@@ -59,7 +59,7 @@ import org.unitime.timetable.webutil.WebClassListTableBuilder;
 @Action(value = "schedulingSubpartDetail", results = {
 		@Result(name = "displaySchedulingSubpart", type = "tiles", location = "schedulingSubpartDetail.tiles"),
 		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),
-		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.do",
+		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.action",
 			params = { "subpartId", "${form.schedulingSubpartId}", "op", "${op}"}
 		)
 	})

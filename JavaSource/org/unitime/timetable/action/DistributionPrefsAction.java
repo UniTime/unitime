@@ -27,22 +27,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -70,7 +64,6 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -82,60 +75,78 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 12-14-2005
- * 
- * XDoclet definition:
- * @struts:action path="/distributionPrefs" name="distributionPrefsForm" input="/user/distributionPrefs.jsp" scope="request"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-@Service("/distributionPrefs")
-public class DistributionPrefsAction extends Action {
+@Action(value="distributionPrefs", results = {
+		@Result(name = "list", type = "tiles", location = "distributionPrefs.tiles"),
+		@Result(name = "add", type = "tiles", location = "addDistributionPref.tiles"),
+		@Result(name = "edit", type = "tiles", location = "editDistributionPref.tiles")
+	})
+@TilesDefinitions(value = {
+		@TilesDefinition(name = "distributionPrefs.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Distribution Preferences"),
+				@TilesPutAttribute(name = "body", value = "/user/distributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		}),
+		@TilesDefinition(name = "addDistributionPref.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Add Distribution Preference"),
+				@TilesPutAttribute(name = "body", value = "/user/distributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		}),
+		@TilesDefinition(name = "editDistributionPref.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Edit Distribution Preference"),
+				@TilesPutAttribute(name = "body", value = "/user/distributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		})
+	})
+public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm> {
+	private static final long serialVersionUID = 1926148300437111812L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	public static GwtConstants CONST = Localization.create(GwtConstants.class);
+	protected static GwtConstants CONST = Localization.create(GwtConstants.class);
+	protected String op2;
+	protected String reloadId;
+	protected String reloadCause;
+	protected String deleteId;
+	protected String deleteType;
+	protected String distPrefId;
 	
-	@Autowired SessionContext sessionContext;
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }
+	public String getReloadId() { return reloadId; }
+	public void setReloadId(String reloadId) { this.reloadId = reloadId; }
+	public String getReloadCause() { return reloadCause; }
+	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
+	public String getDeleteId() { return deleteId; }
+	public void setDeleteId(String deleteId) { this.deleteId = deleteId; }
+	public String getDeleteType() { return deleteType; }
+	public void setDeleteType(String deleteType) { this.deleteType = deleteType; }
+	public String getDp() { return distPrefId; }
+	public void setDp(String distPrefId) { this.distPrefId = distPrefId; }
 	
-	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
-
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
-
     /** 
      * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
      */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public String execute() throws Exception {
+    	if (form == null) {
+    		form = new DistributionPrefsForm();
+    	}
     	
     	sessionContext.checkPermission(Right.DistributionPreferences);
+    	
+		if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
 
-		MessageResources rsc = getResources(request);
-		ActionMessages errors = new ActionMessages();
-        DistributionPrefsForm frm = (DistributionPrefsForm) form;
-        
-        String reloadId = request.getParameter("reloadId");
-        String reloadCause = request.getParameter("reloadCause");
-        String deleteId = request.getParameter("deleteId");
-        String deleteType = request.getParameter("deleteType");
-        String distPrefId = request.getParameter("dp");
-        
-		String op = frm.getOp();
-		if(op==null || op.trim().length()==0) {
-		    op = "view";
-		    frm.setOp(op);
+		if (op==null || op.trim().isEmpty()) {
+			op = "view";		    
 		}
 		
-		frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+    	List<ComboBoxLookup> subjects = new ArrayList<ComboBoxLookup>();
+        subjects.add(new ComboBoxLookup(Constants.BLANK_OPTION_LABEL, Constants.BLANK_OPTION_VALUE));
+        subjects.add(new ComboBoxLookup(Constants.ALL_OPTION_LABEL, Constants.ALL_OPTION_VALUE));
+        TreeSet<SubjectArea> userSubjectAreas = SubjectArea.getUserSubjectAreas(sessionContext.getUser());
+        for (SubjectArea sa: userSubjectAreas)
+        	subjects.add(new ComboBoxLookup(sa.getSubjectAreaAbbreviation(), sa.getUniqueId().toString()));
+        form.setFilterSubjectAreas(subjects);
 		
 		if ("DistTypeChange".equals(request.getParameter("op2")) || "GroupingChange".equals(request.getParameter("op2")))
 			op = "reload pref";
@@ -150,99 +161,96 @@ public class DistributionPrefsAction extends Action {
 		if (reloadCause!=null && reloadCause.length()>0) op = "reload";
 		
         // Cancel - Display blank form
-        if(op.equals(rsc.getMessage("button.cancel"))) {
-            frm.reset(mapping, request);
-            if (BackTracker.doBack(request, response)) return null;
+        if (MSG.actionCancel().equals(op)) {
+        	form.reset();
+        	if (BackTracker.doBack(request, response)) return null;
             op = "view"; //in case no back is available
         }
-        
+
 		// Set lookup tables lists
-        Vector subjectAreaList = setupSubjectAreas(request); // Subject Areas
+        List<ComboBoxLookup> subjectAreaList = setupSubjectAreas(); // Subject Areas
 
         // Add / Update distribution pref
-        if(op.equals(MSG.actionSaveNewDistributionPreference()) || op.equals(MSG.actionUpdateDistributionPreference()) ) {
+        if (MSG.actionSaveNewDistributionPreference().equals(op) || MSG.actionUpdateDistributionPreference().equals(op)) {
             Debug.debug("Saving distribution pref ...");
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0) {
+    		form.setOp(op);
+    		form.validate(this);
+            if (!hasFieldErrors()) {
             	try {
-           			doAddOrUpdate(request, frm);
-           			if (frm.getDistPrefId()!=null) {
+           			doAddOrUpdate();
+           			if (form.getDistPrefId()!=null) {
            				request.setAttribute("backType", "PreferenceGroup");
-           				request.setAttribute("backId", frm.getDistPrefId());
+           				request.setAttribute("backId", form.getDistPrefId());
            			}
-	    	        frm.reset(mapping, request);
+	    	        form.reset();
 	    	        if (BackTracker.doBack(request, response)) return null;
 		            op = "view"; //in case no back is available
            		} catch (Exception e) {
            			Debug.error(e);
-           			errors.add("classes", new ActionMessage("errors.generic", e.getMessage()));
-	                saveErrors(request, errors);
+           			addFieldError("classes", e.getMessage());
 	            }
 	        }
-	        else 
-	            saveErrors(request, errors);
         }
         
         // Delete distribution object / pref
-        if(op.equals(MSG.actionDeleteDistributionPreference())) {
-            if(deleteType.equals("distObject")) {
-                frm.removeFromLists(Integer.parseInt(deleteId));
+        if (MSG.actionDeleteDistributionPreference().equals(op)) {
+            if ("distObject".equals(deleteType)) {
+                form.removeFromLists(Integer.parseInt(deleteId));
             }
-            if(deleteType.equals("distPref")) {
-                distPrefId = frm.getDistPrefId();
-                doDelete(request, distPrefId);
-                frm.reset(mapping, request);            
+            if("distPref".equals(deleteType)) {
+                doDelete(form.getDistPrefId());
+                form.reset();            
                 if (BackTracker.doBack(request, response)) return null;
 	            op = "view"; //in case no back is available
             }
         }
         
         // Add new class - redirect from SchedulingSubpartEdit / ClassEdit
-        if(op.equals(MSG.actionAddDistributionPreference()) || MSG.actionAddDistributionPreference().equals(op)) {
+        if (MSG.actionAddDistributionPreference().equals(op) || MSG.actionAddNewDistributionPreference().equals(op)) {
             Debug.debug("Adding new Class via redirect ...");
-	        frm.setDistType(Preference.BLANK_PREF_VALUE);
-	        frm.setGrouping(Preference.BLANK_PREF_VALUE);
+	        form.setDistType(Preference.BLANK_PREF_VALUE);
+	        form.setGrouping(Preference.BLANK_PREF_VALUE);
 	        if (request.getParameter("classId") != null) {
 	        	Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(request.getParameter("classId")));
 	        	if (clazz != null) {
-	        		frm.addToSubjectArea(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
-		        	frm.addToItype(clazz.getSchedulingSubpart().getUniqueId().toString());
-		        	frm.addToCourseNbr(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId().toString());
-		        	frm.addToClassNumber(clazz.getUniqueId().toString());
-			        request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+	        		form.addToSubjectArea(clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
+		        	form.addToItype(clazz.getSchedulingSubpart().getUniqueId().toString());
+		        	form.addToCourseNbr(clazz.getSchedulingSubpart().getControllingCourseOffering().getUniqueId().toString());
+		        	form.addToClassNumber(clazz.getUniqueId().toString());
+			        request.setAttribute("addedClass", ""+(form.getSubjectArea().size()-1));
 	        	}
 	        } else if (request.getParameter("subpartId") != null) {
 	        	SchedulingSubpart subpart = SchedulingSubpartDAO.getInstance().get(Long.valueOf(request.getParameter("subpartId")));
 	        	if (subpart != null) {
-	        		frm.addToSubjectArea(subpart.getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
-		        	frm.addToItype(subpart.getUniqueId().toString());
-		        	frm.addToCourseNbr(subpart.getControllingCourseOffering().getUniqueId().toString());
-		        	frm.addToClassNumber("-1");
-			        request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+	        		form.addToSubjectArea(subpart.getControllingCourseOffering().getSubjectArea().getUniqueId().toString());
+		        	form.addToItype(subpart.getUniqueId().toString());
+		        	form.addToCourseNbr(subpart.getControllingCourseOffering().getUniqueId().toString());
+		        	form.addToClassNumber("-1");
+			        request.setAttribute("addedClass", ""+(form.getSubjectArea().size()-1));
 	        	}
 	        } else if (request.getAttribute("subjectAreaId")!=null) {
-	        	frm.addToSubjectArea(request.getAttribute("subjectAreaId").toString());
-	        	frm.addToItype(request.getAttribute("schedSubpartId").toString());
-	        	frm.addToCourseNbr(request.getAttribute("courseOffrId").toString());
-	        	frm.addToClassNumber(request.getAttribute("classId").toString());
-		        request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+	        	form.addToSubjectArea(request.getAttribute("subjectAreaId").toString());
+	        	form.addToItype(request.getAttribute("schedSubpartId").toString());
+	        	form.addToCourseNbr(request.getAttribute("courseOffrId").toString());
+	        	form.addToClassNumber(request.getAttribute("classId").toString());
+		        request.setAttribute("addedClass", ""+(form.getSubjectArea().size()-1));
 	        }
         }
         
         // Add new class
-        if(op.equals(MSG.actionAddClassToDistribution())) {
+        if (MSG.actionAddClassToDistribution().equals(op)) {
             Debug.debug("Adding new Class ...");
             String subjAreaId = null;
             if(subjectAreaList.size()==1)
-            	subjAreaId = ((ComboBoxLookup)subjectAreaList.elementAt(0)).getValue();
+            	subjAreaId = subjectAreaList.get(0).getValue();
             
-            frm.addNewClass(subjAreaId);
-    	    request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
+            form.addNewClass(subjAreaId);
+    	    request.setAttribute("addedClass", ""+(form.getSubjectArea().size()-1));
         }
         
-        if (op.equals(MSG.actionSearchDistributionPreferences()) || op.equals(MSG.actionExportPdf()) || op.equals(MSG.actionExportCsv())) {
-        	String subjectAreaId = frm.getFilterSubjectAreaId();
-        	String courseNbr = frm.getFilterCourseNbr();
+        if (MSG.actionSearchDistributionPreferences().equals(op) || MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op)) {
+        	String subjectAreaId = form.getFilterSubjectAreaId();
+        	String courseNbr = form.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
         		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId);
         	else
@@ -252,142 +260,136 @@ public class DistributionPrefsAction extends Action {
         	else
         		sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
         	
-        	if (op.equals(MSG.actionExportPdf()))
+        	if (MSG.actionExportPdf().equals(op))
         		op="export"; 
-        	else if (op.equals(MSG.actionExportCsv()))
+        	else if (MSG.actionExportCsv().equals(op))
         		op="export-csv"; 
         	else 
         		op="view";
         }
 
         // Load Distribution Pref
-        if(op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) 
-                && distPrefId!=null && distPrefId.trim().length()>0) {
+        if (op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) && distPrefId!=null && distPrefId.trim().length()>0) {
             Debug.debug("Loading dist pref - " + distPrefId);
-            
-            frm.reset(mapping, request);
-            doLoad(frm, distPrefId);
+            form.reset();
+            doLoad(distPrefId);
         }
         
         // Reload 
-        if(op!=null && op.equals("reload")) {
+        if (op!=null && op.equals("reload")) {
             // Subject area changed
             if (reloadCause!=null && reloadCause.equals("subjectArea")) {
 	            int index = Integer.parseInt(reloadId);
-	            Debug.debug("subj area changed ... " + reloadId + " - " + frm.getSubjectArea(index));
+	            Debug.debug("subj area changed ... " + reloadId + " - " + form.getSubjectArea(index));
 	
 	            // Reset values to blank
-	            frm.setCourseNbr(index, Preference.BLANK_PREF_VALUE);
-	            frm.setItype(index, Preference.BLANK_PREF_VALUE);
-	            frm.setClassNumber(index, Preference.BLANK_PREF_VALUE);
+	            form.setCourseNbr(index, Preference.BLANK_PREF_VALUE);
+	            form.setItype(index, Preference.BLANK_PREF_VALUE);
+	            form.setClassNumber(index, Preference.BLANK_PREF_VALUE);
 	        }
             
             // Move Distribution object up one level
             if (reloadCause!=null && reloadCause.equals("moveUp")) {
 	            int index = Integer.parseInt(reloadId);
 	            Debug.debug("moving up ... " + reloadId);
-	            frm.swap(index, index-1);
+	            form.swap(index, index-1);
             }
             
             // Move Distribution object down one level
             if (reloadCause!=null && reloadCause.equals("moveDown")) {
 	            int index = Integer.parseInt(reloadId);
 	            Debug.debug("moving down ... " + reloadId);
-	            frm.swap(index, index+1);
+	            form.swap(index, index+1);
             }
         }
 
         // Set up lookup list
-        setLookupLists(request, frm, subjectAreaList, errors); // Distribution Objects
+        setLookupLists(subjectAreaList); // Distribution Objects
 
-        if (frm.getDistType()!=null && !frm.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
+        if (form.getDistType()!=null && !form.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(frm.getDistType())));
-        	frm.setDescription(dist.getDescr());
+        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(form.getDistType())));
+        	form.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
         		if (dist.isAllowed(pref)) {
         			prefs.addElement(pref);
-        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(frm.getPrefLevel()))) containsPref = true;
+        			if (form.getPrefLevel()!=null && !form.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(form.getPrefLevel()))) containsPref = true;
         		}
         	}
         	if (!containsPref)
-        		frm.setPrefLevel(Preference.BLANK_PREF_VALUE);
+        		form.setPrefLevel(Preference.BLANK_PREF_VALUE);
         	if (prefs.size()==1)
-        		frm.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
+        		form.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
         	LookupTables.setupDistribTypes(request, sessionContext, dist);
         } else {
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, new Vector(0));
-        	frm.setDescription("");
+        	form.setDescription("");
             LookupTables.setupDistribTypes(request, sessionContext, null);
         }	    
         
-        if (frm.getGrouping()!=null && !frm.getGrouping().equals(Preference.BLANK_PREF_VALUE)) {
-        	frm.setGroupingDescription(frm.getStructure().getDescription());
+        if (form.getGrouping()!=null && !form.getGrouping().equals(Preference.BLANK_PREF_VALUE)) {
+        	form.setGroupingDescription(form.getStructure().getDescription());
         }
 
-        if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("export".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().length()==0)) {
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "distprefs");
-            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsPdf(out, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsPdf(out, sessionContext, form.getFilterSubjectAreaId(), form.getFilterCourseNbr());
             out.flush(); out.close();
             return null;
         }
         
-        if ("export-csv".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("export-csv".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().length()==0)) {
         	PrintWriter out = ExportUtils.getCsvWriter(response, "distprefs");
-            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsCsv(out, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsCsv(out, sessionContext, form.getFilterSubjectAreaId(), form.getFilterCourseNbr());
             out.flush(); out.close();
             return null;
         }
         
-        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
+        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, (form.getSubjectArea() == null ? 0 : form.getSubjectArea().size()-1));
 
-        if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("view".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().isEmpty())) {
         	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         	if (subject != null && subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
-        	frm.setFilterSubjectAreaId(subject);
-        	frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+        	form.setFilterSubjectAreaId(subject);
+        	form.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
         	
         	DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-        	if (frm.getFilterSubjectAreaId()==null) {
+        	if (form.getFilterSubjectAreaId()==null) {
         	    if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-        	        frm.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
+        	        form.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
         	    else
-        	        frm.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
+        	        form.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
         	}        	
         	
-        	String html = tbl.getAllDistPrefsTableForCurrentUser(request, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+        	String html = tbl.getAllDistPrefsTableForCurrentUser(request, sessionContext, form.getFilterSubjectAreaId(), form.getFilterCourseNbr());
         	if (html!=null)
         		request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             BackTracker.markForBack(
             		request,
-            		"distributionPrefs.do",
+            		"distributionPrefs.action",
             		MSG.backDistributionPreferences(),
             		true, true);
-            return mapping.findForward("list");
+            return "list";
         }
         
-        return mapping.findForward(frm.getDistPrefId()==null || frm.getDistPrefId().length()==0?"add":"edit");
+        return (form.getDistPrefId()==null || form.getDistPrefId().length()==0?"add":"edit");
     }
 
     /**
      * Get Subject Areas for an acad session for a user and store it in request object
      * Gets all subject areas for LLR Manager, Lab Manager and Admin
-     * @param request
-     * @throws Exception
      */
-    public Vector setupSubjectAreas(
-            HttpServletRequest request) throws Exception {
-
+    public List<ComboBoxLookup> setupSubjectAreas() throws Exception {
         Set subjectAreas = SubjectArea.getUserSubjectAreas(sessionContext.getUser());
         
         if (subjectAreas==null) return null;
         
-        Vector v = new Vector(subjectAreas.size());
-           for (Iterator i=subjectAreas.iterator();i.hasNext();) {
+        List<ComboBoxLookup> v = new ArrayList<ComboBoxLookup>(subjectAreas.size());
+        for (Iterator i=subjectAreas.iterator();i.hasNext();) {
            	SubjectArea sa = (SubjectArea)i.next();
-           	v.addElement(new ComboBoxLookup(sa.getSubjectAreaAbbreviation(),sa.getUniqueId().toString()));
+           	v.add(new ComboBoxLookup(sa.getSubjectAreaAbbreviation(),sa.getUniqueId().toString()));
     	}
            
         return v;
@@ -396,20 +398,16 @@ public class DistributionPrefsAction extends Action {
     /**
      * @param index
      */
-    private void setLookupLists(       
-            HttpServletRequest request,
-            DistributionPrefsForm frm, 
-            Vector subjectAreaList, 
-            ActionMessages errors ) {
+    private void setLookupLists(List<ComboBoxLookup> subjectAreaList) {
         
-        int ct = frm.getSubjectArea().size();
+        int ct = (form.getSubjectArea() == null ? 0 : form.getSubjectArea().size());
         boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
         for(int index=0; index<ct; index++) {
             
-	        String subjectAreaId = frm.getSubjectArea(index);
-	        String courseNbr = frm.getCourseNbr(index);
-	        String subpart = frm.getItype(index);
-	        String classNumber = frm.getClassNumber(index);
+	        String subjectAreaId = form.getSubjectArea(index);
+	        String courseNbr = form.getCourseNbr(index);
+	        String subpart = form.getItype(index);
+	        String classNumber = form.getClassNumber(index);
 	        
 	        Vector crsNumList = null;
 	        Vector subpartList = null;
@@ -454,8 +452,8 @@ public class DistributionPrefsAction extends Action {
 	        		    // Only one record - select it to save time and one more click
 	        		    if(result.size()==1) {
 	        		        ComboBoxLookup cbl = (ComboBoxLookup) crsNumList.elementAt(0);
-	        		        frm.setCourseNbr(index, cbl.getValue());
-	        		        courseNbr = frm.getCourseNbr(index);
+	        		        form.setCourseNbr(index, cbl.getValue());
+	        		        courseNbr = form.getCourseNbr(index);
 	        		    }
 	        		}
 	                
@@ -491,7 +489,7 @@ public class DistributionPrefsAction extends Action {
 		        		        String name = a.getItype().getAbbv();
 		        		        String sufix = a.getSchedulingSubpartSuffix();
 		        		        while (a.getParentSubpart()!=null) {
-		        		        	name = "&nbsp;&nbsp;&nbsp;&nbsp;"+name;
+		        		        	name = "\u00A0\u00A0\u00A0\u00A0"+name;
 		        		        	a = a.getParentSubpart();
 		        		        }
 		        		        if (a.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size()>1)
@@ -503,16 +501,14 @@ public class DistributionPrefsAction extends Action {
 		        		    // Only one record - select it to save time and one more click
 		        		    if(result.size()==1) {
 		        		        ComboBoxLookup cbl = (ComboBoxLookup) subpartList.elementAt(0);
-		        		        frm.setItype(index, cbl.getValue());
-		        		        subpart = frm.getItype(index);
+		        		        form.setItype(index, cbl.getValue());
+		        		        subpart = form.getItype(index);
 		        		    }
 		        		}
 	                    
-	                    if(subpartList==null || subpartList.size()==0) {
+	                    if (subpartList==null || subpartList.size()==0) {
 	                        subpartList = new Vector();
-	                        errors.add("classes", 
-	                                	new ActionMessage("errors.generic",
-	                                	       MSG.errorNoSupbartsExist()));
+	                        addFieldError("classes", MSG.errorNoSupbartsExist());
 	                    }
 	                    
 	                    // Process subpart selection
@@ -531,15 +527,16 @@ public class DistributionPrefsAction extends Action {
 			        		q.setFetchSize(200);
 			        		q.setCacheable(true);
 			        		q.setLong("itype", Long.parseLong(subpart));
-			                
+			        		
 			        		result = q.list();
 			        		if(result!=null && result.size()>0) {
                                 Collections.sort(result, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
                                 
 			        		    if(classNumber.equals(Preference.BLANK_PREF_VALUE)) 
-			        		        frm.setClassNumber(index, DistributionPrefsForm.ALL_CLASSES_SELECT);
+			        		        form.setClassNumber(index, DistributionPrefsForm.ALL_CLASSES_SELECT);
 			        		        
 	                            classNumList = new Vector();
+				        		classNumList.addElement(new ComboBoxLookup(MSG.dropDistrPrefAll(), "-1"));
 			        		    for(int i=0; i<result.size(); i++) {
 			        		    	Class_ clazz = (Class_)result.get(i);
 			        		        ComboBoxLookup cbl = new ComboBoxLookup(clazz.getSectionNumberString(), clazz.getUniqueId().toString());
@@ -553,9 +550,7 @@ public class DistributionPrefsAction extends Action {
 			        		}
 			        		else {
     	                        classNumList = new Vector();
-    	                        errors.add("classes", 
-    	                                	new ActionMessage("errors.generic",
-    	                                	       MSG.errorNoClassesExist() ) );
+    	                        addFieldError("classes", MSG.errorNoClassesExist());
 	                        }
 	                    }
 	                }
@@ -572,27 +567,22 @@ public class DistributionPrefsAction extends Action {
             request.setAttribute( 
                     DistributionPrefsForm.CLASS_NUM_ATTR_LIST + index, classNumList );
         }
-
-        saveErrors(request, errors);
     }
     
     /**
      * Loads the form with the data for the distribution pref selected
-     * @param frm
      * @param distPrefId
      */
-    private void doLoad(
-            DistributionPrefsForm frm, 
-            String distPrefId ) {
+    private void doLoad(String distPrefId ) {
  
         // Get distribution pref info
         DistributionPrefDAO dpDao = new DistributionPrefDAO();
         DistributionPref dp = dpDao.get(Long.valueOf(distPrefId));
-        frm.setDistType(dp.getDistributionType().getUniqueId().toString());
-        frm.setStructure(dp.getStructure());
-        frm.setOwner(dp.getOwner().getUniqueId().toString());
-        frm.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
-        frm.setDistPrefId(distPrefId);
+        form.setDistType(dp.getDistributionType().getUniqueId().toString());
+        form.setStructure(dp.getStructure());
+        form.setOwner(dp.getOwner().getUniqueId().toString());
+        form.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
+        form.setDistPrefId(distPrefId);
         
         org.hibernate.Session hibSession = dpDao.getSession();
 
@@ -660,10 +650,10 @@ public class DistributionPrefsAction extends Action {
                 } else {
                 	indx = ((Integer) rec[4]).intValue() - 1;
                 }
-                frm.setSubjectArea(indx, rec[0].toString());
-                frm.setCourseNbr(indx, rec[1].toString());
-                frm.setItype(indx, rec[2].toString());
-                frm.setClassNumber(indx, rec[3].toString());
+                form.setSubjectArea(indx, rec[0].toString());
+                form.setCourseNbr(indx, rec[1].toString());
+                form.setItype(indx, rec[2].toString());
+                form.setClassNumber(indx, rec[3].toString());
                 i++;
             }                
         }            
@@ -672,16 +662,14 @@ public class DistributionPrefsAction extends Action {
     /**
      * Add new distribution pref
      * @param httpSession
-     * @param frm
+     * @param form
      */
-    private void doAddOrUpdate(
-            HttpServletRequest request, 
-            DistributionPrefsForm frm ) throws Exception {
+    private void doAddOrUpdate() throws Exception {
 
-        String distPrefId = frm.getDistPrefId();
-        List saList = frm.getSubjectArea();
-        List suList = frm.getItype();
-        List clList = frm.getClassNumber();            
+        String distPrefId = form.getDistPrefId();
+        List saList = form.getSubjectArea();
+        List suList = form.getItype();
+        List clList = form.getClassNumber();            
         
         // Create distribution preference
         DistributionPref dp = null;
@@ -712,9 +700,9 @@ public class DistributionPrefsAction extends Action {
             	}
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(frm.getDistType()), hibSession));
-            dp.setStructure(frm.getStructure());
-        	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
+            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(form.getDistType()), hibSession));
+            dp.setStructure(form.getStructure());
+        	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(form.getPrefLevel()) ));
         
         	Department owningDept = null;
         
@@ -807,6 +795,8 @@ public class DistributionPrefsAction extends Action {
         
 	        // Save
     	    hibSession.saveOrUpdate(dp);
+    	    
+    	    Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");
             
     	    List<Long> changedOfferingIds = new ArrayList<Long>();
             for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
@@ -830,7 +820,7 @@ public class DistributionPrefsAction extends Action {
     	    hibSession.refresh(dp.getOwner());
     	    if (oldOwner!=null && !oldOwner.equals(dp.getOwner()))
     	    	hibSession.refresh(oldOwner);
-    	    frm.setDistPrefId(dp.getUniqueId().toString());
+    	    form.setDistPrefId(dp.getUniqueId().toString());
         } catch (Exception e) {
         	if (tx!=null) tx.rollback();
         	hibSession.clear();
@@ -842,7 +832,7 @@ public class DistributionPrefsAction extends Action {
      * Delete distribution pref
      * @param distPrefId
      */
-    private void doDelete(HttpServletRequest request, String distPrefId) {
+    private void doDelete(String distPrefId) {
         /*
         String query = "delete DistributionPref dp where dp.uniqueId=:distPrefId";
 
@@ -879,6 +869,8 @@ public class DistributionPrefsAction extends Action {
 	        hibSession.delete(dp);
 	        hibSession.saveOrUpdate(dept);
 	        
+	        Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");
+	        
 	        List<Long> changedOfferingIds = new ArrayList<Long>();
             for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
                 InstructionalOffering io = (InstructionalOffering)i.next();
@@ -907,5 +899,13 @@ public class DistributionPrefsAction extends Action {
             if (tx!=null && tx.isActive()) 
                 tx.rollback();
         }
+    }
+    
+    public String getFocusElement() {
+    	if (request.getAttribute("addedClass")!=null)
+    		return "subjectArea[" + request.getAttribute("addedClass").toString() + "]";
+    	if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)!=null)
+    		return null;
+    	return "distType";
     }
 }

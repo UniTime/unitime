@@ -24,14 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.util.DynamicList;
@@ -39,20 +34,12 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 12-14-2005
- * 
- * XDoclet definition:
- * @struts:form name="distributionPrefsForm"
- *
  * @author Tomas Muller
  */
-public class DistributionPrefsForm extends ActionForm {
-
-	// Messages
+public class DistributionPrefsForm implements UniTimeForm {
+	private static final long serialVersionUID = 6316876654471770646L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	private static final long serialVersionUID = 6316876654471770646L;
 	// --------------------------------------------------------- Class Variables
     public static final String SUBJ_AREA_ATTR_LIST = "subjectAreaList";
     public static final String CRS_NUM_ATTR_LIST = "courseNbrList";
@@ -79,10 +66,10 @@ public class DistributionPrefsForm extends ActionForm {
     private String distPrefId;
     
     /** distribution objects **/
-    private List subjectArea;
-    private List courseNbr;
-    private List itype;
-    private List classNumber;
+    private List<String> subjectArea;
+    private List<String> courseNbr;
+    private List<String> itype;
+    private List<String> classNumber;
     
     private String description;
     private String groupingDescription;
@@ -97,78 +84,51 @@ public class DistributionPrefsForm extends ActionForm {
     // --------------------------------------------------------- Classes
 
     /** Factory to create dynamic list element for Distribution Objects */
-    protected DynamicListObjectFactory factoryDistObj = new DynamicListObjectFactory() {
-        public Object create() {
-            return Preference.BLANK_PREF_VALUE;
-        }
-    };
+    protected DynamicListObjectFactory factoryDistObj;
+    
+    public DistributionPrefsForm() {
+    	factoryDistObj = new DynamicListObjectFactory() {
+            public Object create() {
+                return Preference.BLANK_PREF_VALUE;
+            };
+    	};
+    	reset();
+    }
 
     // --------------------------------------------------------- Methods
 
     /** 
      * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
      */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
+    public void validate(UniTimeAction action) {
         // Distribution Type must be selected
-        if(distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {
-	        errors.add("distType", 
-	                new ActionMessage(
-	                        "errors.generic", MSG.errorSelectDistributionType()) );
+        if (distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {
+        	action.addFieldError("distType", MSG.errorSelectDistributionType());
         }
         
-        /*
-        // Distribution Type must be selected
-        if(grouping==null || grouping.equals(Preference.BLANK_PREF_VALUE)) {
-	        errors.add("grouping", 
-	                new ActionMessage(
-	                        "errors.generic", "Select a structure. ") );
-        }
-        */
-
         // Distribution Pref Level must be selected
-        if(prefLevel==null || prefLevel.equals(Preference.BLANK_PREF_VALUE)) {
-	        errors.add("prefLevel", 
-	                new ActionMessage(
-	                        "errors.generic", 
-	                        MSG.errorSelectDistributionPreferenceLevel()) );
+        if (prefLevel==null || prefLevel.equals(Preference.BLANK_PREF_VALUE)) {
+        	action.addFieldError("prefLevel", MSG.errorSelectDistributionPreferenceLevel());
         }
         
         // Check duplicate / blank selections
-        if(!checkClasses()) {
-	        errors.add("classes", 
-	                new ActionMessage(
-	                        "errors.generic", 
-	                        MSG.errorInvalidClassSelectionDP()) );
+        if (!checkClasses()) {
+        	action.addFieldError("classes", MSG.errorInvalidClassSelectionDP());
         }
         
         // Save/Update clicked
-        if(op.equals(MSG.accessSaveNewDistributionPreference())
-                || op.equals(MSG.accessUpdateDistributionPreference()) ) {
-            
-            // At least one row of subpart should exist
-            if(subjectArea.size()==0)
-    	        errors.add("classes", 
-    	                new ActionMessage(
-    	                        "errors.generic", 
-    	                        MSG.errorInvalidClassSelectionDPSubpart()) );
+        if (op.equals(MSG.accessSaveNewDistributionPreference()) || op.equals(MSG.accessUpdateDistributionPreference())) {
+        	
+        	// At least one row of subpart should exist
+            if (subjectArea.size()==0)
+            	action.addFieldError("classes", MSG.errorInvalidClassSelectionDPSubpart());
 
             // At least 2 rows should exist if one is a class
-            if(subjectArea.size()==1 && !classNumber.get(0).toString().equals(ALL_CLASSES_SELECT))
-    	        errors.add("classes", 
-    	                new ActionMessage(
-    	                        "errors.generic", 
-    	                        MSG.errorInvalidClassSelectionDPMinTwoClasses()) );
+            if (subjectArea.size()==1 && !classNumber.get(0).toString().equals(ALL_CLASSES_SELECT))
+            	action.addFieldError("classes", MSG.errorInvalidClassSelectionDPMinTwoClasses());
             
             // Class cannot be specified if its subpart is already specified
-            if(subjectArea.size()>1) {
+            if (subjectArea.size()>1) {
                 HashMap mapSubparts = new HashMap();
                 HashMap mapClasses = new HashMap();
                 for (int i=0; i<subjectArea.size(); i++) {
@@ -176,10 +136,7 @@ public class DistributionPrefsForm extends ActionForm {
                     String classNum = classNumber.get(i).toString();
                     if(classNum.equals(ALL_CLASSES_SELECT)) {
                         if(mapClasses.get(subpart)!=null) {
-                	        errors.add("classes", 
-                	                new ActionMessage(
-                	                        "errors.generic", 
-                	                        MSG.errorInvalidClassSelectionDPIndividualClass()) );
+                        	action.addFieldError("classes", MSG.errorInvalidClassSelectionDPIndividualClass());
                 	        break;
                         }
                         else 
@@ -187,10 +144,7 @@ public class DistributionPrefsForm extends ActionForm {
                     }
                     else {
                         if(mapSubparts.get(subpart)!=null) {
-                	        errors.add("classes", 
-                	                new ActionMessage(
-                	                        "errors.generic", 
-                	                        MSG.errorInvalidClassSelectionDPIndividualClass()) );
+                        	action.addFieldError("classes", MSG.errorInvalidClassSelectionDPIndividualClass());
                 	        break;
                         }
                         else 
@@ -199,8 +153,6 @@ public class DistributionPrefsForm extends ActionForm {
                 }
             }
         }
-
-        return errors;
     }
 
     /**
@@ -236,10 +188,8 @@ public class DistributionPrefsForm extends ActionForm {
     
     /** 
      * Method reset
-     * @param mapping
-     * @param request
      */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    public void reset() {
         op="";
         distPrefId="";
         distType=Preference.BLANK_PREF_VALUE;
@@ -333,14 +283,14 @@ public class DistributionPrefsForm extends ActionForm {
     /**
      * @return Returns the subjectArea.
      */
-    public List getSubjectArea() {
+    public List<String> getSubjectArea() {
         return subjectArea;
     }
     
     /**
      * @param subjectArea The subjectArea to set.
      */
-    public void setSubjectArea(List subjectArea) {
+    public void setSubjectArea(List<String> subjectArea) {
         this.subjectArea = subjectArea;
     }
     
@@ -348,13 +298,13 @@ public class DistributionPrefsForm extends ActionForm {
      * @return Returns the subjectArea.
      */
     public String getSubjectArea(int key) {
-        return subjectArea.get(key).toString();
+        return subjectArea.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setSubjectArea(int key, Object value) {
+    public void setSubjectArea(int key, String value) {
         this.subjectArea.set(key, value);
     }
 
@@ -368,14 +318,14 @@ public class DistributionPrefsForm extends ActionForm {
     /**
      * @return Returns the courseNbr.
      */
-    public List getCourseNbr() {
+    public List<String> getCourseNbr() {
         return courseNbr;
     }
     
     /**
      * @param courseNbr The courseNbr to set.
      */
-    public void setCourseNbr(List courseNbr) {
+    public void setCourseNbr(List<String> courseNbr) {
         this.courseNbr = courseNbr;
     }
     
@@ -383,13 +333,13 @@ public class DistributionPrefsForm extends ActionForm {
      * @return Returns the courseNbr.
      */
     public String getCourseNbr(int key) {
-        return courseNbr.get(key).toString();
+        return courseNbr.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setCourseNbr(int key, Object value) {
+    public void setCourseNbr(int key, String value) {
         this.courseNbr.set(key, value);
     }
 
@@ -403,14 +353,14 @@ public class DistributionPrefsForm extends ActionForm {
     /**
      * @return Returns the itype.
      */
-    public List getItype() {
+    public List<String> getItype() {
         return itype;
     }
     
     /**
      * @param itype The itype to set.
      */
-    public void setItype(List itype) {
+    public void setItype(List<String> itype) {
         this.itype = itype;
     }
     
@@ -418,13 +368,13 @@ public class DistributionPrefsForm extends ActionForm {
      * @return Returns the itype.
      */
     public String getItype(int key) {
-        return itype.get(key).toString();
+        return itype.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setItype(int key, Object value) {
+    public void setItype(int key, String value) {
         this.itype.set(key, value);
     }
 
@@ -438,14 +388,14 @@ public class DistributionPrefsForm extends ActionForm {
     /**
      * @return Returns the classNumber.
      */
-    public List getClassNumber() {
+    public List<String> getClassNumber() {
         return classNumber;
     }
     
     /**
      * @param classNumber The classNumber to set.
      */
-    public void setClassNumber(List classNumber) {
+    public void setClassNumber(List<String> classNumber) {
         this.classNumber = classNumber;
     }
     
@@ -453,13 +403,13 @@ public class DistributionPrefsForm extends ActionForm {
      * @return Returns the classNumber.
      */
     public String getClassNumber(int key) {
-        return classNumber.get(key).toString();
+        return classNumber.get(key);
     }
     /**
      * @param key The key to set.
      * @param value The value to set.
      */
-    public void setClassNumber(int key, Object value) {
+    public void setClassNumber(int key, String value) {
         this.classNumber.set(key, value);
     }
 
@@ -532,15 +482,15 @@ public class DistributionPrefsForm extends ActionForm {
      * @param index2
      */
     public void swap(int index, int index2) {
-        Object objSa = subjectArea.get(index);
-        Object objCo = courseNbr.get(index);
-        Object objIt = itype.get(index);
-        Object objCl = classNumber.get(index);
+    	String objSa = subjectArea.get(index);
+        String objCo = courseNbr.get(index);
+        String objIt = itype.get(index);
+        String objCl = classNumber.get(index);
         
-        Object objSa2 = subjectArea.get(index2);
-        Object objCo2 = courseNbr.get(index2);
-        Object objIt2 = itype.get(index2);
-        Object objCl2 = classNumber.get(index2);
+        String objSa2 = subjectArea.get(index2);
+        String objCo2 = courseNbr.get(index2);
+        String objIt2 = itype.get(index2);
+        String objCl2 = classNumber.get(index2);
         
         subjectArea.set(index, objSa2);
         subjectArea.set(index2, objSa);

@@ -70,7 +70,7 @@ import org.unitime.timetable.webutil.BackTracker;
 @Action(value = "classEdit", results = {
 		@Result(name = "editClass", type = "tiles", location = "classEditTile.tiles"),
 		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),
-		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.do", 
+		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.action", 
 			params = { "classId", "${form.classId}", "op", "${op}"}
 		),
 		@Result(name = "displayClassDetail", type = "redirect", location = "/classDetail.action",

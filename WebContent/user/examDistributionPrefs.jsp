@@ -487,7 +487,7 @@
 	
 		// Request
 		var vars = "id="+id+"&examType="+examType+"&type="+type;
-		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
@@ -541,7 +541,7 @@
 	
 		// Request
 		var vars = "id="+id+"&type=distType";
-		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);

@@ -41,7 +41,6 @@
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
-      <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
@@ -449,25 +448,6 @@
     	forward="hibrenateStatsTile" />
      
       <action
-         path="/distributionPrefs"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="distributionPrefsForm"
-         input="distributionPrefsTile"
-         name="distributionPrefsForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="list" 
-        	path="distributionPrefsTile" />
-        <forward 
-        	name="add" 
-        	path="adddistributionPrefTile" />
-        <forward 
-        	name="edit" 
-        	path="editDistributionPrefTile" />
-      </action>
-      
-      <action
          path="/hibernateQueryTest"
          type="org.springframework.web.struts.DelegatingActionProxy"
          attribute="hibernateQueryTestForm"
@@ -698,19 +678,6 @@
        <forward name="add" path="userAddTile" />
        <forward name="edit" path="userEditTile" />
     </action>
-
-	  <action
-         path="/distributionPrefsAjax"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" />
-         
-      <action
-      	 path="/itypesAjax"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" 
-      />
 
     <action
       attribute="rollForwardSessionForm"

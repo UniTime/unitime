@@ -271,6 +271,10 @@ public class PreferenceLevel extends BasePreferenceLevel {
         }
     }
     
+    public String getDropdownOptionStyle() {
+    	return "background-color: " + prefcolor() + ";";
+    }
+    
     public String prefcolorNeutralBlack() {
     	if (sNeutral.equals(getPrefProlog())) return "black";
     	else return prefcolor();

@@ -257,7 +257,7 @@ public class DistributionPrefsTableBuilder {
         
         WebTable tbl = new WebTable(4, 
         		title,  
-    			"distributionPrefs.do?order=%%",
+    			"distributionPrefs.action?order=%%",
     			new String[] {MSG.columnDistrPrefType(), MSG.columnDistrPrefStructure(), MSG.columnDistrPrefOwner(), MSG.columnDistrPrefClass() },
     			new String[] { "left", "left", "left", "left"},
     			new boolean[] { true, true, true, true } );
@@ -330,7 +330,7 @@ public class DistributionPrefsTableBuilder {
             				+ "&op=Show%20Instructor%20Preferences'\"";
             } else {
             	if (context.hasPermission(dp, Right.DistributionPreferenceEdit))
-            		onClick = "onClick=\"document.location='distributionPrefs.do"
+            		onClick = "onClick=\"document.location='distributionPrefs.action"
             				+ "?dp=" + dp.getUniqueId().toString() 
             				+ "&op=view'\"";
             }

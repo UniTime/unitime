@@ -33,7 +33,6 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
@@ -75,7 +74,6 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /**
  * @author Tomas Muller
  */
-@Service("/examList")
 @Action(value="examList", results = {
 		@Result(name = "list", type = "tiles", location = "examList.tiles"),
 		@Result(name = "addExam", type = "redirect", location = "/examEdit.action")

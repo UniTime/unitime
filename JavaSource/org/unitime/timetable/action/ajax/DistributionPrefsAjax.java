@@ -26,16 +26,13 @@ import java.util.List;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -55,20 +52,18 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  *
  */
-@Service("/distributionPrefsAjax")
-public class DistributionPrefsAjax extends Action {
+@Action(value = "distributionPrefsAjax")
+public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -3166421023163905806L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+    public String execute() throws Exception {
         
         response.addHeader("Content-Type", "text/xml; charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         
-        //System.out.println("type:"+request.getParameter("type")); 
-        //System.out.println("id:  "+request.getParameter("id"));
-        
         PrintWriter out = response.getWriter();
         
-        //System.out.println("response:");
         out.print("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
         out.print("<results>");
         coumputeSuggestionList(request, out);
@@ -83,12 +78,10 @@ public class DistributionPrefsAjax extends Action {
     }
     
     protected void print(PrintWriter out, String id, String value) throws IOException {
-        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
         out.print("<result id=\""+id+"\" value=\""+escapeXml(value)+"\" />");
     }
     
     protected void print(PrintWriter out, String id, String value, String extra) throws IOException {
-        //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
         out.print("<result id=\""+id+"\" value=\""+escapeXml(value)+"\" extra=\""+escapeXml(extra)+"\" />");
     }
 

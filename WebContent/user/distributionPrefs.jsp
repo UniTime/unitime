@@ -17,154 +17,87 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.form.DistributionPrefsForm" %>
-<%@ page import="org.unitime.timetable.model.DistributionPref" %>
-<%@ page import="org.unitime.timetable.model.DistributionType" %>
-<%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-<%
-	String focusElement = "distType";
-	if (request.getAttribute("addedClass")!=null) {
-		focusElement = "subjectArea[" + request.getAttribute("addedClass").toString() + "]";
-	}
-	if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)!=null)
-		focusElement = null;
-%> 
-<html:form action="/distributionPrefs" focus="<%= focusElement %>">
-<loc:bundle name="CourseMessages"><tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if (!confirm('<%=MSG.confirmDeleteDistributionPreference()%>')) {
-				return false;
-			}
-
-			return true;
-		}
-	// -->
-</SCRIPT>  	
-	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
-	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
-	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
-	<INPUT type="hidden" name="reloadId" id="reloadId" value="">
-	<INPUT type="hidden" name="op2" value="">
-	<html:hidden property="distPrefId"/>
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
-		
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="distributionPrefs" focusElement="%{getFocusElement()}" id="distributionPrefsForm">
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDistributionPreference"/></tt:confirm>
+	<input type="hidden" name="deleteType" id="deleteType" value="">
+	<input type="hidden" name="deleteId" id="deleteId" value="">
+	<input type="hidden" name="reloadCause" id="reloadCause" value="">
+	<input type="hidden" name="reloadId" id="reloadId" value="">
+	<input type="hidden" name="op2" value="">
+	<s:hidden name="form.distPrefId"/>
+	<table class="unitime-MainTable">
+	<s:if test="#request.distPrefs == null">
 		<TR>
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:notEmpty name="distributionPrefsForm" property="distPrefId">
+						<s:if test="form.distPrefId != null">
 							<loc:message name="sectionTitleEditDistributionPreference"/>
-						</logic:notEmpty>
-						<logic:empty name="distributionPrefsForm" property="distPrefId">
+						</s:if>
+						<s:else>
 							<loc:message name="sectionTitleAddDistributionPreference"/>
-						</logic:empty>
+						</s:else>
 					</tt:section-title>
-					<logic:notEmpty name="distributionPrefsForm" property="distPrefId">
-						<html:submit 
-							styleClass="btn" 
-							property="op" 
-							accesskey="<%=MSG.accessUpdateDistributionPreference() %>" 
-							title="<%=MSG.titleUpdateDistributionPreference(MSG.accessUpdateDistributionPreference()) %>">
-							<loc:message name="actionUpdateDistributionPreference" />
-						</html:submit>
-						
-						<sec:authorize access="hasPermission(#distributionPrefsForm.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
-							&nbsp;
-							<html:submit styleClass="btn" property="op" 
-								accesskey="<%=MSG.accessDeleteDistributionPreference() %>" 
-								title="<%=MSG.titleDeleteDistributionPreference(MSG.accessDeleteDistributionPreference()) %>" 
-								onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
-								<loc:message name="actionDeleteDistributionPreference" />
-							</html:submit>
+					<s:if test="form.distPrefId != null">
+						<s:submit name='op' value="%{#msg.actionUpdateDistributionPreference()}"
+							title="%{#msg.titleUpdateDistributionPreference(#msg.accessUpdateDistributionPreference())}"
+							accesskey="%{#msg.accessUpdateDistributionPreference()}"/>
+						<sec:authorize access="hasPermission(#form.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
+							<s:submit name='op' value="%{#msg.actionDeleteDistributionPreference()}"
+								title="%{#msg.titleDeleteDistributionPreference(#msg.accessDeleteDistributionPreference())}"
+								accesskey="%{#msg.accessDeleteDistributionPreference()}"
+								onclick="doDel('distPref', '-1'); return confirmDelete();"
+								/>
 						</sec:authorize>				
-					</logic:notEmpty>
-				
-					<logic:empty name="distributionPrefsForm" property="distPrefId">
-
-					<html:submit styleClass="btn" property="op" 
-						accesskey="<%=MSG.accessSaveNewDistributionPreference() %>" 
-						title="<%=MSG.titleSaveNewDistributionPreference(MSG.accessSaveNewDistributionPreference()) %>">
-						<loc:message name="actionSaveNewDistributionPreference" />
-					</html:submit>
-				
-					</logic:empty>
-
-					<!-- 
-					<html:submit property="op" accesskey="C">
-						<bean:message key="button.cancel" />
-					</html:submit>
-					-->
-
-					&nbsp;
-					<logic:notEmpty name="distributionPrefsForm" property="distPrefId">
+					</s:if>
+					<s:else>
+						<s:submit name='op' value="%{#msg.actionSaveNewDistributionPreference()}"
+							title="%{#msg.titleSaveNewDistributionPreference(#msg.accessSaveNewDistributionPreference())}"
+							accesskey="%{#msg.accessSaveNewDistributionPreference()}"/>
+					</s:else>
+					<s:if test="form.distPrefId != null">
 						<tt:back styleClass="btn" 
-							name="<%=MSG.actionBackDistributionPreference()%>" 
-							title="<%=MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference()) %>"
-							accesskey="<%=MSG.accessBackDistributionPreference() %>" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
 							back="1" 
 							type="PreferenceGroup">
-							<bean:write name="distributionPrefsForm" property="distPrefId"/>
+							<s:property value="form.distPrefId"/>
 						</tt:back>
-					</logic:notEmpty>
-					<logic:empty name="distributionPrefsForm" property="distPrefId">
+					</s:if>
+					<s:else>
 						<tt:back styleClass="btn" 
-							name="<%=MSG.actionBackDistributionPreference()%>" 
-							title="<%=MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference()) %>"
-							accesskey="<%=MSG.accessBackDistributionPreference() %>" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
 							back="1"/>
-					</logic:empty>
-					
+					</s:else>
 				</tt:section-header>
 			</TD>
 		</TR>
-				
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="3" align="left" class="errorCell">
-					<B><U><loc:message name="errors"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="3" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 		
 		<TR>
 			<TD nowrap valign='top'><loc:message name="propertyDistributionType"></loc:message><font class="reqField">*</font></TD>
 			<TD colspan='2' width='100%'>
-				<html:select style="width:300px;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
-					<html:option value="-">-</html:option>
-					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
-				</html:select>
+				<s:select name="form.distType"
+					list="#request.distributionTypeList" listKey="uniqueId" listValue="label"
+					headerKey="-" headerValue="-"
+					style="width:300px;"
+					onchange="distTypeChanged(this.value);"
+					/>
 				<span id='distTypeDesc' style='display:block;padding:3px; max-width: 800px;'>
-					<bean:write name="distributionPrefsForm" property="description" filter="false"/>
+					<s:property value="form.description" escapeHtml="false"/>
 				</span>
 			</TD>
 		</TR>
@@ -172,12 +105,14 @@
 		<TR>
 			<TD nowrap valign='top'><loc:message name="propertyDistributionStructure"/><font class="reqField">*</font></TD>
 			<TD colspan='2'>
-				<html:select property="grouping" onchange="javascript: groupingChanged(this.value);" > <!-- onchange="op2.value='GroupingChange';submit();" -->
-					<html:option value="-">-</html:option>
-					<html:options name="distributionPrefsForm" property="groupings"/>
-				</html:select>
+				<s:select name="form.grouping"
+					list="form.groupings"
+					headerKey="-" headerValue="-"
+					style="width:300px;"
+					onchange="groupingChanged(this.value);"
+					/>
 				<span id='groupingDesc' style='display:block;padding:3px; max-width: 800px;'>
-					<bean:write name="distributionPrefsForm" property="groupingDescription" filter="false"/>
+					<s:property value="form.groupingDescription" escapeHtml="false"/>
 				</span>
 			</TD>
 		</TR>
@@ -185,16 +120,11 @@
 		<TR>
 			<TD><loc:message name="propertyDistributionPreference"/> <font class="reqField">*</font></TD>
 			<TD>
-				<html:select style="width:200px;" property="prefLevel">					
-					<html:option value="-">-</html:option>
-					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
-					<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
-					<html:option
-						style='<%="background-color:" + pr.prefcolor() + ";"%>'
-						value="<%=pr.getUniqueId().toString()%>"> <%=pr.getPrefName() %>
-					</html:option>
-				   	</logic:iterate>
-				</html:select>
+				<s:select name="form.prefLevel" id="prefLevel"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+					headerKey="-" headerValue="-"
+					style="width:200px;">
+				</s:select>
 			</TD>
 			<TD>&nbsp;</TD>
 		</TR>
@@ -206,93 +136,83 @@
 					<tt:section-title>
 						<loc:message name="sectionTitleClassesInDistribution"/>
 					</tt:section-title>
-					<html:submit styleClass="btn" property="op" 
-						accesskey="<%=MSG.accessAddClassToDistribution() %>" 
-						title="<%=MSG.titleAddClassToDistribution(MSG.accessAddClassToDistribution()) %>" 
-						style="width: 100px">
-						<loc:message name="actionAddClassToDistribution" />
-					</html:submit>
+					<s:submit name='op' value="%{#msg.actionAddClassToDistribution()}"
+						title="%{#msg.titleAddClassToDistribution(#msg.accessAddClassToDistribution())}"
+						accesskey="%{#msg.accessAddClassToDistribution()}"
+						style="min-width:100px;"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
-		<logic:iterate name="distributionPrefsForm" property="subjectArea" id="sa" indexId="ctr">
+		<s:iterator value="form.subjectArea" var="sa" status="stat">
 		<TR>
 			<TD colspan="3">
-			
 				<!-- Class / Subpart -->
-				<html:select style="width:90px;" 
-					property='<%= "subjectArea[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
-					styleId='<%="subjectArea"+ctr%>' >
-					<html:option value="-">-</html:option>
-					<html:options collection="<%=DistributionPrefsForm.SUBJ_AREA_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
-				</html:select>
+				<s:select name="form.subjectArea[%{#stat.index}]"
+					list="#request['subjectAreaList' + #stat.index]" listKey="value" listValue="label"
+					headerKey="-" headerValue="-"
+					style="width:90px;"
+					onchange="doReload('subjectArea', '%{#stat.index}');"
+					id="subjectArea%{#stat.index}"
+					/>
 
-				<html:select style="width:470px;" 
-					property='<%= "courseNbr[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('courseNbr', '\" + ctr + \"');\" %>"
-					styleId='<%="courseNbr"+ctr%>' >
-					<html:option value="-">-</html:option>
-					<html:options collection="<%=DistributionPrefsForm.CRS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
-				</html:select>
+				<s:select name="form.courseNbr[%{#stat.index}]"
+					list="#request['courseNbrList' + #stat.index]" listKey="value" listValue="label"
+					headerKey="-" headerValue="-"
+					style="width:470px;"
+					onchange="doReload('courseNbr', '%{#stat.index}');"
+					id="courseNbr%{#stat.index}"
+					/>
 
-				<html:select style="width:150px;" 
-					property='<%= "itype[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('itype', '\" + ctr + \"');\" %>"
-					styleId='<%="itype"+ctr%>' >
-					<html:option value="-">-</html:option>
-					<html:options collection="<%=DistributionPrefsForm.ITYPE_ATTR_LIST+ctr%>" property="value" labelProperty="label" filter="false"/>
-				</html:select>
-				
+				<s:select name="form.itype[%{#stat.index}]"
+					list="#request['itypeList' + #stat.index]" listKey="value" listValue="label"
+					headerKey="-" headerValue="-"
+					style="width:150px;"
+					onchange="doReload('itype', '%{#stat.index}');"
+					id="itype%{#stat.index}"
+					/>
+
 				<tt:propertyEquals name="unitime.distributions.showClassSuffixes" value="true">
-					<html:select style="width:150px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
-						<html:option value="-">-</html:option>
-						<html:option value="-1"><loc:message name="dropDistrPrefAll"/></html:option>
-						<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
-					</html:select>
+					<s:select name="form.classNumber[%{#stat.index}]"
+						list="#request['classNumList' + #stat.index]" listKey="value" listValue="label"
+						headerKey="-" headerValue="-"
+						style="width:150px;"
+						id="classNumber%{#stat.index}"
+						/>
 				</tt:propertyEquals>
 				<tt:propertyNotEquals name="unitime.distributions.showClassSuffixes" value="true">
-					<html:select style="width:80px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
-						<html:option value="-">-</html:option>
-						<html:option value="-1"><loc:message name="dropDistrPrefAll"/></html:option>
-						<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
-					</html:select>
+					<s:select name="form.classNumber[%{#stat.index}]"
+						list="#request['classNumList' + #stat.index]" listKey="value" listValue="label"
+						headerKey="-" headerValue="-"
+						style="width:80px;"
+						id="classNumber%{#stat.index}"
+						/>
 				</tt:propertyNotEquals>
 				
 				<!-- Arrows -->
-				<logic:greaterThan name="ctr" value="0">
-					<IMG border="0" src="images/arrow_up.png" alt="<%=MSG.titleMoveUp()%>" title="<%=MSG.titleMoveUp()%>" align='absmiddle'
+				<s:if test="#stat.index > 0">
+					<IMG border="0" src="images/arrow_up.png" alt="${MSG.titleMoveUp()}" title="${MSG.titleMoveUp()}" align='middle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
-						onClick="javascript: doReload('moveUp', '<%=ctr%>');">
-				</logic:greaterThan>
-
-				<logic:equal name="ctr" value="0">
-					<IMG border="0" src="images/blank.png" align='absmiddle'>
-				</logic:equal>
-
-				<logic:lessThan name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/arrow_down.png" alt="<%=MSG.titleMoveDown()%>" title="<%=MSG.titleMoveDown()%>" align='absmiddle'
+						onClick="doReload('moveUp', '${stat.index}');">
+				</s:if>
+				<s:if test="#stat.index == 0">
+					<IMG border="0" src="images/blank.png" align='middle'>
+				</s:if>
+				<s:if test="#stat.index < #request.listSize">
+					<IMG border="0" src="images/arrow_down.png" alt="${MSG.titleMoveDown()}" title="${MSG.titleMoveDown()}" align='middle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
-						onClick="javascript: doReload('moveDown', '<%=ctr%>');">
-				</logic:lessThan>
-
-				<logic:equal name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/blank.png" align='absmiddle'>
-				</logic:equal>
+						onClick="javascript: doReload('moveDown', '${stat.index}');">
+				</s:if>
+				<s:if test="#stat.index == #request.listSize">
+					<IMG border="0" src="images/blank.png" align='middle'>
+				</s:if>
 
 				<!-- Delete button -->
-				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" 
-					onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-					<loc:message name="actionDelete" />
-				</html:submit>
-				<!--
-				<IMG src="images/action_delete.png" border="0" align="middle">	
-				-->
+				&nbsp;&nbsp;
+				<s:submit name='op' value="%{#msg.actionDelete()}" onclick="doDel('distObject', '%{#stat.index}');"/>
 			</TD>
 		</TR>
-		</logic:iterate>
+		</s:iterator>
 		
 		<TR>
 			<TD colspan="3">
@@ -302,101 +222,64 @@
 			
 		<TR>
 			<TD colspan="3" align="right">
-				<logic:notEmpty name="distributionPrefsForm" property="distPrefId">
-					<html:submit styleClass="btn" property="op" 
-						accesskey="<%=MSG.accessUpdateDistributionPreference() %>" 
-						title="<%=MSG.titleUpdateDistributionPreference(MSG.accessUpdateDistributionPreference()) %>">
-						<loc:message name="actionUpdateDistributionPreference" />
-					</html:submit>
-					
-					&nbsp;
-					<html:submit styleClass="btn" property="op" 
-						accesskey="<%=MSG.accessDeleteDistributionPreference() %>" 
-						title="<%=MSG.titleDeleteDistributionPreference(MSG.accessDeleteDistributionPreference()) %>" 
-						onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
-						<loc:message name="actionDeleteDistributionPreference" />
-					</html:submit>
-				</logic:notEmpty>
-				
-				<logic:empty name="distributionPrefsForm" property="distPrefId">
-					<html:submit styleClass="btn" property="op" 
-						accesskey="<%=MSG.accessSaveNewDistributionPreference() %>" 
-						title="<%=MSG.titleSaveNewDistributionPreference(MSG.accessSaveNewDistributionPreference()) %>">
-						<loc:message name="actionSaveNewDistributionPreference" />
-					</html:submit>
-				</logic:empty>
-				
-				<!-- 
-				<html:submit property="op" accesskey="C">
-					<bean:message key="button.cancel" />
-				</html:submit>
-				-->
-				
-				&nbsp;
-				<logic:notEmpty name="distributionPrefsForm" property="distPrefId">
-					<tt:back styleClass="btn" 
-						name="<%=MSG.actionBackDistributionPreference()%>" 
-						title="<%=MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference()) %>"
-						accesskey="<%=MSG.accessBackDistributionPreference() %>" 
-						back="1" 
-						type="PreferenceGroup">
-						<bean:write name="distributionPrefsForm" property="distPrefId"/>
-					</tt:back>
-				</logic:notEmpty>
-				<logic:empty name="distributionPrefsForm" property="distPrefId">
-					<tt:back styleClass="btn" 
-						name="<%=MSG.actionBackDistributionPreference()%>" 
-						title="<%=MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference()) %>"
-						accesskey="<%=MSG.accessBackDistributionPreference() %>" 
-						back="1"/>
-				</logic:empty>
+					<s:if test="form.distPrefId != null">
+						<s:submit name='op' value="%{#msg.actionUpdateDistributionPreference()}"
+							title="%{#msg.titleUpdateDistributionPreference(#msg.accessUpdateDistributionPreference())}"
+							accesskey="%{#msg.accessUpdateDistributionPreference()}"/>
+						<sec:authorize access="hasPermission(#form.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
+							<s:submit name='op' value="%{#msg.actionDeleteDistributionPreference()}"
+								title="%{#msg.titleDeleteDistributionPreference(#msg.accessDeleteDistributionPreference())}"
+								accesskey="%{#msg.accessDeleteDistributionPreference()}"
+								onclick="doDel('distPref', '-1'); return confirmDelete();"
+								/>
+						</sec:authorize>				
+					</s:if>
+					<s:else>
+						<s:submit name='op' value="%{#msg.actionSaveNewDistributionPreference()}"
+							title="%{#msg.titleSaveNewDistributionPreference(#msg.accessSaveNewDistributionPreference())}"
+							accesskey="%{#msg.accessSaveNewDistributionPreference()}"/>
+					</s:else>
+					<s:if test="form.distPrefId != null">
+						<tt:back styleClass="btn" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1" 
+							type="PreferenceGroup">
+							<s:property value="form.distPrefId"/>
+						</tt:back>
+					</s:if>
+					<s:else>
+						<tt:back styleClass="btn" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1"/>
+					</s:else>			
 			</TD>
 		</TR>
-			
-		<!-- 
-		<TR>
-			<TD colspan="2" class="font8Gray">
-				To edit/delete any preference from the list below, simply click on the line
-				<br>data will be shown in the form above with the buttons to update/delete
-			</TD>
-		</TR>
-		-->
-
-		<% } else { %>
+	</s:if>
+	<s:else>
 			<TR>
 				<TD colspan="2">
 					<B><loc:message name="filterSubject"/></B>
-					<html:select name="distributionPrefsForm" property="filterSubjectAreaId" styleId="subjectId">
-						<loc:bundle name="ConstantsMessages" id="CONST">
-							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
-							<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><loc:message name="all" id="CONST"/></html:option>
-						</loc:bundle>
-						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
+					<s:select name="form.filterSubjectAreaId" id="subjectId"
+					 	list="form.filterSubjectAreas" listKey="value" listValue="label"
+						/>
 					<B><loc:message name="filterCourseNumber"/></B>
-					<tt:course-number property="filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"/>
+					<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectId};notOffered=exclude">
+						<s:textfield name="form.filterCourseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
+					</span>
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						onclick="displayLoading();"
-						accesskey="<%=MSG.accessSearchDistributionPreferences() %>"
-						styleClass="btn" 
-						title="<%=MSG.titleSearchDistributionPreferences(MSG.accessSearchDistributionPreferences()) %>">
-						<loc:message name="actionSearchDistributionPreferences" />
-					</html:submit> 
-					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						accesskey="<%=MSG.accessExportPdf() %>" 
-						styleClass="btn" 
-						title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
-						<loc:message name="actionExportPdf"/>
-					</html:submit> 
-					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						accesskey="<%=MSG.accessExportCsv() %>" 
-						styleClass="btn" 
-						title="<%=MSG.titleExportCsv(MSG.accessExportCsv()) %>">
-						<loc:message name="actionExportCsv"/>
-					</html:submit> 
+					<s:submit name='op' value="%{#msg.actionSearchDistributionPreferences()}"
+						title="%{#msg.titleSearchDistributionPreferences(#msg.accessSearchDistributionPreferences())}"
+						accesskey="%{#msg.accessSearchDistributionPreferences()}"/>
+					<s:submit name='op' value="%{#msg.actionExportPdf()}"
+						title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+						accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='op' value="%{#msg.actionExportCsv()}"
+						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+						accesskey="%{#msg.accessExportCsv()}"/>
 				</TD>
 			</TR>		
 		
@@ -408,11 +291,11 @@
 			
 			<TR>
 				<TD colspan="2">
-					<script language="javascript">displayLoading();</script>
-					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-						<%=request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)%>
+					<script type="text/javascript">displayLoading();</script>
+					<TABLE style="margin:0; width: 100%;">
+						<s:property value="#request.distPrefs" escapeHtml="false"/>
 					</TABLE>
-					<script language="javascript">hideLoading();</script>
+					<script type="text/javascript">hideLoading();</script>
 				</TD>
 			</TR>
 			<TR>
@@ -423,28 +306,25 @@
 			<TR>
 				<sec:authorize access="hasPermission(null, 'Department', 'DistributionPreferenceAdd')">
 					<TD colspan="2" align="right">
-						<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
-							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
-							<loc:message name="actionAddDistributionPreference" />
-						</html:submit>
+						<s:submit name='op' value="%{#msg.actionAddDistributionPreference()}"
+							title="%{#msg.accessAddDistributionPreference(#msg.accessAddDistributionPreference())}"
+							accesskey="%{#msg.accessAddDistributionPreference()}"/>
 					</TD>
 				</sec:authorize>
 			</TR>
-		<% } %>
+	</s:else>
+	</table>
+</s:form>
+</loc:bundle>
 
-	</TABLE>
-	</loc:bundle>
-</html:form>
-
-<SCRIPT type="text/javascript" language="javascript">
+<SCRIPT type="text/javascript">
 	var reload = false;
 
 	function doDel(type, id) {
-		var delType = document.distributionPrefsForm.deleteType;
+		var delType = document.getElementById('deleteType');
 		delType.value = type;
 
-		var delId = document.distributionPrefsForm.deleteId;
+		var delId = document.getElementById('deleteId');
 		delId.value = id;
 	}
 	
@@ -453,13 +333,13 @@
 			doAjax(type,id);
 			return;
 		}
-		var reloadId = document.distributionPrefsForm.reloadId;
+		var reloadId = document.getElementById('reloadId');
 		reloadId.value = id;
 
-		var reloadCause = document.distributionPrefsForm.reloadCause;
+		var reloadCause = document.getElementById('reloadCause');
 		reloadCause.value = type;
 		
-		document.distributionPrefsForm.submit();
+		document.getElementById('distributionPrefsForm').submit();
 	}
 
 	function doAjax(type, idx) {
@@ -524,7 +404,7 @@
 	
 		// Request
 		var vars = "id="+id+"&type="+type;
-		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
@@ -533,7 +413,7 @@
 	
 	function distTypeChanged(id) {
 		var descObj = document.getElementById('distTypeDesc');
-		var prefLevObj = document.getElementsByName('prefLevel')[0];
+		var prefLevObj = document.getElementsByName('form.prefLevel')[0];
 		var options = prefLevObj.options;
 		var prefId = prefLevObj.options[prefLevObj.selectedIndex].value;
 		
@@ -578,7 +458,7 @@
 	
 		// Request
 		var vars = "id="+id+"&type=distType";
-		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
@@ -624,7 +504,7 @@
 	
 		// Request
 		var vars = "id="+id+"&type=grouping";
-		req.open( "POST", "distributionPrefsAjax.do", true );
+		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);

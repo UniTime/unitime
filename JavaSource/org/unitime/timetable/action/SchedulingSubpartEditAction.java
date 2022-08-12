@@ -64,7 +64,7 @@ import org.unitime.timetable.webutil.BackTracker;
 @Action(value = "schedulingSubpartEdit", results = {
 		@Result(name = "editSchedulingSubpart", type = "tiles", location = "schedulingSubpartEdit.tiles"),
 		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),
-		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.do", 
+		@Result(name = "addDistributionPrefs", type = "redirect", location = "/distributionPrefs.action", 
 			params = { "subpartId", "${form.schedulingSubpartId}", "op", "${op}"}
 		),
 		@Result(name = "displaySubpartDetail", type = "redirect", location = "/schedulingSubpartDetail.action",

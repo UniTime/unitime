@@ -104,7 +104,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.datePatternPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isDatePatternDisabled(#stat.index)"
 					/>
@@ -152,7 +152,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.roomGroupLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isRoomGroupDisabled(#stat.index)"
 					/>
@@ -200,7 +200,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.roomPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isRoomDisabled(#stat.index)"
 					/>
@@ -237,7 +237,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.bldgPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isBuidingDisabled(#stat.index)"
 					/>
@@ -274,7 +274,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.roomFeaturePrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isRoomFeatureDisabled(#stat.index)"
 					/>
@@ -311,7 +311,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.distPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isDistPrefDisabled(#stat.index)"
 					/>
@@ -348,7 +348,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.distPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isAttributePrefDisabled(#stat.index)"
 					/>
@@ -385,7 +385,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.coursePrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isCoursePrefDisabled(#stat.index)"
 					/>
@@ -422,7 +422,7 @@
 				&nbsp;&nbsp;
 				<s:select style="width:350px;"
 					name="form.instrPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="background-color: %{#pr.prefcolor()};"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
 					disabled="form.isInstructorPrefDisabled(#stat.index)"
 					/>

@@ -100,7 +100,7 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Distribution Preferences" page="distributionPrefs.do">
+			<item name="Distribution Preferences" page="distributionPrefs.action">
 				<condition>
 					<hasPermission name="DistributionPreferences"/>
 				</condition>

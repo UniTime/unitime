@@ -29,6 +29,7 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
@@ -88,5 +89,9 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	
 	protected PageContext getPageContext() {
 		return (PageContext)ActionContext.getContext().get(StrutsStatics.PAGE_CONTEXT);
+	}
+	
+	protected <X> Permission<X> getPermission(String name) {
+		return (Permission<X>)SpringApplicationContextHolder.getBean(name);
 	}
 }
