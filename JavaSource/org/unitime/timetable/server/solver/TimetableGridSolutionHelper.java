@@ -238,8 +238,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays());
 			cell.setLength(ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting));
 		}
-		for (Location location: assignment.getRooms())
+		for (Location location: assignment.getRooms()) {
 			cell.addRoom(location.getLabel());
+		}
 		
 		int bgMode = context.getBgMode();
 		AssignmentPreferenceInfo assignmentInfo = null; 
@@ -540,6 +541,34 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		q.setCacheable(true);
 		List<Assignment> committed = q.list();
 		createCells(model, committed, hibSession, context, true);
+		if (ApplicationProperty.TimeGridShowClassesAcrossPartitions.isTrue() && room instanceof Room) {
+			q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.parentRoom.uniqueId=:resourceId");
+			q.setLong("resourceId", room.getUniqueId());
+			q.setCacheable(true);
+			assignments = q.list();
+			createCells(model, assignments, hibSession, context, false);
+			q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
+					"where r.parentRoom.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+			q.setLong("roomId",room.getUniqueId());
+	        q.setLong("sessionId", room.getSession().getUniqueId().longValue());
+			q.setCacheable(true);
+			committed = q.list();
+			createCells(model, committed, hibSession, context, true);
+			if (((Room)room).getParentRoom() != null) {
+				q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
+				q.setLong("resourceId", ((Room)room).getParentRoom().getUniqueId());
+				q.setCacheable(true);
+				assignments = q.list();
+				createCells(model, assignments, hibSession, context, false);
+				q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
+						"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+				q.setLong("roomId",((Room)room).getParentRoom().getUniqueId());
+		        q.setLong("sessionId", room.getSession().getUniqueId().longValue());
+				q.setCacheable(true);
+				committed = q.list();
+				createCells(model, committed, hibSession, context, true);				
+			}
+		}
 		model.setUtilization(countUtilization(new Combine<Assignment>(assignments, committed), context));
 		RoomSharingModel sharing = room.getRoomSharingModel();
 		if (sharing != null) {
@@ -585,6 +614,18 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			createMeetingCells(model, room.getSession(), context,
 					RoomAvailability.getInstance().getRoomAvailability(room.getUniqueId(), context.getSessionStartDate(), context.getSessionEndDate(), RoomAvailabilityInterface.sClassType),
 					room.getLabel());
+			if (ApplicationProperty.TimeGridShowClassesAcrossPartitions.isTrue() && room instanceof Room) {
+				if (((Room)room).getParentRoom() != null) {
+					createMeetingCells(model, room.getSession(), context,
+							RoomAvailability.getInstance().getRoomAvailability(((Room)room).getParentRoom().getUniqueId(), context.getSessionStartDate(), context.getSessionEndDate(), RoomAvailabilityInterface.sClassType),
+							((Room)room).getParentRoom().getLabel());
+				}
+				for (Room child: ((Room)room).getPartitions()) {
+					createMeetingCells(model, room.getSession(), context,
+							RoomAvailability.getInstance().getRoomAvailability(child.getUniqueId(), context.getSessionStartDate(), context.getSessionEndDate(), RoomAvailabilityInterface.sClassType),
+							child.getLabel());
+				}
+			}
 		}
         model.setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
         return model;

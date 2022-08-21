@@ -1160,4 +1160,8 @@ public abstract class Location extends BaseLocation implements Comparable {
                 "select l from Location l where l.session.uniqueId=:sessionId"
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
+	
+	public Long getPartitionParentId() {
+		return null;
+	}
 }

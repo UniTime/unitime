@@ -1445,6 +1445,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		getModel().addConstraint(rc);
     		iRooms.put(location.getUniqueId(),rc);
     		iRoomsByPermId.put(location.getPermanentId(), rc);
+    		
+    		if (location instanceof Room && ((Room)location).getParentRoom() != null) {
+    			getRoomConstraint(dept, ((Room)location).getParentRoom(), hibSession).addPartition(rc);
+    		}
+    		if (location instanceof Room) {
+    			for (Room child: ((Room)location).getPartitions()) {
+    				getRoomConstraint(dept, child, hibSession);
+    			}
+    		}
     	}
     	return rc;
     }

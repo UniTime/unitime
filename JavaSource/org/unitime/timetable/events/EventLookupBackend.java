@@ -1923,6 +1923,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						location.setMessage(m.getLocation().getEventMessage());
 						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 						location.setDisplayName(m.getLocation().getDisplayName());
+						location.setPartitionParentId(m.getLocation().getPartitionParentId());
 						meeting.setLocation(location);
 					}
 					if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
@@ -2560,6 +2561,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setMessage(m.getLocation().getEventMessage());
 								location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 								location.setDisplayName(m.getLocation().getDisplayName());
+								location.setPartitionParentId(m.getLocation().getPartitionParentId());
 								meeting.setLocation(location);
 							}
 							if (context.hasPermission(Right.EventCanViewMeetingContacts)) {
@@ -2805,6 +2807,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									location.setMessage(rp.getRoom().getEventMessage());
 									location.setIgnoreRoomCheck(rp.getRoom().isIgnoreRoomCheck());
 									location.setDisplayName(rp.getRoom().getDisplayName());
+									location.setPartitionParentId(rp.getRoom().getPartitionParentId());
 									meeting.setLocation(location);
 									event.addMeeting(meeting);
 				    			}
@@ -2914,6 +2917,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		resource.setMessage(location.getEventMessage());
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		resource.setDisplayName(location.getDisplayName());
+		resource.setPartitionParentId(location.getPartitionParentId());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)

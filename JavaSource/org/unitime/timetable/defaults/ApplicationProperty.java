@@ -2697,6 +2697,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Time Grid: when room partitions are used, show classes from the partitions in the parent room and vice versa")
+	TimeGridShowClassesAcrossPartitions("unitime.timeGrid.classesAcrossPartitions"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Events: show academic sessions in the reverse order (latest first)")
 	ListSessionsReverse("unitime.events.listSessionsLatestFirst"),
 	

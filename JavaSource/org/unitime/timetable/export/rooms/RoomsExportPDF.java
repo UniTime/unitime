@@ -256,7 +256,10 @@ public class RoomsExportPDF extends RoomsExporter {
 				a.add(new A(s.getLabel() + (s.getDepartmentId() == null || room.getEventDepartment() == null ? "" : " (" + context.dept2string(room.getEventDepartment(), true) + ")")));
 			}
 			return a;
-		
+			
+		case PARTITION:
+			if (room.getParent() == null) return new A();
+			return new A(room.getParent().hasDisplayName() ? MESSAGES.label(room.getParent().getLabel(), room.getParent().getDisplayName()) : room.getParent().getLabel());
 		default:
 			return null;
 		}

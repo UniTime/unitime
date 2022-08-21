@@ -1040,7 +1040,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Available<br>Services")
 	String colAvailableServices();
-
+	
 	@DefaultMessage("Constraint")
 	String colConflictingConstraint();
 	
@@ -7159,4 +7159,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course Offering")
 	String sectCourseOffering();
+	
+	@DefaultMessage("Partition of:")
+	String propPartitionOf();
+	
+	@DefaultMessage("Partition of")
+	String colPartitionOf();
+	
+	@DefaultMessage("Not a Partition")
+	String itemNoParition();
 }

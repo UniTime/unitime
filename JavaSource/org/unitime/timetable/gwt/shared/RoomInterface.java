@@ -1227,6 +1227,7 @@ public class RoomInterface implements IsSerializable {
 		private Long iSessionId = null;
 		private String iSessionName = null;
 		private Set<EventServiceProviderInterface> iServices = null;
+		private RoomDetailInterface iParent = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -1581,6 +1582,10 @@ public class RoomInterface implements IsSerializable {
 			}
 			return ret;
 		}
+		
+		public RoomDetailInterface getParent() { return iParent; }
+		public boolean hasParent() { return iParent != null; }
+		public void setParent(RoomDetailInterface parent) { iParent = parent; }
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -2263,6 +2268,7 @@ public class RoomInterface implements IsSerializable {
 		NAME,
 		EXTERNAL_ID,
 		TYPE,
+		PARTITION,
 		CAPACITY,
 		EXAM_CAPACITY,
 		AREA,
@@ -2803,6 +2809,18 @@ public class RoomInterface implements IsSerializable {
 		public String getEllipsoid() { return iEllipsoid; }
 		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
 		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
+	}
+	
+	public static class GetRoomsOfABuildingRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
+		private Long iBuildingId;
+		
+		public GetRoomsOfABuildingRequest() {}
+		public GetRoomsOfABuildingRequest(Long buildingId) {
+			iBuildingId = buildingId;
+		}
+		
+		public Long getBuildingId() { return iBuildingId; }
+		public void setBuildingId(Long buildingId) { iBuildingId = buildingId; }
 	}
 	
 	public static enum BuildingsColumn {

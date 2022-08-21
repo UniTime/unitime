@@ -92,6 +92,7 @@ import org.unitime.timetable.model.dao.EventServiceProviderDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationPictureDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.RoomPictureDAO;
@@ -314,6 +315,36 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						((Room)location).setBuildingAbbv(building.getAbbreviation());
 					}
 					((Room)location).setRoomNumber(room.getName());
+					if (room.getParent() == null) {
+						if (((Room)location).getParentRoom() != null)
+							((Room)location).getParentRoom().getPartitions().remove((Room)location);
+						((Room)location).setParentRoom(null);
+					} else {
+						Room parent = RoomDAO.getInstance().get(room.getParent().getUniqueId());
+						if (parent != null) {
+							if (!future) {
+								if (((Room)location).getParentRoom() != null)
+									((Room)location).getParentRoom().getPartitions().remove((Room)location);
+								((Room)location).setParentRoom(parent);
+								parent.getPartitions().add((Room)location);
+							} else {
+								List<Location> futureParents = parent.getFutureLocations();
+								if (futureParents != null)
+									for (Location futureParent: futureParents) {
+										if (futureParent.getSession().equals(location.getSession())) {
+											if (((Room)location).getParentRoom() != null)
+												((Room)location).getParentRoom().getPartitions().remove((Room)location);
+											((Room)location).setParentRoom((Room)futureParent);
+											((Room)futureParent).getPartitions().add((Room)location);
+										}
+									}
+							}
+						} else {
+							if (((Room)location).getParentRoom() != null)
+								((Room)location).getParentRoom().getPartitions().remove((Room)location);
+							((Room)location).setParentRoom(null);
+						}
+					}
 				} else {
 					if (!room.getName().equals(location.getLabel())) {
 						String nonUniversityLocationRegex = ApplicationProperty.NonUniversityLocationPattern.value();
@@ -786,6 +817,25 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				r.setBuildingAbbv(b.getAbbreviation());
 				r.setRoomNumber(room.getName());
 				r.setPictures(new HashSet<RoomPicture>());
+				r.setPartitions(new HashSet<Room>());
+				if (room.getParent() != null) {
+					Room parent = RoomDAO.getInstance().get(room.getParent().getUniqueId());
+					if (parent != null) {
+						if (!future) {
+							r.setParentRoom(parent);
+							parent.getPartitions().add(r);
+						} else {
+							List<Location> futureParents = parent.getFutureLocations();
+							if (futureParents != null)
+								for (Location futureParent: futureParents) {
+									if (futureParent.getSession().equals(session)) {
+										r.setParentRoom((Room)futureParent);
+										((Room)futureParent).getPartitions().add(r);
+									}
+								}
+						}
+					}
+				}
 				location = r;
 			} else {
 				String nonUniversityLocationRegex = ApplicationProperty.NonUniversityLocationPattern.value();
@@ -1200,7 +1250,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			return BuildingDAO.getInstance().get(original.getId(), hibSession);
 		}
 	}
-	
+
 	protected Department lookuDepartment(org.hibernate.Session hibSession, DepartmentInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
 		if (future || original.getId() == null) {

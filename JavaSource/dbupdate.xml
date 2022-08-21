@@ -14492,4 +14492,13 @@
 		<pgsql onFail="next">create index idx_waitlist_enrolled_course ON %SCHEMA%.waitlist USING btree (enrolled_course_id)</pgsql>
 		<pgsql onFail="next">create index idx_waitlist_swap_course ON %SCHEMA%.waitlist USING btree (swap_course_id)</pgsql>
 	</update>
+	<update version="253" date="21-Aug-2022" comment="Room Partitions">
+		<plsql>alter table %SCHEMA%.room add parent_room_id number(20)</plsql>
+		<mysql>alter table %SCHEMA%.room add parent_room_id decimal(20,0)</mysql>
+		<pgsql>alter table %SCHEMA%.room add parent_room_id bigint</pgsql>
+		<sql>
+			alter table %SCHEMA%.room add constraint fk_room_parent foreign key (parent_room_id)
+			references %SCHEMA%.room (uniqueid) on delete set null
+		</sql>
+	</update>	
 </dbupdate>

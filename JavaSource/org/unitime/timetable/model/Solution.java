@@ -282,6 +282,40 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					isOK=false;
 				}
 			}
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Room r inner join r.assignments a1 inner join r.parentRoom.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
+			}
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Room r inner join r.parentRoom.assignments a1 inner join r.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
+			}
 			
 			for (Object[] o: (List<Object[]>)hibSession.createQuery(
 					"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
@@ -307,6 +341,40 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		} else {
 			for (Object[] o: (List<Object[]>)hibSession.createQuery(
 					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setLong("ownerId",getOwner().getUniqueId())
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
+			}
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Room r inner join r.assignments a1 inner join r.parentRoom.assignments a2 "+
+					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					.setLong("ownerId",getOwner().getUniqueId())
+					.setLong("solutionId",getUniqueId())
+					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.list()) {
+				Location room = (Location)o[0];
+				Assignment a = (Assignment)o[1];
+				Assignment b = (Assignment)o[2];
+				if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+					messages.add(MESSAGES.failedCommitRoomConflict(a.getClassName(), a.getTimeLocation().getName(CONSTANTS.useAmPm()), b.getClassName(), b.getTimeLocation().getName(CONSTANTS.useAmPm()), room.getLabel()));
+					isOK=false;
+				}
+			}
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					"select r, a1, a2 from Room r inner join r.parentRoom.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
@@ -1440,6 +1508,20 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 									if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
 										return true;
 			            	}
+							if (room instanceof Room) {
+								Room r = (Room)room;
+								if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
+									for (Assignment a : r.getParentRoom().getCommitedAssignments())
+										if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+											return true;
+								}
+								for (Room p: r.getPartitions()) {
+									if (!p.isIgnoreRoomCheck())
+										for (Assignment a : p.getCommitedAssignments())
+											if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+												return true;
+								}
+							}
 			            }
 					
 					if (clazz.getClassInstructors() != null)
@@ -1503,6 +1585,20 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 						if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
 							conflicts.add(a);
             	}
+				if (room instanceof Room) {
+					Room r = (Room)room;
+					if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
+						for (Assignment a : r.getParentRoom().getCommitedAssignments())
+							if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+								conflicts.add(a);
+					}
+					for (Room p: r.getPartitions()) {
+						if (!p.isIgnoreRoomCheck())
+							for (Assignment a : p.getCommitedAssignments())
+								if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+									conflicts.add(a);
+					}
+				}
             }
 		
 		if (clazz.getClassInstructors() != null)

@@ -43,8 +43,10 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	private RoomType iRoomType;
 	private Building iBuilding;
+	private Room iParentRoom;
 	private Set<RoomPicture> iPictures;
 	private Set<EventServiceProvider> iAllowedServices;
+	private Set<Room> iPartitions;
 
 	public static String PROP_ROOM_NUMBER = "roomNumber";
 	public static String PROP_CLASSIFICATION = "classification";
@@ -75,6 +77,9 @@ public abstract class BaseRoom extends Location implements Serializable {
 	public Building getBuilding() { return iBuilding; }
 	public void setBuilding(Building building) { iBuilding = building; }
 
+	public Room getParentRoom() { return iParentRoom; }
+	public void setParentRoom(Room parentRoom) { iParentRoom = parentRoom; }
+
 	public Set<RoomPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<RoomPicture> pictures) { iPictures = pictures; }
 	public void addTopictures(RoomPicture roomPicture) {
@@ -87,6 +92,13 @@ public abstract class BaseRoom extends Location implements Serializable {
 	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
 		if (iAllowedServices == null) iAllowedServices = new HashSet<EventServiceProvider>();
 		iAllowedServices.add(eventServiceProvider);
+	}
+
+	public Set<Room> getPartitions() { return iPartitions; }
+	public void setPartitions(Set<Room> partitions) { iPartitions = partitions; }
+	public void addTopartitions(Room room) {
+		if (iPartitions == null) iPartitions = new HashSet<Room>();
+		iPartitions.add(room);
 	}
 
 	public boolean equals(Object o) {
@@ -123,6 +135,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
 			"\n	ManagerIds: " + getManagerIds() +
 			"\n	Note: " + getNote() +
+			"\n	ParentRoom: " + getParentRoom() +
 			"\n	Pattern: " + getPattern() +
 			"\n	PermanentId: " + getPermanentId() +
 			"\n	RoomNumber: " + getRoomNumber() +

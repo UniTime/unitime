@@ -542,6 +542,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 					onl.setMessage(online.getEventMessage());
 					onl.setIgnoreRoomCheck(online.isIgnoreRoomCheck());
 					onl.setDisplayName(online.getDisplayName());
+					onl.setPartitionParentId(online.getPartitionParentId());
 				}
 				String note = getMessage(ssm, iSkipBreaks ? classEvent : null);
 				if (note != null) {

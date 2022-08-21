@@ -503,6 +503,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iIgnoreRoomCheck = false;
 		private String iDisplayName = null;
 		private boolean iShowMessageInGrid = false;
+		private Long iPartitionParentId;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -520,6 +521,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setIgnoreRoomCheck("1".equals(room.getProperty("ignoreRoomCheck", "0")));
 			setDisplayName(room.getProperty("display", null)); 
 			setShowMessageInGrid("1".equals(room.getProperty("gridNote", "0")));
+			String parentId = room.getProperty("parentId", null);
+			setPartitionParentId(parentId == null ? null : Long.valueOf(parentId));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -558,6 +561,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setDisplayName(String name) { iDisplayName = name; }
 		public boolean isShowMessageInGrid() { return iShowMessageInGrid; }
 		public void setShowMessageInGrid(boolean showMessageInGrid) { iShowMessageInGrid = showMessageInGrid; }
+		public Long getPartitionParentId() { return iPartitionParentId; }
+		public void setPartitionParentId(Long parentId) { iPartitionParentId = parentId; }
 		
 		public String getNameWithHint(GwtMessages msg) {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
@@ -601,6 +606,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof ResourceInterface)) return false;
 			return ((ResourceInterface)o).getId().equals(getId());
+		}
+		
+		public boolean sameLocationOrPartition(ResourceInterface other) {
+			if (other == null) return false;
+			return getId().equals(other.getId()) || other.getId().equals(getPartitionParentId()) || getId().equals(other.getPartitionParentId());
 		}
 		
 		public int hashCode() {
@@ -909,7 +919,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean inConflict(MeetingInterface meeting) {
 			return getDayOfYear() == meeting.getDayOfYear() && 
 					getStartSlot() < meeting.getEndSlot() && meeting.getStartSlot() < getEndSlot() &&
-					getLocation() != null &&  getLocation().equals(meeting.getLocation()) && !getLocation().isIgnoreRoomCheck();
+					getLocation() != null &&  getLocation().sameLocationOrPartition(meeting.getLocation()) && !getLocation().isIgnoreRoomCheck();
 		}
 
 		public boolean overlapsWith(MeetingInterface meeting) {

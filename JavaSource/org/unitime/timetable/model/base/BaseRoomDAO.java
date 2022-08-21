@@ -51,4 +51,9 @@ public abstract class BaseRoomDAO extends _RootDAO<Room,Long> {
 	public List<Room> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
 		return hibSession.createQuery("from Room x where x.building.uniqueId = :buildingId").setLong("buildingId", buildingId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Room> findByParentRoom(org.hibernate.Session hibSession, Long parentRoomId) {
+		return hibSession.createQuery("from Room x where x.parentRoom.uniqueId = :parentRoomId").setLong("parentRoomId", parentRoomId).list();
+	}
 }

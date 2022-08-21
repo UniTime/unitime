@@ -90,10 +90,11 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					locations += (locations.isEmpty() ? "" : ",") + ":l" + i;
 				
 				Query query = EventDAO.getInstance().getSession().createQuery(
-						"select m from Meeting m, Location l " +
+						"select m, l.permanentId from Meeting m, Location x, Location l " +
 						"where m.startPeriod<:stopTime and m.stopPeriod>:startTime and m.approvalStatus <= 1 and " +
 						"l.session.uniqueId = :sessionId and l.permanentId in (" + locations + ") and l.ignoreRoomCheck = false and " +
-						"m.locationPermanentId = l.permanentId and m.meetingDate in ("+dates+")");
+						"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and " +
+						"m.locationPermanentId = x.permanentId and m.meetingDate in ("+dates+")");
 				
 				query.setInteger("startTime", request.getStartSlot());
 				query.setInteger("stopTime", request.getEndSlot());
@@ -105,7 +106,9 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 				
-				for (Meeting m: (List<Meeting>)query.list()) {
+				for (Object[] o: (List<Object[]>)query.list()) {
+					Meeting m = (Meeting)o[0];
+					Long permId = (Long)o[1];
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 
 					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
@@ -196,7 +199,22 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						}
 					}
 					
-					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), m.getLocationPermanentId(), conflict);
+					if (m.getLocation() != null) {
+						ResourceInterface location = new ResourceInterface();
+						location.setType(ResourceType.ROOM);
+						location.setId(m.getLocation().getUniqueId());
+						location.setName(m.getLocation().getLabel());
+						location.setSize(m.getLocation().getCapacity());
+						location.setRoomType(m.getLocation().getRoomTypeLabel());
+						location.setBreakTime(m.getLocation().getEffectiveBreakTime());
+						location.setMessage(m.getLocation().getEventMessage());
+						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
+						location.setDisplayName(m.getLocation().getDisplayName());
+						location.setPartitionParentId(m.getLocation().getPartitionParentId());
+						conflict.setLocation(location);
+					}
+						
+					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), permId, conflict);
 				}
 				
 				query = EventDAO.getInstance().getSession().createQuery(
@@ -315,9 +333,10 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				if (!location.isIgnoreRoomCheck())
 					for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
-							"select m from Meeting m, Location l "+
+							"select m from Meeting m, Location x, Location l "+
 							"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
-							"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId")
+							"m.locationPermanentId = x.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and "+
+							"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and l.ignoreRoomCheck = false")
 							.setInteger("startTime", meeting.getStartSlot())
 							.setInteger("stopTime", meeting.getEndSlot())
 							.setDate("meetingDate", meeting.getMeetingDate())
@@ -361,6 +380,21 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 								}
 								conflict.addMeetingContact(contact);
 							}
+						}
+						
+						if (m.getLocation() != null) {
+							ResourceInterface loc = new ResourceInterface();
+							loc.setType(ResourceType.ROOM);
+							loc.setId(m.getLocation().getUniqueId());
+							loc.setName(m.getLocation().getLabel());
+							loc.setSize(m.getLocation().getCapacity());
+							loc.setRoomType(m.getLocation().getRoomTypeLabel());
+							loc.setBreakTime(m.getLocation().getEffectiveBreakTime());
+							loc.setMessage(m.getLocation().getEventMessage());
+							loc.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
+							loc.setDisplayName(m.getLocation().getDisplayName());
+							loc.setPartitionParentId(m.getLocation().getPartitionParentId());
+							conflict.setLocation(loc);
 						}
 						
 						meeting.addConflict(conflict);
@@ -439,6 +473,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setMessage(location.getEventMessage());
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		resource.setDisplayName(location.getDisplayName());
+		resource.setPartitionParentId(location.getPartitionParentId());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)
@@ -499,6 +534,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setMessage(location.getEventMessage());
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		resource.setDisplayName(location.getDisplayName());
+		resource.setPartitionParentId(location.getPartitionParentId());
 		
 		int day = meeting.getDayOfWeek();
 		for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {

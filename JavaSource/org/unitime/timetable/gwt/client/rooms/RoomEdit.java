@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -54,6 +55,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FutureOperation;
 import org.unitime.timetable.gwt.shared.RoomInterface.FutureRoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.GetRoomsOfABuildingRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
@@ -114,6 +116,8 @@ public class RoomEdit extends Composite {
 	private UniTimeWidget<ListBox> iType;
 	private UniTimeWidget<ListBox> iBuilding;
 	private int iBuildingRow;
+	private UniTimeWidget<ListBox> iParent;
+	private int iParentRow;
 	private Label iNameLabel;
 	private UniTimeWidget<TextBox> iName;
 	private TextBox iDisplayName, iExternalId;
@@ -271,6 +275,15 @@ public class RoomEdit extends Composite {
 			public void onChange(ChangeEvent event) {
 				buildingChanged();
 				iBuilding.clearHint();
+				iHeader.clearMessage();
+			}
+		});
+		
+		iParent = new UniTimeWidget<ListBox>(new ListBox()); iParent.getWidget().setStyleName("unitime-TextBox");
+		iParent.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iParent.clearHint();
 				iHeader.clearMessage();
 			}
 		});
@@ -526,6 +539,9 @@ public class RoomEdit extends Composite {
 		iBuilding.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 		for (BuildingInterface building: iProperties.getBuildings())
 			iBuilding.getWidget().addItem(building.getAbbreviation() + " - " + building.getName(), building.getId().toString());
+		
+		iParent.getWidget().clear();
+		iParent.getWidget().addItem(MESSAGES.itemNoParition(), "-1");
 
 		iCoordinatesFormat.setText(iProperties.getEllipsoid());
 		
@@ -683,6 +699,7 @@ public class RoomEdit extends Composite {
 		
 		if (iRoom.getUniqueId() != null && iRoom.getBuilding() == null) {
 			iBuildingRow = -1;
+			iParentRow = -1;
 		} else if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
 			iBuilding.clearHint();
 			if (iRoom.getBuilding() == null) {
@@ -691,8 +708,16 @@ public class RoomEdit extends Composite {
 				iBuilding.getWidget().setSelectedIndex(1 + iProperties.getBuildings().indexOf(iRoom.getBuilding()));
 			}
 			iBuildingRow = iForm.addRow(MESSAGES.propBuilding(), iBuilding, 1);
+			iParent.clearHint(); iParent.getWidget().setSelectedIndex(0);
+			iParentRow = iForm.addRow(MESSAGES.propPartitionOf(), iParent, 1);
+			loadPartitions();
 		} else {
 			iBuildingRow = iForm.addRow(MESSAGES.propBuilding(), new Label(iRoom.getBuilding().getAbbreviation() + " - " + iRoom.getBuilding().getName()), 1);
+			if (iRoom.getParent() != null) {
+				iParentRow = iForm.addRow(MESSAGES.propPartitionOf(), new Label(iRoom.getParent().hasDisplayName() ? MESSAGES.label(iRoom.getParent().getLabel(), iRoom.getParent().getDisplayName()) : iRoom.getParent().getLabel()));
+			} else {
+				iParentRow = -1;
+			}
 		}
 		
 		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
@@ -708,6 +733,8 @@ public class RoomEdit extends Composite {
 		} else {
 			if (iBuildingRow >= 0)
 				iForm.getRowFormatter().setVisible(iBuildingRow, iRoom.getRoomType() != null && iRoom.getRoomType().isRoom());
+			if (iParentRow >= 0)
+				iForm.getRowFormatter().setVisible(iParentRow, iRoom.getRoomType() != null && iRoom.getRoomType().isRoom());
 			iNameLabel.setText(iRoom.getRoomType() != null && iRoom.getRoomType().isRoom() ? MESSAGES.propRoomNumber() : MESSAGES.propRoomName());
 		}
 		
@@ -1201,6 +1228,7 @@ public class RoomEdit extends Composite {
 			iY.setValue(building.getY());
 		}
 		if (iMap != null) iMap.setMarker();
+		loadPartitions();
 	}
 	
 	protected void futureChanged() {
@@ -1220,6 +1248,8 @@ public class RoomEdit extends Composite {
 		RoomTypeInterface type = iProperties.getRoomType(Long.valueOf(iType.getWidget().getValue(iType.getWidget().getSelectedIndex())));
 		if (iBuildingRow >= 0)
 			iForm.getRowFormatter().setVisible(iBuildingRow, type != null && type.isRoom());
+		if (iParentRow >= 0)
+			iForm.getRowFormatter().setVisible(iParentRow, type != null && type.isRoom());
 		iNameLabel.setText(type != null && type.isRoom() ? MESSAGES.propRoomNumber() : MESSAGES.propRoomName());
 	}
 	
@@ -1379,6 +1409,14 @@ public class RoomEdit extends Composite {
 						result = false;
 					}
 				}
+				Long parentId = Long.valueOf(iParent.getWidget().getSelectedValue());
+				if (parentId < 0) {
+					iRoom.setParent(null);
+				} else {
+					iRoom.setParent(new RoomDetailInterface(parentId, null, iParent.getWidget().getSelectedItemText()));
+				}
+			} else {
+				iRoom.setParent(null);
 			}
 			iRoom.setName(iName.getWidget().getText());
 			if (iRoom.getName().isEmpty()) {
@@ -1693,6 +1731,38 @@ public class RoomEdit extends Composite {
 		} else {
 			iDistanceCheck.addStyleName("check-disabled");
 			iDistanceCheck.removeStyleName("check-enabled");
+		}
+	}
+	
+	protected void loadPartitions() {
+		String buildingId = iBuilding.getWidget().getSelectedValue();
+		final String lastId = iParent.getWidget().getSelectedValue();
+		iParent.getWidget().clear();
+		iParent.getWidget().addItem(MESSAGES.itemNoParition(), "-1");
+		if ("-1".equals(buildingId)) {
+			iParent.getWidget().setSelectedIndex(0);
+		} else {
+			RPC.execute(new GetRoomsOfABuildingRequest(Long.valueOf(buildingId)), new AsyncCallback<GwtRpcResponseList<RoomDetailInterface>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iParent.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
+				}
+
+				@Override
+				public void onSuccess(GwtRpcResponseList<RoomDetailInterface> result) {
+					for (RoomDetailInterface room: result) {
+						if (room.getUniqueId().equals(iRoom.getUniqueId())) continue;
+						if (room.getProperty("parent", null) != null) continue;
+						iParent.getWidget().addItem(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel(),
+								room.getUniqueId().toString());
+						if (iRoom.getParent() != null && iRoom.getParent().getUniqueId().equals(room.getUniqueId())) {
+							iParent.getWidget().setSelectedIndex(iParent.getWidget().getItemCount() - 1);
+						} else if (lastId != null && lastId.equals(room.getUniqueId().toString())) {
+							iParent.getWidget().setSelectedIndex(iParent.getWidget().getItemCount() - 1);
+						}
+					}
+				}
+			});
 		}
 	}
 }

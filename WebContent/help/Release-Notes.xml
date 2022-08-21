@@ -33,7 +33,7 @@
 			<name>Wait-Listing</name>
 			<description>
 				<line>
-					UniTime 4.7 will include various improvements in wait-listing,
+					UniTime 4.7 includes various improvements in wait-listing,
 					including the ability to swap a course or wait-list for a different section of a course that the student is already enrolled in.
 				</line>
 			</description>
@@ -42,7 +42,7 @@
 			<name>Student Scheduling Preferences</name>
 			<description>
 				<line>
-					UniTime 4.7 will include various improvements in student scheduling,
+					UniTime 4.7 includes various improvements in student scheduling,
 					including the ability for a student to indicate whether he/she prefers dense vs sparse schedule or online vs face-to-face classes.
 				</line>
 			</description>
@@ -60,6 +60,25 @@
 				<line>A number of pages have been rewritten to GWT as part of this effort, but it is possible to switch the user interface back to the original Struts based page. See unitime.legacy.xxx properties in the Application Configuration.
 					<line>These include Departments, Subject Areas, Instructor Assignment, and Add/Edit Course Offering pages.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Partitions</name>
+			<description>
+				<line>Added ability to partition a room into multiple smaller rooms.
+					<line>On the Add/Edit Room page, there is a new Partition of drop-down listing all rooms of the same building that are not partitions of some other rooms already.</line>
+					<line>Non-university locations cannot be partitioned.</line>
+					<line>On the Rooms page, there is a new Partitions of column (listing the parent room of room partition).</line>
+				</line>
+				<line>Added support for the course timetabling solver.
+					<line>Parent room is unavailable when one of its partitions is occupied and vice versa (partitions cannot be used at the time when the parent class is occupied).</line>
+					<line>Timetable Grid page can include:
+						<line>classes from all the partitions on the parent room,</line>
+						<line>classes of the parent room on each of the room partitions.</line>
+						<line>This is disabled by default, enable by setting unitime.timeGrid.classesAcrossPartitions to true.</line>
+					</line>
+				</line>
+				<line>Added support for conflict checking in the events, and for the computation and display of conflicting events.</line>
 			</description>
 		</item>
 	</category>

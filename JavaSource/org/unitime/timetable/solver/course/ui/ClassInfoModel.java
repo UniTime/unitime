@@ -83,6 +83,7 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -182,6 +183,28 @@ public class ClassInfoModel implements Serializable {
 		            		}
 		            	}
 	            	}
+	            	if (room.getLocation() instanceof Room) {
+						Room r = (Room)room.getLocation(RoomDAO.getInstance().getSession());
+						if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
+							for (Assignment a : r.getParentRoom().getCommitedAssignments()) {
+			            		if (a.getClazz().isCancelled()) continue;
+			            		if (assignment.getTime().overlaps(new ClassTimeInfo(a)) && !a.getClazz().canShareRoom(assignment.getClazz())) {
+			            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+			            				iChange.getConflicts().add(new ClassAssignment(a));
+			            		}
+			            	}
+						}
+						for (Room p: r.getPartitions()) {
+							if (!p.isIgnoreRoomCheck())
+								for (Assignment a : p.getCommitedAssignments()) {
+				            		if (a.getClazz().isCancelled()) continue;
+				            		if (assignment.getTime().overlaps(new ClassTimeInfo(a)) && !a.getClazz().canShareRoom(assignment.getClazz())) {
+				            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
+				            				iChange.getConflicts().add(new ClassAssignment(a));
+				            		}
+				            	}
+						}
+					}
 	            }
 	            
 	            // Check for instructor conflicts

@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
+import org.unitime.timetable.gwt.client.rooms.RoomsTable.RoomNameCell;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -189,6 +190,22 @@ public class RoomDetail extends Composite {
 		iForm.addRow(MESSAGES.propType(), new Label(iRoom.getRoomType().getLabel()), 1);
 		if (iRoom.hasExternalId()) {
 			iForm.addRow(MESSAGES.propExternalId(), new Label(iRoom.getExternalId()), 1);
+		}
+		if (iRoom.getParent() != null) {
+			final Label parent = new Label(iRoom.getParent().hasDisplayName() ? MESSAGES.label(iRoom.getParent().getLabel(), iRoom.getParent().getDisplayName()) : iRoom.getParent().getLabel());
+			parent.addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomHint.showHint(parent.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
+				}
+			});
+			parent.addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomHint.hideHint();
+				}
+			});
+			iForm.addRow(MESSAGES.propPartitionOf(), parent);
 		}
 		if (iRoom.getCapacity() != null)
 			iForm.addRow(MESSAGES.propCapacity(), new Label(iRoom.getCapacity().toString()), 1);

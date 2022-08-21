@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.security.crypto.codec.Base64;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -252,6 +253,14 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			building.setExternalId(b.getExternalUniqueId());
 			response.setBuilding(building);
 			response.setName(room.getRoomNumber());
+			try {
+				if (room.getParentRoom() != null) {
+					response.setParent( new RoomDetailInterface(
+						room.getParentRoom().getUniqueId(),
+						room.getParentRoom().getDisplayName(),
+						room.getParentRoom().getLabel()));
+				}
+			} catch (ObjectNotFoundException e) {}
 		}
 		
 		response.setSessionId(location.getSession().getUniqueId());

@@ -220,7 +220,7 @@
             type="java.lang.String"
             not-null="false"
             length="40"/>
-        
+            
         <union-subclass
             name="Room"
             table="room"
@@ -277,6 +277,23 @@
                 <cache include="non-lazy" usage="transactional"/>
                 <key column="location_id" foreign-key="fk_room_service_loc"/>
 	            <many-to-many class="EventServiceProvider" column="provider_id" foreign-key="fk_room_service_provider"/>
+        	</set>
+        	
+	        <many-to-one
+    	        name="parentRoom"
+        	    class="Room"
+            	column="parent_room_id"
+            	not-null="false"
+            	foreign-key="fk_room_parent"/>
+            	
+           	<set
+            	name="partitions"
+            	table="room"
+            	lazy="true"
+            	inverse="true">
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="parent_room_id" foreign-key="fk_room_parent"/>
+                <one-to-many class="Room"/>
         	</set>
         </union-subclass>
 

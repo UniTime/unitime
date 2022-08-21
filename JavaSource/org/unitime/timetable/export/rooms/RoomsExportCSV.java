@@ -157,6 +157,9 @@ public class RoomsExportCSV extends RoomsExporter {
 				return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(column.getIndex() - 1));
 		case SERVICES:
 			return context.services2string(room.getServices(), room.getEventDepartment());
+		case PARTITION:
+			if (room.getParent() == null) return null;
+			return (room.getParent().hasDisplayName() ? MESSAGES.label(room.getParent().getLabel(), room.getParent().getDisplayName()) : room.getParent().getLabel());
 		default:
 			return null;
 		}

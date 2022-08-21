@@ -218,6 +218,7 @@ public abstract class RoomsExporter implements Exporter {
 			if (column.getIndex() == 0) return MESSAGES.colFeatures();
 			else return ec.getRoomFeatureTypes().get(column.getIndex() - 1).getAbbreviation();
 		case SERVICES: return MESSAGES.colAvailableServices();
+		case PARTITION: return MESSAGES.colPartitionOf();
 		default: return column.getColumn().name();
 		}
 	}

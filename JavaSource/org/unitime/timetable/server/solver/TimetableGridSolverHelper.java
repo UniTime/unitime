@@ -108,6 +108,30 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					assignments.add(placement);
 			}
 		}
+		if (ApplicationProperty.TimeGridShowClassesAcrossPartitions.isTrue()) {
+			if (room.getParentRoom() != null) {
+				for (Lecture lecture: room.getParentRoom().variables()) {
+					Placement placement = assignment.getValue(lecture);
+					if (placement == null) continue;
+					if (placement.hasRoomLocation(room.getParentRoom().getResourceId())) {
+						if (week == null || placement.getTimeLocation().shareWeeks(week))
+							assignments.add(placement);
+					}
+				}
+			}
+			if (room.getPartitions() != null) {
+				for (RoomConstraint rc: room.getPartitions()) {
+					for (Lecture lecture: rc.variables()) {
+						Placement placement = assignment.getValue(lecture);
+						if (placement == null) continue;
+						if (placement.hasRoomLocation(rc.getResourceId())) {
+							if (week == null || placement.getTimeLocation().shareWeeks(week))
+								assignments.add(placement);
+						}
+					}
+				}
+			}
+		}
 		createCells(model, solver, assignments, context, false);
 		
 		Set<Long> deptIds = new HashSet<Long>();
@@ -170,6 +194,39 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				        		createCells(model, solver, p, context, true);
 				        }
 				    }
+				}
+			}
+		}
+		if (ApplicationProperty.TimeGridShowClassesAcrossPartitions.isTrue()) {
+			Set<Placement> done = new HashSet<Placement>();
+			if (room.getParentRoom() != null && room.getParentRoom().getAvailableArray() != null) {
+				for (int i = 0; i < Constants.DAY_CODES.length; i++) {
+					for (int j = 0; j < Constants.SLOTS_PER_DAY; j++) {
+						List<Placement> placements = room.getParentRoom().getAvailableArray()[i * Constants.SLOTS_PER_DAY + j];
+						if (placements!=null && !placements.isEmpty()) {
+					        for (Placement p: placements) {
+					        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
+					        		createCells(model, solver, p, context, true);
+					        }
+					    }
+					}
+				}
+			}
+			if (room.getPartitions() != null) {
+				for (RoomConstraint rc: room.getPartitions()) {
+					if (rc.getAvailableArray() != null) {
+						for (int i = 0; i < Constants.DAY_CODES.length; i++) {
+							for (int j = 0; j < Constants.SLOTS_PER_DAY; j++) {
+								List<Placement> placements = rc.getAvailableArray()[i * Constants.SLOTS_PER_DAY + j];
+								if (placements!=null && !placements.isEmpty()) {
+							        for (Placement p: placements) {
+							        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
+							        		createCells(model, solver, p, context, true);
+							        }
+							    }
+							}
+						}		
+					}
 				}
 			}
 		}
@@ -453,8 +510,11 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		case RoomPref:
 			if (notAvailable) break;
 			int roomPref = placement.getRoomPreference();
-			if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null)
-				roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+			try {
+				if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null) {
+					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+				}
+			} catch (NullPointerException e) {}
 			if (PreferenceLevel.sNeutral.equals(PreferenceLevel.int2prolog(roomPref)) && lecture.nrRoomLocations() == lecture.getNrRooms()) roomPref = PreferenceLevel.sIntLevelRequired;
 			cell.setBackground(pref2color(roomPref));
 			break;
@@ -548,8 +608,11 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		
 		if (!notAvailable) {
 			int roomPref = placement.getRoomPreference();
-			if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null)
-				roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+			try {
+				if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null) {
+					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+				}
+			} catch (NullPointerException e) {}
 			if (!cell.hasPreference()) {
 				cell.setPreference(
 					(lecture.getBestTimePreference()<placement.getTimeLocation().getNormalizedPreference()?"<span style='color:red'>"+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())+"</span>":""+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())) + ", " +

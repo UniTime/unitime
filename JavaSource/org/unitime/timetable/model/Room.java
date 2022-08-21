@@ -317,4 +317,9 @@ public class Room extends BaseRoom {
 
     	return ret;
     }
+	
+	@Override
+	public Long getPartitionParentId() {
+		return getParentRoom() == null ? null : getParentRoom().getUniqueId();
+	}
 }
