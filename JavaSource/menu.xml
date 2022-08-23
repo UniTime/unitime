@@ -409,7 +409,7 @@
 			</menu>
 			<separator/>
 			<item name="Examinations" page="examList.action"/>
-			<item name="Distribution Preferences" page="examDistributionPrefs.do">
+			<item name="Distribution Preferences" page="examDistributionPrefs.action">
 				<condition>
 					<hasPermission name="ExaminationDistributionPreferences"/>
 				</condition>

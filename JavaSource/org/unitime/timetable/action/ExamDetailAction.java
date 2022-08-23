@@ -68,7 +68,7 @@ import org.unitime.timetable.webutil.Navigation;
  */
 @Action(value = "examDetail", results = {
 		@Result(name = "showExamDetail", type = "tiles", location = "examDetail.tiles"),
-		@Result(name = "addDistributionPrefs", type = "redirect", location = "/examDistributionPrefs.do",
+		@Result(name = "addDistributionPrefs", type = "redirect", location = "/examDistributionPrefs.action",
 				params = { "examId", "${form.examId}", "op", "${op}"}),
 		@Result(name = "showList", type = "redirect", location = "/examList.action")
 	})

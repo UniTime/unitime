@@ -21,26 +21,24 @@ package org.unitime.timetable.action;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ConstantsMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.ExamDistributionPrefsForm;
@@ -61,10 +59,10 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
@@ -72,128 +70,149 @@ import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
 /**
  * @author Tomas Muller
  */
-@Service("/examDistributionPrefs")
-public class ExamDistributionPrefsAction extends Action {
+@Action(value="examDistributionPrefs", results = {
+		@Result(name = "list", type = "tiles", location = "examDistributionPrefs.tiles"),
+		@Result(name = "add", type = "tiles", location = "addExamDistributionPref.tiles"),
+		@Result(name = "edit", type = "tiles", location = "editExamDistributionPref.tiles")
+	})
+@TilesDefinitions(value = {
+		@TilesDefinition(name = "examDistributionPrefs.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Examination Distribution Preferences"),
+				@TilesPutAttribute(name = "body", value = "/user/examDistributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		}),
+		@TilesDefinition(name = "addExamDistributionPref.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Add Examination Distribution Preference"),
+				@TilesPutAttribute(name = "body", value = "/user/examDistributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		}),
+		@TilesDefinition(name = "editExamDistributionPref.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Edit Examination Distribution Preference"),
+				@TilesPutAttribute(name = "body", value = "/user/examDistributionPrefs.jsp"),
+				@TilesPutAttribute(name = "showNavigation", value = "true")
+		})
+	})
+public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionPrefsForm> {
+    private static final long serialVersionUID = -4234228449590216694L;
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	protected static ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
+	protected String reloadId;
+	protected String reloadCause;
+	protected String deleteId;
+	protected String deleteType;
+	protected String distPrefId;
 	
-	@Autowired SessionContext sessionContext;
+	public String getReloadId() { return reloadId; }
+	public void setReloadId(String reloadId) { this.reloadId = reloadId; }
+	public String getReloadCause() { return reloadCause; }
+	public void setReloadCause(String reloadCause) { this.reloadCause = reloadCause; }
+	public String getDeleteId() { return deleteId; }
+	public void setDeleteId(String deleteId) { this.deleteId = deleteId; }
+	public String getDeleteType() { return deleteType; }
+	public void setDeleteType(String deleteType) { this.deleteType = deleteType; }
+	public String getDp() { return distPrefId; }
+	public void setDp(String distPrefId) { this.distPrefId = distPrefId; }
 
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-    	
+	public String execute() throws Exception {
+		if (form == null) form = new ExamDistributionPrefsForm();
     	sessionContext.checkPermission(Right.ExaminationDistributionPreferences);
-        
-        MessageResources rsc = getResources(request);
-		ActionMessages errors = new ActionMessages();
-        ExamDistributionPrefsForm frm = (ExamDistributionPrefsForm) form;
-
-        String deleteId = request.getParameter("deleteId");
-        String deleteType = request.getParameter("deleteType");
-        String distPrefId = request.getParameter("dp");
-        String reloadCause = request.getParameter("reloadCause");
-        String reloadId = request.getParameter("reloadId");
-        
-		String op = frm.getOp();
-		if(op==null || op.trim().length()==0) {
-			if (deleteType!=null && deleteType.length()>0)
+    	
+    	if (op == null) op = form.getOp();
+    	if (op==null || op.trim().isEmpty()) {
+			if (deleteType != null && deleteType.length()>0)
 				op = "delete";
 			else
 				op = "view";
-		    frm.setOp(op);
+		    form.setOp(op);
 		}
 		
 		if (reloadCause!=null && reloadCause.length()>0) op = "reload";
 		
         // Cancel - Display blank form
-        if (op.equals(rsc.getMessage("button.cancel"))) {
-            frm.reset(mapping, request);
+		if (MSG.actionCancel().equals(op)) {
+            form.reset();
             if (BackTracker.doBack(request, response)) return null;
             op = "view"; //in case no back is available
         }
 
 		// Set lookup tables lists
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamView); // Exam Types
-        request.setAttribute("examTypesAdd", ExamType.findAllApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit));
+        request.setAttribute("examTypesAdd", ExamType.findAllUsedApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit));
 
         // Add / Update distribution pref
-        if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {
+        if (MSG.actionSaveNewDistributionPreference().equals(op) || MSG.actionUpdateDistributionPreference().equals(op)) {
             Debug.debug("Saving distribution pref ...");
-            sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0) {
+            sessionContext.setAttribute(SessionAttribute.ExamType, form.getExamType());
+            form.validate(this);
+            if (!hasFieldErrors()) {
             	try {
-           			doAddOrUpdate(request, frm);
-           			if (frm.getDistPrefId()!=null) {
+           			doAddOrUpdate(form);
+           			if (form.getDistPrefId()!=null) {
            				request.setAttribute("backType", "PreferenceGroup");
-           				request.setAttribute("backId", frm.getDistPrefId());
+           				request.setAttribute("backId", form.getDistPrefId());
            			}
-	    	        frm.reset(mapping, request);
+	    	        form.reset();
 	    	        if (BackTracker.doBack(request, response)) return null;
 		            op = "view"; //in case no back is available
            		} catch (Exception e) {
            			Debug.error(e);
-           			errors.add("classes", new ActionMessage("errors.generic", e.getMessage()));
-	                saveErrors(request, errors);
+           			addFieldError("classes", e.getMessage());
 	            }
 	        }
-	        else 
-	            saveErrors(request, errors);
         }
         
         // Delete distribution object / pref
-        if(op.equals(rsc.getMessage("button.delete")) || op.equals("delete")) {
+        if (MSG.actionDeleteDistributionPreference().equals(op) || "delete".equals(op)) {
             if(deleteType.equals("distObject")) {
-                frm.deleteExam(Integer.parseInt(deleteId));
+                form.deleteExam(Integer.parseInt(deleteId));
             }
-            if(deleteType.equals("distPref")) {
-                distPrefId = frm.getDistPrefId();
-                doDelete(request, distPrefId);
-                frm.reset(mapping, request);            
+            if (deleteType.equals("distPref")) {
+                distPrefId = form.getDistPrefId();
+                doDelete(distPrefId);
+                form.reset();            
                 if (BackTracker.doBack(request, response)) return null;
 	            op = "view"; //in case no back is available
             }
             if (deleteType.equals("examType")) {
-            	sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
+            	sessionContext.setAttribute(SessionAttribute.ExamType, form.getExamType());
             }
         }
         
         // Add new class - redirect from SchedulingSubpartEdit / ClassEdit
-        if (op.equals(rsc.getMessage("button.addDistPref"))) {
+        if (MSG.actionAddDistributionPreference().equals(op)) {
             Debug.debug("Adding new Class via redirect ...");
-	        frm.setDistType(Preference.BLANK_PREF_VALUE);
+	        form.setDistType(Preference.BLANK_PREF_VALUE);
 	        if (request.getAttribute("subjectAreaId")!=null) {
-	        	frm.setSubjectArea(0, Long.valueOf(request.getAttribute("subjectAreaId").toString()));
+	        	form.setSubjectArea(0, Long.valueOf(request.getAttribute("subjectAreaId").toString()));
 	        }
 	        if (request.getAttribute("courseOffrId")!=null) {
 	            CourseOffering course = new CourseOfferingDAO().get(Long.valueOf(request.getAttribute("courseOffrId").toString()));
-	            frm.setSubjectArea(0, course.getSubjectArea().getUniqueId());
-	            frm.setCourseNbr(0, course.getUniqueId());
+	            form.setSubjectArea(0, course.getSubjectArea().getUniqueId());
+	            form.setCourseNbr(0, course.getUniqueId());
 	        }
 	        if (request.getParameter("examId")!=null) {
 	            Exam exam = new ExamDAO().get(Long.valueOf(request.getParameter("examId")));
-	            frm.setExam(0, exam.getUniqueId());
-	            frm.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
-                frm.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
-                frm.setExamType(exam.getExamType().getUniqueId());
+	            form.setExam(0, exam.getUniqueId());
+	            form.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
+                form.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
+                form.setExamType(exam.getExamType().getUniqueId());
 	        }
-            frm.getSubjectArea().add(Long.valueOf(-1));
-            frm.getCourseNbr().add(Long.valueOf(-1));
-            frm.getExam().add(Long.valueOf(-1));
+            form.getSubjectArea().add(Long.valueOf(-1));
+            form.getCourseNbr().add(Long.valueOf(-1));
+            form.getExam().add(Long.valueOf(-1));
         }
         
         // Add new class
-        if(op.equals(rsc.getMessage("button.addExam"))) {
+        if (MSG.actionAddExamToDistribution().equals(op)) {
             Debug.debug("Adding new Class ...");
-            frm.getSubjectArea().add(Long.valueOf(-1));
-            frm.getCourseNbr().add(Long.valueOf(-1));
-            frm.getExam().add(Long.valueOf(-1));
+            form.getSubjectArea().add(Long.valueOf(-1));
+            form.getCourseNbr().add(Long.valueOf(-1));
+            form.getExam().add(Long.valueOf(-1));
         }
-
-        if (op.equals(rsc.getMessage("button.search")) || op.equals(rsc.getMessage("button.exportPDF")) || op.equals(rsc.getMessage("button.exportCSV"))) {
-        	String subjectAreaId = frm.getFilterSubjectAreaId();
-        	String courseNbr = frm.getFilterCourseNbr();
+        
+        if (MSG.actionSearchDistributionPreferences().equals(op) || MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op)) {
+        	String subjectAreaId = form.getFilterSubjectAreaId();
+        	String courseNbr = form.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
         		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId);
         	else
@@ -202,113 +221,120 @@ public class ExamDistributionPrefsAction extends Action {
         		sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);
         	else
         		sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
-        	sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
-        	if (op.equals(rsc.getMessage("button.exportPDF")))
+        	sessionContext.setAttribute(SessionAttribute.ExamType, form.getExamType());
+        	if (MSG.actionExportPdf().equals(op))
         		op="export"; 
-        	else if (op.equals(rsc.getMessage("button.exportCSV")))
+        	else if (MSG.actionExportCsv().equals(op))
         		op="export-csv"; 
         	else 
         		op="view";
         }
 
         // Load Distribution Pref
-        if(op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) 
+        if (op!=null && (op.equals("view") || op.equals("export") || op.equals("export-csv")) 
                 && distPrefId!=null && distPrefId.trim().length()>0) {
             Debug.debug("Loading dist pref - " + distPrefId);
-            
-            frm.reset(mapping, request);
-                        
-            doLoad(frm, distPrefId);
+            form.reset();
+            doLoad(distPrefId);
         }
         
         // Reload 
-        if(op!=null && op.equals("reload")) {
+        if (op!=null && op.equals("reload")) {
             // Move Distribution object up one level
             if (reloadCause!=null && reloadCause.equals("moveUp")) {
 	            int index = Integer.parseInt(reloadId);
 	            Debug.debug("moving up ... " + reloadId);
-	            frm.swapExams(index, index-1);
+	            form.swapExams(index, index-1);
             }
             
             // Move Distribution object down one level
             if (reloadCause!=null && reloadCause.equals("moveDown")) {
 	            int index = Integer.parseInt(reloadId);
 	            Debug.debug("moving down ... " + reloadId);
-	            frm.swapExams(index, index+1);
+	            form.swapExams(index, index+1);
             }
         }
 
-        if (frm.getDistType()!=null && !frm.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
+        if (form.getDistType()!=null && !form.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(frm.getDistType())));
-        	frm.setDescription(dist.getDescr());
+        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(form.getDistType())));
+        	form.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
         		if (dist.isAllowed(pref)) {
         			prefs.addElement(pref);
-        			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(frm.getPrefLevel()))) containsPref = true;
+        			if (form.getPrefLevel()!=null && !form.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(Integer.valueOf(form.getPrefLevel()))) containsPref = true;
         		}
         	}
         	if (!containsPref)
-        		frm.setPrefLevel(Preference.BLANK_PREF_VALUE);
+        		form.setPrefLevel(Preference.BLANK_PREF_VALUE);
         	if (prefs.size()==1)
-        		frm.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
+        		form.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
         	LookupTables.setupExamDistribTypes(request, sessionContext, dist);
         } else {
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, new Vector(0));
-        	frm.setDescription("");
+        	form.setDescription("");
         	LookupTables.setupExamDistribTypes(request, sessionContext, null);
         }	    
         
-        if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("export".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().length()==0)) {
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "distpref");
-            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsPdf(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId()) || frm.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsPdf(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(form.getFilterSubjectAreaId()) || form.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(form.getFilterSubjectAreaId())), form.getFilterCourseNbr(), form.getExamType());
             out.flush();out.close();
             return null;
         }
 
-        if ("export-csv".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("export-csv".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().length()==0)) {
         	PrintWriter out = ExportUtils.getCsvWriter(response, "distpref");
-            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsCsv(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId()) || frm.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsCsv(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(form.getFilterSubjectAreaId()) || form.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(form.getFilterSubjectAreaId())), form.getFilterCourseNbr(), form.getExamType());
             out.flush();out.close();
             return null;
         }
         
-        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
+        request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(form.getSubjectArea().size()-1));
         
-        if (frm.getExamType() == null) {
+        if (form.getExamType() == null) {
             if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
-            	frm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
+            	form.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
             else {
             	TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
             	if (!types.isEmpty())
-            		frm.setExamType(types.first().getUniqueId());
+            		form.setExamType(types.first().getUniqueId());
             }
         }
         
-        frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
-        if (frm.getFilterSubjectAreas().size()==1) {
-            SubjectArea firstSubjectArea = (SubjectArea)frm.getFilterSubjectAreas().iterator().next();
-            frm.setFilterSubjectAreaId(firstSubjectArea.getUniqueId().toString());
+        form.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
+        
+        List<IdValue> subjects = new ArrayList<IdValue>();
+        subjects.add(new IdValue(null, CONST.select()));
+        if (sessionContext.hasPermission(Right.DepartmentIndependent)) {
+        	subjects.add(new IdValue(-1l, CONST.all()));
+        }
+        for (SubjectArea sa: form.getFilterSubjectAreas())
+        	subjects.add(new IdValue(sa.getUniqueId(), sa.getSubjectAreaAbbreviation()));
+        getForm().setSubjectAreas(subjects);
+        if (form.getFilterSubjectAreas().size()==1) {
+            SubjectArea firstSubjectArea = (SubjectArea)form.getFilterSubjectAreas().iterator().next();
+            form.setFilterSubjectAreaId(firstSubjectArea.getUniqueId().toString());
         }
         
-        if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        if ("view".equals(op) && (form.getDistPrefId()==null || form.getDistPrefId().length()==0)) {
         	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         	if (subject != null && subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
-        	frm.setFilterSubjectAreaId(subject);
-            frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+        	form.setFilterSubjectAreaId(subject);
+            form.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
 
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
-        	if (frm.getFilterSubjectAreaId()==null) {
+        	if (form.getFilterSubjectAreaId()==null) {
         	    if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-        	        frm.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
+        	        form.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
         	    else
-        	        frm.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
+        	        form.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
         	}
         	
-        	if (frm.getFilterSubjectAreaId()!=null && frm.getFilterSubjectAreaId().length()>0 && !"null".equals(frm.getFilterSubjectAreaId())) {
-        	    String html = tbl.getDistPrefsTable(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+        	if (form.getFilterSubjectAreaId()!=null && form.getFilterSubjectAreaId().length()>0 && !"null".equals(form.getFilterSubjectAreaId())) {
+        	    String html = tbl.getDistPrefsTable(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(form.getFilterSubjectAreaId())?null:Long.valueOf(form.getFilterSubjectAreaId())), form.getFilterCourseNbr(), form.getExamType());
         	    if (html!=null)
         	        request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
         	} else {
@@ -316,53 +342,45 @@ public class ExamDistributionPrefsAction extends Action {
         	}
             BackTracker.markForBack(
             		request,
-            		"examDistributionPrefs.do",
+            		"examDistributionPrefs.action",
             		"Exam Distribution Prefs",
             		true, true);
-            return mapping.findForward("list");
+            return "list";
         }
         
-        return mapping.findForward(frm.getDistPrefId()==null || frm.getDistPrefId().length()==0?"add":"edit");
+        return (form.getDistPrefId()==null || form.getDistPrefId().length()==0?"add":"edit");
     }
 
     /**
      * Loads the form with the data for the distribution pref selected
-     * @param frm
-     * @param distPrefId
      */
-    private void doLoad(
-            ExamDistributionPrefsForm frm, 
-            String distPrefId ) {
+    private void doLoad(String distPrefId ) {
  
     	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDetail);
     	
         // Get distribution pref info
         DistributionPref dp = new DistributionPrefDAO().get(Long.valueOf(distPrefId));
-        frm.setDistType(dp.getDistributionType().getUniqueId().toString());
-        frm.setDescription(dp.getDistributionType().getDescr());
-        frm.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
-        frm.setDistPrefId(distPrefId);
+        form.setDistType(dp.getDistributionType().getUniqueId().toString());
+        form.setDescription(dp.getDistributionType().getDescr());
+        form.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
+        form.setDistPrefId(distPrefId);
         
         for (Iterator i=new TreeSet(dp.getDistributionObjects()).iterator();i.hasNext();) {
             DistributionObject distObj = (DistributionObject)i.next();
             Exam exam = (Exam)distObj.getPrefGroup();
-            frm.getSubjectArea().add(exam.firstSubjectArea().getUniqueId());
-            frm.getCourseNbr().add(exam.firstCourseOffering().getUniqueId());
-            frm.getExam().add(exam.getUniqueId());
+            form.getSubjectArea().add(exam.firstSubjectArea().getUniqueId());
+            form.getCourseNbr().add(exam.firstCourseOffering().getUniqueId());
+            form.getExam().add(exam.getUniqueId());
         }
         
     }
     
     /**
      * Add new distribution pref
-     * @param httpSession
-     * @param frm
      */
-    private void doAddOrUpdate(
-            HttpServletRequest request, 
-            ExamDistributionPrefsForm frm ) throws Exception {
+    private void doAddOrUpdate(ExamDistributionPrefsForm form) throws Exception {
 
-        String distPrefId = frm.getDistPrefId();
+        String distPrefId = form.getDistPrefId();
         
         if (distPrefId != null && !distPrefId.isEmpty()) {
         	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceEdit);
@@ -394,15 +412,15 @@ public class ExamDistributionPrefsAction extends Action {
     			dp.setDistributionObjects(s);
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(frm.getDistType()), hibSession));
+            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(form.getDistType()), hibSession));
             dp.setGrouping(-1);
-        	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
+        	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(form.getPrefLevel()) ));
         
         	dp.setOwner(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
         
         	HashSet addedExams = new HashSet();
         	int idx = 0;
-        	for (Iterator i=frm.getExam().iterator();i.hasNext();) {
+        	for (Iterator i=form.getExam().iterator();i.hasNext();) {
         		Object o = i.next();
         	    Long examId = (o instanceof Long ? (Long) o : Long.valueOf(o.toString()));
         	    if (examId<0) continue;
@@ -438,7 +456,7 @@ public class ExamDistributionPrefsAction extends Action {
 	       	tx.commit();
 	       	hibSession.flush();
     	    hibSession.refresh(dp.getOwner());
-    	    frm.setDistPrefId(dp.getUniqueId().toString());
+    	    form.setDistPrefId(dp.getUniqueId().toString());
         } catch (Exception e) {
         	if (tx!=null) tx.rollback();
         	hibSession.clear();
@@ -450,7 +468,7 @@ public class ExamDistributionPrefsAction extends Action {
      * Delete distribution pref
      * @param distPrefId
      */
-    private void doDelete(HttpServletRequest request, String distPrefId) {
+    private void doDelete(String distPrefId) {
         Transaction tx = null;
         
         sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDelete);

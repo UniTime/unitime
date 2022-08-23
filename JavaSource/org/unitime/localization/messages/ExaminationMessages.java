@@ -19,6 +19,8 @@
 */
 package org.unitime.localization.messages;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -395,4 +397,127 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("There are the following errors:")
 	String formValidationErrors();
+	
+	@DefaultMessage("Select a distribution type.")
+	String errorSelectDistributionType();
+	
+	@DefaultMessage("Select a preference level.")
+	String errorSelectPreferenceLevel();
+	
+	@DefaultMessage("Cancel")
+	String actionCancel();
+	
+	@DefaultMessage("Update")
+	String actionUpdateDistributionPreference();
+	
+	@DefaultMessage("Save")
+	String actionSaveNewDistributionPreference();
+
+	@DefaultMessage("Delete")
+	String actionDeleteDistributionPreference();
+	
+	@DefaultMessage("Back")
+	String actionBackDistributionPreference();
+	
+	@DefaultMessage("Add Distribution Preference")
+	String actionAddDistributionPreference();
+	
+	@DefaultMessage("Add Examination")
+	String actionAddExamToDistribution();
+
+	@DefaultMessage("Search")
+	String actionSearchDistributionPreferences();
+
+	@DefaultMessage("Export PDF")
+	String actionExportPdf();
+
+	@DefaultMessage("Export CSV")
+	String actionExportCsv();
+	
+	@DefaultMessage("Delete")
+	String actionDelete();
+	
+	@DefaultMessage("Update Distribution Preference (Alt+{0})")
+	String titleUpdateDistributionPreference(String accessKey);
+
+	@DefaultMessage("Save New Distribution Preference (Alt+{0})")
+	String titleSaveNewDistributionPreference(String accessKey);
+	
+	@DefaultMessage("Delete Distribution Preference (Alt+{0})")
+	String titleDeleteDistributionPreference(String accessKey);
+	
+	@DefaultMessage("Return to %% (Alt+{0})")
+	String titleBackDistributionPreference(String accessKey);	
+	
+	@DefaultMessage("Add Examination (Alt+{0})")
+	String titleAddExamToDistribution(String accessKey);
+	
+	@DefaultMessage("Move Up")
+	String titleMoveUp();
+	
+	@DefaultMessage("Move Down")
+	String titleMoveDown();
+	
+	@DefaultMessage("Search Distribution Preferences (Alt+{0})")
+	String titleSearchDistributionPreferences(String accessKey);
+	
+	@DefaultMessage("Export PDF (Alt+{0})")
+	String titleExportPdf(String accessKey);
+
+	@DefaultMessage("Export CSV (Alt+{0})")
+	String titleExportCsv(String accessKey);
+	
+	@DefaultMessage("Add Distribution Preference (Alt+{0})")
+	String titleAddDistributionPreference(String accessKey);
+	
+	@DefaultMessage("U")
+	String accessUpdateDistributionPreference();
+
+	@DefaultMessage("S")
+	String accessSaveNewDistributionPreference();
+	
+	@DefaultMessage("D")
+	String accessDeleteDistributionPreference();
+	
+	@DefaultMessage("B")
+	String accessBackDistributionPreference();
+	
+	@DefaultMessage("A")
+	String accessAddExamToDistribution();
+	
+	@DefaultMessage("S")
+	String accessSearchDistributionPreferences();
+	
+	@DefaultMessage("P")
+	String accessExportPdf();
+	
+	@DefaultMessage("C")
+	String accessExportCsv();
+	
+	@DefaultMessage("A")
+	String accessAddDistributionPreference();
+	
+	@DefaultMessage("Do you really want to delete this distribution preference?")
+	String confirmDeleteDistributionPreference();
+	
+	@DefaultMessage("Add Examination Distribution Preference")
+	String sectionAddDistributionPreference();
+	
+	@DefaultMessage("Edit Examination  Distribution Preference")
+	String sectionEditDistributionPreference();
+	
+	@DefaultMessage("{0} Examinations in Distribution")
+	String sectionExaminationsInDistribution(String examType);
+	
+	@DefaultMessage("{0} Examination Distribution Preferences")
+	String sectionDistributionPreferences(String examType);
+
+	@DefaultMessage("Distribution Type:")
+	String propertyDistributionType();
+	
+	@DefaultMessage("Preference:")
+	String propertyDistributionPreference();
+	
+	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
+	String tooltipCourseNumber();
 }

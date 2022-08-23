@@ -234,6 +234,10 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	        	form.addToCourseNbr(request.getAttribute("courseOffrId").toString());
 	        	form.addToClassNumber(request.getAttribute("classId").toString());
 		        request.setAttribute("addedClass", ""+(form.getSubjectArea().size()-1));
+	        } else {
+	        	String subjectAreaId = form.getFilterSubjectAreaId();
+	        	if (Constants.ALL_OPTION_VALUE.equals(subjectAreaId)) subjectAreaId = null;
+	        	form.addNewClass(subjectAreaId);
 	        }
         }
         
@@ -415,7 +419,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	        
 	        // Process subject area selection
 	        if(subjectAreaId!=null) {
-	            if(subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) {
+	            if(subjectAreaId.equals(Preference.BLANK_PREF_VALUE) || subjectAreaId.equals(Constants.ALL_OPTION_VALUE)) {
 	    	        crsNumList = new Vector();
 	    	        subpartList = new Vector();
 	    	        classNumList = new Vector();

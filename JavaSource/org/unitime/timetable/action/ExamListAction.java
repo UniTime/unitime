@@ -63,6 +63,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
@@ -104,7 +105,7 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
         if (op==null && sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea) != null) {
         	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         	if (subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
-        	if ("All".equalsIgnoreCase(subject))
+        	if (Constants.ALL_OPTION_VALUE.equalsIgnoreCase(subject))
         		getForm().setSubjectAreaId(-1l);
         	else
         		getForm().setSubjectAreaId(Long.valueOf(subject));
@@ -124,7 +125,7 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
         if ("Search".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op) ||
         	MSG.buttonSearch().equals(op) || MSG.buttonExportPDF().equals(op) || MSG.buttonExportCSV().equals(op)) {
             if (getForm().getSubjectAreaId()!=null) {
-            	sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, getForm().getSubjectAreaId() < 0 ? "All" : getForm().getSubjectAreaId().toString());
+            	sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, getForm().getSubjectAreaId() < 0 ? Constants.ALL_OPTION_VALUE : getForm().getSubjectAreaId().toString());
                 sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, getForm().getCourseNbr());
                 sessionContext.setAttribute(SessionAttribute.ExamType, getForm().getExamType());
             }

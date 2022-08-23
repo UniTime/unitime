@@ -191,7 +191,7 @@ public class DistributionPrefsForm implements UniTimeForm {
      */
     public void reset() {
         op="";
-        distPrefId="";
+        distPrefId=null;
         distType=Preference.BLANK_PREF_VALUE;
         prefLevel=Preference.BLANK_PREF_VALUE;
         owner="";

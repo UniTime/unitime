@@ -150,7 +150,7 @@ public class ExamDistributionPrefsTableBuilder {
         
         WebTable tbl = new WebTable(3, 
                 title,  
-    			"examDistributionPrefs.do?order=%%",
+    			"examDistributionPrefs.action?order=%%",
     			new String[] {" Type ", " Exam ", " Class/Course " },
     			new String[] { "left", "left", "left"},
     			new boolean[] { true, true, true} );
@@ -197,7 +197,7 @@ public class ExamDistributionPrefsTableBuilder {
             boolean gray = false;
             
             if (prefEditable) {
-                onClick = "onClick=\"document.location='examDistributionPrefs.do"
+                onClick = "onClick=\"document.location='examDistributionPrefs.action"
                     + "?dp=" + dp.getUniqueId().toString() 
                     + "&op=view'\"";
             } //else gray = true;

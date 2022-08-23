@@ -17,165 +17,119 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.form.DistributionPrefsForm" %>
-<%@ page import="org.unitime.timetable.model.DistributionPref" %>
-<%@ page import="org.unitime.timetable.model.DistributionType" %>
-<%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-<html:form action="/examDistributionPrefs" >
-<loc:bundle name="CourseMessages"><tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if (!confirm('<%=MSG.confirmDeleteDistributionPreference()%>')) {
-				return false;
-			}
-
-			return true;
-		}
-	// -->
-</SCRIPT>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="examDistributionPrefs" id="examDistributionPrefsForm"> 
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDistributionPreference"/></tt:confirm>
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
 	<INPUT type="hidden" name="reloadId" id="reloadId" value="">
-	<INPUT type="hidden" name="op2" value="">
-	<html:hidden property="distPrefId"/>
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
+	<s:if test="form.distPrefId != null"><s:hidden name="form.distPrefId"/></s:if>
+	<table class="unitime-MainTable">
+	<s:if test="#request.distPrefs == null">
 		<TR>
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-							Edit
-						</logic:notEmpty>
-						<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-							Add
-						</logic:empty>
-						Examination Distribution Preference
+						<s:if test="form.distPrefId != null">
+							<loc:message name="sectionEditDistributionPreference"/>
+						</s:if>
+						<s:else>
+							<loc:message name="sectionAddDistributionPreference"/>
+						</s:else>
 					</tt:section-title>
-					<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-						<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateDistPref">
-							<bean:message key="button.update" />
-						</html:submit>
-						
-						<sec:authorize access="hasPermission(#examDistributionPrefsForm.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
-							&nbsp;
-							<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
-								<bean:message key="button.delete" />
-							</html:submit>
-						</sec:authorize>					
-					</logic:notEmpty>
-				
-					<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-						&nbsp;
-						<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
-							<bean:message key="button.save" />
-						</html:submit>
-					</logic:empty>
-
-					<!-- 
-					<html:submit property="op" accesskey="C">
-						<bean:message key="button.cancel" />
-					</html:submit>
-					-->
-
-					&nbsp;
-					<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-						<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" back="1" type="PreferenceGroup">
-							<bean:write name="examDistributionPrefsForm" property="distPrefId"/>
-						</tt:back>
-					</logic:notEmpty>
-					<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-						<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" back="1"/>
-					</logic:empty>
+					<s:if test="form.distPrefId != null">
+						<s:submit name='op' value="%{#msg.actionUpdateDistributionPreference()}"
+							title="%{#msg.titleUpdateDistributionPreference(#msg.accessUpdateDistributionPreference())}"
+							accesskey="%{#msg.accessUpdateDistributionPreference()}"/>
+						<sec:authorize access="hasPermission(#form.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
+							<s:submit name='op' value="%{#msg.actionDeleteDistributionPreference()}"
+								title="%{#msg.titleDeleteDistributionPreference(#msg.accessDeleteDistributionPreference())}"
+								accesskey="%{#msg.accessDeleteDistributionPreference()}"
+								onclick="doDel('distPref', '-1'); return confirmDelete();"
+								/>
+						</sec:authorize>	
+					</s:if>
+					<s:else>
+						<s:submit name='op' value="%{#msg.actionSaveNewDistributionPreference()}"
+							title="%{#msg.titleSaveNewDistributionPreference(#msg.accessSaveNewDistributionPreference())}"
+							accesskey="%{#msg.accessSaveNewDistributionPreference()}"/>
+					</s:else>
 					
+					<s:if test="form.distPrefId != null">
+						<tt:back styleClass="btn"
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1" 
+							type="PreferenceGroup">
+							<s:property value="form.distPrefId"/>
+						</tt:back>
+					</s:if>
+					<s:else>
+						<tt:back styleClass="btn" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1"/>
+					</s:else>
 				</tt:section-header>
 			</TD>
 		</TR>
 				
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="3" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="3" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 		
 		<TR>
-			<TD nowrap valign='top'>Type: <font class="reqField">*</font></TD>
+			<TD nowrap valign='top'><loc:message name="propExamType"/><font class="reqField">*</font></TD>
 			<TD colspan='2' width='100%'>
-				<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-					<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
-						<html:options collection="examTypesAdd" property="uniqueId" labelProperty="label"/>
-					</html:select>
-				</logic:empty>
-				<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-					<html:hidden property="examType"/>
-					<logic:iterate name="examTypes" scope="request" id="type">
-						<bean:define name="type" property="uniqueId" id="typeId" type="Long"/>
-						<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=typeId.toString()%>">
-							<bean:write name="type" property="label"/>
-						</logic:equal>
-					</logic:iterate>
-				</logic:notEmpty>
+				<s:if test="form.distPrefId != null">
+					<s:hidden name="form.examType" id="examType"/>
+					<s:iterator value="#request.examTypesAdd" var="type">
+						<s:if test="#type.uniqueId == form.examType">
+							<s:property value="#type.label"/>
+						</s:if>
+					</s:iterator>
+				</s:if>
+				<s:else>
+					<s:select name="form.examType" id="examType"
+						list="#request.examTypesAdd" listKey="uniqueId" listValue="label"
+						onchange="doDel('examType', this.value); document.getElementById('examDistributionPrefsForm').submit();"
+						/>
+				</s:else>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>
+			<TD nowrap valign='top'><loc:message name="propertyDistributionType"/><font class="reqField">*</font></TD>
 			<TD colspan='2' width='100%'>
-				<html:select style="width:300px;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
-					<html:option value="-">-</html:option>
-					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
-				</html:select>
-				<span id='distTypeDesc' style='display:block;padding:3px'>
-					<bean:write name="examDistributionPrefsForm" property="description" filter="false"/>
+				<s:select name="form.distType"
+					list="#request.distributionTypeList" listKey="uniqueId" listValue="label"
+					headerKey="-" headerValue="-"
+					style="width:300px;"
+					onchange="distTypeChanged(this.value);"
+					/>
+				<span id='distTypeDesc' style='display:block;padding:3px;max-width:800px;'>
+					<s:property value="form.description" escapeHtml="false"/>
 				</span>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Preference: <font class="reqField">*</font></TD>
+			<TD><loc:message name="propertyDistributionPreference"/><font class="reqField">*</font></TD>
 			<TD>
-				<html:select style="width:200px;" property="prefLevel">					
-					<html:option value="-">-</html:option>
-					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
-					<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
-					<html:option
-						style='<%="background-color:" + pr.prefcolor() + ";"%>'
-						value="<%=pr.getUniqueId().toString()%>" ><%=
-						pr.getPrefName()
-					%></html:option>
-				   	</logic:iterate>
-				</html:select>
+				<s:select name="form.prefLevel" id="prefLevel"
+					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+					headerKey="-" headerValue="-"
+					style="width:200px;">
+				</s:select>
 			</TD>
 			<TD>&nbsp;</TD>
 		</TR>
@@ -185,79 +139,72 @@
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:iterate scope="request" name="examTypes" id="et">
-							<bean:define name="et" property="uniqueId" id="examType"/>
-							<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=examType.toString()%>">
-								<bean:write name="et" property="label"/>			
-							</logic:equal>
-						</logic:iterate>
-						Examinations in Distribution
+						<loc:message name="sectionExaminationsInDistribution">
+							<s:iterator value="#request.examTypes" var="et">
+								<s:if test="#et.uniqueId == form.examType">
+									<s:property value="#et.label"/>
+								</s:if>
+							</s:iterator>
+						</loc:message>
 					</tt:section-title>
-					<html:submit styleClass="btn" property="op" accesskey="A" titleKey="title.addExam" >
-						<bean:message key="button.addExam" />
-					</html:submit>
+					<s:submit name='op' value="%{#msg.actionAddExamToDistribution()}"
+						title="%{#msg.titleAddClassToDistribution(#msg.accessAddExamToDistribution())}"
+						accesskey="%{#msg.accessAddExamToDistribution()}"
+						style="min-width:100px;"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
-		<logic:iterate name="examDistributionPrefsForm" property="subjectAreaList" id="sa" indexId="ctr">
+		<s:iterator value="form.subjectArea" var="sa" status="stat">
 		<TR>
 			<TD colspan="3">
 			
 				<!-- Class / Subpart -->
-				<html:select style="width:90px;" 
-					property='<%= "subjectArea[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
-					styleId='<%="subjectArea"+ctr%>' >
-					<html:option value="-1">-</html:option>
-					<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
-				</html:select>
+				<s:select name="form.subjectArea[%{#stat.index}]"
+					list="form.filterSubjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"
+					headerKey="-1" headerValue="-"
+					style="width:90px;"
+					onchange="doReload('subjectArea', '%{#stat.index}');"
+					id="subjectArea%{#stat.index}"
+					/>
 
-				<html:select style="width:290px;" 
-					property='<%= "courseNbr[" + ctr + "]" %>' 
-					onchange="<%= \"javascript: doReload('courseNbr[', '\" + ctr + \"]');\" %>"
-					styleId='<%="courseNbr"+ctr%>' >
-					<html:optionsCollection property='<%="courseNbrs["+ctr+"]"%>' label="value" value="id"/>
-				</html:select>
+				<s:select name="form.courseNbr[%{#stat.index}]"
+					list="form.courseNbrs[#stat.index]" listKey="id" listValue="value"
+					style="width:290px;"
+					onchange="doReload('exam', '%{#stat.index}');"
+					id="courseNbr%{#stat.index}"
+					/>
+					
+				<s:select name="form.exam[%{#stat.index}]"
+					list="form.exams[#stat.index]" listKey="id" listValue="value"
+					style="width:300px;"
+					id="exam%{#stat.index}"
+					/>
 
-				<html:select style="width:300px;" 
-					property='<%= "exam[" + ctr + "]" %>' 
-					styleId='<%="exam"+ctr%>' >
-					<html:optionsCollection property='<%="exams["+ctr+"]"%>' label="value" value="id"/>
-				</html:select>
-				
 				<!-- Arrows -->
-				<logic:greaterThan name="ctr" value="0">
-					<IMG border="0" src="images/arrow_up.png" alt="Move Up" title="Move Up" align='absmiddle'
+				<s:if test="#stat.index > 0">
+					<IMG border="0" src="images/arrow_up.png" alt="${MSG.titleMoveUp()}" title="${MSG.titleMoveUp()}" align='middle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
-						onClick="javascript: doReload('moveUp', '<%=ctr%>');">
-				</logic:greaterThan>
-
-				<logic:equal name="ctr" value="0">
-					<IMG border="0" src="images/blank.png" align='absmiddle'>
-				</logic:equal>
-
-				<logic:lessThan name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/arrow_down.png" alt="Move Down" title="Move Down" align='absmiddle'
+						onClick="doReload('moveUp', '${stat.index}');">
+				</s:if>
+				<s:if test="#stat.index == 0">
+						<IMG border="0" src="images/blank.png" align='middle'>
+				</s:if>
+				<s:if test="#stat.index < #request.listSize">
+					<IMG border="0" src="images/arrow_down.png" alt="${MSG.titleMoveDown()}" title="${MSG.titleMoveDown()}" align='middle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
-						onClick="javascript: doReload('moveDown', '<%=ctr%>');">
-				</logic:lessThan>
-
-				<logic:equal name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/blank.png" align='absmiddle'>
-				</logic:equal>
+						onClick="javascript: doReload('moveDown', '${stat.index}');">
+				</s:if>
+				<s:if test="#stat.index == #request.listSize">
+					<IMG border="0" src="images/blank.png" align='middle'>
+				</s:if>
 
 				<!-- Delete button -->
-				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-					<bean:message key="button.delete" />
-				</html:submit>
-				<!--
-				<IMG src="images/action_delete.png" border="0" align="middle">	
-				-->
+				&nbsp;&nbsp;
+				<s:submit name='op' value="%{#msg.actionDelete()}" onclick="doDel('distObject', '%{#stat.index}');"/>
 			</TD>
 		</TR>
-		</logic:iterate>
+		</s:iterator>
 		
 		<TR>
 			<TD colspan="3">
@@ -267,84 +214,68 @@
 			
 		<TR>
 			<TD colspan="3" align="right">
-				<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-					<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateDistPref">
-						<bean:message key="button.update" />
-					</html:submit>
+					<s:if test="form.distPrefId != null">
+						<s:submit name='op' value="%{#msg.actionUpdateDistributionPreference()}"
+							title="%{#msg.titleUpdateDistributionPreference(#msg.accessUpdateDistributionPreference())}"
+							accesskey="%{#msg.accessUpdateDistributionPreference()}"/>
+						<sec:authorize access="hasPermission(#form.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
+							<s:submit name='op' value="%{#msg.actionDeleteDistributionPreference()}"
+								title="%{#msg.titleDeleteDistributionPreference(#msg.accessDeleteDistributionPreference())}"
+								accesskey="%{#msg.accessDeleteDistributionPreference()}"
+								onclick="doDel('distPref', '-1'); return confirmDelete();"
+								/>
+						</sec:authorize>	
+					</s:if>
+					<s:else>
+						<s:submit name='op' value="%{#msg.actionSaveNewDistributionPreference()}"
+							title="%{#msg.titleSaveNewDistributionPreference(#msg.accessSaveNewDistributionPreference())}"
+							accesskey="%{#msg.accessSaveNewDistributionPreference()}"/>
+					</s:else>
 					
-					&nbsp;
-					<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1'); return confirmDelete();">
-						<bean:message key="button.delete" />
-					</html:submit>					
-				</logic:notEmpty>
-				
-				<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-					&nbsp;
-					<html:submit styleClass="btn" property="op" accesskey="S" titleKey="title.addNewDistPref">
-						<bean:message key="button.save" />
-					</html:submit>
-				</logic:empty>
-				
-				<!-- 
-				<html:submit property="op" accesskey="C">
-					<bean:message key="button.cancel" />
-				</html:submit>
-				-->
-				
-				&nbsp;
-				<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" back="1" type="PreferenceGroup">
-						<bean:write name="examDistributionPrefsForm" property="distPrefId"/>
-					</tt:back>
-				</logic:notEmpty>
-				<logic:empty name="examDistributionPrefsForm" property="distPrefId">
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" back="1"/>
-				</logic:empty>
+					<s:if test="form.distPrefId != null">
+						<tt:back styleClass="btn"
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1" 
+							type="PreferenceGroup">
+							<s:property value="form.distPrefId"/>
+						</tt:back>
+					</s:if>
+					<s:else>
+						<tt:back styleClass="btn" 
+							name="${MSG.actionBackDistributionPreference()}" 
+							title="${MSG.titleBackDistributionPreference(MSG.accessBackDistributionPreference())}"
+							accesskey="${MSG.accessBackDistributionPreference()}" 
+							back="1"/>
+					</s:else>
 			</TD>
 		</TR>
-			
-		<!-- 
-		<TR>
-			<TD colspan="2" class="font8Gray">
-				To edit/delete any preference from the list below, simply click on the line
-				<br>data will be shown in the form above with the buttons to update/delete
-			</TD>
-		</TR>
-		-->
-
-		<% } else { %>
+		</s:if>
+		<s:else>
 			<TR>
 				<TD colspan="2">
-					<B>Type: </B>
-					<html:select name="examDistributionPrefsForm" property="examType">
-						<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-					</html:select>
-					<B>Subject: </B>
-					<html:select name="examDistributionPrefsForm" property="filterSubjectAreaId" styleId="subjectId">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-						<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
-							<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
-						</sec:authorize>
-						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-					</html:select>
-					<B>Course Number: </B>
-					<tt:course-number property="filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="15"/>
+					<B><loc:message name="propExamType"/> </B>
+					<s:select name="form.examType"
+						list="#request.examTypes" listKey="uniqueId" listValue="label"/>
+					<B><loc:message name="propExamSubject"/> </B>
+					<s:select name="form.filterSubjectAreaId" id="subjectId"
+						list="form.subjectAreas" listKey="id" listValue="value"
+						/>
+					<B><loc:message name="propExamCourseNumber"/> </B>
+					<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectId};notOffered=exclude">
+						<s:textfield name="form.filterCourseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
+					</span>
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						onclick="displayLoading();"
-						accesskey="S" styleClass="btn" titleKey="title.search">
-						<bean:message key="button.search" />
-					</html:submit> 
-					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						accesskey="P" styleClass="btn" titleKey="title.exportPDF">
-						<bean:message key="button.exportPDF" />
-					</html:submit> 
-					&nbsp;&nbsp;&nbsp;
-					<html:submit property="op" 
-						accesskey="C" styleClass="btn" titleKey="title.exportCSV">
-						<bean:message key="button.exportCSV" />
-					</html:submit> 
+					<s:submit name='op' value="%{#msg.actionSearchDistributionPreferences()}"
+						title="%{#msg.titleSearchDistributionPreferences(#msg.accessSearchDistributionPreferences())}"
+						accesskey="%{#msg.accessSearchDistributionPreferences()}"/>
+					<s:submit name='op' value="%{#msg.actionExportPdf()}"
+						title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+						accesskey="%{#msg.accessExportPdf()}"/>
+					<s:submit name='op' value="%{#msg.actionExportCsv()}"
+						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+						accesskey="%{#msg.accessExportCsv()}"/>
 				</TD>
 			</TR>		
 		
@@ -353,24 +284,24 @@
 					&nbsp;
 				</TD>
 			</TR>		
-			
-		<logic:notEmpty scope="request" name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>">
+		
+		<s:if test="#request.distPrefs != null && !#request.distPrefs.isEmpty()">
 			<TR>
 				<TD colspan="2">
 					<tt:section-header>
 						<tt:section-title>
-							<logic:iterate scope="request" name="examTypes" id="et">
-								<bean:define name="et" property="uniqueId" id="examType"/>
-								<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=examType.toString()%>">
-									<bean:write name="et" property="label"/>			
-								</logic:equal>
-							</logic:iterate>
-							Examination Distribution Preferences
+							<loc:message name="sectionDistributionPreferences">
+								<s:iterator value="#request.examTypes" var="et">
+									<s:if test="#et.uniqueId == form.examType">
+										<s:property value="#et.label"/>
+									</s:if>
+								</s:iterator>
+							</loc:message>
 						</tt:section-title>
 						<sec:authorize access="hasPermission(null, 'Session', 'ExaminationDistributionPreferenceAdd')">
-							<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
-								<bean:message key="button.addDistPref" />
-							</html:submit>
+							<s:submit name='op' value="%{#msg.actionAddDistributionPreference()}"
+								title="%{#msg.titleAddDistributionPreference(#msg.accessAddDistributionPreference())}"
+								accesskey="%{#msg.accessAddDistributionPreference()}"/>
 						</sec:authorize>
 					</tt:section-header>
 				</TD>
@@ -378,14 +309,14 @@
 
 			<TR>
 				<TD colspan="2">
-					<script language="javascript">displayLoading();</script>
-					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-						<%=request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)%>
+					<script type="text/javascript">displayLoading();</script>
+					<TABLE style="margin:0; width: 100%;">
+						<s:property value="#request.distPrefs" escapeHtml="false"/>
 					</TABLE>
-					<script language="javascript">hideLoading();</script>
+					<script type="text/javascript">hideLoading();</script>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 			<TR>
 				<TD colspan="2" align="right">
 					<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
@@ -394,26 +325,25 @@
 			<TR>
 				<TD colspan="2" align="right">
 					<sec:authorize access="hasPermission(null, 'Session', 'ExaminationDistributionPreferenceAdd')">
-						<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
-							<bean:message key="button.addDistPref" />
-						</html:submit>
+						<s:submit name='op' value="%{#msg.actionAddDistributionPreference()}"
+							title="%{#msg.titleAddDistributionPreference(#msg.accessAddDistributionPreference())}"
+							accesskey="%{#msg.accessAddDistributionPreference()}"/>
 					</sec:authorize>
 				</TD>
 			</TR>
-		<% } %>
-
+		</s:else>
 	</TABLE>
+</s:form>
 </loc:bundle>
-</html:form>
 
-<SCRIPT type="text/javascript" language="javascript">
+<SCRIPT type="text/javascript">
 	var reload = false;
 
 	function doDel(type, id) {
-		var delType = document.examDistributionPrefsForm.deleteType;
+		var delType = document.getElementById('deleteType');
 		delType.value = type;
 
-		var delId = document.examDistributionPrefsForm.deleteId;
+		var delId = document.getElementById('deleteId');
 		delId.value = id;
 	}
 	
@@ -422,20 +352,20 @@
 			doAjax(type,id);
 			return;
 		}
-		var reloadId = document.examDistributionPrefsForm.reloadId;
+		var reloadId = document.getElementById('reloadId');
 		reloadId.value = id;
 
-		var reloadCause = document.examDistributionPrefsForm.reloadCause;
+		var reloadCause = document.getElementById('reloadCause');
 		reloadCause.value = type;
 		
-		document.examDistributionPrefsForm.submit();
+		document.getElementById('examDistributionPrefsForm').submit();
 	}
 
 	function doAjax(type, idx) {
 		var subjAreaObj = document.getElementById('subjectArea'+idx);
 		var courseNbrObj = document.getElementById('courseNbr'+idx);
 		var examObj = document.getElementById('exam'+idx);
-		var examType = document.getElementsByName('examType')[0].value;
+		var examType = document.getElementById('examType').value;
 
 		var id = null;
 		var options = null;
@@ -446,7 +376,6 @@
 			options = courseNbrObj.options;
 			next = 'exam';
 			courseNbrObj.options.length=1;
-			examObj.options.length=1;
 			examObj.options.length=1;
 			examObj.options[0]=new Option('-', '-1', false);
 		} else if (type=='exam') {
@@ -479,7 +408,7 @@
 					}
 				}
 			}
-			if (options.length==2 || type=='itype') {
+			if (options.length==2) {
 				options.selectedIndex = 1;
 				if (next!=null) doReload(next,idx);
 			}
@@ -496,7 +425,7 @@
 	
 	function distTypeChanged(id) {
 		var descObj = document.getElementById('distTypeDesc');
-		var prefLevObj = document.getElementsByName('prefLevel')[0];
+		var prefLevObj = document.getElementById('prefLevel');
 		var options = prefLevObj.options;
 		var prefId = prefLevObj.options[prefLevObj.selectedIndex].value;
 		

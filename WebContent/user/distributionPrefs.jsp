@@ -29,7 +29,7 @@
 	<input type="hidden" name="reloadCause" id="reloadCause" value="">
 	<input type="hidden" name="reloadId" id="reloadId" value="">
 	<input type="hidden" name="op2" value="">
-	<s:hidden name="form.distPrefId"/>
+	<s:if test="form.distPrefId != null"><s:hidden name="form.distPrefId"/></s:if>
 	<table class="unitime-MainTable">
 	<s:if test="#request.distPrefs == null">
 		<TR>
@@ -307,7 +307,7 @@
 				<sec:authorize access="hasPermission(null, 'Department', 'DistributionPreferenceAdd')">
 					<TD colspan="2" align="right">
 						<s:submit name='op' value="%{#msg.actionAddDistributionPreference()}"
-							title="%{#msg.accessAddDistributionPreference(#msg.accessAddDistributionPreference())}"
+							title="%{#msg.titleAddDistributionPreference(#msg.accessAddDistributionPreference())}"
 							accesskey="%{#msg.accessAddDistributionPreference()}"/>
 					</TD>
 				</sec:authorize>

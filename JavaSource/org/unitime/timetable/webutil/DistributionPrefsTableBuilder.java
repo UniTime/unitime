@@ -79,7 +79,7 @@ public class DistributionPrefsTableBuilder {
 	public String getAllDistPrefsTableForCurrentUser(HttpServletRequest request, SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
 		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
 		    return "";
-		if (subjectAreaId.equals(Constants.ALL_OPTION_VALUE))
+		if (subjectAreaId.equals(Constants.ALL_OPTION_VALUE) || subjectAreaId.equals("-1"))
 		    subjectAreaId = null;
 		
 		Long subjAreaId = null;

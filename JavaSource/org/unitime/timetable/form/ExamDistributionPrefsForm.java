@@ -26,16 +26,12 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
@@ -45,56 +41,44 @@ import org.unitime.timetable.util.IdValue;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class ExamDistributionPrefsForm extends ActionForm {
+public class ExamDistributionPrefsForm implements UniTimeForm {
 	private static final long serialVersionUID = -822886662425670241L;
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	private String op;
     private String distPrefId;
     private String distType;
     private String prefLevel;
     private String description;
     
-    private List subjectArea;
-    private List courseNbr;
-    private List exam;
+    private List<Long> subjectArea;
+    private List<Long> courseNbr;
+    private List<Long> exam;
     private Long iExamType;
     
 	private String filterSubjectAreaId;
-	private Collection filterSubjectAreas;
+	private Collection<SubjectArea> filterSubjectAreas;
+	private List<IdValue> subjectAreas;
 	private String filterCourseNbr;
 	
-    protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
-        public Object create() { return Long.valueOf(-1); }
-    };
+    protected DynamicListObjectFactory factory;
+    
+    public ExamDistributionPrefsForm() {
+    	 factory = new DynamicListObjectFactory() {
+    		 public Object create() { return Long.valueOf(-1); }
+    	 };
+    	 reset();
+    }
 
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-
+    public void validate(UniTimeAction action) {
         // Distribution Type must be selected
-        if(distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {
-	        errors.add("distType", 
-	                new ActionMessage(
-	                        "errors.generic", "Select a distribution type. ") );
+        if (distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {
+        	action.addFieldError("distType", MSG.errorSelectDistributionType());
         }
         
         // Distribution Pref Level must be selected
-        if(prefLevel==null || prefLevel.equals(Preference.BLANK_PREF_VALUE)) {
-	        errors.add("prefLevel", 
-	                new ActionMessage(
-	                        "errors.generic", "Select a preference level. ") );
+        if (prefLevel==null || prefLevel.equals(Preference.BLANK_PREF_VALUE)) {
+        	action.addFieldError("prefLevel", MSG.errorSelectPreferenceLevel());
         }
-        
-        // Save/Update clicked
-        if(op.equals(rsc.getMessage("button.addNew")) || op.equals(rsc.getMessage("button.update")) ) {
-
-        }
-
-        return errors;
     }
 
     /** 
@@ -102,17 +86,17 @@ public class ExamDistributionPrefsForm extends ActionForm {
      * @param mapping
      * @param request
      */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    public void reset() {
         op="";
-        distPrefId="";
+        distPrefId=null;
         distType=Preference.BLANK_PREF_VALUE;
         prefLevel=Preference.BLANK_PREF_VALUE;
-        subjectArea = DynamicList.getInstance(new ArrayList(), factory);    
-        courseNbr = DynamicList.getInstance(new ArrayList(), factory);    
-        exam = DynamicList.getInstance(new ArrayList(), factory);    
+        subjectArea = DynamicList.getInstance(new ArrayList<Long>(), factory);    
+        courseNbr = DynamicList.getInstance(new ArrayList<Long>(), factory);    
+        exam = DynamicList.getInstance(new ArrayList<Long>(), factory);    
         filterSubjectAreaId = null;
         filterCourseNbr = null; 
-        filterSubjectAreas = new ArrayList();
+        filterSubjectAreas = new ArrayList<SubjectArea>();
         iExamType = null;
     }
 
@@ -128,34 +112,22 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public List getSubjectAreaList() { return subjectArea; }
-    public List getSubjectArea() { return subjectArea; }
+    public List<Long> getSubjectAreaList() { return subjectArea; }
+    public List<Long> getSubjectArea() { return subjectArea; }
     public Long getSubjectArea(int key) {
-    	try {
-    		return (Long)subjectArea.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(subjectArea.get(key).toString());
-    	}
+    	return subjectArea.get(key);
     }
     public void setSubjectArea(int key, Long value) { this.subjectArea.set(key, value); }
-    public void setSubjectArea(List subjectArea) { this.subjectArea = subjectArea; }
-    public List getCourseNbr() { return courseNbr; }
+    public void setSubjectArea(List<Long> subjectArea) { this.subjectArea = subjectArea; }
+    public List<Long> getCourseNbr() { return courseNbr; }
     public Long getCourseNbr(int key) {
-    	try {
-    		return (Long)courseNbr.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(courseNbr.get(key).toString());
-    	}
+    	return courseNbr.get(key);
     }
     public void setCourseNbr(int key, Long value) { this.courseNbr.set(key, value); }
     public void setCourseNbr(List courseNbr) { this.courseNbr = courseNbr; }
-    public List getExam() { return exam; }
+    public List<Long> getExam() { return exam; }
     public Long getExam(int key) {
-    	try {
-    		return (Long)exam.get(key);
-    	} catch (ClassCastException e) {
-    		return Long.valueOf(exam.get(key).toString());
-    	}
+    	return exam.get(key);
     }
     public void setExam(int key, Long value) { this.exam.set(key, value); }
     public void setExam(List itype) { this.exam = itype; }
@@ -167,13 +139,13 @@ public class ExamDistributionPrefsForm extends ActionForm {
     }
 
     public void swapExams(int i1, int i2) {
-        Object objSa1 = subjectArea.get(i1);
-        Object objCo1 = courseNbr.get(i1);
-        Object objEx1 = exam.get(i1);
+    	Long objSa1 = subjectArea.get(i1);
+        Long objCo1 = courseNbr.get(i1);
+        Long objEx1 = exam.get(i1);
         
-        Object objSa2 = subjectArea.get(i2);
-        Object objCo2 = courseNbr.get(i2);
-        Object objEx2 = exam.get(i2);
+        Long objSa2 = subjectArea.get(i2);
+        Long objCo2 = courseNbr.get(i2);
+        Long objEx2 = exam.get(i2);
         
         subjectArea.set(i1, objSa2);
         subjectArea.set(i2, objSa1);
@@ -187,10 +159,12 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public void setFilterSubjectAreaId(String filterSubjectAreaId) { this.filterSubjectAreaId = filterSubjectAreaId; }
     public String getFilterCourseNbr() { return filterCourseNbr; }
     public void setFilterCourseNbr(String filterCourseNbr) { this.filterCourseNbr = filterCourseNbr; }
-    public Collection getFilterSubjectAreas() { return filterSubjectAreas; }
-    public void setFilterSubjectAreas(Collection filterSubjectAreas) { this.filterSubjectAreas = filterSubjectAreas;}
+    public Collection<SubjectArea> getFilterSubjectAreas() { return filterSubjectAreas; }
+    public void setFilterSubjectAreas(Collection<SubjectArea> filterSubjectAreas) { this.filterSubjectAreas = filterSubjectAreas;}
+    public List<IdValue> getSubjectAreas() { return subjectAreas; }
+    public void setSubjectAreas(List<IdValue> subjectAreas) { this.subjectAreas = subjectAreas; }
     
-    public Collection getCourseNbrs(int idx) {
+    public Collection<IdValue> getCourseNbrs(int idx) {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {
@@ -214,7 +188,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
         return ret;
     }
     
-    public Collection getExams(int idx) { 
+    public Collection<IdValue> getExams(int idx) { 
         Vector ret = new Vector();
         boolean contains = false;
         if (getCourseNbr(idx)>=0) {

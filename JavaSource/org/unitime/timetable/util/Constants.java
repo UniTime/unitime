@@ -119,7 +119,7 @@ public class Constants extends org.cpsolver.coursett.Constants {
     public static String BLANK_OPTION_LABEL = MSG.select();
     public static String BLANK_OPTION_VALUE = ""; 
     public static String ALL_OPTION_LABEL = MSG.all();
-    public static String ALL_OPTION_VALUE = "All";
+    public static String ALL_OPTION_VALUE = "-1";
     
     /** Facility group references */
     public static String FACILITY_GROUP_LLR = "LLR";
