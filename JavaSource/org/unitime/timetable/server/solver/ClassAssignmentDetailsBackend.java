@@ -79,8 +79,6 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
-import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
-import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
 /**
  * @author Tomas Muller
@@ -144,7 +142,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 				lecture.getName(),
 				lecture.getClassId(),
 				lecture.getNrRooms(),
-				SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(),lecture,placement),
+				TimetableGridSolverHelper.hardConflicts2pref(solver.currentSolution().getAssignment(),lecture,placement),
 				lecture.minRoomSize(),
 				lecture.getOrd(),
 				lecture.getNote()));
@@ -411,7 +409,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 				assignment.getClassName(),
 				assignment.getClassId(),
 				assignment.getRooms().size(),
-				SolutionGridModel.hardConflicts2pref(assignmentInfo),
+				TimetableGridSolutionHelper.hardConflicts2pref(assignmentInfo),
 				-1,0,
 				assignment.getClazz().getNotes()
 				));

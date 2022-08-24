@@ -71,6 +71,8 @@ import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.server.solver.TimetableGridSolutionHelper;
+import org.unitime.timetable.server.solver.TimetableGridSolverHelper;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
@@ -78,8 +80,6 @@ import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
-import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
-import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
 
 /**
@@ -166,7 +166,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	
 	public ClassAssignmentDetails(Solver solver, Lecture lecture, Placement placement, boolean includeConstraints) {
 		org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
-		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(),lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
+		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),TimetableGridSolverHelper.hardConflicts2pref(solver.currentSolution().getAssignment(),lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
 		if (placement!=null) {
 			if (placement.isMultiRoom()) {
 				iRoom = new RoomInfo[placement.getRoomLocations().size()];
@@ -348,7 +348,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				}
 			}
 		}
-		iClass = new ClassInfo(assignment.getClassName(), assignment.getClassId(), assignment.getRooms().size(), SolutionGridModel.hardConflicts2pref(iAssignmentInfo), -1, assignment.getClazz());
+		iClass = new ClassInfo(assignment.getClassName(), assignment.getClassId(), assignment.getRooms().size(), TimetableGridSolutionHelper.hardConflicts2pref(iAssignmentInfo), -1, assignment.getClazz());
 	}
 	
 	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SessionContext context, Long assignmentId, boolean includeConstraints) {

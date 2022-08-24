@@ -55,8 +55,8 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.server.solver.TimetableGridSolverHelper;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
 /**
  * @author Tomas Muller
@@ -110,7 +110,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			
 			CBSVariable var = (CBSVariable)iVariables.get(lecture.getClassId());
 			if (var==null) {
-				String pref = SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(), lecture,null);
+				String pref = TimetableGridSolverHelper.hardConflicts2pref(solver.currentSolution().getAssignment(), lecture,null);
 				var = new CBSVariable(lecture.getClassId().longValue(),lecture.getName(),pref);
 				iVariables.put(lecture.getClassId(),var);
 			}
@@ -179,7 +179,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 					AssignedValue ass = (AssignedValue)e3.next();
 					Placement p = (Placement)ass.getValue();
 					Lecture l = (Lecture)p.variable();
-					String pr = SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(), l,p);
+					String pr = TimetableGridSolverHelper.hardConflicts2pref(solver.currentSolution().getAssignment(), l,p);
 					CBSAssignment a = new CBSAssignment(con,
 							l.getClassId().longValue(),
 							l.getName(),

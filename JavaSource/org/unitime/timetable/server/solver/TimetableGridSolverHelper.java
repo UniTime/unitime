@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.solver;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -73,7 +74,6 @@ import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
 /**
  * @author Tomas Muller
@@ -563,7 +563,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			break;
 		case HardConflicts:
 			if (notAvailable) break;
-			cell.setBackground(pref2color(SolverGridModel.hardConflicts2pref(assignment, lecture, placement)));
+			cell.setBackground(pref2color(hardConflicts2pref(assignment, lecture, placement)));
 			break;
 		case DepartmentalBalancing:
 			if (notAvailable) break;
@@ -1082,5 +1082,108 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				return false;
 			}
 		});
+	}
+
+	@SuppressWarnings("deprecation")
+	public static String hardConflicts2pref(Assignment<Lecture, Placement> assignment, Lecture lecture, Placement placement) {
+		if (placement != null) {
+			if (placement.getExtra() == null || placement.getExtra() instanceof CachedHardConflictPreference) {
+				CachedHardConflictPreference cached = (placement.getExtra() == null ? null : (CachedHardConflictPreference)placement.getExtra());
+				if (cached != null && cached.isValid()) return cached.getPreference();
+				String preference = hardConflicts2prefNoCache(assignment, lecture, placement);
+				placement.setExtra(new CachedHardConflictPreference(preference));
+				return preference;
+			} else {
+				return hardConflicts2prefNoCache(assignment, lecture, placement);
+			}
+		} else {
+			if (lecture.getExtra() == null || lecture.getExtra() instanceof CachedHardConflictPreference) {
+				CachedHardConflictPreference cached = (lecture.getExtra() == null ? null : (CachedHardConflictPreference)lecture.getExtra());
+				if (cached != null && cached.isValid()) return cached.getPreference();
+				String preference = hardConflicts2prefNoCache(assignment, lecture, placement);
+				lecture.setExtra(new CachedHardConflictPreference(preference));
+				return preference;
+			} else {
+				return hardConflicts2prefNoCache(assignment, lecture, placement);
+			}
+		}
+	}
+
+	public static String hardConflicts2prefNoCache(Assignment<Lecture, Placement> assignment, Lecture lecture, Placement placement) {
+    	if (lecture.isCommitted()) return PreferenceLevel.sRequired;
+    	List<Placement> values = lecture.values(assignment);
+        if (placement==null) {
+        	boolean hasNoConf = false;
+            for (Placement p: values) {
+                if (p.isHard(assignment)) continue;
+                if (lecture.getModel().conflictValues(assignment, p).isEmpty()) {
+                	hasNoConf=true; break;
+                }
+            }
+        	if (lecture.nrTimeLocations()==1) {
+        		if (lecture.nrRoomLocations()==1)
+        			return PreferenceLevel.sRequired;
+        		else
+        			return (hasNoConf?PreferenceLevel.sDiscouraged:PreferenceLevel.sStronglyDiscouraged);
+        	} else {
+        		if (lecture.nrRoomLocations()==1)
+        			return (hasNoConf?PreferenceLevel.sStronglyPreferred:PreferenceLevel.sNeutral);
+        		else
+        			return (hasNoConf?PreferenceLevel.sStronglyPreferred:PreferenceLevel.sPreferred);
+        	}
+        }
+        if (values.size()==1)
+            return PreferenceLevel.sRequired;
+        boolean hasTime = false;
+        boolean hasRoom = false;
+        boolean hasTimeNoConf = false;
+        boolean hasRoomNoConf = false;
+        for (Placement p: values) {
+            if (p.equals(placement)) continue;
+            if (p.isHard(assignment)) continue; 
+            if (p.getTimeLocation().equals(placement.getTimeLocation())) {
+                hasTime = true;
+                if (!hasTimeNoConf) {
+                	Set conf = lecture.getModel().conflictValues(assignment, p);
+                	if (conf.isEmpty() || (conf.size()==1 && conf.contains(placement)))
+                		hasTimeNoConf = true;
+                }
+            }
+            if (p.sameRooms(placement)) {
+            	hasRoom = true;
+            	if (!hasRoomNoConf) {
+                	Set conf = lecture.getModel().conflictValues(assignment, p);
+                	if (conf.isEmpty() || (conf.size()==1 && conf.contains(placement)))
+                		hasRoomNoConf = true;
+            	}
+            }
+            if (hasRoomNoConf && hasTimeNoConf) break;
+        }
+        if (hasTimeNoConf) return PreferenceLevel.sStronglyPreferred;
+        if (hasTime && hasRoomNoConf) return PreferenceLevel.sPreferred;
+        if (hasTime) return PreferenceLevel.sNeutral;
+        if (hasRoomNoConf) return PreferenceLevel.sDiscouraged;
+        if (hasRoom) return PreferenceLevel.sStronglyDiscouraged;
+        return PreferenceLevel.sRequired;
+    }
+	
+	public static class CachedHardConflictPreference implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iPreference = null;
+		private Long iCreated = null;
+		public CachedHardConflictPreference(String preference) {
+			iPreference = preference;
+			iCreated = System.currentTimeMillis();
+		}
+		
+		public void setPreference(String preference) { iPreference = preference; }
+		public String getPreference() { return iPreference; }
+		
+		public boolean isValid() {
+			return (System.currentTimeMillis() - iCreated) < 900000l;
+		}
+		
+		@Override
+		public String toString() { return iPreference; }
 	}
 }

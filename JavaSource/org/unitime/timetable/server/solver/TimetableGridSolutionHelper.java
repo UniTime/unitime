@@ -1048,4 +1048,17 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			}
 		});
 	}
+
+	public static String hardConflicts2pref(AssignmentPreferenceInfo assignmentInfo) {
+		if (assignmentInfo==null) return PreferenceLevel.sNeutral;
+		String pref = PreferenceLevel.sNeutral;
+		if (assignmentInfo.getNrRoomLocations()==1 && assignmentInfo.getNrTimeLocations()==1) pref = PreferenceLevel.sRequired;
+		else if (assignmentInfo.getNrSameTimePlacementsNoConf()>0) pref=PreferenceLevel.sStronglyPreferred;
+		else if (assignmentInfo.getNrTimeLocations()>1 && assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sProhibited;
+		else if (assignmentInfo.getNrTimeLocations()>1) pref=PreferenceLevel.sNeutral;
+		else if (assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sDiscouraged;
+		else if (assignmentInfo.getNrRoomLocations()>1) pref=PreferenceLevel.sStronglyDiscouraged;
+		else pref=PreferenceLevel.sRequired;
+		return pref;
+	}
 }
