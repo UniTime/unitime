@@ -340,7 +340,7 @@ public class CourseCurriculaTable extends Composite {
 
 					@Override
 					public void onSuccess(Boolean result) {
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iOfferingId);
 					}
 					
 				});
@@ -363,7 +363,7 @@ public class CourseCurriculaTable extends Composite {
 
 					@Override
 					public void onSuccess(Boolean result) {
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId);
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iOfferingId);
 					}
 					
 				});

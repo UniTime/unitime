@@ -129,7 +129,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					@Override
 					public void onSuccess(GwtRpcResponseNull result) {
 						LoadingWidget.getInstance().hide();
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId + "&op=view#instructors");
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iOfferingId + "&op=view#instructors");
 					}
 				});
 			}
@@ -137,7 +137,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 		iHeader.addButton("back", MESSAGES.buttonBack(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOfferingId + "&op=view#instructors");
+				ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iOfferingId + "&op=view#instructors");
 			}
 		});
 		iHeader.setEnabled("add", false);

@@ -377,10 +377,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getOfferingLabel(InstructionalOffering offering) {
-    	return "<A href='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+    	return "<A href='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
     }
     private String getOfferingLabel(CourseOffering offering) {
-    	return "<A href='instructionalOfferingDetail.do?io="+offering.getInstructionalOffering().getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+    	return "<A href='instructionalOfferingDetail.action?io="+offering.getInstructionalOffering().getUniqueId()+"'>"+offering.getCourseName()+"</A>";
     }
     private String getSubpartLabel(SchedulingSubpart subpart) {
     	String suffix = subpart.getSchedulingSubpartSuffix();

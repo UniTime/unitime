@@ -420,7 +420,7 @@ public class PointInTimeDataReportsPage extends Composite {
 					if ("__Class".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "classDetail.action?cid=" + event.getData()[0]);
 					else if ("__Offering".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?op=view&io=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + event.getData()[0]);
 					else if ("__Subpart".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.action?ssuid=" + event.getData()[0]);
 					else if ("__Room".equals(iFirstField))

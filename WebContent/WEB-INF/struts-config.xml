@@ -43,7 +43,6 @@
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
-      <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
       <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
@@ -283,7 +282,7 @@
         	path="/instructionalOfferingSearch.action" />
         <forward 
         	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.do" />
+        	path="/instructionalOfferingDetail.action" />
       </action>
       
       <action
@@ -299,7 +298,7 @@
         	path="crossListsModifyTile" />
         <forward 
         	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.do" />
+        	path="/instructionalOfferingDetail.action" />
       </action>
  
       <action
@@ -315,7 +314,7 @@
         	path="instructionalOfferingModifyTile" />
         <forward 
         	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.do" />
+        	path="/instructionalOfferingDetail.action" />
       </action>
       
       <action
@@ -489,28 +488,6 @@
 	      <forward name="edit" path="solverGroupEditTile" />
 	    </action>
 
-      	<action
-          path="/instructionalOfferingDetail"
-          type="org.springframework.web.struts.DelegatingActionProxy"
-          attribute="instructionalOfferingDetailForm"
-          input="instructionalOfferingDetailTile"
-          name="instructionalOfferingDetailForm"
-          scope="request"
-          validate="false">
-	      <forward
-	        name="modifyConfig" 
-	        path="/instructionalOfferingConfigEdit.do" />
-	      <forward
-	        name="showInstructionalOfferings" 
-	        path="/instructionalOfferingSearch.action" />
-	      <forward
-	        name="modifyCrossLists" 
-	        path="/crossListsModify.do" />
-	      <forward
-	        name="showConfigDetail" 
-	        path="instructionalOfferingDetailTile" />
-	    </action>
-	    
     <action
       attribute="datePatternEditForm"
       input="datePatternsTile"
@@ -551,7 +528,7 @@
        		path="courseOfferingAddTile" />       		
        <forward 
        		name="instructionalOfferingDetail" 
-       		path="/instructionalOfferingDetail.do" />
+       		path="/instructionalOfferingDetail.action" />
     </action>
     
     <action
@@ -599,7 +576,7 @@
         	path="classInstructorAssignmentTile" />
         <forward 
         	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.do" />
+        	path="/instructionalOfferingDetail.action" />
       </action>
     
     <action

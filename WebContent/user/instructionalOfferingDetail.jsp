@@ -17,342 +17,211 @@
  * limitations under the License.
  * 
 --%>
-<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.DistributionPref" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder"%>
-<%@ page import="org.unitime.timetable.form.InstructionalOfferingDetailForm"%>
-<%@ page import="org.unitime.timetable.solver.WebSolver"%>
-<%@ page import="org.unitime.timetable.model.CourseOffering" %>
-<%@ page import="org.unitime.timetable.model.Reservation" %>
-
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %> 
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<tiles:importAttribute />
-<tt:session-context/>
-<% 
-	String frmName = "instructionalOfferingDetailForm";
-	InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) request.getAttribute(frmName);
-
-	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-%>
-<loc:bundle name="CourseMessages">
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmMakeOffered() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if (!confirm('<%=MSG.confirmMakeOffered() %>')) {
-				return false;
-			}
-
-			return true;
-		}
-
-		function confirmMakeNotOffered() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-				
-			if (!confirm('<%=MSG.confirmMakeNotOffered() %>')) {
-				return false;
-			}
-			
-			return true;
-		}
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if (!confirm('<%=MSG.confirmDeleteIO() %>')) {
-				return false;
-			}
-
-			return true;
-		}
-
-	// -->
-</SCRIPT>
-
-	<bean:define name="instructionalOfferingDetailForm" property="instrOfferingName" id="instrOfferingName"/>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="instructionalOfferingDetail">
+<tt:confirm name="confirmMakeOffered"><loc:message name="confirmMakeOffered"/></tt:confirm>
+<tt:confirm name="confirmMakeNotOffered"><loc:message name="confirmMakeNotOffered"/></tt:confirm>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteIO"/></tt:confirm>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
-				<html:form action="/instructionalOfferingDetail" styleClass="FormWithNoPadding">
-					<input type='hidden' name='confirm' value='y'/>
-					<html:hidden property="instrOfferingId"/>	
-					<html:hidden property="nextId"/>
-					<html:hidden property="previousId"/>
-					<html:hidden property="catalogLinkLabel"/>
-					<html:hidden property="catalogLinkLocation"/>
-					
+				<s:hidden name="form.instrOfferingId"/>
+				<s:hidden name="form.ctrlCrsOfferingId"/>
+				<s:hidden name="form.nextId"/>
+				<s:hidden name="form.previousId"/>
+				<s:hidden name="form.catalogLinkLabel"/>
+				<s:hidden name="form.catalogLinkLocation"/>
+				<s:hidden name="form.crsOfferingId" id="courseOfferingId"/>
 				<tt:section-header>
 					<tt:section-title>
-							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>" 
-								accesskey="<%=MSG.accessBackToIOList() %>"
-								class="l8" 
-								href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />"
-							><bean:write name="instructionalOfferingDetailForm" property="instrOfferingName" /></A> 
+						<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
+							accesskey="${MSG.accessBackToIOList()}" class="l8"
+							href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
 					</tt:section-title>						
-					<bean:define id="instrOfferingId">
-						<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" />				
-					</bean:define>
-					<bean:define id="subjectAreaId">
-						<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />				
-					</bean:define>
-				 
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-							<loc:message name="actionLockIO"/>
-						</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
+						<s:submit name='op' value='%{#msg.actionLockIO()}'
+							accesskey='%{#msg.accessLockIO()}' title='%{#msg.titleLockIO(#msg.accessLockIO())}'
+							onclick='%{#msg.jsSubmitLockIO(#form.instrOfferingName)}'/>
 					</sec:authorize>
-					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-							<loc:message name="actionUnlockIO"/>
-						</html:submit>
+					 <sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
+					 	<s:submit name='op' value='%{#msg.actionUnlockIO()}'
+							accesskey='%{#msg.accessUnlockIO()}' title='%{#msg.titleUnlockIO(#msg.accessUnlockIO())}'
+							onclick='%{#msg.jsSubmitUnlockIO(#form.instrOfferingName)}'/>
 					</sec:authorize>
-
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessAddConfiguration() %>" 
-									title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
-								<loc:message name="actionAddConfiguration" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
+						<s:submit name='op' value='%{#msg.actionAddConfiguration()}'
+							accesskey='%{#msg.accessAddConfiguration()}' title='%{#msg.titleAddConfiguration(#msg.accessAddConfiguration())}'/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessCrossLists() %>" 
-									title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
-								<loc:message name="actionCrossLists" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
+						<s:submit name='op' value='%{#msg.actionCrossLists()}'
+							accesskey='%{#msg.accessCrossLists()}' title='%{#msg.titleCrossLists(#msg.accessCrossLists())}'/>
 					</sec:authorize>
-
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
-							<html:submit property="op" 
-									onclick="return confirmMakeOffered();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessMakeOffered() %>" 
-									title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
-								<loc:message name="actionMakeOffered" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
+						<s:submit name='op' value='%{#msg.actionMakeOffered()}'
+							accesskey='%{#msg.accessMakeOffered()}' title='%{#msg.titleMakeOffered(#msg.accessMakeOffered())}'
+							onclick="return confirmMakeOffered();"/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
-							<html:submit property="op" 
-									onclick="return confirmDelete();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessDeleteIO() %>" 
-									title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
-								<loc:message name="actionDeleteIO" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
+						<s:submit name='op' value='%{#msg.actionDeleteIO()}'
+							accesskey='%{#msg.accessDeleteIO()}' title='%{#msg.titleDeleteIO(#msg.accessDeleteIO())}'
+							onclick="return confirmDelete();"/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
-							<html:submit property="op" 
-									onclick="return confirmMakeNotOffered();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessMakeNotOffered() %>"
-									title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
-								<loc:message name="actionMakeNotOffered" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
+						<s:submit name='op' value='%{#msg.actionMakeNotOffered()}'
+							accesskey='%{#msg.accessMakeNotOffered()}' title='%{#msg.titleMakeNotOffered(#msg.accessMakeNotOffered())}'
+							onclick="return confirmMakeNotOffered();"/>
 					</sec:authorize>
-									
-					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessPreviousIO() %>" 
-								title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
-							<loc:message name="actionPreviousIO" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessNextIO() %>" 
-								title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
-							<loc:message name="actionNextIO" />
-						</html:submit> 
-					</logic:notEmpty>
-
+					<s:if test="form.previousId != null">
+						<s:submit name='op' value='%{#msg.actionPreviousIO()}'
+							accesskey='%{#msg.accessPreviousIO()}' title='%{#msg.titlePreviousIO(#msg.accessPreviousIO())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit name='op' value='%{#msg.actionNextIO()}'
+							accesskey='%{#msg.accessNextIO()}' title='%{#msg.titleNextIO(#msg.accessNextIO())}'/>
+					</s:if>
 					<tt:back styleClass="btn" 
-							name="<%=MSG.actionBackIODetail() %>" 
-							title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
-							accesskey="<%=MSG.accessBackIODetail() %>" 
+							name="${MSG.actionBackIODetail()}" 
+							title="${MSG.titleBackIODetail(MSG.accessBackIODetail())}" 
+							accesskey="${MSG.accessBackIODetail()}" 
 							type="InstructionalOffering">
-						<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
+						<s:property value="form.instrOfferingId"/>
 					</tt:back>
 				</tt:section-header>					
-				
-				</html:form>
-			</TD>
-		</TR>		
-
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errors"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
 			</TD>
 		</TR>
-		</logic:messagesPresent>
+		
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
 			<TD width="20%" valign="top"><loc:message name="propertyCourseOfferings"/></TD>
 			<TD>
 				<div class='unitime-ScrollTableCell'>
-				<TABLE border="0" width="100%" cellspacing="0" cellpadding="2">
+				<TABLE style="border-spacing:0px; width: 100%;">
 					<TR>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseTypes" value="true">
+						<s:if test="form.hasCourseTypes == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnCourseType"/></TD>
-						</logic:equal>
+						</s:if>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnTitle"/></TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseExternalId" value="true">
+						<s:if test="form.hasCourseExternalId == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnExternalId"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
+						</s:if>
+						<s:if test="form.hasCourseReservation == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCredit" value="true">
+						</s:if>
+						<s:if test="form.hasCredit == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnCredit"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasScheduleBookNote" value="true">
+						</s:if>
+						<s:if test="form.hasScheduleBookNote == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnScheduleOfClassesNote"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
+						</s:if>
+						<s:if test="form.hasDemandOfferings == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasAlternativeCourse" value="true">
+						</s:if>
+						<s:if test="form.hasAlternativeCourse == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnAlternativeCourse"/></TD>
-						</logic:equal>
+						</s:if>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnConsent"/></TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasDisabledOverrides" value="true">
+						<s:if test="form.hasDisabledOverrides == true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDisabledOverrides"/></TD>
-						</logic:equal>
+						</s:if>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 						<TD align="left" class="WebTableHeader"><loc:message name="columnCourseCatalog"/></TD>
 						</tt:hasProperty>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
-				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" type="org.unitime.timetable.model.CourseOffering">
+				<s:iterator value="form.courseOfferings" var="co">
 					<TR>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
-							<logic:equal name="co" property="isControl" value="true">
-								<IMG src="images/accept.png" alt="<%=MSG.altControllingCourse() %>" title="<%=MSG.titleControllingCourse() %>" border="0">
-							</logic:equal>
+							<s:if test="#co.isControl == true">
+								<IMG src="images/accept.png" alt="${MSG.altControllingCourse()}" title="${MSG.titleControllingCourse()}" border="0">
+							</s:if>
 							&nbsp;
 						</TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseTypes" value="true">
+						<s:if test="form.hasCourseTypes == true">
 							<TD class="BottomBorderGray">
-								<logic:notEmpty name="co" property="courseType">
-									<span title='<%=co.getCourseType().getLabel()%>'><%=co.getCourseType().getReference()%></span>
-								</logic:notEmpty>
+								<s:if test="#co.courseType != null">
+									<span title='${co.courseType.label}'><s:property value="#co.courseType.reference"/></span>
+								</s:if>
 							</TD>
-						</logic:equal>
-						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseExternalId" value="true">
+						</s:if>
+						<TD class="BottomBorderGray"><s:property value="#co.courseNameWithTitle"/></TD>
+						<s:if test="form.hasCourseExternalId == true">
 							<TD class="BottomBorderGray">
-								<logic:notEmpty name="co" property="externalUniqueId">
-									<bean:write name="co" property="externalUniqueId"/>
-								</logic:notEmpty>
+								<s:if test="#co.externalUniqueId != null">
+									<s:property value="#co.externalUniqueId"/>
+								</s:if>
 							</TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
+						</s:if>
+						<s:if test="form.hasCourseReservation == true">
 							<TD class="BottomBorderGray">
-								<logic:notEmpty name="co" property="reservation">
-									<bean:write name="co" property="reservation"/>
-								</logic:notEmpty>
+								<s:if test="#co.reservation != null">
+									<s:property value="#co.reservation"/>
+								</s:if>
 							</TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasCredit" value="true">
+						</s:if>
+						<s:if test="form.hasCredit == true">
 							<TD class="BottomBorderGray">
-								<logic:notEmpty name="co" property="credit">
-									<span title='<%=co.getCredit().creditText()%>'><%=co.getCredit().creditAbbv()%></span>
-								</logic:notEmpty>
+								<s:if test="#co.credit != null">
+									<span title='${co.credit.creditText()}'><s:property value="#co.credit.creditAbbv()"/></span>
+								</s:if>
 							</TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasScheduleBookNote" value="true">
-							<TD class="BottomBorderGray" style="white-space: pre-wrap;"><bean:write name="co" property="scheduleBookNote" filter="false"/></TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
+						</s:if>
+						<s:if test="form.hasScheduleBookNote == true">
+							<TD class="BottomBorderGray" style="white-space: pre-wrap;"><s:property value="#co.scheduleBookNote" escapeHtml="false"/></TD>
+						</s:if>
+						<s:if test="form.hasDemandOfferings == true">
 							<TD class="BottomBorderGray">&nbsp;
-							<%
-								CourseOffering cod = ((CourseOffering)co).getDemandOffering();
-								if (cod!=null) out.write(cod.getCourseName()); 
-							 %>
+								<s:if test="#co.demandOffering != null">
+									<s:property value="#co.demandOffering.courseName"/>
+								</s:if>
 							</TD>
-						</logic:equal>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasAlternativeCourse" value="true">
+						</s:if>
+						<s:if test="form.hasAlternativeCourse == true">
 							<TD class="BottomBorderGray">&nbsp;
-							<%
-								CourseOffering cod = ((CourseOffering)co).getAlternativeOffering();
-								if (cod!=null) out.write(cod.getCourseName()); 
-							 %>
+								<s:if test="#co.alternativeOffering != null">
+									<s:property value="#co.alternativeOffering.courseName"/>
+								</s:if>
 							</TD>
-						</logic:equal>
+						</s:if>
 						<TD class="BottomBorderGray">
-							<logic:empty name="co" property="consentType">
+							<s:if test="#co.consentType == null">
 								<loc:message name="noConsentRequired"/>
-							</logic:empty>
-							<logic:notEmpty name="co" property="consentType">
-								<bean:define name="co" property="consentType" id="consentType"/>
-								<bean:write name="consentType" property="abbv"/>
-							</logic:notEmpty>
+							</s:if>
+							<s:else>
+								<s:property value="#co.consentType.abbv"/>
+							</s:else>
 						</TD>
-						<logic:equal name="instructionalOfferingDetailForm" property="hasDisabledOverrides" value="true">
+						<s:if test="form.hasDisabledOverrides == true">
 							<TD class="BottomBorderGray">
-								<bean:size id="nbrOverrides" name="co" property="disabledOverrides"/>
-								<logic:iterate id="override" name="co" property="disabledOverrides" indexId="idx">
-									<span title='${override.label}'><bean:write name="override" property="reference"/></span><logic:lessThan name="idx" value="${nbrOverrides-1}">, </logic:lessThan>
-								</logic:iterate>
+								<s:iterator value="#co.disabledOverrides" var="override" status="stat">
+									<span title='${override.label}'><s:property value="#override.reference"/></span><s:if test="!#stat.last">, </s:if>
+								</s:iterator>
 							</TD>
-						</logic:equal>
+						</s:if>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 							<TD class="BottomBorderGray">
-								<span name='UniTimeGWT:CourseLink' style="display: none;"><bean:write name="co" property="uniqueId"/></span>
+								<span name='UniTimeGWT:CourseLink' style="display: none;"><s:property value="#co.uniqueId"/></span>
 							</TD>
 						</tt:hasProperty>
 						<TD align="right" class="BottomBorderGray">
 							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
-								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
-									<html:hidden property="courseOfferingId" value="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
-									<html:submit property="op" 
-											styleClass="btn" 
-											title="<%=MSG.titleEditCourseOffering() %>">
-										<loc:message name="actionEditCourseOffering" />
-									</html:submit>
-								</html:form>
+								<s:submit name='op' value='%{#msg.actionEditCourseOffering()}' title='%{#msg.titleEditCourseOffering()}'
+									onclick="document.getElementById('courseOfferingId').value = '%{#co.uniqueId}'; return true;"
+								/>
 							</sec:authorize>
 						</TD>
 					</TR>
-				</logic:iterate>
+				</s:iterator>
 				</TABLE>
 				</div>
 			</TD>
@@ -361,199 +230,180 @@
 		<TR>
 			<TD><loc:message name="propertyEnrollment"/> </TD>
 			<TD>
-				<bean:write name="instructionalOfferingDetailForm" property="enrollment" /> 
+				<s:property value="form.enrollment"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD><loc:message name="propertyLastEnrollment"/> </TD>
 			<TD>
-				<logic:equal name="instructionalOfferingDetailForm" property="demand" value="0">
-					-
-				</logic:equal>
-				<logic:notEqual name="instructionalOfferingDetailForm" property="demand" value="0">
-					<bean:write name="instructionalOfferingDetailForm" property="demand" /> 
-				</logic:notEqual>
+				<s:if test="form.demand == 0">-</s:if>
+				<s:else><s:property value="form.demand"/></s:else>
 			</TD>
 		</TR>
 
-		<logic:notEqual name="instructionalOfferingDetailForm" property="projectedDemand" value="0">
+		<s:if test="form.projectedDemand != 0">
 			<TR>
 				<TD><loc:message name="propertyProjectedDemand"/> </TD>
 				<TD>
-					<bean:write name="instructionalOfferingDetailForm" property="projectedDemand" /> 
+					<s:property value="form.projectedDemand"/>
 				</TD>
 			</TR>
-		</logic:notEqual>
+		</s:if>
 
 		<TR>
 			<TD><loc:message name="propertyOfferingLimit"/> </TD>
 			<TD>
-				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
-					<bean:write name="instructionalOfferingDetailForm" property="limit" />
-					<logic:present name="limitsDoNotMatch" scope="request"> 
+				<s:if test="form.unlimited == false">
+					<s:property value="form.limit"/>
+					<s:if test="#request.limitsDoNotMatch != null">
 						&nbsp;
-						<img src='images/cancel.png' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
-						<font color="#FF0000"><loc:message name="errorReservedSpacesForOfferingsTotal"><bean:write name="limitsDoNotMatch" scope="request"/></loc:message></font>
-					</logic:present>
-					<logic:present name="configsWithTooHighLimit" scope="request">
-						<logic:notPresent name="limitsDoNotMatch" scope="request">
-							&nbsp;
-							<img src='images/cancel.png' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
-						</logic:notPresent>
-						<font color="#FF0000"><bean:write name="configsWithTooHighLimit" scope="request"/></font>
-					</logic:present>
-				</logic:equal>
-				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
-					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
-				</logic:equal>
+						<img src='images/cancel.png' alt='${MSG.altLimitsDoNotMatch()}' title='${MSG.titleLimitsDoNotMatch()}' border='0' align='top'>
+						<font color="#FF0000"><loc:message name="errorReservedSpacesForOfferingsTotal"><s:property value="#request.limitsDoNotMatch"/></loc:message></font>
+					</s:if>
+					<s:elseif test="#request.configsWithTooHighLimit != null">
+						&nbsp;
+						<img src='images/cancel.png' alt='${MSG.altLimitsDoNotMatch()}' title='${MSG.titleLimitsDoNotMatch()}' border='0' align='top'>
+						<font color="#FF0000"><s:property value="#request.configsWithTooHighLimit"/></font>
+					</s:elseif>
+				</s:if>
+				<s:else>
+					<span title="${MSG.titleUnlimitedEnrollment()}"><font size="+1">&infin;</font></span>
+				</s:else>
 			</TD>
 		</TR>
-		<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="snapshotLimit">
+		<s:if test="form.unlimited == false and form.snapshotLimit! = null">
 		<TR>
 			<TD><loc:message name="propertySnapshotLimit"/> </TD>
-			<TD>
-				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
-						<bean:write name="instructionalOfferingDetailForm" property="snapshotLimit" /> 
-				</logic:equal>
-				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
-					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
-				</logic:equal>
-			</TD>
+			<TD><s:property value="form.snapshotLimit"/></TD>
 		</TR>
-		</logic:notEmpty>
-		</logic:equal>
-
-		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
+		</s:if>
+		<s:if test="form.byReservationOnly == true">
 			<TR>
 				<TD><loc:message name="propertyByReservationOnly"/></TD>
 				<TD>
-					<IMG src="images/accept.png" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+					<IMG src="images/accept.png" alt="ENABLED" title="${MSG.descriptionByReservationOnly2()}" border="0">
 					<i><loc:message name="descriptionByReservationOnly2"/></i>
 				</TD>
 			</TR>
-		</logic:equal>
-		
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="coordinators">
+		</s:if>
+		<s:if test="form.coordinators != null && !form.coordinators.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/></TD>
 				<TD>
-					<bean:write name="instructionalOfferingDetailForm" property="coordinators" filter="false"/>
+					<s:property value="form.coordinators" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkEnroll">
+		<s:if test="form.wkEnroll != null && !form.wkEnroll.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
 				<TD>
-					<loc:message name="textLastWeekEnrollment"><bean:write name="instructionalOfferingDetailForm" property="wkEnroll" /></loc:message>
+					<loc:message name="textLastWeekEnrollment"><s:property value="form.wkEnroll"/></loc:message>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkChange">
+		<s:if test="form.wkChange != null && !form.wkChange.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
 				<TD>
-					<loc:message name="textLastWeekChange"><bean:write name="instructionalOfferingDetailForm" property="wkChange" /></loc:message>
+					<loc:message name="textLastWeekChange"><s:property value="form.wkChange"/></loc:message>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="wkDrop">
+		<s:if test="form.wkDrop != null && !form.wkDrop.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
 				<TD>
-					<loc:message name="textLastWeekDrop"><bean:write name="instructionalOfferingDetailForm" property="wkDrop" /></loc:message>
+					<loc:message name="textLastWeekDrop"><s:property value="form.wkDrop"/></loc:message>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
-		<logic:equal name="instructionalOfferingDetailForm" property="displayEnrollmentDeadlineNote" value="true">
+		<s:if test="form.displayEnrollmentDeadlineNote == true">
 			<TR>
 				<TD valign="top">&nbsp;</TD>
 				<TD>
-					<i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="instructionalOfferingDetailForm" property="weekStartDayOfWeek" /></loc:message></i>
+					<i><loc:message name="descriptionEnrollmentDeadlines"><s:property value="form.weekStartDayOfWeek"/></loc:message></i>
 				</TD>
 			</TR>
-		</logic:equal>
+		</s:if>
 		
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="waitList">
+		<s:if test="form.waitList != null && !form.waitList.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
 				<TD>
-					<logic:equal name="instructionalOfferingDetailForm" property="waitList" value="true">
-						<IMG src="images/accept.png" alt="<%=MSG.waitListEnabled() %>" title="<%=MSG.descWaitListEnabled() %>" border="0" align="top">
+					<s:if test="form.waitList == 'true'">
+						<IMG src="images/accept.png" alt="${MSG.waitListEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 						<loc:message name="descWaitListEnabled"/>
-					</logic:equal>
-					<logic:equal name="instructionalOfferingDetailForm" property="waitList" value="false">
-						<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+					</s:if>
+					<s:elseif test="form.waitList == 'false'">
+						<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 						<loc:message name="descWaitListDisabled"/>
-					</logic:equal>
-					<logic:present name="waitlistProblem" scope="request"> 
+					</s:elseif>
+					<s:if test="#request.waitlistProblem != null">
 						<br>
-						<bean:define name="waitlistProblem" scope="request" id="waitlistProblem"/>
+						<s:set var="waitlistProblem" value="#request.waitlistProblem"/>
 						<img src='images/warning.png' alt='WARNING' border='0' align='top' title="${waitlistProblem}">
-						<font color="#FF0000">${waitlistProblem}</font>
-					</logic:present>
+						<font color="#FF0000"><s:property value="#request.waitlistProblem" escapeHtml="false"/></font>
+					</s:if>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="catalogLinkLabel">
+		<s:if test="form.catalogLinkLabel != null">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
-				<A href="<bean:write name="instructionalOfferingDetailForm" property="catalogLinkLocation" />" 
-						target="_blank"><bean:write name="instructionalOfferingDetailForm" property="catalogLinkLabel" /></A>
+				<A href="${form.catalogLinkLocation}" target="_blank"><s:property value="form.catalogLinkLabel"/></A>
 			</TD>
 		</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="accommodation">
+		</s:if>
+		<s:if test="form.accommodation != null && !form.accommodation.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
 				<TD>
-					<bean:write name="instructionalOfferingDetailForm" property="accommodation" filter="false"/>
+					<s:property value="form.accommodation" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<logic:equal name="instructionalOfferingDetailForm" property="hasConflict" value="true">
+		</s:if>
+		<s:if test="form.hasConflict == true">
 			<TR>
 				<TD></TD>
 				<TD>
-					<IMG src="images/warning.png" alt="WARNING" title="<%=MSG.warnOfferingHasConflictingClasses() %>" border="0">
+					<IMG src="images/warning.png" alt="WARNING" title="${MSG.warnOfferingHasConflictingClasses()}" border="0">
 					<font color="#FF0000"><loc:message name="warnOfferingHasConflictingClasses"/></font>
 				</TD>
 			</TR>
-		</logic:equal>
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="notes">
+		</s:if>
+		<s:if test="form.notes != null && !form.notes.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
 				<TD>
 					<div class='unitime-ScrollTableCell'>
-						<span style='white-space: pre-wrap;'><bean:write name="instructionalOfferingDetailForm" property="notes" filter="false"/></span>
+						<span style='white-space: pre-wrap;'><s:property value="form.notes" escapeHtml="false"/></span>
 					</div>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		<tt:propertyEquals name="unitime.courses.funding_departments_enabled" value="true">
-			<logic:notEmpty name="instructionalOfferingDetailForm" property="fundingDepartment">
+			<s:if test="form.fundingDepartment != null">
 				<TR>
 					<TD valign="top"><loc:message name="propertyFundingDepartment"/></TD>
 					<TD>
-						<bean:write name="instructionalOfferingDetailForm" property="fundingDepartment" />
+						<s:property value="form.fundingDepartment"/>
 					</TD>
 				</TR>
-				<TR>
-			</logic:notEmpty>
+			</s:if>
 		</tt:propertyEquals>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>
 			<TD colspan="2">
-				<div id='UniTimeGWT:CourseCurricula' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+				<div id='UniTimeGWT:CourseCurricula' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 			</TD>
 		</TR>
 		</sec:authorize>
@@ -561,12 +411,12 @@
 		<sec:authorize access="hasPermission(null, 'Department', 'Reservations')">
 		<TR>
 			<TD colspan="2">
-				<a name="reservations"></a>
+				<a id="reservations"></a>
 				<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') and hasPermission(null, null, 'ReservationAdd')">
-					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</sec:authorize>
 				<sec:authorize access="not hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') or not hasPermission(null, null, 'ReservationAdd')">
-					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</sec:authorize>
 			</TD>
 		</TR>
@@ -579,23 +429,9 @@
 <!-- Configuration -->
 		<TR>
 			<TD colspan="2" valign="middle">
-	<% //output configuration
-	if (frm.getInstrOfferingId() != null){
-		WebInstrOfferingConfigTableBuilder ioTableBuilder = new WebInstrOfferingConfigTableBuilder();
-		ioTableBuilder.setDisplayDistributionPrefs(false);
-		ioTableBuilder.setDisplayConfigOpButtons(true);
-		ioTableBuilder.setDisplayConflicts(true);
-		ioTableBuilder.setDisplayDatePatternDifferentWarning(true);
-		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
-									sessionContext,
-				    		        WebSolver.getClassAssignmentProxy(session),
-				    		        WebSolver.getExamSolver(session),
-				    		        frm.getInstrOfferingId(), 
-				    		        out,
-				    		        request.getParameter("backType"),
-				    		        request.getParameter("backId"));
-	}
-	%>
+				<s:if test="form.instrOfferingId != null">
+					<s:property value="%{printTable()}" escapeHtml="false"/>
+				</s:if>
 			</TD>
 		</TR>
 
@@ -605,54 +441,52 @@
 			</TD>
 		</TR>
 		
-		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)!=null) { %>
+		<s:if test="#request.distPrefs != null">
 			<TR>
 				<TD colspan="2" >&nbsp;</TD>
 			</TR>
 	
 			<TR>
 				<TD colspan="2">
-					<TABLE width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
-						<%=request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)%>
+					<TABLE style="border-spacing:0px; width: 100%;">
+						<s:property value="#request.distPrefs" escapeHtml="false"/>
 					</TABLE>
 				</TD>
 			</TR>
-		<% } %>
+		</s:if>
 		
-		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
-			<logic:equal name="instructionalOfferingDetailForm" property="teachingRequests" value="true">
+		<s:if test="form.notOffered == false && form.teachingRequests == true">
 			<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
 			<TR>
 				<TD colspan="2">
-					<a name="instructors"></a>
-					<div id='UniTimeGWT:TeachingRequests' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+					<a id="instructors"></a>
+					<div id='UniTimeGWT:TeachingRequests' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</TD>
 			</TR>
 			</sec:authorize>
-			</logic:equal>
-		</logic:equal>
+		</s:if>
 
-		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+		<s:if test="form.notOffered == false">
 		<TR>
 			<TD colspan="2">
 				<tt:exams type='InstructionalOffering' add='true'>
-					<bean:write name="<%=frmName%>" property="instrOfferingId"/>
+					<s:property value="form.instrOfferingId"/>
 				</tt:exams>
 			</TD>
 		</TR>
-		</logic:equal>
+		</s:if>
 		
 		<tt:last-change type='InstructionalOffering'>
-			<bean:write name="<%=frmName%>" property="instrOfferingId"/>
+			<s:property value="form.instrOfferingId"/>
 		</tt:last-change>		
 
-		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+		<s:if test="form.notOffered == false">
 			<TR>
 				<TD colspan="2">
-					<div id='UniTimeGWT:OfferingEnrollments' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
+					<div id='UniTimeGWT:OfferingEnrollments' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</TD>
 			</TR>
-		</logic:equal>
+		</s:if>
 
 <!-- Buttons -->
 		<TR>
@@ -663,106 +497,57 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-			
-				<html:form action="/instructionalOfferingDetail" styleClass="FormWithNoPadding">
-					<input type='hidden' name='confirm' value='y'/>
-					<html:hidden property="instrOfferingId"/>	
-					<html:hidden property="nextId"/>
-					<html:hidden property="previousId"/>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-							<loc:message name="actionLockIO"/>
-						</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
+						<s:submit name='op' value='%{#msg.actionLockIO()}'
+							accesskey='%{#msg.accessLockIO()}' title='%{#msg.titleLockIO(#msg.accessLockIO())}'
+							onclick='%{#msg.jsSubmitLockIO(#form.instrOfferingName)}'/>
 					</sec:authorize>
-					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-							<loc:message name="actionUnlockIO"/>
-						</html:submit>
+					 <sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
+					 	<s:submit name='op' value='%{#msg.actionUnlockIO()}'
+							accesskey='%{#msg.accessUnlockIO()}' title='%{#msg.titleUnlockIO(#msg.accessUnlockIO())}'
+							onclick='%{#msg.jsSubmitUnlockIO(#form.instrOfferingName)}'/>
 					</sec:authorize>
-				
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessAddConfiguration() %>" 
-									title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
-								<loc:message name="actionAddConfiguration" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
+						<s:submit name='op' value='%{#msg.actionAddConfiguration()}'
+							accesskey='%{#msg.accessAddConfiguration()}' title='%{#msg.titleAddConfiguration(#msg.accessAddConfiguration())}'/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
-							<html:submit property="op" 
-									styleClass="btn" 
-									accesskey="<%=MSG.accessCrossLists() %>" 
-									title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
-								<loc:message name="actionCrossLists" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
+						<s:submit name='op' value='%{#msg.actionCrossLists()}'
+							accesskey='%{#msg.accessCrossLists()}' title='%{#msg.titleCrossLists(#msg.accessCrossLists())}'/>
 					</sec:authorize>
-
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
-							<html:submit property="op" 
-									onclick="return confirmMakeOffered();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessMakeOffered() %>" 
-									title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
-								<loc:message name="actionMakeOffered" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
+						<s:submit name='op' value='%{#msg.actionMakeOffered()}'
+							accesskey='%{#msg.accessMakeOffered()}' title='%{#msg.titleMakeOffered(#msg.accessMakeOffered())}'
+							onclick="return confirmMakeOffered();"/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
-							<html:submit property="op" 
-									onclick="return confirmDelete();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessDeleteIO() %>" 
-									title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
-								<loc:message name="actionDeleteIO" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
+						<s:submit name='op' value='%{#msg.actionDeleteIO()}'
+							accesskey='%{#msg.accessDeleteIO()}' title='%{#msg.titleDeleteIO(#msg.accessDeleteIO())}'
+							onclick="return confirmDelete();"/>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
-							<html:submit property="op" 
-									onclick="return confirmMakeNotOffered();"
-									styleClass="btn" 
-									accesskey="<%=MSG.accessMakeNotOffered() %>"
-									title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
-								<loc:message name="actionMakeNotOffered" />
-							</html:submit>
+					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
+						<s:submit name='op' value='%{#msg.actionMakeNotOffered()}'
+							accesskey='%{#msg.accessMakeNotOffered()}' title='%{#msg.titleMakeNotOffered(#msg.accessMakeNotOffered())}'
+							onclick="return confirmMakeNotOffered();"/>
 					</sec:authorize>
-					
-					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessPreviousIO() %>" 
-								title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
-							<loc:message name="actionPreviousIO" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessNextIO() %>" 
-								title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
-							<loc:message name="actionNextIO" />
-						</html:submit> 
-					</logic:notEmpty>
-
+					<s:if test="form.previousId != null">
+						<s:submit name='op' value='%{#msg.actionPreviousIO()}'
+							accesskey='%{#msg.accessPreviousIO()}' title='%{#msg.titlePreviousIO(#msg.accessPreviousIO())}'/>
+					</s:if>
+					<s:if test="form.nextId != null">
+						<s:submit name='op' value='%{#msg.actionNextIO()}'
+							accesskey='%{#msg.accessNextIO()}' title='%{#msg.titleNextIO(#msg.accessNextIO())}'/>
+					</s:if>
 					<tt:back styleClass="btn" 
-							name="<%=MSG.actionBackIODetail() %>" 
-							title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
-							accesskey="<%=MSG.accessBackIODetail() %>" 
+							name="${MSG.actionBackIODetail()}" 
+							title="${MSG.titleBackIODetail(MSG.accessBackIODetail())}" 
+							accesskey="${MSG.accessBackIODetail()}" 
 							type="InstructionalOffering">
-						<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
-					</tt:back>				
-
-				</html:form>					
+						<s:property value="form.instrOfferingId"/>
+					</tt:back>			
 			</TD>
 		</TR>
 
 	</TABLE>
+</s:form>
 </loc:bundle>

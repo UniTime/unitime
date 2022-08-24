@@ -385,7 +385,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.addCourseName(owner.getCourse().getCourseName());
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
-					related.setDetailPage("instructionalOfferingDetail.do?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
+					related.setDetailPage("instructionalOfferingDetail.action?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
 					related.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -500,7 +500,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setName(owner.getLabel());
 				related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId()});
 				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
-					related.setDetailPage("instructionalOfferingDetail.do?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
+					related.setDetailPage("instructionalOfferingDetail.action?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
 					related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId(), clazz.getSchedulingSubpart().getUniqueId(), clazz.getUniqueId()});

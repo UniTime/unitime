@@ -33,7 +33,7 @@
 					<tt:section-title>
 						<A title="${MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail())}" 
 							accesskey="${MSG.accessInstructionalOfferingDetail()}" class="l8"
-							href="instructionalOfferingDetail.do?op=view&io=${form.instrOfferingId}"><s:property value="form.courseName"/> - <s:property value="form.courseTitle"/></A>:
+							href="instructionalOfferingDetail.action?op=view&io=${form.instrOfferingId}"><s:property value="form.courseName"/> - <s:property value="form.courseTitle"/></A>:
 						<s:if test="form.subpart == null"><s:property value="form.itypeDesc"/></s:if>
 						<s:else> 
 							<A title="${MSG.titleSchedulingSubpartDetail(MSG.accessSchedulingSubpartDetail())}" 

@@ -253,7 +253,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                     case ExamOwner.sOwnerTypeConfig :
                         InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
                         if (sessionContext.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
+                            onclick = "onClick=\"document.location='instructionalOfferingDetail.action?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
                         name = owner.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
                         type = EXMSG.examTypeConfig();
                         manager = config.getInstructionalOffering().getControllingCourseOffering().getDepartment().getShortLabel();
@@ -262,7 +262,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                     case ExamOwner.sOwnerTypeOffering :
                         InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                         if (sessionContext.hasPermission(offering, Right.InstructionalOfferingDetail))
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
+                            onclick = "onClick=\"document.location='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"';\"";;
                         name = owner.getLabel();//offering.getCourseName();
                         type = EXMSG.examTypeOffering();
                         manager = offering.getControllingCourseOffering().getDepartment().getShortLabel();
@@ -271,7 +271,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                     case ExamOwner.sOwnerTypeCourse :
                         CourseOffering course = (CourseOffering)owner.getOwnerObject();
                         if (sessionContext.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
+                            onclick = "onClick=\"document.location='instructionalOfferingDetail.action?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
                         name = owner.getLabel();//course.getCourseName();
                         type = EXMSG.examTypeCourse();
                         manager = course.getDepartment().getShortLabel();

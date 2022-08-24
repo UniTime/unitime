@@ -217,7 +217,7 @@
 						<s:iterator value="#request.crsOfferingList" var="co">
 							<s:if test="#coursePref == #co.uniqueId">
 								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${co.courseNameWithTitle}'
-									onclick="document.location='instructionalOfferingDetail.do?co=${co.uniqueId}';"
+									onclick="document.location='instructionalOfferingDetail.action?co=${co.uniqueId}';"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"><s:property value="#co.courseName"/></div>
 							</s:if>
 						</s:iterator>

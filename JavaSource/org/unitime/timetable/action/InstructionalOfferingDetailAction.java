@@ -28,17 +28,12 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -76,233 +71,216 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
+import org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 03-20-2006
- * 
- * XDoclet definition:
- * @struts:action path="/instructionalOfferingConfigDetail" name="instructionalOfferingConfigDetailForm" input="/user/instructionalOfferingConfigDetail.jsp" scope="request"
- *
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
-@Service("/instructionalOfferingDetail")
-public class InstructionalOfferingDetailAction extends Action {
+@Action(value = "instructionalOfferingDetail", results = {
+		@Result(name = "showConfigDetail", type = "tiles", location = "instructionalOfferingDetail.tiles"),
+		@Result(name = "addConfig", type = "redirect", location = "/instructionalOfferingConfigEdit.do",
+			params = { "instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
+		@Result(name = "showInstructionalOfferings", type = "redirect", location = "/instructionalOfferingSearch.action",
+				params = { "backType", "InstructionalOffering", "backId", "${form.instrOfferingId}",
+						"anchor", "back"}),
+		@Result(name = "modifyCrossLists", type = "redirect", location = "/crossListsModify.do",
+			params = { "instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
+		@Result(name = "editCourse", type = "redirect", location = "/courseOfferingEdit.do",
+			params = { "courseOfferingId", "${form.crsOfferingId}", "op", "${op}"})
+	})
+@TilesDefinition(name = "instructionalOfferingDetail.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Instructional Offering Detail"),
+		@TilesPutAttribute(name = "body", value = "/user/instructionalOfferingDetail.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "assignment")
+	})
+public class InstructionalOfferingDetailAction extends UniTimeAction<InstructionalOfferingDetailForm> {
+	private static final long serialVersionUID = -4648988999277363085L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected Long instrOfferingId = null;
+	protected Long courseOfferingId = null;
+	protected String op2 = null;
+	protected String confirm = null;
+	protected String crsNbr = null;
 	
-	@Autowired SessionContext sessionContext;
-	
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	public Long getIo() { return instrOfferingId; }
+	public void setIo(Long instrOfferingId) { this.instrOfferingId = instrOfferingId; }
+	public Long getCo() { return courseOfferingId; }
+	public void setCo(Long courseOfferingId) { this.courseOfferingId = courseOfferingId; }
+	public String getHdnOp() { return op2; }
+	public void setHdnOp(String hdnOp) { this.op2 = hdnOp; }
+	public String getConfirm() { return confirm; }
+	public void setConfirm(String confirm) { this.confirm = confirm; }
+	public String getCrsNbr() { return crsNbr; }
+	public void setCrsNbr(String crsNbr) { this.crsNbr = crsNbr; }
 
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
-
-    /** 
+	/** 
      * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
      */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public String execute() throws Exception {
+    	if (form == null) form = new InstructionalOfferingDetailForm();
     	
-        MessageResources rsc = getResources(request);
-        InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) form;
-        
+    	setCrsNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+
         // Read Parameters
-        String op = (request.getAttribute("op") != null ? request.getAttribute("op").toString() :
-        	request.getParameter("op") != null ? request.getParameter("op") :
-        	frm.getOp() != null && !frm.getOp().isEmpty() ? frm.getOp() :
-        	request.getParameter("hdnOp"));
-        
+    	if (op == null) op = form.getOp();
+    	if (op2 != null && !op2.isEmpty()) op = op2;
+		if ("n".equals(confirm)) op = "view";
+    	
 		// Check operation
-		if(op==null || op.trim().length()==0)
-		    throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
+		if (op==null || op.trim().isEmpty())
+			throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
 		
-		if ("n".equals(request.getParameter("confirm")))
-			op = rsc.getMessage("op.view");
-
 		Debug.debug ("Op: " + op);
-
 		// Delete insructional offering
-		if(op.equals(MSG.actionDeleteIO()) && request.getAttribute("cfgDelete") == null) {
-			
-	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete);
-
-			doDelete(request, frm);
-			
+		if (op.equals(MSG.actionDeleteIO()) && request.getAttribute("cfgDelete") == null) {
+	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete);
+			doDelete(request, form);
 			sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
-			
-	        return mapping.findForward("showInstructionalOfferings");
+	        return "showInstructionalOfferings";
+		}
+		
+		if (op.equals(MSG.actionEditCourseOffering()) ) {
+			if (ApplicationProperty.LegacyCourseEdit.isTrue()) {
+				return "editCourse";
+			} else {
+				response.sendRedirect("gwt.jsp?page=courseOffering&offering=" + form.getCrsOfferingId() + "&op=editCourseOffering");
+				return null;
+			}
 		}
 		
 		// Display detail - default
-		if(op.equals(rsc.getMessage("op.view"))
-		       // || op.equals(rsc.getMessage("button.createClasses"))
+		if (op.equals("view")
 		        || op.equals(MSG.actionUpdateConfiguration()) 
 		        || op.equals(MSG.actionSaveConfiguration()) 
 		        || op.equals(MSG.actionDeleteConfiguration())
 		        || op.equals(MSG.actionUnassignAllInstructorsFromConfig()) ) {
 			
-		    String instrOfferingId = (request.getParameter("io")==null)
-		    							? (request.getAttribute("io")==null)
-		    							        ? null
-		    							        : request.getAttribute("io").toString()
-		    							: request.getParameter("io");
-		    if (instrOfferingId==null && frm.getInstrOfferingId()!=null)
-		    	instrOfferingId=frm.getInstrOfferingId().toString();
+		    if (instrOfferingId == null && form.getInstrOfferingId() != null)
+		    	instrOfferingId = form.getInstrOfferingId();
 		    
-		    if (instrOfferingId == null && request.getParameter("co") != null) {
+		    if (instrOfferingId == null && courseOfferingId != null) {
 		    	try {
-		    		instrOfferingId = CourseOfferingDAO.getInstance().get(Long.valueOf(request.getParameter("co"))).getInstructionalOffering().getUniqueId().toString();
+		    		instrOfferingId = CourseOfferingDAO.getInstance().get(courseOfferingId).getInstructionalOffering().getUniqueId();
 		    	} catch (Exception e) {}
 		    }
 		    
-			if(instrOfferingId==null || instrOfferingId.trim().length()==0)
-			    throw new Exception (MSG.exceptionIODataNotCorrect() + instrOfferingId);
-			else  {
-
+			if (instrOfferingId==null) {
+			    throw new Exception(MSG.exceptionIODataNotCorrect() + instrOfferingId);
+			} else {
 		    	sessionContext.checkPermission(instrOfferingId, "InstructionalOffering", Right.InstructionalOfferingDetail);
-
-		    	doLoad(request, frm, instrOfferingId);
+		    	doLoad();
 			}
 			
 			BackTracker.markForBack(
 					request,
-					"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
-					MSG.backInstructionalOffering(frm.getInstrOfferingNameNoTitle()),
+					"instructionalOfferingDetail.action?io="+form.getInstrOfferingId(),
+					MSG.backInstructionalOffering(form.getInstrOfferingNameNoTitle()),
 					true, false);
 			
-			return mapping.findForward("showConfigDetail");
-	        
+			return "showConfigDetail";
 		}
 
 		// Add Configuration
-		if(op.equals(MSG.actionAddConfiguration())) {
-			
-	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
-
-		    // Redirect to config edit
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-		    request.setAttribute("uid",io.getControllingCourseOffering().getUniqueId().toString());
-		    return mapping.findForward("modifyConfig");
+		if (op.equals(MSG.actionAddConfiguration())) {
+	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
+		    return "addConfig";
 		}
 		
 		// Make Offering 'Offered'
 		if(op.equals(MSG.actionMakeOffered())) {
-			
-	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
-
-		    doMakeOffered(request, frm);
-		    
+	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
+		    doMakeOffered();
 		    // Redirect to config edit
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-		    request.setAttribute("uid",io.getControllingCourseOffering().getUniqueId().toString());
-		    return mapping.findForward("modifyConfig");
+		    return "addConfig";
 		}
 		
 		// Make Offering 'Not Offered'
 		if(op.equals(MSG.actionMakeNotOffered())) {
-	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
-
-	    	doMakeNotOffered(request, frm);
+	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
+	    	doMakeNotOffered();
 	    	if (ApplicationProperty.MakeNotOfferedStaysOnDetail.isFalse()) {
-	    		ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferings"));
-                redirect.setAnchor("A" + frm.getInstrOfferingId());
-                return redirect;
+	    		response.sendRedirect(response.encodeURL("instructionalOfferingSearch.action#A" + form.getInstrOfferingId()));
+                return null;
 	    	} else {
-	    		response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getInstrOfferingId()));
+	    		response.sendRedirect(response.encodeURL("instructionalOfferingDetail.action?io="+form.getInstrOfferingId()));
 	        	return null;
 	    	}
 		}
 		
 		// Change controlling course, add other offerings
 		if(op.equals(MSG.actionCrossLists())) {
-	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingCrossLists);
-
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-		    request.setAttribute("uid",io.getControllingCourseOffering().getUniqueId().toString());
-		    return mapping.findForward("modifyCrossLists");
+	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingCrossLists);
+		    return "modifyCrossLists";
 		}
 		
         if (op.equals(MSG.actionNextIO())) {
-        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getNextId()));
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.action?io="+form.getNextId()));
         	return null;
         }
         
         if (op.equals(MSG.actionPreviousIO())) {
-        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getPreviousId()));
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.action?io="+form.getPreviousId()));
         	return null;
         }
         
         if (op.equals(MSG.actionLockIO())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	    	sessionContext.checkPermission(io, Right.OfferingCanLock);
 
 	    	io.getSession().lockOffering(io.getUniqueId());
-        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.action?io="+io.getUniqueId()));
         	return null;
         }
 		
         if (op.equals(MSG.actionUnlockIO())) {
 	    	InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	    	sessionContext.checkPermission(io, Right.OfferingCanUnlock);
 
 	        io.getSession().unlockOffering(io, sessionContext.getUser());
-        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
+        	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.action?io="+io.getUniqueId()));
         	return null;
         }
         
-    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
+    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
 
         BackTracker.markForBack(
 				request,
-				"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
-				MSG.backInstructionalOffering(frm.getInstrOfferingName()),
+				"instructionalOfferingDetail.action?io="+form.getInstrOfferingId(),
+				MSG.backInstructionalOffering(form.getInstrOfferingName()),
 				true, false);
         
 		// Go back to instructional offerings
-        return mapping.findForward("showInstructionalOfferings");
+        return "showInstructionalOfferings";
         
     }
 
     /**
      * Delete Instructional Offering
 	 * @param request
-	 * @param frm
+	 * @param form
 	 */
 	private void doDelete(
 			HttpServletRequest request, 
-			InstructionalOfferingDetailForm frm) throws Exception {
+			InstructionalOfferingDetailForm form) throws Exception {
 		
         org.hibernate.Session hibSession = null;
         Transaction tx = null;
         
         try {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	        hibSession = idao.getSession();
 	        tx = hibSession.beginTransaction();
@@ -353,7 +331,7 @@ public class InstructionalOfferingDetailAction extends Action {
             RoomAvailability.setAvailabilityWarning(request, session, true, true);
         }
 
-        ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+        ClassAssignmentProxy proxy = getClassAssignmentService().getAssignment();
 		try {
 			if (proxy != null) return proxy.hasConflicts(io.getUniqueId());
 		} catch (Exception e) {}
@@ -363,17 +341,10 @@ public class InstructionalOfferingDetailAction extends Action {
 
 	/**
      * Loads the form initially
-     * @param request
-     * @param frm
-     * @param instrOfferingIdStr
      */
-    private void doLoad(
-            HttpServletRequest request, 
-            InstructionalOfferingDetailForm frm, 
-            String instrOfferingIdStr) throws Exception {
+    private void doLoad() throws Exception {
         
         // Load Instr Offering
-        Long instrOfferingId = Long.valueOf(instrOfferingIdStr);
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
         InstructionalOffering io = idao.get(instrOfferingId);
         Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
@@ -390,27 +361,27 @@ public class InstructionalOfferingDetailAction extends Action {
                 new CourseOfferingComparator(CourseOfferingComparator.COMPARE_BY_CTRL_CRS));
                 
 	    // Load Form
-        frm.setInstrOfferingId(instrOfferingId);
-        frm.setSubjectAreaId(subjectAreaId);
-        frm.setInstrOfferingName(io.getCourseNameWithTitle());
-        frm.setSubjectAreaAbbr(io.getControllingCourseOffering().getSubjectAreaAbbv());
-        frm.setCourseNbr(io.getControllingCourseOffering().getCourseNbr());
-        frm.setInstrOfferingNameNoTitle(io.getCourseName());
-        frm.setCtrlCrsOfferingId(io.getControllingCourseOffering().getUniqueId());
-        frm.setDemand(io.getDemand());
-        frm.setEnrollment(io.getEnrollment());
-        frm.setSnapshotLimit(io.getSnapshotLimit());
-        frm.setProjectedDemand(io.getProjectedDemand());
-        frm.setLimit(io.getLimit());
-        frm.setUnlimited(Boolean.FALSE);
-        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(io)));
-        frm.setByReservationOnly(io.isByReservationOnly());
-        frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
-        frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
-        frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
-        if (io.effectiveWaitList() || ApplicationProperty.OfferingWaitListDefault.isTrue()) frm.setWaitList(io.effectiveWaitList() ? "true" : "false");
-        frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
-        frm.setHasConflict(hasConflicts(request, io));
+        form.setInstrOfferingId(instrOfferingId);
+        form.setSubjectAreaId(subjectAreaId);
+        form.setInstrOfferingName(io.getCourseNameWithTitle());
+        form.setSubjectAreaAbbr(io.getControllingCourseOffering().getSubjectAreaAbbv());
+        form.setCourseNbr(io.getControllingCourseOffering().getCourseNbr());
+        form.setInstrOfferingNameNoTitle(io.getCourseName());
+        form.setCtrlCrsOfferingId(io.getControllingCourseOffering().getUniqueId());
+        form.setDemand(io.getDemand());
+        form.setEnrollment(io.getEnrollment());
+        form.setSnapshotLimit(io.getSnapshotLimit());
+        form.setProjectedDemand(io.getProjectedDemand());
+        form.setLimit(io.getLimit());
+        form.setUnlimited(Boolean.FALSE);
+        form.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(io)));
+        form.setByReservationOnly(io.isByReservationOnly());
+        form.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
+        form.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
+        form.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
+        if (io.effectiveWaitList() || ApplicationProperty.OfferingWaitListDefault.isTrue()) form.setWaitList(io.effectiveWaitList() ? "true" : "false");
+        form.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
+        form.setHasConflict(hasConflicts(request, io));
 
         if (io.effectiveWaitList()) {
 			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
@@ -428,9 +399,9 @@ public class InstructionalOfferingDetailAction extends Action {
 
         Department fundingDepartment = io.getEffectiveFundingDept();
         if (fundingDepartment != null) {
-        	frm.setFundingDepartment(fundingDepartment.toString());
+        	form.setFundingDepartment(fundingDepartment.toString());
         } else {
-        	frm.setFundingDepartment(null);
+        	form.setFundingDepartment(null);
         }
 
 
@@ -452,16 +423,16 @@ public class InstructionalOfferingDetailAction extends Action {
         		}
         	}
         	if (notes.length() == 0) {
-        		frm.setNotes(io.getNotes());
+        		form.setNotes(io.getNotes());
         	} else {
-        		frm.setNotes(
+        		form.setNotes(
         				"<table border='0' cellspacing='2' cellpadding='0'>" +
         				(io.getNotes() != null && !io.getNotes().isEmpty() ? "<tr><th valign='top' align='left' nowrap>" + io.getControllingCourseOffering().getCourseName() + "&nbsp;</th><td>" + io.getNotes() + "</td></tr>" : "") +
         				notes +
         				"</table>");
         	}
         } else {
-        	frm.setNotes(io.getNotes());
+        	form.setNotes(io.getNotes());
         }
         String coordinators = "";
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
@@ -474,12 +445,12 @@ public class InstructionalOfferingDetailAction extends Action {
         					" (" + coordinator.getResponsibility().getLabel() + (coordinator.getPercentShare() > 0 ? ", " + coordinator.getPercentShare() + "%" : "") + ")") + 
         			"</a>";
         }
-        frm.setCoordinators(coordinators);
-        frm.setTeachingRequests(false);
+        form.setCoordinators(coordinators);
+        form.setTeachingRequests(false);
         if (sessionContext.hasPermission(Right.InstructorScheduling)) {
             for (DepartmentalInstructor di: io.getDepartment().getInstructors()) {
             	if (di.getTeachingPreference() != null && !PreferenceLevel.sProhibited.equals(di.getTeachingPreference().getPrefProlog())) {
-            		frm.setTeachingRequests(true);
+            		form.setTeachingRequests(true);
             		break;
             	}
             }
@@ -487,13 +458,13 @@ public class InstructionalOfferingDetailAction extends Action {
         
         for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();)
         	if (((InstrOfferingConfig)i.next()).isUnlimitedEnrollment().booleanValue()) {
-        		frm.setUnlimited(Boolean.TRUE); break;
+        		form.setUnlimited(Boolean.TRUE); break;
         	}
-        frm.setNotOffered(io.isNotOffered());
-        frm.setCourseOfferings(offerings);
+        form.setNotOffered(io.isNotOffered());
+        form.setCourseOfferings(offerings);
 	    
         // Check limits on courses if cross-listed
-        if (io.getCourseOfferings().size()>1 && !frm.getUnlimited().booleanValue()) {
+        if (io.getCourseOfferings().size()>1 && !form.getUnlimited().booleanValue()) {
             int lim = 0;
             boolean reservationSet = false;
             for (CourseOffering course: io.getCourseOfferings()) {
@@ -545,14 +516,14 @@ public class InstructionalOfferingDetailAction extends Action {
             if (results==null)
                 throw new Exception (lookup.getErrorMessage());
             
-            frm.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
-            frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
+            form.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
+            form.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
         }
         
 	    InstructionalOffering next = io.getNextInstructionalOffering(sessionContext);
-        frm.setNextId(next==null?null:next.getUniqueId().toString());
+        form.setNextId(next==null?null:next.getUniqueId().toString());
         InstructionalOffering previous = io.getPreviousInstructionalOffering(sessionContext);
-        frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
+        form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 	    
 		DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
         String html = tbl.getDistPrefsTableForInstructionalOffering(request, sessionContext, io);
@@ -562,21 +533,17 @@ public class InstructionalOfferingDetailAction extends Action {
 
     /**
      * Make an offering 'Not Offered'
-     * @param request
-     * @param frm
      */
-    private void doMakeNotOffered(
-            HttpServletRequest request, 
-            InstructionalOfferingDetailForm frm) throws Exception {
+    private void doMakeNotOffered() throws Exception {
         
-    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
+    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
 
         org.hibernate.Session hibSession = null;
         
         try {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 		    hibSession = idao.getSession();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 	        
 	        io.deleteAllDistributionPreferences(hibSession);
             
@@ -633,7 +600,7 @@ public class InstructionalOfferingDetailAction extends Action {
 
             
             // Update Form 
-            frm.setNotOffered(io.isNotOffered());
+            form.setNotOffered(io.isNotOffered());
 
         }
         catch (Exception e) {
@@ -644,21 +611,17 @@ public class InstructionalOfferingDetailAction extends Action {
 
     /**
      * Make an offering 'Not Offered'
-     * @param request
-     * @param frm
      */
-    private void doMakeOffered(
-            HttpServletRequest request, 
-            InstructionalOfferingDetailForm frm) throws Exception {
+    private void doMakeOffered() throws Exception {
 
-    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
+    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
 
     	org.hibernate.Session hibSession = null;
         
         try {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 		    hibSession = idao.getSession();
-	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
             
             // Set flag to offered
             io.setNotOffered(Boolean.valueOf(false));
@@ -688,12 +651,28 @@ public class InstructionalOfferingDetailAction extends Action {
         	}
 
             // Update Form 
-            frm.setNotOffered(io.isNotOffered());            
+            form.setNotOffered(io.isNotOffered());            
         }
         catch (Exception e) {
 			Debug.error(e);
             throw (e);
         }
     }
-
+    
+    public String printTable() throws Exception {
+    	WebInstrOfferingConfigTableBuilder ioTableBuilder = new WebInstrOfferingConfigTableBuilder();
+		ioTableBuilder.setDisplayDistributionPrefs(false);
+		ioTableBuilder.setDisplayConfigOpButtons(true);
+		ioTableBuilder.setDisplayConflicts(true);
+		ioTableBuilder.setDisplayDatePatternDifferentWarning(true);
+		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
+									sessionContext,
+									getClassAssignmentService().getAssignment(),
+									getExaminationSolverService().getSolver(),
+									form.getInstrOfferingId(), 
+				    		        getPageContext().getOut(),
+				    		        request.getParameter("backType"),
+				    		        request.getParameter("backId"));
+		return "";
+	}
 }

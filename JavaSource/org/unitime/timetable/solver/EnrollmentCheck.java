@@ -169,7 +169,7 @@ public class EnrollmentCheck {
     private String getOfferingLabel(Long offeringId) {
         InstructionalOffering offering = (new InstructionalOfferingDAO()).get(offeringId);
         if (offering!=null)
-            return "<A href='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+            return "<A href='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
         else
             return offeringId.toString();
     }

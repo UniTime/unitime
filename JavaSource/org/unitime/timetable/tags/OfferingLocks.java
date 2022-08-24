@@ -65,10 +65,10 @@ public class OfferingLocks extends TagSupport {
 		String course2 = null;
 		for (InstructionalOffering io: lockedOfferings) {
 			if (course1 == null) {
-				course1 = "<a href='instructionalOfferingDetail.do?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
+				course1 = "<a href='instructionalOfferingDetail.action?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
 			} else {
 				if (course2 != null) course1 += ", " + course2;
-				course2 = "<a href='instructionalOfferingDetail.do?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
+				course2 = "<a href='instructionalOfferingDetail.action?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
 			}
 		}
 		return (course2 == null ? MSG.lockedCourse(course1) : MSG.lockedCourses(course1, course2));

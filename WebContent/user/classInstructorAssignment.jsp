@@ -131,7 +131,7 @@
 					styleClass="btn" 
 					accesskey="<%=MSG.accessBackToIODetail() %>" 
 					title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
-					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
+					onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
 					<loc:message name="actionBackToIODetail" />
 				</html:button>		
 				</tt:section-header>					
@@ -405,7 +405,7 @@
 					styleClass="btn" 
 					accesskey="<%=MSG.accessBackToIODetail() %>" 
 					title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
-					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
+					onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
 					<loc:message name="actionBackToIODetail" />
 				</html:button>		
 					

@@ -141,7 +141,7 @@ public class AssignClassInstructorsPage extends Composite {
 									UniTimeNotifications.error(MESSAGES.failedSave(iData.getErrors()), null, null);									
 								} else {
 									LoadingWidget.hideLoading();
-									ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iData.getOfferingId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
 								}
 							}
 						});
@@ -177,7 +177,7 @@ public class AssignClassInstructorsPage extends Composite {
 							public void onSuccess(AssignClassInstructorsInterface result) {
 								iData = result;
 								LoadingWidget.hideLoading();
-								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iData.getOfferingId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
 							}
 						});
 					}
@@ -270,7 +270,7 @@ public class AssignClassInstructorsPage extends Composite {
 					@Override
 					public void execute() {
 						LoadingWidget.hideLoading();
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iData.getOfferingId());
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
 					}
 				});
 			}

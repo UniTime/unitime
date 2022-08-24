@@ -419,7 +419,7 @@ public class HibernateQueryTestAction extends Action {
     		if ("__Class".equals(alias[0]))
     			link = "classDetail.action?cid=" + ((Object[])o)[0];
 			else if ("__Offering".equals(alias[0]))
-				link = "instructionalOfferingDetail.do?op=view&io=" + ((Object[])o)[0];
+				link = "instructionalOfferingDetail.action?op=view&io=" + ((Object[])o)[0];
 			else if ("__Subpart".equals(alias[0]))
 				link = "schedulingSubpartDetail.action?ssuid=" + ((Object[])o)[0];
 			else if ("__Room".equals(alias[0]))

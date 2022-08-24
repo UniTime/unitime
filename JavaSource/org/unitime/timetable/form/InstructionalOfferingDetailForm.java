@@ -23,13 +23,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
@@ -38,23 +34,11 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 03-20-2006
- * 
- * XDoclet definition:
- * @struts:form name="instructionalOfferingConfigDetailForm"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-public class InstructionalOfferingDetailForm extends ActionForm {
-	
-	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-
-    /**
-	 * 
-	 */
+public class InstructionalOfferingDetailForm implements UniTimeForm {
 	private static final long serialVersionUID = -5161466018324037153L;
-	// --------------------------------------------------------- Instance Variables
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     private String op;   
     private Long subjectAreaId;
@@ -92,35 +76,32 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     // --------------------------------------------------------- Classes
 
     /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory factoryCourseOfferings = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String("");
-        }
-    };
+    protected DynamicListObjectFactory factoryCourseOfferings = null;
+    
+    public InstructionalOfferingDetailForm() {
+    	factoryCourseOfferings = new DynamicListObjectFactory() {
+            public Object create() {
+                return new String("");
+            }
+        };
+        reset();
+    }
 
    
     // --------------------------------------------------------- Methods
 
     /** 
      * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
      */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
+    public void validate(UniTimeAction action) {
         throw new UnsupportedOperationException(
             MSG.exceptionValidateNotImplemented());
     }
 
     /** 
      * Method reset
-     * @param mapping
-     * @param request
      */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    public void reset() {
         op = "view";    
         subjectAreaId = null;
         subjectAreaAbbr = null;

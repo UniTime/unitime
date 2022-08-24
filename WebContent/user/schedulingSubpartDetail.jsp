@@ -36,7 +36,7 @@
 					<tt:section-title>
 						<A title="${MSG.titleInstructionalOfferingDetail(MSG.accessInstructionalOfferingDetail())}" 
 							accesskey="${MSG.accessInstructionalOfferingDetail()}" class="l8"
-							href="instructionalOfferingDetail.do?op=view&io=${form.instrOfferingId}">
+							href="instructionalOfferingDetail.action?op=view&io=${form.instrOfferingId}">
 							<s:property value="form.subjectArea"/>
 							<s:property value="form.courseNbr"/> - <s:property value="form.courseTitle"/>
 						</A>:

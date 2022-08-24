@@ -283,13 +283,6 @@
 		<put name="title" type="string" value="Edit Solver Group"/>
   	</definition>
 
-  	<definition name="instructionalOfferingDetailTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Instructional Offering Detail"/>
-		<put name="body" value="/user/instructionalOfferingDetail.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-
   	<definition name="datePatternsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Date Patterns"/>
 		<put name="body" value="/admin/datePatterns.jsp" />

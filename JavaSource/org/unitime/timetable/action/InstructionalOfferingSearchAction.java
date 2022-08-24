@@ -64,7 +64,7 @@ import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
  */
 @Action(value="instructionalOfferingSearch", results = {
 		@Result(name = "showInstructionalOfferingSearch", type = "tiles", location = "instructionalOfferingList.tiles"),
-		@Result(name = "showInstructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.do",
+		@Result(name = "showInstructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action",
 			params = {"op" , "${op}", "io", "${io}"}
 		),
 		@Result(name = "showCourseOfferingEdit", type = "redirect", location = "/courseOfferingEdit.do",

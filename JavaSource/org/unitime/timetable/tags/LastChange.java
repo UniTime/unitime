@@ -132,7 +132,7 @@ public class LastChange extends BodyTagSupport {
         WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
         WebTable webTable = new WebTable( 5, "Last Changes",
-                "instructionalOfferingDetail.do?io="+io.getUniqueId()+"&lcord=%%",
+                "instructionalOfferingDetail.action?io="+io.getUniqueId()+"&lcord=%%",
                 new String[] {"Page", "Object", "Operation", "Manager", "Date"},
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true, false} );

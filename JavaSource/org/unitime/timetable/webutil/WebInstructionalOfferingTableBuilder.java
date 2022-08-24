@@ -616,7 +616,7 @@ public class WebInstructionalOfferingTableBuilder {
     }
 
     private String subjectOnClickAction(Long instrOfferingId){
-        return("document.location='instructionalOfferingDetail.do?op=view&io=" + instrOfferingId + "';");
+        return("document.location='instructionalOfferingDetail.action?op=view&io=" + instrOfferingId + "';");
     }
     
     private TableCell subjectAndCourseInfo(InstructionalOffering io, CourseOffering co, boolean isEditable) {
