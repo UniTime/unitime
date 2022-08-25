@@ -207,6 +207,7 @@ public class Class_ extends BaseClass_ {
     public Set classInstructorPrefsOfType(Class type) {
     	List<DepartmentalInstructor> instructors = getLeadInstructors();
     	if (instructors.isEmpty()) return null;
+    	if (InstructorCoursePref.class.equals(type)) return null;
     	Set ret = null;
     	for (DepartmentalInstructor instructor: instructors) {
     		if (ret == null)
