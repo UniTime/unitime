@@ -210,7 +210,7 @@ public class ExportTimetableXLS extends TableExporter {
 			return false;
 		}
 		
-		protected void print(ExportContext cx, Sheet sheet, int x, int y, P parent) {
+		public void print(ExportContext cx, Sheet sheet, int x, int y, P parent) {
 			if (isStyle("unitime-TimetableGrid")) {
 				for (int r = y; r < y + getHeight(); r++ ) {
 					Row row = sheet.createRow(r);
@@ -335,7 +335,7 @@ public class ExportTimetableXLS extends TableExporter {
 		}
 	}
 	
-	protected static class TimetableGrid extends P {
+	public static class TimetableGrid extends P {
 		private List<Meeting> iMeetings = new ArrayList<Meeting>();
 		private List<Background> iBackbrounds = new ArrayList<Background>();
 		
@@ -814,6 +814,8 @@ public class ExportTimetableXLS extends TableExporter {
 		        }
 			}
 		}
+		
+		public boolean hasMeetings() { return !iMeetings.isEmpty(); }
 	}
 	
 	protected static class Meeting extends P {
@@ -1184,7 +1186,7 @@ public class ExportTimetableXLS extends TableExporter {
 			return style;
 		}
 		
-		protected Sheet createSheet(String name) {
+		public Sheet createSheet(String name) {
 			Sheet sheet = null;
 			try {
 				sheet = (name == null ? iWorkbook.createSheet() : iWorkbook.createSheet(name.replace('/', '-').replace('\\','-').replace('?', ' ').replace('*', ' ').replace(':', '-').replace('[', '(').replace(']', ')')));
@@ -1203,7 +1205,7 @@ public class ExportTimetableXLS extends TableExporter {
 	        return sheet;
 		}
 		
-		protected void write(OutputStream output, boolean vertical) throws IOException {
+		public void write(OutputStream output, boolean vertical) throws IOException {
 			int headerWidth = (int) Math.round(256 * ApplicationProperty.TimeGridXLSHeaderWidth.doubleValue());
 			int cellWidth = (int) Math.round(256 * (vertical ? ApplicationProperty.TimeGridXLSCellWidthVertical.doubleValue() : ApplicationProperty.TimeGridXLSCellWidth.doubleValue()));
 			for (int s = 0; s < iWorkbook.getNumberOfSheets(); s++) {
