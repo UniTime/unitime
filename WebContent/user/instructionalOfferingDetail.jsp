@@ -22,20 +22,20 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="instructionalOfferingDetail">
 <tt:confirm name="confirmMakeOffered"><loc:message name="confirmMakeOffered"/></tt:confirm>
 <tt:confirm name="confirmMakeNotOffered"><loc:message name="confirmMakeNotOffered"/></tt:confirm>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteIO"/></tt:confirm>
 	<table class="unitime-MainTable">
+		<s:form action="instructionalOfferingDetail">
+			<s:hidden name="form.instrOfferingId"/>
+			<s:hidden name="form.ctrlCrsOfferingId"/>
+			<s:hidden name="form.nextId"/>
+			<s:hidden name="form.previousId"/>
+			<s:hidden name="form.catalogLinkLabel"/>
+			<s:hidden name="form.catalogLinkLocation"/>
+			<s:hidden name="form.crsOfferingId" id="courseOfferingId"/>
 		<TR>
 			<TD valign="middle" colspan='2'>
-				<s:hidden name="form.instrOfferingId"/>
-				<s:hidden name="form.ctrlCrsOfferingId"/>
-				<s:hidden name="form.nextId"/>
-				<s:hidden name="form.previousId"/>
-				<s:hidden name="form.catalogLinkLabel"/>
-				<s:hidden name="form.catalogLinkLocation"/>
-				<s:hidden name="form.crsOfferingId" id="courseOfferingId"/>
 				<tt:section-header>
 					<tt:section-title>
 						<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
@@ -425,6 +425,7 @@
 		<TR>
 			<TD colspan="2" >&nbsp;</TD>
 		</TR>
+		</s:form>
 
 <!-- Configuration -->
 		<TR>
@@ -454,6 +455,15 @@
 				</TD>
 			</TR>
 		</s:if>
+		
+		<s:form action="instructionalOfferingDetail">
+			<s:hidden name="form.instrOfferingId"/>
+			<s:hidden name="form.ctrlCrsOfferingId"/>
+			<s:hidden name="form.nextId"/>
+			<s:hidden name="form.previousId"/>
+			<s:hidden name="form.catalogLinkLabel"/>
+			<s:hidden name="form.catalogLinkLocation"/>
+			<s:hidden name="form.crsOfferingId" id="courseOfferingId"/>
 		
 		<s:if test="form.notOffered == false && form.teachingRequests == true">
 			<sec:authorize access="hasPermission(null, 'SolverGroup', 'InstructorScheduling') and hasPermission(null, 'Department', 'InstructorAssignmentPreferences')">
@@ -547,7 +557,6 @@
 					</tt:back>			
 			</TD>
 		</TR>
-
+		</s:form>
 	</TABLE>
-</s:form>
 </loc:bundle>
