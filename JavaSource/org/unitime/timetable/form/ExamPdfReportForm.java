@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
@@ -117,6 +118,18 @@ public class ExamPdfReportForm extends ExamReportForm {
         
         return errors;
     }
+    
+    @Override
+    public void validate(UniTimeAction action) {
+    	if (iReports==null || iReports.length==0)
+    		action.addFieldError("reports", "No report selected.");
+        
+        if (!iAll && (iSubjects==null || iSubjects.length==0))
+        	action.addFieldError("subjects", "No subject area selected.");
+        
+        if (iSince != null && !iSince.isEmpty() && !Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).isValid(iSince))
+        	action.addFieldError("since", "<b>" + iSince + "</b> is not a valid date.");
+    }
 
     
     public void reset(ActionMapping mapping, HttpServletRequest request) {
@@ -148,6 +161,36 @@ public class ExamPdfReportForm extends ExamReportForm {
         iCompact = false;
         iRoomDispNames = false;
     }
+    
+    @Override
+	public void reset() {
+    	super.reset();
+        iReports = null;
+        iMode = sModes[0];
+        iAll = false;
+        iDispRooms = false;
+        iNoRoom = null;
+        iDirect = false;
+        iM2d = false;
+        iBtb = false;
+        iLimit = null;
+        iTotals = false;
+        iRoomCodes = null;
+        iEmail = false;
+        iAddr = null; iCc = null; iBcc = null; 
+        iEmailDeputies = false;
+        iSubject = "Examination Report";
+        iMessage = null;
+        iDispLimit = false;
+        iSince = null;
+        iEmailInstructors = false; 
+        iEmailStudents = false;
+        iClassSchedule = false;
+        iIgnoreEmptyExams = false;
+        iItype = false;
+        iDispNote = false;
+        iCompact = false;
+        iRoomDispNames = false;    }
     
     public void load(SessionContext session) {
     	super.load(session, true);

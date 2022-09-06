@@ -462,7 +462,7 @@
 					<hasPermission name="ExaminationReports"/>
 				</condition>
 			</separator>
-			<item name="Reports" page="examAssignmentReport.do">
+			<item name="Reports" page="examAssignmentReport.action">
 				<condition>
 					<hasPermission name="ExaminationReports"/>
 				</condition>

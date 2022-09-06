@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.security.SessionContext;
 
 
@@ -41,6 +42,12 @@ public class RoomAvailabilityForm extends ExamReportForm {
 	    if (getExamType()<0) errors.add("examType", new ActionMessage("errors.required", ""));
         return errors;
 	}
+	
+	@Override
+    public void validate(UniTimeAction action) {
+		if (getExamType()<0) 
+			action.addFieldError("examType", "<b>Exam Type</b> is required.");
+	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 	    super.reset(mapping, request);
@@ -49,6 +56,15 @@ public class RoomAvailabilityForm extends ExamReportForm {
 	    iCompare = false;
 	    setExamType(null);
 	}
+	
+    @Override
+	public void reset() {
+    	super.reset();
+    	iIncludeExams = false;
+	    iFilter = null;
+	    iCompare = false;
+	    setExamType(null);
+    }
 
 	public String getFilter() { return iFilter; }
 	public void setFilter(String filter) { iFilter = filter; }

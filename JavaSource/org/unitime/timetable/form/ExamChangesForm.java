@@ -48,6 +48,12 @@ public class ExamChangesForm extends ExamReportForm {
         iChage = sChangeInitial; iReverse = false;
     }
     
+    @Override
+	public void reset() {
+    	super.reset();
+    	iChage = sChangeInitial; iReverse = false;
+    }
+    
     public void load(SessionContext session) {
         super.load(session);
         setReverse("1".equals(session.getUser().getProperty("ExamChanges.reverse", "0")));

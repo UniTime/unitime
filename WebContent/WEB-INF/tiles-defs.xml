@@ -439,12 +439,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
   	
- 	<definition	name="examAssignmentReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Reports"/>
-		<put name="body" value="/exam/assignmentReport.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-  	
  	<definition	name="examPdfReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination PDF Reports"/>
 		<put name="body" value="/exam/pdfReport.jsp" />

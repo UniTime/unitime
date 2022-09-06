@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,21 +40,20 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ConstantsMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
+import org.unitime.timetable.form.ExamAssignmentReportForm.ExamReport;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -68,9 +68,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -85,84 +83,120 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
 /** 
  * @author Tomas Muller
  */
-@Service("/examAssignmentReport")
-public class ExamAssignmentReportAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
-	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	    ExamAssignmentReportForm myForm = (ExamAssignmentReportForm) form;
-	    
+@Action(value = "examAssignmentReport", results = {
+		@Result(name = "show", type = "tiles", location = "examAssignmentReport.tiles")
+	})
+@TilesDefinition(name = "examAssignmentReport.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination Reports"),
+		@TilesPutAttribute(name = "body", value = "/exam/assignmentReport.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
+public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentReportForm> {
+	private static final long serialVersionUID = -5536751983250422597L;
+	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+
+	public String execute() throws Exception {
 	    // Check Access
 	    sessionContext.checkPermission(Right.ExaminationReports);
 	    
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+    	ExamSolverProxy solver = getExaminationSolverService().getSolver();
 
-        if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(sessionContext);
-        } else if ("Refresh".equals(op)) {
-            myForm.reset(mapping, request);
+    	if (form == null) {
+	    	form = new ExamAssignmentReportForm();
+	    	form.reset();
+	    	if (solver != null) form.setExamType(solver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
+
+        if (MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op) || MSG.buttonApply().equals(op)) {
+            form.save(sessionContext);
+        } else if (MSG.buttonRefresh().equals(op)) {
+            form.reset();
+            if (solver != null) form.setExamType(solver.getExamTypeId());
         }
         
-        myForm.setCanSeeAll(sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent));
+        form.setCanSeeAll(sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent));
         
         Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
-        RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
+        RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), true, false);
         
-        myForm.load(sessionContext);
+        form.load(sessionContext);
         
-        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
+        List<IdValue> subjects = new ArrayList<IdValue>();
+        subjects.add(new IdValue(null, CONST.select()));
+        if (sessionContext.hasPermission(Right.DepartmentIndependent)) {
+        	subjects.add(new IdValue(-1l, CONST.all()));
+        }
+        TreeSet<SubjectArea> userSubjectAreas = SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false);
+        for (SubjectArea sa: userSubjectAreas)
+        	subjects.add(new IdValue(sa.getUniqueId(), sa.getSubjectAreaAbbreviation()));
+        form.setSubjectAreas(subjects);
+        if (userSubjectAreas.size() == 1) {
+        	form.setSubjectArea(userSubjectAreas.first().getUniqueId());
+        }
         
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
-        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0 && myForm.getExamType() != null) {
-            if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
-                assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
+        if (form.getSubjectArea()!=null && form.getSubjectArea()!=0 && form.getExamType() != null) {
+            if (solver!=null && solver.getExamTypeId().equals(form.getExamType()))
+                assignedExams = solver.getAssignedExams(form.getSubjectArea());
             else {
-                if (ApplicationProperty.ExaminationCacheConflicts.isTrue() && myForm.getSubjectArea()!=null && myForm.getSubjectArea()>0)
-                    assignedExams = Exam.findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
+                if (ApplicationProperty.ExaminationCacheConflicts.isTrue() && form.getSubjectArea()!=null && form.getSubjectArea()>0)
+                    assignedExams = Exam.findAssignedExams(session.getUniqueId(),form.getSubjectArea(),form.getExamType());
                 else
-                    assignedExams = findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
+                    assignedExams = findAssignedExams(session.getUniqueId(),form.getSubjectArea(),form.getExamType());
             }
         }
         
-        WebTable.setOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"examAssignmentReport["+form.getReport()+"].ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(session.getUniqueId(), true, myForm, assignedExams);
+        WebTable table = getTable(session.getUniqueId(), true, form, assignedExams);
         
-        if ("Export PDF".equals(op) && table!=null) {
+        if (MSG.actionExportPdf().equals(op) && table!=null) {
         	ExportUtils.exportPDF(
-        			getTable(session.getUniqueId(), false, myForm, assignedExams),
-        			WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"),
+        			getTable(session.getUniqueId(), false, form, assignedExams),
+        			WebTable.getOrder(sessionContext,"examAssignmentReport["+form.getReport()+"].ord"),
         			response, "xreport");
         	return null;
         }
         
-        if ("Export CSV".equals(op) && table!=null) {
+        if (MSG.actionExportCsv().equals(op) && table!=null) {
         	ExportUtils.exportCSV(
-        			getTable(session.getUniqueId(), false, myForm, assignedExams),
-        			WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"),
+        			getTable(session.getUniqueId(), false, form, assignedExams),
+        			WebTable.getOrder(sessionContext,"examAssignmentReport["+form.getReport()+"].ord"),
         			response, "xreport");
         	return null;
         }
 
-        if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord")), table.getNrColumns(), assignedExams.size());
+        if (table!=null) {
+            form.setTable(table.printTable(WebTable.getOrder(sessionContext,"examAssignmentReport["+form.getReport()+"].ord")), table.getNrColumns(), assignedExams.size());
+            BackTracker.markForBack(
+                    request, 
+                    "examAssignmentReport.action?form.op=" + MSG.buttonApply() + "&form.examType="+getForm().getExamType()+"&form.subjectArea="+getForm().getSubjectArea()
+                    	+"&form.showSections="+getForm().getShowSections()
+                    	+"&form.report="+getForm().getReport()
+                    	+"&form.filter="+URLEncoder.encode(getForm().getFilter(), "utf-8"),
+                    MSG.backExaminationReports(form.getReportName(), form.getSubjectArea() == -1l ? CONST.all() : form.getSubjectAreaAbbv()), 
+                    true, true);
+        }
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
 
-        return mapping.findForward("show");
+        return "show";
 	}
 	
     public static TreeSet<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId, Long examTypeId) throws Exception {
@@ -461,70 +495,77 @@ public class ExamAssignmentReportAction extends Action {
 	
 	public PdfWebTable getTable(Long sessionId, boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
-		if (ExamAssignmentReportForm.sExamAssignmentReport.equals(form.getReport())) {
-		    return generateAssignmentReport(html, form, exams);
-		}  else if (ExamAssignmentReportForm.sRoomAssignmentReport.equals(form.getReport())) {
-		    return generateRoomReport(html, form, exams);
-		}  else if (ExamAssignmentReportForm.sPeriodUsage.equals(form.getReport())) {
-            return generatePeriodUsageReport(html, form, exams, sessionId);
-		}  else if (ExamAssignmentReportForm.sNrExamsADay.equals(form.getReport())) {
-		    return generateNrExamsADayReport(html, form, exams);
-		} else if (ExamAssignmentReportForm.sRoomSplits.equals(form.getReport())) {
-		    return generateRoomSplitReport(html, form, exams);
-		} else if (ExamAssignmentReportForm.sViolatedDistributions.equals(form.getReport())) {
-		    return generateViolatedDistributionsReport(html, form, exams);
-        } else if (ExamAssignmentReportForm.sIndividualStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualDirectStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualBackToBackStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualMore2ADayStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualDirectInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualBackToBackInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualMore2ADayInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sDirectStudentConflicts.equals(form.getReport())) {
-            return generateDirectConflictsReport(html, form, exams, true);
-        } else if (ExamAssignmentReportForm.sBackToBackStudentConflicts.equals(form.getReport())) {
-            return generateBackToBackConflictsReport(html, form, exams, true);
-        } else if (ExamAssignmentReportForm.sMore2ADayStudentConflicts.equals(form.getReport())) {
-            return generate2MoreADayConflictsReport(html, form, exams, true);
-        } else if (ExamAssignmentReportForm.sDirectInstructorConflicts.equals(form.getReport())) {
-            return generateDirectConflictsReport(html, form, exams, false);
-        } else if (ExamAssignmentReportForm.sBackToBackInstructorConflicts.equals(form.getReport())) {
-            return generateBackToBackConflictsReport(html, form, exams, false);
-        } else if (ExamAssignmentReportForm.sMore2ADayInstructorConflicts.equals(form.getReport())) {
-            return generate2MoreADayConflictsReport(html, form, exams, false);
-        } else if (ExamAssignmentReportForm.sIndividualStudentSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, sessionId, form, exams, true, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sIndividualInstructorSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, sessionId, form, exams, false, UserProperty.NameFormat.get(sessionContext.getUser()));
-        } else if (ExamAssignmentReportForm.sStatistics.equals(form.getReport())) {
-            return generateStatisticsReport(html, sessionId, form, exams);
-        } else  return null;
+        try {
+            switch (ExamReport.valueOf(form.getReport())) {
+            case ExamAssignmentReport:
+    		    return generateAssignmentReport(html, form, exams);
+            case RoomAssignmentReport:
+    		    return generateRoomReport(html, form, exams);
+            case PeriodUsage:
+                return generatePeriodUsageReport(html, form, exams, sessionId);
+            case NrExamsADay:
+    		    return generateNrExamsADayReport(html, form, exams);
+            case RoomSplits:
+    		    return generateRoomSplitReport(html, form, exams);
+            case ViolatedDistributions:
+    		    return generateViolatedDistributionsReport(html, form, exams);
+            case IndividualStudentConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualDirectStudentConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualBackToBackStudentConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualMore2ADayStudentConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualInstructorConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualDirectInstructorConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualBackToBackInstructorConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualMore2ADayInstructorConflicts:
+                return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case DirectStudentConflicts:
+                return generateDirectConflictsReport(html, form, exams, true);
+            case BackToBackStudentConflicts:
+                return generateBackToBackConflictsReport(html, form, exams, true);
+            case More2ADayStudentConflicts:
+                return generate2MoreADayConflictsReport(html, form, exams, true);
+            case DirectInstructorConflicts:
+                return generateDirectConflictsReport(html, form, exams, false);
+            case BackToBackInstructorConflicts:
+                return generateBackToBackConflictsReport(html, form, exams, false);
+            case More2ADayInstructorConflicts:
+                return generate2MoreADayConflictsReport(html, form, exams, false);
+            case IndividualStudentSchedule:
+                return generateIndividualAssignmentReport(html, sessionId, form, exams, true, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case IndividualInstructorSchedule:
+                return generateIndividualAssignmentReport(html, sessionId, form, exams, false, UserProperty.NameFormat.get(sessionContext.getUser()));
+            case Statistics:
+                return generateStatisticsReport(html, sessionId, form, exams);
+            default:
+            	return null;
+            }
+        } catch (IllegalArgumentException e) {
+        	return null;
+        }
     }
 	
 	private PdfWebTable generateAssignmentReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
 	    String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 10,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Enrollment",
-                    "Seating"+nl+"Type",
-                    "Date",
-                    "Time",
-                    "Room",
-                    "Capacity",
-                    "Instructor",
-                    "Student"+nl+"Conflicts",
-                    "Instructor"+nl+"Conflicts"},
+                    (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.colEnrollment(),
+                    MSG.colSeatingType().replace("\n",nl),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    MSG.colRoom(),
+                    MSG.colRoomCapacity(),
+                    MSG.colInstructor(),
+                    MSG.colStudentConflicts().replace("\n",nl),
+                    MSG.colInstructorConflicts().replace("\n",nl)},
                 new String[] {"left", "right", "center", "left", "left", "left", "right", "left", "center", "center"},
                 new boolean[] {true, true, true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -631,19 +672,19 @@ public class ExamAssignmentReportAction extends Action {
 	private PdfWebTable generateRoomReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 11,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    "Room",
-                    "Capacity",
-                    "Exam"+nl+"Capacity",
-                    "Date",
-                    "Time",
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Enrollment",
-                    "Seating"+nl+"Type",
-                    "Instructor",
-                    "Student"+nl+"Conflicts",
-                    "Instructor"+nl+"Conflicts"},
+                    MSG.colRoom(),
+                    MSG.colRoomCapacity(),
+                    MSG.colExamCapacity().replace("\n",nl),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.colEnrollment(),
+                    MSG.colSeatingType().replace("\n",nl),
+                    MSG.colInstructor(),
+                    MSG.colStudentConflicts().replace("\n",nl),
+                    MSG.colInstructorConflicts().replace("\n",nl)},
                 new String[] {"left", "right", "right", "left", "left", "left", "right", "center", "left", "center", "center"},
                 new boolean[] {true, true, true, true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -766,16 +807,16 @@ public class ExamAssignmentReportAction extends Action {
 	private PdfWebTable generatePeriodUsageReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams, Long sessionId) {
 	    String nl = (html?"<br>":"\n");
 	    PdfWebTable table = new PdfWebTable( 8,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    "Date",
-                    "Time",
-                    (form.getShowSections()?"Classes / Courses":"Examinations"),
-                    "Total Enrollment",
-                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 10+ students",
-                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 50+ students",
-                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 100+ students",
-                    (form.getShowSections()?"Classes / Courses":"Examinations")+nl+"with 500+ students"
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    (form.getShowSections()?MSG.colOwners():MSG.colExaminations()),
+                    MSG.colTotalEnrollment(),
+                    (form.getShowSections()?MSG.colOwners():MSG.colExaminations())+nl+MSG.withNOrMoreStudents(10),
+                    (form.getShowSections()?MSG.colOwners():MSG.colExaminations())+nl+MSG.withNOrMoreStudents(50),
+                    (form.getShowSections()?MSG.colOwners():MSG.colExaminations())+nl+MSG.withNOrMoreStudents(100),
+                    (form.getShowSections()?MSG.colOwners():MSG.colExaminations())+nl+MSG.withNOrMoreStudents(500)
                     },
                 new String[] {"left","left","right","right","right","right","right","right"},
                 new boolean[] {true, true, true, true, true, true, true, true} );
@@ -843,7 +884,7 @@ public class ExamAssignmentReportAction extends Action {
         }
         table.addLine(
                 new String[] {
-                        (html?"<b>Totals</b>":"Totals"),
+                        (html?"<b>"+MSG.colTotals()+"</b>":MSG.colTotals()),
                         "",
                         (html?"<b>"+tnrExams+"</b>":String.valueOf(tnrExams)),
                         (html?"<b>"+tnrStudents+"</b>":String.valueOf(tnrStudents)),
@@ -868,16 +909,16 @@ public class ExamAssignmentReportAction extends Action {
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    "Date",
-                    "Students with"+nl+"No Exam",
-                    "Students with"+nl+"One Exam",
-                    "Students with"+nl+"Two Exams",
-                    "Students with"+nl+"Three Exams",
-                    "Students with"+nl+"Four or More Exams",
-                    "Student "+nl+"Back-To-Back Exams",
-                    "Student Distance"+nl+"Back-To-Back Exams"},
+                    MSG.colDate(),
+                    MSG.colStudentsWithNoExam().replace("\n",nl),
+                    MSG.colStudentsWithOneExam().replace("\n",nl),
+                    MSG.colStudentsWithTwoExams().replace("\n",nl),
+                    MSG.colStudentsWithThreeExams().replace("\n",nl),
+                    MSG.colStudentsWithFourOrMoreExams().replace("\n",nl),
+                    MSG.colStudentBTBExams().replace("\n",nl),
+                    MSG.colStudentDistanceBTBExams().replace("\n",nl)},
                 new String[] {"left", "right", "right", "right", "right", "right", "right", "right", "right"},
                 new boolean[] {true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -963,7 +1004,7 @@ public class ExamAssignmentReportAction extends Action {
         }
         table.addLine(
                 new String[] {
-                        (html?"<b>Totals</b>":"Totals"),
+                        (html?"<b>"+MSG.colTotals()+"</b>":MSG.colTotals()),
                         (html?"<b>"+tNoExam+"</b>":String.valueOf(tNoExam)),
                         (html?"<b>"+tOneExam+"</b>":String.valueOf(tOneExam)),
                         (html?"<b>"+tTwoExams+"</b>":String.valueOf(tTwoExams)),
@@ -988,12 +1029,12 @@ public class ExamAssignmentReportAction extends Action {
         String nl = (html?"<br>":"\n");
         List<String> colNames = new ArrayList<String>(
         		Arrays.asList(new String[] {
-                        (form.getShowSections()?"Class / Course":"Examination"),
-                        "Enrollment",
-                        "Seating"+nl+"Type",
-                        "Date",
-                        "Time",
-                        "Average"+nl+"Distance"}));
+                        (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                        MSG.colEnrollment(),
+                        MSG.colSeatingType().replace("\n",nl),
+                        MSG.colDate(),
+                        MSG.colTime(),
+                        MSG.colAverageDistance().replace("\n",nl)}));
         List<String> colCmp = new ArrayList<String>(
         		Arrays.asList(new String[] {"left","left","center","left","left","left"}));
         List<Boolean> colOrd = new ArrayList<Boolean>(
@@ -1006,20 +1047,20 @@ public class ExamAssignmentReportAction extends Action {
         for (int i = 1; i <= maxSplits; i++) {
         	String pos;
         	switch (i) {
-        		case 1: pos = "1st"; break;
-        		case 2: pos = "2nd"; break;
-        		case 3: pos = "3rd"; break;
-        		default: pos = i + "th"; break;
+        		case 1: pos = MSG.col1stExam(); break;
+        		case 2: pos = MSG.col2ndExam(); break;
+        		case 3: pos = MSG.col3rdExam(); break;
+        		default: pos = MSG.colNthExam(i); break;
         	}
-        	colNames.add(pos + " Room");
-        	colNames.add(pos + " Room" + nl + "Capacity");
+        	colNames.add(pos + " " + MSG.colRoom());
+        	colNames.add(pos + " " + MSG.colRoom() + nl + MSG.colRoomCapacity());
         	colCmp.add("left"); colCmp.add("left");
         	colOrd.add(true); colOrd.add(true);
         }
         boolean[] ord = new boolean[colOrd.size()];
         for (int i = 0; i < colOrd.size(); i++) ord[i] = colOrd.get(i);
         PdfWebTable table = new PdfWebTable( colNames.size(),
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 colNames.toArray(new String[colNames.size()]), colCmp.toArray(new String[colCmp.size()]), ord);
         table.setRowStyle("white-space:nowrap");
         for (ExamAssignmentInfo exam : exams) {
@@ -1110,16 +1151,16 @@ public class ExamAssignmentReportAction extends Action {
 	private PdfWebTable generateViolatedDistributionsReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    "Preference",
-                    "Distribution",
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Enrollment",
-                    "Seating"+nl+"Type",
-                    "Date",
-                    "Time",
-                    "Room"},
+                    MSG.colPreference(),
+                    MSG.colDistribution(),
+                    (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.colEnrollment(),
+                    MSG.colSeatingType().replace("\n",nl),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    MSG.colRoom()},
                 new String[] {"left","left","left","right","center","left","left","left"},
                 new boolean[] {true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -1248,18 +1289,18 @@ public class ExamAssignmentReportAction extends Action {
 	    }
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 10,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    (studentConf?"Student Id":"Instructor Id"),
-                    "Name",
-                    "Type",
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Enrollment",
-                    "Seating"+nl+"Type",
-                    "Date",
-                    "Time",
-                    "Room",
-                    "Distance"},
+                    (studentConf?MSG.colStudentId():MSG.colInstructorId()),
+                    MSG.colStudentOrInstructorName(),
+                    MSG.colType(),
+                    (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.colEnrollment(),
+                    MSG.colSeatingType().replace("\n",nl),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    MSG.colRoom(),
+                    MSG.colDistance()},
                 new String[] {"left","left","left","left","right","center","left","left","left","left"},
                 new boolean[] {true, true, true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -1320,7 +1361,7 @@ public class ExamAssignmentReportAction extends Action {
                                 classes += nl; enrollment += nl; seating += nl; date += nl; time += nl; room += nl;
                                 classes += conflict.getOtherEventName();
                                 enrollment += conflict.getOtherEventSize();
-                                seating += (conflict.isOtherClass()?"Class":"Event");
+                                seating += (conflict.isOtherClass()?MSG.typeClass():MSG.typeEvent());
                                 room += conflict.getOtherEventRoom();
                                 //date += conflict.getOtherEventDate();
                                 time += conflict.getOtherEventTime(); 
@@ -1330,7 +1371,7 @@ public class ExamAssignmentReportAction extends Action {
                                     new String[] {
                                         id,
                                         name,
-                                        (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
+                                        (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+MSG.conflictDirect()+(html?"</font>":""),
                                         classes,
                                         enrollment,
                                         seating,
@@ -1358,7 +1399,7 @@ public class ExamAssignmentReportAction extends Action {
                                         new String[] {
                                             id,
                                             name,
-                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
+                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+MSG.conflictDirect()+(html?"</font>":""),
                                             exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                             exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
                                             exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
@@ -1385,10 +1426,10 @@ public class ExamAssignmentReportAction extends Action {
                                         new String[] {
                                             id,
                                             name,
-                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+"Direct"+(html?"</font>":""),
+                                            (html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>":"")+MSG.conflictDirect()+(html?"</font>":""),
                                             exam.getExamName()+nl+conflict.getOtherEventName(),
                                             String.valueOf(exam.getNrStudents())+nl+conflict.getOtherEventSize(),
-                                            exam.getSeatingTypeLabel()+nl+(conflict.isOtherClass()?"Class":"Event"),
+                                            exam.getSeatingTypeLabel()+nl+(conflict.isOtherClass()?MSG.typeClass():MSG.typeEvent()),
                                             exam.getDate(html)+nl,//+conflict.getOtherEventDate(),
                                             exam.getTime(html)+nl+conflict.getOtherEventTime(),
                                             exam.getRoomsName(html, ", ")+nl+conflict.getOtherEventRoom(),
@@ -1464,7 +1505,7 @@ public class ExamAssignmentReportAction extends Action {
                                     new String[] {
                                         id,
                                         name,
-                                        (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
+                                        (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+MSG.conflictBackToBack()+(html?"</font>":""),
                                         classes,
                                         enrollment,
                                         seating,
@@ -1491,7 +1532,7 @@ public class ExamAssignmentReportAction extends Action {
                                     new String[] {
                                         id,
                                         name,
-                                        (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+"Back-To-Back"+(html?"</font>":""),
+                                        (html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>":"")+MSG.conflictBackToBack()+(html?"</font>":""),
                                         exam.getExamName()+nl+conflict.getOtherExam().getExamName(),
                                         exam.getNrStudents()+nl+conflict.getOtherExam().getNrStudents(),
                                         exam.getSeatingTypeLabel()+nl+conflict.getOtherExam().getSeatingTypeLabel(),
@@ -1643,18 +1684,18 @@ public class ExamAssignmentReportAction extends Action {
         String nl = (html?"<br>":"\n");
         DecimalFormat df = new DecimalFormat("0.0");
         PdfWebTable table = new PdfWebTable( 10,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    "1st "+(form.getShowSections()?"Class / Course":"Examination"),
-                    "1st Enrollment",
-                    "1st Seating"+nl+"Type",
-                    "2nd "+(form.getShowSections()?"Class / Course":"Examination"),
-                    "2nd Enrollment",
-                    "2nd Seating"+nl+"Type",
-                    "Date",
-                    "Time",
-                    "Direct",
-                    "Direct [%]"},
+                    MSG.col1stExam() + " " + (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.col1stExam() + " " + MSG.colEnrollment(),
+                    MSG.col1stExam() + " " + MSG.colSeatingType().replace("\n", nl),
+                    MSG.col2ndExam() + " " + (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.col2ndExam() + " " + MSG.colEnrollment(),
+                    MSG.col2ndExam() + " " + MSG.colSeatingType().replace("\n", nl),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    MSG.conflictDirect(),
+                    MSG.colDirectPercent()},
                 new String[] {"left","right","center","left","right","center","left","left","right","right"},
                 new boolean[] {true, true, true, true, true, true, true, true, true, true} );
         
@@ -1715,7 +1756,7 @@ public class ExamAssignmentReportAction extends Action {
                                         exam.getSeatingTypeLabel(),
                                         conflict.getOtherEventName(),
                                         String.valueOf(conflict.getOtherEventSize()),
-                                        (conflict.isOtherClass()?"Class":"Event"),
+                                        (conflict.isOtherClass()?MSG.typeClass():MSG.typeEvent()),
                                         exam.getDate(html),
                                         exam.getTime(html),
                                         String.valueOf(nrStudents),
@@ -1772,7 +1813,7 @@ public class ExamAssignmentReportAction extends Action {
                                     exam.getSeatingTypeLabel(),
                                     conflict.getOtherEventName(),
                                     String.valueOf(conflict.getOtherEventSize()),
-                                    (conflict.isOtherClass()?"Class":"Event"),
+                                    (conflict.isOtherClass()?MSG.typeClass():MSG.typeEvent()),
                                     exam.getDate(html),
                                     exam.getTime(html),
                                     String.valueOf(conflict.getNrStudents()),
@@ -1801,19 +1842,19 @@ public class ExamAssignmentReportAction extends Action {
          String nl = (html?"<br>":"\n");
          DecimalFormat df = new DecimalFormat("0.0");
          PdfWebTable table = new PdfWebTable( 11,
-                 form.getReport(), "examAssignmentReport.do?ord=%%",
+                 form.getReportName(), "examAssignmentReport.action?ord=%%",
                  new String[] {
-                     "1st "+(form.getShowSections()?"Class / Course":"Examination"),
-                     "1st Enrollment",
-                     "1st Seating"+nl+"Type",
-                     "2nd "+(form.getShowSections()?"Class / Course":"Examination"),
-                     "2nd Enrollment",
-                     "2nd Seating"+nl+"Type",
-                     "Date",
-                     "Time",
-                     "Back-To-Back",
-                     "Back-To-Back [%]",
-                     "Distance [m]"},
+                     MSG.col1stExam() + " " + (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                     MSG.col1stExam() + " " + MSG.colEnrollment(),
+                     MSG.col1stExam() + " " + MSG.colSeatingType().replace("\n", nl),
+                     MSG.col2ndExam() + " " + (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                     MSG.col2ndExam() + " " + MSG.colEnrollment(),
+                     MSG.col2ndExam() + " " + MSG.colSeatingType().replace("\n", nl),
+                     MSG.colDate(),
+                     MSG.colTime(),
+                     MSG.conflictBackToBack(),
+                     MSG.colBackToBackPercent(),
+                     MSG.colDistanceMeters()},
                  new String[] {"left","right","center","left","right","center","left","left","right","right","right"},
                  new boolean[] {true, true, true, true, true, true, true, true, true, true, true} );
          
@@ -1915,16 +1956,16 @@ public class ExamAssignmentReportAction extends Action {
         String[] colAlign = new String[3+3*max];
         boolean[] colOrd = new boolean[3+3*max];
         int idx = 0;
-        colName[idx] = "Date"; colAlign[idx] = "left"; colOrd[idx++] = true;
+        colName[idx] = MSG.colDate(); colAlign[idx] = "left"; colOrd[idx++] = true;
         for (int i=0;i<max;i++) {
-            String th = (i==0?"1st":i==1?"2nd":i==2?"3rd":(i+1)+"th");
-            colName[idx] = th+" "+(form.getShowSections()?"Class / Course":"Examination"); colAlign[idx] = "left"; colOrd[idx++] = true;
-            colName[idx] = th+" Enrollment"; colAlign[idx] = "right"; colOrd[idx++] = true;
-            colName[idx] = th+" Time"; colAlign[idx] = "left"; colOrd[idx++] = true;
+            String th = (i==0?MSG.col1stExam():i==1?MSG.col2ndExam():i==2?MSG.col3rdExam():MSG.colNthExam(i + 1));
+            colName[idx] = th+" "+(form.getShowSections()?MSG.colOwner():MSG.colExamination()); colAlign[idx] = "left"; colOrd[idx++] = true;
+            colName[idx] = th+" " + MSG.colEnrollment(); colAlign[idx] = "right"; colOrd[idx++] = true;
+            colName[idx] = th+" " + MSG.colTime(); colAlign[idx] = "left"; colOrd[idx++] = true;
         }
-        colName[idx] = (html?"&gt;":"")+"2 A Day"; colAlign[idx] = "left"; colOrd[idx++] = true;
-        colName[idx] = (html?"&gt;":"")+"2 A Day [%]"; colAlign[idx] = "left"; colOrd[idx++] = true;
-        PdfWebTable table = new PdfWebTable( 3+3*max, form.getReport(), "examAssignmentReport.do?ord=%%", colName, colAlign, colOrd);
+        colName[idx] = (html ? MSG.conflictMoreThanTwoADay().replace(">", "&gt;") : MSG.conflictMoreThanTwoADay()); colAlign[idx] = "left"; colOrd[idx++] = true;
+        colName[idx] = (html ? MSG.colMoreThanTwoADayPercent().replace(">", "&gt;") : MSG.colMoreThanTwoADayPercent()); colAlign[idx] = "left"; colOrd[idx++] = true;
+        PdfWebTable table = new PdfWebTable( 3+3*max, form.getReportName(), "examAssignmentReport.action?ord=%%", colName, colAlign, colOrd);
         table.setRowStyle("white-space:nowrap");
         for (ExamAssignmentInfo exam : exams) {
             if (!match(form, exam)) continue;
@@ -2064,26 +2105,26 @@ public class ExamAssignmentReportAction extends Action {
         PdfWebTable table =
             (student?
             new PdfWebTable( 7,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
                 new String[] {
-                    (student?"Student Id":"Instructor Id"),
-                    "Name",
-                    (form.getShowSections()?"Class / Course":"Examination"),
-                    "Date",
-                    "Time",
-                    "Room",
-                    "Instuctor"},
+                    (student?MSG.colStudentId():MSG.colInstructorId()),
+                    MSG.colStudentOrInstructorName(),
+                    (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    MSG.colDate(),
+                    MSG.colTime(),
+                    MSG.colRoom(),
+                    MSG.colInstructor()},
                 new String[] {"left","left","left","left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true, true, true} ):
            new PdfWebTable( 6,
-                   form.getReport(), "examAssignmentReport.do?ord=%%",
+                   form.getReportName(), "examAssignmentReport.action?ord=%%",
                    new String[] {
-                       (student?"Student Id":"Instructor Id"),
-                       "Name",
-                       (form.getShowSections()?"Class / Course":"Examination"),
-                       "Date",
-                       "Time",
-                       "Room"},
+                       (student?MSG.colStudentId():MSG.colInstructorId()),
+                       MSG.colStudentOrInstructorName(),
+                       (form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                       MSG.colDate(),
+                       MSG.colTime(),
+                       MSG.colRoom()},
                        new String[] {"left","left","left","left", "left", "left"},
                        new boolean[] {true, true, true, true, true, true} ));
                     
@@ -2205,8 +2246,8 @@ public class ExamAssignmentReportAction extends Action {
         String sp = (html?"&nbsp;":" ");
         String indent = (html?"&nbsp;&nbsp;&nbsp;&nbsp;":"    ");
         PdfWebTable table = new PdfWebTable( 2,
-                form.getReport(), "examAssignmentReport.do?ord=%%",
-                new String[] {"Name","Value"},
+                form.getReportName(), "examAssignmentReport.action?ord=%%",
+                new String[] {MSG.colName(),MSG.colValue()},
                 new String[] {"left", "right"},
                 new boolean[] {true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -2261,12 +2302,13 @@ public class ExamAssignmentReportAction extends Action {
             }
         }
         table.addLine(new String[] {
-                "Number of exams", df2.format(exams.size())
+                MSG.propNumberOfExams(), df2.format(exams.size())
                 }, new Comparable[] {row++,null,null});
         for (int i=0;i<ExamOwner.sOwnerTypes.length;i++)
             if (!sct[i].isEmpty()) 
                 table.addLine(new String[] {
-                        indent+(i==ExamOwner.sOwnerTypeClass?"Classes":i==ExamOwner.sOwnerTypeConfig?"Configs":i==ExamOwner.sOwnerTypeCourse?"Courses":"Offerings")+" with an exam", df2.format(sct[i].size())
+                        indent+
+                        MSG.propOwnersWithAnExam(i==ExamOwner.sOwnerTypeClass?MSG.typeClasses():i==ExamOwner.sOwnerTypeConfig?MSG.typeConfigs():i==ExamOwner.sOwnerTypeCourse?MSG.typeCourses():MSG.typeOfferings()), df2.format(sct[i].size())
                         }, new Comparable[] {row++,null,null});
         
         table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
@@ -2279,58 +2321,58 @@ public class ExamAssignmentReportAction extends Action {
                 }, new Comparable[] {row++,null,null});
                 */
         table.addLine(new String[] {
-                indent+"Students enrolled in classes", 
+                indent+MSG.propStudentsEnrolledInClasses(), 
                 df2.format(new StudentDAO().getSession().createQuery("select count(distinct s) from Student s inner join s.classEnrollments c where s.session.uniqueId=:sessionId")
                 .setLong("sessionId", sessionId).uniqueResult())
                 }, new Comparable[] {row++,null,null});
         table.addLine(new String[] {
-                indent+"Students having an exam", df2.format(students.size())
+                indent+MSG.propStudentsHavingAnExam(), df2.format(students.size())
                 }, new Comparable[] {row++,null,null});
         table.addLine(new String[] {
-                indent+"Student exam enrollments", df2.format(studentExams)
+                indent+MSG.propStudentExamEnrollments(), df2.format(studentExams)
                 }, new Comparable[] {row++,null,null});
 
         table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
                                     
         if (!instructors.isEmpty()) {
             table.addLine(new String[] {
-                    "Registered instructors", 
+                    MSG.propRegisteredInstructors(), 
                     df2.format(new StudentDAO().getSession().createQuery("select count(i.externalUniqueId) from DepartmentalInstructor i where i.department.session.uniqueId=:sessionId")
                     .setLong("sessionId", sessionId).uniqueResult())
                     
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Instructors having an exam", df2.format(instructors.size())
+                    indent+MSG.propInstructorsHavingAnExam(), df2.format(instructors.size())
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Instructor exam enrollments", df2.format(instructorExams)
+                    indent+MSG.propInstructorExamEnrollments(), df2.format(instructorExams)
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
         }
 
         if (sdc>0)
             table.addLine(new String[] {
-                    "Direct student conflicts", df2.format(sdc)
+                    MSG.propDirectStudentConflicts(), df2.format(sdc)
                     }, new Comparable[] {row++,null,null});
         if (sdcna>0) {
             table.addLine(new String[] {
-                    indent+"Conflict with other exam", df2.format(sdc-sdcna)
+                    indent+MSG.propConflictWithOtherExam(), df2.format(sdc-sdcna)
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Student not available", df2.format(sdcna)
+                    indent+MSG.propStudentNotAvailable(), df2.format(sdcna)
                     }, new Comparable[] {row++,null,null});
         }
         if (sm2d>0)
             table.addLine(new String[] {
-                    "More than 2 exams a day student conflicts", ""+df2.format(sm2d)
+                    MSG.propStudentMoreThanTwoExamsADayConflicts(), ""+df2.format(sm2d)
                     }, new Comparable[] {row++,null,null});
         if (sbtb>0)
             table.addLine(new String[] {
-                    "Back-to-back student conflicts", df2.format(sbtb)
+                    MSG.propStudentBackToBackConflicts(), df2.format(sbtb)
                     }, new Comparable[] {row++,null,null});
         if (sdbtb>0)
             table.addLine(new String[] {
-                    indent+"Distance back-to-back student conflicts", df2.format(sdbtb)
+                    indent+MSG.propStudentDistanceBackToBackConflicts(), df2.format(sdbtb)
                     }, new Comparable[] {row++,null,null});
         
         if (idc>0 || im2d>0 || ibtb>0) 
@@ -2338,54 +2380,54 @@ public class ExamAssignmentReportAction extends Action {
 
         if (idc>0)
             table.addLine(new String[] {
-                    "Direct instructor conflicts", df2.format(idc)
+                    MSG.propDirectInstructorConflicts(), df2.format(idc)
                     }, new Comparable[] {row++,null,null});
         if (idcna>0) {
             table.addLine(new String[] {
-                    indent+"Conflict with other exam", df2.format(idc-idcna)
+                    indent+MSG.propConflictWithOtherExam(), df2.format(idc-idcna)
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Instructor not available", df2.format(idcna)
+                    indent+MSG.propInstructorNotAvailable(), df2.format(idcna)
                     }, new Comparable[] {row++,null,null});
         }
         if (im2d>0)
             table.addLine(new String[] {
-                    "More than 2 exams a day instructor conflicts", df2.format(im2d)
+                    MSG.propInstructorMoreThanTwoExamsADayConflicts(), df2.format(im2d)
                     }, new Comparable[] {row++,null,null});
         if (ibtb>0)
             table.addLine(new String[] {
-                    "Back-to-back instructor conflicts", df2.format(ibtb)
+                    MSG.propInstructorBackToBackConflicts(), df2.format(ibtb)
                     }, new Comparable[] {row++,null,null});
         if (idbtb>0)
             table.addLine(new String[] {
-                    indent+"Distance back-to-back instructor conflicts", df2.format(idbtb)
+                    indent+MSG.propInstructorDistanceBackToBackConflicts(), df2.format(idbtb)
                     }, new Comparable[] {row++,null,null});
         
         table.addLine(new String[] {sp,""}, new Comparable[] {row++,null,null});
 
         if (sdc>0)
             table.addLine(new String[] {
-                    "Direct student conflicts", df1.format(100.0*sdc/studentExams)+"%"
+                    MSG.propDirectStudentConflicts(), df1.format(100.0*sdc/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (sdcna>0) {
             table.addLine(new String[] {
-                    indent+"Conflict with other exam", df1.format(100.0*(sdc-sdcna)/studentExams)+"%"
+                    indent+MSG.propConflictWithOtherExam(), df1.format(100.0*(sdc-sdcna)/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Student not available", df1.format(100.0*sdcna/studentExams)+"%"
+                    indent+MSG.propStudentNotAvailable(), df1.format(100.0*sdcna/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         }
         if (sm2d>0)
             table.addLine(new String[] {
-                    "More than 2 exams a day student conflicts", ""+df1.format(100.0*sm2d/studentExams)+"%"
+                    MSG.propStudentMoreThanTwoExamsADayConflicts(), ""+df1.format(100.0*sm2d/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (sbtb>0)
             table.addLine(new String[] {
-                    "Back-to-back student conflicts", df1.format(100.0*sbtb/studentExams)+"%"
+            		MSG.propStudentBackToBackConflicts(), df1.format(100.0*sbtb/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (sdbtb>0)
             table.addLine(new String[] {
-                    indent+"Distance back-to-back student conflicts", df1.format(100.0*sdbtb/studentExams)+"%"
+                    indent+MSG.propStudentDistanceBackToBackConflicts(), df1.format(100.0*sdbtb/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         
         if (idc>0 || im2d>0 || ibtb>0) 
@@ -2393,27 +2435,27 @@ public class ExamAssignmentReportAction extends Action {
 
         if (idc>0)
             table.addLine(new String[] {
-                    "Direct instructor conflicts", df1.format(100.0*idc/studentExams)+"%"
+            		MSG.propDirectInstructorConflicts(), df1.format(100.0*idc/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (idcna>0) {
             table.addLine(new String[] {
-                    indent+"Conflict with other exam", df1.format(100.0*(idc-idcna)/studentExams)+"%"
+                    indent+MSG.propConflictWithOtherExam(), df1.format(100.0*(idc-idcna)/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
             table.addLine(new String[] {
-                    indent+"Instructor not available", df1.format(100.0*idcna/studentExams)+"%"
+                    indent+MSG.propInstructorNotAvailable(), df1.format(100.0*idcna/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         }
         if (im2d>0)
             table.addLine(new String[] {
-                    "More than 2 exams a day instructor conflicts", df1.format(100.0*im2d/studentExams)+"%"
+                    MSG.propInstructorMoreThanTwoExamsADayConflicts(), df1.format(100.0*im2d/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (ibtb>0)
             table.addLine(new String[] {
-                    "Back-to-back instructor conflicts", df1.format(100.0*ibtb/studentExams)+"%"
+            		MSG.propInstructorBackToBackConflicts(), df1.format(100.0*ibtb/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
         if (idbtb>0)
             table.addLine(new String[] {
-                    indent+"Distance back-to-back instructor conflicts", df1.format(100.0*idbtb/studentExams)+"%"
+                    indent+MSG.propInstructorDistanceBackToBackConflicts(), df1.format(100.0*idbtb/studentExams)+"%"
                     }, new Comparable[] {row++,null,null});
 
         table.setRowStyle("white-space:nowrap");

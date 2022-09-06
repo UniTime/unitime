@@ -69,7 +69,6 @@
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
 	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
-	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
@@ -753,20 +752,6 @@
     	<forward
     		name="show"
     		path="examInfoTile"
-    		redirect="true" />
-    </action>
-    
-    <action
-    	path="/examAssignmentReport"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examAssignmentReportForm"
-    	input="examAssignmentReportTile"
-    	name="examAssignmentReportForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="examAssignmentReportTile"
     		redirect="true" />
     </action>
     

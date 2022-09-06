@@ -17,94 +17,80 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<tt:back-mark back="true" clear="true" title="Examination Reports" uri="examAssignmentReport.do"/>
-<tiles:importAttribute />
-<html:form action="/examAssignmentReport">
-	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="examAssignmentReport">
+	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+	<table class="unitime-MainTable">
 		<TR>
-			<TD width="10%" nowrap>Show classes/courses:</TD>
+			<TD width="10%" nowrap><loc:message name="filterShowClassesCourses"/></TD>
 			<TD>
-				<html:checkbox property="showSections"/>
+				<s:checkbox name="form.showSections"/>
 			</TD>
 		</TR>
-	</TABLE>
-	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</table>
+	<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+	<script type="text/javascript">blEndCollapsed('dispFilter');</script>
+	<table class="unitime-MainTable">
 	<TR>
-  		<TD width="10%" nowrap>Examination Problem:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterExaminationProblem"/></TD>
 		<TD>
-			<html:select property="examType">
-				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-			</html:select>
+			<s:select name="form.examType"
+				list="#request.examTypes" listKey="uniqueId" listValue="label"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Report:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterReport"/></TD>
 		<TD>
-			<html:select property="report">
-				<html:options property="reports"/>
-			</html:select>
+			<s:select name="form.report" list="form.reports" listKey="value" listValue="label"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Filter:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterTextFilter"/></TD>
 		<TD>
-			<html:text property="filter" size="50" title="Hint: use comma for conjunctions, semicolon for disjunctions, e.g., 'a,b;c means (a and b) or c'."/>
+			<s:textfield name="form.filter" size="50" title="%{#msg.titleTextFilter()}"/>
 		</TD>
 	</TR>
 	<TR>
-		<TD width="10%" nowrap>Subject Areas:</TD>
+		<TD width="10%" nowrap><loc:message name="filterSubjectAreas"/></TD>
 		<TD>
-			<html:select name="examAssignmentReportForm" property="subjectArea">
-				<html:option value="">Select...</html:option>
-				<logic:equal name="examAssignmentReportForm" property="canSeeAll" value="true">
-					<html:option value="-1">All</html:option>
-				</logic:equal>
-				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-			</html:select>
+			<s:select name="form.subjectArea" list="form.subjectAreas" listKey="id" listValue="value"/>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-			<logic:notEmpty name="examAssignmentReportForm" property="table">
-				<html:submit property="op" value="Export PDF"/>
-			</logic:notEmpty>
-			<logic:notEmpty name="examAssignmentReportForm" property="table">
-				<html:submit property="op" value="Export CSV"/>
-			</logic:notEmpty>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+			<s:submit name='form.op' value="%{#msg.buttonApply()}" accesskey="%{#msg.accessApply()}" title="%{#msg.titleApply()}"/>
+			<s:if test="form.table != null">
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+			</s:if>
+			<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 		</TD>
 	</TR>
 	</TABLE>
 
 	<BR><BR>
-	<logic:empty name="examAssignmentReportForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
-			<tr><td><i>
-				No exams matching the above criteria found.
-			</i></td></tr>
+	<s:if test="form.table == null">
+		<s:if test="form.subjectArea != null">
+			<table class="unitime-MainTable">
+				<tr><td><i><loc:message name="errorNoExamsFound"/></i></td></tr>
+			</table>
+		</s:if>
+	</s:if>
+	<s:else>
+		<table class="unitime-MainTable">
+			<s:property value="form.table" escapeHtml="false"/>
+			<tr><td colspan='%{form.nrColumns}'><tt:displayPrefLevelLegend/></td></tr>
 		</table>
-	</logic:empty>
-	<logic:notEmpty name="examAssignmentReportForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:define id="colspan" name="examAssignmentReportForm" property="nrColumns"/>
-			<bean:write name="examAssignmentReportForm" property="table" filter="false"/>
-			<tr><td colspan='<%=colspan%>'><tt:displayPrefLevelLegend/></td></tr>
-		</table>
-	</logic:notEmpty>
-	<logic:notEmpty scope="request" name="hash">
-		<SCRIPT type="text/javascript" language="javascript">
+	</s:else>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
-	</logic:notEmpty>
-</html:form>
+	</s:if>
+</s:form>
+</loc:bundle>

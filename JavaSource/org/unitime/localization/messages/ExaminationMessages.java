@@ -26,6 +26,9 @@ import com.google.gwt.i18n.client.Messages.DefaultMessage;
  */
 public interface ExaminationMessages extends Messages {
 	
+	@DefaultMessage("Filter")
+	String filter();
+
 	@DefaultMessage("Normal")
 	String seatingNormal();
 
@@ -265,6 +268,9 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("{0} Exams ({1})")
 	String backExams(String type, String subjectOrCourse);
+	
+	@DefaultMessage("{0} ({1})")
+	String backExaminationReports(String report, String subject);
 	
 	@DefaultMessage("Exam ({0})")
 	String backExam(String name);
@@ -520,4 +526,322 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
+	
+	@DefaultMessage("Show classes/courses:")
+	String filterShowClassesCourses();
+	
+	@DefaultMessage("Examination Problem:")
+	String filterExaminationProblem();
+	
+	@DefaultMessage("Report:")
+	String filterReport();
+	
+	@DefaultMessage("Filter:")
+	String filterTextFilter();
+	
+	@DefaultMessage("Hint: use comma for conjunctions, semicolon for disjunctions, e.g., 'a,b;c means (a and b) or c'.")
+	String titleTextFilter();
+	
+	@DefaultMessage("Subject Areas:")
+	String filterSubjectAreas();
+	
+	@DefaultMessage("Apply")
+	String buttonApply();
+	
+	@DefaultMessage("A")
+	String accessApply();
+	
+	@DefaultMessage("Apply (Alt + A)")
+	String titleApply();
+	
+	@DefaultMessage("Refresh")
+	String buttonRefresh();
+	
+	@DefaultMessage("R")
+	String accessRefresh();
+	
+	@DefaultMessage("Refresh (Alt + R)")
+	String titleRefresh();
+	
+	@DefaultMessage("No exams matching the above criteria found.")
+	String errorNoExamsFound();
+	
+	@DefaultMessage("Class / Course")
+	String colOwner();
+	
+	@DefaultMessage("Examination")
+	String colExamination();
+	
+	@DefaultMessage("Enrollment")
+	String colEnrollment();
+	
+	@DefaultMessage("Seating\nType")
+	String colSeatingType();
+	
+	@DefaultMessage("Date")
+	String colDate();
+	
+	@DefaultMessage("Time")
+	String colTime();
+	
+	@DefaultMessage("Room")
+	String colRoom();
+	
+	@DefaultMessage("Name")
+	String colStudentOrInstructorName();
+	
+	@DefaultMessage("Name")
+	String colName();
+	
+	@DefaultMessage("Student Id")
+	String colStudentId();
+	
+	@DefaultMessage("Instructor Id")
+	String colInstructorId();
+	
+	@DefaultMessage("Instructor")
+	String colInstructor();
+	
+	@DefaultMessage("Capacity")
+	String colRoomCapacity();
+	
+	@DefaultMessage("Exam Capacity")
+	String colExamCapacity();
+	
+	@DefaultMessage("Instructor\nConflicts")
+	String colInstructorConflicts();
+	
+	@DefaultMessage("Student\nConflicts")
+	String colStudentConflicts();
+	
+	@DefaultMessage("Classes / Courses")
+	String colOwners();
+	
+	@DefaultMessage("Examinations")
+	String colExaminations();
+	
+	@DefaultMessage("Total Enrollment")
+	String colTotalEnrollment();
+	
+	@DefaultMessage("with {0}+ students")
+	String withNOrMoreStudents(int n);
+	
+	@DefaultMessage("Totals")
+	String colTotals();
+	
+	@DefaultMessage("Average\nDistance")
+	String colAverageDistance();
+	
+	@DefaultMessage("1st")
+	String col1stExam();
+	
+	@DefaultMessage("2nd")
+	String col2ndExam();
+	
+	@DefaultMessage("3rd")
+	String col3rdExam();
+	
+	@DefaultMessage("{0}th")
+	String colNthExam(int n);
+	
+	@DefaultMessage("Preference")
+	String colPreference();
+	
+	@DefaultMessage("Distribution")
+	String colDistribution();
+	
+	@DefaultMessage("Students with\nNo Exam")
+	String colStudentsWithNoExam();
+	
+	@DefaultMessage("Students with\nOne Exam")
+	String colStudentsWithOneExam();
+	
+	@DefaultMessage("Students with\nTwo Exams")
+	String colStudentsWithTwoExams();
+	
+	@DefaultMessage("Students with\nThree Exams")
+	String colStudentsWithThreeExams();
+	
+	@DefaultMessage("Students with\nFour or More Exams")
+	String colStudentsWithFourOrMoreExams();
+	
+	@DefaultMessage("Student\nBack-To-Back Exams")
+	String colStudentBTBExams();
+	
+	@DefaultMessage("Student Distance\nBack-To-Back Exams")
+	String colStudentDistanceBTBExams();
+	
+	@DefaultMessage("Type")
+	String colType();
+	
+	@DefaultMessage("Distance")
+	String colDistance();
+	
+	@DefaultMessage("Class")
+	String typeClass();
+	
+	@DefaultMessage("Event")
+	String typeEvent();
+	
+	@DefaultMessage("Direct")
+	String conflictDirect();
+	
+	@DefaultMessage("Direct [%]")
+	String colDirectPercent();
+	
+	@DefaultMessage("Back-To-Back")
+	String conflictBackToBack();
+	
+	@DefaultMessage("Back-To-Back [%]")
+	String colBackToBackPercent();
+	
+	@DefaultMessage("Distance [m]")
+	String colDistanceMeters();
+	
+	@DefaultMessage(">2 A Day")
+	String conflictMoreThanTwoADay();
+	
+	@DefaultMessage(">2 A Day [%]")
+	String colMoreThanTwoADayPercent();
+	
+	@DefaultMessage("Value")
+	String colValue();
+	
+	@DefaultMessage("Number of exams")
+	String propNumberOfExams();
+	
+	@DefaultMessage("Classes")
+	String typeClasses();
+	
+	@DefaultMessage("Configs")
+	String typeConfigs();
+	
+	@DefaultMessage("Courses")
+	String typeCourses();
+	
+	@DefaultMessage("Offerings")
+	String typeOfferings();
+	
+	@DefaultMessage("{0} with an exam")
+	String propOwnersWithAnExam(String type);
+	
+	@DefaultMessage("Students enrolled in classes")
+	String propStudentsEnrolledInClasses();
+	
+	@DefaultMessage("Students having an exam")
+	String propStudentsHavingAnExam();
+	
+	@DefaultMessage("Student exam enrollments")
+	String propStudentExamEnrollments();
+	
+	@DefaultMessage("Registered instructors")
+	String propRegisteredInstructors();
+	
+	@DefaultMessage("Instructors having an exam")
+	String propInstructorsHavingAnExam();
+	
+	@DefaultMessage("Instructor exam enrollments")
+	String propInstructorExamEnrollments();
+	
+	@DefaultMessage("Direct student conflicts")
+	String propDirectStudentConflicts();
+	
+	@DefaultMessage("Conflict with other exam")
+	String propConflictWithOtherExam();
+	
+	@DefaultMessage("Student not available")
+	String propStudentNotAvailable();
+	
+	@DefaultMessage("More than 2 exams a day student conflicts")
+	String propStudentMoreThanTwoExamsADayConflicts();
+	
+	@DefaultMessage("Back-to-back student conflicts")
+	String propStudentBackToBackConflicts();
+	
+	@DefaultMessage("Distance back-to-back student conflicts")
+	String propStudentDistanceBackToBackConflicts();
+	
+	@DefaultMessage("Direct instructor conflicts")
+	String propDirectInstructorConflicts();
+	
+	@DefaultMessage("Instructor not available")
+	String propInstructorNotAvailable();
+	
+	@DefaultMessage("More than 2 exams a day instructor conflicts")
+	String propInstructorMoreThanTwoExamsADayConflicts();
+	
+	@DefaultMessage("Back-to-back instructor conflicts")
+	String propInstructorBackToBackConflicts();
+	
+	@DefaultMessage("Distance back-to-back instructor conflicts")
+	String propInstructorDistanceBackToBackConflicts();
+
+	@DefaultMessage("Exam Assignment Report")
+	String reportExamAssignmentReport();
+
+	@DefaultMessage("Room Assignment Report")
+	String reportRoomAssignmentReport();
+
+	@DefaultMessage("Statistics")
+	String reportStatistics();
+
+	@DefaultMessage("Period Usage")
+	String reportPeriodUsage();
+
+	@DefaultMessage("Number of Exams A Day")
+	String reportNrExamsADay();
+
+	@DefaultMessage("Room Splits")
+	String reportRoomSplits();
+
+	@DefaultMessage("Violated Distribution Constraints")
+	String reportViolatedDistributions();
+
+	@DefaultMessage("Direct Student Conflicts")
+	String reportDirectStudentConflicts();
+
+	@DefaultMessage("More Than 2 Exams A Day Student Conflicts")
+	String reportMore2ADayStudentConflicts();
+
+	@DefaultMessage("Back-To-Back Student Conflicts")
+	String reportBackToBackStudentConflicts();
+
+	@DefaultMessage("Individual Student Conflicts")
+	String reportIndividualStudentConflicts();
+
+	@DefaultMessage("Individual Direct Student Conflicts")
+	String reportIndividualDirectStudentConflicts();
+
+	@DefaultMessage("Individual Back-To-Back Student Conflicts")
+	String reportIndividualBackToBackStudentConflicts();
+
+	@DefaultMessage("Individual More Than 2 Exams A Day Student Conflicts")
+	String reportIndividualMore2ADayStudentConflicts();
+
+	@DefaultMessage("Direct Instructor Conflicts")
+	String reportDirectInstructorConflicts();
+
+	@DefaultMessage("More Than 2 Exams A Day Instructor Conflicts")
+	String reportMore2ADayInstructorConflicts();
+
+	@DefaultMessage("Back-To-Back Instructor Conflicts")
+	String reportBackToBackInstructorConflicts();
+
+	@DefaultMessage("Individual Instructor Conflicts")
+	String reportIndividualInstructorConflicts();
+
+	@DefaultMessage("Individual Direct Instructor Conflicts")
+	String reportIndividualDirectInstructorConflicts();
+
+	@DefaultMessage("Individual Back-To-Back Instructor Conflicts")
+	String reportIndividualBackToBackInstructorConflicts();
+
+	@DefaultMessage("Individual More Than 2 Exams A Day Instructor Conflicts")
+	String reportIndividualMore2ADayInstructorConflicts();
+
+	@DefaultMessage("Individual Student Schedule")
+	String reportIndividualStudentSchedule();
+
+	@DefaultMessage("Individual Instructor Schedule")
+	String reportIndividualInstructorSchedule();
 }

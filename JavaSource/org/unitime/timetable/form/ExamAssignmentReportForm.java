@@ -19,53 +19,51 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
  * @author Tomas Muller
  */
 public class ExamAssignmentReportForm extends ExamReportForm {
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	private static final long serialVersionUID = -1263238076223090733L;
-	private String iReport = null; 
-    public static final String sExamAssignmentReport = "Exam Assignment Report";
-    public static final String sRoomAssignmentReport = "Room Assignment Report";
-    public static final String sStatistics = "Statistics";
-    public static final String sPeriodUsage = "Period Usage";
-    public static final String sNrExamsADay = "Number of Exams A Day";
-    public static final String sRoomSplits = "Room Splits";
-    public static final String sViolatedDistributions = "Violated Distribution Constraints";
-    public static final String sDirectStudentConflicts = "Direct Student Conflicts";
-    public static final String sMore2ADayStudentConflicts = "More Than 2 Exams A Day Student Conflicts";
-    public static final String sBackToBackStudentConflicts = "Back-To-Back Student Conflicts";
-    public static final String sIndividualStudentConflicts = "Individual Student Conflicts";
-    public static final String sIndividualDirectStudentConflicts = "Individual Direct Student Conflicts";
-    public static final String sIndividualBackToBackStudentConflicts = "Individual Back-To-Back Student Conflicts";
-    public static final String sIndividualMore2ADayStudentConflicts = "Individual More Than 2 Exams A Day Student Conflicts";
-    public static final String sDirectInstructorConflicts = "Direct Instructor Conflicts";
-    public static final String sMore2ADayInstructorConflicts = "More Than 2 Exams A Day Instructor Conflicts";
-    public static final String sBackToBackInstructorConflicts = "Back-To-Back Instructor Conflicts";
-    public static final String sIndividualInstructorConflicts = "Individual Instructor Conflicts";
-    public static final String sIndividualDirectInstructorConflicts = "Individual Direct Instructor Conflicts";
-    public static final String sIndividualBackToBackInstructorConflicts = "Individual Back-To-Back Instructor Conflicts";
-    public static final String sIndividualMore2ADayInstructorConflicts = "Individual More Than 2 Exams A Day Instructor Conflicts";
-    public static final String sIndividualStudentSchedule = "Individual Student Schedule";
-    public static final String sIndividualInstructorSchedule = "Individual Instructor Schedule";
-    private static final String[] sReports = { 
-            sExamAssignmentReport, sRoomAssignmentReport, sStatistics, 
-            sPeriodUsage, sNrExamsADay, sRoomSplits, 
-            sViolatedDistributions,
-            sDirectStudentConflicts, sMore2ADayStudentConflicts, sBackToBackStudentConflicts, 
-            sIndividualStudentSchedule,
-            sIndividualStudentConflicts, sIndividualDirectStudentConflicts, sIndividualMore2ADayStudentConflicts, sIndividualBackToBackStudentConflicts,
-            sDirectInstructorConflicts, sMore2ADayInstructorConflicts, sBackToBackInstructorConflicts, 
-            sIndividualInstructorSchedule,
-            sIndividualInstructorConflicts, sIndividualDirectInstructorConflicts, sIndividualBackToBackInstructorConflicts, sIndividualMore2ADayInstructorConflicts
-            };
+	private String iReport = null;
+	public static enum ExamReport {
+		ExamAssignmentReport,
+		RoomAssignmentReport,
+		Statistics,
+		PeriodUsage,
+		NrExamsADay,
+		RoomSplits,
+		ViolatedDistributions,
+		DirectStudentConflicts,
+		More2ADayStudentConflicts,
+		BackToBackStudentConflicts,
+		IndividualStudentConflicts,
+		IndividualDirectStudentConflicts,
+		IndividualBackToBackStudentConflicts,
+		IndividualMore2ADayStudentConflicts,
+		DirectInstructorConflicts,
+		More2ADayInstructorConflicts,
+		BackToBackInstructorConflicts,
+		IndividualInstructorConflicts,
+		IndividualDirectInstructorConflicts,
+		IndividualBackToBackInstructorConflicts,
+		IndividualMore2ADayInstructorConflicts,
+		IndividualStudentSchedule,
+		IndividualInstructorSchedule,
+	}
     private String iFilter = null;
     private boolean iCanSeeAll = false;
     
@@ -80,9 +78,56 @@ public class ExamAssignmentReportForm extends ExamReportForm {
 	    iReport = null; iCanSeeAll = false;
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		iReport = null; iCanSeeAll = false;
+	}
+	
 	public String getReport() { return iReport; }
+	public String getReportName() {
+		try {
+			return getReportName(ExamReport.valueOf(iReport));
+		} catch (Exception e) {
+			return iReport;
+		}
+	}
 	public void setReport(String report) { iReport = report; }
-	public String[] getReports() { return sReports; }
+	public String getReportName(ExamReport report) {
+		switch (report) { 
+		case ExamAssignmentReport: return MSG.reportExamAssignmentReport();
+		case RoomAssignmentReport: return MSG.reportRoomAssignmentReport();
+		case Statistics: return MSG.reportStatistics();
+		case PeriodUsage: return MSG.reportPeriodUsage();
+		case NrExamsADay: return MSG.reportNrExamsADay();
+		case RoomSplits: return MSG.reportRoomSplits();
+		case ViolatedDistributions: return MSG.reportViolatedDistributions();
+		case DirectStudentConflicts: return MSG.reportDirectStudentConflicts();
+		case More2ADayStudentConflicts: return MSG.reportMore2ADayStudentConflicts();
+		case BackToBackStudentConflicts: return MSG.reportBackToBackStudentConflicts();
+		case IndividualStudentConflicts: return MSG.reportIndividualStudentConflicts();
+		case IndividualDirectStudentConflicts: return MSG.reportIndividualDirectStudentConflicts();
+		case IndividualBackToBackStudentConflicts: return MSG.reportIndividualBackToBackStudentConflicts();
+		case IndividualMore2ADayStudentConflicts: return MSG.reportIndividualMore2ADayStudentConflicts();
+		case DirectInstructorConflicts: return MSG.reportDirectInstructorConflicts();
+		case More2ADayInstructorConflicts: return MSG.reportMore2ADayInstructorConflicts();
+		case BackToBackInstructorConflicts: return MSG.reportBackToBackInstructorConflicts();
+		case IndividualInstructorConflicts: return MSG.reportIndividualInstructorConflicts();
+		case IndividualDirectInstructorConflicts: return MSG.reportIndividualDirectInstructorConflicts();
+		case IndividualBackToBackInstructorConflicts: return MSG.reportIndividualBackToBackInstructorConflicts();
+		case IndividualMore2ADayInstructorConflicts: return MSG.reportIndividualMore2ADayInstructorConflicts();
+		case IndividualStudentSchedule: return MSG.reportIndividualStudentSchedule();
+		case IndividualInstructorSchedule: return MSG.reportIndividualInstructorSchedule();
+		default: return report.name();
+		}
+	}
+	
+	public List<ComboBoxLookup> getReports() {
+		List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+		for (ExamReport r: ExamReport.values())
+			ret.add(new ComboBoxLookup(getReportName(r), r.name()));
+		return ret;
+	}
 	
 	public String getFilter() { return iFilter; }
 	public void setFilter(String filter) { iFilter = filter; }
