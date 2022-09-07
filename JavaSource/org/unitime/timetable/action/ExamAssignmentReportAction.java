@@ -63,7 +63,6 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -83,7 +82,6 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.Formats;
-import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
@@ -133,19 +131,6 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
         RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), true, false);
         
         form.load(sessionContext);
-        
-        List<IdValue> subjects = new ArrayList<IdValue>();
-        subjects.add(new IdValue(null, CONST.select()));
-        if (sessionContext.hasPermission(Right.DepartmentIndependent)) {
-        	subjects.add(new IdValue(-1l, CONST.all()));
-        }
-        TreeSet<SubjectArea> userSubjectAreas = SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false);
-        for (SubjectArea sa: userSubjectAreas)
-        	subjects.add(new IdValue(sa.getUniqueId(), sa.getSubjectAreaAbbreviation()));
-        form.setSubjectAreas(subjects);
-        if (userSubjectAreas.size() == 1) {
-        	form.setSubjectArea(userSubjectAreas.first().getUniqueId());
-        }
         
         Collection<ExamAssignmentInfo> assignedExams = null;
         if (form.getSubjectArea()!=null && form.getSubjectArea()!=0 && form.getExamType() != null) {

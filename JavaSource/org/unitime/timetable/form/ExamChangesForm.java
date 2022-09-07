@@ -19,45 +19,67 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 /**
  * @author Tomas Muller
  */
 public class ExamChangesForm extends ExamReportForm {
 	private static final long serialVersionUID = 4093360180461644275L;
-	private String iChage = sChangeInitial;
-    public static final String sChangeInitial = "Initial";
-    public static final String sChangeBest = "Best";
-    public static final String sChangeSaved = "Saved";
-    public static final String[] sChanges = new String[] { sChangeInitial, sChangeBest, sChangeSaved }; 
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
+	private String iChage = ExamChange.Initial.name();
     private boolean iReverse = false;
     private boolean iNoSolver = false;
+    
+    public static enum ExamChange {
+    	Initial, Best, Saved,
+    }
+    
+    public String getChangeName() {
+		try {
+			return getChangeName(ExamChange.valueOf(iChage));
+		} catch (Exception e) {
+			return iChage;
+		}
+	}
+    public String getChangeName(ExamChange ch) {
+    	switch (ch) {
+		case Best: return MSG.changeBest();
+		case Initial: return MSG.changeInitial();
+		case Saved: return MSG.changeSaved();
+		default:
+			return ch.name();
+		}
+    }
     
     public boolean getReverse() { return iReverse; }
     public void setReverse(boolean reverse) { iReverse = reverse; }
     public String getChangeType() { return iChage; }
     public void setChangeType(String changeType) { iChage = changeType; }
-    public String[] getChangeTypes() { return sChanges; }
-    
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        super.reset(mapping, request);
-        iChage = sChangeInitial; iReverse = false;
-    }
+    public List<ComboBoxLookup> getChangeTypes() {
+		List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+		for (ExamChange ch: ExamChange.values())
+			ret.add(new ComboBoxLookup(getChangeName(ch), ch.name()));
+		return ret;
+	}
     
     @Override
 	public void reset() {
     	super.reset();
-    	iChage = sChangeInitial; iReverse = false;
+    	iChage = ExamChange.Initial.name(); iReverse = false;
     }
     
     public void load(SessionContext session) {
         super.load(session);
         setReverse("1".equals(session.getUser().getProperty("ExamChanges.reverse", "0")));
-        setChangeType(session.getUser().getProperty("ExamChanges.changeType", sChangeInitial));
+        setChangeType(session.getUser().getProperty("ExamChanges.changeType", ExamChange.Initial.name()));
     }
         
     public void save(SessionContext session) {

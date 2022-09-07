@@ -187,7 +187,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
         try {
             Exam exam = getExam(examId);
             ExamPlacement placement = (exam == null ? null : currentSolution().getAssignment().getValue(exam));
-            return placement == null ? null : new ExamAssignmentInfo(placement, currentSolution().getAssignment());
+            return placement == null ? new ExamAssignmentInfo(exam, null, currentSolution().getAssignment()) : new ExamAssignmentInfo(placement, currentSolution().getAssignment());
         } finally {
         	lock.unlock();
         }

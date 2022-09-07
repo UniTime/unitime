@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,11 +29,16 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.util.IdValue;
 
 
 /** 
@@ -39,6 +46,8 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
  */
 public class ExamReportForm extends ActionForm implements UniTimeForm {
 	private static final long serialVersionUID = -8009733200124355056L;
+	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
+
 	private String iOp = null;
 	private boolean iShowSections = false;
 	private Long iSubjectArea = null;
@@ -88,28 +97,20 @@ public class ExamReportForm extends ActionForm implements UniTimeForm {
 	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }
 	
 	public void load(SessionContext session) {
-		load(session, false);
-	}
-	
-	public void load(SessionContext session, boolean allSubjects) {
 	    setShowSections("1".equals(session.getUser().getProperty("ExamReport.showSections", "1")));
+	    List<IdValue> subjects = new ArrayList<IdValue>();
+        subjects.add(new IdValue(null, CONST.select()));
+        if (session.hasPermission(Right.DepartmentIndependent)) {
+        	subjects.add(new IdValue(-1l, CONST.all()));
+        }
+        TreeSet<SubjectArea> userSubjectAreas = SubjectArea.getUserSubjectAreas(session.getUser(), false);
+        for (SubjectArea sa: userSubjectAreas)
+        	subjects.add(new IdValue(sa.getUniqueId(), sa.getSubjectAreaAbbreviation()));
+        setSubjectAreas(subjects);
 	    setSubjectArea(session.getAttribute("ExamReport.subjectArea")==null?null:(Long)session.getAttribute("ExamReport.subjectArea"));
-	    try {
-	    	if (allSubjects) {
-		        iSubjectAreas = new TreeSet(
-		                new SubjectAreaDAO().getSession().createQuery(
-		                        "from SubjectArea where session.uniqueId=:sessionId")
-		                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
-		                        .setCacheable(true).list());
-	    	} else {
-		        iSubjectAreas = new TreeSet(
-		                new SubjectAreaDAO().getSession().createQuery(
-		                        "select distinct o.course.subjectArea from Exam x inner join x.owners o where "+
-		                        "x.session.uniqueId=:sessionId")
-		                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
-		                        .setCacheable(true).list());
-	    	}
-	    } catch (Exception e) {}
+        if (userSubjectAreas.size() == 1) {
+        	setSubjectArea(userSubjectAreas.first().getUniqueId());
+        }
 	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Long)session.getAttribute("Exam.Type"));
 	}
 	    

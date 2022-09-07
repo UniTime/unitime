@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cpsolver.ifs.util.CSVFile;
+import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -81,9 +82,11 @@ public class ExportUtils {
 	
 	public static void exportPDF(PdfWebTable table, int ordCol, HttpServletResponse response, String name) throws Exception {
 		OutputStream out = getPdfOutputStream(response, name);
-		
-		table.exportPdf(out, ordCol);
-		
+		try {
+			table.exportPdf(out, ordCol);
+		} catch (Exception e) {
+			Debug.error("Failed to export PDF: " + e.getMessage(), e);
+		}
 		out.flush(); out.close();		
 	}
 	

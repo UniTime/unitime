@@ -426,12 +426,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
 
-	<definition	name="examChangesTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Assignment Changes"/>
-		<put name="body" value="/exam/changes.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
 	<definition	name="examInfoTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination Assignment"/>
 		<put name="body" value="/exam/info.jsp" />

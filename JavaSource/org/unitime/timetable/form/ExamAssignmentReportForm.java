@@ -22,10 +22,6 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.security.SessionContext;
@@ -67,17 +63,6 @@ public class ExamAssignmentReportForm extends ExamReportForm {
     private String iFilter = null;
     private boolean iCanSeeAll = false;
     
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = super.validate(mapping, request);
-        
-        return errors;
-	}
-
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-	    super.reset(mapping, request);
-	    iReport = null; iCanSeeAll = false;
-	}
-	
 	@Override
 	public void reset() {
 		super.reset();

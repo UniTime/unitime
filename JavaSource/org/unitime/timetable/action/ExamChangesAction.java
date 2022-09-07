@@ -24,26 +24,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.ToolBox;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ConstantsMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -55,43 +51,57 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /** 
  * @author Tomas Muller
  */
-@Service("/examChanges")
-public class ExamChangesAction extends Action {
+@Action(value = "examChanges", results = {
+		@Result(name = "showReport", type = "tiles", location = "examChanges.tiles")
+	})
+@TilesDefinition(name = "examChanges.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination Assignment Changes"),
+		@TilesPutAttribute(name = "body", value = "/exam/changes.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
+public class ExamChangesAction extends UniTimeAction<ExamChangesForm> {
+	private static final long serialVersionUID = -1849884878783974335L;
+	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	
-	@Autowired SessionContext sessionContext;
-	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamChangesForm myForm = (ExamChangesForm) form;
-
+	public String execute() throws Exception {
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationAssignmentChanges);
-        
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+		
+		ExamSolverProxy solver = getExaminationSolverService().getSolver();
 
-        if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(sessionContext);
-        } else if ("Refresh".equals(op)) {
-            myForm.reset(mapping, request);
+    	if (form == null) {
+	    	form = new ExamChangesForm();
+	    	form.reset();
+	    	if (solver != null) form.setExamType(solver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
+
+    	if (MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op) || MSG.buttonApply().equals(op)) {
+            form.save(sessionContext);
+        } else if (MSG.buttonRefresh().equals(op)) {
+            form.reset();
+            if (solver != null) form.setExamType(solver.getExamTypeId());
         }
         
-        myForm.load(sessionContext);
+        form.load(sessionContext);
         
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-        myForm.setNoSolver(solver==null);
+        form.setNoSolver(solver==null);
         Collection<ExamAssignmentInfo[]> changes = null;
-        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0 && myForm.getExamType() != null) {
+        if (form.getSubjectArea()!=null && form.getSubjectArea()!=0 && form.getExamType() != null) {
             if (solver!=null) {
-                if (ExamChangesForm.sChangeInitial.equals(myForm.getChangeType()))
-                    changes = solver.getChangesToInitial(myForm.getSubjectArea());
-                else if (ExamChangesForm.sChangeBest.equals(myForm.getChangeType()))
-                    changes = solver.getChangesToBest(myForm.getSubjectArea());
+                if (ExamChangesForm.ExamChange.Initial.name().equals(form.getChangeType()))
+                    changes = solver.getChangesToInitial(form.getSubjectArea());
+                else if (ExamChangesForm.ExamChange.Best.name().equals(form.getChangeType()))
+                    changes = solver.getChangesToBest(form.getSubjectArea());
                 else { //sChangeSaved
                     changes = new Vector<ExamAssignmentInfo[]>();
                     List exams = null;
-                    if (myForm.getSubjectArea()<0)
+                    if (form.getSubjectArea()<0)
                         exams = Exam.findAll(solver.getSessionId(), solver.getExamTypeId());
                     else
-                        exams = Exam.findExamsOfSubjectArea(myForm.getSubjectArea(), solver.getExamTypeId());
+                        exams = Exam.findExamsOfSubjectArea(form.getSubjectArea(), solver.getExamTypeId());
                     exams: for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         ExamAssignment assignment = solver.getAssignment(exam.getUniqueId());
@@ -126,34 +136,53 @@ public class ExamChangesAction extends Action {
         
         WebTable.setOrder(sessionContext,"examChanges.ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(true, myForm, changes);
+        WebTable table = getTable(Format.html, changes);
         
-        if ("Export PDF".equals(op) && table!=null) {
+        if (MSG.actionExportPdf().equals(op) && table!=null) {
         	ExportUtils.exportPDF(
-        			getTable(false, myForm, changes),
+        			getTable(Format.pdf, changes),
+        			WebTable.getOrder(sessionContext,"examChanges.ord"),
+        			response, "changes");
+        	return null;
+        }
+        
+        if (MSG.actionExportCsv().equals(op) && table!=null) {
+        	ExportUtils.exportCSV(
+        			getTable(Format.csv, changes),
         			WebTable.getOrder(sessionContext,"examChanges.ord"),
         			response, "changes");
         	return null;
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"examChanges.ord")), 9, changes.size());
+            form.setTable(table.printTable(WebTable.getOrder(sessionContext,"examChanges.ord")), 9, changes.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
 
-        return mapping.findForward("showReport");
+        return "showReport";
 	}
 	
-    public PdfWebTable getTable(boolean html, ExamChangesForm form, Collection<ExamAssignmentInfo[]> changes) {
+	private enum Format { html, csv, pdf };
+	
+    public PdfWebTable getTable(Format format, Collection<ExamAssignmentInfo[]> changes) {
         if (changes==null || changes.isEmpty()) return null;
-        String nl = (html?"<br>":"\n");
+        String nl = (format == Format.html?"<br>":"\n");
 		PdfWebTable table =
             new PdfWebTable( 9,
-                    "Examination Assignment Changes", "examChanges.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Period", "Room", "Seating"+nl+"Type", "Students", "Instructor", "Direct", ">2 A Day", "Back-To-Back"},
+                    MSG.sectExaminationAssingmentChanges(), "examChanges.action?ord=%%",
+                    new String[] {
+                    		(form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    		MSG.colPeriod(),
+                    		MSG.colRoom(),
+                    		MSG.colSeatingType().replace("\n", nl),
+                    		MSG.colStudents(),
+                    		MSG.colInstructor(),
+                    		MSG.conflictDirect(),
+                    		MSG.conflictMoreThanTwoADay(),
+                    		MSG.conflictBackToBack()},
        				new String[] {"left", "left", "left", "center", "right", "left", "right", "right", "right"},
        				new boolean[] {true, true, true, true, false, true, false, false, false} );
 		table.setRowStyle("white-space:nowrap");
@@ -166,70 +195,78 @@ public class ExamChangesAction extends Action {
 
         	    String period = "";
         	    if (ToolBox.equals(old.getPeriodId(),exam.getPeriodId())) {
-        	        period = (html?exam.getPeriodAbbreviationWithPref():exam.getPeriodAbbreviation());
+        	        period = (format == Format.html?exam.getPeriodAbbreviationWithPref():exam.getPeriodAbbreviation());
         	    } else {
-        	        if (html) {
-        	            period = (old.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>":old.getPeriodAbbreviationWithPref());
+        	        if (format == Format.html) {
+        	            period = (old.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>":old.getPeriodAbbreviationWithPref());
         	            period += " &rarr; ";
-        	            period += (exam.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>":exam.getPeriodAbbreviationWithPref());
-        	        } else {
-                        period = (old.getPeriodId()==null?"@@ITALIC not-assigned @END_ITALIC":old.getPeriodAbbreviation());
+        	            period += (exam.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>":exam.getPeriodAbbreviationWithPref());
+        	        } else if (format == Format.pdf) {
+                        period = (old.getPeriodId()==null?"@@ITALIC "+MSG.notAssigned()+" @@END_ITALIC":old.getPeriodAbbreviation());
                         period += " -> ";
-                        period += (exam.getPeriodId()==null?"@@ITALIC not-assigned @@END_ITALIC":exam.getPeriodAbbreviation());
+                        period += (exam.getPeriodId()==null?"@@ITALIC "+MSG.notAssigned()+" @@END_ITALIC ":exam.getPeriodAbbreviation());
+        	        } else {
+                        period = (old.getPeriodId()==null?MSG.notAssigned():old.getPeriodAbbreviation());
+                        period += " -> ";
+                        period += (exam.getPeriodId()==null?MSG.notAssigned():exam.getPeriodAbbreviation());
         	        }
         	    }
         	    
         	    String room = "";
         	    if (ToolBox.equals(old.getRooms(),exam.getRooms())) {
-        	        room = (html?exam.getRoomsNameWithPref(", "):exam.getRoomsName(", "));
+        	        room = (format == Format.html?exam.getRoomsNameWithPref(", "):exam.getRoomsName(", "));
         	    } else if (exam.getMaxRooms()>0) {
-                    if (html) {
+                    if (format == Format.html) {
                         room += "<table border='0'><tr><td valign='middle'>";
-                        room += (old.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>":old.getRoomsNameWithPref("<br>"));
+                        room += (old.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>":old.getRoomsNameWithPref("<br>"));
                         room += "</td><td valign='middle'>&rarr;</td><td valign='middle'>";
-                        room += (exam.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>":exam.getRoomsNameWithPref("<br>"));
+                        room += (exam.getPeriodId()==null?"<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>":exam.getRoomsNameWithPref("<br>"));
                         room += "</td></tr></table>";
-                    } else {
-                        room = (old.getPeriodId()==null?"@@ITALIC not-assigned @END_ITALIC":old.getRoomsName(", "));
+                    } else if (format == Format.pdf) {
+                        room = (old.getPeriodId()==null?"@@ITALIC "+MSG.notAssigned()+" @@END_ITALIC":old.getRoomsName(", "));
                         room += " -> ";
-                        room += (exam.getPeriodId()==null?"@@ITALIC not-assigned @@END_ITALIC":exam.getRoomsName(", "));
+                        room += (exam.getPeriodId()==null?"@@ITALIC "+MSG.notAssigned()+" @@END_ITALIC ":exam.getRoomsName(", "));
+                    } else {
+                    	room = (old.getPeriodId()==null?MSG.notAssigned():old.getRoomsName(", "));
+                        room += " -> ";
+                        room += (exam.getPeriodId()==null?MSG.notAssigned():exam.getRoomsName(", "));
                     }
         	    }
         	        
         	    int xdc = exam.getNrDirectConflicts();
                 int dc = xdc-old.getNrDirectConflicts();
-                String dcStr = (xdc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+xdc+"</font>":String.valueOf(xdc));
-                if (html && dc<0)
+                String dcStr = (xdc<=0?"":format == Format.html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+xdc+"</font>":String.valueOf(xdc));
+                if (format == Format.html && dc<0)
                     dcStr += "<font color='"+PreferenceLevel.prolog2color("R")+"'> ("+dc+")</font>";
-                if (html && dc>0)
+                if (format == Format.html && dc>0)
                     dcStr += "<font color='"+PreferenceLevel.prolog2color("P")+"'> (+"+dc+")</font>";
-                if (!html && dc<0)
+                if (format != Format.html && dc<0)
                     dcStr += " ("+dc+")";
-                if (!html && dc>0)
+                if (format != Format.html && dc>0)
                     dcStr += " (+"+dc+")";
                 
                 int xm2d = exam.getNrMoreThanTwoConflicts();
                 int m2d = exam.getNrMoreThanTwoConflicts()-old.getNrMoreThanTwoConflicts();
-                String m2dStr = (xm2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+xm2d+"</font>":String.valueOf(xm2d));
-                if (html && m2d<0)
+                String m2dStr = (xm2d<=0?"":format == Format.html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+xm2d+"</font>":String.valueOf(xm2d));
+                if (format == Format.html && m2d<0)
                     m2dStr += "<font color='"+PreferenceLevel.prolog2color("-2")+"'> ("+m2d+")</font>";
-                if (html && m2d>0)
+                if (format == Format.html && m2d>0)
                     m2dStr += "<font color='"+PreferenceLevel.prolog2color("2")+"'> (+"+m2d+")</font>";
-                if (!html && m2d<0)
+                if (format != Format.html && m2d<0)
                     m2dStr += " ("+m2d+")";
-                if (!html && m2d>0)
+                if (format != Format.html && m2d>0)
                     m2dStr += " (+"+m2d+")";
 
                 int xbtb = exam.getNrBackToBackConflicts();
                 int btb = exam.getNrBackToBackConflicts() - old.getNrBackToBackConflicts();
                 int dbtb = exam.getNrDistanceBackToBackConflicts() - old.getNrDistanceBackToBackConflicts();
-                String btbStr = (xbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+xbtb+"</font>":String.valueOf(xbtb));
-                if (html) {
+                String btbStr = (xbtb<=0?"":format == Format.html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+xbtb+"</font>":String.valueOf(xbtb));
+                if (format == Format.html) {
                     if (btb<0) btbStr += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> ("+btb+"</font>";
                     else if (btb>0) btbStr += "<font color='"+PreferenceLevel.prolog2color("1")+"'> (+"+btb+"</font>";
                     else if (dbtb!=0) btbStr += " ("+String.valueOf(btb);
-                    if (dbtb<0) btbStr += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> d:"+dbtb+"</font>";
-                    if (dbtb>0) btbStr += "<font color='"+PreferenceLevel.prolog2color("1")+"'> d:+"+dbtb+"</font>";
+                    if (dbtb<0) btbStr += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> "+MSG.prefixDistanceConclict()+dbtb+"</font>";
+                    if (dbtb>0) btbStr += "<font color='"+PreferenceLevel.prolog2color("1")+"'> "+MSG.prefixDistanceConclict()+"+"+dbtb+"</font>";
                     if (btb<0) btbStr += "<font color='"+PreferenceLevel.prolog2color("-1")+"'>)</font>";
                     else if (btb>0) btbStr += "<font color='"+PreferenceLevel.prolog2color("1")+"'>)</font>";
                     else if (dbtb!=0) btbStr += ")";
@@ -237,20 +274,20 @@ public class ExamChangesAction extends Action {
                     if (btb<0) btbStr += " ("+btb;
                     else if (btb>0) btbStr += " (+"+btb;
                     else if (dbtb!=0) btbStr += " ("+String.valueOf(btb);
-                    if (dbtb<0) btbStr += " d:"+dbtb;
-                    if (dbtb>0) btbStr += " d:+"+dbtb;
+                    if (dbtb<0) btbStr += " "+MSG.prefixDistanceConclict()+dbtb;
+                    if (dbtb>0) btbStr += " "+MSG.prefixDistanceConclict()+"+"+dbtb;
                     if (btb<0) btbStr += ")";
                     else if (btb>0) btbStr += ")";
                     else if (dbtb!=0) btbStr += ")";
                 }
                 
         	    table.addLine(
-                        "onClick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
+                        "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
-                            (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
+                            (format == Format.html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(format == Format.html?"</a>":""),
                             period,
                             room,
-                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.seatingNormal():MSG.seatingExam()),
                             String.valueOf(exam.getNrStudents()),
                             exam.getInstructorName(", "),
                             dcStr,
@@ -272,7 +309,7 @@ public class ExamChangesAction extends Action {
         	}
         } catch (Exception e) {
         	Debug.error(e);
-        	table.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
+        	table.addLine(new String[] {"<font color='red'>"+MSG.error(e.getMessage())+"</font>"},null);
         }
         return table;
     }	

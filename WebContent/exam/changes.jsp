@@ -17,95 +17,86 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<tt:back-mark back="true" clear="true" title="Exam Changes" uri="examChanges.do"/>
-<tiles:importAttribute />
-<html:form action="/examChanges">
-	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<tt:back-mark back="true" clear="true" title="${MSG.backExaminationAssignmentChanges()}" uri="examChanges.action"/>
+<s:form action="examChanges">
+	<s:hidden name="form.examType"/>
+	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+	<table class="unitime-MainTable">
 		<TR>
-			<TD width="10%" nowrap>Show classes/courses:</TD>
+			<TD width="10%" nowrap><loc:message name="filterShowClassesCourses"/></TD>
 			<TD>
-				<html:checkbox property="showSections"/>
+				<s:checkbox name="form.showSections"/>
 			</TD>
 		</TR>
 		<TR>
-			<TD width="10%" nowrap>Reversed mode:</TD>
+			<TD width="10%" nowrap><loc:message name="filterReverseMode"/></TD>
 			<TD>
-				<html:checkbox property="reverse"/> (current &rarr; compared solution)
+				<s:checkbox name="form.reverse"/> <loc:message name="hintReversedMode"/>
 			</TD>
 		</TR>
 	</TABLE>
-	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+	<script type="text/javascript">blEndCollapsed('dispFilter');</script>
+	<table class="unitime-MainTable">
 	<TR>
-		<TD width="10%" nowrap>Subject Areas:</TD>
+		<TD width="10%" nowrap><loc:message name="filterSubjectAreas"/></TD>
 		<TD>
-			<html:select name="examChangesForm" property="subjectArea">
-				<html:option value="">Select...</html:option>
-				<html:option value="-1">All</html:option>
-				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-			</html:select>
+			<s:select name="form.subjectArea" list="form.subjectAreas" listKey="id" listValue="value"/>
 		</TD>
 	</TR>
 	<TR>
-		<TD width="10%" nowrap>Compare with:</TD>
+		<TD width="10%" nowrap><loc:message name="filterCompareWith"/></TD>
 		<TD>
-			<html:select property="changeType">
-				<html:options property="changeTypes"/>
-			</html:select>
+			<s:select name="form.changeType" list="form.changeTypes" listKey="value" listValue="label"/>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-			<logic:notEmpty name="examChangesForm" property="table">
-				<html:submit property="op" value="Export PDF"/>
-			</logic:notEmpty>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+			<s:submit name='form.op' value="%{#msg.buttonApply()}" accesskey="%{#msg.accessApply()}" title="%{#msg.titleApply()}"/>
+			<s:if test="form.table != null">
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+			</s:if>
+			<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 		</TD>
 	</TR>
 	</TABLE>
 
 	<BR><BR>
-	<logic:empty name="examChangesForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
+	<s:if test="form.table == null">
+		<table class="unitime-MainTable">
 			<tr><td><i>
-				<logic:equal name="examChangesForm" property="noSolver" value="true">
-					No examination timetable is loaded into the solver.
-				</logic:equal>
-				<logic:empty name="examChangesForm" property="subjectArea">
-					No subject area selected.
-				</logic:empty>
-				<logic:equal name="examChangesForm" property="subjectArea" value="0">
-					No subject area selected.
-				</logic:equal>
-				<logic:lessThan name="examChangesForm" property="subjectArea" value="0">
-					Solutions are identical.
-				</logic:lessThan>
-				<logic:greaterThan name="examChangesForm" property="subjectArea" value="0">
-					There are no assignment changes between exams of <bean:write name="examChangesForm" property="subjectAreaAbbv"/> subject area.
-				</logic:greaterThan>
+				<s:if test="form.noSolver == true">
+					<loc:message name="messageNoSolver"/>
+				</s:if>
+				<s:if test="form.subjectArea == null || form.subjectArea == 0">
+					<loc:message name="messageNoSubject"/>
+				</s:if>
+				<s:if test="form.subjectArea < 0">
+					<loc:message name="messageNoChanges"/>
+				</s:if>
+				<s:if test="form.subjectArea > 0">
+					<loc:message name="messageNoChangesInSubject"><s:property value="form.subjectAreaAbbv"/></loc:message>
+				</s:if>
 			</i></td></tr>
 		</table>
-	</logic:empty>
-	<logic:notEmpty name="examChangesForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:define id="colspan" name="examChangesForm" property="nrColumns"/>
-			<bean:write name="examChangesForm" property="table" filter="false"/>
-			<tr><td colspan='<%=colspan%>'><tt:displayPrefLevelLegend/></td></tr>
+	</s:if>
+	<s:else>
+		<table class="unitime-MainTable">
+			<s:property value="form.table" escapeHtml="false"/>
+			<tr><td colspan='%{form.nrColumns}'><tt:displayPrefLevelLegend/></td></tr>
 		</table>
-	</logic:notEmpty>
-	<logic:notEmpty scope="request" name="hash">
-		<SCRIPT type="text/javascript" language="javascript">
+	</s:else>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
-	</logic:notEmpty>
-</html:form>
+	</s:if>
+</s:form>
+</loc:bundle>

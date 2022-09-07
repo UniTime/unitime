@@ -19,8 +19,6 @@
 */
 package org.unitime.localization.messages;
 
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
-
 /**
  * @author Tomas Muller
  */
@@ -844,4 +842,55 @@ public interface ExaminationMessages extends Messages {
 
 	@DefaultMessage("Individual Instructor Schedule")
 	String reportIndividualInstructorSchedule();
+	
+	@DefaultMessage("Best")
+	String changeBest();
+	
+	@DefaultMessage("Initial")
+	String changeInitial();
+	
+	@DefaultMessage("Saved")
+	String changeSaved();
+	
+	@DefaultMessage("Examination Assignment Changes")
+	String sectExaminationAssingmentChanges();
+	
+	@DefaultMessage("Period")
+	String colPeriod();
+	
+	@DefaultMessage("Students")
+	String colStudents();
+	
+	@DefaultMessage("not-assigned")
+	String notAssigned();
+	
+	@DefaultMessage("ERROR: {0}")
+	String error(String message);
+	
+	@DefaultMessage("d:")
+	String prefixDistanceConclict();
+	
+	@DefaultMessage("Exam Changes")
+	String backExaminationAssignmentChanges();
+	
+	@DefaultMessage("Reversed mode:")
+	String filterReverseMode();
+	
+	@DefaultMessage("(current &rarr; compared solution)")
+	String hintReversedMode();
+	
+	@DefaultMessage("Compare with:")
+	String filterCompareWith();
+	
+	@DefaultMessage("No examination timetable is loaded into the solver.")
+	String messageNoSolver();
+	
+	@DefaultMessage("No subject area selected.")
+	String messageNoSubject();
+	
+	@DefaultMessage("Solutions are identical.")
+	String messageNoChanges();
+	
+	@DefaultMessage("There are no assignment changes between exams of {0} subject area.")
+	String messageNoChangesInSubject(String subject);
 }
