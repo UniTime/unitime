@@ -92,6 +92,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
 		context.getUser().setProperty("TimetableGridTable.week", request.getFilter().getParameterValue("weeks"));
 		context.getUser().setProperty("TimetableGridTable.resourceType", request.getFilter().getParameterValue("resource"));
 		context.getUser().setProperty("TimetableGridTable.findString", request.getFilter().getParameterValue("filter"));
+		context.getUser().setProperty("TimetableGridTable.classFilter", request.getFilter().getParameterValue("classFilter"));
 		context.getUser().setProperty("TimetableGridTable.day", request.getFilter().getParameterValue("days"));
 		context.getUser().setProperty("TimetableGridTable.times", request.getFilter().getParameterValue("times"));
 		context.getUser().setProperty("TimetableGridTable.dispMode", request.getFilter().getParameterValue("dispMode"));

@@ -4576,6 +4576,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Filter:")
 	String propTimeGridFilter();
 	
+	@DefaultMessage("Class Filter:")
+	String propTimeGridClassFilter();
+	
 	@DefaultMessage("Days:")
 	String propTimeGridDays();
 	

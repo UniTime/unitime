@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ItypeDesc;
@@ -63,6 +64,7 @@ public class TimetableGridContext implements Serializable {
 	private String iInstructorNameFormat = NameFormat.SHORT.reference();
 	private int iWeekOffset = 0;
 	private Long iSessionId = null;
+	private Query iClassFilter = null;
 	
 	public TimetableGridContext() {}
 	
@@ -73,6 +75,9 @@ public class TimetableGridContext implements Serializable {
 		if (dp == null)
 			throw new RuntimeException("No default date pattern is defined for " + session.getLabel() + ". Use the <a href='sessionEdit.do?doit=editSession&sessionId=" + session.getUniqueId() + "'>Edit Academic Session</a> page to set a default date pattern.");
 		iFilter = filter.getParameterValue("filter", "");
+		String cf = filter.getParameterValue("classFilter", "");
+		if (cf != null && !cf.isEmpty())
+			iClassFilter = new Query(cf);
 		iStartDayDayOfWeek = Constants.getDayOfWeek(DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()));
 		int week = Integer.parseInt(filter.getParameterValue("weeks", "-100"));
 		iFirstDay = (week == -100 ? -1 : DateUtils.getFirstDayOfWeek(session.getSessionStartYear(), week) - session.getDayOfYear(1, session.getPatternStartMonth()) - 1 + iWeekOffset);
@@ -148,6 +153,8 @@ public class TimetableGridContext implements Serializable {
 	}
 	
 	public String getFilter() { return iFilter; }
+	
+	public Query getClassFilter() { return iClassFilter; }
 	
 	public int getResourceType() { return iResourceType; }
 	

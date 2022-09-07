@@ -55,6 +55,8 @@ import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridBackground;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell.Property;
@@ -443,6 +445,9 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 	
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, TimetableSolver solver, Placement placement, TimetableGridContext context, boolean notAvailable) {
 		List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
+		
+		if (!match(context.getClassFilter(), placement)) return cells;
+		
 		TimetableGridCell cell = null;
 		
 		for (Enumeration<Integer> f = placement.getTimeLocation().getStartSlots(); f.hasMoreElements(); ) {
@@ -962,5 +967,95 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				}
 			}
 		}
+	}
+	
+	private static enum Size {
+		eq, lt, gt, le, ge
+	};
+	
+	private static boolean match(Query q, final Placement p) {
+    	return q == null || q.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(p.variable().getName(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+					for (InstructorConstraint ic: p.variable().getInstructorConstraints()) {
+						if (term.equalsIgnoreCase(ic.getPuid())) return true;
+						if (term.equalsIgnoreCase(ic.getName())) return true;
+						for (StringTokenizer s = new StringTokenizer(ic.getName(), " ,"); s.hasMoreTokens(); ) {
+							String token = s.nextToken();
+							if (term.equalsIgnoreCase(token)) return true;
+						}
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return p.variable().getName().matches(term);
+				} else if ("find".equals(attr)) {
+					return p.variable().getName().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("class".equals(attr)) {
+					for (StringTokenizer s = new StringTokenizer(p.variable().getName(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("instructor".equals(attr)) {
+					for (InstructorConstraint ic: p.variable().getInstructorConstraints()) {
+						if (term.equalsIgnoreCase(ic.getPuid())) return true;
+						if (term.equalsIgnoreCase(ic.getName())) return true;
+						for (StringTokenizer s = new StringTokenizer(ic.getName(), " ,"); s.hasMoreTokens(); ) {
+							String token = s.nextToken();
+							if (term.equalsIgnoreCase(token)) return true;
+						}
+					}
+				} else if ("room".equals(attr)) {
+					if (p.isMultiRoom())
+						for (RoomLocation l: p.getRoomLocations()) {
+							if (term.equalsIgnoreCase(l.getName())) return true;
+							for (StringTokenizer s = new StringTokenizer(l.getName(), " ,"); s.hasMoreTokens(); ) {
+								String token = s.nextToken();
+								if (term.equalsIgnoreCase(token)) return true;
+							}
+						}
+					else if (p.getRoomLocation() != null) {
+						RoomLocation l = p.getRoomLocation();
+						if (term.equalsIgnoreCase(l.getName())) return true;
+						for (StringTokenizer s = new StringTokenizer(l.getName(), " ,"); s.hasMoreTokens(); ) {
+							String token = s.nextToken();
+							if (term.equalsIgnoreCase(token)) return true;
+						}
+					}
+				} else if ("limit".equals(attr)) {
+					int min = 0, max = Integer.MAX_VALUE;
+					Size prefix = Size.eq;
+					String number = term;
+					if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
+					else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
+					else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
+					else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
+					else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+					try {
+						int a = Integer.parseInt(number);
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					} catch (NumberFormatException e) {}
+					if (term.contains("..")) {
+						try {
+							String a = term.substring(0, term.indexOf('.'));
+							String b = term.substring(term.indexOf("..") + 2);
+							min = Integer.parseInt(a); max = Integer.parseInt(b);
+						} catch (NumberFormatException e) {}
+					}
+					return min <= p.variable().maxClassLimit() && p.variable().minClassLimit() <= max;
+				}
+				return false;
+			}
+		});
 	}
 }

@@ -96,6 +96,16 @@ public class TimetableGridFilterBackend implements GwtRpcImplementation<Timetabl
 		filter.setDefaultValue(context.getUser().getProperty("TimetableGridTable.findString", ""));
 		response.addParameter(filter);
 		
+		// Filter
+		if (ApplicationProperty.TimeGridClassFilter.isTrue()) {
+			FilterParameterInterface classFilter = new FilterParameterInterface();
+			classFilter.setName("classFilter");
+			classFilter.setLabel(MESSAGES.propTimeGridClassFilter());
+			classFilter.setType("text");
+			classFilter.setDefaultValue(context.getUser().getProperty("TimetableGridTable.classFilter", ""));
+			response.addParameter(classFilter);
+		}
+		
 		// Days
 		FilterParameterInterface days = new FilterParameterInterface();
 		days.setName("days");

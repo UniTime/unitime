@@ -45,6 +45,7 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridBackground;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell.Property;
@@ -94,6 +95,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, Assignment assignment, org.hibernate.Session hibSession, TimetableGridContext context, boolean notAvailable) {
     	List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
+    	if (!match(context, assignment)) return cells;
     	TimetableGridCell cell = null;
 
 		int days = assignment.getDays().intValue();
@@ -904,4 +906,109 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		
 		return model;
     }
+    
+    private static enum Size {
+		eq, lt, gt, le, ge
+	};
+	
+	private static boolean match(final TimetableGridContext context, final Assignment a) {
+    	return context.getClassFilter() == null || context.getClassFilter().match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(a.getClassName(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+					if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
+							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
+								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse())
+									if (term.equalsIgnoreCase(instructor.getInstructor().getExternalUniqueId())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getFirstName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getMiddleName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getLastName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getName(context.getInstructorNameFormat()))) return true;
+							}
+						}
+					} else {
+						for (DepartmentalInstructor instructor: a.getInstructors()) {
+							if (term.equalsIgnoreCase(instructor.getExternalUniqueId())) return true;
+							if (term.equalsIgnoreCase(instructor.getFirstName())) return true;
+							if (term.equalsIgnoreCase(instructor.getMiddleName())) return true;
+							if (term.equalsIgnoreCase(instructor.getLastName())) return true;
+							if (term.equalsIgnoreCase(instructor.getName(context.getInstructorNameFormat()))) return true;
+						}
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return a.getClassName().matches(term);
+				} else if ("find".equals(attr)) {
+					return a.getClassName().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("class".equals(attr)) {
+					for (StringTokenizer s = new StringTokenizer(a.getClassName(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("room".equals(attr)) {
+					for (Location l: a.getRooms()) {
+						if (term.equalsIgnoreCase(l.getLabel())) return true;
+						for (StringTokenizer s = new StringTokenizer(l.getLabel(), " ,"); s.hasMoreTokens(); ) {
+							String token = s.nextToken();
+							if (term.equalsIgnoreCase(token)) return true;
+						}						
+					}
+				} else if ("instructor".equals(attr)) {
+					if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
+							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
+								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse())
+									if (term.equalsIgnoreCase(instructor.getInstructor().getExternalUniqueId())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getFirstName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getMiddleName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getLastName())) return true;
+									if (term.equalsIgnoreCase(instructor.getInstructor().getName(context.getInstructorNameFormat()))) return true;
+							}
+						}
+					} else {
+						for (DepartmentalInstructor instructor: a.getInstructors()) {
+							if (term.equalsIgnoreCase(instructor.getExternalUniqueId())) return true;
+							if (term.equalsIgnoreCase(instructor.getFirstName())) return true;
+							if (term.equalsIgnoreCase(instructor.getMiddleName())) return true;
+							if (term.equalsIgnoreCase(instructor.getLastName())) return true;
+							if (term.equalsIgnoreCase(instructor.getName(context.getInstructorNameFormat()))) return true;
+						}
+					}
+				} else if ("limit".equals(attr)) {
+					int min = 0, max = Integer.MAX_VALUE;
+					Size prefix = Size.eq;
+					String number = term;
+					if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
+					else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
+					else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
+					else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
+					else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+					try {
+						int a = Integer.parseInt(number);
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					} catch (NumberFormatException e) {}
+					if (term.contains("..")) {
+						try {
+							String a = term.substring(0, term.indexOf('.'));
+							String b = term.substring(term.indexOf("..") + 2);
+							min = Integer.parseInt(a); max = Integer.parseInt(b);
+						} catch (NumberFormatException e) {}
+					}
+					return min <= a.getClazz().getClassLimit(a) && a.getClazz().getClassLimit(a) <= max;
+				}
+				return false;
+			}
+		});
+	}
 }
