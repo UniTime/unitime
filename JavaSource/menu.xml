@@ -468,7 +468,7 @@
 				</condition>
 			</item>
 		</menu>
-		<item name="Pdf Reports" page="examPdfReport.do">
+		<item name="Pdf Reports" page="examPdfReport.action">
 			<condition>
 				<hasPermission name="ExaminationPdfReports"/>
 			</condition>

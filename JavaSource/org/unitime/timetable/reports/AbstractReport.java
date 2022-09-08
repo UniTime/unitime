@@ -33,7 +33,7 @@ public abstract class AbstractReport implements ReportWriter.Listener {
 	protected ReportWriter iWriter;
 	protected Mode iMode;
 	
-	protected static enum Mode {
+	public static enum Mode {
 		LegacyPdfLetter,
 		LegacyPdfLedger,
 		LegacyText,

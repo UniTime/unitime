@@ -17,233 +17,221 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<tiles:importAttribute />
-<html:form action="/examPdfReport">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<logic:messagesPresent>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="examPdfReport">
+	<table class="unitime-MainTable">
+	<s:if test="!fieldErrors.isEmpty()">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title><font color='red'>Errors</font></tt:section-title>
-					<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
+					<tt:section-title><loc:message name="sectErrors"/></tt:section-title>
+					<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-				<BLOCKQUOTE>
-				<UL>
-					<html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
+			<TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
 			</TD>
 		</TR>
 		<TR><TD>&nbsp;</TD></TR>
-	</logic:messagesPresent>
-	<logic:notEmpty name="table" scope="request">
+	</s:if>
+	<s:if test="#request.table != null">
 		<TR><TD colspan="2">
-			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-				<bean:write name="table" scope="request" filter="false"/>
-			</TABLE>
+			<table style="width:100%;">
+				<s:property value="#request.table" escapeHtml="false"/>
+			</table>
 		</TD></TR>
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
-	</logic:notEmpty>
-	<logic:notEmpty name="log" scope="request">
+	</s:if>
+	<s:if test="#request.log != null">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						Log of <bean:write name="logname" scope="request" filter="false"/>
+						<loc:message name="sectLogOfTask"><s:property value="#requesst.logname"/></loc:message>
 					</tt:section-title>
-					<bean:define id="logid" name="logid" scope="request"/>
-					<input type="hidden" name="log" value="<%=logid%>">
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" title="Refresh Log (Alt+R)"/>
+					<s:hidden name="log" value="#request.logid"/>
+					<s:submit accesskey='%{#msg.accessRegreshLog()}' name='op' value='%{#msg.actionRegreshLog()}' title='%{#msg.titleRegreshLog()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
   			<TD colspan='2'>
   				<blockquote>
-	  				<bean:write name="log" scope="request" filter="false"/>
+  					<s:property value="#request.log" escapeHtml="false"/>
   				</blockquote>
   			</TD>
 		</TR>
-	</logic:notEmpty>
+	</s:if>
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Input Data</tt:section-title>
-				<logic:messagesNotPresent>
-					<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
-				</logic:messagesNotPresent>
+				<tt:section-title><loc:message name="sectInputData"/></tt:section-title>
+				<s:if test="fieldErrors.isEmpty()">
+					<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
+				</s:if>
 			</tt:section-header>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Examination Problem:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterExaminationProblem"/></TD>
 		<TD>
-			<html:select property="examType">
-				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-			</html:select>
+			<s:select name="form.examType" 
+				list="#request.examTypes" listKey="uniqueId" listValue="label"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="filterSubjectAreas"/></TD>
 		<TD>
-			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas (on one report)<br>
-			<html:select property="subjects" multiple="true" size="7">
-				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-			</html:select>
+			<s:checkbox name="form.all" onclick="selectionChanged();"/><loc:message name="checkReportAllSubjectAreas"/><br>
+			<s:select name="form.subjects" list="form.subjectAreas" listKey="id" listValue="value" multiple="true"/>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2'>
-			<tt:section-title><br>Report</tt:section-title>
+			<tt:section-title><br><loc:message name="sectReport"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Report:</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="filterReport"/></TD>
 		<TD>
-			<logic:iterate name="examPdfReportForm" property="allReports" id="report">
-				<html:multibox property="reports" onclick="selectionChanged();">
-					<bean:write name="report"/>
-				</html:multibox>
-				<bean:write name="report"/><br>
-			</logic:iterate>
+			<s:iterator value="form.allReports" var="report">
+				<s:checkboxlist name="form.reports" list="#{#report.value:''}" onchange="selectionChanged();"/>
+				<s:property value="#report.label"/>
+				<br>
+			</s:iterator>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2'>
-			<tt:section-title><br>Parameters</tt:section-title>
+			<tt:section-title><br><loc:message name="sectParameters"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>All Reports:</TD>
-		<TD><html:checkbox property="itype"/>Display Instructional Type<br>
-			<html:checkbox property="ignoreEmptyExams"/>Skip Exams with No Enrollment<br>
-			<html:checkbox property="roomDispNames"/>Use Room Display Names</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="propAllReports"/></TD>
+		<TD><s:checkbox name="form.itype"/><loc:message name="checkDisplayInstructionalType"/><br>
+			<s:checkbox name="form.ignoreEmptyExams"/><loc:message name="checkSkipExamsWithNoEnrollment"/><br>
+			<s:checkbox name="form.roomDispNames"/><loc:message name="checkUseRoomDisplayNames"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Conflicts Reports:</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="propConflictReports"/></TD>
 		<TD>
-			<html:checkbox property="direct"/>Display Direct Conflicts<br>
-			<html:checkbox property="m2d"/>Display More Than 2 Exams A Day Conflicts<br>
-			<html:checkbox property="btb"/>Display Back-To-Back Conflicts
+			<s:checkbox name="form.direct"/><loc:message name="checkDisplayDirectConflicts"/><br>
+			<s:checkbox name="form.m2d"/><loc:message name="checkDisplayMoreThan2ExamsADayConflicts"/><br>
+			<s:checkbox name="form.btb"/><loc:message name="checkDisplayBackToBackConflicts"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top' rowspan='2'>Reports with Rooms:</TD>
-		<TD><html:checkbox property="dispRooms"/>Display Rooms</TD>
+  		<TD width="10%" nowrap valign='top' rowspan='2'><loc:message name="propReportsWithRooms"/></TD>
+		<TD><s:checkbox name="form.dispRooms"/><loc:message name="checkDisplayRooms"/></TD>
 	</TR>
 	<TR>
-		<TD>No Room: <html:text property="noRoom" size="11" maxlength="11"/></TD>
+		<TD><loc:message name="propNoRoomLabel"/> <s:textfield name="form.noRoom" size="11" maxlength="11"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top' rowspan='4'>Period Chart:</TD>
-		<TD><html:checkbox property="totals"/>Display Totals</TD>
+  		<TD width="10%" nowrap valign='top' rowspan='4'><loc:message name="propPeriodChartReport"/></TD>
+		<TD><s:checkbox name="form.totals"/><loc:message name="checkDisplayTotals"/></TD>
 	</TR>
 	<TR>
-		<TD>Limit: <html:text property="limit" size="4" maxlength="4"/></TD>
+		<TD><loc:message name="propExamLimit"/> <s:textfield name="form.limit" size="4" maxlength="4"/></TD>
 	</TR>
 	<TR>
-		<TD>Room Codes: <html:text property="roomCodes" size="70" maxlength="200"/></TD>
+		<TD><loc:message name="propRoomCodes"/> <s:textfield name="form.roomCodes" size="70" maxlength="200"/></TD>
 	</TR>
 	<TR>
-		<TD><html:checkbox property="compact"/>Compact Size <i>(no section information)</i></TD>
+		<TD><s:checkbox name="form.compact"/><loc:message name="checkReportCompactSize"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top' rowspan="2">Verification Report:</TD>
-		<TD><html:checkbox property="dispLimit"/>Display Limits &amp; Enrollments</TD>
+  		<TD width="10%" nowrap valign='top' rowspan="2"><loc:message name="propVerificationReport"/></TD>
+		<TD><s:checkbox name="form.dispLimit"/><loc:message name="checkDisplayLimitsAndEnrollments"/></TD>
 	</TR>
 	<TR>
-		<TD><html:checkbox property="dispNote"/>Display Class Schedule Notes</TD>
+		<TD><s:checkbox name="form.dispNote"/><loc:message name="checkDisplayClassScheduleNotes"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top' rowspan='2'>Individual Reports:</TD>
-  		<TD><html:checkbox property="classSchedule"/>Include Class Schedule</TD>
+  		<TD width="10%" nowrap valign='top' rowspan='2'><loc:message name="propIndividualReports"/></TD>
+  		<TD><s:checkbox name="form.classSchedule"/><loc:message name="checkIncludeClassSchedule"/></TD>
   	</TR>
   	<TR>
 		<TD>
 			<span style="display: table;">
 				<span style="display: table-row;">
-					<span style="display: table-cell; vertical-align: middle; padding-right: 5px;">Date: </span>
-					<tt:calendar property="since" outerStyle="display: table-cell;"/>
-					<span style="display: table-cell; font-style: italic; padding-left: 5px; vertical-align: middle;">(Only email instructors/students that have a change in their schedule since this date, email all when empty)
+					<span style="display: table-cell; vertical-align: middle; padding-right: 5px;"><loc:message name="propReportStartDate"/> </span>
+					<span name='UniTimeGWT:Calendar' style="display: table-cell;"><s:textfield name="form.since"/></span>
+					<span style="display: table-cell; font-style: italic; padding-left: 5px; vertical-align: middle;"><loc:message name="hintReportStartDate"/></span>
 				</span>
 			</span>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2' valign='top'>
-			<tt:section-title><br>Output</tt:section-title>
+			<tt:section-title><br><loc:message name="sectOutput"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Format:</TD>
+  		<TD width="10%" nowrap><loc:message name="propReportFormat"/></TD>
 		<TD>
-			<html:select property="mode">
-				<html:options property="modes"/>
-			</html:select>
+			<s:select name="form.mode" list="form.modes" listKey="value" listValue="label"/>
 		</TD>
 	</TR>
-	<logic:equal name="examPdfReportForm" property="canEmail" value="false">
-		<html:hidden property="email"/>
-	</logic:equal>
-	<logic:equal name="examPdfReportForm" property="canEmail" value="true">
+	<s:if test="form.canEmail == false">
+		<s:hidden name="form.email"/>
+	</s:if>
+	<s:else>
 	<TR>
-		<TD rowspan='1' valign='top'>Delivery:</TD>
+		<TD rowspan='1' valign='top'><loc:message name="propReportDelivery"/></TD>
 		<TD>
-			<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> Email
-			<bean:define name="examPdfReportForm" property="email" id="email"/>
-			<table border='0' id='eml' style='display:<%=(Boolean)email?"block":"none"%>;'>
+			<s:checkbox name="form.email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> <loc:message name="checkReportDeliveryEmail"/>
+			<s:set var="email" value="form.email"/>
+			<table id='eml' style='display:none;'>
 				<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
 					<tr>
-						<td rowspan='4' valign='top'>Address:</td>
-						<td><html:textarea property="address" rows="3" cols="70"/></td>
+						<td rowspan='4' valign='top'><loc:message name="propEmailAddress"/></td>
+						<td><s:textarea name="form.address" rows="3" cols="70"/></td>
 					</tr>
 					<tr><td>
-						<html:checkbox property="emailDeputies" styleId="ed"/> All Involved Department Schedule Managers
+						<s:checkbox name="form.emailDeputies"/> <loc:message name="checkAllInvolvedDepartmentScheduleManagers"/>
 					</td></tr>
 					<tr><td>
-						<html:checkbox property="emailInstructors" styleId="ed"/> Send Individual Instructor Schedule Reports to All Involved Instructors
+						<s:checkbox name="form.emailInstructors"/> <loc:message name="checkSendIndividualInstructorReportsToInstructors"/>
 					</td></tr>
 					<tr><td>
-						<html:checkbox property="emailStudents" styleId="ed"/> Send Individual Student Schedule Reports to All Involved Students
+						<s:checkbox name="form.emailStudents"/> <loc:message name="checkSendIndividualStudentReportsToStudents"/>
 					</td></tr>
 				</sec:authorize>
 				<sec:authorize access="!hasPermission(null, null, 'DepartmentIndependent')">
 					<tr>
-						<td valign='top'>Address:</td>
-						<td><html:textarea property="address" rows="3" cols="70"/></td>
+						<td valign='top'><loc:message name="propEmailAddress"/></td>
+						<td><s:textarea name="form.address" rows="3" cols="70"/></td>
 					</tr>
 				</sec:authorize>
-				<tr><td valign='top'>CC:</td><td>
-					<html:textarea property="cc" rows="2" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailCC"/></td><td>
+					<s:textarea name="form.cc" rows="2" cols="70"/>
 				</td></tr>
-				<tr><td valign='top'>BCC:</td><td>
-					<html:textarea property="bcc" rows="2" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailBCC"/></td><td>
+					<s:textarea name="form.bcc" rows="2" cols="70"/>
 				</td></tr>
-				<tr><td valign='top' style='border-top: black 1px dashed;'>Subject:</td><td style='border-top: black 1px dashed;'>
-					<html:text property="subject" size="70" style="margin-top:2px;"/>
+				<tr><td valign='top' style='border-top: black 1px dashed;'><loc:message name="propEmailSubject"/></td><td style='border-top: black 1px dashed;'>
+					<s:textfield name="form.subject" size="70" style="margin-top:2px;"/>
 				</td></tr>
-				<tr><td valign='top'>Message:</td><td>
-					<html:textarea property="message" rows="10" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailMessage"/></td><td>
+					<s:textarea name="form.message" rows="10" cols="70"/>
 				</td></tr>
 			</table>
+			<s:if test="form.email == true">
+				<script type="text/javascript">
+					document.getElementById('eml').style.display = 'block';
+				</script>
+			</s:if>
 		</TD>
 	</TR>
-	</logic:equal>
+	</s:else>
 	<TR>
 		<TD colspan='2'>
 			<tt:section-title><br>&nbsp;</tt:section-title>
@@ -251,30 +239,30 @@
 	</TR>
 	<TR>
 		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
+			<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
 		</TD>
 	</TR>
 	</TABLE>
-<script type="text/javascript" language="javascript">
+<script type="text/javascript">
 	function selectionChanged() {
-		if (document.getElementsByName('all')==null || document.getElementsByName('all').length==0) return;
-		var allSubjects = document.getElementsByName('all')[0].checked;
-		var objSubjects = document.getElementsByName('subjects')[0];
-		var objEmailDeputies = document.getElementsByName('emailDeputies')[0];
-		var objEmailInstructors = document.getElementsByName('emailInstructors')[0];
-		var objEmailStudents = document.getElementsByName('emailStudents')[0];
-		var objReports = document.getElementsByName('reports');
-		var objSince = document.getElementsByName('since')[0];
+		if (document.getElementById('examPdfReport_form_all')==null || document.getElementById('examPdfReport_form_all').length==0) return;
+		var allSubjects = document.getElementById('examPdfReport_form_all').checked;
+		var objSubjects = document.getElementById('examPdfReport_form_subjects');
+		var objEmailDeputies = document.getElementById('examPdfReport_form_emailDeputies');
+		var objEmailInstructors = document.getElementById('examPdfReport_form_emailInstructors');
+		var objEmailStudents = document.getElementById('examPdfReport_form_emailStudents');
+		var objReports = document.getElementsByName('form.reports');
+		var objSince = document.getElementById('examPdfReport_form_since');
 		var studentSchedule = false;
 		var instructorSchedule = false;
 		for (var i=0;i<objReports.length;i++) {
-			if ('Individual Student Schedule'==objReports[i].value) studentSchedule = objReports[i].checked;
-			if ('Individual Instructor Schedule'==objReports[i].value) instructorSchedule = objReports[i].checked;
+			if ('StudentExamReport'==objReports[i].value) studentSchedule = objReports[i].checked;
+			if ('InstructorExamReport'==objReports[i].value) instructorSchedule = objReports[i].checked;
 		}
 		objSubjects.disabled=allSubjects;
-		objEmailDeputies.disabled=allSubjects; 
-		objEmailInstructors.disabled=!instructorSchedule;
-		objEmailStudents.disabled=!studentSchedule;
+		if (objEmailDeputies) objEmailDeputies.disabled=allSubjects; 
+		if (objEmailInstructors) objEmailInstructors.disabled=!instructorSchedule;
+		if (objEmailStudents) objEmailStudents.disabled=!studentSchedule;
 		if (allSubjects) {
 			objEmailDeputies.checked=false;
 		}
@@ -282,5 +270,7 @@
 		if (!instructorSchedule) objEmailInstructors.checked=false;
 		objSince.disabled=objEmailInstructors.disabled && objEmailStudents.disabled;
 	}
+	selectionChanged();
 </script>
-</html:form>
+</s:form>
+</loc:bundle>

@@ -19,19 +19,17 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndInstructorReport;
@@ -40,19 +38,23 @@ import org.unitime.timetable.reports.exam.ExamPeriodChartReport;
 import org.unitime.timetable.reports.exam.ExamScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ExamVerificationReport;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
+import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.reports.exam.PeriodChartReport;
 import org.unitime.timetable.reports.exam.ScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ScheduleByRoomReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.IdValue;
 
 /*
  * @author Tomas Muller
  */
 public class ExamPdfReportForm extends ExamReportForm {
 	private static final long serialVersionUID = 4349609058043519671L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	protected static Log sLog = LogFactory.getLog(ExamPdfReportForm.class);
     private String[] iReports = null; 
     private String iMode = null;
@@ -82,60 +84,89 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iCompact = false;
     private boolean iRoomDispNames = false;
     
-    public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
-    public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text", "CSV", "PDF (New)", "XLS"};
+    public static String getModeLabel(PdfLegacyExamReport.Mode m) {
+    	switch (m) {
+    	case LegacyPdfLetter: return MSG.formatPdfLetter();
+    	case LegacyPdfLedger: return MSG.formatPdfLedger();
+    	case LegacyText: return MSG.formatText();
+    	case CSV: MSG.formatCSV();
+    	case PDF: return MSG.formatPdfNew();
+    	case XLS: return MSG.formatXLS();
+    	default: return m.name();
+		}
+    }
+    
     public static int sDeliveryDownload = 0;
     public static int sDeliveryEmail = 1;
     
-    static {
-        sRegisteredReports.put("Schedule by Course", ScheduleByCourseReport.class);
-        sRegisteredReports.put("Student Conflicts", ConflictsByCourseAndStudentReport.class);
-        sRegisteredReports.put("Instuctor Conflicts", ConflictsByCourseAndInstructorReport.class);
-        sRegisteredReports.put("Schedule by Period", ScheduleByPeriodReport.class);
-        sRegisteredReports.put("Schedule by Period (Exams)", ExamScheduleByPeriodReport.class);
-        sRegisteredReports.put("Schedule by Room", ScheduleByRoomReport.class);
-        sRegisteredReports.put("Period Chart", PeriodChartReport.class);
-        sRegisteredReports.put("Period Chart (Exams)", ExamPeriodChartReport.class);
-        sRegisteredReports.put("Verification", ExamVerificationReport.class);
-        sRegisteredReports.put("Abbreviated Schedule", AbbvScheduleByCourseReport.class);
-        sRegisteredReports.put("Abbreviated Schedule (Exams)", AbbvExamScheduleByCourseReport.class);
-        sRegisteredReports.put("Individual Instructor Schedule", InstructorExamReport.class);
-        sRegisteredReports.put("Individual Student Schedule", StudentExamReport.class);
+    public static enum RegisteredReport {
+        AbbvScheduleByCourseReport(AbbvScheduleByCourseReport.class),
+        AbbvExamScheduleByCourseReport(AbbvExamScheduleByCourseReport.class),
+        InstructorExamReport(InstructorExamReport.class),
+        StudentExamReport(StudentExamReport.class),
+        ConflictsByCourseAndInstructorReport(ConflictsByCourseAndInstructorReport.class),
+        PeriodChartReport(PeriodChartReport.class),
+        ExamPeriodChartReport(ExamPeriodChartReport.class),
+    	ScheduleByCourseReport(ScheduleByCourseReport.class),
+        ScheduleByPeriodReport(ScheduleByPeriodReport.class),
+        ExamScheduleByPeriodReport(ExamScheduleByPeriodReport.class),
+        ScheduleByRoomReport(ScheduleByRoomReport.class),
+        ConflictsByCourseAndStudentReport(ConflictsByCourseAndStudentReport.class),
+        ExamVerificationReport(ExamVerificationReport.class),
+    	;
+    	
+    	private Class<? extends PdfLegacyExamReport> implementation;
+    	RegisteredReport(Class<? extends PdfLegacyExamReport> implementation) {
+    		this.implementation = implementation;
+    	}
+    	public Class<? extends PdfLegacyExamReport> getImplementation() { return implementation; }
     }
     
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = super.validate(mapping, request);
-        
-        if (iReports==null || iReports.length==0)
-            errors.add("reports", new ActionMessage("errors.generic", "No report selected."));
-        
-        if (!iAll && (iSubjects==null || iSubjects.length==0))
-            errors.add("subjects", new ActionMessage("errors.generic", "No subject area selected."));
-        
-        if (iSince != null && !iSince.isEmpty() && !Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).isValid(iSince)) {
-        	errors.add("since", new ActionMessage("errors.invalidDate", iSince));
-        }
-        
-        return errors;
+    public String getReportName(RegisteredReport report) {
+    	switch (report) {
+        case ScheduleByCourseReport: return MSG.reportScheduleByCourseReport();
+        case ConflictsByCourseAndStudentReport: return MSG.reportConflictsByCourseAndStudentReport();
+        case ConflictsByCourseAndInstructorReport: return MSG.reportConflictsByCourseAndInstructorReport();
+        case ScheduleByPeriodReport: return MSG.reportScheduleByPeriodReport();
+        case ExamScheduleByPeriodReport: return MSG.reportExamScheduleByPeriodReport();
+        case ScheduleByRoomReport: return MSG.reportScheduleByRoomReport();
+        case PeriodChartReport: return MSG.reportPeriodChartReport();
+        case ExamPeriodChartReport: return MSG.reportExamPeriodChartReport();
+        case ExamVerificationReport: return MSG.reportExamVerificationReport();
+        case AbbvScheduleByCourseReport: return MSG.reportAbbvScheduleByCourseReport();
+        case AbbvExamScheduleByCourseReport: return MSG.reportAbbvExamScheduleByCourseReport();
+        case InstructorExamReport: return MSG.reportInstructorExamReport();
+        case StudentExamReport: return MSG.reportStudentExamReport();    	
+		default: return report.name();
+		}
     }
     
+    public String getReportName(String report) {
+    	try {
+    		return getReportName(RegisteredReport.valueOf(report));
+    	} catch (Exception e) {
+    		return report;
+    	}
+    }
+
     @Override
     public void validate(UniTimeAction action) {
     	if (iReports==null || iReports.length==0)
-    		action.addFieldError("reports", "No report selected.");
+    		action.addFieldError("reports", MSG.errorNoReportSelected());
         
         if (!iAll && (iSubjects==null || iSubjects.length==0))
-        	action.addFieldError("subjects", "No subject area selected.");
+        	action.addFieldError("subjects", MSG.errorNoSubjectAreaSelected());
         
         if (iSince != null && !iSince.isEmpty() && !Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).isValid(iSince))
-        	action.addFieldError("since", "<b>" + iSince + "</b> is not a valid date.");
+        	action.addFieldError("since", MSG.errorNotValidDate(iSince));
     }
 
     
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        super.reset(mapping, request);
+    @Override
+	public void reset() {
+    	super.reset();
         iReports = null;
-        iMode = sModes[0];
+        iMode = PdfLegacyExamReport.Mode.LegacyPdfLetter.name();
         iAll = false;
         iDispRooms = false;
         iNoRoom = null;
@@ -148,7 +179,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         iEmail = false;
         iAddr = null; iCc = null; iBcc = null; 
         iEmailDeputies = false;
-        iSubject = "Examination Report";
+        iSubject = MSG.emailSubjectExaminationReport();
         iMessage = null;
         iDispLimit = false;
         iSince = null;
@@ -162,41 +193,11 @@ public class ExamPdfReportForm extends ExamReportForm {
         iRoomDispNames = false;
     }
     
-    @Override
-	public void reset() {
-    	super.reset();
-        iReports = null;
-        iMode = sModes[0];
-        iAll = false;
-        iDispRooms = false;
-        iNoRoom = null;
-        iDirect = false;
-        iM2d = false;
-        iBtb = false;
-        iLimit = null;
-        iTotals = false;
-        iRoomCodes = null;
-        iEmail = false;
-        iAddr = null; iCc = null; iBcc = null; 
-        iEmailDeputies = false;
-        iSubject = "Examination Report";
-        iMessage = null;
-        iDispLimit = false;
-        iSince = null;
-        iEmailInstructors = false; 
-        iEmailStudents = false;
-        iClassSchedule = false;
-        iIgnoreEmptyExams = false;
-        iItype = false;
-        iDispNote = false;
-        iCompact = false;
-        iRoomDispNames = false;    }
-    
     public void load(SessionContext session) {
-    	super.load(session, true);
+    	super.load(session);
         setAll(session.getAttribute("ExamPdfReport.all")==null?true:(Boolean)session.getAttribute("ExamPdfReport.all"));
         setReports((String[])session.getAttribute("ExamPdfReport.reports"));
-        setMode(session.getAttribute("ExamPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("ExamPdfReport.mode"));
+        setMode(session.getAttribute("ExamPdfReport.mode")==null?PdfLegacyExamReport.Mode.LegacyPdfLetter.name():(String)session.getAttribute("ExamPdfReport.mode"));
         setSubjects((String[])session.getAttribute("ExamPdfReport.subjects"));
         setDispRooms("1".equals(session.getUser().getProperty("ExamPdfReport.dispRooms", "1")));
         setNoRoom(session.getUser().getProperty("ExamPdfReport.noRoom", ApplicationProperty.ExaminationsNoRoomText.value()));
@@ -223,6 +224,11 @@ public class ExamPdfReportForm extends ExamReportForm {
         setDispNote("1".equals(session.getUser().getProperty("ExamPdfReport.dispNote", "0")));
         setCompact("1".equals(session.getUser().getProperty("ExamPdfReport.compact", "0")));
         setRoomDispNames("1".equals(session.getUser().getProperty("ExamPdfReport.roomDispNames", "1")));
+        List<IdValue> subjects = new ArrayList<IdValue>();
+        TreeSet<SubjectArea> userSubjectAreas = SubjectArea.getUserSubjectAreas(session.getUser(), false);
+        for (SubjectArea sa: userSubjectAreas)
+        	subjects.add(new IdValue(sa.getUniqueId(), sa.getSubjectAreaAbbreviation()));
+        setSubjectAreas(subjects);
     }
     
     public void save(SessionContext session) {
@@ -258,15 +264,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         session.getUser().setProperty("ExamPdfReport.roomDispNames", getRoomDispNames() ? "1" : "0");
     }
 
-    public String[] getReports() { return iReports;}
+    public String[] getReports() { return iReports; }
     public void setReports(String[] reports) { iReports = reports;}
     public String getMode() { return iMode; }
     public void setMode(String mode) { iMode = mode; }
-    public int getModeIdx() {
-        for (int i=0;i<sModes.length;i++)
-            if (sModes[i].equals(iMode)) return i;
-        return 0;
-    }
     public boolean getAll() { return iAll; }
     public void setAll(boolean all) { iAll = all;}
     public String[] getSubjects() { return iSubjects; }
@@ -309,10 +310,18 @@ public class ExamPdfReportForm extends ExamReportForm {
     public boolean getRoomDispNames() { return iRoomDispNames; }
     public void setRoomDispNames(boolean roomDispNames) { iRoomDispNames = roomDispNames; }
     
-    public TreeSet<String> getAllReports() {
-        return new TreeSet<String>(sRegisteredReports.keySet());
+    public List<ComboBoxLookup> getAllReports() {
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	for (RegisteredReport r: RegisteredReport.values())
+    		ret.add(new ComboBoxLookup(getReportName(r), r.name()));
+    	return ret;
     }
-    public String[] getModes() { return sModes; }
+    public List<ComboBoxLookup> getModes() { 
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	for (PdfLegacyExamReport.Mode m: PdfLegacyExamReport.Mode.values())
+    		ret.add(new ComboBoxLookup(getModeLabel(m), m.name()));
+    	return ret;
+    }
     
     public boolean getDispLimit() { return iDispLimit; }
     public void setDispLimit(boolean dispLimit) { iDispLimit = dispLimit; }
@@ -364,5 +373,13 @@ public class ExamPdfReportForm extends ExamReportForm {
 	    x.setCompact(getCompact());
 	    x.setRoomDispNames(getRoomDispNames());
     	return x;
+    }
+    
+    public PdfLegacyExamReport.Mode getReportMode() {
+    	try {
+    		return PdfLegacyExamReport.Mode.valueOf(getMode());
+    	} catch (Exception e) {
+    		return PdfLegacyExamReport.Mode.LegacyPdfLetter;
+    	}
     }
 }

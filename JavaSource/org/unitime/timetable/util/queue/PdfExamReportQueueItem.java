@@ -39,9 +39,12 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Email;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
+import org.unitime.timetable.form.ExamPdfReportForm.RegisteredReport;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
@@ -72,6 +75,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class PdfExamReportQueueItem extends QueueItem {
 	private static final long serialVersionUID = 1L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
 	public static String TYPE = "PDF Exam Report";
 
@@ -90,7 +94,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 		iName = ExamTypeDAO.getInstance().get(iForm.getExamType()).getLabel() + " ";
         for (int i=0;i<iForm.getReports().length;i++) {
         	if (i > 0) iName += ", ";
-        	iName += iForm.getReports()[i];
+        	iName += iForm.getReportName(iForm.getReports()[i]);
         }
         if (!iForm.getAll()) {
         	iName += " (";
@@ -115,7 +119,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 	private void createReports(org.hibernate.Session hibSession) {
         try {
         	iProgress = 0;
-            setStatus("Loading exams...");
+            setStatus(MSG.statusLoadingExams());
             TreeSet<ExamAssignmentInfo> exams = null;
             if (iExamSolver!=null && iExamSolver.getExamTypeId().equals(iForm.getExamType()) && ApplicationProperty.ExaminationPdfReportsCanUseSolution.isTrue()) {
                     exams = new TreeSet(iExamSolver.getAssignedExams());
@@ -123,36 +127,36 @@ public class PdfExamReportQueueItem extends QueueItem {
                         if (i.next().getStudentIds().isEmpty()) i.remove();
                     }
                     if (ApplicationProperty.ExaminationPdfReportsPreloadCrosslistedExams.isTrue()) {
-                		setStatus("  Fetching exams...");
+                		setStatus("  " + MSG.statusFetchingExams());
                 		hibSession.createQuery(
                                 "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
                                 ).setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list();
-                		setStatus("  Fetching related objects (class)...");
+                		setStatus("  " + MSG.statusFetchingRelatedClasses());
                         hibSession.createQuery(
                                 "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
                                 .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
-                        setStatus("  Fetching related objects (config)...");
+                        setStatus("  " + MSG.statusFetchingRelatedConfigs());
                         hibSession.createQuery(
                                 "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
                                 .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
-                        setStatus("  Fetching related objects (course)...");
+                        setStatus("  " + MSG.statusFetchingRelatedCourses());
                         hibSession.createQuery(
                                 "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
                                 .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
-                        setStatus("  Fetching related objects (offering)...");
+                        setStatus("  " + MSG.statusFetchingRelatedOfferings());
                         hibSession.createQuery(
                                 "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
                                 .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
                         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
-                        setStatus("  Loading students (class)...");
+                        setStatus("  " + MSG.statusLoadingStudentsFromClasses());
                         for (Iterator i=
                             hibSession.createQuery(
                             "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
@@ -177,7 +181,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 }
                                 studentsOfCourse.add(studentId);
                         }
-                        setStatus("  Loading students (config)...");
+                        setStatus("  " + MSG.statusLoadingStudentsFromConfigs());
                         for (Iterator i=
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
@@ -203,7 +207,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             }
                             studentsOfCourse.add(studentId);
                         }
-                        setStatus("  Loading students (course)...");
+                        setStatus("  " + MSG.statusLoadingStudentsFromCourses());
                         for (Iterator i=
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
@@ -228,7 +232,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             }
                             studentsOfCourse.add(studentId);
                         }
-                        setStatus("  Loading students (offering)...");
+                        setStatus("  " + MSG.statusLoadingStudentsFromOfferings());
                         for (Iterator i=
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
@@ -284,19 +288,20 @@ public class PdfExamReportQueueItem extends QueueItem {
             Session session = getSession();
             for (int i=0;i<iForm.getReports().length;i++) {
             	iProgress = 0.1 + (0.8 / iForm.getReports().length) * i;
-                setStatus("Generating "+iForm.getReports()[i]+"...");
-                Class reportClass = ExamPdfReportForm.sRegisteredReports.get(iForm.getReports()[i]);
+            	RegisteredReport regReport = ExamPdfReportForm.RegisteredReport.valueOf(iForm.getReports()[i]);
+                setStatus(MSG.statusGeneratingReport(iForm.getReportName(regReport)));
+                Class reportClass = regReport.getImplementation();
                 String reportName = null;
                 for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
                     if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
                 if (reportName==null) reportName = "r"+(i+1);
                 String name = session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
-                    File file = ApplicationProperties.getTempFile(name, PdfLegacyExamReport.getExtension(iForm.getModeIdx()).substring(1));
-                    log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getModeIdx())+"</a>... " + (iSubjectIndependent ? " ("+exams.size()+" exams)" : ""));
+                    File file = ApplicationProperties.getTempFile(name, PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
+                    log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                         getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                        newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
+                        newInstance(iForm.getReportMode().ordinal(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
                     report.setDirect(iForm.getDirect());
                     report.setM2d(iForm.getM2d());
                     report.setBtb(iForm.getBtb());
@@ -314,7 +319,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     report.setUseRoomDisplayNames(iForm.getRoomDispNames());
                     report.printReport();
                     report.close();
-                    output.put(reportName+PdfLegacyExamReport.getExtension(iForm.getModeIdx()),file);
+                    output.put(reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
                     if (report instanceof InstructorExamReport && iForm.getEmailInstructors()) {
                         ireports = ((InstructorExamReport)report).printInstructorReports(name, new FileGenerator(name));
                     } else if (report instanceof StudentExamReport && iForm.getEmailStudents()) {
@@ -323,16 +328,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                 } else {
                     for (int j=0;j<iForm.getSubjects().length;j++) {
                         SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[j]));
-                        File file = ApplicationProperties.getTempFile(name+"_"+subject.getSubjectAreaAbbreviation(), PdfLegacyExamReport.getExtension(iForm.getModeIdx()).substring(1));
+                        File file = ApplicationProperties.getTempFile(name+"_"+subject.getSubjectAreaAbbreviation(), PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
                         int nrExams = 0;
                         for (ExamAssignmentInfo exam : exams) {
                             if (exam.isOfSubjectArea(subject)) nrExams++;
                         }
-                        log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getModeIdx())+"</a>... ("+nrExams+" exams)");
+                        log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + " " + MSG.hintNbrExams(nrExams));
                         List<SubjectArea> subjects = new ArrayList<SubjectArea>(); subjects.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                            newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
+                            newInstance(iForm.getReportMode(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
                         report.setDirect(iForm.getDirect());
                         report.setM2d(iForm.getM2d());
                         report.setBtb(iForm.getBtb());
@@ -349,12 +354,12 @@ public class PdfExamReportQueueItem extends QueueItem {
                         report.setUseRoomDisplayNames(iForm.getRoomDispNames());
                         report.printReport();
                         report.close();
-                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getModeIdx()),file);
+                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
                         Hashtable<String,File> files = outputPerSubject.get(subject);
                         if (files==null) {
                             files = new Hashtable(); outputPerSubject.put(subject,files);
                         }
-                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getModeIdx()),file);
+                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
                         if (report instanceof InstructorExamReport && iForm.getEmailInstructors()) {
                             ireports = ((InstructorExamReport)report).printInstructorReports( name, new FileGenerator(name));
                         } else if (report instanceof StudentExamReport && iForm.getEmailStudents()) {
@@ -367,15 +372,14 @@ public class PdfExamReportQueueItem extends QueueItem {
             byte[] buffer = new byte[32*1024];
             int len = 0;
             if (output.isEmpty())
-                log("<font color='orange'>No report generated.</font>");
+                log("<font color='orange'>" + MSG.warnNoReportGenerated() + "</font>");
             else if (iForm.getEmail()) {
-                setStatus("Sending email(s)...");
+                setStatus(MSG.statusSendingEmails());
                 if (iForm.getEmailDeputies()) {
                     Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
                     for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
                         if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
-                            log("<font color='orange'>&nbsp;&nbsp;No manager associated with subject area "+entry.getKey().getSubjectAreaAbbreviation()+
-                                " ("+entry.getKey().getDepartment().getLabel()+")</font>");
+                            log("<font color='orange'>&nbsp;&nbsp;" + MSG.warnNoManagerForSubject(entry.getKey().getSubjectAreaAbbreviation(), entry.getKey().getDepartment().getLabel())+"</font>");
                         for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                             TimetableManager g = (TimetableManager)i.next();
                             boolean receiveEmail = false;
@@ -385,7 +389,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             }
                             if (receiveEmail){
                                 if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
-                                    log("<font color='orange'>&nbsp;&nbsp;Manager "+g.getName()+" has no email address.</font>");
+                                    log("<font color='orange'>&nbsp;&nbsp;" + MSG.warnManagerHasNoEmail(g.getName()) + "</font>");
                                 } else {
                                     Hashtable<String,File> files = files2send.get(g);
                                     if (files==null) { files = new Hashtable<String,File>(); files2send.put(g, files); }
@@ -395,28 +399,26 @@ public class PdfExamReportQueueItem extends QueueItem {
                         }
                     }
                     if (files2send.isEmpty()) {
-                        log("<font color='red'>Nothing to send.</font>");
+                        log("<font color='red'>" + MSG.warnNothingToSend() + "</font>");
                     } else {
                         Set<TimetableManager> managers = files2send.keySet();
                         while (!managers.isEmpty()) {
                             TimetableManager manager = managers.iterator().next();
                             Hashtable<String,File> files = files2send.get(manager);
                             managers.remove(manager);
-                            log("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
+                            log(MSG.infoSendingEmail(manager.getName(), manager.getEmailAddress()));
                             try {
                                 Email mail = Email.createEmail();
-                                mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                                mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                                 mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                        "For an up-to-date examination report, please visit "+
-                                        iUrl+"/\r\n\r\n"+
-                                        "This email was automatically generated by "+
-                                        "UniTime "+Constants.getVersion()+
-                                        " (Univesity Timetabling Application, http://www.unitime.org).");
+                                		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                                		MSG.emailFooter(Constants.getVersion())
+                                		);
                                 mail.addRecipient(manager.getEmailAddress(), manager.getName());
                                 for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
                                     TimetableManager m = (TimetableManager)i.next();
                                     if (files.equals(files2send.get(m))) {
-                                        log("&nbsp;&nbsp;Including "+m.getName()+" ("+m.getEmailAddress()+")");
+                                        log("&nbsp;&nbsp;" + MSG.infoIncluding(m.getName(), m.getEmailAddress()));
                                         mail.addRecipient(m.getEmailAddress(),m.getName());
                                         i.remove();
                                     }
@@ -429,12 +431,12 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
                                 	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
-                                    log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
+                                    log("&nbsp;&nbsp;" + MSG.infoAttaching("<a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>"));
                                 }
                                 mail.send();
-                                log("Email sent.");
+                                log(MSG.infoEmailSent());
                             } catch (Exception e) {
-                                log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
+                                log("<font color='red'>" + MSG.errorUnableToSendEmail(e.getMessage())+"</font>");
                                 setError(e);
                             }
                         }
@@ -442,13 +444,10 @@ public class PdfExamReportQueueItem extends QueueItem {
                 } else {
                     try {
                     	Email mail = Email.createEmail();
-                        mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                        mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                         mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                "For an up-to-date examination report, please visit "+
-                                iUrl+"/\r\n\r\n"+
-                                "This email was automatically generated by "+
-                                "UniTime "+Constants.getVersion()+
-                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                        		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                        		MSG.emailFooter(Constants.getVersion()));
                         if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(s.nextToken(), null);
                         if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
@@ -459,81 +458,75 @@ public class PdfExamReportQueueItem extends QueueItem {
                         	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                         }
                         mail.send();
-                        log("Email sent.");
+                        log(MSG.infoEmailSent());
                     } catch (Exception e) {
-                        log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
+                    	log("<font color='red'>" + MSG.errorUnableToSendEmail(e.getMessage())+"</font>");
                         setError(e);
                     }
                 }
                 if (iForm.getEmailInstructors() && ireports!=null && !ireports.isEmpty()) {
-                    setStatus("Emailing instructors...");
+                    setStatus(MSG.statusEmailingInstructors());
                     for (ExamInstructorInfo instructor : new TreeSet<ExamInstructorInfo>(ireports.keySet())) {
                         File report = ireports.get(instructor);
                         String email = instructor.getInstructor().getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- instructor has no email address.</font>");
+                            log("&nbsp;&nbsp;<font color='orange'>" + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>") + "</font>");
                             continue;
                         }
                         try {
                         	Email mail = Email.createEmail();
-                            mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                            mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                    "For an up-to-date examination report, please visit "+
-                                    iUrl+"/exams.do\r\n\r\n"+
-                                    "This email was automatically generated by "+
-                                    "UniTime "+Constants.getVersion()+
-                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                            		MSG.emailFooter(Constants.getVersion()));
                             mail.addRecipient(email, null);
                             if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getModeIdx()));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
+                            log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
                         } catch (Exception e) {
-                            log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a> -- "+e.getMessage()+".</font>");
+                            log("&nbsp;&nbsp;<font color='orange'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage())+"</font>");
                             setError(e);
                         }
                     }
-                    log("Emails sent.");
+                    log(MSG.infoEmailsSent());
                 }
                 if (iForm.getEmailStudents() && sreports!=null && !sreports.isEmpty()) {
-                    setStatus("Emailing students...");
+                    setStatus(MSG.statusEmailingStudents());
                     for (Student student : new TreeSet<Student>(sreports.keySet())) {
                         File report = sreports.get(student);
                         String email = student.getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- student has no email address.</font>");
+                            log("&nbsp;&nbsp;<font color='orange'>" + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>") + "</font>");
                             continue;
                         }
                         try {
                             Email mail = Email.createEmail();
-                            mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
+                            mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                    "For an up-to-date examination report, please visit "+
-                                    iUrl+"/exams.do\r\n\r\n"+
-                                    "This email was automatically generated by "+
-                                    "UniTime "+Constants.getVersion()+
-                                    " (Univesity Timetabling Application, http://www.unitime.org).");
+                            		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                            		MSG.emailFooter(Constants.getVersion()));
                             mail.addRecipient(email, null);
                             if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getModeIdx()));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
+                            log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                         } catch (Exception e) {
-                            log("&nbsp;&nbsp;<font color='orange'>Unable to email <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a> -- "+e.getMessage()+".</font>");
+                        	log("&nbsp;&nbsp;<font color='orange'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage())+"</font>");
                             setError(e);
                         }
                     }
-                    log("Emails sent.");
+                    log(MSG.infoEmailsSent());
                 }
             }
             if (output.isEmpty()) {
-                throw new Exception("Nothing generated.");
+                throw new Exception(MSG.errorNoReportGenerated());
             } else if (output.size()==1) {
             	setOutput(output.elements().nextElement());
             } else {
@@ -541,7 +534,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                 ZipOutputStream zip = null;
                 try {
                     File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
-                    log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>...");
+                    log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>"));
                     zip = new ZipOutputStream(new FileOutputStream(zipFile));
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                         zip.putNextEntry(new ZipEntry(entry.getKey()));
@@ -559,9 +552,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                 }
             }
         	iProgress = 1.0;
-            setStatus("All done.");
+            setStatus(MSG.statusAllDone());
         } catch (Exception e) {
-            fatal("Process failed.", e);
+            fatal(MSG.errorTaskFailed(), e);
         }
 	}
 

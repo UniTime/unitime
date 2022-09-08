@@ -980,4 +980,358 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Nothing to display.")
 	String messageNothingToDisplay();
+	
+	@DefaultMessage("Examination PDF reports are generated from the current solution (in-memory solution taken from the solver).")
+	String warnExamPdfReportsUsingSolution();
+	
+	@DefaultMessage("Examination PDF reports are generated from the saved solution (solver assignments are ignored).")
+	String warnEamPdfReportsUsingSaved();
+	
+	@DefaultMessage("Reports in progress")
+	String sectReportsInProgress();
+	
+	@DefaultMessage("Name")
+	String colTaskName();
+	
+	@DefaultMessage("Status")
+	String colTaskStatus();
+	
+	@DefaultMessage("Progress")
+	String colTaskProgress();
+	
+	@DefaultMessage("Owner")
+	String colTaskOwner();
+	
+	@DefaultMessage("Session")
+	String colTaskSession();
+	
+	@DefaultMessage("Created")
+	String colTaskCreated();
+	
+	@DefaultMessage("Started")
+	String colTaskStarted();
+	
+	@DefaultMessage("Finished")
+	String colTaskFinished();
+	
+	@DefaultMessage("Output")
+	String colTaskOutput();
+	
+	@DefaultMessage("Do you really want to remove this report?")
+	String questionDeleteReportInProgress();
+	
+	@DefaultMessage("PDF (Letter)")
+	String formatPdfLetter();
+	
+	@DefaultMessage("PDF (Ledger)")
+	String formatPdfLedger();
+
+	@DefaultMessage("Text")
+	String formatText();
+	
+	@DefaultMessage("CSV")
+	String formatCSV();
+	
+	@DefaultMessage("PDF (New)")
+	String formatPdfNew();
+	
+	@DefaultMessage("XLS")
+	String formatXLS();
+
+	@DefaultMessage("Schedule by Course")
+	String reportScheduleByCourseReport();
+
+	@DefaultMessage("Student Conflicts")
+	String reportConflictsByCourseAndStudentReport();
+
+	@DefaultMessage("Instuctor Conflicts")
+	String reportConflictsByCourseAndInstructorReport();
+
+	@DefaultMessage("Schedule by Period")
+	String reportScheduleByPeriodReport();
+
+	@DefaultMessage("Schedule by Period (Exams)")
+	String reportExamScheduleByPeriodReport();
+
+	@DefaultMessage("Schedule by Room")
+	String reportScheduleByRoomReport();
+
+	@DefaultMessage("Period Chart")
+	String reportPeriodChartReport();
+
+	@DefaultMessage("Period Chart (Exams)")
+	String reportExamPeriodChartReport();
+
+	@DefaultMessage("Verification")
+	String reportExamVerificationReport();
+
+	@DefaultMessage("Abbreviated Schedule")
+	String reportAbbvScheduleByCourseReport();
+
+	@DefaultMessage("Abbreviated Schedule (Exams)")
+	String reportAbbvExamScheduleByCourseReport();
+
+	@DefaultMessage("Individual Instructor Schedule")
+	String reportInstructorExamReport();
+
+	@DefaultMessage("Individual Student Schedule")
+	String reportStudentExamReport();
+	
+	@DefaultMessage("Examination Report")
+	String emailSubjectExaminationReport();
+	
+	@DefaultMessage("Loading exams...")
+	String statusLoadingExams();
+	
+	@DefaultMessage("Errors")
+	String sectErrors();
+	
+	@DefaultMessage("No report selected.")
+	String errorNoReportSelected();
+	
+	@DefaultMessage("No subject area selected.")
+	String errorNoSubjectAreaSelected();
+	
+	@DefaultMessage("<b>{0}</b> is not a valid date.")
+	String errorNotValidDate(String date);
+	
+	@DefaultMessage("Generate")
+	String actionGenerateReport();
+	
+	@DefaultMessage("G")
+	String accessGenerateReport();
+	
+	@DefaultMessage("Generate Report (Alt+G)")
+	String titleGenerateReport();
+	
+	@DefaultMessage("Refresh")
+	String actionRegreshLog();
+	
+	@DefaultMessage("R")
+	String accessRegreshLog();
+	
+	@DefaultMessage("Refresh Log (Alt+R)")
+	String titleRegreshLog();
+	
+	@DefaultMessage("Log of {0}")
+	String sectLogOfTask(String task);
+	
+	@DefaultMessage("Input Data")
+	String sectInputData();
+	
+	@DefaultMessage("All Subject Areas (on one report)")
+	String checkReportAllSubjectAreas();
+	
+	@DefaultMessage("Report")
+	String sectReport();
+	
+	@DefaultMessage("Parameters")
+	String sectParameters();
+	
+	@DefaultMessage("All Reports:")
+	String propAllReports();
+	
+	@DefaultMessage("Display Instructional Type")
+	String checkDisplayInstructionalType();
+	
+	@DefaultMessage("Skip Exams with No Enrollment")
+	String checkSkipExamsWithNoEnrollment();
+	
+	@DefaultMessage("Use Room Display Names")
+	String checkUseRoomDisplayNames();
+	
+	@DefaultMessage("Conflicts Reports:")
+	String propConflictReports();
+	
+	@DefaultMessage("Display Direct Conflicts")
+	String checkDisplayDirectConflicts();
+	
+	@DefaultMessage("Display More Than 2 Exams A Day Conflicts")
+	String checkDisplayMoreThan2ExamsADayConflicts();
+	
+	@DefaultMessage("Display Back-To-Back Conflicts")
+	String checkDisplayBackToBackConflicts();
+	
+	@DefaultMessage("Reports with Rooms:")
+	String propReportsWithRooms();
+	
+	@DefaultMessage("Display Rooms")
+	String checkDisplayRooms();
+	
+	@DefaultMessage("No Room:")
+	String propNoRoomLabel();
+	
+	@DefaultMessage("Period Chart:")
+	String propPeriodChartReport();
+	
+	@DefaultMessage("Display Totals")
+	String checkDisplayTotals();
+	
+	@DefaultMessage("Limit:")
+	String propExamLimit();
+	
+	@DefaultMessage("Room Codes:")
+	String propRoomCodes();
+	
+	@DefaultMessage("Compact Size <i>(no section information)</i>")
+	String checkReportCompactSize();
+	
+	@DefaultMessage("Verification Report:")
+	String propVerificationReport();
+	
+	@DefaultMessage("Display Limits &amp; Enrollments")
+	String checkDisplayLimitsAndEnrollments();
+	
+	@DefaultMessage("Display Class Schedule Notes")
+	String checkDisplayClassScheduleNotes();
+	
+	@DefaultMessage("Individual Reports:")
+	String propIndividualReports();
+	
+	@DefaultMessage("Include Class Schedule")
+	String checkIncludeClassSchedule();
+	
+	@DefaultMessage("Date:")
+	String propReportStartDate();
+	
+	@DefaultMessage("(Only email instructors/students that have a change in their schedule since this date, email all when empty)")
+	String hintReportStartDate();
+	
+	@DefaultMessage("Output")
+	String sectOutput();
+	
+	@DefaultMessage("Format:")
+	String propReportFormat();
+	
+	@DefaultMessage("Delivery:")
+	String propReportDelivery();
+	
+	@DefaultMessage("Email")
+	String checkReportDeliveryEmail();
+	
+	@DefaultMessage("Address:")
+	String propEmailAddress();
+	
+	@DefaultMessage("All Involved Department Schedule Managers")
+	String checkAllInvolvedDepartmentScheduleManagers();
+	
+	@DefaultMessage("Send Individual Instructor Schedule Reports to All Involved Instructors")
+	String checkSendIndividualInstructorReportsToInstructors();
+	
+	@DefaultMessage("Send Individual Student Schedule Reports to All Involved Students")
+	String checkSendIndividualStudentReportsToStudents();
+	
+	@DefaultMessage("CC:")
+	String propEmailCC();
+	
+	@DefaultMessage("BCC:")
+	String propEmailBCC();
+	
+	@DefaultMessage("Subject:")
+	String propEmailSubject();
+	
+	@DefaultMessage("Message:")
+	String propEmailMessage();
+	
+	@DefaultMessage("Fetching exams...")
+	String statusFetchingExams();
+	
+	@DefaultMessage("Fetching related objects (class)...")
+	String statusFetchingRelatedClasses();
+	
+	@DefaultMessage("Fetching related objects (config)...")
+	String statusFetchingRelatedConfigs();
+	
+	@DefaultMessage("Fetching related objects (course)...")
+	String statusFetchingRelatedCourses();
+	
+	@DefaultMessage("Fetching related objects (offering)...")
+	String statusFetchingRelatedOfferings();
+	
+	@DefaultMessage("Loading students (class)...")
+	String statusLoadingStudentsFromClasses();
+
+	@DefaultMessage("Loading students (config)...")
+	String statusLoadingStudentsFromConfigs();
+	
+	@DefaultMessage("Loading students (course)...")
+	String statusLoadingStudentsFromCourses();
+	
+	@DefaultMessage("Loading students (offering)...")
+	String statusLoadingStudentsFromOfferings();
+	
+	@DefaultMessage("Generating {0}...")
+	String statusGeneratingReport(String report);
+	
+	@DefaultMessage("Writing {0}...")
+	String statusWritingReport(String report);
+	
+	@DefaultMessage("({0} exams)")
+	String hintNbrExams(int exams);
+	
+	@DefaultMessage("No report generated.")
+	String warnNoReportGenerated();
+	
+	@DefaultMessage("Sending email(s)...")
+	String statusSendingEmails();
+	
+	@DefaultMessage("No manager associated with subject area {0} ({1}).")
+	String warnNoManagerForSubject(String subject, String dept);
+	
+	@DefaultMessage("Manager {0} has no email address.")
+	String warnManagerHasNoEmail(String name);
+	
+	@DefaultMessage("Nothing to send.")
+	String warnNothingToSend();
+	
+	@DefaultMessage("Sending email to {0} ({1})...")
+	String infoSendingEmail(String name, String email);
+	
+	@DefaultMessage("For an up-to-date examination report, please visit {0}")
+	String emailForUpToDateReportVisit(String url);
+	
+	@DefaultMessage("This email was automatically generated by UniTime {0} (Univesity Timetabling Application, http://www.unitime.org).")
+	String emailFooter(String version);
+	
+	@DefaultMessage("Including {0} ({1})")
+	String infoIncluding(String name, String email);
+	
+	@DefaultMessage("Attaching {0}")
+	String infoAttaching(String file);
+	
+	@DefaultMessage("Email sent.")
+	String infoEmailSent();
+	
+	@DefaultMessage("Unable to send email: {0}")
+	String errorUnableToSendEmail(String error);
+	
+	@DefaultMessage("Emailing instructors...")
+	String statusEmailingInstructors();
+	
+	@DefaultMessage("Unable to email {0} -- instructor has no email address.")
+	String errorUnableToSentInstructorNoEmail(String name);
+	
+	@DefaultMessage("An email was sent to {0}.")
+	String infoEmailSentTo(String name);
+	
+	@DefaultMessage("Unable to send email {0} -- {1}.")
+	String errorUnableToSendEmailTo(String name, String error);
+	
+	@DefaultMessage("Emails sent.")
+	String infoEmailsSent();
+	
+	@DefaultMessage("Emailing students...")
+	String statusEmailingStudents();
+	
+	@DefaultMessage("Unable to email {0} -- student has no email address.")
+	String errorUnableToSentStudentNoEmail(String name);
+	
+	@DefaultMessage("Nothing generated.")
+	String errorNoReportGenerated();
+	
+	@DefaultMessage("All done.")
+	String statusAllDone();
+	
+	@DefaultMessage("Process failed.")
+	String errorTaskFailed();
 }

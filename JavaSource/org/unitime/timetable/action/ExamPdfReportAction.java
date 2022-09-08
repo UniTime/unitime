@@ -23,27 +23,21 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.SolverServerService;
-import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
@@ -53,51 +47,62 @@ import org.unitime.timetable.util.queue.QueueItem;
 /** 
  * @author Tomas Muller
  */
-@Service("/examPdfReport")
-public class ExamPdfReportAction extends Action {
-    @Autowired SessionContext sessionContext;
-    
-    @Autowired SolverService<ExamSolverProxy> examinationSolverService;
-    
-    @Autowired SolverServerService solverServerService;
+@Action(value = "examPdfReport", results = {
+		@Result(name = "show", type = "tiles", location = "examPdfReport.tiles")
+	})
+@TilesDefinition(name = "examPdfReport.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination PDF Reports"),
+		@TilesPutAttribute(name = "body", value = "/exam/pdfReport.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamPdfReportForm myForm = (ExamPdfReportForm) form;
-		
+public class ExamPdfReportAction extends UniTimeAction<ExamPdfReportForm> {
+	private static final long serialVersionUID = -2736074007763182603L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	private String remove;
+	
+	public String getRemove() { return remove; }
+	public void setRemove(String remove) { this.remove = remove; }
+
+	public String execute() throws Exception {
 		sessionContext.checkPermission(Right.ExaminationPdfReports);
-        
-        ExamSolverProxy examSolver = examinationSolverService.getSolver();
+		
+		ExamSolverProxy examSolver = getExaminationSolverService().getSolver();
+
+    	if (form == null) {
+	    	form = new ExamPdfReportForm();
+	    	form.reset();
+	    	if (examSolver != null) form.setExamType(examSolver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
         
         if (examSolver!=null) {
             if (ApplicationProperty.ExaminationPdfReportsCanUseSolution.isTrue()) 
-                request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the current solution (in-memory solution taken from the solver).");
+                request.setAttribute(Constants.REQUEST_WARN, MSG.warnExamPdfReportsUsingSolution());
             else
-                request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");
+                request.setAttribute(Constants.REQUEST_WARN, MSG.warnEamPdfReportsUsingSaved());
         }
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if ("Generate".equals(op)) myForm.save(sessionContext);
-        myForm.load(sessionContext);
-        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
-        if (myForm.getAddress() == null)
-        	myForm.setAddress(sessionContext.getUser().getEmail());
+        String op = (form.getOp()!=null?form.getOp():request.getParameter("op"));
+        if ("Generate".equals(op)) form.save(sessionContext);
+        form.load(sessionContext);
+        if (form.getAddress() == null)
+        	form.setAddress(sessionContext.getUser().getEmail());
         
         if ("Generate".equals(op)) {
-            ActionMessages errors = myForm.validate(mapping, request);
-            if (!errors.isEmpty()) {
-                saveErrors(request, errors);
-            } else {
-
-            	solverServerService.getQueueProcessor().add(new PdfExamReportQueueItem(
+            form.validate(this);
+            if (!hasFieldErrors()) {
+            	getSolverServerService().getQueueProcessor().add(new PdfExamReportQueueItem(
                 		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()),
                 		sessionContext.getUser(),
-                		(ExamPdfReportForm) myForm.clone(), request, examSolver));
+                		(ExamPdfReportForm) form.clone(), request, examSolver));
             }
         }
         
-        if (request.getParameter("remove") != null) {
-        	solverServerService.getQueueProcessor().remove(request.getParameter("remove"));
+        if (remove != null && !remove.isEmpty()) {
+        	getSolverServerService().getQueueProcessor().remove(remove);
         }
         
         WebTable table = getQueueTable(request);
@@ -107,7 +112,7 @@ public class ExamPdfReportAction extends Action {
         
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
         
-        return mapping.findForward("show");
+        return "show";
 	}
 	
 	private WebTable getQueueTable(HttpServletRequest request) {
@@ -117,10 +122,19 @@ public class ExamPdfReportAction extends Action {
 		String ownerId = null;
 		if (!sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 			ownerId = sessionContext.getUser().getExternalUserId();
-		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
+		List<QueueItem> queue = getSolverServerService().getQueueProcessor().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
 		if (queue.isEmpty()) return null;
-		WebTable table = new WebTable(9, "Reports in progress", "examPdfReport.do?ord=%%",
-				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
+		WebTable table = new WebTable(9, MSG.sectReportsInProgress(), "examPdfReport.action?ord=%%",
+				new String[] {
+						MSG.colTaskName(),
+						MSG.colTaskStatus(),
+						MSG.colTaskProgress(),
+						MSG.colTaskOwner(),
+						MSG.colTaskSession(),
+						MSG.colTaskCreated(),
+						MSG.colTaskStarted(),
+						MSG.colTaskFinished(),
+						MSG.colTaskOutput()},
 				new String[] { "left", "left", "right", "left", "left", "left", "left", "left", "center"},
 				new boolean[] { true, true, true, true, true, true, true, true, true});
 		Date now = new Date();
@@ -132,9 +146,9 @@ public class ExamPdfReportAction extends Action {
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
 			if (sessionContext.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
-				delete = "<img src='images/action_delete.png' border='0' onClick=\"if (confirm('Do you really want to remove this report?')) document.location='examPdfReport.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
+				delete = "<img src='images/action_delete.png' border='0' onClick=\"if (confirm('" + MSG.questionDeleteReportInProgress() + "')) document.location='examPdfReport.action?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
-			WebTableLine line = table.addLine(item.log().isEmpty() ? null : "onClick=\"document.location='examPdfReport.do?log=" + item.getId() + "';\"",
+			WebTableLine line = table.addLine(item.log().isEmpty() ? null : "onClick=\"document.location='examPdfReport.action?log=" + item.getId() + "';\"",
 					new String[] {
 						name + (delete == null ? "": " " + delete),
 						item.status(),
