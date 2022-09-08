@@ -31,18 +31,19 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.RoomAvailabilityForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -54,10 +55,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
@@ -70,56 +71,79 @@ import org.unitime.timetable.webutil.PdfWebTable;
  * @author Tomas Muller
  */
 @Service("/roomAvailability")
-public class RoomAvailabilityAction extends Action {
+@Action(value = "roomAvailability", results = {
+		@Result(name = "showReport", type = "tiles", location = "roomAvailability.tiles")
+	})
+@TilesDefinition(name = "roomAvailability.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Room Availability"),
+		@TilesPutAttribute(name = "body", value = "/exam/roomAvailability.jsp")
+	})
 
-	@Autowired SessionContext sessionContext;
+public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> {
+	private static final long serialVersionUID = 3901909271352342751L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	protected static final GwtConstants GWT_CONST = Localization.create(GwtConstants.class);
 
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        RoomAvailabilityForm myForm = (RoomAvailabilityForm) form;
-
+    public String execute() throws Exception {
         // Check Access
         sessionContext.checkPermission(Right.RoomAvailability);
+        
+        ExamSolverProxy solver = getExaminationSolverService().getSolver();
 
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+    	if (form == null) {
+	    	form = new RoomAvailabilityForm();
+	    	form.reset();
+	    	if (solver != null) form.setExamType(solver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
 
-        if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(sessionContext);
-        } else if ("Refresh".equals(op)) {
-            myForm.reset(mapping, request);
+    	if (MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op) || MSG.buttonApply().equals(op)) {
+            form.save(sessionContext);
+        } else if (MSG.buttonRefresh().equals(op)) {
+            form.reset();
+            if (solver != null) form.setExamType(solver.getExamTypeId());
         }
-
-
-        myForm.load(sessionContext);
+    	
+        form.load(sessionContext);
 
         Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 
-        if (myForm.getExamType() != null && myForm.getExamType() >= 0) {
+        if (form.getExamType() != null && form.getExamType() >= 0) {
 
-            Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
-            String exclude = (myForm.getIncludeExams()?
+            Date[] bounds = ExamPeriod.getBounds(session, form.getExamType());
+            String exclude = (form.getIncludeExams()?
                     null :
-                    (ExamTypeDAO.getInstance().get(myForm.getExamType()).getType() == ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                    (ExamTypeDAO.getInstance().get(form.getExamType()).getType() == ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
 
             if (bounds!=null && RoomAvailability.getInstance()!=null) {
                 RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], exclude, "Refresh".equals(op));
             }
 
-            WebTable.setOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
+            WebTable.setOrder(sessionContext,(form.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
 
-            WebTable table = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), true, myForm):getTable(request, session.getUniqueId(), true, myForm));
+            WebTable table = (form.getCompare()?getCompareTable(request, session.getUniqueId(), true, true):getTable(request, session.getUniqueId(), true, true));
 
-            if ("Export PDF".equals(op) && table!=null) {
+            if (MSG.actionExportPdf().equals(op) && table!=null) {
                 ExportUtils.exportPDF(
-                		(myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm)),
-                		WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")),
+                		(form.getCompare()?getCompareTable(request, session.getUniqueId(), false, true):getTable(request, session.getUniqueId(), false, true)),
+                		WebTable.getOrder(sessionContext,(form.getCompare()?"roomAvailability.cord":"roomAvailability.ord")),
+                		response, "roomavail");
+                return null;
+            }
+            
+            if (MSG.actionExportCsv().equals(op) && table!=null) {
+                ExportUtils.exportCSV(
+                		(form.getCompare()?getCompareTable(request, session.getUniqueId(), false, false):getTable(request, session.getUniqueId(), false, false)),
+                		WebTable.getOrder(sessionContext,(form.getCompare()?"roomAvailability.cord":"roomAvailability.ord")),
                 		response, "roomavail");
                 return null;
             }
 
             if (table!=null)
-                myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
+                form.setTable(table.printTable(WebTable.getOrder(sessionContext,(form.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
 
-            RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), false, true);
+            RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), false, true);
         }
 
         if (request.getParameter("backId")!=null)
@@ -127,10 +151,10 @@ public class RoomAvailabilityAction extends Action {
 
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 
-        return mapping.findForward("showReport");
+        return "showReport";
     }
 
-    public boolean match(RoomAvailabilityForm form, String name) {
+    public boolean match(String name) {
         if (form.getFilter()==null || form.getFilter().trim().length()==0) return true;
         String n = name.toUpperCase();
         StringTokenizer stk1 = new StringTokenizer(form.getFilter().toUpperCase(),";");
@@ -153,20 +177,29 @@ public class RoomAvailabilityAction extends Action {
     }
 
 
-    public PdfWebTable getTable(HttpServletRequest request, Long sessionId, boolean html, RoomAvailabilityForm form) {
+    public PdfWebTable getTable(HttpServletRequest request, Long sessionId, boolean html, boolean color) {
         RoomAvailabilityInterface ra = RoomAvailability.getInstance();
         if (ra==null) return null;
         String nl = (html?"<br>":"\n");
         PdfWebTable table =
             new PdfWebTable( 8,
-                    "Room Availability", "roomAvailability.do?ord=%%",
-                    new String[] {"Room", "Capacity", "Examination"+nl+"Capacity", "Event", "Event Type", "Date", "Start Time", "End Time"},
+                    MSG.sectRoomAvailability(), "roomAvailability.action?ord=%%",
+                    new String[] {
+                    		MSG.colRoom(),
+                    		MSG.colRoomCapacity(),
+                    		MSG.colExaminationCapacity().replace("\n", nl),
+                    		MSG.colEvent(),
+                    		MSG.colEventType(),
+                    		MSG.colDate(),
+                    		MSG.colStartTime(),
+                    		MSG.colEndTime()},
                     new String[] {"left", "right", "right", "left", "left", "left", "left", "left"},
                     new boolean[] {true, true, true, true, true, true, true, true} );
         table.setBlankWhenSame(true);
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
-            table.addLine(new String[] {"<font color='orange'>WARN: No examination periods.</font>"},null);
+            table.addLine(new String[] {
+            		color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
@@ -176,7 +209,7 @@ public class RoomAvailabilityAction extends Action {
         try {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
-                if (!match(form, location.getLabel())) continue;
+                if (!match(location.getLabel())) continue;
                 String exclude = (form.getIncludeExams()?
                         null :
                         (ExamTypeDAO.getInstance().get(form.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
@@ -199,8 +232,8 @@ public class RoomAvailabilityAction extends Action {
                                 event.getEventName(),
                                 event.getEventType(),
                                 dateFormat.format(event.getStartTime()),
-                                timeFormat.format(event.getStartTime()).replaceAll("AM", "a").replaceAll("PM", "p"),
-                                timeFormat.format(event.getEndTime()).replaceAll("AM", "a").replaceAll("PM", "p"),
+                                timeFormat.format(event.getStartTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm()),
+                                timeFormat.format(event.getEndTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm()),
                             },
                             new Comparable[] {
                                 new MultiComparable(location.getLabel(),event.getStartTime()),
@@ -218,21 +251,28 @@ public class RoomAvailabilityAction extends Action {
             if (ts!=null) request.setAttribute("timestamp", ts);
         } catch (Exception e) {
             Debug.error(e);
-            table.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
+            table.addLine(new String[] { color ? "<font color='red'>"+ MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
         }
         return table;
     }
 
-    public PdfWebTable getCompareTable(HttpServletRequest request, Long sessionId, boolean html, RoomAvailabilityForm form) {
+    public PdfWebTable getCompareTable(HttpServletRequest request, Long sessionId, boolean html, boolean color) {
         RoomAvailabilityInterface ra = RoomAvailability.getInstance();
         if (ra==null) return null;
         String nl = (html?"<br>":"\n");
         PdfWebTable table =
             new PdfWebTable( 9,
-                    "Examination Comparison", "roomAvailability.do?ord=%%",
-                    new String[] {"Room", "Capacity", "Examination"+nl+"Capacity", 
-                        "Examination", "Examination"+nl+"Date", "Examination"+nl+"Time",
-                        "Event", "Event"+nl+"Date", "Event"+nl+"Time", 
+                    MSG.sectExaminationComparison(), "roomAvailability.action?ord=%%",
+                    new String[] {
+                    		MSG.colRoom(),
+                    		MSG.colRoomCapacity(),
+                    		MSG.colExaminationCapacity().replace("\n", nl),
+                    		MSG.colExamination(),
+                    		MSG.colExaminationDate().replace("\n", nl),
+                    		MSG.colExaminationTime().replace("\n", nl),
+                    		MSG.colEvent(),
+                    		MSG.colEventDate().replace("\n", nl),
+                    		MSG.colEventTime().replace("\n", nl)
                         },
                     new String[] {"left", "right", "right", 
                         "left", "left", "left", 
@@ -241,7 +281,7 @@ public class RoomAvailabilityAction extends Action {
         table.setBlankWhenSame(true);
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
-            table.addLine(new String[] {"<font color='orange'>WARN: No examination periods.</font>"},null);
+            table.addLine(new String[] {color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
@@ -254,7 +294,7 @@ public class RoomAvailabilityAction extends Action {
         try {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
-                if (!match(form, location.getLabel())) continue;
+                if (!match(location.getLabel())) continue;
                 Collection<TimeBlock> events = ra.getRoomAvailability(location.getUniqueId(), bounds[0], bounds[1], null);
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], null);
                 TreeSet<ExamAssignment> exams = null;
@@ -317,19 +357,19 @@ public class RoomAvailabilityAction extends Action {
                                     "",
                                     "",
                                     "",
-                                    (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         event.getEventName()+
-                                    (html?"</span>":" @@END_BGCOLOR "),
-                                    (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         (html?dateFormat.format(event.getStartTime()).replaceAll(" ","&nbsp;"):dateFormat.format(event.getStartTime()))+
-                                    (html?"</span>":" @@END_BGCOLOR "),
-                                    (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(event.getStartTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (html?"</span>":" @@END_BGCOLOR ")+
+                                    (html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                        timeFormat.format(event.getStartTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                    (html?"</span>":color?" @@END_BGCOLOR ":"")+
                                     (html?"&nbsp;-&nbsp;":" - ")+
-                                    (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(event.getEndTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (html?"</span>":" @@END_BGCOLOR ")
+                                    (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                        timeFormat.format(event.getEndTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                    (html?"</span>":color?" @@END_BGCOLOR ":"")
                                 },
                                 new Comparable[] {
                                     new MultiComparable(location.getLabel(),event.getStartTime()),
@@ -374,32 +414,32 @@ public class RoomAvailabilityAction extends Action {
                                     location.getLabel(),
                                     location.getCapacity().toString(),
                                     location.getExamCapacity().toString(),
-                                    (nameMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (nameMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         match.getExamName()+
-                                    (nameMatch?"":html?"</span>":" @@END_BGCOLOR "),
-                                    (dateMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (nameMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (dateMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         (html?dateFormat.format(match.getPeriod().getStartDate()).replaceAll(" ","&nbsp;"):dateFormat.format(match.getPeriod().getStartDate()))+
-                                    (dateMatch?"":html?"</span>":" @@END_BGCOLOR "),
-                                    (startMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (dateMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (startMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         timeFormat.format(startTime).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (startMatch?"":html?"</span>":" @@END_BGCOLOR ")+
+                                    (startMatch?"":html?"</span>":color?" @@END_BGCOLOR ":"")+
                                     (html?"&nbsp;-&nbsp;":" - ")+
-                                    (endMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (endMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         timeFormat.format(endTime).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (endMatch?"":html?"</span>":" @@END_BGCOLOR "),
-                                    (nameMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (endMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (nameMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         event.getEventName()+
-                                    (nameMatch?"":html?"</span>":" @@END_BGCOLOR "),
-                                    (dateMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                    (nameMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (dateMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                         (html?dateFormat.format(event.getStartTime()).replaceAll(" ","&nbsp;"):dateFormat.format(event.getStartTime()))+
-                                    (dateMatch?"":html?"</span>":" @@END_BGCOLOR "),
-                                    (startMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(event.getStartTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (startMatch?"":html?"</span>":" @@END_BGCOLOR ")+
+                                    (dateMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
+                                    (startMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                        timeFormat.format(event.getStartTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                    (startMatch?"":html?"</span>":color?" @@END_BGCOLOR ":"")+
                                     (html?"&nbsp;-&nbsp;":" - ")+
-                                    (endMatch?"":html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                        timeFormat.format(event.getEndTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                    (endMatch?"":html?"</span>":" @@END_BGCOLOR "),
+                                    (endMatch?"":html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                        timeFormat.format(event.getEndTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                    (endMatch?"":html?"</span>":color?" @@END_BGCOLOR ":""),
                                 },
                                 new Comparable[] {
                                     new MultiComparable(location.getLabel(),event.getStartTime()),
@@ -426,19 +466,19 @@ public class RoomAvailabilityAction extends Action {
                                 location.getLabel(),
                                 location.getCapacity().toString(),
                                 location.getExamCapacity().toString(),
-                                (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                     exam.getExamName()+
-                                (html?"</span>":" @@END_BGCOLOR "),
-                                (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
+                                (html?"</span>":color?" @@END_BGCOLOR ":""),
+                                (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
                                     (html?dateFormat.format(exam.getPeriod().getStartDate()).replaceAll(" ","&nbsp;"):dateFormat.format(exam.getPeriod().getStartDate()))+
-                                (html?"</span>":" @@END_BGCOLOR "),
-                                (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                    timeFormat.format(exam.getPeriod().getStartTime()).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                (html?"</span>":" @@END_BGCOLOR ")+
+                                (html?"</span>":color?" @@END_BGCOLOR ":""),
+                                (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                    timeFormat.format(exam.getPeriod().getStartTime()).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                (html?"</span>":color?" @@END_BGCOLOR ":"")+
                                 (html?"&nbsp;-&nbsp;":" - ")+
-                                (html?"<span style='background-color:yellow;'>":"@@BGCOLOR FFFF00 ")+
-                                    timeFormat.format(endTime).replaceAll("AM", "a").replaceAll("PM", "p")+
-                                (html?"</span>":" @@END_BGCOLOR "),
+                                (html?"<span style='background-color:yellow;'>":color?"@@BGCOLOR FFFF00 ":"")+
+                                    timeFormat.format(endTime).replaceAll("AM", GWT_CONST.timeShortAm()).replaceAll("PM", GWT_CONST.timeShortPm())+
+                                (html?"</span>":color?" @@END_BGCOLOR ":""),
                                 "",
                                 "",
                                 ""
@@ -460,7 +500,7 @@ public class RoomAvailabilityAction extends Action {
             if (ts!=null) request.setAttribute("timestamp", ts);
         } catch (Exception e) {
             Debug.error(e);
-            table.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
+            table.addLine(new String[] {color ? "<font color='red'>"+MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
         }
         return table;
     }  

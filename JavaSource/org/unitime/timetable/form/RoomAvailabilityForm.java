@@ -19,11 +19,8 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.security.SessionContext;
 
@@ -32,29 +29,16 @@ import org.unitime.timetable.security.SessionContext;
  * @author Tomas Muller
  */
 public class RoomAvailabilityForm extends ExamReportForm {
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	private static final long serialVersionUID = -7604226806875981047L;
 	private String iFilter = null;
     private boolean iIncludeExams = false;
     private boolean iCompare = false;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-	    ActionErrors errors = super.validate(mapping, request);
-	    if (getExamType()<0) errors.add("examType", new ActionMessage("errors.required", ""));
-        return errors;
-	}
-	
 	@Override
     public void validate(UniTimeAction action) {
 		if (getExamType()<0) 
-			action.addFieldError("examType", "<b>Exam Type</b> is required.");
-	}
-
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-	    super.reset(mapping, request);
-	    iIncludeExams = false;
-	    iFilter = null;
-	    iCompare = false;
-	    setExamType(null);
+			action.addFieldError("examType", MSG.errorExamTypeIsRequired());
 	}
 	
     @Override

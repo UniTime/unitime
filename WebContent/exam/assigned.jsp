@@ -17,7 +17,6 @@
  * limitations under the License.
  * 
 --%>
-
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>

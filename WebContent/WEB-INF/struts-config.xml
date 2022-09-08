@@ -71,7 +71,6 @@
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
-	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
@@ -773,20 +772,6 @@
          	name="personal"
             path="/personalSchedule.do"
             redirect="true"/>
-    </action>
-
-    <action
-    	path="/roomAvailability"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="roomAvailabilityForm"
-    	input="roomAvailabilityTile"
-    	name="roomAvailabilityForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-	    	name="showReport"
-	    	path="roomAvailabilityTile"
-	    	redirect="true" />
     </action>
 
     <action

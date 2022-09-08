@@ -401,7 +401,7 @@
 						<hasPermission name="RoomGroups"/>
 					</condition>
 				</item>
-				<item name="Room Availability" page="roomAvailability.do">
+				<item name="Room Availability" page="roomAvailability.action">
 					<condition>
 						<hasPermission name="RoomAvailability"/>
 					</condition>

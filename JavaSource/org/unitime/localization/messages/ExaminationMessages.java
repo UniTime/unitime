@@ -923,4 +923,61 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("There are no examinations of {0} subject area, or all of them are assigned.")
 	String messageAllExamsOfASubjectAreAssinged(String subject);
+	
+	@DefaultMessage("<b>Exam Type</b> is required.")
+	String errorExamTypeIsRequired();
+	
+	@DefaultMessage("Room Availability")
+	String sectRoomAvailability();
+	
+	@DefaultMessage("Examination\nCapacity")
+	String colExaminationCapacity();
+
+	@DefaultMessage("Event")
+	String colEvent();
+	
+	@DefaultMessage("Event Type")
+	String colEventType();
+	
+	@DefaultMessage("Start Time")
+	String colStartTime();
+	
+	@DefaultMessage("End Time")
+	String colEndTime();
+	
+	@DefaultMessage("WARN: No examination periods.")
+	String warnNoExaminationPeriods();
+	
+	@DefaultMessage("Examination Comparison")
+	String sectExaminationComparison();
+	
+	@DefaultMessage("Examination\nDate")
+	String colExaminationDate();
+	
+	@DefaultMessage("Examination\nTime")
+	String colExaminationTime();
+	
+	@DefaultMessage("Event\nDate")
+	String colEventDate();
+	
+	@DefaultMessage("Event\nTime")
+	String colEventTime();
+	
+	@DefaultMessage("Room Filter:")
+	String filterRoomFilter();
+	
+	@DefaultMessage("Display Examinations:")
+	String filterDisplayExaminations();
+	
+	@DefaultMessage("Compare Examinations:")
+	String filterCompareExaminations();
+	
+	@DefaultMessage("Last Update:")
+	String propLastUpdate();
+	
+	@DefaultMessage("Examination problem not selected.")
+	String messageNoExaminationProblemSelected();
+	
+	@DefaultMessage("Nothing to display.")
+	String messageNothingToDisplay();
 }

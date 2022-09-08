@@ -17,92 +17,88 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tt:back-mark back="true" clear="true" title="Room Availability" uri="roomAvailability.do"/>
-<tiles:importAttribute />
-<html:form action="/roomAvailability">
-	<html:hidden property="showSections"/>
-	<html:hidden property="subjectArea" />
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<tt:back-mark back="true" clear="true" title="${MSG.sectRoomAvailability()}" uri="roomAvailability.action"/>
+<s:form action="roomAvailability">
+	<s:hidden name="form.showSections"/>
+	<s:hidden name="form.subjectArea"/>
+	<table class="unitime-MainTable">
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Filter</tt:section-title>
-				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-				<logic:notEmpty name="roomAvailabilityForm" property="table">
-					<html:submit property="op" value="Export PDF"/>
-				</logic:notEmpty>
-				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+				<tt:section-title><loc:message name="filter"/></tt:section-title>
+				<s:submit name='form.op' value="%{#msg.buttonApply()}" accesskey="%{#msg.accessApply()}" title="%{#msg.titleApply()}"/>
+				<s:if test="form.table != null">
+					<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+					<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+				</s:if>
+				<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 			</tt:section-header>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Examination Problem:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterExaminationProblem"/></TD>
 		<TD>
-			<html:select property="examType">
-				<html:option value="-1">Select...</html:option>
-				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-			</html:select>
+			<s:select name="form.examType"
+				list="#request.examTypes" listKey="uniqueId" listValue="label"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Room Filter:</TD>
+		<TD width="10%" nowrap><loc:message name="filterRoomFilter"/></TD>
 		<TD>
-			<html:text property="filter" size="80"/>
+			<s:textfield name="form.filter" size="80"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Display Examinations:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterDisplayExaminations"/></TD>
 		<TD>
-			<html:checkbox property="includeExams"/>
+			<s:checkbox name="form.includeExams"/>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Compare Examinations:</TD>
+  		<TD width="10%" nowrap><loc:message name="filterCompareExaminations"/></TD>
 		<TD>
-			<html:checkbox property="compare"/>
+			<s:checkbox name="form.compare"/>
 		</TD>
 	</TR>
-	<logic:notEmpty scope="request" name="timestamp">
+	<s:if test="#request.timestamp != null">
 		<TR>
-  			<TD width="10%" nowrap>Last Update:</TD>
+  			<TD width="10%" nowrap><loc:message name="propLastUpdate"/></TD>
 			<TD>
-				<bean:write scope="request" name="timestamp"/>
+				<s:property value="#request.timestamp"/>
 			</TD>
 		</TR>
-	</logic:notEmpty>
+	</s:if>
 	</TABLE>
 
 	<BR><BR>
-	<logic:empty name="roomAvailabilityForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
+	<s:if test="form.table == null">
+		<table class="unitime-MainTable">
 			<tr><td><i>
-				<logic:equal name="roomAvailabilityForm" property="examType" value="-1">
-					Examination problem not selected.
-				</logic:equal>
-				<logic:notEqual name="roomAvailabilityForm" property="examType" value="-1">
-					Nothing to display.
-				</logic:notEqual>
+				<s:if test="form.examType == -1">
+					<loc:message name="messageNoExaminationProblemSelected"/>
+				</s:if><s:else>
+					<loc:message name="messageNothingToDisplay"/>
+				</s:else>
 			</i></td></tr>
 		</table>
-	</logic:empty>
-	<logic:notEmpty name="roomAvailabilityForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:write name="roomAvailabilityForm" property="table" filter="false"/>
+	</s:if>
+	<s:else>
+		<table class="unitime-MainTable">
+			<s:property value="form.table" escapeHtml="false"/>
 		</table>
-	</logic:notEmpty>
-
-	<logic:notEmpty scope="request" name="hash">
-		<SCRIPT type="text/javascript" language="javascript">
+	</s:else>
+	<s:if test="#request.hash != null">
+		<SCRIPT type="text/javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</SCRIPT>
-	</logic:notEmpty>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</s:if>
+	<table class="unitime-MainTable">
 	<TR>
 		<TD>
 			<tt:section-title/>
@@ -110,12 +106,14 @@
 	</TR>
 	<TR>
 		<TD align="right">
-			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
-			<logic:notEmpty name="roomAvailabilityForm" property="table">
-				<html:submit property="op" value="Export PDF"/>
-			</logic:notEmpty>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+			<s:submit name='form.op' value="%{#msg.buttonApply()}" accesskey="%{#msg.accessApply()}" title="%{#msg.titleApply()}"/>
+			<s:if test="form.table != null">
+				<s:submit name='form.op' value="%{#msg.buttonExportPDF()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonExportCSV()}"/>
+			</s:if>
+			<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 		</TD>
 	</TR>
-	</TABLE>	
-</html:form>
+	</TABLE>
+</s:form>
+</loc:bundle>
