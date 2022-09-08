@@ -47,9 +47,11 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -87,7 +89,9 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public abstract class PdfLegacyExamReport extends AbstractReport {
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static StudentSectioningConstants STD_CONST = Localization.create(StudentSectioningConstants.class);
 	private static Log sLog = LogFactory.getLog(PdfLegacyExamReport.class);
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
@@ -145,7 +149,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
     
     public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
         super(Mode.values()[mode], out, title,
-        		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase() + " EXAMINATIONS"),
+        		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? MSG.legacyReportExaminations() : MSG.legacyReportExaminationsOfType(examType.getLabel().toUpperCase())),
                 title + " -- " + session.getLabel(), session.getLabel());
         if (subjectAreas!=null && subjectAreas.size() == 1) setFooter(subjectAreas.iterator().next().getSubjectAreaAbbreviation());
         iExams = exams;
@@ -301,16 +305,12 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         return daysCode;
     }
     
-    public static String DAY_NAMES_SHORT[] = new String[] {
-        "M", "T", "W", "R", "F", "S", "U"
-    }; 
-    
     public String getMeetingDate(MultiMeeting m) {
-        if (m.getMeetings().isEmpty()) return "ARRANGED HOURS";
-        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        if (m.getMeetings().isEmpty()) return MSG.lrArrangedHours();
+        SimpleDateFormat df = new SimpleDateFormat(MSG.lrDateFormat());
         return 
             df.format(m.getMeetings().first().getMeetingDate())+" - "+
-            df.format(m.getMeetings().last().getMeetingDate())+" "+m.getDays(DAY_NAMES_SHORT,DAY_NAMES_SHORT);
+            df.format(m.getMeetings().last().getMeetingDate())+" "+m.getDays(STD_CONST.shortDays(),STD_CONST.shortDays());
     }
     
     public boolean isFullTerm(DatePattern dp, Date[] firstLast) {
@@ -357,7 +357,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
     
     protected Cell getMeetingTime(ExamSectionInfo section) {
         if (section.getOwner().getOwnerObject() instanceof Class_) {
-            SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+            SimpleDateFormat dpf = new SimpleDateFormat(MSG.lrDateFormat());
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             if (iMeetingTimeUseEvents) {
                 Set meetings = (clazz.getCachedEvent() == null ? null : clazz.getCachedEvent().getMeetings());
@@ -365,7 +365,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     int dayCode = getDaysCode(meetings);
                     String days = "";
                     for (int i=0;i<Constants.DAY_CODES.length;i++)
-                        if ((dayCode & Constants.DAY_CODES[i])!=0) days += DAY_NAMES_SHORT[i];
+                        if ((dayCode & Constants.DAY_CODES[i])!=0) days += STD_CONST.shortDays()[i];
                     Cell dayOfWeek = rpad(days,5);
                     Meeting[] firstLastMeeting = firstLastMeeting(clazz.getCachedEvent());
                     Cell startTime = lpad(firstLastMeeting[0].startTime(),6).withSeparator(" - ");
@@ -576,15 +576,15 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         c.setTime(date);
         String day = "";
         switch (c.get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY : day = DAY_NAMES_SHORT[Constants.DAY_MON]; break;
-            case Calendar.TUESDAY : day = DAY_NAMES_SHORT[Constants.DAY_TUE]; break;
-            case Calendar.WEDNESDAY : day = DAY_NAMES_SHORT[Constants.DAY_WED]; break;
-            case Calendar.THURSDAY : day = DAY_NAMES_SHORT[Constants.DAY_THU]; break;
-            case Calendar.FRIDAY : day = DAY_NAMES_SHORT[Constants.DAY_FRI]; break;
-            case Calendar.SATURDAY : day = DAY_NAMES_SHORT[Constants.DAY_SAT]; break;
-            case Calendar.SUNDAY : day = DAY_NAMES_SHORT[Constants.DAY_SUN]; break;
+            case Calendar.MONDAY : day = STD_CONST.shortDays()[Constants.DAY_MON]; break;
+            case Calendar.TUESDAY : day = STD_CONST.shortDays()[Constants.DAY_TUE]; break;
+            case Calendar.WEDNESDAY : day = STD_CONST.shortDays()[Constants.DAY_WED]; break;
+            case Calendar.THURSDAY : day = STD_CONST.shortDays()[Constants.DAY_THU]; break;
+            case Calendar.FRIDAY : day = STD_CONST.shortDays()[Constants.DAY_FRI]; break;
+            case Calendar.SATURDAY : day = STD_CONST.shortDays()[Constants.DAY_SAT]; break;
+            case Calendar.SUNDAY : day = STD_CONST.shortDays()[Constants.DAY_SUN]; break;
         }
-        return day+" "+new SimpleDateFormat("MM/dd").format(date);
+        return day+" "+new SimpleDateFormat(MSG.lrDateFormat()).format(date);
     }
     
     public String formatShortPeriod(ExamPeriod period, int length, Integer printOffset) {

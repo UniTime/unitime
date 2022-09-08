@@ -53,8 +53,8 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
     public ConflictsByCourseAndStudentReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "CONFLICTS BY COURSE AND STUDENT", session, examType, subjectAreas, exams);
-        sLog.debug("  Loading students ...");
+        super(mode, file, MSG.legacyReportConflictsByCourseAndStudent(), session, examType, subjectAreas, exams);
+        sLog.debug(MSG.statusLoadingStudents());
         for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
             if (o[2]!=null)
@@ -62,12 +62,12 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
             else if (o[1]!=null)
                 iStudentNames.put((Long)o[0], (String)o[1]);
             else
-                iStudentNames.put((Long)o[0], "N/A");
+                iStudentNames.put((Long)o[0], MSG.lrNA());
         }
     }
 
     public void printReport() throws DocumentException {
-        sLog.debug("  Sorting sections...");
+        sLog.debug(MSG.statusSortingSections());
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
@@ -81,11 +81,11 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        sLog.debug("  Printing report...");
+        sLog.debug(MSG.statusPrintingReport());
         setHeaderLine(
-    			new Line(rpad("Subject", 7), rpad("Course", 8), (iItype?rpad(iExternal?"ExtnID":"Type", 6):NULL), rpad("Section", 10),
-    					rpad("Date", 7), rpad("Time", 6), rpad("Name", 25), rpad("Type", 6),
-    					rpad("Subject", 7), rpad("Course", 8), (iItype?rpad(iExternal?"ExtnID":"Type", 6):NULL), rpad("Section", 10), rpad("Time", 15)),
+    			new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), (iItype?rpad(iExternal?MSG.lrExtnID():MSG.lrType(), 6):NULL), rpad(MSG.lrSection(), 10),
+    					rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 6), rpad(MSG.lrName(), 25), rpad(MSG.lrType(), 6),
+    					rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), (iItype?rpad(iExternal?MSG.lrExtnID():MSG.lrType(), 6):NULL), rpad(MSG.lrSection(), 10), rpad(MSG.lrTime(), 15)),
     			new Line(lpad("", '-', 7), lpad("", '-', 8), (iItype?lpad("", '-', 6):NULL), lpad("", '-', 10),
     					lpad("", '-', 7), lpad("", '-', 6), lpad("", '-', 25), lpad("", '-', 6),
     					lpad("", '-', 7), lpad("", '-', 8), (iItype?lpad("", '-', 6):NULL), lpad("", '-', 10), lpad("", '-', 15))
@@ -127,7 +127,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iCoursePrinted && isSkipRepeating()?rpad("",7):formatShortPeriodNoEndTimeDate(exam)),
                                         (iCoursePrinted && isSkipRepeating()?rpad("",6):formatShortPeriodNoEndTimeTime(exam)),
                                         rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                        rpad(iPeriodPrinted && isSkipRepeating()?"":"DIRECT",6),
+                                        rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrDIRECT(),6),
                                         rpad(other.getSubject(),7),
                                         rpad(other.getCourseNbr(),8),
                                         (iItype?rpad(other.getItype(),6):NULL),
@@ -146,7 +146,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iCoursePrinted && isSkipRepeating()?rpad("",7):formatShortPeriodNoEndTimeDate(exam)),
                                         (iCoursePrinted && isSkipRepeating()?rpad("",6):formatShortPeriodNoEndTimeTime(exam)),
                                         rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                        rpad(iPeriodPrinted && isSkipRepeating()?"":"CLASS",6),
+                                        rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrCLASS(),6),
                                         rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),7),
                                         rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),8),
                                         (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6):NULL),
@@ -162,7 +162,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iCoursePrinted && isSkipRepeating()?rpad("",7):formatShortPeriodNoEndTimeDate(exam)),
                                         (iCoursePrinted && isSkipRepeating()?rpad("",6):formatShortPeriodNoEndTimeTime(exam)),
                                         rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                        rpad(iPeriodPrinted && isSkipRepeating()?"":"EVENT",6),
+                                        rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrEVENT(),6),
                                         rpad(conflict.getOtherEventName(),(iItype?34:27)).withColSpan(iItype?4:3),
                                         new Cell(getMeetingTime(conflict.getOtherEventTime()))
                                         );
@@ -184,7 +184,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         (iCoursePrinted && isSkipRepeating()?rpad("",7):formatShortPeriodNoEndTimeDate(exam)),
                                         (iCoursePrinted && isSkipRepeating()?rpad("",6):formatShortPeriodNoEndTimeTime(exam)),
                                         rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                        rpad(iPeriodPrinted && isSkipRepeating()?"":">2-DAY",6),
+                                        rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrMore2DAY(),6),
                                         rpad(other.getSubject(),7),
                                         rpad(other.getCourseNbr(),8),
                                         (iItype?rpad(other.getItype(),6):NULL),
@@ -208,7 +208,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     (iCoursePrinted && isSkipRepeating()?rpad("",7):formatShortPeriodNoEndTimeDate(exam)),
                                     (iCoursePrinted && isSkipRepeating()?rpad("",6):formatShortPeriodNoEndTimeTime(exam)),
                                     rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                    rpad(iPeriodPrinted && isSkipRepeating()?"":"BTB",6),
+                                    rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrBTB(),6),
                                     rpad(other.getSubject(),7),
                                     rpad(other.getCourseNbr(),8),
                                     (iItype?rpad(other.getItype(),6):NULL),
@@ -251,13 +251,13 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                             iSubjectPrinted = iCoursePrinted = !iNewPage;
                                     	}
                                         println(
-                                        	rpad(diffSubjectPrinted ? "" : "w/" + child.getSubject(), 8).withSeparator(""),
+                                        	rpad(diffSubjectPrinted ? "" : MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                         	rpad(child.getCourseNbr(), 8),
                                         	(iItype?rpad(child.getItype(), 6):NULL),
                                         	formatSection10(child.getSection()),
                                         	formatShortPeriodNoEndTimeDate(exam), formatShortPeriodNoEndTimeTime(exam),
                                         	rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                        	rpad(iPeriodPrinted && isSkipRepeating()?"":"DIRECT",6),
+                                        	rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrDIRECT(),6),
                                         	rpad(other.getSubject(),7),
                                         	rpad(other.getCourseNbr(),8),
                                         	(iItype?rpad(other.getItype(),6):NULL),
@@ -280,13 +280,13 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                 	}
                                     if (conflict.isOtherClass()) {
                                         println(
-                                        		rpad(diffSubjectPrinted ? "" : "w/" + child.getSubject(), 8).withSeparator(""),
+                                        		rpad(diffSubjectPrinted ? "" : MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                         		rpad(child.getCourseNbr(), 8),
                                         		(iItype?rpad(child.getItype(), 6):NULL),
                                         		formatSection10(child.getSection()),
                                         		formatShortPeriodNoEndTimeDate(exam), formatShortPeriodNoEndTimeTime(exam),
                                                 rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                                rpad(iPeriodPrinted && isSkipRepeating()?"":"CLASS",6),
+                                                rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrCLASS(),6),
                                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),7),
                                                 rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),8),
                                                 (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6):NULL),
@@ -295,13 +295,13 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                                 );
                                     } else {
                                         println(
-                                        		rpad(diffSubjectPrinted ? "" : "w/" + child.getSubject(), 8).withSeparator(""),
+                                        		rpad(diffSubjectPrinted ? "" : MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                         		rpad(child.getCourseNbr(), 8),
                                         		(iItype?rpad(child.getItype(), 6):NULL),
                                         		formatSection10(child.getSection()),
                                         		formatShortPeriodNoEndTimeDate(exam), formatShortPeriodNoEndTimeTime(exam),
                                         		rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                                rpad(iPeriodPrinted && isSkipRepeating()?"":"EVENT",6),
+                                                rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrEVENT(),6),
                                                 rpad(conflict.getOtherEventName(),(iItype?34:27)).withColSpan(iItype?4:3),
                                                 new Cell(getMeetingTime(conflict.getOtherEventTime()))
                                                 );
@@ -327,13 +327,13 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                             iSubjectPrinted = iCoursePrinted = !iNewPage;
                                     	}
                                         println(
-                                        		rpad(diffSubjectPrinted ? "" : "w/" + child.getSubject(), 8).withSeparator(""),
+                                        		rpad(diffSubjectPrinted ? "" : MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                         		rpad(child.getCourseNbr(), 8),
                                         		(iItype?rpad(child.getItype(), 6):NULL),
                                         		formatSection10(child.getSection()),
                                         		formatShortPeriodNoEndTimeDate(exam), formatShortPeriodNoEndTimeTime(exam),
                                                 rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                                rpad(iPeriodPrinted && isSkipRepeating()?"":">2-DAY",6),
+                                                rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrMore2DAY(),6),
                                                 rpad(other.getSubject(),7),
                                                 rpad(other.getCourseNbr(),8),
                                                 (iItype?rpad(other.getItype(),6):NULL),
@@ -361,13 +361,13 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                         iSubjectPrinted = iCoursePrinted = !iNewPage;
                                 	}
                                     println(
-                                    		rpad(diffSubjectPrinted ? "" : "w/" + child.getSubject(), 8).withSeparator(""),
+                                    		rpad(diffSubjectPrinted ? "" : MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                     		rpad(child.getCourseNbr(), 8),
                                     		(iItype?rpad(child.getItype(), 6):NULL),
                                     		formatSection10(child.getSection()),
                                     		formatShortPeriodNoEndTimeDate(exam), formatShortPeriodNoEndTimeTime(exam),
                                     		rpad(iStudentPrinted && isSkipRepeating()?"":iStudentNames.get(studentId),25),
-                                            rpad(iPeriodPrinted && isSkipRepeating()?"":"BTB",6),
+                                            rpad(iPeriodPrinted && isSkipRepeating()?"":MSG.lrBTB(),6),
                                             rpad(other.getSubject(),7),
                                             rpad(other.getCourseNbr(),8),
                                             (iItype?rpad(other.getItype(),6):NULL),

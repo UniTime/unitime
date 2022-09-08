@@ -39,7 +39,7 @@ import com.lowagie.text.DocumentException;
  */
 public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
     public AbbvScheduleByCourseReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportScheduleByCourse(), session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
@@ -92,7 +92,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                     lines.add(new Line(
                     	rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                         rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                        rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                        rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?MSG.lrALL():section.getItype(),5),
                         formatSection10(sameSct && isSkipRepeating()?"":section.getSection()),
                         formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment())
                         ));
@@ -100,7 +100,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                     lines.add(new Line(
                     		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                             rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()),
+                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?MSG.lrALL():section.getSection()),
                             formatShortPeriodNoEndTimeDate(section.getExamAssignment()), formatShortPeriodNoEndTimeTime(section.getExamAssignment())
                             ));
                 }
@@ -109,8 +109,8 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 if (iExternal) {
                 	setHeaderLine(
                 			new Line(
-                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15)).withLength(60),
-                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15))
+                					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrExtID(), 5), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15)).withLength(60),
+                					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrExtID(), 5), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15))
                 			), new Line(
                         			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15)).withLength(60),
                         			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15))
@@ -118,8 +118,8 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 } else {
                 	setHeaderLine(
                 			new Line(
-                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15)).withLength(60),
-                					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9).withSeparator("  "), rpad("Date", 9), rpad("Time", 15))
+                					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrType(), 5), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15)).withLength(60),
+                					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrType(), 5), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15))
                 			), new Line(
                         			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15)).withLength(60),
                         			new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 9), rpad("", '-', 15))
@@ -128,9 +128,9 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
             } else {
             	setHeaderLine(
             			new Line(
-            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6)).withLength(43),
-            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6)).withLength(43),
-            					new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9).withSeparator("  "), rpad("Date", 7), rpad("Time", 6))
+            					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 6)).withLength(43),
+            					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 6)).withLength(43),
+            					new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrSection(), 9).withSeparator("  "), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 6))
             			), new Line(
             					new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 7), rpad("", '-', 6)).withLength(43),
             					new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9).withSeparator("  "), rpad("", '-', 7), rpad("", '-', 6)).withLength(43),
@@ -180,7 +180,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                         lines.add(new Line(
                                  rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                                  rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                                 rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                                 rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?MSG.lrALL():section.getItype(),5),
                                  formatSection10(sameSct && isSkipRepeating()?"":section.getSection()).withSeparator(""),
                                  formatShortPeriodDate(section.getExamAssignment()), formatShortPeriodTime(section.getExamAssignment()),
                                  rpad(iNoRoom,23)
@@ -189,7 +189,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                             lines.add(new Line(
                             		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                             		rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                            		formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()).withSeparator(""),
+                            		formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?MSG.lrALL():section.getSection()).withSeparator(""),
                             		formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment()),
                             		rpad(iNoRoom,23)
                             		));
@@ -203,7 +203,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                 lines.add(new Line(
                                 		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                                 		rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                                		rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?"ALL":section.getItype(),5),
+                                		rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?MSG.lrALL():section.getItype(),5),
                                 		formatSection10(sameSct && isSkipRepeating()?"":section.getSection()).withSeparator(""),
                                 		formatShortPeriodDate(section.getExamAssignment()), formatShortPeriodTime(section.getExamAssignment()),
                                 		formatRoom(a)
@@ -212,7 +212,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                     lines.add(new Line(
                                     		rpad(sameSubj && isSkipRepeating()?"":section.getSubject(),7),
                                             rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
-                                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?"ALL":section.getSection()).withSeparator(""),
+                                            formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?MSG.lrALL():section.getSection()).withSeparator(""),
                                             formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment()),
                                             formatRoom(a)
                                             ));
@@ -231,8 +231,8 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 if (iExternal) {
                     setHeaderLine(
                     		new Line(
-                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(66).withLineSeparator("|"),
-                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("ExtID", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                    				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrExtID(), 5), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 13), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrExtID(), 5), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 13), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5))
                     		), new Line(
                     				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(66).withLineSeparator("|"),
                     				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))
@@ -240,8 +240,8 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 } else {
                     setHeaderLine(
                     		new Line(
-                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(66).withLineSeparator("|"),
-                    				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Type", 5), rpad("Section", 9), rpad("Date", 7), rpad("Time", 13), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                    				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrType(), 5), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 13), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5)).withLength(66).withLineSeparator("|"),
+                    				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrType(), 5), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 7), rpad(MSG.lrTime(), 13), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5))
                     		), new Line(
                     				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(66).withLineSeparator("|"),
                     				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 5), rpad("", '-', 9), rpad("", '-', 7), rpad("", '-', 13), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))
@@ -250,8 +250,8 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
             } else {
                 setHeaderLine(
                 		new Line(
-                				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9), rpad("Date", 9), rpad("Time", 15), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5)).withLength(65),
-                				new Line(rpad("Subject", 7), rpad("Course", 8), rpad("Section", 9), rpad("Date", 9), rpad("Time", 15), rpad("Bldg", 5).withColSpan(0), rpad("Room", 5))
+                				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5)).withLength(65),
+                				new Line(rpad(MSG.lrSubject(), 7), rpad(MSG.lrCourse(), 8), rpad(MSG.lrSection(), 9), rpad(MSG.lrDate(), 9), rpad(MSG.lrTime(), 15), rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5))
                 		), new Line(
                 				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9), rpad("", '-', 9), rpad("", '-', 15), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5)).withLength(65),
                 				new Line(rpad("", '-', 7), rpad("", '-', 8), rpad("", '-', 9), rpad("", '-', 9), rpad("", '-', 15), rpad("", '-', 5).withColSpan(0), rpad("", '-', 5))

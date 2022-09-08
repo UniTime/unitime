@@ -47,11 +47,11 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Log sLog = LogFactory.getLog(ScheduleByPeriodReport.class);
     
     public ScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportScheduleByPeriod(), session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
-        sLog.debug("  Sorting sections...");
+        sLog.debug(MSG.statusSortingSections());
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
@@ -66,16 +66,16 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
         }
         setHeaderLine(
         		new Line(
-        				rpad("Date And Time", 30),
-        				rpad("Subject", 7),
-        				rpad("Course", 8),
-        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-        				rpad("Section", 10),
-        				rpad("Meeting Times", 35),
-        				lpad("Enrl", 5),
-        				(iDispRooms ? rpad("Room", 11): NULL),
-        				(iDispRooms ? lpad("Cap", 5): NULL),
-        				(iDispRooms ? lpad("ExCap", 6): NULL)
+        				rpad(MSG.lrDateAndTime(), 30),
+        				rpad(MSG.lrSubject(), 7),
+        				rpad(MSG.lrCourse(), 8),
+        				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+        				rpad(MSG.lrSection(), 10),
+        				rpad(MSG.lrMeetingTimes(), 35),
+        				lpad(MSG.lrEnrl(), 5),
+        				(iDispRooms ? rpad(MSG.lrRoom(), 11): NULL),
+        				(iDispRooms ? lpad(MSG.lrCap(), 5): NULL),
+        				(iDispRooms ? lpad(MSG.lrExCap(), 6): NULL)
         		), new Line(
         				lpad("", '-', 30),
         				lpad("", '-', 7),
@@ -88,7 +88,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
         				(iDispRooms ? lpad("", '-', 5): NULL),
         				(iDispRooms ? lpad("", '-', 6): NULL)
         		));
-        sLog.debug("  Printing report...");
+        sLog.debug(MSG.statusPrintingReport());
         printHeader();
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
             ExamPeriod period = (ExamPeriod)p.next();

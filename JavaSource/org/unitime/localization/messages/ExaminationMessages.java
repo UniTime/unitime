@@ -1332,6 +1332,303 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("All done.")
 	String statusAllDone();
 	
+	@DefaultMessage("  Sorting sections...")
+	String statusSortingSections();
+	
+	@DefaultMessage("  Sorting exams...")
+	String statusSortingExams();
+	
+	@DefaultMessage("  Printing report...")
+	String statusPrintingReport();
+	
+	@DefaultMessage("  Loading students ...")
+	String statusLoadingStudents();
+	
+	@DefaultMessage("  Loading courses ...")
+	String statusLoadingCourses();
+	
+	@DefaultMessage("  Loading class events...")
+	String statusLoadingClassEvents();
+	
+	@DefaultMessage("  Loading course limits ...")
+	String statusLoadingCourseLimits();
+	
+	@DefaultMessage("  Loading class limits ...")
+	String statusLoadingClassLimits();
+	
+	@DefaultMessage("  Loading locations...")
+	String statusLoadingLocations();
+	
+	@DefaultMessage("  Printing individual instructor reports...")
+	String statusPrintingIndividualInstructorReports();
+	
+	@DefaultMessage("  Printing individual student reports...")
+	String statusPrintingIndividualStudentReports();
+	
+	@DefaultMessage("  Computing room table...")
+	String statusComputingRoomTable();
+
 	@DefaultMessage("Process failed.")
 	String errorTaskFailed();
+	
+	@DefaultMessage("EXAMINATIONS")
+	String legacyReportExaminations();
+	
+	@DefaultMessage("{0} EXAMINATIONS")
+	String legacyReportExaminationsOfType(String type);
+	
+	@DefaultMessage("SCHEDULE BY COURSE")
+	String legacyReportScheduleByCourse();
+	
+	@DefaultMessage("CONFLICTS BY COURSE AND INSTRUCTOR")
+	String legacyReportConflictsByCourseAndInstructor();
+	
+	@DefaultMessage("CONFLICTS BY COURSE AND STUDENT")
+	String legacyReportConflictsByCourseAndStudent();
+	
+	@DefaultMessage("PERIOD ASSIGNMENT")
+	String legacyReportPeriodAssignment();
+	
+	@DefaultMessage("SCHEDULE BY PERIOD")
+	String legacyReportScheduleByPeriod();
+	
+	@DefaultMessage("SCHEDULE BY ROOM")
+	String legacyReportScheduleByRoom();
+	
+	@DefaultMessage("EXAMINATION VERIFICATION REPORT")
+	String legacyReportExaminationVerificationReport();
+	
+	@DefaultMessage("INSTRUCTOR EXAMINATION SCHEDULE")
+	String legactReportInstructorExaminationSchedule();
+	
+	@DefaultMessage("STUDENT EXAMINATION SCHEDULE")
+	String legactReportStudentExaminationSchedule();
+	
+	@DefaultMessage("ALL")
+	String lrALL();
+	
+	@DefaultMessage("w/")
+	String lrWith();
+	
+	@DefaultMessage("Subject")
+	String lrSubject();
+	
+	@DefaultMessage("Course")
+	String lrCourse();
+	
+	@DefaultMessage("ExtID")
+	String lrExtID();
+	
+	@DefaultMessage("Section")
+	String lrSection();
+	
+	@DefaultMessage("Date")
+	String lrDate();
+	
+	@DefaultMessage("Time")
+	String lrTime();
+	
+	@DefaultMessage("Type")
+	String lrType();
+	
+	@DefaultMessage("Bldg")
+	String lrBldg();
+	
+	@DefaultMessage("Room")
+	String lrRoom();
+	
+	@DefaultMessage("ExtnID")
+	String lrExtnID();
+	
+	@DefaultMessage("Name")
+	String lrName();
+	
+	@DefaultMessage("DIRECT")
+	String lrDIRECT();
+	
+	@DefaultMessage("CLASS")
+	String lrCLASS();
+	
+	@DefaultMessage("EVENT")
+	String lrEVENT();
+	
+	@DefaultMessage(">2-DAY")
+	String lrMore2DAY();
+	
+	@DefaultMessage("BTB")
+	String lrBTB();
+	
+	@DefaultMessage("N/A")
+	String lrNA();
+	
+	@DefaultMessage("limit={0}")
+	String lrLimit(int limit);
+	
+	@DefaultMessage("Start Time")
+	String lrStartTime();
+	
+	@DefaultMessage("Exam")
+	String lrExam();
+	
+	@DefaultMessage("Enrl")
+	String lrEnrl();
+	
+	@DefaultMessage("Totals")
+	String lrTotals();
+	
+	@DefaultMessage("Total Student Exams")
+	String lrTotalStudentExams();
+	
+	@DefaultMessage("Date And Time")
+	String lrDateAndTime();
+	
+	@DefaultMessage("Meeting Times")
+	String lrMeetingTimes();
+	
+	@DefaultMessage("Cap")
+	String lrCap();
+	
+	@DefaultMessage("ExCap")
+	String lrExCap();
+	
+	@DefaultMessage("** NO EXAM **")
+	String lrNoExam();
+		
+	@DefaultMessage("Not organized instructional type")
+	String lrNotOrganizedIType();
+	
+	@DefaultMessage("Class not organized")
+	String lrClassNotOrganized();
+	
+	@DefaultMessage("Class not full-term")
+	String lrClassNotFullTerm();
+	
+	@DefaultMessage("Meets with")
+	String lrMeetsWith();
+	
+	@DefaultMessage("Exam not assigned")
+	String lrExamNotAssigned();
+	
+	@DefaultMessage("Section exam")
+	String lrSectionExam();
+	
+	@DefaultMessage("yes")
+	String lrYes();
+	
+	@DefaultMessage("no")
+	String lrNo();
+	
+	@DefaultMessage("m/w")
+	String lrMW();
+	
+	@DefaultMessage("Title")
+	String lrTitle();
+	
+	@DefaultMessage("Alt")
+	String lrAlt();
+	
+	@DefaultMessage("Len")
+	String lrLen1();
+	
+	@DefaultMessage("gth")
+	String lrLen2();
+	
+	@DefaultMessage("Seat")
+	String lrSeat();
+	
+	@DefaultMessage("Date & Time")
+	String lrDateAmpTime();
+	
+	@DefaultMessage("InsType")
+	String lrInsType();
+	
+	@DefaultMessage("Sections")
+	String lrSections();
+	
+	@DefaultMessage("Exam with")
+	String lrExamWith();
+	
+	@DefaultMessage("Limit")
+	String lrLimit();
+	
+	@DefaultMessage("Enrollmt")
+	String lrEnrollmt();
+	
+	@DefaultMessage("Course Exam")
+	String lrCourseExam();
+	
+	@DefaultMessage("MM/dd")
+	String lrDateFormat();
+	
+	@DefaultMessage("EEE, MM/dd/yyyy hh:mmaa")
+	String lrLastChangeDateFormat();
+	
+	@DefaultMessage("Instructor:")
+	String lrPropInstructor();
+	
+	@DefaultMessage("Name:")
+	String lrPropStudent();
+	
+	@DefaultMessage("Email:")
+	String lrPropEmail();
+	
+	@DefaultMessage("Last Change:")
+	String lrPropLastChange();
+	
+	@DefaultMessage("ExtnId")
+	String lrExtnId();
+	
+	@DefaultMessage("Dates")
+	String lrDates();
+	
+	@DefaultMessage("Share")
+	String lrShare();
+	
+	@DefaultMessage("Chk")
+	String lrChk();
+	
+	@DefaultMessage("ARRANGED HOURS")
+	String lrArrangedHours();
+	
+	@DefaultMessage("CROSS-LIST")
+	String lrCrossList();
+	
+	@DefaultMessage("Capacity")
+	String lrCapacity();
+	
+	@DefaultMessage("Period")
+	String lrPeriod();
+	
+	@DefaultMessage("Instructor")
+	String lrInstructor();
+	
+	@DefaultMessage("~ ~ ~ ~ ~ CLASS SCHEDULE ~ ~ ~ ~ ~")
+	String lrSectClassSchedule();
+	
+	@DefaultMessage("~ ~ ~ ~ ~ EXAMINATION SCHEDULE ~ ~ ~ ~ ~")
+	String lrSectExaminationSchedule();
+	
+	@DefaultMessage("~ ~ ~ ~ ~ INSTRUCTOR CONFLICTS ~ ~ ~ ~ ~")
+	String lrSectInstructorConflicts();
+	
+	@DefaultMessage("{0}  INSTRUCTOR CONFLICTS")
+	String lrInstructorConflicts(String name);
+	
+	@DefaultMessage("~ ~ ~ ~ ~ STUDENT CONFLICTS ~ ~ ~ ~ ~")
+	String lrSectStudentConflicts();
+	
+	@DefaultMessage("{0}  STUDENT CONFLICTS")
+	String lrStudentConflicts(String name);
+	
+	@DefaultMessage("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~")
+	String lrExaminationConflicts();
+	
+	@DefaultMessage("{0}  EXAMINATION CONFLICTS")
+	String lrExaminationConflicts(String name);
+	
+	@DefaultMessage("No change found for {0}")
+	String logNoChangesFoundFor(String name);
+	
+	@DefaultMessage("Generating file for {0}")
+	String logGeneratingFileFor(String name);
 }

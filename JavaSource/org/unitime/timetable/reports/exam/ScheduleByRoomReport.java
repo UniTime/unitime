@@ -50,11 +50,11 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
     protected static Log sLog = LogFactory.getLog(ScheduleByRoomReport.class);
     
     public ScheduleByRoomReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY ROOM", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportScheduleByRoom(), session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
-        sLog.info("  Computing room table...");
+        sLog.info(MSG.statusComputingRoomTable());
         Hashtable <ExamRoomInfo,Hashtable<ExamPeriod,List<ExamAssignmentInfo>>> table = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
@@ -81,19 +81,19 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
         });
         rooms.addAll(table.keySet());
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));
-        sLog.info("  Printing report...");
+        sLog.info(MSG.statusPrintingReport());
         setHeaderLine(
         		new Line(
-        				rpad("Bldg", 5).withColSpan(0), rpad("Room", 5),
-        				lpad("Capacity", 8),
-        				lpad("ExCap", 6),
-        				lpad("Period", 6),
-        				rpad("Date And Time", 38),
-        				rpad("Subject", 7),
-        				rpad("Course", 8),
-        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-        				rpad("Section", 10),
-        				lpad("Enrl", 5)
+        				rpad(MSG.lrBldg(), 5).withColSpan(0), rpad(MSG.lrRoom(), 5),
+        				lpad(MSG.lrCapacity(), 8),
+        				lpad(MSG.lrExCap(), 6),
+        				lpad(MSG.lrPeriod(), 6),
+        				rpad(MSG.lrDateAndTime(), 38),
+        				rpad(MSG.lrSubject(), 7),
+        				rpad(MSG.lrCourse(), 8),
+        				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+        				rpad(MSG.lrSection(), 10),
+        				lpad(MSG.lrEnrl(), 5)
         			), new Line(
         				lpad("", '-', 5).withColSpan(0), lpad("", '-', 5),
             			lpad("", '-', 8),

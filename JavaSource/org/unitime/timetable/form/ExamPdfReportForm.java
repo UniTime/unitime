@@ -89,7 +89,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     	case LegacyPdfLetter: return MSG.formatPdfLetter();
     	case LegacyPdfLedger: return MSG.formatPdfLedger();
     	case LegacyText: return MSG.formatText();
-    	case CSV: MSG.formatCSV();
+    	case CSV: return MSG.formatCSV();
     	case PDF: return MSG.formatPdfNew();
     	case XLS: return MSG.formatXLS();
     	default: return m.name();

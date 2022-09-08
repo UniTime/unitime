@@ -44,23 +44,23 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
 	private static Log sLog = LogFactory.getLog(ExamScheduleByPeriodReport.class);
     
     public ExamScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportScheduleByPeriod(), session, examType, subjectAreas, exams);
     }
 
     
     public void printReport() throws DocumentException {
     	setHeaderLine(
     			new Line(
-    					rpad("Date And Time", 30),
-    	    			rpad("Subject", 7),
-    	    			rpad("Course", 8),
-    	    			(iItype ? rpad(iExternal ? "ExtnID" : "Type", 6) : NULL),
-    	    			rpad("Section", 10),
-    	    			rpad("Meeting Times", 35),
-    	    			lpad("Enrl", 5),
-    	    			(iDispRooms ? rpad("Room", 11) : NULL),
-    	    			(iDispRooms ? lpad("Cap", 5) : NULL),
-    	    			(iDispRooms ? lpad("ExCap", 6) : NULL)
+    					rpad(MSG.lrDateAndTime(), 30),
+    	    			rpad(MSG.lrSubject(), 7),
+    	    			rpad(MSG.lrCourse(), 8),
+    	    			(iItype ? rpad(iExternal ? MSG.lrExtnID() : MSG.lrType(), 6) : NULL),
+    	    			rpad(MSG.lrSection(), 10),
+    	    			rpad(MSG.lrMeetingTimes(), 35),
+    	    			lpad(MSG.lrEnrl(), 5),
+    	    			(iDispRooms ? rpad(MSG.lrRoom(), 11) : NULL),
+    	    			(iDispRooms ? lpad(MSG.lrCap(), 5) : NULL),
+    	    			(iDispRooms ? lpad(MSG.lrExCap(), 6) : NULL)
     			), new Line(
     					lpad("", '-', 30),
     	    			lpad("", '-', 7),
@@ -74,13 +74,13 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     	    			(iDispRooms ? lpad("", '-', 6) : NULL)
     			));
         printHeader();
-        sLog.debug("  Sorting exams...");
+        sLog.debug(MSG.statusSortingExams());
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
             exams.add(exam);
         }
-        sLog.debug("  Printing report...");
+        sLog.debug(MSG.statusPrintingReport());
         for (Iterator p=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();p.hasNext();) {
             ExamPeriod period = (ExamPeriod)p.next();
             iPeriodPrinted = false;

@@ -69,16 +69,16 @@ public class StudentExamReport extends PdfLegacyExamReport {
     Hashtable<Long,Location> iLocations = null;
     
     public StudentExamReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legactReportStudentExaminationSchedule(), session, examType, subjectAreas, exams);
     }
     
     public StudentExamReport(int mode, OutputStream out, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, out, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectAreas, exams);
+        super(mode, out, MSG.legactReportStudentExaminationSchedule(), session, examType, subjectAreas, exams);
     }
 
     private void generateCache() {
         if (iStudents==null) {
-            sLog.info("  Loading students...");
+            sLog.info(MSG.statusLoadingStudents());
             iStudents = new Hashtable();
             for (Iterator i=new StudentDAO().getSession().createQuery("select s from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", getSession().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
                 Student s = (Student)i.next();
@@ -86,7 +86,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
             }
         }
         if (iClass2event==null) {
-            sLog.info("  Loading class events...");
+            sLog.info(MSG.statusLoadingClassEvents());
             iClass2event = new Hashtable();
             if (hasSubjectAreas()) {
             	for (SubjectArea subject: getSubjectAreas()) {
@@ -111,7 +111,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
             }
         }
         if (iLocations==null) {
-            sLog.info("  Loading locations...");
+            sLog.info(MSG.statusLoadingLocations());
             iLocations = new Hashtable();
             for (Iterator i=new SessionDAO().getSession().createQuery(
                     "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null").
@@ -136,7 +136,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
 
     public void printReport() throws DocumentException {
         generateCache();
-        sLog.info("  Printing report...");
+        sLog.info(MSG.statusPrintingReport());
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
             if (exam.getPeriod()==null) continue;
@@ -160,7 +160,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
             if (iSince!=null) {
                 ChangeLog last = getLastChange(sectionsThisStudent);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
-                    sLog.debug("No change found for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
+                    sLog.debug(MSG.logNoChangesFoundFor(student.getName(DepartmentalInstructor.sNameFormatLastFist)));
                     continue;
                 }
             }
@@ -230,9 +230,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
         String shortName = student.getName(DepartmentalInstructor.sNameFormatLastInitial).toUpperCase();
         setPageName(shortName);
         setCont(shortName);
-        println(rpad("Name:", 12), new Cell(name).withColSpan(9));
+        println(rpad(MSG.lrPropStudent(), 12), new Cell(name).withColSpan(9));
         if (student.getEmail()!=null)
-        	println(rpad("Email:", 12), new Cell(student.getEmail()).withColSpan(9));
+        	println(rpad(MSG.lrPropEmail(), 12), new Cell(student.getEmail()).withColSpan(9));
         if (iClassSchedule) {
         	StudentClassComparator scc = new StudentClassComparator(student);
             TreeSet<Class_> allClasses = new TreeSet(scc);
@@ -243,14 +243,14 @@ public class StudentExamReport extends PdfLegacyExamReport {
             if (!allClasses.isEmpty()) {
                 setHeaderLine(
                 		new Line(
-                				rpad("Subject", 7),
-                				rpad("Course", 8),
-                				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                				rpad("Section", 9),
-                				rpad("Dates", 25),
-                				rpad("Time", 15),
-                				rpad("Room", 11),
-                				rpad("Instructor", 45)
+                				rpad(MSG.lrSubject(), 7),
+                				rpad(MSG.lrCourse(), 8),
+                				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                				rpad(MSG.lrSection(), 9),
+                				rpad(MSG.lrDates(), 25),
+                				rpad(MSG.lrTime(), 15),
+                				rpad(MSG.lrRoom(), 11),
+                				rpad(MSG.lrInstructor(), 45)
                 		), new Line(
                 				lpad("", '-', 7),
                 				lpad("", '-', 8),
@@ -262,7 +262,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                 				lpad("", '-', 45)
                 		));
                 println();
-                println(mpad("~ ~ ~ ~ ~ CLASS SCHEDULE ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+                println(mpad(MSG.lrSectClassSchedule(),getNrCharsPerLine()).withColSpan(10));
                 printHeader(false);
                 for (Class_ clazz : allClasses) {
                     String instructor = "";
@@ -287,7 +287,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 rpad(course,8),
                                 (iItype?rpad(itype,6):NULL),
                                 rpad(section,9),
-                                rpad("ARRANGED HOURS",53).withColSpan(3),
+                                rpad(MSG.lrArrangedHours(),53).withColSpan(3),
                                 rpad(instructor,45)
                                 );
                     } else {
@@ -340,13 +340,13 @@ public class StudentExamReport extends PdfLegacyExamReport {
         if (getLineNumber()+5>=getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
         setHeaderLine(
         		new Line(
-        				rpad("Subject", 7),
-        				rpad("Course", 8),
-        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-        				rpad("Section", 9),
-        				rpad("Meeting Times", 36),
-        				rpad("Date And Time", 30),
-        				rpad("Room", 11)
+        				rpad(MSG.lrSubject(), 7),
+        				rpad(MSG.lrCourse(), 8),
+        				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+        				rpad(MSG.lrSection(), 9),
+        				rpad(MSG.lrMeetingTimes(), 36),
+        				rpad(MSG.lrDateAndTime(), 30),
+        				rpad(MSG.lrRoom(), 11)
         		), new Line(
         				lpad("", '-', 7),
         				lpad("", '-', 8),
@@ -357,7 +357,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
         				lpad("", '-', 11)
         		));
         println();
-        println(mpad("~ ~ ~ ~ ~ EXAMINATION SCHEDULE ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+        println(mpad(MSG.lrSectExaminationSchedule(),getNrCharsPerLine()).withColSpan(10));
         printHeader(false);
         iSubjectPrinted = false; String lastSubject = null;
         iCoursePrinted = false; String lastCourse = null;
@@ -423,17 +423,17 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 if (getLineNumber()+5>=getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                                 setHeaderLine(
                                 		new Line(
-                                				rpad("Subject", 7),
-                                				rpad("Course", 8),
-                                				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                                				rpad("Section", 9),
-                                				rpad("Date And Time", 25),
-                                				rpad("Type", 6),
-                                				rpad("Subject", 7),
-                                				rpad("Course", 8),
-                                				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                                				rpad("Section", 9),
-                                				rpad("Time", 15)
+                                				rpad(MSG.lrSubject(), 7),
+                                				rpad(MSG.lrCourse(), 8),
+                                				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                                				rpad(MSG.lrSection(), 9),
+                                				rpad(MSG.lrDateAndTime(), 25),
+                                				rpad(MSG.lrType(), 6),
+                                				rpad(MSG.lrSubject(), 7),
+                                				rpad(MSG.lrCourse(), 8),
+                                				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                                				rpad(MSG.lrSection(), 9),
+                                				rpad(MSG.lrTime(), 15)
                                 		), new Line(
                                 				lpad("", '-', 7),
                                 				lpad("", '-', 8),
@@ -448,9 +448,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 				lpad("", '-', 15)
                                 		));
                                 if (!iNewPage) println();
-                                println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+                                println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                                 printHeader(false);
-                                setCont(shortName+"  EXAMINATION CONFLICTS");
+                                setCont(MSG.lrExaminationConflicts(shortName));
                                 headerPrinted = true;
                             }
                             println(
@@ -459,7 +459,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6):NULL),
                                     rpad(iCoursePrinted?"":section.getSection(),9),
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),25),
-                                    rpad(iPeriodPrinted?"":"DIRECT",6),
+                                    rpad(iPeriodPrinted?"":MSG.lrDIRECT(),6),
                                     rpad(other.getSubject(),7),
                                     rpad(other.getCourseNbr(),8),
                                     (iItype?rpad(other.getItype(),6):NULL),
@@ -475,17 +475,17 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             if (getLineNumber()+5>=getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                             setHeaderLine(
                             		new Line(
-                            				rpad("Subject", 7),
-                            				rpad("Course", 8),
-                            				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                            				rpad("Section", 9),
-                            				rpad("Date And Time", 25),
-                            				rpad("Type", 6),
-                            				rpad("Subject", 7),
-                            				rpad("Course", 8),
-                            				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                            				rpad("Section", 9),
-                            				rpad("Time", 15)
+                            				rpad(MSG.lrSubject(), 7),
+                            				rpad(MSG.lrCourse(), 8),
+                            				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                            				rpad(MSG.lrSection(), 9),
+                            				rpad(MSG.lrDateAndTime(), 25),
+                            				rpad(MSG.lrType(), 6),
+                            				rpad(MSG.lrSubject(), 7),
+                            				rpad(MSG.lrCourse(), 8),
+                            				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                            				rpad(MSG.lrSection(), 9),
+                            				rpad(MSG.lrTime(), 15)
                             		), new Line(
                             				lpad("", '-', 7),
                             				lpad("", '-', 8),
@@ -500,9 +500,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             				lpad("", '-', 15)
                             		));
                         	if (!iNewPage) println();
-                            println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+                            println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                             printHeader(false);
-                            setCont(shortName+"  EXAMINATION CONFLICTS");
+                            setCont(MSG.lrExaminationConflicts(shortName));
                             headerPrinted = true;
                         }
                         if (conflict.isOtherClass()) {
@@ -512,7 +512,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6):NULL),
                                     rpad(iCoursePrinted?"":section.getSection(), 9),
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),25),
-                                    rpad(iPeriodPrinted?"":"CLASS",6),
+                                    rpad(iPeriodPrinted?"":MSG.lrCLASS(),6),
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),7),
                                     rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),8),
                                     (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6):NULL),
@@ -526,7 +526,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6):NULL),
                                     rpad(iCoursePrinted?"":section.getSection(),9),
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),25),
-                                    rpad(iPeriodPrinted?"":"EVENT",6),
+                                    rpad(iPeriodPrinted?"":MSG.lrEVENT(),6),
                                     rpad(conflict.getOtherEventName(),(iItype?33:26)),
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
@@ -546,17 +546,17 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 if (getLineNumber()+5>=getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                                 setHeaderLine(
                                 		new Line(
-                                				rpad("Subject", 7),
-                                				rpad("Course", 8),
-                                				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                                				rpad("Section", 9),
-                                				rpad("Date And Time", 25),
-                                				rpad("Type", 6),
-                                				rpad("Subject", 7),
-                                				rpad("Course", 8),
-                                				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                                				rpad("Section", 9),
-                                				rpad("Time", 15)
+                                				rpad(MSG.lrSubject(), 7),
+                                				rpad(MSG.lrCourse(), 8),
+                                				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                                				rpad(MSG.lrSection(), 9),
+                                				rpad(MSG.lrDateAndTime(), 25),
+                                				rpad(MSG.lrType(), 6),
+                                				rpad(MSG.lrSubject(), 7),
+                                				rpad(MSG.lrCourse(), 8),
+                                				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                                				rpad(MSG.lrSection(), 9),
+                                				rpad(MSG.lrTime(), 15)
                                 		), new Line(
                                 				lpad("", '-', 7),
                                 				lpad("", '-', 8),
@@ -571,9 +571,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 				lpad("", '-', 15)
                                 		));
                             	if (!iNewPage) println();
-                                println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+                                println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                                 printHeader(false);
-                                setCont(shortName+"  EXAMINATION CONFLICTS");
+                                setCont(MSG.lrExaminationConflicts(shortName));
                                 headerPrinted = true;
                             }
                             println(
@@ -582,7 +582,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6):NULL),
                                     rpad(iCoursePrinted?"":section.getSection(),9),
                                     rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),25),
-                                    rpad(iPeriodPrinted?"":">2-DAY",6),
+                                    rpad(iPeriodPrinted?"":MSG.lrMore2DAY(),6),
                                     rpad(other.getSubject(),7),
                                     rpad(other.getCourseNbr(),8),
                                     (iItype?rpad(other.getItype(),6):NULL),
@@ -604,17 +604,17 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             if (getLineNumber()+5>=getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();
                             setHeaderLine(
                             		new Line(
-                            				rpad("Subject", 7),
-                            				rpad("Course", 8),
-                            				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                            				rpad("Section", 9),
-                            				rpad("Date And Time", 25),
-                            				rpad("Type", 6),
-                            				rpad("Subject", 7),
-                            				rpad("Course", 8),
-                            				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-                            				rpad("Section", 9),
-                            				rpad("Time", 15)
+                            				rpad(MSG.lrSubject(), 7),
+                            				rpad(MSG.lrCourse(), 8),
+                            				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                            				rpad(MSG.lrSection(), 9),
+                            				rpad(MSG.lrDateAndTime(), 25),
+                            				rpad(MSG.lrType(), 6),
+                            				rpad(MSG.lrSubject(), 7),
+                            				rpad(MSG.lrCourse(), 8),
+                            				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+                            				rpad(MSG.lrSection(), 9),
+                            				rpad(MSG.lrTime(), 15)
                             		), new Line(
                             				lpad("", '-', 7),
                             				lpad("", '-', 8),
@@ -629,9 +629,9 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             				lpad("", '-', 15)
                             		));
                             if (!iNewPage) println();
-                            println(mpad("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~",getNrCharsPerLine()).withColSpan(10));
+                            println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                             printHeader(false);
-                            setCont(shortName+"  EXAMINATION CONFLICTS");
+                            setCont(MSG.lrExaminationConflicts(shortName));
                             headerPrinted = true;
                         }
                         println(
@@ -640,7 +640,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 (iItype?rpad(iCoursePrinted?"":section.getItype(), 6):NULL),
                                 rpad(iCoursePrinted?"":section.getSection(),9),
                                 rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),25),
-                                rpad(iPeriodPrinted?"":"BTB",6),
+                                rpad(iPeriodPrinted?"":MSG.lrBTB(),6),
                                 rpad(other.getSubject(),7),
                                 rpad(other.getCourseNbr(),8),
                                 (iItype?rpad(other.getItype(),6):NULL),
@@ -670,7 +670,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
     
     public Hashtable<Student,File> printStudentReports(String filePrefix, FileGenerator gen) throws DocumentException, IOException {
         generateCache();
-        sLog.info("Printing individual student reports...");
+        sLog.info(MSG.statusPrintingIndividualStudentReports());
         Hashtable<Student,File> files = new Hashtable();
         Hashtable<Student,TreeSet<ExamSectionInfo>> sections = new Hashtable();
         for (ExamAssignmentInfo exam:getExams()) {
@@ -692,11 +692,11 @@ public class StudentExamReport extends PdfLegacyExamReport {
             if (iSince!=null) {
                 ChangeLog last = getLastChange(sectionsThisStudent);
                 if (last==null || iSince.compareTo(last.getTimeStamp())>0) {
-                    sLog.debug("No change found for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
+                    sLog.debug(MSG.logNoChangesFoundFor(student.getName(DepartmentalInstructor.sNameFormatLastFist)));
                     continue;
                 }
             }
-            sLog.debug("  Generating file for "+student.getName(DepartmentalInstructor.sNameFormatLastFist));
+            sLog.debug(MSG.logGeneratingFileFor(student.getName(DepartmentalInstructor.sNameFormatLastFist)));
             File file = gen.generate(filePrefix+"_"+
                     (student.getExternalUniqueId()!=null?student.getExternalUniqueId():student.getLastName()),
                     getExtension()); 

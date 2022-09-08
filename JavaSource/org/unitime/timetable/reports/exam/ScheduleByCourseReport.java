@@ -46,11 +46,11 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
     protected static Log sLog = LogFactory.getLog(ScheduleByCourseReport.class);
     
     public ScheduleByCourseReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportScheduleByCourse(), session, examType, subjectAreas, exams);
     }
     
     public void printReport() throws DocumentException {
-        sLog.debug("  Sorting sections...");
+        sLog.debug(MSG.statusSortingSections());
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
@@ -63,19 +63,19 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                 sections.add(section);
             }
         }
-        sLog.debug("  Printing report...");
+        sLog.debug(MSG.statusPrintingReport());
         setHeaderLine(
         		new Line(
-        				rpad("Subject", 7),
-        				rpad("Course", 8),
-        				(iItype ? rpad(iExternal ? "ExtnId" : "Type", 6) : NULL),
-        				rpad("Section", 10),
-        				rpad("Meeting Times", 35),
-        				lpad("Enrl", 5).withSeparator("  "),
-        				rpad("Date And Time", 30),
-        				rpad("Room", 11),
-        				lpad("Cap", 5),
-        				lpad("ExCap", 5)
+        				rpad(MSG.lrSubject(), 7),
+        				rpad(MSG.lrCourse(), 8),
+        				(iItype ? rpad(iExternal ? MSG.lrExtnId() : MSG.lrType(), 6) : NULL),
+        				rpad(MSG.lrSection(), 10),
+        				rpad(MSG.lrMeetingTimes(), 35),
+        				lpad(MSG.lrEnrl(), 5).withSeparator("  "),
+        				rpad(MSG.lrDateAndTime(), 30),
+        				rpad(MSG.lrRoom(), 11),
+        				lpad(MSG.lrCap(), 5),
+        				lpad(MSG.lrExCap(), 5)
         		), new Line(
         				lpad("", '-', 7),
         				lpad("", '-', 8),
@@ -120,7 +120,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                     	ExamSectionInfo child = (firstRoom || ch == null || !ch.hasNext() ? null : ch.next());
                     	if (child != null) {
                     		println(
-                                    rpad("w/" + child.getSubject(), 8).withSeparator(""),
+                                    rpad(MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                                     rpad(child.getCourseNbr(), 8),
                                     (iItype?rpad(child.getItype(), 6):NULL),
                                     formatSection10(child.getSection()),
@@ -151,7 +151,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                 while (ch != null && ch.hasNext()) {
                 	ExamSectionInfo child = ch.next();
                 	println(
-                            rpad("w/" + child.getSubject(), 8).withSeparator(""),
+                            rpad(MSG.lrWith() + child.getSubject(), 8).withSeparator(""),
                             rpad(child.getCourseNbr(), 8),
                             (iItype?rpad(child.getItype(), 6):NULL),
                             formatSection10(child.getSection()),

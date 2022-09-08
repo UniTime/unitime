@@ -53,14 +53,14 @@ public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Log sLog = LogFactory.getLog(ScheduleByCourseReport.class);
     
     public PeriodChartReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectAreas, exams);
+        super(mode, file, MSG.legacyReportPeriodAssignment(), session, examType, subjectAreas, exams);
     }
     
     public void printReport() throws DocumentException {
         if (iRC!=null && iRC.length()>0)
-            setFooter(iRC+(iLimit>=0?" (limit="+iLimit+")":""));
+            setFooter(iRC+(iLimit>=0?" (" + MSG.lrLimit(iLimit) + ")":""));
         else if (iLimit>=0)
-            setFooter("limit="+iLimit);
+            setFooter(MSG.lrLimit(iLimit));
         Hashtable<ExamPeriod,TreeSet<ExamSectionInfo>> period2courseSections = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
@@ -91,12 +91,12 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         if (!iTotals) {
         	if (iCompact) {
         		setHeaderLine(new Line(
-        				rpad("Start Time", 10).withSeparator("| "),
-        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4)),
+        				rpad(MSG.lrStartTime(), 10).withSeparator("| "),
+        				rpad(MSG.lrExam(), 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 15).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4)),
         				new Line(rpad("", '-', 10).withSeparator("| "),
                 		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
                 		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
@@ -105,11 +105,11 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 		rpad("", '-', 15).withColSpan(2), rpad("", '-', 4)));
         	} else {
         		setHeaderLine(new Line(
-        				rpad("Start Time", 10).withSeparator("|"),
-        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4).withSeparator("| "),
-        				rpad("Exam", 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad("Enrl", 4)),
+        				rpad(MSG.lrStartTime(), 10).withSeparator("|"),
+        				rpad(MSG.lrExam(), 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4).withSeparator("| "),
+        				rpad(MSG.lrExam(), 24).withSeparator(""), rpad(" ", 1).withSeparator(""), lpad(MSG.lrEnrl(), 4)),
         				new Line(rpad("", '-', 10).withSeparator("|"),
         				rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
                 		rpad("", '-', 24).withColSpan(2), rpad("", '-', 4).withSeparator("| "),
@@ -150,15 +150,15 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     lastDay = dayStr;
                     if (iCompact) {
                     	header1.add(mpad(dayStr,20).withSeparator("| ").withColSpan(3));
-                    	header2.add(rpad("Exam", 15).withSeparator(""));
+                    	header2.add(rpad(MSG.lrExam(), 15).withSeparator(""));
                     	header2.add(rpad(" ", 1).withSeparator(""));
-                    	header2.add(lpad("Enrl", 4).withSeparator("| "));
+                    	header2.add(lpad(MSG.lrEnrl(), 4).withSeparator("| "));
                     	header3.add(lpad("", '=', 15).withColSpan(2)); header3.add(lpad("", '=', 4).withSeparator("| "));
                     } else {
                     	header1.add(mpad(dayStr,29).withSeparator("| ").withColSpan(3)); 
-                    	header2.add(rpad("Exam", 24).withSeparator(""));
+                    	header2.add(rpad(MSG.lrExam(), 24).withSeparator(""));
                     	header2.add(rpad(" ", 1).withSeparator(""));
-                    	header2.add(lpad("Enrl", 4).withSeparator("| "));
+                    	header2.add(lpad(MSG.lrEnrl(), 4).withSeparator("| "));
                     	header3.add(lpad("", '=', 24).withColSpan(2)); header3.add(lpad("", '=', 4).withSeparator("| "));
                     }
                     ExamPeriod period = null;
@@ -389,7 +389,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
             	setHeaderLine();
                 if (getLineNumber()+5>getNrLinesPerPage() && getNrLinesPerPage() > 0) {
                     newPage();
-                    setPageName("Totals");
+                    setPageName(MSG.lrTotals());
                 } else 
                 	println();
                 List<Cell> line1 = new ArrayList<Cell>();
@@ -410,7 +410,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     }
                 }
                 setHeaderLine(
-                		new Line(new Cell("Total Student Exams").withColSpan(line1.size() * 3)),
+                		new Line(new Cell(MSG.lrTotalStudentExams()).withColSpan(line1.size() * 3)),
                 		new Line(line1.toArray(new Cell[line1.size()])),
                 		new Line(line2.toArray(new Cell[line2.size()])));
                 printHeader(false);
