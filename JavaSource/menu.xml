@@ -431,7 +431,7 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Assigned Exams" page="assignedExams.do">
+			<item name="Assigned Exams" page="assignedExams.action">
 				<condition>
 					<hasPermission name="AssignedExaminations"/>
 				</condition>

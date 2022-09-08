@@ -32,7 +32,6 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
-import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -61,7 +60,6 @@ import org.unitime.timetable.webutil.PdfWebTable;
 	})
 public class ExamChangesAction extends UniTimeAction<ExamChangesForm> {
 	private static final long serialVersionUID = -1849884878783974335L;
-	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	
 	public String execute() throws Exception {

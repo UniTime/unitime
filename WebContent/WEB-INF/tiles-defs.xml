@@ -408,12 +408,6 @@
 		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
 
-	<definition	name="assignedExamsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Assigned Examinations"/>
-		<put name="body" value="/exam/assigned.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
 	<definition	name="unassignedExamsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Not-Assigned Examinations"/>
 		<put name="body" value="/exam/unassigned.jsp" />

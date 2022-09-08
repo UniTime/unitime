@@ -685,20 +685,6 @@
     </action>
 
     <action
-    	path="/assignedExams"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examReportForm"
-    	input="assignedExamsTile"
-    	name="examReportForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showReport"
-    		path="assignedExamsTile"
-    		redirect="true" />
-    </action>
-
-    <action
     	path="/unassignedExams"
     	type="org.springframework.web.struts.DelegatingActionProxy"
     	attribute="examReportForm"

@@ -684,6 +684,9 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Direct")
 	String conflictDirect();
 	
+	@DefaultMessage("Student N/A")
+	String conflictStudentNotAvailable();
+	
 	@DefaultMessage("Direct [%]")
 	String colDirectPercent();
 	
@@ -893,4 +896,19 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("There are no assignment changes between exams of {0} subject area.")
 	String messageNoChangesInSubject(String subject);
+	
+	@DefaultMessage("Examination Assignment")
+	String sectExaminationAssignment();
+	
+	@DefaultMessage("Violated\nDistributions")
+	String colViolatedDistributions();
+	
+	@DefaultMessage("Assigned Exams")
+	String backAssignedExaminations();
+	
+	@DefaultMessage("All examinations are not assigned.")
+	String messageAllExamsAreNotAssinged();
+	
+	@DefaultMessage("There are no examinations of {0} subject area, or none of them is assigned.")
+	String messageAllExamsOfASubjectAreNotAssinged(String subject);
 }
