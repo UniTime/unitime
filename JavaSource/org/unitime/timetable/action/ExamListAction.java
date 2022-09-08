@@ -224,10 +224,10 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
                 11,
                 MSG.tableExaminations(type.getLabel()), "examList.action?ord=%%",
                 new String[] {
-                		MSG.colExamOwner().replace("|", nl), MSG.colExamLength().replace("|", nl), MSG.colExamSeatingType().replace("|", nl), 
-                		MSG.colExamSize().replace("|", nl), MSG.colExamMaxRooms().replace("|", nl), MSG.colExamInstructor().replace("|", nl),
-                		MSG.colExamPeriodPrefs().replace("|", nl), MSG.colExamRoomPrefs().replace("|", nl), MSG.colExamDistributionPrefs().replace("|", nl),
-                		MSG.colExamAssignedPeriod().replace("|", nl), MSG.colExamAssignedRoom().replace("|", nl)},
+                		MSG.colExamOwner().replace("\n", nl), MSG.colExamLength().replace("\n", nl), MSG.colExamSeatingType().replace("\n", nl), 
+                		MSG.colExamSize().replace("\n", nl), MSG.colExamMaxRooms().replace("\n", nl), MSG.colExamInstructor().replace("\n", nl),
+                		MSG.colExamPeriodPrefs().replace("\n", nl), MSG.colExamRoomPrefs().replace("\n", nl), MSG.colExamDistributionPrefs().replace("\n", nl),
+                		MSG.colExamAssignedPeriod().replace("\n", nl), MSG.colExamAssignedRoom().replace("\n", nl)},
                 new String[] {"left", "right", "center", "right", "right", "left", 
                         "left", "left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true, true, true, true, true, true}

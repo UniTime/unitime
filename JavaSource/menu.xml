@@ -436,7 +436,7 @@
 					<hasPermission name="AssignedExaminations"/>
 				</condition>
 			</item>
-			<item name="Not-assigned Exams" page="unassignedExams.do">
+			<item name="Not-assigned Exams" page="unassignedExams.action">
 				<condition>
 					<hasPermission name="NotAssignedExaminations"/>
 				</condition>

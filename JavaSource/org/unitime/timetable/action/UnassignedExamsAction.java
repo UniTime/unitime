@@ -23,17 +23,16 @@ import java.awt.Image;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -50,9 +49,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.util.ExportUtils;
@@ -66,53 +63,67 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 @Service("/unassignedExams")
-public class UnassignedExamsAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
-	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamReportForm myForm = (ExamReportForm) form;
+@Action(value = "unassignedExams", results = {
+		@Result(name = "showReport", type = "tiles", location = "unassignedExams.tiles")
+	})
+@TilesDefinition(name = "unassignedExams.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Not-Assigned Examinations"),
+		@TilesPutAttribute(name = "body", value = "/exam/unassigned.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
+public class UnassignedExamsAction extends UniTimeAction<ExamReportForm> {
+	private static final long serialVersionUID = 1476233244372449453L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
+	public String execute() throws Exception {
         // Check Access
 		sessionContext.checkPermission(Right.NotAssignedExaminations);
-        
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+		
+		ExamSolverProxy solver = getExaminationSolverService().getSolver();
 
-        if ("Export CSV".equals(op) || "Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(sessionContext);
-        } else if ("Refresh".equals(op)) {
-            myForm.reset(mapping, request);
+    	if (form == null) {
+	    	form = new ExamChangesForm();
+	    	form.reset();
+	    	if (solver != null) form.setExamType(solver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
+
+    	if (MSG.actionExportPdf().equals(op) || MSG.actionExportCsv().equals(op) || MSG.buttonApply().equals(op)) {
+            form.save(sessionContext);
+        } else if (MSG.buttonRefresh().equals(op)) {
+            form.reset();
+            if (solver != null) form.setExamType(solver.getExamTypeId());
         }
         
-        myForm.load(sessionContext);
+        form.load(sessionContext);
         
         Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
-        RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
+        RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), true, false);
         
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamInfo> unassignedExams = null;
-        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0  && myForm.getExamType() != null) {
-            if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
-                unassignedExams = solver.getUnassignedExams(myForm.getSubjectArea());
+        if (form.getSubjectArea()!=null && form.getSubjectArea()!=0  && form.getExamType() != null) {
+            if (solver!=null && solver.getExamTypeId().equals(form.getExamType()))
+                unassignedExams = solver.getUnassignedExams(form.getSubjectArea());
             else
-                unassignedExams = Exam.findUnassignedExams(sessionContext.getUser().getCurrentAcademicSessionId(), myForm.getSubjectArea(),myForm.getExamType());
+                unassignedExams = Exam.findUnassignedExams(sessionContext.getUser().getCurrentAcademicSessionId(), form.getSubjectArea(),form.getExamType());
         }
         
         WebTable.setOrder(sessionContext,"unassignedExams.ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(true, false, myForm, unassignedExams);
+        WebTable table = getTable(true, false, unassignedExams);
         
-        if ("Export PDF".equals(op) && table!=null) {
+        if (MSG.actionExportPdf().equals(op) && table!=null) {
         	ExportUtils.exportPDF(
-        			getTable(false, true, myForm, unassignedExams),
+        			getTable(false, true, unassignedExams),
         			WebTable.getOrder(sessionContext,"unassignedExams.ord"),
         			response, "unassigned");
         	return null;
         }
 
-        if ("Export CSV".equals(op) && table!=null) {
+        if (MSG.actionExportCsv().equals(op) && table!=null) {
         	ExportUtils.exportCSV(
-        			getTable(false, false, myForm, unassignedExams),
+        			getTable(false, false, unassignedExams),
         			WebTable.getOrder(sessionContext,"unassignedExams.ord"),
         			response, "unassigned");
         	return null;
@@ -120,17 +131,17 @@ public class UnassignedExamsAction extends Action {
 
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"unassignedExams.ord")), 9, unassignedExams.size());
+            form.setTable(table.printTable(WebTable.getOrder(sessionContext,"unassignedExams.ord")), 9, unassignedExams.size());
 
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
         
-        return mapping.findForward("showReport");
+        return "showReport";
 	}
 	
-    public PdfWebTable getTable( boolean html, boolean color, ExamReportForm form, Collection<ExamInfo> exams) {
+    public PdfWebTable getTable(boolean html, boolean color, Collection<ExamInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(sessionContext.getUser());
         boolean timeText = RequiredTimeTable.getTimeGridAsText(sessionContext.getUser());
@@ -138,9 +149,17 @@ public class UnassignedExamsAction extends Action {
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
             new PdfWebTable( 9,
-                    "Not-assigned Examinations", "unassignedExams.do?ord=%%",
-                    new String[] {(form.getShowSections()?"Classes / Courses":"Examination"), "Length", "Seating"+nl+"Type", "Size", "Max"+nl+"Rooms",
-                                 "Instructor", "Period"+nl+"Preferences", "Room"+nl+"Preferences", "Distribution"+nl+"Preferences"},
+                    MSG.sectionNotAssingedExaminations(), "unassignedExams.action?ord=%%",
+                    new String[] {
+                    		(form.getShowSections()?MSG.colOwner():MSG.colExamination()),
+                    		MSG.colExamLength(),
+                    		MSG.colSeatingType().replace("\n", nl),
+                    		MSG.colExamSize(),
+                    		MSG.colExamMaxRooms().replace("\n", nl),
+                    		MSG.colInstructor(),
+                    		MSG.colExamPeriodPrefs().replace("\n", nl),
+                    		MSG.colExamRoomPrefs().replace("\n", nl),
+                    		MSG.colExamDistributionPrefs().replace("\n", nl)},
        				new String[] {"left", "right", "center", "right", "right", "left", "left", "left", "left"},
        				new boolean[] {true, true, true, false, false, true, true, true, true} );
 		table.setRowStyle("white-space:nowrap");
@@ -230,11 +249,11 @@ public class UnassignedExamsAction extends Action {
                 String instructors = exam.getInstructorName(", ");
                 
         	    table.addLine(
-        	            "onClick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
+        	            "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             String.valueOf(exam.getLength()),
-                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
+                            (Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.seatingNormal():MSG.seatingExam()),
                             String.valueOf(exam.getNrStudents()),
                             String.valueOf(exam.getMaxRooms()),
                             instructors,
@@ -257,7 +276,7 @@ public class UnassignedExamsAction extends Action {
         	}
         } catch (Exception e) {
         	Debug.error(e);
-        	table.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
+        	table.addLine(new String[] {"<font color='red'>"+MSG.error(e.getMessage())+"</font>"},null);
         }
         return table;
     }	

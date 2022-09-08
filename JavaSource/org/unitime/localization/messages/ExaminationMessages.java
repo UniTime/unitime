@@ -48,31 +48,31 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Length")
 	String colExamLength();
 	
-	@DefaultMessage("Seating|Type")
+	@DefaultMessage("Seating\nType")
 	String colExamSeatingType();
 	
 	@DefaultMessage("Size")
 	String colExamSize();
 	
-	@DefaultMessage("Max|Rooms")
+	@DefaultMessage("Max\nRooms")
 	String colExamMaxRooms();
 	
 	@DefaultMessage("Instructor")
 	String colExamInstructor();
 	
-	@DefaultMessage("Period|Preferences")
+	@DefaultMessage("Period\nPreferences")
 	String colExamPeriodPrefs();
 	
-	@DefaultMessage("Room|Preferences")
+	@DefaultMessage("Room\nPreferences")
 	String colExamRoomPrefs();
 	
-	@DefaultMessage("Distribution|Preferences")
+	@DefaultMessage("Distribution\nPreferences")
 	String colExamDistributionPrefs();
 	
-	@DefaultMessage("Assigned|Period")
+	@DefaultMessage("Assigned\nPeriod")
 	String colExamAssignedPeriod();
 	
-	@DefaultMessage("Assigned|Room")
+	@DefaultMessage("Assigned\nRoom")
 	String colExamAssignedRoom();
 	
 	@DefaultMessage("Subject")
@@ -897,9 +897,6 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("There are no assignment changes between exams of {0} subject area.")
 	String messageNoChangesInSubject(String subject);
 	
-	@DefaultMessage("Examination Assignment")
-	String sectExaminationAssignment();
-	
 	@DefaultMessage("Violated\nDistributions")
 	String colViolatedDistributions();
 	
@@ -911,4 +908,19 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("There are no examinations of {0} subject area, or none of them is assigned.")
 	String messageAllExamsOfASubjectAreNotAssinged(String subject);
+	
+	@DefaultMessage("Not-assigned Examinations")
+	String sectionNotAssingedExaminations();
+
+	@DefaultMessage("Assigned Examinations")
+	String sectAssignedExaminations();
+	
+	@DefaultMessage("Not-assigned Exams")
+	String backNotAssignedExaminations();
+	
+	@DefaultMessage("All examinations are assigned.")
+	String messageAllExamsAreAssinged();
+	
+	@DefaultMessage("There are no examinations of {0} subject area, or all of them are assigned.")
+	String messageAllExamsOfASubjectAreAssinged(String subject);
 }
