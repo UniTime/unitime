@@ -47,6 +47,8 @@ import org.cpsolver.ifs.extension.AssignedValue;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.model.Constraint;
 import org.dom4j.Element;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable;
@@ -56,6 +58,8 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
  */
 public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 	private static final long serialVersionUID = 7L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
 	public static int sVersion = 7; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;
 	public static final int sConstraintTypeInstructor = 2;
@@ -559,7 +563,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Examination Assignment', 'examInfo.do?examId="+variable.getId()+"&op=Reset','900','90%');\"";
+    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+variable.getId()+"&op=Reset','900','90%');\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -576,7 +580,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Examination Assignment', 'examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";	
+    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -624,7 +628,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	}
     	String onClick = null;
     	if (clickable)
-    	    onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Examination Assignment', 'examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";
+    	    onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     

@@ -19,33 +19,40 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
  * @author Tomas Muller
  */
-public class ExamCbsForm extends ActionForm {
+public class ExamCbsForm implements UniTimeForm {
 	private static final long serialVersionUID = -8811101882445836746L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
 	public static double sDefaultLimit = 25.0;
-	public static int sDefaultType = 0;
+	public static Type sDefaultType = Type.VariableOriented;
 	private String iOp = null;
 	private String iType = null;
-	private static String[] sTypes = new String[] {"Variable - oriented","Constraint - oriented"};
+	public static enum Type {
+		VariableOriented, ConstraintOriented,
+	}
 	private double iLimit = sDefaultLimit;
+	
+	public ExamCbsForm() { reset(); }
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        return errors;
+	@Override
+	public void validate(UniTimeAction action) {
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iLimit = sDefaultLimit;
+	@Override
+	public void reset() {
+		iOp = null; iLimit = sDefaultLimit; iType = sDefaultType.name();
 	}
 	
 	public String getOp() { return iOp; }
@@ -53,13 +60,26 @@ public class ExamCbsForm extends ActionForm {
 	public String getType() { return iType; }
 	public void setType(String type) { iType = type; }
 	public int getTypeInt() {
-		for (int i=0;i<sTypes.length;i++)
-			if (sTypes[i].equals(iType)) return i;
+		for (Type t: Type.values())
+			if (t.name().equals(iType)) return t.ordinal();
 		return 0;
 	}
-	public void setTypeInt(int type) { iType = sTypes[type]; }
+	public void setTypeInt(int type) { iType = Type.values()[type].name(); }
 	public double getLimit() { return iLimit; }
 	public void setLimit(double limit) { iLimit = limit; }
-	public String[] getTypes() { return sTypes; }
+	public List<ComboBoxLookup> getTypes() {
+		List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+		for (Type t: Type.values()) {
+			ret.add(new ComboBoxLookup(getTypeLabel(t), t.name()));
+		}
+		return ret;
+	}
+	public static String getTypeLabel(Type t) {
+		switch(t) {
+		case VariableOriented: return MSG.cbsVariableOriented();
+		case ConstraintOriented: return MSG.cbsConstraintOriented();
+		default: return t.name();
+		}
+	}
 }
 

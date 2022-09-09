@@ -446,7 +446,7 @@
 					<hasPermission name="ExaminationAssignmentChanges"/>
 				</condition>
 			</item>
-			<item name="Conflict Statistics" page="ecbs.do">
+			<item name="Conflict Statistics" page="ecbs.action">
 				<condition>
 					<hasPermission name="ExaminationConflictStatistics"/>
 				</condition>

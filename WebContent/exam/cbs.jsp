@@ -17,70 +17,60 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@page import="org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-
-<tiles:importAttribute />
-<html:form action="/ecbs">
-	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<tt:back-mark back="true" clear="true" title="${MSG.backCbs()}" uri="ecbs.action"/>
+<s:form action="ecbs">
+	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
+	<table class="unitime-MainTable">
 		<TR>
-			<TD>Mode:</TD>
+			<TD><loc:message name="propCbsMode"/></TD>
 			<TD>
-				<html:select property="type">
-					<html:options name="ecbsForm" property="types"/>
-				</html:select>
+				<s:select name="form.type" list="form.types" listKey="value" listValue="label"/>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Limit:</TD>
+			<TD><loc:message name="propCbsLimit"/></TD>
 			<TD>
-				<html:text property="limit" size="5" maxlength="5"/> %
-				&nbsp;<html:errors property="limit"/>
+				<s:textfield name="form.limit" size="5" maxlength="5"/> %
+				&nbsp;<s:fielderror name="form.limit"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit onclick="displayLoading();" property="op" value="Change"/>
-				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+				<s:submit name='form.op' value="%{#msg.buttonChange()}" accesskey="%{#msg.accessChange()}" title="%{#msg.titleChange()}"/>
+				<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 			</TD>
 		</TR>
-	</TABLE>
-	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</table>
+	<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+		<table class="unitime-MainTable">
 			<TR>
 				<TD colspan='2' align='right'>
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
+					<s:submit name='form.op' value="%{#msg.buttonRefresh()}" accesskey="%{#msg.accessRefresh()}" title="%{#msg.titleRefresh()}"/>
 				</TD>
 			</TR>
-		</TABLE>
-	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
+		</table>
+	<script type="text/javascript">blEndCollapsed('dispFilter');</script>
 	
-	<logic:notEmpty name="cbs" scope="request">
-		<bean:define id="limit" name="ecbsForm" property="limit" type="Double"/>
-		<bean:define id="type" name="ecbsForm" property="typeInt" type="Integer"/>
-		<bean:define id="cbs" name="cbs" type="ExamConflictStatisticsInfo" scope="request"/>
-		<font size='2'>
-			<% ExamConflictStatisticsInfo.printHtmlHeader(out); %>
-			<% cbs.printHtml(out, limit / 100.0, type, true); %>
-		</font>
-		<table border='0' width='100%'><tr><td>
+	<s:if test="#request.cbs != null">
+		<s:property value="%{printTable()}" escapeHtml="false"/>
+		<table class="unitime-MainTable"><tr><td>
 			<tt:displayPrefLevelLegend/>
 		</td></tr></table>
-	</logic:notEmpty>
-	<logic:notEmpty name="warning" scope="request">
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</s:if>
+	<s:if test="#request.warning != null">
+		<table class="unitime-MainTable">
 			<TR>
 				<TD colspan="2">	
-					<i><bean:write name="warning" scope="request"/></i>
+					<i><s:property value="#request.warning"/></i>
 				</TD>
 			</TR>
-		</TABLE>	
-	</logic:notEmpty>
-</html:form>
+		</table>
+	</s:if>
+</s:form>
+</loc:bundle>

@@ -19,66 +19,70 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.ExamCbsForm;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
-import org.unitime.timetable.solver.service.SolverService;
 
 
 /** 
  * @author Tomas Muller
  */
-@Service("/ecbs")
-public class ExamCbsAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
-	
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+@Action(value = "ecbs", results = {
+		@Result(name = "show", type = "tiles", location = "ecbs.tiles")
+	})
+@TilesDefinition(name = "ecbs.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination Conflict-Based Statistics"),
+		@TilesPutAttribute(name = "body", value = "/exam/cbs.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
+public class ExamCbsAction extends UniTimeAction<ExamCbsForm> {
+	private static final long serialVersionUID = 6759587563290713198L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamCbsForm myForm = (ExamCbsForm) form;
+	public String execute() throws Exception {
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationConflictStatistics);
 		
-        // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null) op="Refresh";
+		if (form == null) form = new ExamCbsForm();
+
+		if (form.getOp() != null) op = form.getOp();
+        if (op==null) op = MSG.buttonRefresh();
         
-        if ("Change".equals(op)) {
-        	sessionContext.getUser().setProperty("Ecbs.limit", String.valueOf(myForm.getLimit()));
-        	sessionContext.getUser().setProperty("Ecbs.type", String.valueOf(myForm.getTypeInt()));
+        if (MSG.buttonChange().equals(op)) {
+        	sessionContext.getUser().setProperty("Ecbs.limit", String.valueOf(form.getLimit()));
+        	sessionContext.getUser().setProperty("Ecbs.type", String.valueOf(form.getTypeInt()));
         } else {
-        	myForm.reset(mapping,request);
-        	myForm.setTypeInt(Integer.parseInt(sessionContext.getUser().getProperty("Ecbs.type", String.valueOf(ExamCbsForm.sDefaultType))));
-        	myForm.setLimit(Double.parseDouble(sessionContext.getUser().getProperty("Ecbs.limit", String.valueOf(ExamCbsForm.sDefaultLimit))));
+        	form.reset();
+        	form.setTypeInt(Integer.parseInt(sessionContext.getUser().getProperty("Ecbs.type", String.valueOf(ExamCbsForm.sDefaultType.ordinal()))));
+        	form.setLimit(Double.parseDouble(sessionContext.getUser().getProperty("Ecbs.limit", String.valueOf(ExamCbsForm.sDefaultLimit))));
         }
         
         ExamConflictStatisticsInfo cbs = null;
-    	if (examinationSolverService.getSolver() != null)
-    		cbs = examinationSolverService.getSolver().getCbsInfo();
+    	if (getExaminationSolverService().getSolver() != null)
+    		cbs = getExaminationSolverService().getSolver().getCbsInfo();
     	
     	if (cbs != null) {
     		request.setAttribute("cbs", cbs);
     	} else {
-    		if (examinationSolverService.getSolver() == null)
-    			request.setAttribute("warning", "No examination data are loaded into the solver, conflict-based statistics is not available.");
+    		if (getExaminationSolverService().getSolver() == null)
+    			request.setAttribute("warning", MSG.warnCbsNoSolver());
     		else
-    			request.setAttribute("warning", "Conflict-based statistics is not available at the moment.");
+    			request.setAttribute("warning", MSG.warnNoCbs());
     	}
 
-        return mapping.findForward("show");
+        return "show";
 	}
-
+	
+	public void printTable() {
+		ExamConflictStatisticsInfo.printHtmlHeader(getPageContext().getOut());
+		ExamConflictStatisticsInfo cbs = (ExamConflictStatisticsInfo)request.getAttribute("cbs");
+		cbs.printHtml(getPageContext().getOut(), form.getLimit() / 100.0, form.getTypeInt(), true); 
+	}
 }
 

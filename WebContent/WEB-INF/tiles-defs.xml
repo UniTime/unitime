@@ -427,12 +427,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
 
-  	<definition	name="ecbsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Conflict-Based Statistics"/>
-		<put name="body" value="/exam/cbs.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
   	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />

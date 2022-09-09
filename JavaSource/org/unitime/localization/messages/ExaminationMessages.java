@@ -1631,4 +1631,34 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Generating file for {0}")
 	String logGeneratingFileFor(String name);
+	
+	@DefaultMessage("Variable - oriented")
+	String cbsVariableOriented();
+	
+	@DefaultMessage("Constraint - oriented")
+	String cbsConstraintOriented();
+	
+	@DefaultMessage("Change")
+	String buttonChange();
+	
+	@DefaultMessage("C")
+	String accessChange();
+	
+	@DefaultMessage("Change (Alt + C)")
+	String titleChange();
+	
+	@DefaultMessage("No examination data are loaded into the solver, conflict-based statistics is not available.")
+	String warnCbsNoSolver();
+	
+	@DefaultMessage("Conflict-based statistics is not available at the moment.")
+	String warnNoCbs();
+	
+	@DefaultMessage("Mode:")
+	String propCbsMode();
+	
+	@DefaultMessage("Limit:")
+	String propCbsLimit();
+	
+	@DefaultMessage("Examination Conflict-based Statistics")
+	String backCbs();
 }
