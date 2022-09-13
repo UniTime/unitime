@@ -593,11 +593,11 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     			break;
     		case sConstraintTypeInstructor :
     			name += "Instructor "+constraint.getName();
-    			if (clickable) link = "examGrid.do?filter="+constraint.getName()+"&resource="+ExamGridTable.sResourceInstructor+"&op=Cbs";
+    			if (clickable) link = "examGrid.action?filter="+constraint.getName()+"&resource="+ExamGridTable.Resource.Instructor.ordinal()+"&op=Cbs";
     			break;
     		case sConstraintTypeRoom :
     			name += "Room "+constraint.getName();
-    			if (clickable) link = "examGrid.do?filter="+constraint.getName()+"&resource="+ExamGridTable.sResourceRoom+"&op=Cbs";
+    			if (clickable) link = "examGrid.action?filter="+constraint.getName()+"&resource="+ExamGridTable.Resource.Room.ordinal()+"&op=Cbs";
     			break;
             case sConstraintTypeStudent :
                 name += "Student "+constraint.getName();

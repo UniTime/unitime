@@ -64,7 +64,6 @@
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
-	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
@@ -678,20 +677,6 @@
       <forward name="add" path="addExamPeriodTile" />
       <forward name="edit" path="editExamPeriodTile" />
       <forward name="midterm" path="midtermExamPeriodTile" />
-    </action>
-
-    <action
-    	path="/examGrid"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examGridForm"
-    	input="examGridTile"
-    	name="examGridForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showGrid"
-    		path="examGridTile"
-    		redirect="true" />
     </action>
 
     <action

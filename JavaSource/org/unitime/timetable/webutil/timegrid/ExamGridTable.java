@@ -34,6 +34,8 @@ import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -59,58 +61,92 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGr
  */
 public class ExamGridTable {
 	public static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	
-    public static final int sResourceRoom = 0;
-    public static final int sResourceInstructor = 1;
-    public static final int sResourceSubject = 2;
-    public static final String[] sResources = new String[] {"Room", "Instructor", "Subject Area"};
-    public static final int sBgNone = 0;
-    public static final int sBgStudentConfs = 1;
-    public static final int sBgDirectStudentConfs = 2;
-    public static final int sBgMoreThanTwoADayStudentConfs = 3;
-    public static final int sBgBackToBackStudentConfs = 4;
-    public static final int sBgInstructorConfs = 5;
-    public static final int sBgDirectInstructorConfs = 6;
-    public static final int sBgMoreThanTwoADayInstructorConfs = 7;
-    public static final int sBgBackToBackInstructorConfs = 8;
-    public static final int sBgPeriodPref = 9;
-    public static final int sBgRoomPref = 10;
-    public static final int sBgDistPref = 11;
-    public static final String[] sBackgrounds = new String[] {
-        "No Background",
-        "Student Conflicts",
-        "Student Direct Conflicts",
-        "Student >2 A Day Conlicts",
-        "Student Back-To-Back Conlicts",
-        "Instructor Conflicts",
-        "Instructor Direct Conflicts",
-        "Instructor >2 A Day Conlicts",
-        "Instructor Back-To-Back Conlicts",
-        "Period Preferences",
-        "Room Preferences",
-        "Distribution Preferences"
+    public static enum Resource {
+    	Room,
+    	Instructor,
+    	Subject,
+    	;
+    	public String getLabel() {
+    		switch (this) {
+    		case Room: return MSG.resourceRoom();
+    		case Instructor: return MSG.resourceInstructor();
+    		case Subject: return MSG.resourceSubjectArea();
+			default: return name();
+			}
+    	}
     };
-    public static final int sDispModeInRowHorizontal   = 0;
-    public static final int sDispModeInRowVertical   = 1;
-    public static final int sDispModePerDayHorizontal = 2;
-    public static final int sDispModePerDayVertical = 3;
-    public static final int sDispModePerWeekHorizontal = 4;
-    public static final int sDispModePerWeekVertical = 5;
-    public static String[] sDispModes = new String[] {
-        "In Row [horizontal]",
-        "In Row [vertical]",
-        "Per Day [horizontal]",
-        "Per Day [vertical]",
-        "Per Week [horizontal]",
-        "Per Week [vertical]"
-    };
-    public static final int sOrderByNameAsc = 0;
-    public static final int sOrderByNameDesc = 1;
-    public static final int sOrderBySizeAsc = 2;
-    public static final int sOrderBySizeDesc = 3;
-    public static String[] sOrders = new String[] {
-        "name [asc]", "name [desc]", "size [asc]", "size [desc]"
-    };
+    
+    public static enum Background {
+        None,
+        StudentConfs,
+        DirectStudentConfs,
+        MoreThanTwoADayStudentConfs,
+        BackToBackStudentConfs,
+        InstructorConfs,
+        DirectInstructorConfs,
+        MoreThanTwoADayInstructorConfs,
+        BackToBackInstructorConfs,
+        PeriodPref,
+        RoomPref,
+        DistPref,
+        ;
+    	public String getLabel() {
+    		switch(this) {
+    		case None: return MSG.backgroundNone();
+    		case StudentConfs: return MSG.backgroundStudentConflicts();
+    		case DirectStudentConfs: return MSG.backgroundStudentDirectConflicts();
+    		case MoreThanTwoADayStudentConfs: return MSG.backgroundStudentMoreThanTwoExamsADayConflicts();
+    		case BackToBackStudentConfs: return MSG.backgroundStudentBackToBackConflicts();
+    		case InstructorConfs: return MSG.backgroundInstructorConflicts();
+    		case DirectInstructorConfs: return MSG.backgroundInstructorDirectConflicts();
+    		case MoreThanTwoADayInstructorConfs: return MSG.backgroundInstructorMoreThanTwoExamsADayConflicts();
+    		case BackToBackInstructorConfs: return MSG.backgroundInstructorBackToBackConflicts();
+    		case PeriodPref: return MSG.backgroundPeriodPreferences();
+    		case RoomPref: return MSG.backgroundRoomPreferences();
+    		case DistPref: return MSG.backgroundDistributionPreferences();
+    		default: return name();
+    		}
+    	}
+    }
+    
+    public static enum DispMode {
+        InRowHorizontal,
+        InRowVertical,
+        PerDayHorizontal,
+        PerDayVertical,
+        PerWeekHorizontal,
+        PerWeekVertical,
+        ;
+    	public String getLabel() {
+    		switch(this) {
+    		case InRowHorizontal: return MSG.dispModeInRowHorizontal();
+    		case InRowVertical: return MSG.dispModeInRowVertical();
+    		case PerDayHorizontal: return MSG.dispModePerDayHorizontal();
+    		case PerDayVertical: return MSG.dispModePerDayVertical();
+    		case PerWeekHorizontal: return MSG.dispModePerWeekHorizontal();
+    		case PerWeekVertical: return MSG.dispModePerWeekVertical();
+    		default: return name();
+    		}
+    	} 	
+    }
+    public static enum OrderBy{
+    	NameAsc,
+    	NameDesc,
+    	SizeAsc,
+    	SizeDesc,
+    	;
+    	public String getLabel() {
+    		switch(this) {
+    		case NameAsc: return MSG.orderByNameAsc();
+    		case NameDesc: return MSG.orderByNameDesc();
+    		case SizeAsc: return MSG.orderBySizeAsc();
+    		case SizeDesc: return MSG.orderBySizeDesc();
+    		default: return name();
+    		}
+    	}  
+    }
 
     public static String sBgColorEmpty = "rgb(255,255,255)";
     public static String sBgColorRequired = "rgb(80,80,200)";
@@ -142,7 +178,7 @@ public class ExamGridTable {
 	        }
 	        periodsThisDay.put(period.getStartSlot(), period);
 	    }
-	    if (iForm.getResource()==sResourceRoom) {
+	    if (iForm.getResource()==Resource.Room.ordinal()) {
 	        Date[] bounds = ExamPeriod.getBounds(form.getSessionId(),form.getExamBeginDate(), form.getExamType());
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
 	            Location location = (Location)i.next();
@@ -155,7 +191,7 @@ public class ExamGridTable {
                                 Exam.findAssignedExamsOfLocation(location.getUniqueId(), iForm.getExamType()),bounds));
 	            }
 	        }
-	    } else if (iForm.getResource()==sResourceInstructor) {
+	    } else if (iForm.getResource()==Resource.Instructor.ordinal()) {
 	        String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 	        Hashtable<String,ExamGridModel> models = new Hashtable<String,ExamGridModel> ();
             for (Iterator i=DepartmentalInstructor.findAllExamInstructors(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
@@ -187,7 +223,7 @@ public class ExamGridTable {
                     }
                 }
             }
-	    } else if (iForm.getResource()==sResourceSubject) {
+	    } else if (iForm.getResource()==Resource.Subject.ordinal()) {
 	        for (Iterator i=SubjectArea.getSubjectAreaList(iForm.getSessionId()).iterator();i.hasNext();) {
 	            SubjectArea subject = (SubjectArea)i.next();
 	            if (match(subject.getSubjectAreaAbbreviation())) {
@@ -288,7 +324,7 @@ public class ExamGridTable {
         String first = df.format(c.getTime());
         while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SATURDAY) c.add(Calendar.DAY_OF_YEAR, 1);
         String end = df.format(c.getTime());
-        return "Week "+week+"<br>"+first+" - "+end;
+        return MSG.week(week)+"<br>"+first+" - "+end;
     }
     
     public String getSlotName(int slot) {
@@ -303,7 +339,7 @@ public class ExamGridTable {
     }
     
     public boolean isVertical() {
-        return (iForm.getDispMode()==sDispModeInRowVertical || iForm.getDispMode()==sDispModePerDayVertical || iForm.getDispMode()==sDispModePerWeekVertical);
+        return (iForm.getDispMode()==DispMode.InRowVertical.ordinal() || iForm.getDispMode()==DispMode.PerDayVertical.ordinal() || iForm.getDispMode()==DispMode.PerWeekVertical.ordinal());
     }
     
     public void printHeader(PrintWriter out, String name) {
@@ -311,7 +347,7 @@ public class ExamGridTable {
 		boolean vertical = isVertical();
 		printHeaderCell(out, name, vertical, false, false);
 		TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
-		if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+		if (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal()) {
 		    for (Integer day : days) {
 		        for (Integer slot : slots()) {
 	                boolean eod = (slot==slots.last());
@@ -319,22 +355,22 @@ public class ExamGridTable {
 	                printHeaderCell(out, getDayName(day)+"<br>"+getSlotName(slot), vertical, eod, eol);
 		        }
 		    }
-		} else if (iForm.getDispMode()==sDispModeInRowVertical) {
+		} else if (iForm.getDispMode()==DispMode.InRowVertical.ordinal()) {
 		    for (ExamGridModel m : models()) {
                 boolean eol = m.equals(models().lastElement());
                 printHeaderCell(out, m.getName()+(m.getSize()>0?" ("+m.getSize()+")":""), vertical, false, eol);
 		    }
-		} else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+		} else if (iForm.getDispMode()==DispMode.PerDayHorizontal.ordinal()) {
             for (Integer slot : slots()) {
                 boolean eol = (slot==slots.last());
                 printHeaderCell(out, getSlotName(slot), vertical, false, eol);
             }
-		} else if (iForm.getDispMode()==sDispModePerDayVertical) {
+		} else if (iForm.getDispMode()==DispMode.PerDayVertical.ordinal()) {
             for (Integer day : days) {
                 boolean eol = (day==days.last());
                 printHeaderCell(out, getDayName(day), vertical, false, eol);
             }
-		} else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+		} else if (iForm.getDispMode()==DispMode.PerWeekHorizontal.ordinal()) {
 		    for (Integer week : weeks) {
 		        for (Integer slot : slots) {
 		            boolean eod = (slot==slots.last());
@@ -342,7 +378,7 @@ public class ExamGridTable {
 		            printHeaderCell(out, getWeekName(week)+"<br>"+getSlotName(slot), vertical, eod, eol);
 		        }
             }
-		} else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+		} else if (iForm.getDispMode()==DispMode.PerWeekVertical.ordinal()) {
 		    for (Integer dow : daysOfWeek) {
                 boolean eol = (dow==daysOfWeek.last());
                 printHeaderCell(out, getDayOfWeekName(dow), vertical, false, eol);
@@ -357,13 +393,13 @@ public class ExamGridTable {
         if (info==null) return;
     	onMouseOver.append(" onmouseover=\"");
         onMouseOut.append(" onmouseout=\"");
-        if (iForm.getResource()==sResourceRoom) {
+        if (iForm.getResource()==Resource.Room.ordinal()) {
             for (ExamRoomInfo room : info.getRooms()) {
                 Long roomId = room.getLocationId();
                 onMouseOver.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='rgb(223,231,242)';");
                 onMouseOut.append("if (document.getElementById('"+info.getExamId()+"."+roomId+"')!=null) document.getElementById('"+info.getExamId()+"."+roomId+"').style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';");
             }
-        } else if (iForm.getResource()==sResourceInstructor) {
+        } else if (iForm.getResource()==Resource.Instructor.ordinal()) {
             for (Enumeration e=info.getInstructors().elements();e.hasMoreElements();) {
                 Long instructorId = ((ExamInstructorInfo)e.nextElement()).getId();
                 onMouseOver.append("if (document.getElementById('"+info.getExamId()+"."+instructorId+"')!=null) document.getElementById('"+info.getExamId()+"."+instructorId+"').style.backgroundColor='rgb(223,231,242)';");
@@ -501,7 +537,7 @@ public class ExamGridTable {
             out.println("<td rowspan='"+rowspan+"' class='"+style+"' "+(bgColor==null?"":"style='background-color:"+bgColor+"'")+">&nbsp;</td>");
         } else {
             String bgColor = cell.getBackground();
-            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+            if (iForm.getBackground()==Background.None.ordinal() && !sBgColorNotAvailable.equals(bgColor)) {
                 if (!model.isAvailable(period))
                     bgColor = sBgColorNotAvailableButAssigned;
             }
@@ -517,7 +553,7 @@ public class ExamGridTable {
                     (cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                     ">");
             out.print(cell.getName());
-            if (iForm.getResource()!=sResourceRoom)
+            if (iForm.getResource()!=Resource.Room.ordinal())
                 out.print("<BR>"+cell.getRoomName());
             else
                 out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
@@ -542,7 +578,7 @@ public class ExamGridTable {
         out.println("<table border='0' cellpadding='2' cellspacing='0'>");
         TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
         int rowNumber=0; 
-        if (iForm.getDispMode()==sDispModeInRowVertical) {
+        if (iForm.getDispMode()==DispMode.InRowVertical.ordinal()) {
             int globalMaxIdx = 0;
             for (Integer day:days) 
                 for (Integer slot:slots) {
@@ -582,7 +618,7 @@ public class ExamGridTable {
             for (ExamGridModel m : models())
                 tmx = Math.max(tmx,getMaxIdx(m, days.first(),days.last(),slots.first(),slots.last()));
             for (ExamGridModel model : models()) {
-                if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+                if (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal()) {
                     if (rowNumber%10==0) printHeader(out, null);
                     int maxIdx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
                     out.println("<tr valign='top'>");
@@ -604,7 +640,7 @@ public class ExamGridTable {
                         }
                     }
                     out.println("</tr>");
-                } else if (iForm.getDispMode()==sDispModePerDayVertical) {
+                } else if (iForm.getDispMode()==DispMode.PerDayVertical.ordinal()) {
                     printHeader(out, getModelName(model));
                     int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
                     for (Integer slot:slots) {
@@ -625,7 +661,7 @@ public class ExamGridTable {
                         }
                         out.println("</tr>");
                     }
-                } else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+                } else if (iForm.getDispMode()==DispMode.PerDayHorizontal.ordinal()) {
                     printHeader(out, getModelName(model));
                     int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
                     for (Integer day:days) {
@@ -646,7 +682,7 @@ public class ExamGridTable {
                         }
                         out.println("</tr>");
                     }
-                } else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+                } else if (iForm.getDispMode()==DispMode.PerWeekHorizontal.ordinal()) {
                     printHeader(out, getModelName(model));
                     int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
                     for (Integer dow:daysOfWeek()) {
@@ -669,7 +705,7 @@ public class ExamGridTable {
                         }
                         out.println("</tr>");    
                      }
-                } else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+                } else if (iForm.getDispMode()==DispMode.PerWeekVertical.ordinal()) {
                     printHeader(out, getModelName(model));
                     int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
                     for (Integer week : weeks) {
@@ -724,82 +760,82 @@ public class ExamGridTable {
 	}
 
 	public void printLegend(PrintWriter out) {
-		if (iForm.getBackground()!=sBgNone) {
-			out.println("<tr><td colspan='2'>Assigned examinations:</td></tr>");
+		if (iForm.getBackground()!=Background.None.ordinal()) {
+			out.println("<tr><td colspan='2'>" + MSG.propAssignedExaminations() + "</td></tr>");
 		}
-        if (iForm.getBackground()==sBgPeriodPref) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No period preference</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited period</td><td></td></tr>");
-        } else if (iForm.getBackground()==sBgRoomPref) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No room preference</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged room</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited room</td><td></td></tr>");
-        } else if (iForm.getBackground()==sBgInstructorConfs) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No instructor conflict</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor back-to-back conflicts</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor three or more exams a day conflicts</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more instructor direct conflicts</td><td></td></tr>");
-        } else if (iForm.getBackground()==sBgStudentConfs) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No student conflict</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student back-to-back conflicts</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student three or more exams a day student conflicts</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>One or more student direct conflicts</td><td></td></tr>");
-        } else if (iForm.getBackground()==sBgDirectInstructorConfs) {
+        if (iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendRequiredPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyPreferredPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendPreferredPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoPeriodPreference()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendDiscouragedPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyDiscouragedPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendProhibitedPeriod()+"</td><td></td></tr>");
+        } else if (iForm.getBackground()==Background.RoomPref.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sRequired)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendRequiredRoom()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyPreferredRoom()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendPreferredRoom()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoRoomPreference()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendDiscouragedRoom()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyDiscouragedRoom()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendProhibitedRoom()+"</td><td></td></tr>");
+        } else if (iForm.getBackground()==Background.InstructorConfs.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoInstructorConflict()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreInstructorBackToBackConflicts()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreInstructorThreeOrMoreExamsADayConflicts()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreInstructorDirectConflicts()+"</td><td></td></tr>");
+        } else if (iForm.getBackground()==Background.StudentConfs.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoStudentConflict()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreStudentBackToBackConflicts()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreStudentThreeOrMoreExamsADayStudentConflicts()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendOneOrMoreStudentDirectConflicts()+"</td><td></td></tr>");
+        } else if (iForm.getBackground()==Background.DirectInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
                 String color = lessConflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"instructor direct conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendInstructorConflicts(nrConflicts+(nrConflicts==6?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgMoreThanTwoADayInstructorConfs) {
+        } else if (iForm.getBackground()==Background.MoreThanTwoADayInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor more than two exams a day conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendInstructorMoreThanTwoExamsADayConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgBackToBackInstructorConfs) {
+        } else if (iForm.getBackground()==Background.BackToBackInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor back to back conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendInstructorBackToBackConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgDirectStudentConfs) {
+        } else if (iForm.getBackground()==Background.DirectStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
                 String color = lessConflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"student direct conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStudentDirectConflicts(nrConflicts+(nrConflicts==6?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgMoreThanTwoADayStudentConfs) {
+        } else if (iForm.getBackground()==Background.MoreThanTwoADayStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student more than two exams a day conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStudentMoreThanTwoExamsADayConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgBackToBackStudentConfs) {
+        } else if (iForm.getBackground()==Background.BackToBackStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student back to back conflicts</td><td></td></tr>");
+                out.println("<tr><td width=40 style='background-color:"+color+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStudentBackToBackConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():""))+"</td><td></td></tr>");
             }
-        } else if (iForm.getBackground()==sBgDistPref) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No violated constraint<i>(distance=0)</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged/preferred constraint violated</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged/preferred constraint violated</i></td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Required/prohibited constraint violated</i></td><td></td></tr>");
+        } else if (iForm.getBackground()==Background.DistPref.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoViloatedDistributionConstraint()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendDiscouragedOrPreferredDistributionConstraintViolated()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyDiscouragedOrPreferredDistributionConstraintViolated()+"</i></td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendRequiredOrProhibitedDistributionConstraintViolated()+"</i></td><td></td></tr>");
         }
-        out.println("<tr><td colspan='2'>Free times:</td></tr>");
-        out.println("<tr><td width=40 style='background-color:"+sBgColorNotAvailable+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Period not available</td><td></td></tr>");
-        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly preferred period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Preferred period</td><td></td></tr>");
+        out.println("<tr><td colspan='2'>"+MSG.propFreeTimes()+"</td></tr>");
+        out.println("<tr><td width=40 style='background-color:"+sBgColorNotAvailable+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendPeriodNotAvailable()+"</td><td></td></tr>");
+        if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyPreferredPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sPreferred)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendPreferredPeriod()+"</td><td></td></tr>");
         }
-        out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>No period preference</td><td></td></tr>");
-        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Discouraged period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Strongly discouraged period</td><td></td></tr>");
-            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>Prohibited period</td><td></td></tr>");
+        out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sNeutral)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendNoPeriodPreference()+"</td><td></td></tr>");
+        if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendDiscouragedPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sStronglyDiscouraged)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendStronglyDiscouragedPeriod()+"</td><td></td></tr>");
+            out.println("<tr><td width=40 style='background-color:"+pref2color(PreferenceLevel.sProhibited)+";border:1px solid rgb(0,0,0)'>&nbsp;</td><td>"+MSG.legendProhibitedPeriod()+"</td><td></td></tr>");
         }
     }
 	
@@ -913,7 +949,7 @@ public class ExamGridTable {
 	    
 	    public String getBackground(ExamPeriod period) {
 	        if (period==null) return null;
-	        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+	        if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
 	            if (period.getPrefLevel()!=null && !PreferenceLevel.sNeutral.equals(period.getPrefLevel().getPrefProlog()))
 	                return pref2color(period.getPrefLevel().getPrefProlog());
 	        }
@@ -921,14 +957,14 @@ public class ExamGridTable {
 	    }
 	    
 	    public int compareTo(ExamGridModel model) {
-            switch (iForm.getOrder()) {
-            case sOrderByNameAsc :
+            switch (OrderBy.values()[iForm.getOrder()]) {
+            case NameAsc :
                 return getName().compareTo(model.getName());
-            case sOrderByNameDesc :
+            case NameDesc :
                 return -getName().compareTo(model.getName());
-            case sOrderBySizeAsc:
+            case SizeAsc:
                 return Double.compare(getSize(), model.getSize());
-            case sOrderBySizeDesc :
+            case SizeDesc :
                 return -Double.compare(getSize(), model.getSize());
             }
             return getId().compareTo(model.getId());
@@ -945,17 +981,17 @@ public class ExamGridTable {
 	            return iInfo;
 	        }
 	        public String getBackground() {
-	            switch (iForm.getBackground()) {
-	            case sBgPeriodPref :
+	            switch (Background.values()[iForm.getBackground()]) {
+	            case PeriodPref:
 	                return pref2color(getInfo().getPeriodPref());
-                case sBgRoomPref :
-                    if (iForm.getResource()==sResourceRoom)
+                case RoomPref :
+                    if (iForm.getResource()==Resource.Room.ordinal())
                         return pref2color(getInfo().getRoomPref(ExamGridModel.this.getId()));
                     else
                         return pref2color(getInfo().getRoomPref());
-                case sBgDistPref :
+                case DistPref:
                     return pref2color(getInfo().getDistributionPref());
-                case sBgStudentConfs :
+                case StudentConfs:
                     if (getInfo().getNrDirectConflicts()>0)
                         return pref2color(PreferenceLevel.sProhibited);
                     if (getInfo().getNrMoreThanTwoConflicts()>0)
@@ -963,13 +999,13 @@ public class ExamGridTable {
                     if (getInfo().getNrBackToBackConflicts()>0)
                         return pref2color(PreferenceLevel.sDiscouraged);
                     return pref2color(PreferenceLevel.sNeutral);
-                case sBgDirectStudentConfs :
+                case DirectStudentConfs:
                     return lessConflicts2color(getInfo().getNrDirectConflicts());
-                case sBgMoreThanTwoADayStudentConfs :
+                case MoreThanTwoADayStudentConfs:
                     return conflicts2color(getInfo().getNrMoreThanTwoConflicts());
-                case sBgBackToBackStudentConfs :
+                case BackToBackStudentConfs:
                     return conflicts2color(getInfo().getNrBackToBackConflicts());
-                case sBgInstructorConfs :
+                case InstructorConfs:
                     if (getInfo().getNrInstructorDirectConflicts()>0)
                         return pref2color(PreferenceLevel.sProhibited);
                     if (getInfo().getNrInstructorMoreThanTwoConflicts()>0)
@@ -977,23 +1013,23 @@ public class ExamGridTable {
                     if (getInfo().getNrInstructorBackToBackConflicts()>0)
                         return pref2color(PreferenceLevel.sDiscouraged);
                     return pref2color(PreferenceLevel.sNeutral);
-                case sBgDirectInstructorConfs :
+                case DirectInstructorConfs:
                     return lessConflicts2color(getInfo().getNrInstructorDirectConflicts());
-                case sBgMoreThanTwoADayInstructorConfs :
+                case MoreThanTwoADayInstructorConfs:
                     return conflicts2color(getInfo().getNrInstructorMoreThanTwoConflicts());
-                case sBgBackToBackInstructorConfs :
+                case BackToBackInstructorConfs:
                     return conflicts2color(getInfo().getNrInstructorBackToBackConflicts());
 	            }
 	            return null;
 	        }
 
 	        public String getOnClick() {
-	            return "showGwtDialog('Examination Assignment', 'examInfo.do?examId="+getInfo().getExamId()+"','900','90%');";
+	            return "showGwtDialog('"+MSG.dialogExamAssign()+"', 'examInfo.do?examId="+getInfo().getExamId()+"','900','90%');";
 	        }
 	        
 	        public String getId() {
 	            String id = getInfo().getExamId().toString();
-	            if (iForm.getResource()==sResourceRoom || iForm.getResource()==sResourceInstructor)
+	            if (iForm.getResource()==Resource.Room.ordinal() || iForm.getResource()==Resource.Instructor.ordinal())
 	                id += "."+ExamGridModel.this.getId();
 	            return id;
 	        }
@@ -1102,7 +1138,7 @@ public class ExamGridTable {
         
         public String getBackground(ExamPeriod period) {
             if (period==null) return null;
-            if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
+            if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
                 PreferenceLevel pref = getPreference(period);
                 if (pref!=null && !PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
                     return pref2color(pref.getPrefProlog());

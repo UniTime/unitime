@@ -29,10 +29,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
@@ -40,8 +37,6 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable;
@@ -49,7 +44,7 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 /**
  * @author Tomas Muller
  */
-public class ExamGridForm extends ActionForm {
+public class ExamGridForm implements UniTimeForm {
 	private static final long serialVersionUID = 1429431006186003906L;
 	private Long iSessionId;
     private Map<String, TreeSet> iPeriods = new HashMap<String, TreeSet>();
@@ -63,11 +58,11 @@ public class ExamGridForm extends ActionForm {
     private Map<String, Integer> iDate = new HashMap<String, Integer>();
     private Map<String, Integer> iStartTime = new HashMap<String, Integer>();
     private Map<String, Integer> iEndTime = new HashMap<String, Integer>();
-    private int iResource = ExamGridTable.sResourceRoom;
-    private int iBackground = ExamGridTable.sBgNone;
+    private int iResource = ExamGridTable.Resource.Room.ordinal();
+    private int iBackground = ExamGridTable.Background.None.ordinal();
     private String iFilter = null;
-    private int iDispMode = ExamGridTable.sDispModePerWeekVertical;
-    private int iOrder = ExamGridTable.sOrderByNameAsc;
+    private int iDispMode = ExamGridTable.DispMode.PerWeekVertical.ordinal();
+    private int iOrder = ExamGridTable.OrderBy.NameAsc.ordinal();
     private boolean iBgPreferences = false;
     
     public int getDate(String examType) { return iDate.get(examType); }
@@ -92,24 +87,27 @@ public class ExamGridForm extends ActionForm {
     public String getOp() { return iOp; }
     public void setOp(String op) { iOp = op; }
     
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
     	iDate.clear();
         iStartTime.clear();
         iEndTime.clear();
-        iResource = ExamGridTable.sResourceRoom;
-        iBackground = ExamGridTable.sBgNone;
+        iResource = ExamGridTable.Resource.Room.ordinal();
+        iBackground = ExamGridTable.Background.None.ordinal();
         iFilter = null;
-        iDispMode = ExamGridTable.sDispModePerWeekVertical;
-        iOrder = ExamGridTable.sOrderByNameAsc;
+        iDispMode = ExamGridTable.DispMode.PerWeekVertical.ordinal();
+        iOrder = ExamGridTable.OrderBy.NameAsc.ordinal();
         iBgPreferences = false;
         iOp = null;
         iShowSections = false;
 		iExamType = null;
+		/*
 		try {
 			ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
 			if (solver!=null)
 				iExamType = solver.getProperties().getPropertyLong("Exam.Type", null);
 		} catch (Exception e) {}
+		*/
     }
     
     public Long getSessionId() { return iSessionId; }
@@ -131,11 +129,11 @@ public class ExamGridForm extends ActionForm {
         	setStartTime(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.start."+type.getUniqueId(), String.valueOf(getFirstStart(type.getUniqueId().toString())))));
         	setEndTime(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.end."+type.getUniqueId(), String.valueOf(getLastEnd(type.getUniqueId().toString())))));
         }
-        setResource(Integer.parseInt(context.getUser().getProperty("ExamGrid.resource", String.valueOf(ExamGridTable.sResourceRoom))));
-        setBackground(Integer.parseInt(context.getUser().getProperty("ExamGrid.background", String.valueOf(ExamGridTable.sBgNone))));
+        setResource(Integer.parseInt(context.getUser().getProperty("ExamGrid.resource", String.valueOf(ExamGridTable.Resource.Room.ordinal()))));
+        setBackground(Integer.parseInt(context.getUser().getProperty("ExamGrid.background", String.valueOf(ExamGridTable.Background.None.ordinal()))));
         setFilter(context.getUser().getProperty("ExamGrid.filter"));
-        setDispMode(Integer.parseInt(context.getUser().getProperty("ExamGrid.dispMode", String.valueOf(ExamGridTable.sDispModePerWeekVertical))));
-        setOrder(Integer.parseInt(context.getUser().getProperty("ExamGrid.order", String.valueOf(ExamGridTable.sOrderByNameAsc))));
+        setDispMode(Integer.parseInt(context.getUser().getProperty("ExamGrid.dispMode", String.valueOf(ExamGridTable.DispMode.PerWeekVertical.ordinal()))));
+        setOrder(Integer.parseInt(context.getUser().getProperty("ExamGrid.order", String.valueOf(ExamGridTable.OrderBy.NameAsc.ordinal()))));
         setBgPreferences("1".equals(context.getUser().getProperty("ExamGrid.bgPref", "0")));
         setExamType(context.getAttribute("Exam.Type") == null ? iExamType : (Long)context.getAttribute("Exam.Type"));
         setShowSections("1".equals(context.getUser().getProperty("ExamReport.showSections", "1")));
@@ -258,29 +256,29 @@ public class ExamGridForm extends ActionForm {
     
     public Vector<ComboBoxLookup> getResources() {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
-        for (int i=0;i<ExamGridTable.sResources.length;i++)
-            ret.addElement(new ComboBoxLookup(ExamGridTable.sResources[i], String.valueOf(i)));
+        for (ExamGridTable.Resource r: ExamGridTable.Resource.values())
+            ret.addElement(new ComboBoxLookup(r.getLabel(), String.valueOf(r.ordinal())));
         return ret;
     }
 
     public Vector<ComboBoxLookup> getBackgrounds() {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
-        for (int i=0;i<ExamGridTable.sBackgrounds.length;i++)
-            ret.addElement(new ComboBoxLookup(ExamGridTable.sBackgrounds[i], String.valueOf(i)));
+        for (ExamGridTable.Background b: ExamGridTable.Background.values())
+            ret.addElement(new ComboBoxLookup(b.getLabel(), String.valueOf(b.ordinal())));
         return ret;
     }
 
     public Vector<ComboBoxLookup> getDispModes() {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
-        for (int i=0;i<ExamGridTable.sDispModes.length;i++)
-            ret.addElement(new ComboBoxLookup(ExamGridTable.sDispModes[i], String.valueOf(i)));
+        for (ExamGridTable.DispMode m: ExamGridTable.DispMode.values())
+            ret.addElement(new ComboBoxLookup(m.getLabel(), String.valueOf(m.ordinal())));
         return ret;
     }
 
     public Vector<ComboBoxLookup> getOrders() {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
-        for (int i=0;i<ExamGridTable.sOrders.length;i++)
-            ret.addElement(new ComboBoxLookup(ExamGridTable.sOrders[i], String.valueOf(i)));
+        for (ExamGridTable.OrderBy o: ExamGridTable.OrderBy.values())
+            ret.addElement(new ComboBoxLookup(o.getLabel(), String.valueOf(o.ordinal())));
         return ret;
     }
 
@@ -291,4 +289,7 @@ public class ExamGridForm extends ActionForm {
     public Date getSessionBeginDate() { return iSessionBeginDate; }
     public boolean getShowSections() { return iShowSections; }
     public void setShowSections(boolean showSections) { iShowSections = showSections; }
+
+	@Override
+	public void validate(UniTimeAction action) {}
 }

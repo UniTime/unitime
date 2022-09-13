@@ -425,7 +425,7 @@
 					<hasPermission name="ExaminationSolver"/>
 				</condition>
 			</item>
-			<item name="Timetable Grid" page="examGrid.do">
+			<item name="Timetable Grid" page="examGrid.action">
 				<condition>
 					<hasPermission name="ExaminationTimetable"/>
 				</condition>

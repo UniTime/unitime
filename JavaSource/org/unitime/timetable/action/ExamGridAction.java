@@ -23,15 +23,12 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
@@ -39,10 +36,8 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
@@ -52,68 +47,94 @@ import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 /** 
  * @author Tomas Muller
  */
-@Service("/examGrid")
-public class ExamGridAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
-	
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+@Action(value = "examGrid", results = {
+		@Result(name = "showGrid", type = "tiles", location = "examGrid.tiles")
+	})
+@TilesDefinition(name = "examGrid.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination Timetable"),
+		@TilesPutAttribute(name = "body", value = "/exam/examGrid.jsp"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
+	})
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExamGridForm myForm = (ExamGridForm) form;
+public class ExamGridAction extends UniTimeAction<ExamGridForm> {
+	private static final long serialVersionUID = 7694694407236929358L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
+	private String resource;
+	
+	public String getResource() { return resource; }
+	public void setResource(String resource) { this.resource = resource; }
+
+	public String execute() throws Exception {
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationTimetable);
-        
-        // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null && request.getParameter("resource")!=null) op="Change";
-        
-        if ("Change".equals(op) || "Export PDF".equals(op)) {
-        	myForm.save(sessionContext);
+		
+        ExamSolverProxy solver = getExaminationSolverService().getSolver();
+
+    	if (form == null) {
+	    	form = new ExamGridForm();
+	    	form.reset();
+	    	if (solver != null) form.setExamType(solver.getExamTypeId());
+	    }
+	    
+    	if (form.getOp() != null) op = form.getOp();
+    	if (op == null && resource != null) op = MSG.buttonChange();
+
+        if (MSG.buttonChange().equals(op) || MSG.actionExportPdf().equals(op)) {
+        	form.save(sessionContext);
         }
         
-        myForm.load(sessionContext);
+        form.load(sessionContext);
         
-        if (myForm.getExamType() == null) {
+        if (form.getExamType() == null) {
 			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 			if (!types.isEmpty())
-				myForm.setExamType(types.first().getUniqueId());
+				form.setExamType(types.first().getUniqueId());
         }
         
         if ("Cbs".equals(op)) {
             if (request.getParameter("resource")!=null)
-                myForm.setResource(Integer.parseInt(request.getParameter("resource")));
+                form.setResource(Integer.parseInt(request.getParameter("resource")));
             if (request.getParameter("filter")!=null)
-                myForm.setFilter(request.getParameter("filter"));
+                form.setFilter(request.getParameter("filter"));
         }
         
-        if (RoomAvailability.getInstance()!=null && myForm.getExamType() != null) {
+        if (RoomAvailability.getInstance()!=null && form.getExamType() != null) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
-            Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
-            String exclude = ExamTypeDAO.getInstance().get(myForm.getExamType()).getReference();
+            Date[] bounds = ExamPeriod.getBounds(session, form.getExamType());
+            String exclude = ExamTypeDAO.getInstance().get(form.getExamType()).getReference();
             if (bounds != null) {
             	RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
-            	RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
+            	RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), true, false);
             }
         }
         
-        PdfExamGridTable table = new PdfExamGridTable(myForm, sessionContext, examinationSolverService.getSolver());
+        PdfExamGridTable table = new PdfExamGridTable(form, sessionContext, getExaminationSolverService().getSolver());
         
         request.setAttribute("table", table);
 
-        if ("Export PDF".equals(op)) {
+        if (MSG.actionExportPdf().equals(op)) {
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "timetable");
         	table.export(out);
         	out.flush(); out.close();
         	return null;
         }
 
-        myForm.setOp("Change");
+        form.setOp(MSG.buttonChange());
         
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
         
-        return mapping.findForward("showGrid");
+        return "showGrid";
 	}
-
+	
+	public void printTable() {
+		PdfExamGridTable table = (PdfExamGridTable)request.getAttribute("table");
+		table.printToHtml(getPageContext().getOut());
+	}
+	
+	public void printLegend() {
+		PdfExamGridTable table = (PdfExamGridTable)request.getAttribute("table");
+		table.printLegend(getPageContext().getOut());
+	}
 }
 

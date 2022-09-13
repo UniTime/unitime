@@ -55,7 +55,7 @@ public class PdfExamGridTable extends ExamGridTable {
     
     public void export(OutputStream out) throws Exception {
         int nrCols = getNrColumns();
-        iDocument = (iForm.getDispMode()==sDispModeInRowHorizontal || iForm.getDispMode()==sDispModeInRowVertical ?
+        iDocument = (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal() || iForm.getDispMode()==DispMode.InRowVertical.ordinal() ?
             new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)).rotate(), 30, 30, 30, 30)
         :
             new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)), 30, 30, 30, 30));
@@ -71,17 +71,17 @@ public class PdfExamGridTable extends ExamGridTable {
     }
     
     public int getNrColumns() {
-        if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+        if (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal()) {
             return 1 + days().size() * slots().size();
-        } else if (iForm.getDispMode()==sDispModeInRowVertical) {
+        } else if (iForm.getDispMode()==DispMode.InRowVertical.ordinal()) {
             return 1 + models().size();
-        } else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+        } else if (iForm.getDispMode()==DispMode.PerDayHorizontal.ordinal()) {
             return 1 + slots().size();
-        } else if (iForm.getDispMode()==sDispModePerDayVertical) {
+        } else if (iForm.getDispMode()==DispMode.PerDayVertical.ordinal()) {
             return 1 + days().size();
-        } else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+        } else if (iForm.getDispMode()==DispMode.PerWeekHorizontal.ordinal()) {
             return 1 + weeks().size() * slots().size();
-        } else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+        } else if (iForm.getDispMode()==DispMode.PerWeekVertical.ordinal()) {
             return 1 + daysOfWeek().size();
         }
         return 0;
@@ -151,7 +151,7 @@ public class PdfExamGridTable extends ExamGridTable {
         boolean vertical = isVertical();
         printHeaderCell(name, vertical, false, false);
         TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
-        if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+        if (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal()) {
             for (Integer day : days) {
                 for (Integer slot : slots()) {
                     boolean eod = (slot==slots.last());
@@ -159,22 +159,22 @@ public class PdfExamGridTable extends ExamGridTable {
                     printHeaderCell(getDayName(day)+"<br>"+getSlotName(slot), vertical, eod, eol);
                 }
             }
-        } else if (iForm.getDispMode()==sDispModeInRowVertical) {
+        } else if (iForm.getDispMode()==DispMode.InRowVertical.ordinal()) {
             for (ExamGridModel m : models()) {
                 boolean eol = m.equals(models().lastElement());
                 printHeaderCell(m.getName()+(m.getSize()>0?" ("+m.getSize()+")":""), vertical, false, eol);
             }
-        } else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+        } else if (iForm.getDispMode()==DispMode.PerDayHorizontal.ordinal()) {
             for (Integer slot : slots()) {
                 boolean eol = (slot==slots.last());
                 printHeaderCell(getSlotName(slot)+"<br> ", vertical, false, eol);
             }
-        } else if (iForm.getDispMode()==sDispModePerDayVertical) {
+        } else if (iForm.getDispMode()==DispMode.PerDayVertical.ordinal()) {
             for (Integer day : days) {
                 boolean eol = (day==days.last());
                 printHeaderCell(getDayName(day)+"<br> ", vertical, false, eol);
             }
-        } else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+        } else if (iForm.getDispMode()==DispMode.PerWeekHorizontal.ordinal()) {
             for (Integer week : weeks) {
                 for (Integer slot : slots) {
                     boolean eod = (slot==slots.last());
@@ -182,7 +182,7 @@ public class PdfExamGridTable extends ExamGridTable {
                     printHeaderCell(getWeekName(week)+"<br>"+getSlotName(slot), vertical, eod, eol);
                 }
             }
-        } else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+        } else if (iForm.getDispMode()==DispMode.PerWeekVertical.ordinal()) {
             for (Integer dow : daysOfWeek) {
                 boolean eol = (dow==daysOfWeek.last());
                 printHeaderCell(getDayOfWeekName(dow)+"<br> ", vertical, false, eol);
@@ -231,14 +231,14 @@ public class PdfExamGridTable extends ExamGridTable {
             addText(c, " ");
         } else {
             String bgColor = cell.getBackground();
-            if (iForm.getBackground()==sBgNone && !sBgColorNotAvailable.equals(bgColor)) {
+            if (iForm.getBackground()==Background.None.ordinal() && !sBgColorNotAvailable.equals(bgColor)) {
                 if (!model.isAvailable(period))
                     bgColor = sBgColorNotAvailableButAssigned;
             }
             if (bgColor!=null)
                 c.setBackgroundColor(getColor(bgColor));
             addText(c, cell.getName());
-            if (iForm.getResource()!=sResourceRoom)
+            if (iForm.getResource()!=Resource.Room.ordinal())
                 addText(c, cell.getRoomName());
             else
                 addText(c, cell.getShortCommentNoColors()==null?"":cell.getShortCommentNoColors());
@@ -259,7 +259,7 @@ public class PdfExamGridTable extends ExamGridTable {
         boolean vertical = isVertical();
         TreeSet<Integer> days = days(), slots = slots(), weeks = weeks(), daysOfWeek = daysOfWeek();
         int rowNumber=0; 
-        if (iForm.getDispMode()==sDispModeInRowVertical) {
+        if (iForm.getDispMode()==DispMode.InRowVertical.ordinal()) {
             int globalMaxIdx = 0;
             for (Integer day:days) 
                 for (Integer slot:slots) {
@@ -296,7 +296,7 @@ public class PdfExamGridTable extends ExamGridTable {
             for (ExamGridModel m : models())
                 tmx = Math.max(tmx,getMaxIdx(m, days.first(),days.last(),slots.first(),slots.last()));
             for (ExamGridModel model : models()) {
-                if (iForm.getDispMode()==sDispModeInRowHorizontal) {
+                if (iForm.getDispMode()==DispMode.InRowHorizontal.ordinal()) {
                     if (rowNumber==0) { createTable(false); printHeader(null); }
                     int maxIdx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
                     for (int idx=0;idx<=maxIdx;idx++) {
@@ -314,7 +314,7 @@ public class PdfExamGridTable extends ExamGridTable {
                             }
                         }
                     }
-                } else if (iForm.getDispMode()==sDispModePerDayVertical) {
+                } else if (iForm.getDispMode()==DispMode.PerDayVertical.ordinal()) {
                     flushTable(); createTable(true);
                     printHeader(getModelName(model));
                     int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
@@ -332,7 +332,7 @@ public class PdfExamGridTable extends ExamGridTable {
                             }
                         }
                     }
-                } else if (iForm.getDispMode()==sDispModePerDayHorizontal) {
+                } else if (iForm.getDispMode()==DispMode.PerDayHorizontal.ordinal()) {
                     flushTable(); createTable(true);
                     printHeader(getModelName(model));
                     int gmx = getMaxIdx(model, days.first(),days.last(),slots.first(),slots.last());
@@ -350,7 +350,7 @@ public class PdfExamGridTable extends ExamGridTable {
                             }
                         }
                     }
-                } else if (iForm.getDispMode()==sDispModePerWeekHorizontal) {
+                } else if (iForm.getDispMode()==DispMode.PerWeekHorizontal.ordinal()) {
                     flushTable(); createTable(true);
                     printHeader(getModelName(model));
                     int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
@@ -370,7 +370,7 @@ public class PdfExamGridTable extends ExamGridTable {
                             }
                         }
                      }
-                } else if (iForm.getDispMode()==sDispModePerWeekVertical) {
+                } else if (iForm.getDispMode()==DispMode.PerWeekVertical.ordinal()) {
                     flushTable(); createTable(true);
                     printHeader(getModelName(model));
                     int gmx = getMaxIdx(model, days.first(), days.last(), slots.first(),slots.last());
@@ -419,90 +419,90 @@ public class PdfExamGridTable extends ExamGridTable {
         iPdfTable.setSpacingBefore(10);
         iPdfTable.setKeepTogether(true);
         
-        if (iForm.getBackground()!=sBgNone) {
+        if (iForm.getBackground()!=Background.None.ordinal()) {
             PdfPCell c = createCellNoBorder();
             c.setColspan(2);
-            addText(c,"Assigned examinations:");
+            addText(c,MSG.propAssignedExaminations());
             c.setHorizontalAlignment(Element.ALIGN_LEFT);
             iPdfTable.addCell(c);
         }
-        if (iForm.getBackground()==sBgPeriodPref) {
-            addLegendRow(pref2color(PreferenceLevel.sRequired),"Required period");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),"Strongly preferred period");
-            addLegendRow(pref2color(PreferenceLevel.sPreferred),"Preferred period");
-            addLegendRow(pref2color(PreferenceLevel.sNeutral),"No period preference");
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"Discouraged period");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"Strongly discouraged period");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"Prohibited period");
-        } else if (iForm.getBackground()==sBgRoomPref) {
-            addLegendRow(pref2color(PreferenceLevel.sRequired),"Required room");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),"Strongly preferred room");
-            addLegendRow(pref2color(PreferenceLevel.sPreferred),"Preferred room");
-            addLegendRow(pref2color(PreferenceLevel.sNeutral),"No room preference");
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"Discouraged room");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"Strongly discouraged room");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"Prohibited room");
-        } else if (iForm.getBackground()==sBgInstructorConfs) {
-            addLegendRow(pref2color(PreferenceLevel.sNeutral),"No instructor conflict");
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"One or more instructor back-to-back conflicts");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"One or more instructor three or more exams a day conflicts");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"One or more instructor direct conflicts");
-        } else if (iForm.getBackground()==sBgStudentConfs) {
-            addLegendRow(pref2color(PreferenceLevel.sNeutral),"No student conflict");
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"One or more student back-to-back conflicts");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"One or more student three or more exams a day student conflicts");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"One or more student direct conflicts");
-        } else if (iForm.getBackground()==sBgDirectInstructorConfs) {
+        if (iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sRequired),MSG.legendRequiredPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),MSG.legendStronglyPreferredPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sPreferred),MSG.legendPreferredPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoPeriodPreference());
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendDiscouragedPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendStronglyDiscouragedPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendProhibitedPeriod());
+        } else if (iForm.getBackground()==Background.RoomPref.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sRequired),MSG.legendRequiredRoom());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),MSG.legendStronglyPreferredRoom());
+            addLegendRow(pref2color(PreferenceLevel.sPreferred),MSG.legendPreferredRoom());
+            addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoRoomPreference());
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendDiscouragedRoom());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendStronglyDiscouragedRoom());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendProhibitedRoom());
+        } else if (iForm.getBackground()==Background.InstructorConfs.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoInstructorConflict());
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendOneOrMoreInstructorBackToBackConflicts());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendOneOrMoreInstructorThreeOrMoreExamsADayConflicts());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendOneOrMoreInstructorDirectConflicts());
+        } else if (iForm.getBackground()==Background.StudentConfs.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoStudentConflict());
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendOneOrMoreStudentBackToBackConflicts());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendOneOrMoreStudentThreeOrMoreExamsADayStudentConflicts());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendOneOrMoreStudentDirectConflicts());
+        } else if (iForm.getBackground()==Background.DirectInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
                 String color = lessConflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"instructor direct conflicts");
+                addLegendRow(color,MSG.legendInstructorConflicts(nrConflicts+(nrConflicts==6?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgMoreThanTwoADayInstructorConfs) {
+        } else if (iForm.getBackground()==Background.MoreThanTwoADayInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor more than two exams a day conflicts");
+                addLegendRow(color,MSG.legendInstructorMoreThanTwoExamsADayConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgBackToBackInstructorConfs) {
+        } else if (iForm.getBackground()==Background.BackToBackInstructorConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"instructor back to back conflicts");
+                addLegendRow(color,MSG.legendInstructorBackToBackConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgDirectStudentConfs) {
+        } else if (iForm.getBackground()==Background.DirectStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=6;nrConflicts++) {
                 String color = lessConflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==6?"or more ":"")+"student direct conflicts");
+                addLegendRow(color,MSG.legendStudentDirectConflicts(nrConflicts+(nrConflicts==6?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgMoreThanTwoADayStudentConfs) {
+        } else if (iForm.getBackground()==Background.MoreThanTwoADayStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student more than two exams a day conflicts");
+                addLegendRow(color,MSG.legendStudentMoreThanTwoExamsADayConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgBackToBackStudentConfs) {
+        } else if (iForm.getBackground()==Background.BackToBackStudentConfs.ordinal()) {
             for (int nrConflicts=0;nrConflicts<=15;nrConflicts++) {
                 String color = conflicts2color(nrConflicts);
-                addLegendRow(color,""+nrConflicts+" "+(nrConflicts==15?"or more ":"")+"student back to back conflicts");
+                addLegendRow(color,MSG.legendStudentBackToBackConflicts(nrConflicts+(nrConflicts==15?" "+MSG.legendOrMore():"")));
             }
-        } else if (iForm.getBackground()==sBgDistPref) {
-            addLegendRow(pref2color(PreferenceLevel.sNeutral),"No violated constraint<i>(distance=0)</i>");
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"Discouraged/preferred constraint violated");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"Strongly discouraged/preferred constraint violated</i>");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"Required/prohibited constraint violated</i>");
+        } else if (iForm.getBackground()==Background.DistPref.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoViloatedDistributionConstraint());
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendDiscouragedOrPreferredDistributionConstraintViolated());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendStronglyDiscouragedOrPreferredDistributionConstraintViolated());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendRequiredOrProhibitedDistributionConstraintViolated());
         }
         PdfPCell c = createCellNoBorder();
         c.setColspan(2);
-        addText(c,"Free times:");
+        addText(c,MSG.propFreeTimes());
         c.setHorizontalAlignment(Element.ALIGN_LEFT);
         iPdfTable.addCell(c);
-        addLegendRow(sBgColorNotAvailable,"Period not available");
-        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
-            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),"Strongly preferred period");
-            addLegendRow(pref2color(PreferenceLevel.sPreferred),"Preferred period");
+        addLegendRow(sBgColorNotAvailable,MSG.legendPeriodNotAvailable());
+        if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sStronglyPreferred),MSG.legendStronglyPreferredPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sPreferred),MSG.legendNoPeriodPreference());
         }
-        addLegendRow(pref2color(PreferenceLevel.sNeutral),"No period preference");
-        if (iForm.getBgPreferences() && iForm.getBackground()==sBgPeriodPref) {
-            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),"Discouraged period");
-            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),"Strongly discouraged period");
-            addLegendRow(pref2color(PreferenceLevel.sProhibited),"Prohibited period");
+        addLegendRow(pref2color(PreferenceLevel.sNeutral),MSG.legendNoPeriodPreference());
+        if (iForm.getBgPreferences() && iForm.getBackground()==Background.PeriodPref.ordinal()) {
+            addLegendRow(pref2color(PreferenceLevel.sDiscouraged),MSG.legendDiscouragedPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sStronglyDiscouraged),MSG.legendStronglyPreferredPeriod());
+            addLegendRow(pref2color(PreferenceLevel.sProhibited),MSG.legendProhibitedPeriod());
         }
         
         iDocument.add(iPdfTable);

@@ -1661,4 +1661,223 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Examination Conflict-based Statistics")
 	String backCbs();
+	
+	@DefaultMessage("Examination Grid")
+	String backExamGrid();
+	
+	@DefaultMessage("Resource:")
+	String propertyResource();
+	
+	@DefaultMessage("Room")
+	String resourceRoom();
+	
+	@DefaultMessage("Instructor")
+	String resourceInstructor();
+	
+	@DefaultMessage("Subject Area")
+	String resourceSubjectArea();
+	
+	@DefaultMessage("No Background")
+	String backgroundNone();
+	
+	@DefaultMessage("Student Conflicts")
+	String backgroundStudentConflicts();
+	
+	@DefaultMessage("Student Direct Conflicts")
+	String backgroundStudentDirectConflicts();
+	
+	@DefaultMessage("Student >2 A Day Conlicts")
+	String backgroundStudentMoreThanTwoExamsADayConflicts();
+	
+	@DefaultMessage("Student Back-To-Back Conlicts")
+	String backgroundStudentBackToBackConflicts();
+	
+	@DefaultMessage("Instructor Conflicts")
+	String backgroundInstructorConflicts();
+	
+	@DefaultMessage("Instructor Direct Conflicts")
+	String backgroundInstructorDirectConflicts();
+	
+	@DefaultMessage("Instructor >2 A Day Conlicts")
+	String backgroundInstructorMoreThanTwoExamsADayConflicts();
+	
+	@DefaultMessage("Instructor Back-To-Back Conlicts")
+	String backgroundInstructorBackToBackConflicts();
+	
+	@DefaultMessage("Period Preferences")
+	String backgroundPeriodPreferences();
+	
+	@DefaultMessage("Room Preferences")
+	String backgroundRoomPreferences();
+	
+	@DefaultMessage("Distribution Preferences")
+	String backgroundDistributionPreferences();
+	
+	@DefaultMessage("In Row [horizontal]")
+	String dispModeInRowHorizontal();
+	
+	@DefaultMessage("In Row [vertical]")
+    String dispModeInRowVertical();
+	
+	@DefaultMessage("Per Day [horizontal]")
+    String dispModePerDayHorizontal();
+    
+    @DefaultMessage("Per Day [vertical]")
+    String dispModePerDayVertical();
+    
+    @DefaultMessage("Per Week [horizontal]")
+    String dispModePerWeekHorizontal();
+    
+    @DefaultMessage("Per Week [vertical]")
+    String dispModePerWeekVertical();
+    
+    @DefaultMessage("name [asc]")
+    String orderByNameAsc();
+    
+    @DefaultMessage("name [desc]")
+    String orderByNameDesc();
+    
+    @DefaultMessage("size [asc]")
+    String orderBySizeAsc();
+    
+    @DefaultMessage("size [desc]")
+    String orderBySizeDesc();
+    
+    @DefaultMessage("Date:")
+    String propertyPeriodDate();
+    
+    @DefaultMessage("Time:")
+    String propertyPeriodTime();
+    
+    @DefaultMessage("Display Mode:")
+    String propDisplayMode();
+    
+    @DefaultMessage("Background:")
+    String propBackground();
+    
+    @DefaultMessage("Show period preferences:")
+    String propShowPeriodPreferences();
+    
+    @DefaultMessage("Order By:")
+    String propOrderBy();
+    
+    @DefaultMessage("Examination Timetable")
+    String sectExaminationTimetable();
+    
+    @DefaultMessage("Legend")
+    String sectLegend();
+    
+    @DefaultMessage("No resource matches the above criteria (or there is no resource at all).")
+    String messageGridNoMatch();
+
+    @DefaultMessage("Assigned examinations:")
+    String propAssignedExaminations();
+    
+    @DefaultMessage("Required period")
+    String legendRequiredPeriod();
+    
+    @DefaultMessage("Strongly preferred period")
+    String legendStronglyPreferredPeriod();
+    
+    @DefaultMessage("Preferred period")
+    String legendPreferredPeriod();
+    
+    @DefaultMessage("No period preference")
+    String legendNoPeriodPreference();
+    
+    @DefaultMessage("Discouraged period")
+    String legendDiscouragedPeriod();
+    
+    @DefaultMessage("Strongly discouraged period")
+    String legendStronglyDiscouragedPeriod();
+    
+    @DefaultMessage("Prohibited period")
+    String legendProhibitedPeriod();
+    
+    @DefaultMessage("Required room")
+    String legendRequiredRoom();
+    
+    @DefaultMessage("Strongly preferred room")
+    String legendStronglyPreferredRoom();
+    
+    @DefaultMessage("Preferred room")
+    String legendPreferredRoom();
+    
+    @DefaultMessage("No room preference")
+    String legendNoRoomPreference();
+    
+    @DefaultMessage("Discouraged room")
+    String legendDiscouragedRoom();
+    
+    @DefaultMessage("Strongly discouraged room")
+    String legendStronglyDiscouragedRoom();
+    
+    @DefaultMessage("Prohibited room")
+    String legendProhibitedRoom();
+    
+    @DefaultMessage("No instructor conflict")
+    String legendNoInstructorConflict();
+    
+    @DefaultMessage("One or more instructor back-to-back conflicts")
+    String legendOneOrMoreInstructorBackToBackConflicts();
+    
+    @DefaultMessage("One or more instructor three or more exams a day conflicts")
+    String legendOneOrMoreInstructorThreeOrMoreExamsADayConflicts();
+    
+    @DefaultMessage("One or more instructor direct conflicts")
+    String legendOneOrMoreInstructorDirectConflicts();
+    
+    @DefaultMessage("No student conflict")
+    String legendNoStudentConflict();
+    
+    @DefaultMessage("One or more student back-to-back conflicts")
+    String legendOneOrMoreStudentBackToBackConflicts();
+    
+    @DefaultMessage("One or more student three or more exams a day student conflicts")
+    String legendOneOrMoreStudentThreeOrMoreExamsADayStudentConflicts();
+    
+    @DefaultMessage("One or more student direct conflicts")
+    String legendOneOrMoreStudentDirectConflicts();
+    
+    @DefaultMessage("or more")
+    String legendOrMore();
+    
+    @DefaultMessage("{0} instructor direct conflicts")
+    String legendInstructorConflicts(String n);
+    
+    @DefaultMessage("{0} instructor more than two exams a day conflicts")
+    String legendInstructorMoreThanTwoExamsADayConflicts(String n);
+    
+    @DefaultMessage("{0} instructor back to back conflicts")
+    String legendInstructorBackToBackConflicts(String n);
+    
+    @DefaultMessage("{0} student direct conflicts")
+    String legendStudentDirectConflicts(String n);
+    
+    @DefaultMessage("{0} student more than two exams a day conflicts")
+    String legendStudentMoreThanTwoExamsADayConflicts(String n);
+    
+    @DefaultMessage("{0} student back to back conflicts")
+    String legendStudentBackToBackConflicts(String n);
+    
+    @DefaultMessage("No violated constraint")
+    String legendNoViloatedDistributionConstraint();
+    
+    @DefaultMessage("Discouraged/preferred constraint violated")
+    String legendDiscouragedOrPreferredDistributionConstraintViolated();
+    
+    @DefaultMessage("Strongly discouraged/preferred constraint violated")
+    String legendStronglyDiscouragedOrPreferredDistributionConstraintViolated();
+    
+    @DefaultMessage("Required/prohibited constraint violated")
+    String legendRequiredOrProhibitedDistributionConstraintViolated();
+    
+    @DefaultMessage("Period not available")
+    String legendPeriodNotAvailable();
+    
+    @DefaultMessage("Free times:")
+    String propFreeTimes();
+    
+    @DefaultMessage("Week {0}")
+    String week(int number);
 }
