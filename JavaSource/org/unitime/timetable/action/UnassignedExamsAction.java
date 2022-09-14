@@ -249,7 +249,7 @@ public class UnassignedExamsAction extends UniTimeAction<ExamReportForm> {
                 String instructors = exam.getInstructorName(", ");
                 
         	    table.addLine(
-        	            "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
+        	            "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.action?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
                             String.valueOf(exam.getLength()),

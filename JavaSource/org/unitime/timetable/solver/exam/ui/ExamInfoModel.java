@@ -44,6 +44,8 @@ import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
@@ -69,6 +71,8 @@ import org.unitime.timetable.util.RoomAvailability;
 public class ExamInfoModel implements Serializable {
 	private static final long serialVersionUID = 6594424808143469141L;
 	private static Log sLog = LogFactory.getLog(ExamInfoModel.class);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
     private transient ExamSolverProxy iSolver = null;
     private ExamInfo iExam = null;
     private ExamInfoForm iForm = null;
@@ -168,7 +172,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public String assign() {
-        if (iChange==null) return "Nothing to assign.";
+        if (iChange==null) return MSG.warnNothingToAssign();
         sLog.info("About to be assigned: "+iChange);
         if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             String message = null;
@@ -199,7 +203,8 @@ public class ExamInfoModel implements Serializable {
                     String m = assignment.getExam(hibSession).assign(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
                     if (m!=null) message = (message==null?"":message+"\n")+m;
                 } catch (Exception e) {
-                    message = (message==null?"":message+"\n")+"Assignment of "+assignment.getExamName()+" to "+assignment.getPeriodAbbreviation()+" "+assignment.getRoomsName(", ")+" failed, reason: "+e.getMessage();
+                    message = (message==null?"":message+"\n")+
+                    		MSG.errorAssignmentFailed(assignment.getExamName(), assignment.getPeriodAbbreviation(), assignment.getRoomsName(", "), e.getMessage());
                 }
             }
             return message;
@@ -215,9 +220,9 @@ public class ExamInfoModel implements Serializable {
     
     public String getAssignConfirm() {
     	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
-            return "Are you sure?";
+            return MSG.questionAssignSolver();
         } else {
-            return "The selected assignment will be done directly in the database. Are you sure?";
+            return MSG.questionAssignDatabase();
         }
     }
     
@@ -395,8 +400,8 @@ public class ExamInfoModel implements Serializable {
             if (diff<0) ret += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> ("+diff+"</font>";
             else if (diff>0) ret += "<font color='"+PreferenceLevel.prolog2color("1")+"'> (+"+diff+"</font>";
             else if (ddiff!=0) ret += " ("+String.valueOf(diff);
-            if (ddiff<0) ret += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> d:"+ddiff+"</font>";
-            if (ddiff>0) ret += "<font color='"+PreferenceLevel.prolog2color("1")+"'> d:+"+ddiff+"</font>";
+            if (ddiff<0) ret += "<font color='"+PreferenceLevel.prolog2color("-1")+"'> "+MSG.prefixDistanceConclict()+ddiff+"</font>";
+            if (ddiff>0) ret += "<font color='"+PreferenceLevel.prolog2color("1")+"'> "+MSG.prefixDistanceConclict()+"+"+ddiff+"</font>";
             if (diff<0) ret += "<font color='"+PreferenceLevel.prolog2color("-1")+"'>)</font>";
             else if (diff>0) ret += "<font color='"+PreferenceLevel.prolog2color("1")+"'>)</font>";
             else if (ddiff!=0) ret += ")";
@@ -404,8 +409,8 @@ public class ExamInfoModel implements Serializable {
             if (diff<0) ret += " ("+diff;
             else if (diff>0) ret += " (+"+diff;
             else if (ddiff!=0) ret += " ("+String.valueOf(diff);
-            if (ddiff<0) ret += " d:"+ddiff;
-            if (ddiff>0) ret += " d:+"+ddiff;
+            if (ddiff<0) ret += " "+MSG.prefixDistanceConclict()+ddiff;
+            if (ddiff>0) ret += " "+MSG.prefixDistanceConclict()+"+"+ddiff;
             if (diff<0) ret += ")";
             else if (diff>0) ret += ")";
             else if (ddiff!=0) ret += ")";
@@ -415,15 +420,23 @@ public class ExamInfoModel implements Serializable {
     
     public String getPeriodsTable() {
         try {
-            WebTable table = new WebTable(8, "Available Periods for "+getExam().getExamName(), "examInfo.do?op=Reorder&pord=%%&noCacheTS=" + new Date().getTime(), 
-                    new String[] {"Available<br>Period","Violated<br>Distributions", "Student<br>Direct", "Student<br>&gt; 2 A Day","Student<br>Back-To-Back", "Instructor<br>Direct", "Instructor<br>&gt; 2 A Day", "Instructor<br>Back-To-Back"},
+            WebTable table = new WebTable(8, MSG.sectAvailablePeriodsForExam(getExam().getExamName()), "examInfo.action?op=Reorder&pord=%%&noCacheTS=" + new Date().getTime(), 
+                    new String[] {
+                    		MSG.colAvailablePeriod().replace("\n", "<br>"),
+                    		MSG.colViolatedDistributions().replace("\n", "<br>"),
+                    		MSG.colStudentDirectConflicts().replace("\n", "<br>"),
+                    		MSG.colStudentMoreThanTwoExamsADayConflicts().replace("\n", "<br>").replace(">", "&gt;"),
+                    		MSG.colStudentBackToBackConflicts().replace("\n", "<br>"),
+                    		MSG.colInstructorDirectConflicts().replace("\n", "<br>"),
+                    		MSG.colInstructorMoreThanTwoExamsADayConflicts().replace("\n", "<br>").replace(">", "&gt;"),
+                    		MSG.colInstructorBackToBackConflicts().replace("\n", "<br>")},
                     new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
                     new boolean[] { true, true, true, true, true, true, true, true});
             ExamAssignmentInfo current = getExamAssignment();
             for (ExamAssignmentInfo period : getPeriods()) {
                 boolean initial = (getExamOldAssignment()!=null && getExamOldAssignment().getPeriodId()!=null && getExamOldAssignment().getPeriodId().equals(period.getPeriodId()));
                 WebTable.WebTableLine line = table.addLine(
-                   "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period="+period.getPeriodId()+"&noCacheTS=" + new Date().getTime()+"';\"",
+                   "onClick=\"displayLoading();document.location='examInfo.action?op=Select&period="+period.getPeriodId()+"&noCacheTS=" + new Date().getTime()+"';\"",
                    new String[] {
                         (initial?"<u>":"")+period.getPeriodAbbreviationWithPref()+(initial?"</u>":""),
                         period.getDistributionConflictsHtml("<br>"),
@@ -452,9 +465,9 @@ public class ExamInfoModel implements Serializable {
             }
             if (current != null) {
             	table.addLine(
-                        "onClick=\"displayLoading();document.location='examInfo.do?op=Select&period=-1&noCacheTS=" + new Date().getTime()+"';\"",
+                        "onClick=\"displayLoading();document.location='examInfo.action?op=Select&period=-1&noCacheTS=" + new Date().getTime()+"';\"",
                         new String[] {
-                             "not-assigned",
+                             MSG.notAssigned(),
                              "",
                              dc2html(true, 0, -current.getNrDirectConflicts()),
                              m2d2html(true, 0, -current.getNrMoreThanTwoConflicts()),
@@ -494,7 +507,7 @@ public class ExamInfoModel implements Serializable {
                         try {
                             iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, (iChange==null?null:iChange.getAssignmentTable())));
                         } catch (Exception e) {
-                            if (!"Given period is prohibited.".equals(e.getMessage()) && !"Given period is two short.".equals(e.getMessage()))
+                            if (!MSG.errorPeriodProhibited().equals(e.getMessage()) && !MSG.errorPeriodTooShort().equals(e.getMessage()))
                                 Debug.error(e);
                         }
                     }
@@ -774,13 +787,13 @@ public class ExamInfoModel implements Serializable {
             Collections.sort(rooms, new Comparator<ExamRoomInfo>() {
                 public int compare(ExamRoomInfo r1, ExamRoomInfo r2) {
                     int cmp = 0;
-                    if (ExamInfoForm.sRoomOrdNameAsc.equals(iForm.getRoomOrder())) {
+                    if (ExamInfoForm.OrderBy.NameAsc.name().equals(iForm.getRoomOrder())) {
                         cmp = r1.getName().compareTo(r2.getName());
-                    } else if (ExamInfoForm.sRoomOrdNameDesc.equals(iForm.getRoomOrder())) {
+                    } else if (ExamInfoForm.OrderBy.NameDesc.name().equals(iForm.getRoomOrder())) {
                         cmp = -r1.getName().compareTo(r2.getName());
-                    } else if (ExamInfoForm.sRoomOrdSizeAsc.equals(iForm.getRoomOrder())) {
+                    } else if (ExamInfoForm.OrderBy.SizeAsc.name().equals(iForm.getRoomOrder())) {
                         cmp = Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
-                    } else  if (ExamInfoForm.sRoomOrdSizeDesc.equals(iForm.getRoomOrder())) {
+                    } else  if (ExamInfoForm.OrderBy.SizeDesc.name().equals(iForm.getRoomOrder())) {
                         cmp = -Double.compare(r1.getCapacity(getExam()),r2.getCapacity(getExam()));
                     } else {
                         cmp = r1.getName().compareTo(r2.getName());
@@ -839,7 +852,7 @@ public class ExamInfoModel implements Serializable {
             ret += "        };";
             ret += "    }";
             ret += "    roomOut(id);";
-            ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.do?op=Select&room='+sRooms+'&noCacheTS=" + new Date().getTime()+"';}";
+            ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.action?op=Select&room='+sRooms+'&noCacheTS=" + new Date().getTime()+"';}";
             ret += "    var c = document.getElementById('roomCapacityCounter');";
             ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
             ret += "}";
@@ -980,13 +993,13 @@ public class ExamInfoModel implements Serializable {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
         if (suggestions.getSuggestions()!=null && !suggestions.getSuggestions().isEmpty()) {
             ret += "<tr>";
-            ret += "<td><i>Value</i></td>";
-            ret += "<td><i>Examination</i></td>";
-            ret += "<td><i>Period Change</i></td>";
-            ret += "<td><i>Room Change</i></td>";
-            ret += "<td><i>Direct</i></td>";
-            ret += "<td><i>&gt;2 A Day</i></td>";
-            ret += "<td><i>BTB</i></td>";
+            ret += "<td><i>"+MSG.colValue()+"</i></td>";
+            ret += "<td><i>"+MSG.colExamination()+"</i></td>";
+            ret += "<td><i>"+MSG.colPeriodChange()+"</i></td>";
+            ret += "<td><i>"+MSG.colRoomChange()+"</i></td>";
+            ret += "<td><i>"+MSG.conflictDirect()+"</i></td>";
+            ret += "<td><i>"+MSG.conflictMoreThanTwoADay().replace(">", "&gt;")+"</i></td>";
+            ret += "<td><i>"+MSG.conflictBackToBack()+"</i></td>";
             ret += "</tr>";
             int idx = 0;
             for (ExamProposedChange suggestion : suggestions.getSuggestions()) {

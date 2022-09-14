@@ -46,7 +46,7 @@
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationAssignment')">
 					<input type="button" value="${MSG.actionExamAssign()}" title="${MSG.titleExamAssign()}" class="btn" accesskey="${MSG.accessExamAssign()}"
-							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.do?examId=${examId}','900','90%');"
+							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.action?examId=${examId}','900','90%');"
 					/>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationDelete')">
@@ -247,7 +247,7 @@
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationAssignment')">
 					<input type="button" value="${MSG.actionExamAssign()}" title="${MSG.titleExamAssign()}" class="btn" accesskey="${MSG.accessExamAssign()}"
-							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.do?examId=${examId}','900','90%');"
+							onClick="showGwtDialog('${MSG.dialogExamAssign()}', 'examInfo.action?examId=${examId}','900','90%');"
 					/>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationDelete')">

@@ -407,13 +407,6 @@
   	<definition name="midtermExamPeriodTile" extends="examPeriodsTile">
 		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
-
-	<definition	name="examInfoTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Assignment"/>
-		<put name="body" value="/exam/info.jsp" />
-		<put name="showMenu" value="false" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
   	
  	<definition	name="examPdfReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Examination PDF Reports"/>

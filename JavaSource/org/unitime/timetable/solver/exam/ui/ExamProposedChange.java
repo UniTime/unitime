@@ -196,9 +196,9 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
             		"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='examInfo.do?examId="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+            		"onclick=\"document.location='examInfo.action?examId="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
-            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='examInfo.do?delete="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
+            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='examInfo.action?delete="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
             ret += current.getExamNameHtml();
             ret += "</td><td nowrap>";
             if (initial!=null && !initial.getPeriodId().equals(current.getPeriodId()))
@@ -233,7 +233,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
                 "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
                 "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='examInfo.do?examId="+conflict.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                "onclick=\"document.location='examInfo.action?examId="+conflict.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
             ret += conflict.getExamNameHtml();
             ret += "</td><td nowrap>";
@@ -255,7 +255,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
     }
     
     public String getHtmlLine(int index) {
-        String ret = "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.do?suggestion="+index+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+        String ret = "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?suggestion="+index+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
         String name = "", period = "", room = "", dc = "", btb = "", m2d = "";
         for (ExamAssignment current : iAssignments) {
             ExamAssignment initial = iInitials.get(current.getExamId());

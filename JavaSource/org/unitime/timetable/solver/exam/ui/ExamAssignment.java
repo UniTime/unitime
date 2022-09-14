@@ -51,6 +51,7 @@ import org.cpsolver.exam.model.ExamRoomPlacement;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
@@ -71,6 +72,7 @@ import org.unitime.timetable.util.Formats.Format;
 public class ExamAssignment extends ExamInfo implements Serializable {
 	private static final long serialVersionUID = -5726339642542287195L;
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
     private Format<Number> s2Z = Formats.getNumberFormat("00");
     private Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
     protected Long iPeriodId = null;
@@ -172,7 +174,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public ExamAssignment(Exam exam, ExamPeriod period, Collection<ExamRoomInfo> rooms) throws Exception {
         super(exam);
         if (period==null) return;
-        if (Constants.SLOT_LENGTH_MIN*period.getLength()<exam.getLength()) throw new Exception("Given period is two short.");
+        if (Constants.SLOT_LENGTH_MIN*period.getLength()<exam.getLength()) throw new Exception(MSG.errorPeriodTooShort());
         iPeriodPref = period.getPrefLevel().getPrefProlog();
         boolean reqPeriod = false;
         boolean hasPeriodPref = false;
@@ -185,8 +187,8 @@ public class ExamAssignment extends ExamInfo implements Serializable {
             }
         }
         if (exam.getExamType().getType() == ExamType.sExamTypeMidterm && !hasPeriodPref) iPeriodPref=PreferenceLevel.sProhibited;
-        if (PreferenceLevel.sProhibited.equals(iPeriodPref)) throw new Exception("Given period is prohibited.");
-        if (reqPeriod && !PreferenceLevel.sRequired.equals(iPeriodPref)) throw new Exception("Given period is not required.");
+        if (PreferenceLevel.sProhibited.equals(iPeriodPref)) throw new Exception(MSG.errorPeriodProhibited());
+        if (reqPeriod && !PreferenceLevel.sRequired.equals(iPeriodPref)) throw new Exception(MSG.errorPeriodNotRequired());
         iPeriod = period;
         iPeriodId = period.getUniqueId();
         iRooms = new TreeSet();

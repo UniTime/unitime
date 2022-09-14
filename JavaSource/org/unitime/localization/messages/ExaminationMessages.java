@@ -1880,4 +1880,193 @@ public interface ExaminationMessages extends Messages {
     
     @DefaultMessage("Week {0}")
     String week(int number);
+    
+    @DefaultMessage("Search Deeper")
+	String buttonSearchDeeper();
+    
+    @DefaultMessage("Search Longer")
+	String buttonSearchLonger();
+    
+    @DefaultMessage("Assign")
+	String buttonAssign();
+    
+    @DefaultMessage("Close")
+	String buttonClose();
+    
+    @DefaultMessage("Examination {0}")
+	String sectExamination(String name);
+    
+    @DefaultMessage("Open Examination Detail for {0} in a new window.")
+    String hintOpenExaminationDetail(String examName);
+    
+    @DefaultMessage("Courses / Classes:")
+    String propOwners();
+    
+    @DefaultMessage("{0} minutes")
+    String examLengthInMinutes(String length);
+    
+    @DefaultMessage("Assigned Period:")
+    String propAssignedPeriod();
+    
+    @DefaultMessage("Assigned Room:")
+    String propAssignedRoom();
+    
+    @DefaultMessage("Selected Period:")
+    String propSelectedPeriod();
+    
+    @DefaultMessage("Selected Room:")
+    String propSelectedRoom();
+    
+    @DefaultMessage("New Assignment(s)")
+    String sectNewAssignments();
+    
+    @DefaultMessage("Violated Distribution Preferences for {0}")
+    String sectViolatedDistributionPreferencesForExam(String exam);
+    
+    @DefaultMessage("Student Conflicts for {0}")
+    String sectStudentConflictsForExam(String exam);
+    
+    @DefaultMessage("Instructor Conflicts for {0}")
+    String sectInstructorConflictsForExam(String exam);
+    
+    @DefaultMessage("Period:")
+	String propPeriod();
+    
+    @DefaultMessage("Room:")
+	String propRoom();
+    
+    @DefaultMessage("Violated Distribution Preferences")
+    String sectViolatedDistributionPreferences();
+    
+    @DefaultMessage("Student Conflicts")
+    String sectStudentConflicts();
+    
+    @DefaultMessage("Instructor Conflicts")
+    String sectInstructorConflicts();
+    
+    @DefaultMessage("Available Rooms for {0}")
+    String sectAvailableRoomsForExam(String exam);
+    
+    @DefaultMessage("selected size:")
+    String hintSelectedSize();
+    
+    @DefaultMessage("of")
+    String hintRoomSizeOfNbrStudents();
+    
+    @DefaultMessage("Room size:")
+    String filterRoomSize();
+    
+    @DefaultMessage("Filter:")
+    String filterRoomTextFilter();
+    
+    @DefaultMessage("Allow conflicts:")
+    String filterAllowForConflicts();
+    
+    @DefaultMessage("Order:")
+    String filterRoomOrder();
+    
+    @DefaultMessage("Room Types:")
+    String filterRoomTypes();
+    
+    @DefaultMessage("Room Groups:")
+    String filterRoomGroups();
+    
+    @DefaultMessage("No room matching the above criteria was found.")
+    String infoNoMatchingRoom();
+    
+    @DefaultMessage("Suggestions")
+    String sectSuggestions();
+    
+    @DefaultMessage("Maximal Number of Suggestions:")
+    String filterMaxNumberOfSuggestions();
+    
+    @DefaultMessage("Conflict-based Statistics")
+    String sectConflictBasedStatistics();
+    
+    @DefaultMessage("Nothing to assign.")
+    String warnNothingToAssign();
+    
+    @DefaultMessage("Assignment of {0} to {1} {2} failed, reason: {3}")
+    String errorAssignmentFailed(String exam, String period, String room, String error);
+    
+    @DefaultMessage("Are you sure?")
+    String questionAssignSolver();
+    
+    @DefaultMessage("The selected assignment will be done directly in the database. Are you sure?")
+    String questionAssignDatabase();
+    
+    @DefaultMessage("Available Periods for {0}")
+    String sectAvailablePeriodsForExam(String exam);
+    
+    @DefaultMessage("Available\nPeriod")
+    String colAvailablePeriod();
+    
+    @DefaultMessage("Student\nDirect")
+	String colStudentDirectConflicts();
+    
+    @DefaultMessage("Student\n> 2 A Day")
+    String colStudentMoreThanTwoExamsADayConflicts();
+    
+    @DefaultMessage("Student\nBack-To-Back")
+    String colStudentBackToBackConflicts();
+    
+    @DefaultMessage("Instructor\nDirect")
+	String colInstructorDirectConflicts();
+    
+    @DefaultMessage("Instructor\n> 2 A Day")
+    String colInstructorMoreThanTwoExamsADayConflicts();
+    
+    @DefaultMessage("Instructor\nBack-To-Back")
+    String colInstructorBackToBackConflicts();
+    
+    @DefaultMessage("Given period is too short.")
+    String errorPeriodTooShort();
+    
+    @DefaultMessage("Given period is prohibited.")
+    String errorPeriodProhibited();
+    
+    @DefaultMessage("Given period is not required.")
+    String errorPeriodNotRequired();
+    
+    @DefaultMessage("Period Change")
+    String colPeriodChange();
+    
+    @DefaultMessage("Room Change")
+    String colRoomChange();
+    
+    @DefaultMessage("Examination {0} not found.")
+    String errorExaminationNotFound(String exam);
+    
+    @DefaultMessage("Examination period {0} is not available for examination {1}.")
+    String errorExaminationPeriodNotAvailableForExam(String period, String exam);
+    
+    @DefaultMessage("Examination room {0} not found.")
+    String errorExaminationRoomNotFound(String room);
+    
+    @DefaultMessage("Examination room {0} is not available at {1}.")
+    String errorExaminationRoomNotAvailableAtPeriod(String room, String period);
+    
+    @DefaultMessage("Selected placement {0} is in conflict with exam {1} that is assigned to {2}.")
+    String errorSelectedPlacementInConflict(String placement, String confExam, String confExamPlacement);
+    
+    @DefaultMessage("Examination {0} is not assigned.")
+    String errorExaminationNotAssigned(String exam);
+    
+    @DefaultMessage("{0}s timeout reached")
+    String infoTimeoutReached(long timeoutInSeconds);
+    
+    @DefaultMessage("{0} possibilities up to {1} changes were considered")
+    String infoPossibilitiesConsidereUpToChnages(int posibilities, int depth);
+    
+    @DefaultMessage("all {0} possibilities up to {1} changes were considered")
+    String infoAllPossibilitiesConsidereUpToChnages(int posibilities, int depth);
+    
+    @DefaultMessage("no suggestion found")
+    String infoNoSuggestionFound();
+    
+    @DefaultMessage("top {0} of {1} suggestions displayed")
+    String infoTopSuggestionsDisplayed(int displayed, int suggestions);
+    
+    @DefaultMessage("{0} suggestions displayed")
+    String infoAllSuggestionsDisplayed(int suggestions);
 }

@@ -1024,7 +1024,7 @@ public class ExamGridTable {
 	        }
 
 	        public String getOnClick() {
-	            return "showGwtDialog('"+MSG.dialogExamAssign()+"', 'examInfo.do?examId="+getInfo().getExamId()+"','900','90%');";
+	            return "showGwtDialog('"+MSG.dialogExamAssign()+"', 'examInfo.action?examId="+getInfo().getExamId()+"','900','90%');";
 	        }
 	        
 	        public String getId() {

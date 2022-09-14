@@ -21,25 +21,29 @@ package org.unitime.timetable.form;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
+import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 /**
  * @author Tomas Muller
  */
-public class ExamInfoForm extends ActionForm {
+public class ExamInfoForm implements UniTimeForm {
 	private static final long serialVersionUID = 424087977258798931L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
 	private String iOp;
     private ExamInfoModel iModel;
     private String iMessage;
@@ -48,11 +52,22 @@ public class ExamInfoForm extends ActionForm {
     private String iRoomFilter = null;
     private boolean iAllowRoomConflict = false;
     private String iRoomOrder = null;
-    public static String sRoomOrdNameAsc = "Name [asc]";
-    public static String sRoomOrdNameDesc = "Name [desc]";
-    public static String sRoomOrdSizeAsc = "Size [asc]";
-    public static String sRoomOrdSizeDesc = "Size [desc]";
-    public static String[] sRoomOrds = new String[] { sRoomOrdNameAsc, sRoomOrdNameDesc, sRoomOrdSizeAsc, sRoomOrdSizeDesc };
+    public static enum OrderBy{
+    	NameAsc,
+    	NameDesc,
+    	SizeAsc,
+    	SizeDesc,
+    	;
+    	public String getLabel() {
+    		switch(this) {
+    		case NameAsc: return MSG.orderByNameAsc();
+    		case NameDesc: return MSG.orderByNameDesc();
+    		case SizeAsc: return MSG.orderBySizeAsc();
+    		case SizeDesc: return MSG.orderBySizeDesc();
+    		default: return name();
+    		}
+    	}  
+    }
     
     private boolean iComputeSuggestions = false;
     private String iFilter = null;
@@ -67,12 +82,8 @@ public class ExamInfoForm extends ActionForm {
 	private Long iExamTypeId = null;
 
 
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        return errors;
-    }
-
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+	@Override
+    public void reset() {
         iOp = null;
         iModel = null;
         iMessage = null;
@@ -80,7 +91,7 @@ public class ExamInfoForm extends ActionForm {
         iMaxRoomSize = null;
         iRoomFilter = null;
         iAllowRoomConflict = false;
-        iRoomOrder = sRoomOrdNameAsc;
+        iRoomOrder = OrderBy.SizeDesc.name();
         iComputeSuggestions = false;
         iFilter = null;
         iDepth = 2;
@@ -90,6 +101,10 @@ public class ExamInfoForm extends ActionForm {
         iRoomFeatures = null;
         iRoomGroups = null;
     }
+	
+	@Override
+	public void validate(UniTimeAction action) {
+	}
     
     public void load(HttpSession session) {
         iRoomOrder = (String)session.getAttribute("ExamInfo.RoomOrd");
@@ -168,7 +183,12 @@ public class ExamInfoForm extends ActionForm {
     public void setAllowRoomConflict(boolean allowRoomConflict) { iAllowRoomConflict = allowRoomConflict; }
     public String getRoomOrder() { return iRoomOrder; }
     public void setRoomOrder(String ord) { iRoomOrder = ord; }
-    public String[] getRoomOrders() { return sRoomOrds; }
+    public Vector<ComboBoxLookup> getRoomOrders() {
+        Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
+        for (ExamGridTable.OrderBy o: ExamGridTable.OrderBy.values())
+            ret.addElement(new ComboBoxLookup(o.getLabel(), o.name()));
+        return ret;
+    }
     public boolean getComputeSuggestions() { return iComputeSuggestions; }
     public void setComputeSuggestions(boolean computeSuggestions) { iComputeSuggestions = computeSuggestions; }
     public int getLimit() { return iLimit; }

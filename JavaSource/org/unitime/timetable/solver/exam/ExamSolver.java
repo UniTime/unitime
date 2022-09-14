@@ -53,6 +53,8 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.AbstractSolver;
@@ -71,6 +73,7 @@ import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
  * @author Tomas Muller
  */
 public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> implements ExamSolverProxy {
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
     private ExamConflictStatisticsInfo iCbsInfo = null;
     
     public ExamSolver(DataProperties properties, SolverDisposeListener disposeListener) {
@@ -251,12 +254,12 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     	lock.lock();
         try {
             Exam exam = getExam(assignment.getExamId());
-            if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
+            if (exam==null) return MSG.errorExaminationNotFound(assignment.getExamName());
             ExamPeriodPlacement period = null;
             for (ExamPeriodPlacement p: exam.getPeriodPlacements()) {
                 if (p.getId().equals(assignment.getPeriodId())) { period = p; break; }
             }
-            if (period==null) return "Examination period "+assignment.getPeriodName()+" is not available for examination "+assignment.getExamName()+".";
+            if (period==null) return MSG.errorExaminationPeriodNotAvailableForExam(assignment.getPeriodName(), assignment.getExamName());
             HashSet rooms = new HashSet();
             for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {
                 ExamRoomInfo ri = (ExamRoomInfo)i.next();
@@ -264,8 +267,8 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                 for (ExamRoomPlacement r: exam.getRoomPlacements()) {
                     if (r.getId()==ri.getLocationId()) { room = r; break; }
                 }
-                if (room==null) return "Examination room "+ri.getName()+" not found.";
-                if (!room.isAvailable(period.getPeriod())) return "Examination room "+ri.getName()+" is not available at "+assignment.getPeriodName()+".";
+                if (room==null) return MSG.errorExaminationRoomNotFound(ri.getName());
+                if (!room.isAvailable(period.getPeriod())) return MSG.errorExaminationRoomNotAvailableAtPeriod(ri.getName(), assignment.getPeriodName());
                 rooms.add(room);
             }
             ExamPlacement p = new ExamPlacement(exam, period, rooms);
@@ -273,11 +276,11 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
             if (conflicts.isEmpty()) {
             	ExamPlacement old = currentSolution().getAssignment().getValue(exam);
             	currentSolution().getAssignment().assign(0, p);
-            	Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + (old == null ? "not assigned" : old.getName()) + " &rarr; " + p.getName());
+            	Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + (old == null ? MSG.notAssigned() : old.getName()) + " &rarr; " + p.getName());
                 return null;
             } else {
                 ExamPlacement other = (ExamPlacement)conflicts.iterator().next();
-                return "Selected placement "+p.getName()+" is in conflict with exam "+other.variable().getName()+" that is assigned to "+other.getName()+"."; 
+                return MSG.errorSelectedPlacementInConflict(p.getName(), other.variable().getName(), other.getName()); 
             }
         } finally {
         	lock.unlock();
@@ -290,10 +293,10 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
         lock.lock();
         try {
             Exam exam = getExam(examInfo.getExamId());
-            if (exam==null) return "Examination "+examInfo.getExamName()+" not found.";
+            if (exam==null) return MSG.errorExaminationNotFound(examInfo.getExamName());
             ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
-            if (placement == null) return "Examination "+examInfo.getExamName()+" is not assigned.";
-            Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + placement.getName() + " &rarr; not assigned");
+            if (placement == null) return MSG.errorExaminationNotAssigned(examInfo.getExamName());
+            Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + placement.getName() + " &rarr; " + MSG.notAssigned());
             currentSolution().getAssignment().unassign(0, exam);
             return null;
         } finally {
@@ -912,16 +915,16 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
             TreeSet<ExamProposedChange> suggestions = s.computeSuggestions(exam, (change==null?null:change.getAssignments()));
             String message = null;
             if (s.wasTimeoutReached()) {
-                message = "("+(timeOut/1000l)+"s timeout reached, "+s.getNrCombinationsConsidered()+" possibilities up to "+depth+" changes were considered, ";
+                message = "("+MSG.infoTimeoutReached(timeOut/1000l)+", "+MSG.infoPossibilitiesConsidereUpToChnages(s.getNrCombinationsConsidered(), depth)+ ", ";
             } else {
-                message = "(all "+s.getNrCombinationsConsidered()+" possibilities up to "+depth+" changes were considered, ";
+                message = "("+MSG.infoAllPossibilitiesConsidereUpToChnages(s.getNrCombinationsConsidered(), depth) + ", ";
             }
             if (suggestions.isEmpty()) {
-                message += "no suggestion found)";
+                message += MSG.infoNoSuggestionFound() + ")";
             } else if (s.getNrSolutions()>suggestions.size()) {
-                message += "top "+suggestions.size()+" of "+s.getNrSolutions()+" suggestions displayed)";
+                message += MSG.infoTopSuggestionsDisplayed(suggestions.size(), s.getNrSolutions()) + ")";
             } else {
-                message += suggestions.size()+" suggestions displayed)";
+                message += MSG.infoAllSuggestionsDisplayed(suggestions.size()) + ")";
             }
             return new ExamSuggestionsInfo(suggestions, message, s.wasTimeoutReached());
         } finally {

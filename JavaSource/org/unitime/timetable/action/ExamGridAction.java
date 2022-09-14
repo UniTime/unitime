@@ -55,7 +55,6 @@ import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 		@TilesPutAttribute(name = "body", value = "/exam/examGrid.jsp"),
 		@TilesPutAttribute(name = "showSolverWarnings", value = "exams")
 	})
-
 public class ExamGridAction extends UniTimeAction<ExamGridForm> {
 	private static final long serialVersionUID = 7694694407236929358L;
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);

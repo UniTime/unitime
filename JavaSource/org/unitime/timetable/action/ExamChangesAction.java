@@ -280,7 +280,7 @@ public class ExamChangesAction extends UniTimeAction<ExamChangesForm> {
                 }
                 
         	    table.addLine(
-                        "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
+                        "onClick=\"showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.action?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
                             (format == Format.html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(format == Format.html?"</a>":""),
                             period,

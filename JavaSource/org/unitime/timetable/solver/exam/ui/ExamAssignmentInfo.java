@@ -1235,7 +1235,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public String toString(boolean links) {
             String ret = "";
             if (links && getOtherExam()!=null)
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.do?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             else
                 ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
@@ -1323,7 +1323,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public String toString(boolean links) {
             String ret = "";
             if (links && getOtherExam()!=null)
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.do?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             else
                 ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
@@ -1416,7 +1416,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             idx = 0;
             if (links)
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.do?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             else
                 ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
             ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
@@ -1433,7 +1433,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 ret += "</tr>";
                 if (i.hasNext()) {
                     if (links)
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.do?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
                     else
                         ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
                 }
@@ -1541,7 +1541,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             idx = 0;
             if (links)
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.do?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             else
                 ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
             ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";'>";
@@ -1564,7 +1564,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 ret += "</tr>";
                 if (i.hasNext()) {
                     if (links)
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.do?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
                     else
                         ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
                 }

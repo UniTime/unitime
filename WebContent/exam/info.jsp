@@ -17,253 +17,228 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@page import="org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo"%>
-<%@ page import="org.unitime.timetable.form.ExamInfoForm"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
-<%
-	// Get Form 
-	String frmName = "examInfoForm";
-	ExamInfoForm frm = (ExamInfoForm) request.getAttribute(frmName);
-
-%>
-<tiles:importAttribute />
-<html:form action="/examInfo">
-	<html:submit onclick="displayLoading();" property="op" value="Apply" style="display:none;"/>
-	<html:hidden property="depth"/>
-	<html:hidden property="timeout"/>
-	<bean:define id="model" name="examInfoForm" property="model"/>
-	<bean:define id="exam" name="model" property="exam"/>
-	<bean:define id="examId" name="exam" property="examId"/>
-	<bean:define id="examName" name="exam" property="examName"/>
-	<logic:notEmpty name="examInfoForm" property="message">
-		<bean:define id="message" name="examInfoForm" property="message"/>
-		<script language="JavaScript" type="text/javascript">
-			alert('<%=message%>');
-		</script>
-	</logic:notEmpty>
-	<logic:equal name="examInfoForm" property="op" value="Close">
-		<script language="JavaScript" type="text/javascript">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="examInfo">
+	<s:submit name='form.op' value="%{#msg.buttonApply()}" style="display:none;" onclick="displayLoading();"/>
+	<s:hidden name="form.depth"/>
+	<s:hidden name="form.timeout"/>
+	<s:set var="model" value="form.model"/>
+	<s:set var="exam" value="#model.exam"/>
+	<s:set var="examId" value="#exam.examId"/>
+	<s:set var="examName" value="#exam.examName"/>
+	<s:if test="form.op == 'Close'">
+		<script type="text/javascript">
 			parent.hideGwtDialog();
 			parent.refreshPage();
 		</script>
-	</logic:equal>
-	<script language="JavaScript" type="text/javascript">
+	</s:if>
+	<script type="text/javascript">
 		if (parent) parent.hideGwtHint();
 	</script>
-	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
-	<table border='0' width='100%'>
+	<tt:confirm name="confirmAssign"><s:property value="#model.assignConfirm"/></tt:confirm>
+	<table class="unitime-MainTable">
 		<tr><td colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Examination <a href='examDetail.action?examId=<%=examId%>' target='_blank' class='l8' title='Open Examination Detail for <%=examName%> in a new window.'><bean:write name="exam" property="examName"/></a></tt:section-title>
+				<tt:section-title><loc:message name="sectExamination"><a href='examDetail.action?examId=${examId}' target='_blank' class='l8' title='${MSG.hintOpenExaminationDetail(examName)}'><s:property value="#examName"/></a></loc:message></tt:section-title>
 			</tt:section-header>
 		</td></tr>
-		<tr><td>Courses / Classes:</td><td><bean:write name="exam" property="sectionName(<br>)" filter="false"/></td></tr>
-		<tr><td>Type:</td><td><bean:write name="exam" property="examTypeLabel"/></td></tr>
-		<tr><td>Length:</td><td><bean:write name="exam" property="length"/> minutes</td></tr>
-		<tr><td>Size:</td><td><bean:write name="exam" property="nrStudents"/></td></tr>
-		<tr><td>Seating Type:</td><td><bean:write name="exam" property="seatingTypeLabel"/></td></tr>
-		<tr><td>Maximum Number of Rooms:</td><td><bean:write name="exam" property="maxRooms"/></td></tr>
-		<logic:notEmpty name="exam" property="instructors">
-			<tr><td valign="top">Instructor(s):</td><td><%= frm.getModel().getExam().getInstructorName("<br>") %></td></tr>
-		</logic:notEmpty>
-		<logic:notEmpty name="model" property="change">
-			<logic:notEmpty name="model" property="examOldAssignment">
-				<bean:define id="assignment" name="model" property="examOldAssignment"/>
-				<tr><td>Assigned Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
-				<logic:notEmpty name="assignment" property="rooms">
-					<tr><td>Assigned Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
-				</logic:notEmpty>
-			</logic:notEmpty>
-			<logic:notEmpty name="model" property="selectedAssignment">
-				<bean:define id="assignment" name="model" property="selectedAssignment"/>
-				<tr><td>Selected Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
-				<logic:notEmpty name="assignment" property="rooms">
-					<tr><td>Selected Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
-				</logic:notEmpty>
-			</logic:notEmpty>
-			<bean:define name="model" property="change" id="change"/>
-			<tr><td colspan='2'><tt:section-title><br>New Assignment(s)</tt:section-title></td></tr>
-			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
-			<logic:equal name="model" property="canAssign" value="true">
+		<tr><td><loc:message name="propOwners"/></td><td><s:property value="%{#exam.getSectionName('<br>')}" escapeHtml="false"/></td></tr>
+		<tr><td><loc:message name="propExamType"/></td><td><s:property value="#exam.examTypeLabel"/></td></tr>
+		<tr><td><loc:message name="propExamLength"></loc:message> </td><td><loc:message name="examLengthInMinutes"><s:property value="#exam.length"/></loc:message></td></tr>
+		<tr><td><loc:message name="propExamSize"/></td><td><s:property value="#exam.nrStudents"/></td></tr>
+		<tr><td><loc:message name="propExamSeatingType"/></td><td><s:property value="#exam.seatingTypeLabel"/></td></tr>
+		<tr><td><loc:message name="propExamMaxRooms"/></td><td><s:property value="#exam.maxRooms"/></td></tr>
+		<s:if test="#exam.instructors != null && !#exam.instructors.isEmpty()">
+			<tr><td valign="top"><loc:message name="propExamInstructors"/></td><td><s:property value="%{#exam.getInstructorName('<br>')}" escapeHtml="false"/></td></tr>
+		</s:if>
+		<s:if test="#model.change != null && !#model.change.isEmpty()">
+			<s:if test="#model.examOldAssignment != null && #model.examOldAssignment.period != null">
+				<s:set var="assignment" value="#model.examOldAssignment"/>
+				<tr><td><loc:message name="propAssignedPeriod"/></td><td><s:property value="#assignment.periodNameWithPref" escapeHtml="false"/></td></tr>
+				<s:if test="#assignment.rooms != null && !#assignment.rooms.isEmpty()">
+					<tr><td><loc:message name="propAssignedRoom"/></td><td><s:property value="%{#assignment.getRoomsNameWithPref(', ')}" escapeHtml="false"/></td></tr>
+				</s:if>
+			</s:if>
+			<s:if test="#model.selectedAssignment != null">
+				<s:set var="assignment" value="#model.selectedAssignment"/>
+				<tr><td><loc:message name="propSelectedPeriod"/></td><td><s:property value="#assignment.periodNameWithPref" escapeHtml="false"/></td></tr>
+				<s:if test="#assignment.rooms != null && !#assignment.rooms.isEmpty()">
+					<tr><td><loc:message name="propSelectedRoom"/></td><td><s:property value="%{#assignment.getRoomsNameWithPref(', ')}" escapeHtml="false"/></td></tr>
+				</s:if>
+			</s:if>
+			<s:set var="change" value="#model.change"/>
+			<tr><td colspan='2'><tt:section-title><br><loc:message name="sectNewAssignments"/></tt:section-title></td></tr>
+			<tr><td colspan='2'><s:property value="#change.htmlTable" escapeHtml="false"/></td></tr>
+			<s:if test="#model.canAssign == true">
 				<tr><td colspan='2' align="right">
-					<html:submit onclick="return confirmAssign();" property="op" value="Assign" />
+					<s:submit name='form.op' value="%{#msg.buttonAssign()}" onclick="return confirmAssign();"/>
 				</td></tr>
-			</logic:equal>
-			<logic:notEmpty name="model" property="selectedAssignment">
-				<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
-					<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="distributionInfoConflictTable" filter="false"/></td></tr>
-				</logic:greaterThan>
-				<logic:equal name="assignment" property="hasConflicts" value="true">
-					<tr><td colspan='2'><tt:section-title><br>Student Conflicts for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="conflictInfoTable" filter="false"/></td></tr>
-				</logic:equal>
-				<logic:equal name="assignment" property="hasInstructorConflicts" value="true">
-					<tr><td colspan='2'><tt:section-title><br>Instructor Conflicts for <bean:write name="exam" property="examName"/> (<bean:write name="assignment" property="periodAbbreviation" filter="false"/>)</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="instructorConflictInfoTable" filter="false"/></td></tr>
-				</logic:equal>
-			</logic:notEmpty>
-		</logic:notEmpty>
-		<logic:empty name="model" property="change">
-			<logic:notEmpty name="model" property="examAssignment">
-				<bean:define id="assignment" name="model" property="examAssignment"/>
-				<tr><td>Period:</td><td><bean:write name="assignment" property="periodNameWithPref" filter="false"/></td></tr>
-				<logic:notEmpty name="assignment" property="rooms">
-					<tr><td>Room:</td><td><bean:write name="assignment" property="roomsNameWithPref(, )" filter="false"/></td></tr>
-				</logic:notEmpty>
-				<logic:greaterThan name="assignment" property="nrDistributionConflicts" value="0">
-					<tr><td colspan='2'><tt:section-title><br>Violated Distribution Preferences</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="distributionConflictTable" filter="false"/></td></tr>
-				</logic:greaterThan>
-				<logic:equal name="assignment" property="hasConflicts" value="true">
-					<tr><td colspan='2'><tt:section-title><br>Student Conflicts</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="conflictTable" filter="false"/></td></tr>
-				</logic:equal>
-				<logic:equal name="assignment" property="hasInstructorConflicts" value="true">
-					<tr><td colspan='2'><tt:section-title><br>Instructor Conflicts</tt:section-title></td></tr>
-					<tr><td colspan='2'><bean:write name="assignment" property="instructorConflictTable" filter="false"/></td></tr>
-				</logic:equal>
-			</logic:notEmpty>
-		</logic:empty>
-		<logic:notEmpty name="model" property="periods">
-			<tr><td colspan='2'><br><table border='0' width='100%' cellspacing='0' cellpadding='3'>
-				<bean:write name="model" property="periodsTable" filter="false"/>
+			</s:if>
+			<s:if test="#model.selectedAssignment != null">
+				<s:if test="#assignment.nrDistributionConflicts > 0 ">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectViolatedDistributionPreferencesForExam"><s:property value="#exam.examName"/> (<s:property value="#assignment.periodAbbreviation" escapeHtml="false"/>)</loc:message></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.distributionInfoConflictTable" escapeHtml="false"/></td></tr>
+				</s:if>
+				<s:if test="#assignment.hasConflicts == true">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectStudentConflictsForExam"><s:property value="#exam.examName"/> (<s:property value="#assignment.periodAbbreviation" escapeHtml="false"/>)</loc:message></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.conflictInfoTable" escapeHtml="false"/></td></tr>
+				</s:if>
+				<s:if test="#assignment.hasInstructorConflicts == true">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectInstructorConflictsForExam"><s:property value="#exam.examName"/> (<s:property value="#assignment.periodAbbreviation" escapeHtml="false"/>)</loc:message></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.instructorConflictInfoTable" escapeHtml="false"/></td></tr>
+				</s:if>
+			</s:if>
+		</s:if>
+		<s:if test="#model.change == null && #model.examAssignment != null">
+			<s:set var="assignment" value="#model.examAssignment"/>
+				<tr><td><loc:message name="propPeriod"/></td><td><s:property value="#assignment.periodNameWithPref" escapeHtml="false"/></td></tr>
+				<s:if test="#assignment.rooms != null && !#assignment.rooms.isEmpty()">
+					<tr><td><loc:message name="propRoom"/></td><td><s:property value="%{#assignment.getRoomsNameWithPref(', ')}" escapeHtml="false"/></td></tr>
+				</s:if>
+				<s:if test="#assignment.nrDistributionConflicts > 0">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectViolatedDistributionPreferences"/></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.distributionConflictTable" escapeHtml="false"/></td></tr>
+				</s:if>
+				<s:if test="#assignment.hasConflicts == true">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectStudentConflicts"/></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.conflictTable" escapeHtml="false"/></td></tr>
+				</s:if>
+				<s:if test="#assignment.hasInstructorConflicts == true">
+					<tr><td colspan='2'><tt:section-title><br><loc:message name="sectInstructorConflicts"/></tt:section-title></td></tr>
+					<tr><td colspan='2'><s:property value="#assignment.instructorConflictTable" escapeHtml="false"/></td></tr>
+				</s:if>
+		</s:if>
+		<s:if test="#model.periods != null && !#model.periods.isEmpty()">
+			<tr><td colspan='2'><br><table style="width: 100%;">
+				<s:property value="#model.periodsTable" escapeHtml="false"/>
 			</table></td></tr>
-		</logic:notEmpty>
-		<logic:notEmpty name="model" property="selectedAssignment">
-		<logic:greaterThan name="exam" property="maxRooms" value="0">
+		</s:if>
+		<s:if test="#model.selectedAssignment != null && #exam.maxRooms > 0">
 			<tr><td colspan='2'><tt:section-title>
-				<bean:define id="nrStudents" name="exam" property="nrStudents"/>
-				<br>Available Rooms for <bean:write name="exam" property="examName"/> &nbsp;&nbsp;
-				( selected size: <span id='roomCapacityCounter'>
-					<logic:lessThan name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
-						<font color='red'><bean:write name="model" property="roomSize"/></font>
-					</logic:lessThan>
-					<logic:greaterEqual name="model" property="roomSize" value="<%=String.valueOf(nrStudents)%>">
-						<bean:write name="model" property="roomSize"/>
-					</logic:greaterEqual>
-					</span> of <bean:write name="exam" property="nrStudents"/> ) 
+				<s:set var="nrStudents" value="#exam.nrStudents"/>
+				<br><loc:message name="sectAvailableRoomsForExam"><s:property value="#exam.examName"/></loc:message> &nbsp;&nbsp;
+				( <loc:message name="hintSelectedSize"/> <span id='roomCapacityCounter'>
+					<s:if test="#model.roomSize < #nrStudents">
+						<font color='red'><s:property value="#model.roomSize"/></font>
+					</s:if>
+					<s:else>
+						<s:property value="#model.roomSize"/>
+					</s:else>
+					</span> <loc:message name="hintRoomSizeOfNbrStudents"/> <s:property value="#exam.nrStudents"/> ) 
 			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
-				<table border='0' width='100%'>
+				<table style="width:100%;">
 					<tr><td>
-						Room size:
-							<html:text property="minRoomSize" size="5" maxlength="5"/> - <html:text property="maxRoomSize" size="5" maxlength="5"/>
+						<loc:message name="filterRoomSize"/>
+							<s:textfield name="form.minRoomSize" size="5" maxlength="5"/> - <s:textfield name="form.maxRoomSize" size="5" maxlength="5"/>
 					</td><td>
-						Filter:
-							<html:text property="roomFilter" size="25" maxlength="100"/>
+						<loc:message name="filterRoomTextFilter"/>
+							<s:textfield name="form.roomFilter" size="25" maxlength="100"/>
 					</td><td>
-						Allow conflicts:
-							<html:checkbox property="allowRoomConflict"/>
+						<loc:message name="filterAllowForConflicts"/>
+							<s:checkbox name="form.allowRoomConflict"/>
 					</td><td>
-						Order:
-							<html:select property="roomOrder">
-								<html:options property="roomOrders"/>
-							</html:select>
+						<loc:message name="filterRoomOrder"/>
+							<s:select name="form.roomOrder" list="form.roomOrders" listKey="value" listValue="label"/>
 					</td><td align="right">
-						<html:submit onclick="displayLoading();" property="op" value="Apply"/>
+						<s:submit name='form.op' value="%{#msg.buttonApply()}" onclick="displayLoading();"/>
 					</td></tr>
 				</table>
 			</td></tr>
 			<tr><td colspan='2'>
-				<table border='0' width="100%"><tr>
-					<td nowrap>Room Types:</td>
-					<logic:iterate name="examInfoForm" property="allRoomTypes" id="rf" indexId="rfIdx">
+				<table style="width:100%;"><tr>
+					<td nowrap><loc:message name="filterRoomTypes"/></td>
+					<s:iterator value="form.allRoomTypes" var="rf" status="rfIdx">
 						<td nowrap>
-							<html:multibox property="roomTypes">
-								<bean:write name="rf" property="uniqueId"/>
-							</html:multibox>
-							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+							<s:checkboxlist name="form.roomTypes" list="#{#rf.uniqueId:''}"/>
+							<s:property value="#rf.label"/>&nbsp;&nbsp;&nbsp;
 						</td>
-						<% if (rfIdx%3==2) { %>
-							</tr><tr><td></td>
-						<% } %>
-					</logic:iterate>
+						<s:if test="(#rfIdx.index % 3) == 2">
+							<s:property value="'</tr><tr><td></td>'" escapeHtml="false"/>
+						</s:if>
+					</s:iterator>
 				</tr><tr>
-					<td nowrap>Room Groups:</td>
-					<logic:iterate name="examInfoForm" property="allRoomGroups" id="rf" indexId="rfIdx">
+					<td nowrap><loc:message name="filterRoomGroups"/></td>
+					<s:iterator value="form.allRoomGroups" var="rf" status="rfIdx">
 						<td nowrap>
-							<html:multibox property="roomGroups">
-								<bean:write name="rf" property="uniqueId"/>
-							</html:multibox>
-							<bean:write name="rf" property="name"/>&nbsp;&nbsp;&nbsp;
+							<s:checkboxlist name="form.roomGroups" list="#{#rf.uniqueId:''}"/>
+							<s:property value="#rf.name"/>&nbsp;&nbsp;&nbsp;
 						</td>
-						<% if (rfIdx%3==2) { %>
-							</tr><tr><td></td>
-						<% } %>
-					</logic:iterate>
+						<s:if test="(#rfIdx.index % 3) == 2">
+							<s:property value="'</tr><tr><td></td>'" escapeHtml="false"/>
+						</s:if>
+					</s:iterator>
 				</tr>
-				<logic:iterate name="examInfoForm" property="roomFeatureTypes" id="ft" type="org.unitime.timetable.model.RoomFeatureType">
+				<s:iterator value="form.roomFeatureTypes" var="ft">
 					<tr>
-						<td nowrap><bean:write name="ft" property="label"/>:</td>
-						<logic:iterate name="examInfoForm" property='<%="allRoomFeatures("+ft.getUniqueId()+")"%>' id="rf" indexId="rfIdx">
+						<td nowrap><s:property value="#ft.label"/>:</td>
+						<s:iterator value="%{form.getAllRoomFeatures(#ft.uniqueId)}" var="rf" status="rfIdx">
 							<td nowrap>
-								<html:multibox property="roomFeatures">
-									<bean:write name="rf" property="uniqueId"/>
-								</html:multibox>
-								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+								<s:checkboxlist name="form.roomFeatures" list="#{#rf.uniqueId:''}"/>
+								<s:property value="#rf.label"/>&nbsp;&nbsp;&nbsp;
 							</td>
-							<% if (rfIdx%3==2) { %>
-								</tr><tr><td></td>
-							<% } %>
-						</logic:iterate>
+							<s:if test="(#rfIdx.index % 3) == 2">
+								<s:property value="'</tr><tr><td></td>'" escapeHtml="false"/>
+							</s:if>
+						</s:iterator>
 					</tr>
-				</logic:iterate>
+				</s:iterator>
 			</table></td></tr>
-			<logic:empty name="model" property="roomTable">
-				<tr><td colspan='2'><i>No room matching the above criteria was found.</i></td></tr>
-			</logic:empty>
-			<logic:notEmpty name="model" property="roomTable">
+			<s:if test="#model.roomTable == null">
+				<tr><td colspan='2'><i><loc:message name="infoNoMatchingRoom"/></i></td></tr>
+			</s:if>
+			<s:else>
 				<tr><td colspan='2'>
-					<bean:write name="model" property="roomTable" filter="false"/>
+					<s:property value="%{#model.getRoomTable()}" escapeHtml="false"/>
 				</td></tr>
-			</logic:notEmpty>
-		</logic:greaterThan>
-		</logic:notEmpty>
-		<logic:equal name="model" property="canComputeSuggestions" value="true">
-			<tr><td colspan='2'><tt:section-title><br><html:checkbox property="computeSuggestions" onclick="displayLoading();submit();"/> Suggestions</tt:section-title></td></tr>
-			<logic:equal name="examInfoForm" property="computeSuggestions" value="true">
+			</s:else>
+		</s:if>
+		<s:if test="#model.canComputeSuggestions == true">
+			<tr><td colspan='2'><tt:section-title><br><s:checkbox name="form.computeSuggestions" onclick="displayLoading();submit();"/> <loc:message name="sectSuggestions"/></tt:section-title></td></tr>
+			<s:if test="form.computeSuggestions == true">
 				<tr><td colspan='2'>
-					<table border='0' width='100%'>
+					<table style="width:100%;">
 						<tr><td>
-							Filter:
-								<html:text property="filter" size="50" maxlength="100"/>
+							<loc:message name="filterTextFilter"/>
+								<s:textfield name="form.filter" size="50" maxlength="100"/>
 						</td><td>
-							Maximal Number of Suggestions:
-								<html:text property="limit" size="5" maxlength="5"/>
+							<loc:message name="filterMaxNumberOfSuggestions"/>
+								<s:textfield name="form.limit" size="5" maxlength="5"/>
 						</td><td align="right">
 						</td><td align="right">
-							<html:submit onclick="displayLoading();" property="op" value="Apply"/>
-							<html:submit onclick="displayLoading();" property="op" value="Search Deeper"/>
-							<logic:equal name="model" property="suggestionsTimeoutReached" value="true">
-								<html:submit onclick="displayLoading();" property="op" value="Search Longer"/>
-							</logic:equal>
+							<s:submit name='form.op' value="%{#msg.buttonApply()}" onclick="displayLoading();"/>
+							<s:submit name='form.op' value="%{#msg.buttonSearchDeeper()}" onclick="displayLoading();"/>
+							<s:if test="#model.suggestionsTimeoutReached == true">
+								<s:submit name='form.op' value="%{#msg.buttonSearchLonger()}" onclick="displayLoading();"/>
+							</s:if>
 						</td></tr>
 					</table>
 				</td></tr>
-				<logic:notEmpty name="model" property="suggestions">
+				<s:if test="#model.suggestions != null">
 					<tr><td colspan='2'>
-						<bean:write name="model" property="suggestionTable" filter="false"/>
+						<s:property value="%{#model.getSuggestionTable()}" escapeHtml="false"/>
 					</td></tr>
-				</logic:notEmpty>
-			</logic:equal>
-		</logic:equal>
-		<logic:notEmpty name="model" property="cbs">
-			<% ExamConflictStatisticsInfo.printHtmlHeader(out); %>
-			<tr><td colspan='2'><tt:section-title><br>Conflict-based Statistics</tt:section-title></td></tr>
+				</s:if>
+			</s:if>
+		</s:if>
+		<s:if test="#model.cbs != null">
+			<s:property value="%{printCbsHeader()}" escapeHtml="false"/>
+			<tr><td colspan='2'><tt:section-title><br><loc:message name="sectConflictBasedStatistics"/></tt:section-title></td></tr>
 			<tr><td colspan='2'>
-				<bean:define name="model" property="cbs" id="cbs"/>
 				<font size='2'>
-				<% ((ExamConflictStatisticsInfo)cbs).printHtml(out, (Long)examId, 1.0, ExamConflictStatisticsInfo.TYPE_CONSTRAINT_BASED, true); %>
+					<s:property value="%{printCbs()}" escapeHtml="false"/>
 				</font>
 			</td></tr>
-		</logic:notEmpty>
-		<tr><td colspan='2'><tt:section-title><br></tt:section-title></td></tr>
+		</s:if>
 	</table>
-</html:form>
+	<s:if test="form.message != null && !form.message.isEmpty()">
+		<script type="text/javascript">
+			alert('${form.message}');
+		</script>
+	</s:if>
+</s:form>
+</loc:bundle>
