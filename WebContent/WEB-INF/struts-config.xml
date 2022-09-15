@@ -203,16 +203,6 @@
       </action>
 
       <action
-         path="/loginRequired"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false">
-         <forward
-            name="success"
-            path="loginRequiredTile" />
-      </action>
-      
-      <action
          path="/timetableManagerEdit"
          type="org.springframework.web.struts.DelegatingActionProxy"
          attribute="mgrForm"

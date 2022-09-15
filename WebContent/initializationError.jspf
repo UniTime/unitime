@@ -17,13 +17,15 @@
  * limitations under the License.
  * 
 --%>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <%@page import="org.unitime.timetable.StartupService"%>
 <%@page import="org.unitime.timetable.spring.SpringApplicationContextHolder"%>
 <%@page import="org.unitime.timetable.util.Constants"%>
+<loc:bundle name="CourseMessages">
 <% StartupService service = (StartupService)SpringApplicationContextHolder.getBean("startupService"); %>
 <% if (service.getInitializationException() != null) { %>
 <div class='unitime-InitializationError'>
-	UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
+	<loc:message name="errorUniTimeFailedToStart"><%=Constants.getVersion()%></loc:message><br/>
 	<%
 	Throwable t = service.getInitializationException();
 	while (t != null) {
@@ -35,3 +37,4 @@
 	%>
 </div>	
 <% } %>
+</loc:bundle>

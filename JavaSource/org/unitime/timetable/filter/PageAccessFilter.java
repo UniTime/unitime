@@ -121,23 +121,23 @@ public class PageAccessFilter implements Filter {
 								if (user == null) {
 									sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
 									if (s.isNew()) 
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationExpired()));
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationExpired()));
 									else
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationRequired()));
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationRequired()));
 									return;
 								}
 							}
 							if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
 								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
 									sLog.warn("Page "+r.getRequestURI()+" denined: no role");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationInsufficient()));
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationInsufficient()));
 									return;
 								}
 							}
 							if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
 								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
 									sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=" + MESSAGES.authenticationInsufficient()));
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationInsufficient()));
 									return;
 								}
 							}
@@ -146,7 +146,7 @@ public class PageAccessFilter implements Filter {
 								String appAccess = (String) s.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
 								if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
 									sLog.warn("Page "+r.getRequestURI()+" denied: application access disabled");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=The+application+is+temporarily+unavailable.+Please+try+again+after+some+time."));
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=The+application+is+temporarily+unavailable.+Please+try+again+after+some+time."));
 									return;
 								}
 							}
@@ -230,7 +230,7 @@ public class PageAccessFilter implements Filter {
 							message = MESSAGES.authenticationInsufficient();
 						}
 					}
-					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.do?message=" + message));
+					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.action?message=" + message));
 				} else if (exception instanceof ServletException) {
 					throw (ServletException)exception;
 				} else  if (exception instanceof IOException) {

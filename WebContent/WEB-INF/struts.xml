@@ -37,7 +37,10 @@
         </result-types> 
     	<global-results>
     		<result name="exception">/error.jsp</result>
-    		<result name="securityException">/loginRequired.do</result>
+    		<result name="securityException" type="chain">
+    			<param name="actionName">loginRequired</param>
+    			<param name="message">${exception}</param>
+    		</result>
     	</global-results>
     	<global-exception-mappings>
     		<exception-mapping exception="java.lang.Exception" result="exception"/>

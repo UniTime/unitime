@@ -82,13 +82,6 @@
 		<put name="body" value="/admin/timetableManagerList.jsp" />
   	</definition>
 
-  	<definition	name="loginRequiredTile" extends="pageLayoutDef">
-  		<put name="title" type="string" value="Access Denied"/>
-		<put name="body" value="/loginRequired.jsp" />
-		<put name="checkLogin" value="false" />
-		<put name="checkRole" value="false" />
-  	</definition>
-
 	<definition	name="distributionTypeListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Distribution Types"/>
 		<put name="body" value="/admin/distributionTypeList.jsp" />

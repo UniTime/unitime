@@ -3485,4 +3485,13 @@ public interface CourseMessages extends Messages {
     
     @DefaultMessage("Lookup")
 	String buttonLookup();
+
+	@DefaultMessage("UniTime {0} failed to start up properly, please check the application log for more details.")
+	String errorUniTimeFailedToStart(String version);
+
+	@DefaultMessage("BACK")
+	String linkBACK();
+	
+	@DefaultMessage("LOG IN")
+	String linkLOGIN();
 }

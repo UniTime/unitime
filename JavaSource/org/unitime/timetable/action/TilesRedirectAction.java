@@ -19,36 +19,51 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.timetable.form.BlankForm;
 
 /**
  * Dummy action to redirect requests using tiles
  * @author Heston Fernandes, Tomas Muller
  */
-@Service("/loginRequired")
-public class TilesRedirectAction extends Action {
+@Action(value = "loginRequired", results = {
+		@Result(name = "success", type = "tiles", location = "loginRequired.tiles")
+	})
+@TilesDefinition(name = "loginRequired.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Access Denied"),
+		@TilesPutAttribute(name = "body", value = "/loginRequired.jsp"),
+		@TilesPutAttribute(name = "checkLogin", value = "false"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class TilesRedirectAction extends UniTimeAction<BlankForm> {
+    private static final long serialVersionUID = 8188150583963144193L;
+    private String message;
+    private String target;
+    
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+    public String getTarget() { return target; }
+    public void setTarget(String target) { this.target = target; }
 
-
-    /* (non-Javadoc)
-     * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    public ActionForward execute(
-            ActionMapping mapping,
-            ActionForm form,
-            HttpServletRequest request,
-            HttpServletResponse response) {
-    	
+    public String execute() throws Exception {
     	Throwable e = (Throwable)request.getAttribute("exception");
     	if (e != null)
-    		request.setAttribute("message", e.getMessage());
-
-        return mapping.findForward("success");
+    		message = e.getMessage();
+    	else if (request.getAttribute("message") != null)
+    		message = request.getAttribute("message").toString();
+    	target = null;
+    	String uri = request.getRequestURI();
+    	if (!uri.endsWith("/loginRequired.action")) {
+    		if (request.getQueryString() == null || request.getQueryString().isEmpty())
+    			target = URLEncoder.encode(uri, "UTF-8");
+    		else
+    			target = URLEncoder.encode(uri + "?" + request.getQueryString(), "UTF-8");
+    	}
+        return "success";
     }
 }

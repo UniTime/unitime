@@ -35,7 +35,7 @@
  	} catch (IllegalStateException e) {}
  	if (exception != null && (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage()))) {
 %>
-		<jsp:forward page="/loginRequired.do">
+		<jsp:forward page="/loginRequired.action">
 			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
 		</jsp:forward>
 <%

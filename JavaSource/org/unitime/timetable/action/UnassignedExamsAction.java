@@ -62,7 +62,6 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /** 
  * @author Tomas Muller
  */
-@Service("/unassignedExams")
 @Action(value = "unassignedExams", results = {
 		@Result(name = "showReport", type = "tiles", location = "unassignedExams.tiles")
 	})

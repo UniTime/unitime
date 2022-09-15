@@ -18,24 +18,16 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
+<loc:bundle name="CourseMessages">
 <DIV align="center" class="H1">
-	<BR>
-	<BR>
-	<logic:notEmpty name="message" scope="request">
-		<bean:write name="message" scope="request" filter="false"/>
-		<br><br>
-	</logic:notEmpty>
-	<% if (request.getParameter("message")!=null && !"null".equals(request.getParameter("message"))) { %> 
-		<%=request.getParameter("message")%>
-		<BR>
-		<BR>
-	<% } %>
-	<A class="l7" href="javascript:self.history.back();">BACK</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
+	<br><br>
+	<s:property value="message" escapeHtml="false"/>
+	<br><br>
+	<A class="l7" href="javascript:self.history.back();"><loc:message name="linkBACK"/></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<A class="l7" href="${request.getContextPath()}/login.do?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
 	<BR><BR>
 </DIV>
-
+</loc:bundle>
 <%@ include file="/initializationError.jspf"%>
