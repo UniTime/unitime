@@ -323,7 +323,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
             form.setLength(exam.getLength());
             form.setSize(exam.getExamSize()==null?null:exam.getExamSize().toString());
             form.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0?null:exam.getPrintOffset().toString());
-            form.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
+            form.setSeatingType(Exam.getSeatingTypeLabel(exam.getSeatingType()));
             form.setMaxNbrRooms(exam.getMaxNbrRooms());
             form.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));
             

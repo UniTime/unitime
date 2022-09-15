@@ -481,6 +481,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room")
 	String columnExamRoom();
 	
+	@DefaultMessage("Capacity")
+	String columnExamRoomCapacity();
+	
 	@DefaultMessage("Time")
 	String columnTimePref();
 	
@@ -3360,6 +3363,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Log In")
 	String buttonLogIn();
 	
+	@DefaultMessage("Log Out")
+	String buttonLogOut();
+	
+	@DefaultMessage("L")
+	String accessLogOut();
+	
+	@DefaultMessage("Log out (Alt + {0})")
+	String titleLogOut(String access);
+	
 	@DefaultMessage("There are no classes available at the moment.")
 	String infoNoClassesAvailable();
 	
@@ -3386,4 +3398,91 @@ public interface CourseMessages extends Messages {
     
     @DefaultMessage("Section")
 	String columnSection();
+    
+    @DefaultMessage("No classes found.")
+    String infoNoClassesFound();
+    
+    @DefaultMessage("No examinations found.")
+    String infoNoExaminationsFound();
+    
+    @DefaultMessage("No schedule found.")
+    String infoNoScheduleFound();
+    
+    @DefaultMessage("No classes found in {0}.")
+    String infoNoClassesFoundForSession(String acadSession);
+    
+    @DefaultMessage("No examinations found in {0}.")
+    String infoNoExaminationsFoundForSession(String acadSession);
+    
+    @DefaultMessage("No classes or examinations found in {0}.")
+    String infoNoClassesOrExamsFoundForSession(String acadSession);
+    
+    @DefaultMessage("No classes or examinations found for {0}.")
+    String infoNoClassesOrExamsFoundForUser(String userName);
+    
+    @DefaultMessage("iCalendar")
+	String actionExportIcal();
+    
+    @DefaultMessage("I")
+	String accessExportIcal();
+    
+    @DefaultMessage("Export iCalendar (Alt + {0})")
+	String titleExportIcal(String access);
+    
+    @DefaultMessage("Available Academic Sessions for {0}")
+    String sectAvailableAcademicSessionsForUser(String name);
+    
+    @DefaultMessage("Term")
+    String columnTerm();
+    
+    @DefaultMessage("Year")
+    String columnYear();
+    
+    @DefaultMessage("Campus")
+    String columnCampus();
+    
+    @DefaultMessage("{0} Examination Schedule for {1}")
+    String sectExaminationScheduleForStudent(String acadSession, String name);
+    
+    @DefaultMessage("{0} Class Schedule for {1}")
+    String sectClassScheduleForStudent(String acadSession, String name);
+    
+    @DefaultMessage("{0} Class Schedule for {1}")
+    String sectClassScheduleForInstructor(String acadSession, String name);
+    
+    @DefaultMessage("Meeting Time")
+    String columnMeetingTime();
+    
+    @DefaultMessage("Meeting Times")
+    String columnMeetingTimes();
+    
+    @DefaultMessage("Distance")
+    String columnBackToBackDistance();
+    
+    @DefaultMessage("{0} Examination Conflicts for {1}")
+    String sectExaminationConflictsForStudent(String acadSession, String name);
+    
+    @DefaultMessage("{0} Examination Conflicts and/or Back-To-Back Examinations for {1}")
+    String sectExaminationConflictsOrBackToBacksForStudent(String acadSession, String name);
+    
+    @DefaultMessage("{0} m")
+    String backToBackDistanceInMeters(int distance);
+    
+    @DefaultMessage("{0} Examination Instructor Schedule for {1}")
+    String sectExaminationScheduleForInstructor(String acadSession, String name);
+    
+    @DefaultMessage("Name")
+	String columnStudentName();
+    
+    @DefaultMessage("Share")
+	String columnShare();
+    
+    @DefaultMessage("{0} Examination Instructor Conflicts for {1}")
+    String sectExaminationConflictsForInstructor(String acadSession, String name);
+    
+    @DefaultMessage("{0} Examination Instructor Conflicts and/or Back-To-Back Examinations for {1}")
+    String sectExaminationConflictsOrBackToBacksForInstructor(String acadSession, String name);
+    
+    @DefaultMessage("Lookup")
+	String buttonLookup();
 }

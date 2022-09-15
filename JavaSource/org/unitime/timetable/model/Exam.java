@@ -76,7 +76,12 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	public static final int sSeatingTypeNormal = 0;
 	public static final int sSeatingTypeExam = 1;
 	
-	public static final String sSeatingTypes[] = new String[] {MSG.seatingNormal(), MSG.seatingExam()};
+	public static String getSeatingTypeLabel(int seatingType) {
+		if (seatingType == sSeatingTypeNormal)
+			return MSG.seatingNormal();
+		else
+			return MSG.seatingExam();
+	}
 	
 	public String generateName() {
         StringBuffer sb = new StringBuffer();

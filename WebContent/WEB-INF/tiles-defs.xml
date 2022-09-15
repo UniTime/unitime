@@ -414,12 +414,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
 
-  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Personal Schedule"/>
-		<put name="body" value="/exam/personalizedReport.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition> 	
- 
  	<definition	name="sponsoringOrgListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Sponsoring Organizations"/>
 		<put name="body" value="/admin/sponsoringOrgList.jsp" />

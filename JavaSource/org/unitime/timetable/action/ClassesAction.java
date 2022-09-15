@@ -70,7 +70,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Action(value = "classes", results = {
 		@Result(name = "show", type = "tiles", location = "classes.tiles"),
-		@Result(name = "personal", type = "redirect", location = "/personalSchedule.do")
+		@Result(name = "personal", type = "redirect", location = "/personalSchedule.action")
 	})
 @TilesDefinition(name = "classes.tiles", extend = "baseLayout", putAttributes =  {
 		@TilesPutAttribute(name = "title", value = "Class Schedule"),

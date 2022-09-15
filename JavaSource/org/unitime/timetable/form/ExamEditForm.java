@@ -105,10 +105,9 @@ public class ExamEditForm extends PreferencesForm {
     public void setPrintOffset(String printOffset) { this.printOffset = printOffset; }
     public String getSeatingType() { return seatingType; }
     public void setSeatingType(String seatingType) { this.seatingType = seatingType; }
-    public String[] getSeatingTypes() { return Exam.sSeatingTypes; }
+    public String[] getSeatingTypes() { return new String[] {MSG.examSeatingTypeNormal(), MSG.examSeatingTypeExam()}; }
     public int getSeatingTypeIdx() {
-        for (int i=0;i<Exam.sSeatingTypes.length;i++)
-            if (Exam.sSeatingTypes[i].equals(seatingType)) return i;
+    	if (MSG.examSeatingTypeNormal().equals(seatingType)) return Exam.sSeatingTypeNormal;
         return Exam.sSeatingTypeExam;
     }
     public boolean isExamSeating() {
@@ -397,7 +396,7 @@ public class ExamEditForm extends PreferencesForm {
         sizeNote = null;
         printOffset = null;
         avgPeriod = null;
-        seatingType = Exam.sSeatingTypes[Exam.sSeatingTypeExam];
+        seatingType = MSG.examSeatingTypeExam();
         instructors = DynamicList.getInstance(new ArrayList(), factory);
         subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
         courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);

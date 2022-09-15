@@ -19,19 +19,12 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class PersonalizedExamReportForm extends ActionForm {
-    /**
-	 * 
-	 */
+public class PersonalizedExamReportForm implements UniTimeForm {
 	private static final long serialVersionUID = 9166328961282253491L;
 	private String iOp = null;
     private boolean iCanExport = false;
@@ -44,13 +37,12 @@ public class PersonalizedExamReportForm extends ActionForm {
     private String iLname = null;
     private Long iSessionId = null;
     
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        return errors;
+    @Override
+    public void validate(UniTimeAction action) {
     }
 
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         iOp = null;
         iCanExport = false;
         iMessage = null;

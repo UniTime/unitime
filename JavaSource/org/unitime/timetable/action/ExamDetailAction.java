@@ -354,7 +354,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
         form.setLength(exam.getLength());
         form.setSize(String.valueOf(exam.getSize()));
         form.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0 ? null: (exam.getPrintOffset()>0?"+":"")+exam.getPrintOffset());
-        form.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
+        form.setSeatingType(Exam.getSeatingTypeLabel(exam.getSeatingType()));
         form.setMaxNbrRooms(exam.getMaxNbrRooms());
         form.setExamType(exam.getExamType().getUniqueId());
         form.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));

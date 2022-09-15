@@ -172,7 +172,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public String getSeatingTypeLabel() {
-        return Exam.sSeatingTypes[iSeatingType];
+        return Exam.getSeatingTypeLabel(iSeatingType);
     }
 
     public int getLength() {
