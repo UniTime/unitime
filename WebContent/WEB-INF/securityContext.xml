@@ -31,7 +31,7 @@
 		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
 		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
 		<intercept-url pattern="/classes.do" access="permitAll" />
-		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/exams.action" access="permitAll" />
 		<intercept-url pattern="/login.do" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/*.action" access="isAuthenticated()"/>

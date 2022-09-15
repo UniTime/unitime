@@ -2069,4 +2069,13 @@ public interface ExaminationMessages extends Messages {
     
     @DefaultMessage("{0} suggestions displayed")
     String infoAllSuggestionsDisplayed(int suggestions);
+    
+    @DefaultMessage("No subject area selected.")
+    String infoNoSubjectAreaSelected();
+    
+    @DefaultMessage("There are no {0} examinations available for {1} at the moment.")
+    String infoNoExaminationsAvailable(String examType, String acadSession);
+    
+    @DefaultMessage("There are no {0} examinations available for {1} subject area at the moment.")
+    String infoNoExaminationsAvailableForSubject(String examType, String subjectAreaAbbv);
 }

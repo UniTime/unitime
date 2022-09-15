@@ -19,53 +19,53 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Vector;
+import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class ExamsForm extends ActionForm {
+public class ExamsForm implements UniTimeForm {
 	private static final long serialVersionUID = 8434268097497866325L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected final static ExaminationMessages XMSG = Localization.create(ExaminationMessages.class);
+
 	private String iOp = null;
 	private Long iSession = null;
 	private String iSubjectArea = null;
-	private Collection iSubjectAreas = null;
-	private Vector iSessions = null;
+	private Collection<ComboBoxLookup> iSubjectAreas = null;
+	private List<ComboBoxLookup> iSessions = null;
 	private String iTable = null;
 	private int iNrColumns;
 	private int iNrRows;
 	private Long iExamType;
 	private String iMessage;
-	private Boolean canRetrieveAllExamForAllSubjects;
 	
 	private String iUser, iPassword;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        return errors;
+	@Override
+	public void validate(UniTimeAction action) {
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	@Override
+	public void reset() {
 		iOp = null;
 		iTable = null;
 		iNrRows = iNrColumns = 0;
@@ -74,7 +74,6 @@ public class ExamsForm extends ActionForm {
 		iUser = null;
 		iPassword = null;
 		iMessage = null;
-		canRetrieveAllExamForAllSubjects = Boolean.valueOf(false);
 	}
 	
 	public String getOp() { return iOp; }
@@ -82,11 +81,11 @@ public class ExamsForm extends ActionForm {
 	
 	public String getSubjectArea() { return iSubjectArea; }
 	public void setSubjectArea(String subjectArea) { iSubjectArea = subjectArea; } 
-	public Collection getSubjectAreas() { return iSubjectAreas; }
+	public Collection<ComboBoxLookup> getSubjectAreas() { return iSubjectAreas; }
 	
 	public Long getSession() { return iSession; }
 	public void setSession(Long session) { iSession = session; }
-	public Collection getSessions() { return iSessions; }
+	public Collection<ComboBoxLookup> getSessions() { return iSessions; }
 	
 	public Boolean canDisplayAllSubjectsAtOnce(){
 		Boolean displayAll = Boolean.valueOf(false); 
@@ -102,21 +101,33 @@ public class ExamsForm extends ActionForm {
 
 	public void load(HttpSession session) {
 	    setSubjectArea(session.getAttribute("Exams.subjectArea")==null?null:(String)session.getAttribute("Exams.subjectArea"));
-	    iSessions = new Vector();
-        setSession(session.getAttribute("Exams.session")==null?iSessions.isEmpty()?null:Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()):(Long)session.getAttribute("Exams.session"));
-        boolean hasSession = false;
+	    iSessions = new ArrayList<ComboBoxLookup>();
+        setSession(session.getAttribute("Exams.session")==null?null:(Long)session.getAttribute("Exams.session"));
+        Long lastSessionId = null;
 	    for (Iterator i=Session.getAllSessions().iterator();i.hasNext();) {
 	        Session s = (Session)i.next();
 	        if (s.getStatusType()!=null && (s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm()) && Exam.hasTimetable(s.getUniqueId())) {
-	            if (s.getUniqueId().equals(getSession())) hasSession = true;
+	        	lastSessionId = s.getUniqueId();
 	            iSessions.add(new ComboBoxLookup(s.getLabel(),s.getUniqueId().toString()));
 	        }
 	    }
-	    if (!hasSession) { setSession(null); setSubjectArea(null); }
-	    if (getSession()==null && !iSessions.isEmpty()) setSession(Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()));
-	    iSubjectAreas = new TreeSet(new SubjectAreaDAO().getSession().createQuery("select distinct sa.subjectAreaAbbreviation from SubjectArea sa").setCacheable(true).list());
+	    if (lastSessionId == null) { setSession(null); setSubjectArea(null); }
+	    if (getSession() == null && lastSessionId != null) setSession(lastSessionId);
+	    iSubjectAreas = new ArrayList<ComboBoxLookup>();
+	    if (canDisplayAllSubjectsAtOnce())
+	    	iSubjectAreas.add(new ComboBoxLookup(MSG.allSubjects(), "--ALL--"));
+	    else if ("--ALL--".equals(iSubjectArea))
+	    	iSubjectArea = null;
+	    boolean hasSubject = false;
+	    if (iSession != null) {
+	    	for (SubjectArea subject: SubjectArea.getAllSubjectAreas(iSession)) {
+	    		if (subject.getSubjectAreaAbbreviation().equals(iSubjectArea)) hasSubject = true;
+	    		iSubjectAreas.add(new ComboBoxLookup(subject.getSubjectAreaAbbreviation(), subject.getSubjectAreaAbbreviation()));
+	    	}
+	    }
+	    if (!hasSubject && !"--ALL--".equals(iSubjectArea))
+	    	iSubjectArea = null;
 	    setExamType(session.getAttribute("Exams.examType")==null?iExamType:(Long)session.getAttribute("Exams.examType"));
-	    setCanRetrieveAllExamForAllSubjects(canDisplayAllSubjectsAtOnce());
 	}
 	    
     public void save(HttpSession session) {
@@ -161,19 +172,24 @@ public class ExamsForm extends ActionForm {
     
     public String getSessionLabel() {
         if (iSessions==null) return "";
-        for (Enumeration e=iSessions.elements();e.hasMoreElements();) {
-            ComboBoxLookup s = (ComboBoxLookup)e.nextElement();
+        for (ComboBoxLookup s: iSessions) {
             if (Long.valueOf(s.getValue()).equals(getSession())) return s.getLabel();
         }
         return "";
     }
-
-	public Boolean getCanRetrieveAllExamForAllSubjects() {
-		return canRetrieveAllExamForAllSubjects;
-	}
-
-	public void setCanRetrieveAllExamForAllSubjects(
-			Boolean canRetrieveAllExamForAllSubjects) {
-		this.canRetrieveAllExamForAllSubjects = canRetrieveAllExamForAllSubjects;
-	}
+    
+    public String getEmptyMessage() {
+    	if (getSubjectArea() == null || getSubjectArea().isEmpty()) {
+    		if (XMSG.buttonApply().equals(iOp))
+    			return XMSG.infoNoSubjectAreaSelected();
+    		else
+    			return null;
+    	} else {
+    		if ("--ALL--".equals(getSubjectArea())) {
+    			return XMSG.infoNoExaminationsAvailable(getExamTypeLabel(), getSessionLabel());
+    		} else {
+    			return XMSG.infoNoExaminationsAvailableForSubject(getExamTypeLabel(), getSubjectArea());
+    		}
+    	}
+    }
 }

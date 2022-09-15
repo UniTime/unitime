@@ -420,13 +420,6 @@
 		<put name="checkRole" value="false" />
   	</definition> 	
  
- 	<definition	name="examsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Schedule"/>
-		<put name="body" value="/exam/exams.jsp" />
-		<put name="checkLogin" value="false" />
-		<put name="checkRole" value="false" />
-  	</definition> 	
-
  	<definition	name="classesTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Class Schedule"/>
 		<put name="body" value="/user/classes.jsp" />

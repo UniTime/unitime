@@ -64,7 +64,6 @@
       <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
-	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
@@ -679,24 +678,6 @@
     </action>
 
     <action
-    	path="/exams"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="examsForm"
-    	input="examsTile"
-    	name="examsForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-	    	name="show"
-	    	path="examsTile"
-	    	redirect="true" />
-         <forward
-         	name="personal"
-            path="/personalSchedule.do"
-            redirect="true"/>
-    </action>
-
-    <action
     	path="/classes"
     	type="org.springframework.web.struts.DelegatingActionProxy"
     	attribute="classesForm"
@@ -733,7 +714,8 @@
     		path="/login.do"/>
     	<forward
     		name="exams"
-    		path="/exams.do"/>
+    		path="/exams.action"
+    		redirect="true"/>
     	<forward
     		name="classes"
     		path="/classes.do"/>

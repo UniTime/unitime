@@ -17,108 +17,84 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tiles:importAttribute />
-<html:form action="/exams">
-	<logic:notEmpty name="examsForm" property="sessions">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<html:hidden property="op"/>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="exams">
+	<s:if test="!form.sessions.isEmpty()">
+	<s:hidden name="op" value="" id="op"/>
+	<table class="unitime-MainTable">
 	<TR>
 		<TD>
-			<tt:section-title>Filter</tt:section-title>
+			<tt:section-title><loc:message name="filter"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
 		<TD>
-			Term:
-			<html:select property="session">
-				<html:optionsCollection property="sessions" label="label" value="value"/>
-			</html:select>,&nbsp;&nbsp;&nbsp;
-			Exams:
-			<html:select property="examType">
-				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-			</html:select>,&nbsp;&nbsp;&nbsp;
-			Subject:
-			<html:select property="subjectArea">
-				<html:option value="">Select...</html:option>
-				<logic:equal name="examsForm" property="canRetrieveAllExamForAllSubjects" value="true" >
-					<html:option value="--ALL--">All</html:option>
-				</logic:equal>
-				<html:options property="subjectAreas"/>
-			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<html:submit onclick="op.value='Apply'; this.disabled=true; if (document.getElementById('s2')) document.getElementById('s2').disabled=true; displayLoading();form.submit()" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
+			<loc:message name="filterTerm"/>
+			<s:select name="form.session" list="form.sessions" listKey="value" listValue="label"
+				onchange="document.getElementById('op').value='Change';submit();"/>
+			,&nbsp;&nbsp;&nbsp;
+			<loc:message name="filterExams"/>
+			<s:select name="form.examType" list="#request.examTypes" listKey="uniqueId" listValue="label"/>
+			<loc:message name="filterSubject"/>
+			<s:select name="form.subjectArea" list="form.subjectAreas" listKey="value" listValue="label"
+				headerKey="" headerValue="%{#msg.itemSelect()}"/>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<s:submit name='form.op' value="%{#msg.buttonApply()}" onclick="displayLoading();"/>
 		</TD>
 	</TR>
 	</TABLE>
-	</logic:notEmpty>
+	</s:if>
 
 	<BR>
-	
-	<logic:empty name="examsForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
+	<s:if test="form.table == null">
+		<table class="unitime-MainTable">
 			<tr><td style='color:red;font-weight:bold;'>
-				<logic:empty name="examsForm" property="session">
-					There are no examinations available at the moment. 
-				</logic:empty>
-				<logic:notEmpty name="examsForm" property="session">
-					<logic:empty name="examsForm" property="subjectArea">
-						No subject area selected.
-					</logic:empty>
-					<logic:notEmpty name="examsForm" property="subjectArea">
-						<logic:equal name="examsForm" property="subjectArea" value="--ALL--">
-							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="sessionLabel"/> at the moment.
-						</logic:equal>
-						<logic:notEqual name="examsForm" property="subjectArea" value="--ALL--">
-							There are no <bean:write name="examsForm" property="examTypeLabel"/> examinations available for <bean:write name="examsForm" property="subjectArea"/> subject area at the moment.
-						</logic:notEqual>
-					</logic:notEmpty>
-				</logic:notEmpty>
+				<s:property value="form.emptyMessage"/>
 			</td></tr>
 		</table>
-	</logic:empty>
-	
-	<logic:notEmpty name="examsForm" property="table">
-		<table width='100%' border='0' cellspacing='0' cellpadding='3'>
-			<bean:write name="examsForm" property="table" filter="false"/>
+	</s:if>
+	<s:else>
+		<table class="unitime-MainTable">
+			<s:property value="form.table" escapeHtml="false"/>
 		</table>
-	</logic:notEmpty>
+	</s:else>
 	
-	<logic:notEmpty name="examsForm" property="session">
+	<s:if test="form.session != null">
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
-		<a name="login"></a>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<a id="login"></a>
+		<table class="unitime-MainTable">
 		<TR>
 			<TD>
-				<tt:section-title>Personal Schedule</tt:section-title>
+				<tt:section-title><loc:message name="sectPersonalSchedule"/></tt:section-title>
 			</TD>
 		</TR>
- 		<logic:notEmpty name="examsForm" property="message">
+		<s:if test="form.message != null">
 			<TR>
 				<TD style='color:red;font-weight:bold;'>
-					<bean:write name="examsForm" property="message"/>
+					<s:property value="form.message"/>
 				</TD>
 			</TR>
- 		</logic:notEmpty>
- 		<logic:notEmpty name="message" scope="request">
+		</s:if>
+ 		<s:if test="#request.message != null">
 			<TR>
 				<TD style='color:red;font-weight:bold;'>
-					<bean:write name="message" scope="request"/>
+					<s:property value="#request.message"/>
 				</TD>
 			</TR>
- 		</logic:notEmpty>
+		</s:if>
 		<TR>
 			<TD>
-				User:
-				<html:text property="username" size="25"/>,&nbsp;&nbsp;&nbsp;
-				Password:
-				<html:password property="password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s1').disabled=true; displayLoading();form.submit()" styleId="s2" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
+				<loc:message name="propUserName"/>
+				<s:textfield name="form.username" size="25"/>,&nbsp;&nbsp;&nbsp;
+				<loc:message name="propUserPassword"/>
+				<s:password name="form.password" size="25"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<s:submit name='form.op' value="%{#msg.buttonLogIn()}" onclick="displayLoading();"/>
 				<tt:hasProperty name="tmtbl.exams.login.message">
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<i><tt:property name="tmtbl.exams.login.message"/></i>
@@ -126,16 +102,12 @@
 			</TD>
 		</TR>
 		</TABLE>
-		<logic:notEmpty name="examsForm" property="message">
-			<SCRIPT type="text/javascript" language="javascript">
+		<s:if test="form.message != null || #request.message != null">
+			<SCRIPT type="text/javascript">
 				location.hash = 'login';
 			</SCRIPT>
-		</logic:notEmpty>
-		<logic:notEmpty name="mesage" scope="request">
-			<SCRIPT type="text/javascript" language="javascript">
-				location.hash = 'login';
-			</SCRIPT>
-		</logic:notEmpty>
+		</s:if>
 	</tt:propertyEquals>
-	</logic:notEmpty>
-</html:form>
+	</s:if>
+</s:form>
+</loc:bundle>

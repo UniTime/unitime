@@ -3338,4 +3338,25 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Position Type Not Set")
 	String positionNotSet();
+	
+	@DefaultMessage("Term:")
+	String filterTerm();
+	
+	@DefaultMessage("Exams:")
+	String filterExams();
+	
+	@DefaultMessage("All")
+	String allSubjects();
+	
+	@DefaultMessage("Personal Schedule")
+	String sectPersonalSchedule();
+	
+	@DefaultMessage("User:")
+	String propUserName();
+	
+	@DefaultMessage("Password:")
+	String propUserPassword();
+	
+	@DefaultMessage("Log In")
+	String buttonLogIn();
 }

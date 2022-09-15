@@ -19,24 +19,19 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
@@ -50,12 +45,12 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.LookupTables;
@@ -64,60 +59,81 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /** 
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
-@Service("/exams")
-public class ExamsAction extends Action {
-	
+@Action(value = "exams", results = {
+		@Result(name = "show", type = "tiles", location = "exams.tiles"),
+		@Result(name = "personal", type = "redirect", location = "/personalSchedule.do")
+	})
+@TilesDefinition(name = "exams.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Examination Schedule"),
+		@TilesPutAttribute(name = "body", value = "/exam/exams.jsp"),
+		@TilesPutAttribute(name = "checkLogin", value = "false"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class ExamsAction extends UniTimeAction<ExamsForm> {
+	private static final long serialVersionUID = 252256673838259727L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired AuthenticationManager authenticationManager;
+	private String year, term, campus, type, subject;
 	
-	@Autowired SessionContext sessionContext;
-	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	    ExamsForm myForm = (ExamsForm)form;
+	public String getYear() { return year; }
+	public void setYear(String year) { this.year = year; }
+	public String getTerm() { return term; }
+	public void setTerm(String term) { this.term = term; }
+	public String getCampus() { return campus; }
+	public void setCampus(String campus) { this.campus = campus; }
+	public String getType() { return type; }
+	public void setType(String type) { this.type = type; }
+	public String getSubject() { return  subject; }
+	public void setSubject(String subject) { this.subject = subject; }
 
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
-        if (request.getParameter("select")!=null) {
-            myForm.load(request.getSession());
-            if (request.getParameter("subject")!=null) {
-                myForm.setSubjectArea(request.getParameter("subject"));
+	public String execute() throws Exception {
+		if (form == null) {
+	    	form = new ExamsForm();
+	    	form.reset();
+	    }
+		
+    	if (form.getOp() != null) op = form.getOp();
+	    
+        if (subject != null) {
+            form.load(request.getSession());
+            if (subject != null) {
+                form.setSubjectArea(subject);
             } else {
-            	if (myForm.canDisplayAllSubjectsAtOnce()){
-            		myForm.setSubjectArea(Constants.ALL_OPTION_VALUE);
+            	if (form.canDisplayAllSubjectsAtOnce()){
+            		form.setSubjectArea(Constants.ALL_OPTION_VALUE);
             	}
             }
-            if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
-                Session session = Session.getSessionUsingInitiativeYearTerm(
-                        request.getParameter("campus"), 
-                        request.getParameter("year"), 
-                        request.getParameter("term"));
-                if (session!=null) myForm.setSession(session.getUniqueId());
+            if (year!=null && term!=null && campus!=null) {
+                Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+                if (session!=null) form.setSession(session.getUniqueId());
             }
-            if (request.getParameter("type")!=null) {
+            if (type!=null) {
             	try {
-            		myForm.setExamType(Long.valueOf(request.getParameter("type")));
+            		form.setExamType(Long.valueOf(type));
             	} catch (NumberFormatException e) {
-            		ExamType type = ExamType.findByReference(request.getParameter("type"));
-            		if (type != null) myForm.setExamType(type.getUniqueId()); 
+            		ExamType examType = ExamType.findByReference(type);
+            		if (examType != null) form.setExamType(examType.getUniqueId()); 
             	}
             } else {
-                myForm.setExamType(null);
+                form.setExamType(null);
             }
-            op = "Apply";
+            op = MSG.buttonApply();
         }
         
-        if ("Apply".equals(op)) {
-            myForm.save(request.getSession());
-            if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
+        if ("Change".equals(op)) {
+        	form.save(request.getSession());
+        }
+        
+        if (MSG.buttonLogIn().equals(op)) {
+        	if (form.getUsername()!=null && form.getUsername().length()>0 && form.getPassword()!=null && form.getPassword().length()>0) {
             	try {
-            		Authentication authRequest = new UsernamePasswordAuthenticationToken(myForm.getUsername(), myForm.getPassword());
-            		Authentication authResult = authenticationManager.authenticate(authRequest);
+            		Authentication authRequest = new UsernamePasswordAuthenticationToken(form.getUsername(), form.getPassword());
+            		Authentication authResult = getAuthenticationManager().authenticate(authRequest);
             		SecurityContextHolder.getContext().setAuthentication(authResult);
             		UserContext user = (UserContext)authResult.getPrincipal();
             		if (user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.PersonalSchedule))
             			for (UserAuthority auth: user.getAuthorities()) {
-            				if (auth.getAcademicSession() != null && auth.getAcademicSession().getQualifierId().equals(myForm.getSession()) && auth.hasRight(Right.PersonalSchedule)) {
+            				if (auth.getAcademicSession() != null && auth.getAcademicSession().getQualifierId().equals(form.getSession()) && auth.hasRight(Right.PersonalSchedule)) {
             					user.setCurrentAuthority(auth); break;
             				}
             			}
@@ -127,39 +143,44 @@ public class ExamsAction extends Action {
             			response.sendRedirect("selectPrimaryRole.do");
             			return null;
             		}
-            		return mapping.findForward("personal");
+            		return "personal";
             	} catch (Exception e) {
-            		myForm.setMessage("Authentication failed: " + e.getMessage());
-            		LoginManager.addFailedLoginAttempt(myForm.getUsername(), new Date());
+            		form.setMessage("Authentication failed: " + e.getMessage());
+            		LoginManager.addFailedLoginAttempt(form.getUsername(), new Date());
             	}
             }
+        	op = MSG.buttonApply();
         }
-        myForm.load(request.getSession());
+        
+        if (MSG.buttonApply().equals(op)) {
+            form.save(request.getSession());
+        }
+        form.load(request.getSession());
         
         WebTable.setOrder(sessionContext,"exams.order",request.getParameter("ord"),1);
         
-        if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0 && myForm.getExamType() != null) {
-            org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
-            ExamStatus status = ExamStatus.findStatus(myForm.getSession(), myForm.getExamType());
+        if (form.getSession()!=null && form.getSubjectArea()!=null && form.getSubjectArea().length()>0 && form.getExamType() != null) {
+            org.unitime.timetable.model.Session session = new SessionDAO().get(form.getSession());
+            ExamStatus status = ExamStatus.findStatus(form.getSession(), form.getExamType());
             DepartmentStatusType type = (status == null || status.getStatus() == null ? session.getStatusType() : status.getStatus());
-            if (type != null && type.can(myForm.isFinals() ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm)) {
+            if (type != null && type.can(form.isFinals() ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm)) {
                 List exams = null;
-                if ("--ALL--".equals(myForm.getSubjectArea())) 
-                    exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
+                if ("--ALL--".equals(form.getSubjectArea())) 
+                    exams = Exam.findAll(form.getSession(), form.getExamType());
                 else {
-                    SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
-                    if (sa!=null) exams = Exam.findExamsOfSubjectAreaIncludeCrossLists(sa.getUniqueId(), myForm.getExamType());
+                    SubjectArea sa = SubjectArea.findByAbbv(form.getSession(), form.getSubjectArea());
+                    if (sa!=null) exams = Exam.findExamsOfSubjectAreaIncludeCrossLists(sa.getUniqueId(), form.getExamType());
                 }
                 if (exams!=null && !exams.isEmpty()) { 
-                    Vector<ExamAssignment> assignments = new Vector();
+                    List<ExamAssignment> assignments = new ArrayList<ExamAssignment>();
                     for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         if (exam.getAssignedPeriod()!=null) assignments.add(new ExamAssignment(exam));
                     }
                     if (!assignments.isEmpty()) {
-                        PdfWebTable table = getTable(true, myForm, assignments);
+                        PdfWebTable table = getTable(true, assignments);
                         if (table!=null)
-                            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"exams.order")), table.getNrColumns(), table.getLines().size());
+                            form.setTable(table.printTable(WebTable.getOrder(sessionContext,"exams.order")), table.getNrColumns(), table.getLines().size());
                     }
                 }
             }
@@ -167,10 +188,10 @@ public class ExamsAction extends Action {
 		
         LookupTables.setupExamTypes(request, null);
 
-        return mapping.findForward("show");
+        return "show";
 	}
 		
-	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
+	private PdfWebTable getTable(boolean html, List<ExamAssignment> exams) {
 		String itype = MSG.columnExamInstructionalType();
 		if (ApplicationProperty.ExaminationReportsExternalId.isTrue()) {
 			itype = ApplicationProperty.ExaminationReportsExternalIdName.value();
@@ -180,7 +201,7 @@ public class ExamsAction extends Action {
 	    PdfWebTable table = new PdfWebTable( 7,
                 form.getSessionLabel()+" "+form.getExamTypeLabel().toLowerCase()+" "+ MSG.examinations() + 
                 	("--ALL--".equals(form.getSubjectArea())?"":" ("+
-                	form.getSubjectArea()+")"), "exams.do?ord=%%",
+                	form.getSubjectArea()+")"), "exams.action?ord=%%",
                 new String[] {
                     MSG.columnExamSubject(),
                     MSG.columnExamCourse(),
@@ -218,6 +239,10 @@ public class ExamsAction extends Action {
                 }
         }
         return table;	    
+	}
+	
+	protected AuthenticationManager getAuthenticationManager() {
+		return (AuthenticationManager)SpringApplicationContextHolder.getBean("authenticationManager");
 	}
 }
 
