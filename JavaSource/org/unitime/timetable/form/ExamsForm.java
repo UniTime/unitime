@@ -104,14 +104,16 @@ public class ExamsForm implements UniTimeForm {
 	    iSessions = new ArrayList<ComboBoxLookup>();
         setSession(session.getAttribute("Exams.session")==null?null:(Long)session.getAttribute("Exams.session"));
         Long lastSessionId = null;
+        boolean hasSession = false;
 	    for (Iterator i=Session.getAllSessions().iterator();i.hasNext();) {
 	        Session s = (Session)i.next();
 	        if (s.getStatusType()!=null && (s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm()) && Exam.hasTimetable(s.getUniqueId())) {
 	        	lastSessionId = s.getUniqueId();
+	        	if (s.getUniqueId().equals(getSession())) hasSession = true;
 	            iSessions.add(new ComboBoxLookup(s.getLabel(),s.getUniqueId().toString()));
 	        }
 	    }
-	    if (lastSessionId == null) { setSession(null); setSubjectArea(null); }
+	    if (!hasSession) { setSession(null); setSubjectArea(null); }
 	    if (getSession() == null && lastSessionId != null) setSession(lastSessionId);
 	    iSubjectAreas = new ArrayList<ComboBoxLookup>();
 	    if (canDisplayAllSubjectsAtOnce())
@@ -179,14 +181,16 @@ public class ExamsForm implements UniTimeForm {
     }
     
     public String getEmptyMessage() {
-    	if (getSubjectArea() == null || getSubjectArea().isEmpty()) {
+    	if (getSession() == null) {
+    		return XMSG.infoNoExaminationsAvailable();
+    	} else if (getSubjectArea() == null || getSubjectArea().isEmpty()) {
     		if (XMSG.buttonApply().equals(iOp))
     			return XMSG.infoNoSubjectAreaSelected();
     		else
     			return null;
     	} else {
     		if ("--ALL--".equals(getSubjectArea())) {
-    			return XMSG.infoNoExaminationsAvailable(getExamTypeLabel(), getSessionLabel());
+    			return XMSG.infoNoExaminationsAvailableForSession(getExamTypeLabel(), getSessionLabel());
     		} else {
     			return XMSG.infoNoExaminationsAvailableForSubject(getExamTypeLabel(), getSubjectArea());
     		}

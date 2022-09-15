@@ -3359,4 +3359,31 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Log In")
 	String buttonLogIn();
+	
+	@DefaultMessage("There are no classes available at the moment.")
+	String infoNoClassesAvailable();
+	
+	@DefaultMessage("No subject area selected.")
+    String infoNoSubjectAreaSelected();
+    
+    @DefaultMessage("There are no classes available for {0} at the moment.")
+    String infoNoClassesAvailableForSession(String acadSession);
+    
+    @DefaultMessage("There are no classes available for {0} subject area at the moment.")
+    String infoNoClassesAvailableForSubject(String subjectAreaAbbv);
+    
+    @DefaultMessage("There are no {0} {1} classes available at the moment.")
+    String infoNoClassesAvailableForCourse(String subjectAreaAbbv, String courseNumber);
+    
+    @DefaultMessage("Arr Hrs")
+    String arrHrs();
+    
+    @DefaultMessage("Course")
+	String columnCourse();
+    
+    @DefaultMessage("Instruction\nType")
+	String columnInstructionType();
+    
+    @DefaultMessage("Section")
+	String columnSection();
 }

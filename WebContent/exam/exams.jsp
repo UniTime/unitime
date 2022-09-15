@@ -36,8 +36,7 @@
 		<TD>
 			<loc:message name="filterTerm"/>
 			<s:select name="form.session" list="form.sessions" listKey="value" listValue="label"
-				onchange="document.getElementById('op').value='Change';submit();"/>
-			,&nbsp;&nbsp;&nbsp;
+				onchange="document.getElementById('op').value='Change';submit();"/>,&nbsp;&nbsp;&nbsp;
 			<loc:message name="filterExams"/>
 			<s:select name="form.examType" list="#request.examTypes" listKey="uniqueId" listValue="label"/>
 			<loc:message name="filterSubject"/>

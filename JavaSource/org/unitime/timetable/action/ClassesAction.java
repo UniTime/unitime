@@ -28,24 +28,19 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.coursett.model.TimeLocation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassesForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -61,10 +56,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
@@ -73,54 +68,79 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-@Service("/classes")
-public class ClassesAction extends Action {
+@Action(value = "classes", results = {
+		@Result(name = "show", type = "tiles", location = "classes.tiles"),
+		@Result(name = "personal", type = "redirect", location = "/personalSchedule.do")
+	})
+@TilesDefinition(name = "classes.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Class Schedule"),
+		@TilesPutAttribute(name = "body", value = "/user/classes.jsp"),
+		@TilesPutAttribute(name = "checkLogin", value = "false"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class ClassesAction extends UniTimeAction<ClassesForm> {
+	private static final long serialVersionUID = -9496906356490277L;
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired AuthenticationManager authenticationManager;
+	private String year, term, campus, subject, select, course;
 	
-	@Autowired SessionContext sessionContext;
+	public String getYear() { return year; }
+	public void setYear(String year) { this.year = year; }
+	public String getTerm() { return term; }
+	public void setTerm(String term) { this.term = term; }
+	public String getCampus() { return campus; }
+	public void setCampus(String campus) { this.campus = campus; }
+	public String getSubject() { return  subject; }
+	public void setSubject(String subject) { this.subject = subject; }
+	public String getSelect() { return select; }
+	public void setSelect(String select) { this.select = select; }
+	public String getCourse() { return course; }
+	public void setCourse(String course) { this.course = course; }
 	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	    ClassesForm myForm = (ClassesForm)form;
-
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
+	public String execute() throws Exception {
+		if (form == null) {
+	    	form = new ClassesForm();
+	    	form.reset();
+	    }
+		
+    	if (form.getOp() != null) op = form.getOp();
         
-        if (request.getParameter("select")!=null) {
-            myForm.load(request.getSession());
-            if (request.getParameter("subject")!=null) {
-                myForm.setSubjectArea(request.getParameter("subject"));
+        if (subject != null || subject != null) {
+            form.load(request.getSession());
+            if (subject != null) {
+                form.setSubjectArea(subject);
             } else {
-                if (myForm.canDisplayAllSubjectsAtOnce()){
-            		myForm.setSubjectArea("--ALL--");
+                if (form.canDisplayAllSubjectsAtOnce()){
+            		form.setSubjectArea("--ALL--");
             	}
             }
-            if (request.getParameter("year")!=null && request.getParameter("term")!=null && request.getParameter("campus")!=null) {
-                Session session = Session.getSessionUsingInitiativeYearTerm(
-                        request.getParameter("campus"), 
-                        request.getParameter("year"), 
-                        request.getParameter("term"));
-                if (session!=null) myForm.setSession(session.getUniqueId());
+            if (year!=null && term!=null && campus!=null) {
+                Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
+                if (session!=null) form.setSession(session.getUniqueId());
             } 
-            if (request.getParameter("course")!=null) {
-                myForm.setCourseNumber(request.getParameter("course"));
+            if (course != null) {
+                form.setCourseNumber(course);
             } else {
-                myForm.setCourseNumber(null);
+                form.setCourseNumber(null);
             }
-            op = "Apply";
+            op = MSG.buttonApply();
+        }
+        
+        if ("Change".equals(op)) {
+        	form.save(request.getSession());
         }
 
-        if ("Apply".equals(op)) {
-            myForm.save(request.getSession());
-            if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
+        if (MSG.buttonLogIn().equals(op)) {
+        	if (form.getUsername()!=null && form.getUsername().length()>0 && form.getPassword()!=null && form.getPassword().length()>0) {
             	try {
-            		Authentication authRequest = new UsernamePasswordAuthenticationToken(myForm.getUsername(), myForm.getPassword());
-            		Authentication authResult = authenticationManager.authenticate(authRequest);
+            		Authentication authRequest = new UsernamePasswordAuthenticationToken(form.getUsername(), form.getPassword());
+            		Authentication authResult = getAuthenticationManager().authenticate(authRequest);
             		SecurityContextHolder.getContext().setAuthentication(authResult);
             		UserContext user = (UserContext)authResult.getPrincipal();
             		if (user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.PersonalSchedule))
             			for (UserAuthority auth: user.getAuthorities()) {
-            				if (auth.getAcademicSession() != null && auth.getAcademicSession().getQualifierId().equals(myForm.getSession()) && auth.hasRight(Right.PersonalSchedule)) {
+            				if (auth.getAcademicSession() != null && auth.getAcademicSession().getQualifierId().equals(form.getSession()) && auth.hasRight(Right.PersonalSchedule)) {
             					user.setCurrentAuthority(auth); break;
             				}
             			}
@@ -130,51 +150,56 @@ public class ClassesAction extends Action {
             			response.sendRedirect("selectPrimaryRole.do");
             			return null;
             		}
-            		return mapping.findForward("personal");
+            		return "personal";
             	} catch (Exception e) {
-            		myForm.setMessage("Authentication failed: " + e.getMessage());
-            		LoginManager.addFailedLoginAttempt(myForm.getUsername(), new Date());
+            		form.setMessage("Authentication failed: " + e.getMessage());
+            		LoginManager.addFailedLoginAttempt(form.getUsername(), new Date());
             	}
             }
+        	op = MSG.buttonApply();
         }
-        myForm.load(request.getSession());
+
+        if (MSG.buttonApply().equals(op)) {
+            form.save(request.getSession());
+        }
+        form.load(request.getSession());
         
         WebTable.setOrder(sessionContext,"classes.order",request.getParameter("ord"),1);
         
-        if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0) {
-            org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
+        if (form.getSession()!=null && form.getSubjectArea()!=null && form.getSubjectArea().length()>0) {
+            org.unitime.timetable.model.Session session = new SessionDAO().get(form.getSession());
             if (session.getStatusType().canNoRoleReportClass()) {
                 List classes = null;
                 SubjectArea sa = null;
-                if ("--ALL--".equals(myForm.getSubjectArea())) 
-                    classes = Class_.findAll(myForm.getSession());
+                if ("--ALL--".equals(form.getSubjectArea())) 
+                    classes = Class_.findAll(form.getSession());
                 else {
-                    sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
+                    sa = SubjectArea.findByAbbv(form.getSession(), form.getSubjectArea());
                     if (sa!=null) {
-                    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && myForm.getCourseNumber() != null && myForm.getCourseNumber().length() > 2) {
+                    	if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && form.getCourseNumber() != null && form.getCourseNumber().length() > 2) {
                     		classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and (co.courseNbr like :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))").
-                            setLong("sessionId",myForm.getSession()).
+                            setLong("sessionId",form.getSession()).
                             setLong("subjectAreaId",sa.getUniqueId()).
-                            setString("courseNbr",myForm.getCourseNumber().replaceAll("\\*", "%")).
+                            setString("courseNbr",form.getCourseNumber().replaceAll("\\*", "%")).
                             setCacheable(true).list();
-                		} else if (myForm.getCourseNumber()!=null && myForm.getCourseNumber().length()>0) {
+                		} else if (form.getCourseNumber()!=null && form.getCourseNumber().length()>0) {
                             classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and co.courseNbr like :courseNbr").
-                            setLong("sessionId",myForm.getSession()).
+                            setLong("sessionId",form.getSession()).
                             setLong("subjectAreaId",sa.getUniqueId()).
-                            setString("courseNbr",myForm.getCourseNumber().replaceAll("\\*", "%")).
+                            setString("courseNbr",form.getCourseNumber().replaceAll("\\*", "%")).
                             setCacheable(true).list();
                         } else {
                             classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId").
-                            setLong("sessionId",myForm.getSession()).
+                            setLong("sessionId",form.getSession()).
                             setLong("subjectAreaId",sa.getUniqueId()).
                             setCacheable(true).list();
                         }
@@ -182,14 +207,14 @@ public class ClassesAction extends Action {
                 }
                 if (classes!=null && !classes.isEmpty()) {
                     int ord = WebTable.getOrder(sessionContext,"classes.order");
-                    PdfWebTable table = getTable(true, myForm, classes, ord);
+                    PdfWebTable table = getTable(true, form, classes, ord);
                     if (table!=null)
-                        myForm.setTable(table.printTable(ord), table.getNrColumns(), table.getLines().size());
+                        form.setTable(table.printTable(ord), table.getNrColumns(), table.getLines().size());
                 }
             }
         }
         
-        return mapping.findForward("show");
+        return "show";
 	}
 	
     public int getDaysCode(Set meetings) {
@@ -229,7 +254,7 @@ public class ClassesAction extends Action {
             TimeLocation t = assignment.getTimeLocation();
             meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+t.getEndTimeHeader(CONSTANTS.useAmPm());
         } else {
-            meetingTime += "Arr Hrs";
+            meetingTime += MSG.arrHrs();
         }
         if (meetings!=null && !meetings.isEmpty()) {
             if (dp==null || !dp.isDefault()) {
@@ -306,14 +331,14 @@ public class ClassesAction extends Action {
 	    String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 6,
                 form.getSessionLabel()+" classes"+("--ALL--".equals(form.getSubjectArea())?"":" ("+form.getSubjectArea()+(form.getCourseNumber()!=null && form.getCourseNumber().length()>0?" "+form.getCourseNumber():"")+")"), 
-                "classes.do?ord=%%",
+                "classes.action?ord=%%",
                 new String[] {
-                    "Course",
-                    "Instruction"+nl+"Type",
-                    "Section",
-                    "Time",
-                    "Room",
-                    "Instructor"},
+                	MSG.columnCourse(),
+                	MSG.columnInstructionType().replace("\n", nl),
+                	MSG.columnSection(),
+                	MSG.columnAssignedTime(),
+                	MSG.columnAssignedRoom(),
+                    MSG.columnInstructor()},
                     new String[] {"left", "left", "left", "left", "left", "left"},
                     new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
@@ -350,6 +375,10 @@ public class ClassesAction extends Action {
             }
         }
         return table;	    
+	}
+
+	protected AuthenticationManager getAuthenticationManager() {
+		return (AuthenticationManager)SpringApplicationContextHolder.getBean("authenticationManager");
 	}
 }
 

@@ -51,7 +51,6 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -73,7 +72,7 @@ public class ExamsAction extends UniTimeAction<ExamsForm> {
 	private static final long serialVersionUID = 252256673838259727L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	private String year, term, campus, type, subject;
+	private String year, term, campus, type, subject, select;
 	
 	public String getYear() { return year; }
 	public void setYear(String year) { this.year = year; }
@@ -83,8 +82,10 @@ public class ExamsAction extends UniTimeAction<ExamsForm> {
 	public void setCampus(String campus) { this.campus = campus; }
 	public String getType() { return type; }
 	public void setType(String type) { this.type = type; }
-	public String getSubject() { return  subject; }
+	public String getSubject() { return subject; }
 	public void setSubject(String subject) { this.subject = subject; }
+	public String getSelect() { return select; }
+	public void setSelect(String select) { this.select = select; }
 
 	public String execute() throws Exception {
 		if (form == null) {
@@ -94,13 +95,13 @@ public class ExamsAction extends UniTimeAction<ExamsForm> {
 		
     	if (form.getOp() != null) op = form.getOp();
 	    
-        if (subject != null) {
+        if (subject != null || select != null) {
             form.load(request.getSession());
             if (subject != null) {
                 form.setSubjectArea(subject);
             } else {
             	if (form.canDisplayAllSubjectsAtOnce()){
-            		form.setSubjectArea(Constants.ALL_OPTION_VALUE);
+            		form.setSubjectArea("--ALL--");
             	}
             }
             if (year!=null && term!=null && campus!=null) {
