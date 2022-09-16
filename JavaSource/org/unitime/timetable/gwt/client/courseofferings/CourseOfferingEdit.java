@@ -2170,6 +2170,8 @@ public class CourseOfferingEdit extends Composite {
 
 		if (courseNumber != null && iCourseOfferingNumberUpperCase) {
 			iCourseOffering.setCourseNbr(courseNumber.toUpperCase());
+		} else if (courseNumber != null) {
+			iCourseOffering.setCourseNbr(courseNumber);
 		}
 
 		if (iIsAdd) {
