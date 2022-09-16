@@ -1077,7 +1077,7 @@
 		</menu>
 	</menu>
 	<menu name="Preferences">
-		<item name="Change Role" page="selectPrimaryRole.do?list=Y">
+		<item name="Change Role" page="selectPrimaryRole.action?list=Y">
 				<condition>
 					<hasPermission name="HasRole"/>
 				</condition>

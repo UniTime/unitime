@@ -57,8 +57,8 @@ public class TilesRedirectAction extends UniTimeAction<BlankForm> {
     	else if (request.getAttribute("message") != null)
     		message = request.getAttribute("message").toString();
     	target = null;
-    	String uri = request.getRequestURI();
-    	if (!uri.endsWith("/loginRequired.action")) {
+    	String uri = request.getRequestURI().substring(request.getContextPath().length() + 1);
+    	if (!uri.equals("loginRequired.action") && "GET".equals(request.getMethod())) {
     		if (request.getQueryString() == null || request.getQueryString().isEmpty())
     			target = URLEncoder.encode(uri, "UTF-8");
     		else

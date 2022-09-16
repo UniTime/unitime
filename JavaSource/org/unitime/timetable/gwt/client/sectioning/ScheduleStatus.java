@@ -138,7 +138,7 @@ public class ScheduleStatus extends P {
 			setMessage(Level.ERROR, message + "\n" + MESSAGES.sessionExpiredClickToLogin(), new Command() {
 				@Override
 				public void execute() {
-					Window.open("selectPrimaryRole.do?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+					Window.open("selectPrimaryRole.action?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
 					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
 				}
 			});
@@ -158,7 +158,7 @@ public class ScheduleStatus extends P {
 			setMessage(Level.ERROR, message + "\n" + MESSAGES.sessionExpiredClickToLogin(), new Command() {
 				@Override
 				public void execute() {
-					Window.open("selectPrimaryRole.do?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+					Window.open("selectPrimaryRole.action?m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
 					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
 				}
 			});

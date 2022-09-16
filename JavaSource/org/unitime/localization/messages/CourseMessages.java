@@ -3494,4 +3494,28 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("LOG IN")
 	String linkLOGIN();
+	
+	@DefaultMessage("Select Academic Session")
+	String sectSelectAcademicSession();
+	
+	@DefaultMessage("Select User Role &amp; Academic Session")
+	String sectSelectUserRoleAndSession();
+	
+	@DefaultMessage("User Role")
+	String columnUserRole();
+	
+	@DefaultMessage("Academic Session")
+	String columnAcademicSession();
+	
+	@DefaultMessage("Academic Initiative")
+	String columnAcademicInitiative();
+	
+	@DefaultMessage("Academic Session Status")
+	String columnAcademicSessionStatus();
+	
+	@DefaultMessage("No user role and/or academic session associated with the user {0}.")
+	String warnNoRoleForUser(String user);
+	
+	@DefaultMessage("A default user role and/or academic session could not be assigned. Please select one of the user role and academic session combinations below to proceed.")
+	String infoNoDefaultAuthority();
 }

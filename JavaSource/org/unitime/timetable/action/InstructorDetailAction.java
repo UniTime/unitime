@@ -117,7 +117,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
         if (op == null) op = form.getOp();
         if (op2 != null && !op2.isEmpty()) op = op2;
         
-        if (instructorId == null) {
+        if (instructorId == null || instructorId.isEmpty()) {
 	    	List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(sessionContext.getUser());
 	    	if (instructors != null) {
 	    		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
@@ -127,7 +127,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		    				instructorId = i.getUniqueId().toString();
 		    				break;
 		    			}
-	    		if (instructorId == null)
+	    		if (instructorId == null || instructorId.isEmpty())
 		    		for (DepartmentalInstructor i: instructors)
 		    			if (sessionContext.hasPermission(i, Right.InstructorDetail)) {
 		    				instructorId = i.getUniqueId().toString();

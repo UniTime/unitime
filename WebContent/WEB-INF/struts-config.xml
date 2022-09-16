@@ -31,7 +31,6 @@
 	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
-	  <form-bean name="roleListForm" type="org.unitime.timetable.form.RoleListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
@@ -46,12 +45,7 @@
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
       <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
-      <form-bean name="editRoomPrefForm" type="org.unitime.timetable.form.EditRoomPrefForm" />
-      <form-bean name="editRoomFeatureForm" type="org.unitime.timetable.form.EditRoomFeatureForm" />
-      <form-bean name="editRoomGroupForm" type="org.unitime.timetable.form.EditRoomGroupForm" />
-      <form-bean name="editRoomDeptForm" type="org.unitime.timetable.form.EditRoomDeptForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
-      <form-bean name="editRoomForm" type="org.unitime.timetable.form.EditRoomForm" />
       <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
@@ -171,35 +165,6 @@
          scope="request"
          type="org.springframework.web.struts.DelegatingActionProxy">
          <forward name="showDepartmentList" path="departmentListTile" />
-      </action>
-
-      <action
-         path="/selectPrimaryRole"
-         attribute="roleListForm"
-         input="selectPrimaryRoleTile"
-         name="roleListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward
-            name="getUserSelectedRole"
-            path="selectPrimaryRoleTile" />
-         <forward
-            name="getDefaultAcadSession"
-            path="selectAcadSessionTile" />
-         <forward
-            name="success"
-            path="/main.jsp" />
-         <forward
-            name="fail"
-            path="selectPrimaryRoleTile" />
-         <forward
-            name="loginRequired"
-            path="loginRequiredTile" />
-         <forward
-         	name="norole"
-            path="/main.jsp"
-            redirect="true" />
       </action>
 
       <action
@@ -572,7 +537,7 @@
        		path="chameleonTile" />
        <forward
 	        name="reload"
-            path="/selectPrimaryRole.do" />
+            path="/selectPrimaryRole.action" />
     </action>
     
     <action
@@ -588,7 +553,7 @@
        		path="inquiryTile" />
        <forward 
        		name="submit" 
-       		path="/selectPrimaryRole.do" />
+       		path="/selectPrimaryRole.action" />
     </action>
     
     <action

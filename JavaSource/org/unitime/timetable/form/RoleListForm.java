@@ -19,33 +19,23 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 
 /**
- * MyEclipse Struts
- * Creation date: 03-17-2005
- *
- * XDoclet definition:
- * @struts:form name="roleListForm"
- *
  * @author Tomas Muller
  */
-public class RoleListForm extends ActionForm {
+public class RoleListForm implements UniTimeForm {
 	private static final long serialVersionUID = 3546920294733526840L;
 
     private String iAuthority;
     private String iTarget;
 
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-		return errors;
+    @Override
+    public void validate(UniTimeAction action) {
     }
 
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
     	iAuthority = null;
     }
 

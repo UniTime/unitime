@@ -141,7 +141,7 @@ public class ExamsAction extends UniTimeAction<ExamsForm> {
             		request.getSession().setAttribute("loginPage", "exams");
             		LoginManager.loginSuceeded(authResult.getName());
             		if (user.getCurrentAuthority() == null) {
-            			response.sendRedirect("selectPrimaryRole.do");
+            			response.sendRedirect("selectPrimaryRole.action");
             			return null;
             		}
             		return "personal";

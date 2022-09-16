@@ -54,18 +54,6 @@
 
 	<!-- Page Layouts -->
 
-	<definition	name="selectPrimaryRoleTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Select User Role"/>
-		<put name="body" value="/selectPrimaryRole.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition>
-
-	<definition	name="selectAcadSessionTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Select Academic Session"/>
-		<put name="body" value="/selectPrimaryRole.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition>
-
 	<definition	name="timetableManagerEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Timetable Manager"/>
 		<put name="body" value="/admin/timetableManagerEdit.jsp" />

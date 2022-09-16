@@ -147,7 +147,7 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
             		request.getSession().setAttribute("loginPage", "classes");
             		LoginManager.loginSuceeded(authResult.getName());
             		if (user.getCurrentAuthority() == null) {
-            			response.sendRedirect("selectPrimaryRole.do");
+            			response.sendRedirect("selectPrimaryRole.action");
             			return null;
             		}
             		return "personal";

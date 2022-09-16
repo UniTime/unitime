@@ -23,92 +23,101 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoleListForm;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 
 
 /**
- * MyEclipse Struts
- * Creation date: 03-17-2005
- *
- * XDoclet definition:
- * @struts:action path="/selectPrimaryRole" name="roleListForm" input="/selectPrimaryRole.jsp" scope="request" validate="true"
- * @struts:action-forward name="success" path="/main.jsp" contextRelative="true"
- * @struts:action-forward name="fail" path="/selectPrimaryRole.jsp" contextRelative="true"
- *
  * @author Tomas Muller
  */
-@Service("/selectPrimaryRole")
-public class RoleListAction extends Action {
+@Action(value = "selectPrimaryRole", results = {
+		@Result(name = "getUserSelectedRole", type = "tiles", location = "selectPrimaryRole.tiles"),
+		@Result(name = "getDefaultAcadSession", type = "tiles", location = "selectAcadSession.tiles"),
+		@Result(name = "success", type = "redirect", location = "/main.jsp"),
+		@Result(name = "fail", type = "tiles", location = "selectPrimaryRole.tiles"),
+		@Result(name = "loginRequired", type = "redirect", location = "/loginRequired.action"),
+		@Result(name = "norole", type = "redirect", location = "/main.jsp")
+	})
+@TilesDefinitions({
+@TilesDefinition(name = "selectPrimaryRole.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Select User Role"),
+		@TilesPutAttribute(name = "body", value = "/selectPrimaryRole.jsp"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	}),
+@TilesDefinition(name = "selectAcadSession.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Select Academic Session"),
+		@TilesPutAttribute(name = "body", value = "/selectPrimaryRole.jsp"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+})
+public class RoleListAction extends UniTimeAction<RoleListForm> {
+	private static final long serialVersionUID = -1366311288296904417L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	private String list, target;
+	public String getList() { return list; }
+	public void setList(String list) { this.list = list; }
+	public String getTraget() { return target; }
+	public void setTarget(String target) { this.target = target; }
 
-	@Autowired SessionContext sessionContext;
-    /**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,	
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-    	RoleListForm roleListForm = (RoleListForm) form;
+    public String execute() throws Exception {
+    	if (form == null) {
+    		form = new RoleListForm();
+    		form.reset();
+    	}
+    	if (target != null) form.setTarget(target);
 
         UserContext user = null;
     	try {
     		user = (UserContext)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	} catch (Exception e) {}
     	
-        if (user == null) return mapping.findForward("loginRequired");
+        if (user == null) return "loginRequired";
         
-        if (user.getAuthorities().isEmpty()) return mapping.findForward("norole");
+        if (user.getAuthorities().isEmpty()) return "norole";
         
         // Form submitted
-        if (roleListForm.getAuthority() != null) {
-        	UserAuthority authority = user.getAuthority(roleListForm.getAuthority());
+        if (form.getAuthority() != null) {
+        	UserAuthority authority = user.getAuthority(form.getAuthority());
         	if (authority != null) {
         		user.setCurrentAuthority(authority);
             	for (SessionAttribute s: SessionAttribute.values())
             		sessionContext.removeAttribute(s);
         	}
-        	if (roleListForm.getTarget() != null && !roleListForm.getTarget().isEmpty()) {
-        		response.sendRedirect(roleListForm.getTarget());
+        	if (form.getTarget() != null && !form.getTarget().isEmpty()) {
+        		response.sendRedirect(form.getTarget());
         		return null;
         	} else {
-        		return mapping.findForward("success");
+        		return "success";
         	}
         }
 
         UserAuthority authority = setupAuthorities(request, user);
 
         // Role/session list not requested -- try assign default role/session first 
-        if (!"Y".equals(request.getParameter("list")) && authority != null) {
+        if (!"Y".equals(list) && authority != null) {
         	user.setCurrentAuthority(authority);
-        	if (roleListForm.getTarget() != null && !roleListForm.getTarget().isEmpty()) {
-        		response.sendRedirect(roleListForm.getTarget());
+        	if (form.getTarget() != null && !form.getTarget().isEmpty()) {
+        		response.sendRedirect(form.getTarget());
         		return null;
         	} else {
-        		return mapping.findForward("success");
+        		return "success";
         	}
         }
         
@@ -118,11 +127,11 @@ public class RoleListAction extends Action {
         
         switch (roles.size()) {
 		case 0:
-			return mapping.findForward("norole");
+			return "norole";
 		case 1:
-			return mapping.findForward("getDefaultAcadSession");
+			return "getDefaultAcadSession";
 		default:
-			return mapping.findForward("getUserSelectedRole");
+			return "getUserSelectedRole";
         }
     }
     
@@ -133,9 +142,13 @@ public class RoleListAction extends Action {
     	for (UserAuthority authority: user.getAuthorities())
     		roles.add(authority.getRole());
     	
-    	WebTable table = new WebTable(4,"Select " + (roles.size() > 1 ? "User Role &amp; " : "") + "Academic Session",
-        		"selectPrimaryRole.do?list=Y&ord=%%",
-                new String[] { "User Role", "Academic Session", "Academic Initiative", "Academic Session Status" },
+    	WebTable table = new WebTable(4,
+    			roles.size() > 1 ? MSG.sectSelectUserRoleAndSession() : MSG.sectSelectAcademicSession(),
+        		"selectPrimaryRole.action?list=Y&ord=%%",
+                new String[] { MSG.columnUserRole(),
+                		MSG.columnAcademicSession(), 
+                		MSG.columnAcademicInitiative(),
+                		MSG.columnAcademicSessionStatus() },
                 new String[] { "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true});
     	
@@ -147,7 +160,7 @@ public class RoleListAction extends Action {
     		
 
     		String onClick =
-    				"onClick=\"roleListForm.authority.value='" + authority.getAuthority() + "';roleListForm.submit();\"";
+    				"onClick=\"document.getElementById('authority').value='" + authority.getAuthority() + "';document.getElementById('form').submit();\"";
     		
     		String bgColor = (authority.equals(user.getCurrentAuthority()) ? "rgb(168,187,225)" : null);
     		
@@ -172,7 +185,7 @@ public class RoleListAction extends Action {
     	}
     	
         if (user.getCurrentAuthority() == null && nrLines == 0)
-            table.addLine(new String[] {"<i><font color='red'>No user role and/or academic session associated with the user " + (user.getName() == null ? user.getUsername() : user.getName()) + ".</font></i>",null,null,null}, null);
+            table.addLine(new String[] {"<i><font color='red'>" + MSG.warnNoRoleForUser(user.getName() == null ? user.getUsername() : user.getName()) + "</font></i>",null,null,null}, null);
  	    
         if (nrLines == 1 && firstAuthority != null)
         	user.setCurrentAuthority(firstAuthority);

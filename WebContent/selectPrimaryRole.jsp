@@ -17,20 +17,17 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="org.unitime.timetable.model.Roles"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<html:form action="selectPrimaryRole.do" target="_top">
-	<html:hidden property="authority"/>
-	<html:hidden property="target"/>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<% if (!"Y".equals(request.getParameter("list"))) { %>
-			<tr><td colspan='4'>
-				<i>A default user role and/or academic session could not be assigned. Please select one of the user role and academic session combinations below to proceed.<br><br></i>
-			</td></tr>
-		<% } %>
-		<%=request.getAttribute(Roles.USER_ROLES_ATTR_NAME)%>
-	</TABLE>
-</html:form>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages">
+<s:form action="selectPrimaryRole" id="form" target="_top">
+	<s:hidden name="form.authority" id="authority"/>
+	<s:hidden name="form.target"/>
+	<table class="unitime-MainTable">
+		<s:if test="list != 'Y'">
+			<tr><td colspan='4'><i><loc:message name="infoNoDefaultAuthority"/><br><br></i></td></tr>
+		</s:if>
+		<s:property value="#request.userRoles" escapeHtml="false"/>
+	</table>
+</s:form>
+</loc:bundle>

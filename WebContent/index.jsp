@@ -30,7 +30,7 @@
 		<% if (!sessionContext.isAuthenticated()) {%>
 		<META http-equiv="Refresh" content="1; url=login.do">	
 		<% } else { %>	
-		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.do">	
+		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.action">	
 		<% } %>
 		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />

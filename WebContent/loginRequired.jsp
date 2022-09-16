@@ -26,7 +26,12 @@
 	<s:property value="message" escapeHtml="false"/>
 	<br><br>
 	<A class="l7" href="javascript:self.history.back();"><loc:message name="linkBACK"/></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<A class="l7" href="${request.getContextPath()}/login.do?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
+	<s:if test="target != null && !target.isEmpty()">
+		<A class="l7" href="${request.getContextPath()}/login.do?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
+	</s:if>
+	<s:else>
+		<A class="l7" href="${request.getContextPath()}/login.do" target="_top"><loc:message name="linkLOGIN"/></A>
+	</s:else>
 	<BR><BR>
 </DIV>
 </loc:bundle>
