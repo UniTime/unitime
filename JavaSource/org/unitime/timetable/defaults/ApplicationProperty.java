@@ -156,7 +156,7 @@ public enum ApplicationProperty {
 	LoginPage("tmtbl.login_url"),
 	
 	@DefaultValue("forward")
-	@Description("Login: if set to \"forward\" login.do will be forwarded to the login page url, if set to \"redirect\" the page will be redirected instead")
+	@Description("Login: if set to \"forward\" login.action will be forwarded to the login page url, if set to \"redirect\" the page will be redirected instead")
 	LoginMethod("tmtbl.login_method"),
 
 	/**

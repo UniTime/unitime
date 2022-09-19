@@ -3518,4 +3518,43 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("A default user role and/or academic session could not be assigned. Please select one of the user role and academic session combinations below to proceed.")
 	String infoNoDefaultAuthority();
+	
+	@DefaultMessage("Log In")
+	String pageLogIn();
+	
+	@DefaultMessage("University Timetabling")
+	String pageLogInH1();
+	
+	@DefaultMessage("Comprehensive Academic Scheduling Solutions")
+	String pageLogInH2();
+	
+	@DefaultMessage("Authentication failed: {0}.")
+	String errorAuthenticationFailed(String reason);
+	
+	@DefaultMessage("Username:")
+	String propertyUsername();
+	
+	@DefaultMessage("Enter user name")
+	String ariaEnterUserName();
+	
+	@DefaultMessage("Password:")
+	String propertyPassword();
+	
+	@DefaultMessage("Enter password")
+	String ariaEnterPassword();
+	
+	@DefaultMessage("Log In")
+	String actionLogIn();
+	
+	@DefaultMessage("Submit login information.")
+	String ariaLogIn();
+	
+	@DefaultMessage("Forgot your password?")
+	String linkForgotYourPassword();
+	
+	@DefaultMessage("Logging out ...")
+	String messageLoggingOut();
+	
+	@DefaultMessage("Log Out")
+	String pageLogOut();
 }

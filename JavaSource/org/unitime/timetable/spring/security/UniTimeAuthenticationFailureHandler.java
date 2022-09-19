@@ -41,7 +41,7 @@ import org.unitime.timetable.util.LoginManager;
 public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
 	public UniTimeAuthenticationFailureHandler() {
-		setDefaultFailureUrl("/login.do");
+		setDefaultFailureUrl("/login.action");
 	}
 
 	@Override

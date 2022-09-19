@@ -403,10 +403,6 @@
         	path="hibernateQueryTestTile" />
       </action>
       
-      <action 
-	    path="/logOut"
-      	forward="/logout.jsp" />
-      	
 	    <action
 	      path="/timePatternEdit"
 	      attribute="timePatternEditForm"
@@ -550,11 +546,6 @@
        		path="/selectPrimaryRole.action" />
     </action>
     
-    <action
-      path="/login"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false"/> 
-
     <action
        path="/exactTimeEdit"
        type="org.springframework.web.struts.DelegatingActionProxy"

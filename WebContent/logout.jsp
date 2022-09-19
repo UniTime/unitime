@@ -19,35 +19,25 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="java.util.Enumeration" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<%
-	Cookie cookie = new Cookie("loggedOn", "false" );    	
-	response.addCookie( cookie );
-
-	Enumeration e = session.getAttributeNames();
-	while (e.hasMoreElements()) {
-		String key = e.nextElement().toString();
-		session.setAttribute(key, null);
-	}	
-	session.invalidate(); 	
-%>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages">
 <HTML>
 	<HEAD>
 	    <meta charset="UTF-8"/>
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<TITLE>UniTime <%=Constants.VERSION%>| Logging out ...</TITLE>
-		<SCRIPT language="javascript">
+		<TITLE>UniTime <%=Constants.VERSION%>| <loc:message name="pageLogOut"/></TITLE>
+		<SCRIPT type="text/javascript">
 			function closeWin() {
 				// window.close();				
-				location.href='<%=request.getContextPath()%>/login.do';
+				location.href='<%=request.getContextPath()%>/login.action';
 			}
 		</SCRIPT>
 	</HEAD>
 	<BODY onload="closeWin();">
 		<BLOCKQUOTE>
-			<DIV class="normal">Logging out ...</DIV>
+			<DIV class="normal"><loc:message name="messageLoggingOut"/></DIV>
 		</BLOCKQUOTE>
 	</BODY>
 </HTML>
-	
+</loc:bundle>

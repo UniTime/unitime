@@ -321,7 +321,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 			if (isAllowLookup())
 				doLookup();
 			else
-				ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+				ToolBox.open(GWT.getHostPageBaseURL() + "login.action?target=" + URL.encodeQueryString(Window.Location.getHref()));
 			return;
 		}
 		AriaStatus.getInstance().setText(ARIA.authenticationDialogOpened());

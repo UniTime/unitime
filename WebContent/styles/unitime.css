@@ -3828,11 +3828,13 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-Login .header .h1 {
+	display: block;
 	color: #35526F;
 	font-size: xx-large;
 }
 
 .unitime-Login .header .h2 {
+	display: block;
 	color: #35526F;
 	font-size: large;
 }
@@ -3863,6 +3865,54 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	vertical-align: top;
 	padding-right: 5px;
+}
+
+.unitime-Login .login-outer-box {
+	display: block;
+	text-align:center;
+	padding: 20px;
+}
+
+.unitime-Login .login-box {
+	display: inline-block;
+	border: 5px solid #9CB0CE;
+	border-radius: 20px;
+	padding: 20px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.unitime-Login .login-box .table {
+	display: table;
+}
+
+.unitime-Login .login-box .row {
+	display: table-row;
+}
+
+.unitime-Login .login-box .left-cell {
+	display: table-cell;
+	text-align:right;
+	padding: 5px 3px 10px 5px;
+	font-size: larger;
+	color: #35526F;
+}
+
+.unitime-Login .login-box .right-cell {
+	display: table-cell;
+	text-align:left;
+	padding: 5px 5px 10px 3px;
+}
+
+.unitime-Login .login-box input[type="submit"] {
+	font-size: larger; min-width: 80px; color: #35526F;
+}
+
+.unitime-Login .login-box input[type="text"] {
+	font-size: larger;
+}
+
+.unitime-Login .login-box input[type="password"] {
+	font-size: larger;
 }
 
 .unitime-InitializationError {

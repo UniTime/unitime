@@ -74,4 +74,12 @@ public interface SecurityMessages extends Messages {
 	@DefaultMessage("Access denied for {0}: department check failed for {1}.")
 	String departmentCheckFailed(String right, String domainObject);
 
+	@DefaultMessage("Invalid username/password")
+	String errorInvalidUserPasswd();
+	
+	@DefaultMessage("Authentication failed")
+	String errorAuthenticationFailed();
+	
+	@DefaultMessage("User temporarily locked out. Exceeded maximum failed login attempts.")
+	String errorUserLockedOut();
 }

@@ -19,37 +19,46 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
-<%@page import="org.cpsolver.ifs.util.JProf"%>
-<%@page import="java.text.NumberFormat"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-
-<HTML>
-	<HEAD>
-	    <meta charset="UTF-8"/>
-	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
- 	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
- 	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
- 	   <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
- 	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
- 	   <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
-		<link rel="shortcut icon" href="images/timetabling.ico" />
-	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-		<TITLE>UniTime <%=Constants.VERSION%></TITLE>
-	</HEAD>
-	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
-	
-	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
-	<% } %>
-	
+<%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ page import="org.unitime.localization.impl.Localization"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
+<loc:bundle name="CourseMessages">
+<html>
+<head>
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
+    <meta charset="UTF-8"/>
+	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
+    <!--[if IE]>
+	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
+    <![endif]-->
+    <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
+	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
+    <tt:hasProperty name="tmtbl.custom.css">
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
+    <link rel="shortcut icon" href="images/timetabling.ico" />
+	<title>UniTime <%=Constants.VERSION%>| <loc:message name="pageLogIn"/></title>
+    <script type="text/javascript" src="scripts/loading.js"></script>
+	<script type="text/javascript" src="scripts/rtt.js"></script>
+	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
+</head>
+<body class="unitime-Body" onload="document.getElementById('username').focus();">
+	<s:if test="externalHeader != null">
+		<s:include value="%{externalHeader}"/>
+	</s:if>
 	<span class='top-menu'>
     	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     </span>
-
 	<tt:hasProperty name="tmtbl.global.info">
     	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
 	</tt:hasProperty>
@@ -62,76 +71,68 @@
 	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn" page="login"/>
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="login"/>
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="login"/>
-	
-<%
-	String errorMsg = null;
-	if (request.getParameter("e")!=null) {
-		String eNum = request.getParameter("e");
-		if (eNum.equals("1"))
-			errorMsg = "Invalid username/password";
-		if (eNum.equals("2"))
-			errorMsg = "Authentication failed";
-		if (eNum.equals("3"))
-			errorMsg = "Authentication failed";
-		if (eNum.equals("4"))
-			errorMsg = "User temporarily locked out -<br> Exceeded maximum failed login attempts.";
-	} else if (request.getParameter("m")!=null) {
-		errorMsg = (String)request.getParameter("m");
-	}
- %>		
-
-<FORM name="f" action="<c:url value='login'/>" method="POST">
+<form action="login" name="f" method="POST">
 	<INPUT type="hidden" name="cs" value="login">
-	<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
-	<INPUT type="hidden" name="target" value="<%=request.getParameter("target") == null ? "" : request.getParameter("target") %>">
-			
-	<span class='unitime-Login'>
+	<s:hidden name="menu"/>
+	<s:hidden name="target"/>
+	<div class='unitime-Login'>
 		<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
 		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>
 		<span class='header'>
-			<div class='h1'>University Timetabling</div>
-			<div class='h2'>Comprehensive Academic Scheduling Solutions</div>
+			<span class='h1'><loc:message name="pageLogInH1"/></span>
+			<span class='h2'><loc:message name="pageLogInH2"/></span>
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
-		<% if (errorMsg!=null)  { %><div class='error'><%= errorMsg %></div><% } %>
+		<s:if test="errorMsg != null"><div class='error'><s:property value="errorMsg"/></div></s:if>
 		<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
-			<div class='error'>Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.</div>
+			<div class='error'><loc:message name="errorAuthenticationFailed"><c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/></loc:message></div>
 		</c:if>
-		<span class='login'>
-			<div id="login">
-				<div class="BrownBG">
-					<div class="H40px"></div>
-					<div><label>Username:</label></div>
-					<div class="txtField"><input type='text' name='username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/></div>
-					<div class="H20px"></div>
-					<div><label>Password:</label></div>
-					<div class="txtField"><input type='password' name='password' aria-label='Enter password'></div>
-				</div>
-				<div class="bottom"><img src="images/login_bg_2.jpg"/><input id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><img src="images/login_bg_4.jpg"/></div>
-			</div>
-		</span>
-		<c:if test="${SUGGEST_PASSWORD_RESET}">
-			<span class='forgot'><a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'>Forgot your password?</a></span>
-		</c:if>
-	</span>
-</FORM>
-		
-		<%@ include file="/initializationError.jspf"%>
-		
-		<span class="unitime-Footer">
-			<span class="row">
-				<span class="cell middle">
-					<span id='UniTimeGWT:Version'></span>
-					<tt:copy br="false"/>
+		<span class="login-outer-box">
+			<span class="login-box">
+				<span class="table">
+					<span class="row">
+						<span class="left-cell"><loc:message name="propertyUsername"/></span>
+						<span class="right-cell">
+							<input type='text' name='username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='${MSG.ariaEnterUserName()}' id='username'/>
+						</span>
+					</span>
+					<span class="row">
+						<span class="left-cell"><loc:message name="propertyPassword"/></span>
+						<span class="right-cell">
+							<input type='password' name='password' aria-label='${MSG.ariaEnterPassword()}'>
+						</span>
+					</span>
+				</span>
+				<span style="display: block; text-align:center; padding: 10px 5px 0px 5px; font-size: larger;">
+					<input type="submit" value="${MSG.actionLogIn()}" aria-label="${MSG.ariaLogIn()}">
 				</span>
 			</span>
 		</span>
-		<tt:hasProperty name="tmtbl.page.disclaimer">
-			<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
-		</tt:hasProperty>
-		
-
-		<% if (ApplicationProperties.getProperty("tmtbl.footer.external", "").trim().length()>0) { %>
-			<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.footer.external")%>' />
-		<% } %>
-</HTML>
+		<c:if test="${SUGGEST_PASSWORD_RESET}">
+			<span class='forgot'><a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'><loc:message name="linkForgotYourPassword"/></a></span>
+		</c:if>
+	</div>
+</form>
+	<s:if test="hasInitializationError">
+		<div class='unitime-InitializationError'>
+			<loc:message name="errorUniTimeFailedToStart"><%=Constants.getVersion()%></loc:message><br/>
+			<s:property value="%{printInitializationError()}" escapeHtml="false"/>
+		</div>
+	</s:if>
+	<span class="unitime-Footer">
+		<span class="row">
+			<span class="cell middle">
+				<span id='UniTimeGWT:Version'></span>
+				<tt:copy br="false"/>
+			</span>
+		</span>
+	</span>
+	<tt:hasProperty name="tmtbl.page.disclaimer">
+		<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+	</tt:hasProperty>
+	<s:if test="externalFooter != null">
+		<s:include value="%{externalFooter}"/>
+	</s:if>
+</body>
+</html>
+</loc:bundle>

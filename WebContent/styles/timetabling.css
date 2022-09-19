@@ -1409,57 +1409,6 @@ div.suggestionList_element_on {
 	color: navy;
 }
 
-/* Login Page */
-
-#login .BrownBG {
-	height: 140px;
-	background: url(../images/login_bg.jpg) no-repeat scroll left top;
-	width: 354px;
-	margin-left: auto;
-	margin-right: auto;
-}
-#login label {
-	font: bold 15px Verdana, Arial, Helvetica, sans-serif;
-	color: #FFFFFF;
-	width: 150px;
-	float: left;
-	text-align: right;
-	padding-right: 5px;
-	padding-top: 3px;
-}
-#login .txtField {
-	float: left;
-	text-align: left;
-	padding-left: 5px;
-}
-#login input {
-	font: normal 13px Verdana, Arial, Helvetica, sans-serif;
-	background-color: #EFEFEF;
-	color: #660000;
-	width: 150px;
-	height: 23px;
-	border-top: 2px solid #7A6241;
-	border-right: 2px solid #CCB99E;
-	border-bottom: 2px solid #CCB99E;
-	border-left: 2px solid #7A6241;
-	padding: 1px;
-	vertical-align: middle;
-}
-#login .bottom {
-	height: 46px;
-	width: 354px;
-	margin-left: auto;
-	margin-right: auto;
-}
-#login .bottom input{
-	padding: 0px;
-	margin: 0px;
-	border: none;
-	width: 104px;
-	height: 46px;
-	vertical-align: top;
-}
-
 .H20px {
 	height: 20px;
 	clear: both;

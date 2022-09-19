@@ -1260,7 +1260,7 @@
 			</condition>
 		</item>
 	</menu>
-	<item name="Log Out" page="logOut.do">
+	<item name="Log Out" page="logout.action">
 		<condition>
 			<isAuthenticated/>
 			<not>
@@ -1268,7 +1268,7 @@
 			</not>
 		</condition>
 	</item>
-	<item name="Log In" page="login.do">
+	<item name="Log In" page="login.action">
 		<condition>
 			<or>
 				<not>
