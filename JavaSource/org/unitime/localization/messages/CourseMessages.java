@@ -3566,4 +3566,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Messages from UniTime")
 	String sectRegistrationMessages();
+	
+	@DefaultMessage("Page is loading, please wait ...")
+	String messagePageLoading();
 }

@@ -23,6 +23,7 @@
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
+<loc:bundle name="CourseMessages">
 <html>
   <head>
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
@@ -126,9 +127,7 @@
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class="content"> 
-			<span id="UniTimeGWT:Loading" class="unitime-PageLoading">
-				Page is loading, please wait ...
-			</span>
+			<span id="UniTimeGWT:Loading" class="unitime-PageLoading"><loc:message name="messagePageLoading"/></span>
 	    	<span id='UniTimeGWT:Body'></span>
 	    </span>
     </span><span class='footer' id="unitime-Footer">
@@ -152,3 +151,4 @@
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
   </body>
 </html>
+</loc:bundle>

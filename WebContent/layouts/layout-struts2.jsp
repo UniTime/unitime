@@ -191,7 +191,10 @@
 			<span class="row">
 				<span class="cell left">
 					<span id='UniTimeGWT:Version'></span>
-					<tt:time-stamp/>
+					<tiles:importAttribute name="includeTimeStamp" scope="request"/>
+					<s:if test="#request.includeTimeStamp">
+						<tt:time-stamp/>
+					</s:if>
 				</span>
     			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 				<span class="cell middle"><tt:copy/></span>

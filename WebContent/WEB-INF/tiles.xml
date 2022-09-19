@@ -35,5 +35,6 @@
  		<put-attribute name="checkAdmin" value="false" />
  		<put-attribute name="showMenu" value="true" />
  		<put-attribute name="updateRegistration" value="false" />
+ 		<put-attribute name="includeTimeStamp" value="true"/>
   	</definition>
 </tiles-definitions>
