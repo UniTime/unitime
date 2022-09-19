@@ -162,7 +162,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.jsp' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"><tiles:getAsString name="title" /></span>
 					<s:if test="#request.showMenu">
@@ -195,7 +195,13 @@
 				</span>
     			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 				<span class="cell middle"><tt:copy/></span>
-				<span class="cell right"><tt:registration/></span>
+				<tiles:importAttribute name="updateRegistration" scope="request"/>
+				<s:if test="#request.updateRegistration">
+					<span class="cell right"><tt:registration update="true"/></span>
+				</s:if>
+				<s:else>
+					<span class="cell right"><tt:registration/></span>
+				</s:else>
 			</span>
 		</span>
 		<tt:hasProperty name="tmtbl.page.disclaimer">

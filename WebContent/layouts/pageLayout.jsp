@@ -170,7 +170,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.jsp' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"><bean:write name="title" scope="request"/></span>
 					<logic:equal name="showMenu" value="true">

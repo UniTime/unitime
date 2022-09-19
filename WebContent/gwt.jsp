@@ -116,7 +116,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.jsp' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"></span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>

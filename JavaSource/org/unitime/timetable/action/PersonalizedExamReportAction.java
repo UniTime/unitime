@@ -97,7 +97,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Action(value = "personalSchedule", results = {
 		@Result(name = "show", type = "tiles", location = "personalSchedule.tiles"),
-		@Result(name = "main", type = "redirect", location = "/main.jsp"),
+		@Result(name = "main", type = "redirect", location = "/main.action"),
 		@Result(name = "back", type = "redirect", location = "/login.action"),
 		@Result(name = "exams", type = "redirect", location = "/exams.action"),
 		@Result(name = "classes", type = "redirect", location = "/classes.action")

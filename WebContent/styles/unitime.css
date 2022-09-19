@@ -3947,6 +3947,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-MainContent .message {
 	padding: 2px 0px 0px 10px;
+	white-space: pre-wrap;
 }
 
 .unitime-EnrollButton {

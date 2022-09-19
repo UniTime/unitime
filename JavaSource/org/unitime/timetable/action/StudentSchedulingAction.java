@@ -298,7 +298,7 @@ public class StudentSchedulingAction extends Action {
 		} catch (SectioningException e) {}
 		
 		// 5. Main page fallback
-		response.sendRedirect("main.jsp");
+		response.sendRedirect("main.action");
 		return null;
 	}
 }

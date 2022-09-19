@@ -33,6 +33,7 @@
 		<intercept-url pattern="/classes.action" access="permitAll" />
 		<intercept-url pattern="/exams.action" access="permitAll" />
 		<intercept-url pattern="/login.action" access="permitAll" />
+		<intercept-url pattern="/main.action" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/*.action" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />

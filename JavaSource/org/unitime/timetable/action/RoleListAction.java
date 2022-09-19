@@ -49,10 +49,10 @@ import org.unitime.timetable.security.UserContext;
 @Action(value = "selectPrimaryRole", results = {
 		@Result(name = "getUserSelectedRole", type = "tiles", location = "selectPrimaryRole.tiles"),
 		@Result(name = "getDefaultAcadSession", type = "tiles", location = "selectAcadSession.tiles"),
-		@Result(name = "success", type = "redirect", location = "/main.jsp"),
+		@Result(name = "success", type = "redirect", location = "/main.action"),
 		@Result(name = "fail", type = "tiles", location = "selectPrimaryRole.tiles"),
 		@Result(name = "loginRequired", type = "redirect", location = "/loginRequired.action"),
-		@Result(name = "norole", type = "redirect", location = "/main.jsp")
+		@Result(name = "norole", type = "redirect", location = "/main.action")
 	})
 @TilesDefinitions({
 @TilesDefinition(name = "selectPrimaryRole.tiles", extend = "baseLayout", putAttributes =  {

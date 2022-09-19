@@ -19,27 +19,16 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tt:session-context/>
-<HTML>
-	<HEAD>
+<html>
+	<head>
 	    <meta charset="UTF-8"/>
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<% if (!sessionContext.isAuthenticated()) {%>
-		<META http-equiv="Refresh" content="1; url=login.action">	
-		<% } else { %>	
-		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.action">	
-		<% } %>
-		<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
+		<meta http-equiv="Refresh" content="1; url=selectPrimaryRole.action">	
+		<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
-		<TITLE>UniTime <%=Constants.VERSION%>| University Timetabling Application</TITLE>
-	</HEAD>
-	<BODY>
-		<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
-			<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
-		<% } %>
-		<BR>
-	</BODY>
-</HTML>
+		<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
+	</head>
+	<body>
+	</body>
+</html>

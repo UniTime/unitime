@@ -34,5 +34,6 @@
  		<put-attribute name="checkRole" value="true" />
  		<put-attribute name="checkAdmin" value="false" />
  		<put-attribute name="showMenu" value="true" />
+ 		<put-attribute name="updateRegistration" value="false" />
   	</definition>
 </tiles-definitions>
