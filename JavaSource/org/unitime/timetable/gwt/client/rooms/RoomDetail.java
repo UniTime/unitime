@@ -108,7 +108,7 @@ public class RoomDetail extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if ("1".equals(Location.getParameter("back")))
-					ToolBox.open(GWT.getHostPageBaseURL() + "back.do");
+					ToolBox.open(GWT.getHostPageBaseURL() + "back.action");
 				else
 					hide();
 			}

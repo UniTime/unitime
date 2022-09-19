@@ -42,11 +42,11 @@ public class UniTimeBack {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (event.getValue() == null || event.getValue().isEmpty() || "back".equals(event.getValue())) {
-					open(GWT.getHostPageBaseURL() + "back.do?uri=" + iBackUrl);
+					open(GWT.getHostPageBaseURL() + "back.action?uri=" + iBackUrl);
 				} else {
 					String uri = token2uri(event.getValue().replace("%20", " "));
 					if (uri != null)
-						open(GWT.getHostPageBaseURL() + "back.do?uri=" + uri);
+						open(GWT.getHostPageBaseURL() + "back.action?uri=" + uri);
 				}
 			}
 		});

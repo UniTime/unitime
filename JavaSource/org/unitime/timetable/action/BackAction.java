@@ -19,16 +19,8 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.unitime.timetable.security.SessionContext;
+import org.apache.struts2.convention.annotation.Action;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -37,12 +29,11 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  *
  */
-@Service("/back")
-public class BackAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "back")
+public class BackAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = 6990093910325408161L;
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String execute() throws Exception {
         if(!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAuthority() == null)
         	throw new AccessDeniedException();
         

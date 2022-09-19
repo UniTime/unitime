@@ -446,12 +446,6 @@
       <forward name="edit" path="editDatePatternTile" />
     </action>
 
-    <action 
-    	path="/back"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-		scope="request"
-		validate="false" />
-
 	<action 
 		path="/activeSessions"
 		forward="activeSessionsTile"
