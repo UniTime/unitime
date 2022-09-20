@@ -32,7 +32,6 @@
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
 	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
 	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
@@ -204,30 +203,6 @@
             redirect="true" />
       </action>
 
-      <action
-         path="/instructionalOfferingConfigEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="instructionalOfferingConfigEditForm"
-         input="instructionalOfferingConfigEditTile"
-         name="instructionalOfferingConfigEditForm"
-         scope="request"
-         validate="false">
-         <forward
-            name="displayForm"
-            path="instructionalOfferingConfigEditTile"
-            redirect="true" />
-         <forward
-            name="fail"
-            path="/error.jsp"
-            redirect="true" />
-        <forward 
-        	name="instructionalOfferingSearch" 
-        	path="/instructionalOfferingSearch.action" />
-        <forward 
-        	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.action" />
-      </action>
-      
       <action
          path="/crossListsModify"
          type="org.springframework.web.struts.DelegatingActionProxy"

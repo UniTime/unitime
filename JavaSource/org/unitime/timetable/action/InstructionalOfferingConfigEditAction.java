@@ -25,24 +25,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -76,7 +70,6 @@ import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
-import org.unitime.timetable.model.comparators.SicComparator;
 import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -84,10 +77,11 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.AccessDeniedException;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.duration.DurationModel;
@@ -95,144 +89,116 @@ import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
 
 
 /**
- * MyEclipse Struts
- * Creation date: 05-19-2005
- *
- * XDoclet definition:
- * @struts:action path="/instructionalOfferingConfigEdit" name="InstructionalOfferingConfigEditForm" input="/instructionalOfferingConfigEdit.jsp" scope="request"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Service("/instructionalOfferingConfigEdit")
-public class InstructionalOfferingConfigEditAction extends Action {
-	
+@Action(value = "instructionalOfferingConfigEdit", results = {
+		@Result(name = "displayForm", type = "tiles", location = "instructionalOfferingConfigEdit.tiles"),
+		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),
+		@Result(name = "instructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action", 
+			params = { "io", "${form.instrOfferingId}", "op", "view"}
+		)
+	})
+@TilesDefinition(name = "instructionalOfferingConfigEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Instructional Offering Configuration"),
+		@TilesPutAttribute(name = "body", value = "/user/instructionalOfferingConfigEdit.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true")
+	})
+public class InstructionalOfferingConfigEditAction extends UniTimeAction<InstructionalOfferingConfigEditForm> {
+	private static final long serialVersionUID = -4608795904003447557L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String op2 = null;
+	private Integer limit;
+	private Long id;
+	private Long uid;
 	
-	@Autowired PermissionDepartment permissionDepartment;
+	public String getHdnOp() { return op2; }
+	public void setHdnOp(String hdnOp) { this.op2 = hdnOp; }
+	public Integer getLimit() { return limit; }
+	public void setLimit(Integer limit) { this.limit = limit; }
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+	public Long getUid() { return uid; }
+	public void setUid(Long uid) { this.uid = uid; }
 
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
-
-    /**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-
-    	MessageResources rsc = getResources(request);
-        InstructionalOfferingConfigEditForm frm = (InstructionalOfferingConfigEditForm) form;
-        
+    public String execute() throws Exception {
+    	if (form == null)
+    		form = new InstructionalOfferingConfigEditForm();
+    	
         Department contrDept = null;
-        if (frm.getConfigId() == null || frm.getConfigId() == 0) {
-        	InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.valueOf(frm.getInstrOfferingId()));
+        if (form.getConfigId() == null || form.getConfigId() == 0) {
+        	InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.valueOf(form.getInstrOfferingId()));
         	sessionContext.checkPermission(offering, Right.InstrOfferingConfigAdd);
         	contrDept = offering.getControllingCourseOffering().getSubjectArea().getDepartment();
         }
         
-        if (frm.getConfigId() != null && frm.getConfigId() != 0) {
-        	InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(frm.getConfigId());
+        if (form.getConfigId() != null && form.getConfigId() != 0) {
+        	InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(form.getConfigId());
         	sessionContext.checkPermission(config, Right.InstrOfferingConfigEdit);
         	contrDept = config.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment();
         }
 
         String html = "";
-        String op = (request.getParameter("op")==null)
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");
-
-        if(op==null)
-            op = request.getParameter("hdnOp");
+        
+    	if (op == null) op = form.getOp();
+    	if (op2 != null && !op2.isEmpty()) op = op2;
 
         if(op==null || op.trim().length()==0)
             throw new Exception (MSG.errorOperationNotInterpreted() + op);
+        
+        if (MSG.actionBackToIODetail().equals(op)) {
+        	return "instructionalOfferingDetail";
+        }
 
         // Set up itypes and subparts
-        frm.setOp(op);
+        form.setOp(op);
         LookupTables.setupItypes(request,true);
         LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
 		TreeSet ts = new TreeSet();
 		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
 			Department d = (Department) it.next();
 			if (sessionContext.hasPermission(d, Right.InstrOfferingConfigEditDepartment) &&
-				permissionDepartment.check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
+				getPermissionDepartment().check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
 				ts.add(d);
 		}
 		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME), ts);
         request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 
         // Clear previous error markers
-        search("-1111", new Vector(), true);
+        search(-1111, new ArrayList<Integer>(), true);
 
         // First access to screen
-        if(op.equalsIgnoreCase(rsc.getMessage("op.edit"))
-        	//	|| op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")) --- probably never used
-                || op.equalsIgnoreCase(MSG.actionEditConfiguration()) ) {
-            Long configId = null;
-
-            try {
-                configId = Long.valueOf(request.getParameter("configId"));
-            }
-            catch (Exception e) {
-                throw new Exception (MSG.errorConfigIDNotValid() + request.getParameter("configId"));
-            }
+        if ("Edit".equals(op) || MSG.actionEditConfiguration().equals(op)) {
+        	if (form.getConfigId() == null)
+                throw new Exception (MSG.errorConfigIDNotValid() + form.getConfigId());
             
-            sessionContext.checkPermission(configId, "InstrOfferingConfig", Right.InstrOfferingConfigEdit);
+            sessionContext.checkPermission(form.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigEdit);
 
-            loadDetailFromConfig(frm, configId, false);
+            loadDetailFromConfig(form.getConfigId(), false);
 
             // load existing config from database
-            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
+            List<SimpleItypeConfig> sp = loadOriginalConfig(form.getConfigId());
             boolean createAsNew = false;
-//            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")))
-//                createAsNew = true;
 
             if(sp!=null && sp.size()>0) {
 	            sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getConfigId().toString(), createAsNew, form.getUnlimited().booleanValue(), form.getDurationTypeText());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             } else {
             	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
             }
-
-            // For duplication set configID to 0
-//            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig"))) {
-//                frm.setConfigId(Long.valueOf(0));
-//                frm.setName(InstrOfferingConfig.getGeneratedName(
-//                        ( new InstrOfferingConfigDAO().get(configId)).getInstructionalOffering() ));
-//            }
         }
 
         // Add a new configuration
 		if(op.equals(MSG.actionAddConfiguration())) {
-    		String courseOfferingId = (request.getParameter("uid")==null)
-			? (request.getAttribute("uid")==null)
-			        ? null
-			        : request.getAttribute("uid").toString()
-			: request.getParameter("uid");
-
-
-			if(courseOfferingId==null || courseOfferingId.trim().length()==0)
+			if (uid==null)
 			    throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 			
-            sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
+            sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
 
-            loadDetailFromCourseOffering(frm, Long.valueOf(courseOfferingId), true, false);
+            loadDetailFromCourseOffering(uid, true, false);
             sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
@@ -240,28 +206,20 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Redirect after making course offered
         if (op.equalsIgnoreCase(MSG.actionMakeOffered()) ) {
-
-    		String courseOfferingId = (request.getParameter("uid")==null)
-						? (request.getAttribute("uid")==null)
-						        ? null
-						        : request.getAttribute("uid").toString()
-						: request.getParameter("uid");
-
-
-	        if(courseOfferingId==null || courseOfferingId.trim().length()==0)
+	        if (uid==null)
 	            throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 	        
             // Get first available config
-            loadDetailFromCourseOffering(frm, Long.valueOf(courseOfferingId), true, true);
+            loadDetailFromCourseOffering(uid, true, true);
             sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
             // load existing config from database
-            if (frm.getConfigId()!=null && frm.getConfigId().intValue()>0) {
-	            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
+            if (form.getConfigId()!=null && form.getConfigId().intValue()>0) {
+	            List<SimpleItypeConfig> sp = loadOriginalConfig(form.getConfigId());
 	            if(sp!=null && sp.size()>0) {
 	            	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, sp);
-		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), uid.toString(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 	            } else {
 	            	sessionContext.setAttribute(SessionAttribute.InstructionalOfferingConfigList, null);
@@ -271,120 +229,79 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         // Add Instructional Type
-        if(op.equals(MSG.actionAddInstructionalTypeToConfig())) {
-
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+        if (MSG.actionAddInstructionalTypeToConfig().equals(op)) {
+        	form.validate(this);
+            if (hasFieldErrors()) {
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
-                saveErrors(request, errors);
-                return mapping.findForward("displayForm");
+                return "displayForm";
             }
 
-            addInstructionalType(frm);
-            frm.setItype(Constants.BLANK_OPTION_VALUE);
+            addInstructionalType(form);
+            form.setItype(Constants.BLANK_OPTION_VALUE);
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
         // Move / Order / Delete Itypes
-        if(op.indexOf(rsc.getMessage("op.shift"))>=0
-                || op.equals(rsc.getMessage("op.delete")) ) {
-
-            int limit = 0;
-
-            try {
-                limit = Integer.parseInt(request.getParameter("limit"));
-            }
-            catch (Exception e) {
-                limit = 0;
+        if (op.indexOf("shift")>=0 || op.equals("delete")) {
+            if (limit != null) {
+            	form.setLimit(limit);
             }
 
-            frm.setLimit(limit);
+            processShiftOrDelete(id, op);
 
-            processShiftOrDelete(request.getParameter("id"), op);
-
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
         // Multiple Limits
         if (op.equalsIgnoreCase("multipleLimits")) {
-
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
         // User commits changes
-        if(op.equals(MSG.actionSaveConfiguration())
-                || op.equals(MSG.actionUpdateConfiguration()) ) {
-
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
-                request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
-                saveErrors(request, errors);
-                return mapping.findForward("displayForm");
-            }
+        if (op.equals(MSG.actionSaveConfiguration()) || op.equals(MSG.actionUpdateConfiguration()) ) {
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
+            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
+            form.validate(this);
+            if (hasFieldErrors())
+                return "displayForm";
 
             try {
-                updateConfig(request, frm);
-
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
-	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
-
-	            // Redirect to instr offering detail on success
-                ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
-                redirect.addParameter("io", frm.getInstrOfferingId());
-                redirect.addParameter("op", "view");
-                return redirect;
-            }
-            catch (Exception e) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
-                request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
-                errors.add(
-                        "subparts",
-                        new ActionMessage(
-                                "errors.generic",
-                                "Configuration could not be updated. If possible, split your configuration change into 2 or more separate operations. "
-                                + (e.getClass().getName().startsWith("org.hibernate.") ? "" : "Exception: " + e.getMessage()) ));
-                saveErrors(request, errors);
-                return mapping.findForward("displayForm");
+                updateConfig();
+	            return "instructionalOfferingDetail";
+            } catch (Exception e) {
+            	addFieldError("form.subparts", MSG.errorConfigurationCouldNotBeUpdated());
+            	if (!e.getClass().getName().startsWith("org.hibernate."))
+            		addFieldError("form.subparts", MSG.errorCaughtException(e.getMessage()));
+            	return "displayForm";
             }
         }
 
         // Delete configuration
-		if(op.equals(MSG.actionDeleteConfiguration())) {
+		if (op.equals(MSG.actionDeleteConfiguration())) {
 			
-            sessionContext.checkPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigDelete);
+            sessionContext.checkPermission(form.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigDelete);
 			
-            deleteConfig(request, frm);
-
-            // Redirect to instr offering detail on success
-            ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
-            redirect.addParameter("io", frm.getInstrOfferingId());
-            redirect.addParameter("op", "view");
-            redirect.addParameter("cfgDelete", "1");
-            return redirect;
+            deleteConfig(request, form);
+            return "instructionalOfferingDetail";
 		}
 
         // User clicks Unlimited Enrollment
-		if(op.equalsIgnoreCase("unlimitedEnrollment")) {
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
+		if (op.equalsIgnoreCase("unlimitedEnrollment")) {
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, form.getLimit(), form.getCourseOfferingId(), false, form.getUnlimited().booleanValue(), form.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
-            return mapping.findForward("displayForm");
+            return "displayForm";
 		}
 
-        return mapping.findForward("displayForm");
+        return "displayForm";
     }
 
 
-    private void loadDetailFromConfig(
-            InstructionalOfferingConfigEditForm frm,
-            Long configId,
-            boolean init ) throws Exception {
+    private void loadDetailFromConfig(Long configId, boolean init ) throws Exception {
 
         // Check uniqueid
         if(configId==null)
@@ -396,39 +313,32 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if(ioc==null)
             throw new Exception ("Congifuration not found for id: " + configId);
 
-	    frm.setConfigId(configId);
-	    frm.setName(ioc.getName());
-        frm.setUnlimited(ioc.isUnlimitedEnrollment());
+	    form.setConfigId(configId);
+	    form.setName(ioc.getName());
+        form.setUnlimited(ioc.isUnlimitedEnrollment());
 
         Long courseOfferingId = ioc.getControllingCourseOffering().getUniqueId();
-        loadDetailFromCourseOffering(frm, courseOfferingId, init, false);
+        loadDetailFromCourseOffering(courseOfferingId, init, false);
         
-        frm.setDurationType(ioc.getClassDurationType() == null ? -1l : ioc.getClassDurationType().getUniqueId());
+        form.setDurationType(ioc.getClassDurationType() == null ? -1l : ioc.getClassDurationType().getUniqueId());
         for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
         	if (!sessionContext.hasPermission(subpart, Right.InstrOfferingConfigEditSubpart)) {
-        		frm.setDurationTypeEditable(false);
+        		form.setDurationTypeEditable(false);
         		break;
         	}
-        if (frm.getDurationTypes().size() <= 1) {
+        if (form.getDurationTypes().size() <= 1) {
         	ClassDurationType dtype = ioc.getEffectiveDurationType();
         	if (dtype != null && dtype.isVisible())
-        		frm.setDurationTypeEditable(false);
+        		form.setDurationTypeEditable(false);
         }
-        frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
-        frm.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
+        form.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
+        form.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
     }
 
     /**
      * Loads course offering details into the form
-     * @param courseOfferingId Course Offering Uid
-     * @param frm Form
-     * @throws Exception
      */
-    private void loadDetailFromCourseOffering(
-            InstructionalOfferingConfigEditForm frm,
-            Long courseOfferingId,
-            boolean init,
-            boolean loadDefaultConfig ) throws Exception {
+    private void loadDetailFromCourseOffering(Long courseOfferingId, boolean init, boolean loadDefaultConfig ) throws Exception {
 
         // Check uniqueid
         if(courseOfferingId==null)
@@ -444,21 +354,21 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	    InstructionalOffering io = co.getInstructionalOffering();
 
 	    // Set values
-        frm.setCourseOfferingId(co.getUniqueId().toString());
-        frm.setSubjectArea(co.getSubjectAreaAbbv());
-        frm.setCourseNumber(co.getCourseNbr());
-        frm.setInstrOfferingName(co.getCourseNameWithTitle());
-        frm.setInstrOfferingId(io.getUniqueId().toString());
-        frm.setNotOffered(io.isNotOffered());
-        frm.setDurationType(io.getSession().getDefaultClassDurationType() == null ? -1 : io.getSession().getDefaultClassDurationType().getUniqueId());
-        frm.setDurationTypeDefault(io.getSession().getDefaultClassDurationType() == null ? MSG.systemDefaultDurationType() : MSG.sessionDefault(io.getSession().getDefaultClassDurationType().getLabel()));
-        frm.setDurationTypeEditable(true);
-        frm.setInstructionalMethod(null);
-        frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
-        frm.setInstructionalMethodEditable(true);
+        form.setCourseOfferingId(co.getUniqueId().toString());
+        form.setSubjectArea(co.getSubjectAreaAbbv());
+        form.setCourseNumber(co.getCourseNbr());
+        form.setInstrOfferingName(co.getCourseNameWithTitle());
+        form.setInstrOfferingId(io.getUniqueId().toString());
+        form.setNotOffered(io.isNotOffered());
+        form.setDurationType(io.getSession().getDefaultClassDurationType() == null ? -1 : io.getSession().getDefaultClassDurationType().getUniqueId());
+        form.setDurationTypeDefault(io.getSession().getDefaultClassDurationType() == null ? MSG.systemDefaultDurationType() : MSG.sessionDefault(io.getSession().getDefaultClassDurationType().getLabel()));
+        form.setDurationTypeEditable(true);
+        form.setInstructionalMethod(null);
+        form.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+        form.setInstructionalMethodEditable(true);
 
 	    Set configs = io.getInstrOfferingConfigs();
-	    frm.setConfigCount(Integer.valueOf(configs.size()));
+	    form.setConfigCount(Integer.valueOf(configs.size()));
 
 	    // Catalog Link
         @SuppressWarnings("deprecation")
@@ -469,51 +379,41 @@ public class InstructionalOfferingConfigEditAction extends Action {
             if (results==null)
                 throw new Exception (lookup.getErrorMessage());
             
-            frm.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
-            frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
+            form.setCatalogLinkLabel((String)results.get(ExternalLinkLookup.LINK_LABEL));
+            form.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
         }
 
         if (loadDefaultConfig) {
     	    if (configs==null || configs.size()==0) {
-    	        frm.setConfigId(null);
-                frm.setName("1");
+    	        form.setConfigId(null);
+                form.setName("1");
     	    }
     	    else {
     	        InstrOfferingConfig ioc = (InstrOfferingConfig) configs.iterator().next();
-    	        frm.setConfigId(ioc.getUniqueId());
+    	        form.setConfigId(ioc.getUniqueId());
 
     	        if(init) {
-    		        frm.setName(ioc.getName());
-    		        frm.setUnlimited(ioc.isUnlimitedEnrollment());
+    		        form.setName(ioc.getName());
+    		        form.setUnlimited(ioc.isUnlimitedEnrollment());
     	        }
     	    }
         }
         else {
-            if (frm.getName()==null || frm.getName().trim().length()==0)
-                frm.setName(InstrOfferingConfig.getGeneratedName(io));
+            if (form.getName()==null || form.getName().trim().length()==0)
+                form.setName(InstrOfferingConfig.getGeneratedName(io));
         }
     }
 
 
     /**
      * Loads original config from database
-     * @param user User object
-     * @param courseOfferingId Course Offering Uid
-     * @param frm Form
+     * @param uid Course Offering Uid
      */
-    private Vector loadOriginalConfig(
-            Long configId,
-            InstructionalOfferingConfigEditForm frm)
-    	throws Exception {
-
-        InstrOfferingConfigDAO cfgDao = new InstrOfferingConfigDAO();
-        InstrOfferingConfig config = cfgDao.get(configId);
-        frm.setLimit(config.getLimit().intValue());
-        Vector sp = toSimpleItypeConfig(config);
-
-        if(sp!=null && sp.size()>0)
-            Collections.sort(sp, new SicComparator());
-
+    private List<SimpleItypeConfig> loadOriginalConfig(Long configId) throws Exception {
+        InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(configId);
+        form.setLimit(config.getLimit());
+        List<SimpleItypeConfig> sp = toSimpleItypeConfig(config);
+        Collections.sort(sp);
         return sp;
     }
 
@@ -521,29 +421,29 @@ public class InstructionalOfferingConfigEditAction extends Action {
     /**
      * Add a new Inst. Type to the user defined config
      * @param httpSession Http Session object
-     * @param frm Form object
+     * @param form Form object
      * @throws Exception
      */
     private void addInstructionalType(
-            InstructionalOfferingConfigEditForm frm) throws Exception {
+            InstructionalOfferingConfigEditForm form) throws Exception {
 
         // Create object
         ItypeDescDAO itypeDao = new ItypeDescDAO();
-        ItypeDesc itype = itypeDao.get(Integer.valueOf(frm.getItype()));
+        ItypeDesc itype = itypeDao.get(Integer.valueOf(form.getItype()));
         if(itype==null)
             throw new Exception ("Instructional Type not found");
 
         // Retrieve object containing user defined config from session
-        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
+        List<SimpleItypeConfig> sp = (List<SimpleItypeConfig>) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
         if(sp==null)
-            sp = new Vector();
+            sp = new ArrayList<SimpleItypeConfig>();
 
         // Create new object
         SimpleItypeConfig sic = new SimpleItypeConfig(itype);
         sic.setSubpartId(-1L);
-        //sic.setLimitPerClass(frm.getLimit());
-        //sic.setRoomCapacity(frm.getLimit());
-        sp.addElement(sic);
+        //sic.setLimitPerClass(form.getLimit());
+        //sic.setRoomCapacity(form.getLimit());
+        sp.add(sic);
 
         //Collections.sort(sp, new SicComparator());
 
@@ -558,26 +458,25 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @param op Operation to be performed
      * @throws Exception
      */
-    private void processShiftOrDelete(
-            String id, String op) throws Exception {
+    private void processShiftOrDelete(long id, String op) throws Exception {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
+        List<SimpleItypeConfig> sp = (List<SimpleItypeConfig>) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
-        if(sp==null || sp.size()==0)
+        if (sp==null || sp.size()==0)
             throw new Exception ("Could not retrieve user defined configs");
 
         // Locate config element
-        Vector indx = new Vector();
+        List<Integer> indx = new ArrayList<Integer>();
         SimpleItypeConfig result = search(id, indx, false);
-        if(result==null)
+        if (result==null)
             throw new Exception ("Could not retrieve config element: " + id);
 
-        int index = Integer.parseInt(indx.elementAt(0).toString());
+        int index = indx.get(0);
 
         // Process ops
-        if(op.equalsIgnoreCase("shiftUp"))  {
+        if (op.equalsIgnoreCase("shiftUp"))  {
             // Get parent
            SimpleItypeConfig parent = result.getParent();
 
@@ -586,23 +485,23 @@ public class InstructionalOfferingConfigEditAction extends Action {
                // Switch elements with one above
 	            int indx1 = index;
 	            int indx2 = indx1-1;
-	            Object tmp = sp.elementAt(indx1);
-	            sp.insertElementAt(tmp, indx2);
-	            sp.removeElementAt(indx1+1);
+	            SimpleItypeConfig tmp = sp.get(indx1);
+	            sp.add(indx2, tmp);
+	            sp.remove(indx1+1);
             }
 
          	// Element is a subpart of another element
            else {
                // Locate the element index in the subparts
-               Vector v = parent.getSubparts();
+               List<SimpleItypeConfig> v = parent.getSubparts();
                for(int i=0; i<v.size(); i++) {
-                   SimpleItypeConfig subp = (SimpleItypeConfig) v.elementAt(i);
+                   SimpleItypeConfig subp = v.get(i);
 
                    // Switch elements with one above
-                   if(subp.getId()==Long.parseLong(id)) {
-                       Object tmp = v.elementAt(i);
-                       v.insertElementAt(tmp, i-1);
-                       v.removeElementAt(i+1);
+                   if(subp.getId()==id) {
+                	   SimpleItypeConfig tmp = v.get(i);
+                       v.add(i-1, tmp);
+                       v.remove(i+1);
                        break;
                    }
                }
@@ -618,23 +517,23 @@ public class InstructionalOfferingConfigEditAction extends Action {
                // Switch elements with one below
 	            int indx1 = index+1;
 	            int indx2 = index;
-	            Object tmp = sp.elementAt(indx1);
-	            sp.insertElementAt(tmp, indx2);
-	            sp.removeElementAt(indx1+1);
+	            SimpleItypeConfig tmp = sp.get(indx1);
+	            sp.add(indx2, tmp);
+	            sp.remove(indx1+1);
             }
 
           	// Element is a subpart of another element
            else {
                // Locate the element index in the subparts
-               Vector v = parent.getSubparts();
+               List<SimpleItypeConfig> v = parent.getSubparts();
                for(int i=0; i<v.size(); i++) {
-                   SimpleItypeConfig subp = (SimpleItypeConfig) v.elementAt(i);
+                   SimpleItypeConfig subp = v.get(i);
 
                    // Switch elements with one below
-                   if(subp.getId()==Long.parseLong(id)) {
-                       Object tmp = v.elementAt(i+1);
-                       v.insertElementAt(tmp, i);
-                       v.removeElementAt(i+2);
+                   if(subp.getId()==id) {
+                	   SimpleItypeConfig tmp = v.get(i+1);
+                       v.add(i, tmp);
+                       v.remove(i+2);
                        break;
                    }
                }
@@ -646,11 +545,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
             SimpleItypeConfig parent = result.getParent();
 
             // Remove element from parent subpart
-            Vector v = parent.getSubparts();
+            List<SimpleItypeConfig> v = parent.getSubparts();
             for(int i=0; i<v.size(); i++) {
-                SimpleItypeConfig subp = (SimpleItypeConfig) v.elementAt(i);
-                if(subp.getId()==Long.parseLong(id)) {
-                    v.removeElementAt(i);
+                SimpleItypeConfig subp = v.get(i);
+                if(subp.getId()==id) {
+                    v.remove(i);
                     break;
                 }
             }
@@ -661,18 +560,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             // Parent is at the top most level
             if(grandParent==null) {
-                sp.insertElementAt(result, index+1);
+                sp.add(index+1, result);
             }
 
             // Grandparent exists
             else {
                 // Locate parent in grandparent subparts
-                Vector v1 = grandParent.getSubparts();
+                List<SimpleItypeConfig> v1 = grandParent.getSubparts();
                 for(int i=0; i<v1.size(); i++) {
-                    SimpleItypeConfig subp = (SimpleItypeConfig) v1.elementAt(i);
+                    SimpleItypeConfig subp = v1.get(i);
                     // Add element just after parent subpart
                     if(subp.getId()==parent.getId()) {
-                        v1.insertElementAt(result, i+1);
+                        v1.add(i+1, result);
                         break;
                     }
                 }
@@ -686,25 +585,25 @@ public class InstructionalOfferingConfigEditAction extends Action {
            	// Element is at the top most level
            	if(parent==null) {
            	    // Switch elements with one below
-	            SimpleItypeConfig curr = (SimpleItypeConfig) sp.elementAt(index);
-	            SimpleItypeConfig prev = (SimpleItypeConfig) sp.elementAt(index-1);
+	            SimpleItypeConfig curr = sp.get(index);
+	            SimpleItypeConfig prev = sp.get(index-1);
 	            prev.addSubpart(curr);
-                sp.removeElementAt(index);
+                sp.remove(index);
             }
 
            	// Element is a subpart of another element
             else {
                 // Locate the element index in the subparts
-                Vector v = parent.getSubparts();
+            	List<SimpleItypeConfig> v = parent.getSubparts();
                 for(int i=0; i<v.size(); i++) {
-                    SimpleItypeConfig subp = (SimpleItypeConfig) v.elementAt(i);
+                    SimpleItypeConfig subp = v.get(i);
 
                     // Add the element to the subpart of the element above
-                    if(subp.getId()==Long.parseLong(id)) {
-        	            SimpleItypeConfig curr = (SimpleItypeConfig) v.elementAt(i);
-        	            SimpleItypeConfig prev = (SimpleItypeConfig) v.elementAt(i-1);
+                    if(subp.getId()==id) {
+        	            SimpleItypeConfig curr = v.get(i);
+        	            SimpleItypeConfig prev = v.get(i-1);
         	            prev.addSubpart(curr);
-                        v.removeElementAt(i);
+                        v.remove(i);
                         break;
                     }
                 }
@@ -717,17 +616,17 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
            	// Element is at the top most level
             if(parent==null) {
-                sp.removeElementAt(index);
+                sp.remove(index);
             }
 
           	// Element is a subpart of another element
             else {
                 // Locate the element index in the subparts
-                Vector v = parent.getSubparts();
+            	List<SimpleItypeConfig> v = parent.getSubparts();
                 for(int i=0; i<v.size(); i++) {
-                    SimpleItypeConfig subp = (SimpleItypeConfig) v.elementAt(i);
-                    if(subp.getId()==Long.parseLong(id)) {
-                        v.removeElementAt(i);
+                    SimpleItypeConfig subp = v.get(i);
+                    if(subp.getId()==id) {
+                        v.remove(i);
                         break;
                     }
                 }
@@ -745,10 +644,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @param indx Stores the row number of the config element that has the match
      * @return null if not found, SimpleItypeConfig object if found
      */
-    private SimpleItypeConfig search(String id, Vector indx, boolean clearErrorFlags) {
+    private SimpleItypeConfig search(long id, List<Integer> indx, boolean clearErrorFlags) {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
+        List<SimpleItypeConfig> sp = (List<SimpleItypeConfig>) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -758,10 +657,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Loop through itypes
         for(int i=0; i<sp.size(); i++) {
-            SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
+            SimpleItypeConfig sic = (SimpleItypeConfig) sp.get(i);
 
             indx.clear();
-            indx.addElement(""+i);
+            indx.add(i);
 
             if (clearErrorFlags)
                 sic.setHasError(false);
@@ -784,17 +683,17 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @param id Target Id
      * @return null if not found, SimpleItypeConfig object if found
      */
-    private SimpleItypeConfig searchR(SimpleItypeConfig sic, String id, boolean clearErrorFlags) {
+    private SimpleItypeConfig searchR(SimpleItypeConfig sic, long id, boolean clearErrorFlags) {
 
-        if(sic.getId() == Long.parseLong(id))
+        if (sic.getId() == id)
             return sic;
 
-        Vector v = sic.getSubparts();
+        List<SimpleItypeConfig> v = sic.getSubparts();
         SimpleItypeConfig result = null;
 
         // Loop through children sub-parts
         for(int i=0; i<v.size(); i++) {
-            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
+            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.get(i);
 
             if (clearErrorFlags)
                 sic1.setHasError(false);
@@ -810,12 +709,12 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * Deletes configuration
      * and associated prefs
      * @param request
-     * @param frm
+     * @param form
      * @throws Exception
      */
     private void deleteConfig(
             HttpServletRequest request,
-            InstructionalOfferingConfigEditForm frm) throws Exception {
+            InstructionalOfferingConfigEditForm form) throws Exception {
 
 		org.hibernate.Session hibSession = null;
         Transaction tx = null;
@@ -826,11 +725,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        hibSession = iocDao.getSession();
 	        tx = hibSession.beginTransaction();
 
-            Long configId = frm.getConfigId();
+            Long configId = form.getConfigId();
 	        InstrOfferingConfig ioc = iocDao.get(configId);
 	        InstructionalOffering io = ioc.getInstructionalOffering();
 
-	        deleteSubpart(request, hibSession, ioc, new HashMap());
+	        deleteSubpart(hibSession, ioc, new HashMap());
 	        io.removeConfiguration(ioc);
 
 	        io.computeLabels(hibSession);
@@ -888,16 +787,12 @@ public class InstructionalOfferingConfigEditAction extends Action {
     /**
      * Update configuration without destroying existing subparts/classes
      * and associated prefs
-     * @param request
-     * @param frm
      * @throws Exception
      */
-    private void updateConfig(
-            HttpServletRequest request,
-            InstructionalOfferingConfigEditForm frm) throws Exception {
+    private void updateConfig() throws Exception {
 
         // Read user defined config
-        Vector sp = (Vector) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
+    	List<SimpleItypeConfig> sp = (List<SimpleItypeConfig>) sessionContext.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -918,17 +813,17 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession = iocDao.getSession();
             tx = hibSession.beginTransaction();
 
-            io = ioDao.get(Long.valueOf(frm.getInstrOfferingId()));
-            Long configId = frm.getConfigId();
-            Boolean unlimitedEnroll = (frm.getUnlimited()==null) ? Boolean.valueOf(false) : frm.getUnlimited();
-            int limit = (unlimitedEnroll.booleanValue()) ? 0 : frm.getLimit();
-            ClassDurationType dtype = (frm.getDurationType() == null || frm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(frm.getDurationType(), hibSession));
-            InstructionalMethod imeth = (frm.getInstructionalMethod() == null || frm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(frm.getInstructionalMethod(), hibSession));
+            io = ioDao.get(Long.valueOf(form.getInstrOfferingId()));
+            Long configId = form.getConfigId();
+            Boolean unlimitedEnroll = (form.getUnlimited()==null) ? Boolean.valueOf(false) : form.getUnlimited();
+            int limit = (unlimitedEnroll.booleanValue()) ? 0 : form.getLimit();
+            ClassDurationType dtype = (form.getDurationType() == null || form.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(form.getDurationType(), hibSession));
+            InstructionalMethod imeth = (form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod(), hibSession));
 
             if (configId==null || configId.intValue()==0) {
                 ioc = new InstrOfferingConfig();
                 ioc.setLimit(Integer.valueOf(limit));
-                ioc.setName(frm.getName());
+                ioc.setName(form.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setInstructionalOffering(io);
                 ioc.setClassDurationType(dtype);
@@ -941,7 +836,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             else {
                 ioc = iocDao.get(configId);
                 ioc.setLimit(Integer.valueOf(limit));
-                ioc.setName(frm.getName());
+                ioc.setName(form.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setClassDurationType(dtype);
                 ioc.setInstructionalMethod(imeth);
@@ -951,9 +846,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             // Update subparts in the modified config
             for(int i=0; i<sp.size(); i++) {
-                SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
-                createOrUpdateSubpart(request, hibSession, sic, ioc, null, rg, notDeletedSubparts);
-                createOrUpdateClasses(request, hibSession, sic, ioc, null);
+                SimpleItypeConfig sic = sp.get(i);
+                createOrUpdateSubpart(hibSession, sic, ioc, null, rg, notDeletedSubparts);
+                createOrUpdateClasses(hibSession, sic, ioc, null);
             }
 
             // Update Parents
@@ -967,7 +862,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             }
 
             // Remove any subparts that do not exist in the modified config
-            deleteSubpart(request, hibSession, ioc, notDeletedSubparts);
+            deleteSubpart(hibSession, ioc, notDeletedSubparts);
 
             hibSession.saveOrUpdate(ioc);
             hibSession.saveOrUpdate(io);
@@ -1160,17 +1055,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
     /**
      * Deletes all the subparts that do not exist in the modified config
-     * @param request
-     * @param hibSession
-     * @param ioc
-     * @param notDeletedSubparts
-     * @throws Exception
      */
-    private void deleteSubpart(
-            HttpServletRequest request,
-            org.hibernate.Session hibSession,
-            InstrOfferingConfig ioc,
-            HashMap notDeletedSubparts ) throws Exception {
+    private void deleteSubpart(org.hibernate.Session hibSession, InstrOfferingConfig ioc, HashMap notDeletedSubparts ) throws Exception {
 
         Set s = ioc.getSchedulingSubparts();
         HashMap deletedSubparts = new HashMap();
@@ -1233,7 +1119,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @throws Exception
      */
     private void createOrUpdateSubpart(
-            HttpServletRequest request,
             org.hibernate.Session hibSession,
             SimpleItypeConfig sic,
             InstrOfferingConfig ioc,
@@ -1607,10 +1492,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
         } // End If: Subpart Exists
 
         // Loop through children sub-parts
-        Vector v = sic.getSubparts();
+        List<SimpleItypeConfig> v = sic.getSubparts();
         for(int i=0; i<v.size(); i++) {
-            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
-            createOrUpdateSubpart(request, hibSession, sic1, ioc, subpart, rg, notDeletedSubparts);
+            SimpleItypeConfig sic1 = v.get(i);
+            createOrUpdateSubpart(hibSession, sic1, ioc, subpart, rg, notDeletedSubparts);
         }
 
         hibSession.saveOrUpdate(ioc);
@@ -1620,14 +1505,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
     /**
      * Create or Update Classes
-     * @param sic
-     * @param subpart
-     * @param mgr
-     * @param ncfs
-     * @param lfs
      */
     private void createOrUpdateClasses(
-            HttpServletRequest request,
             org.hibernate.Session hibSession,
             SimpleItypeConfig sic,
             InstrOfferingConfig ioc,
@@ -1871,10 +1750,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         // Loop through children sub-parts
-        Vector v = sic.getSubparts();
+        List<SimpleItypeConfig> v = sic.getSubparts();
         for(int i=0; i<v.size(); i++) {
-            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
-            createOrUpdateClasses(request, hibSession, sic1, ioc, subpart);
+            SimpleItypeConfig sic1 = v.get(i);
+            createOrUpdateClasses(hibSession, sic1, ioc, subpart);
         }
     }
 
@@ -1975,9 +1854,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
     }
     
-	public Vector toSimpleItypeConfig(InstrOfferingConfig config) throws Exception{
+	public List<SimpleItypeConfig> toSimpleItypeConfig(InstrOfferingConfig config) throws Exception{
 	    
-	    Vector sp = new Vector();
+	    List<SimpleItypeConfig> sp = new ArrayList<SimpleItypeConfig>();
         Set subparts = config.getSchedulingSubparts();
         Iterator iterSp = subparts.iterator();
         
@@ -1990,7 +1869,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             
             // Process each subpart
             SimpleItypeConfig sic = toSimpleItypeConfig(config, subpart);
-            sp.addElement(sic);
+            sp.add(sic);
         }
 	    
         return sp;
@@ -2081,5 +1960,26 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
         
         return false;
+    }
+    
+    protected PermissionDepartment getPermissionDepartment() {
+    	return (PermissionDepartment)SpringApplicationContextHolder.getBean("permissionDepartment");
+    }
+    
+    public String getCrsNbr() {
+    	return (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
+    }
+
+    public String getSubjArea() {
+    	return (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+    }
+    
+    public List<ComboBoxLookup> getItypes() {
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	ret.add(new ComboBoxLookup(MSG.itemSelect(), ""));
+    	for (ItypeDesc it: ItypeDesc.findAll(true))
+    		ret.add(new ComboBoxLookup(it.getDesc(), it.getItype().toString()));
+    	ret.add(new ComboBoxLookup(MSG.selectMoreOptions(), "more"));
+    	return ret;
     }
 }

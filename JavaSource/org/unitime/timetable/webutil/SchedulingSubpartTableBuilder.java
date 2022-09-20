@@ -21,7 +21,7 @@ package org.unitime.timetable.webutil;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -66,7 +66,7 @@ public class SchedulingSubpartTableBuilder {
 		boolean varLimits = "y".equals(request.getParameter("varLimits"));
 		
         // Read user defined config
-        Vector sp = (Vector) context.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
+        List<SimpleItypeConfig> sp = (List<SimpleItypeConfig>) context.getAttribute(SessionAttribute.InstructionalOfferingConfigList);
         
         // Read setting for auto calculation 
         boolean autoCalc = true;
@@ -86,7 +86,7 @@ public class SchedulingSubpartTableBuilder {
             
             if (!varLimits) {
 		        for(int i=0; i<sp.size(); i++) {
-		            SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
+		            SimpleItypeConfig sic = sp.get(i);
 		            if ( hasVarLimitsInSubpart(request, sic) ) {
 		                varLimits=true;
 		                break;
@@ -114,7 +114,7 @@ public class SchedulingSubpartTableBuilder {
             
 	        // Loop through itypes
 	        for(int i=0; i<sp.size(); i++) {
-	            SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
+	            SimpleItypeConfig sic = sp.get(i);
 	            // Recursively process each itype config
 	            setupSubpart(request, context, sic, 1, tbl, i, sp.size(), 
 	                    -1, -1, limit, null, autoCalc, createAsNew, extDeptsOption, unlimitedEnroll, varLimits);
@@ -170,9 +170,9 @@ public class SchedulingSubpartTableBuilder {
 		if (mnlpc!=mxlpc)
 		    return true;
 		
-        Vector v = sic.getSubparts();
+        List<SimpleItypeConfig> v = sic.getSubparts();
         for(int i=0; i<v.size(); i++) {
-            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
+            SimpleItypeConfig sic1 = v.get(i);
             if (hasVarLimitsInSubpart(request, sic1))
                 return true;
         }
@@ -240,7 +240,7 @@ public class SchedulingSubpartTableBuilder {
         boolean notOwned = sic.isNotOwned();
         boolean hasError = sic.getHasError();
         boolean uDisabled = unlimitedEnroll;
-        Vector v = sic.getSubparts();
+        List<SimpleItypeConfig> v = sic.getSubparts();
         
         // If status is not LLR Edit then do not show option to change to external manager
         boolean mgrDisabled = false;
@@ -406,7 +406,7 @@ public class SchedulingSubpartTableBuilder {
         
         // Loop through children sub-parts
         for(int i=0; i<v.size(); i++) {
-            SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
+            SimpleItypeConfig sic1 = v.get(i);
             setupSubpart(request, context, sic1, level+1, tbl, rowNum, maxRows, 
                     i, v.size(), limit, sic, autoCalc, createAsNew, extDepts, unlimitedEnroll, varLimits);
         }

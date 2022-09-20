@@ -2462,10 +2462,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("This will create {0} classes. Continue?")
 	String confirmCreateTooManyClasses();
 	
-	@DefaultMessage("This operation may result in deletion of existing subparts/classes . Continue?")
+	@DefaultMessage("This operation may result in deletion of existing subparts/classes. Continue?")
 	String confirmMayDeleteSubpartsClasses();
 	
-	@DefaultMessage("This operation will delete existing subparts and associated classes . Continue?")
+	@DefaultMessage("This operation will delete existing subparts and associated classes. Continue?")
 	String confirmDeleteExistingSubpartsClasses();
 	
 	@DefaultMessage("Do you really want to unassign all instructors?")
@@ -3620,4 +3620,73 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("(default)")
 	String userSettingDefaultIndicator();
+	
+	@DefaultMessage("<b>{0}</b> must be greater than or equal to <b>{1}</b>.")
+	String errorIntegerGtEq(String variable, String value);
+	
+	@DefaultMessage("<b>{0}</b> must be less than or equal to <b>{1}</b>.")
+	String errorIntegerLtEq(String variable, String value);
+	
+	@DefaultMessage("<b>{0}</b> must have a value greater than <b>{1}</b>.")
+	String errorIntegerGt(String variable, String value);
+	
+	@DefaultMessage("<b>{0}</b> must have a value lesser than <b>{1}</b>.")
+	String errorIntegerLt(String variable, String value);
+	
+	@DefaultMessage("<b>{0}</b> must be equal to <b>{1}</b>.")
+	String errorEqual(String variable, String value);
+	
+	@DefaultMessage("Min Limit")
+	String columnMinLimit();
+	
+	@DefaultMessage("Max Limit")
+	String columnMaxLimit();
+	
+	@DefaultMessage("A configuration with this name already exists in this offering. Use a unique name.")
+	String errorConfigurationAlreadyExists();
+	
+	@DefaultMessage("{0} per class for <u>{1}</u>")
+	String messageLimitPerClassForIType(String limitName, String itype);
+	
+	@DefaultMessage("{0} per class of {1} for <u>{2}</u>")
+	String messageLimitPerClassOfLimitForIType(String limitName, int limit, String itype);
+	
+	@DefaultMessage("Configuration limit of {0}")
+	String messageConfigurationLimit(int limit);
+	
+	@DefaultMessage("Sum of class limits <u>{0}</u>")
+	String messageSumClassLimitsForIType(String itype);
+	
+	@DefaultMessage("Number of classes for <u>{0}</u>")
+	String messageNumberOfClassesForIType(String itype);
+	
+	@DefaultMessage("Number of rooms for <u>{0}</u>")
+	String messageNumberOfRoomsForIType(String itype);
+
+	@DefaultMessage("Minutes per week for <u>{0}</u>")
+	String messageMinsPerWeekForIType(String itype);
+	
+	@DefaultMessage("Room ratio for <u>{0}</u>")
+	String messageRoomRatioForIType(String itype);
+	
+	@DefaultMessage("Max limit per class")
+	String messageMaxLimitPerClass();
+	
+	@DefaultMessage("Subparts that are grouped under <u>{0}</u> must <br>&nbsp; &nbsp; &nbsp; have number of classes that is a multiple of {1}.")
+	String errorConfigurationNC(String itype, int numClasses);
+	
+	@DefaultMessage("Subparts that are grouped under <u>{0}</u> must <br>&nbsp; &nbsp; &nbsp; have a {1} per class &lt;= {1} per class of {2}.")
+	String errorConfigurationCL(String itype, String limitName, int maxLimitPerClass);
+	
+	@DefaultMessage("Subparts that are grouped under <u>{0}</u> must <br>&nbsp; &nbsp; &nbsp; not accomodate lesser number of students.")
+	String errorConfigurationLS(String itype);
+	
+	@DefaultMessage("Minutes per week for <u>{0}</u> can be 0 only if number of rooms is 0.")
+	String messageMinsPerWeekForITypeCanBeZeroWhenNbrRoomsIsZero(String itype);
+	
+	@DefaultMessage("Configuration could not be updated. If possible, split your configuration change into 2 or more separate operations.")
+	String errorConfigurationCouldNotBeUpdated();
+	
+	@DefaultMessage("Exception: {0}")
+	String errorCaughtException(String errorMessage);
 }

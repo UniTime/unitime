@@ -17,61 +17,34 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.ItypeDesc"%>
-<%@ page import="org.unitime.timetable.model.SimpleItypeConfig"%>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-
-<loc:bundle name="CourseMessages">
+<%@page import="org.unitime.timetable.webutil.JavascriptFunctions"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+	<tt:confirm name="confirmUpdate"><loc:message name="confirmMayDeleteSubpartsClasses"/></tt:confirm>
+	<tt:confirm name="confirmDeleteConfig"><loc:message name="confirmDeleteExistingSubpartsClasses"/></tt:confirm>
 <tt:session-context/>
-<SCRIPT language="javascript">
+<SCRIPT type="text/javascript">
 	<!--
+		<%=JavascriptFunctions.getJsConfirm(sessionContext)%>
 
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
 		function confirmNumClasses(numClasses) {
-			/*integer maxNumClasses = 0;
-			for (integer i = 1; i < document.forms[0].elements['nc'].length; i++){
-			  if (maxNumClasses < document.forms[0].elements['nc' + i].value){
-			    maxNumClasses = document.forms[0].elements['nc' + i].value;
-			  }
-			}
-			  figure out max number of classes */
-			if(numClasses > 100) {
+			if (numClasses > 100) {
 				if (!confirmDelete("<%=MSG.confirmCreateTooManyClasses()%>".replace("{0}",numClasses))){
 			        return(false);
 				}
 			}
 		    return(true);
 		}
-		function confirmDelete1() {
-		   /* if (!confirmNumClasses()){
-		        return(false);
-		    } */
-			return confirmDelete("<%=MSG.confirmMayDeleteSubpartsClasses()%>");
-		}
-
-		function confirmDelete2() {
-			return confirmDelete("<%=MSG.confirmDeleteExistingSubpartsClasses()%>");
-		}
 
 		function confirmDelete(msg) {
 			if (jsConfirm!=null && !jsConfirm) {
-				document.forms[0].elements['click'].value='y'; 
 				return true;
 			} 
 				
 			if(confirm(msg)) {
-				document.forms[0].elements['click'].value='y'; 
 				return true;
 			} 
 			else {
@@ -82,32 +55,22 @@
 		function doClick(op, id) {
 			document.forms[0].elements["hdnOp"].value=op;
 			document.forms[0].elements["id"].value=id;
-			document.forms[0].elements["click"].value="y";
 			document.forms[0].submit();
 		}
-		
 	// -->
 </SCRIPT>
-
-<% 
-	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-	String subjArea = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
-%>
-
-<html:form action="/instructionalOfferingConfigEdit">
-	<html:hidden property="configId" />
-	<html:hidden property="instrOfferingId" />
-	<html:hidden property="subjectArea" styleId="subjectId"/>
-	<html:hidden property="courseNumber" styleId="course"/>
-	<html:hidden property="notOffered" />
-	<html:hidden property="configCount" />
+<s:form action="instructionalOfferingConfigEdit">
+	<s:hidden name="form.configId" />
+	<s:hidden name="form.instrOfferingId" />
+	<s:hidden name="form.subjectArea" styleId="subjectId"/>
+	<s:hidden name="form.courseNumber" styleId="course"/>
+	<s:hidden name="form.notOffered" />
+	<s:hidden name="form.configCount" />
 	<INPUT type="hidden" name="id" value = "">
 	<INPUT type="hidden" name="hdnOp" value = "">
-	<INPUT type="hidden" name="click" value = "n">
 	<INPUT type="hidden" name="doit" value="Cancel">
 	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
@@ -115,189 +78,156 @@
 						<A  title="Back to Instructional Offering List (Alt+I)" 
 							accesskey="I"
 							class="l8" 
-							href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<%=subjArea%>&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingConfigEditForm" property="courseOfferingId" />">
-						<B><bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingName" /></B></A>
-						<html:hidden property="instrOfferingName"/>											
-						<html:hidden property="courseOfferingId"/>
-					</tt:section-title>						
-
-					<logic:equal name="instructionalOfferingConfigEditForm" property="configId" value="0">
-						<logic:equal name="subpartsExist" scope="request" value="true">
-							<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessSaveConfiguration() %>" 
-								title="<%=MSG.titleSaveConfiguration(MSG.accessSaveConfiguration()) %>" 
-								onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
-								<loc:message name="actionSaveConfiguration" />
-							</html:submit>						
-						</logic:equal>
-					</logic:equal>
-					
-					<logic:notEqual name="instructionalOfferingConfigEditForm" property="configId" value="0">
-						<logic:equal name="subpartsExist" scope="request" value="true">
-							<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessUpdateConfiguration() %>" 
-								title="<%=MSG.titleUpdateConfiguration(MSG.accessUpdateConfiguration()) %>" 
-								onclick="return (confirmDelete1());" >			
-								<loc:message name="actionUpdateConfiguration" />
-							</html:submit>						
-						</logic:equal>
-						<sec:authorize access="hasPermission(#instructionalOfferingConfigEditForm.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
-							<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessDeleteConfiguration() %>" 
-								title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
-								onclick="return (confirmDelete2());" >			
-								<loc:message name="actionDeleteConfiguration" />
-							</html:submit>
-						</sec:authorize>						
-					</logic:notEqual>
-	
-					<bean:define id="instrOfferingId">
-						<bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingId" />				
-					</bean:define>
-					 
-					<html:button property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToIODetail() %>" 
-						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
-						onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
-						<loc:message name="actionBackToIODetail" />
-					</html:button>
-
+							href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=${subjArea}&courseNbr=${crsNbr}#A${form.courseOfferingId}">
+						<B><s:property value="name.instrOfferingName"/></B></A>
+						<s:hidden name="form.instrOfferingName"/>											
+						<s:hidden name="form.courseOfferingId"/>
+					</tt:section-title>
+					<s:if test="form.configId == 0 && #request.subpartsExist == 'true'">
+						<s:submit
+							name='op' value='%{#msg.actionSaveConfiguration()}'
+							accesskey='%{#msg.accessSaveConfiguration()}' title='%{#msg.titleSaveConfiguration(#msg.accessSaveConfiguration())}'
+						/>
+					</s:if>
+					<s:if test="form.configId != 0 && #request.subpartsExist == 'true'">
+						<s:submit
+							name='op' value='%{#msg.actionUpdateConfiguration()}'
+							accesskey='%{#msg.accessUpdateConfiguration()}' title='%{#msg.titleUpdateConfiguration(#msg.accessUpdateConfiguration())}'
+							onclick="return confirmUpdate();"
+						/>
+						<sec:authorize access="hasPermission(#form.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
+							<s:submit
+								name='op' value='%{#msg.actionDeleteConfiguration()}'
+								accesskey='%{#msg.accessDeleteConfiguration()}' title='%{#msg.titleDeleteConfiguration(#msg.accessDeleteConfiguration())}'
+								onclick="return confirmDeleteConfig();"
+							/>
+						</sec:authorize>
+					</s:if>
+					<s:submit
+						name='op' value='%{#msg.actionBackToIODetail()}'
+						accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'
+					/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errorsConfigurationEdit"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div>
+				<s:fielderror escape="false"/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
 			<TD><loc:message name="propertyConfigurationName"/></TD>
 			<TD>
-				<html:text property="name" size="20" maxlength="20" />
+				<s:textfield name="form.name" size="20" maxlength="20" />
 			</TD>
 		</TR>
 		
-		<html:hidden property="instructionalMethodEditable"/>
-		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethods">
+		<s:hidden name="form.instructionalMethodEditable"/>
+		<s:if test="form.instructionalMethods != null && !form.instructionalMethods.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyInstructionalMethod"/></TD>
 				<TD colspan="2">
-					<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethodEditable" value="true">
-					<html:select property="instructionalMethod">
-						<logic:empty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
-							<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
-						</logic:empty>
-						<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
-							<html:option value="-1"><loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault"/></loc:message></html:option>
-						</logic:notEmpty>
-						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
-					</html:select>
-					</logic:equal>
-					<logic:notEqual name="instructionalOfferingConfigEditForm" property="instructionalMethodEditable" value="true">
-						<html:hidden property="instructionalMethod"/>
-						<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethod" value="-1">
-							<logic:empty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
+					<s:if test="form.instructionalMethodEditable == true">
+						<s:if test="form.instructionalMethodDefault == null">
+							<s:select name="form.instructionalMethod"
+								list="form.instructionalMethods" listKey="id" listValue="value"
+								headerKey="-1" headerValue="%{#msg.selectNoInstructionalMethod()}" 
+							/>
+						</s:if>
+						<s:if test="form.instructionalMethodDefault != null">
+							<s:select name="form.instructionalMethod"
+								list="form.instructionalMethods" listKey="id" listValue="value"
+								headerKey="-1" headerValue="%{#msg.defaultInstructionalMethod(form.instructionalMethodDefault)}" 
+							/>
+						</s:if>
+					</s:if>
+					<s:else>
+						<s:hidden name="form.instructionalMethod"/>
+						<s:if test="form.instructionalMethod == -1">
+							<s:if test="form.instructionalMethodDefault == null">
 								<loc:message name="selectNoInstructionalMethod"/>
-							</logic:empty>
-							<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault">
-								<loc:message name="defaultInstructionalMethod"><bean:write name="instructionalOfferingConfigEditForm" property="instructionalMethodDefault"/></loc:message>
-							</logic:notEmpty>
-						</logic:equal>
-						<logic:iterate name="instructionalOfferingConfigEditForm" property="instructionalMethods" id="im" type="org.unitime.timetable.util.IdValue">
-							<logic:equal name="instructionalOfferingConfigEditForm" property="instructionalMethod" value="<%=im.getId().toString()%>">
-								<bean:write name="im" property="value"/>
-							</logic:equal>
-						</logic:iterate>
-					</logic:notEqual>
+							</s:if>
+							<s:if test="form.instructionalMethodDefault != null">
+								<loc:message name="defaultInstructionalMethod"><s:property value="form.instructionalMethodDefault"/></loc:message>
+							</s:if>
+						</s:if>
+						<s:if test="form.instructionalMethod != -1">
+							<s:iterator value="form.instructionalMethods" var="im">
+								<s:if test="#im.id == form.instructionalMethod">
+									<s:property value="#im.value"/>
+								</s:if>
+							</s:iterator>
+						</s:if>
+					</s:else>
 				</TD>
 			</TR>
-		</logic:notEmpty>		
+		</s:if>		
 
 		<TR>
 			<TD><loc:message name="propertyUnlimitedEnrollment"/></TD>
 			<TD>
-				<html:checkbox property="unlimited" onclick="doClick('unlimitedEnrollment', '');" />
+				<s:checkbox name="form.unlimited" onclick="doClick('unlimitedEnrollment', '');" />
 			</TD>
 		</TR>
-
-		<logic:notEqual name="instructionalOfferingConfigEditForm" property="unlimited" value="true" >
+		
+		<s:if test="form.unlimited != true">
 		<TR>
 			<TD><loc:message name="propertyConfigurationLimit"/><font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="limit" size="4" maxlength="4" />
+				<s:textfield name="form.limit" size="4" maxlength="4" id="limit"/>
 			</TD>
 		</TR>
-		</logic:notEqual>
+		</s:if>
 		
-		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="catalogLinkLabel">
+		<s:if test="form.catalogLinkLabel != null">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
-				<A href="<bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="instructionalOfferingConfigEditForm" property="catalogLinkLabel" /></A>
+				<A href="${form.catalogLinkLocation}" target="_blank"><s:property value="form.catalogLinkLabel"/></A>
 			</TD>
 		</TR>
-		</logic:notEmpty>
+		</s:if>
 		<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 			<TR>
 				<TD><loc:message name="propertyCourseCatalog"/> </TD>
 				<TD>
-					<span id='UniTimeGWT:CourseLink' style="display: none;">-<bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingId"/></span>
+					<span id='UniTimeGWT:CourseLink' style="display: none;">-<s:property value="form.instrOfferingId"/></span>
 				</TD>
 			</TR>
 		</tt:hasProperty>
 		
-		<html:hidden property="durationTypeEditable"/>
-		<html:hidden property="durationTypeDefault"/>
-		<logic:notEqual value="true" name="instructionalOfferingConfigEditForm" property="durationTypeEditable">
-			<html:hidden property="durationType"/>
-		</logic:notEqual>
-		<logic:equal value="true" name="instructionalOfferingConfigEditForm" property="durationTypeEditable">
+		<s:hidden name="form.durationTypeEditable"/>
+		<s:hidden name="form.durationTypeDefault"/>
+		<s:if test="form.durationTypeEditable != true">
+			<s:hidden name="form.durationType"/>
+		</s:if>
+		<s:else>
 			<TR>
 				<TD><loc:message name="propertyClassDurationType"/></TD>
 				<TD colspan="2">
-					<html:select property="durationType" onchange="var el = document.getElementById('durationColumn'); if (el != null) el.innerText = this.options[this.selectedIndex].text;">
-						<html:option value="-1"><bean:write name="instructionalOfferingConfigEditForm" property="durationTypeDefault"/></html:option>
-						<html:optionsCollection property="durationTypes" value="id" label="value" />
-					</html:select>
+					<s:select name="form.durationType"
+						list="form.durationTypes" listKey="id" listValue="value"
+						headerKey="-1" headerValue="%{form.durationTypeDefault}"
+						onchange="var el = document.getElementById('durationColumn'); if (el != null) el.innerText = this.options[this.selectedIndex].text;"/>
 				</TD>
 			</TR>
-		</logic:equal>
+		</s:else>
 		
 		<TR>
 			<TD><loc:message name="filterInstructionalType"/></TD>
 			<TD>
-				<html:select property="itype" onchange="javascript: itypeChanged(this);">
-					<loc:bundle name="ConstantsMessages" id="CONST">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
-					</loc:bundle>
-					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
-					<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
-				</html:select>
+				<s:select name="form.itype"
+					list="itypes" listKey="value" listValue="label"
+					onchange="itypeChanged(this);"
+					/>
 				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessAddInstructionalTypeToConfig() %>" 
-					title="<%=MSG.titleAddInstructionalTypeToConfig(MSG.accessAddInstructionalTypeToConfig()) %>" 
-					onclick="document.forms[0].elements['click'].value='y'" >
-					<loc:message name="actionAddInstructionalTypeToConfig" />
-				</html:submit>
+				<s:submit
+					name='op' value='%{#msg.actionAddInstructionalTypeToConfig()}'
+					accesskey='%{#msg.accessAddInstructionalTypeToConfig()}' title='%{#msg.titleAddInstructionalTypeToConfig(#msg.accessAddInstructionalTypeToConfig())}'
+					/>
 		</TR>		
 
 		<TR>
@@ -308,82 +238,44 @@
 
 	</TABLE>
 	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="2">
-		<% int cols = 9; %>
-		<%= request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)!=null 
-			? request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)
-			: "" %>		
-		
+	<table class="unitime-MainTable">
+		<s:property value="#request.configsList" escapeHtml="false"/>
+	</table>
+	<table class="unitime-MainTable">
 		<TR>
-			<TD colspan="<%=cols%>"><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
+			<TD colspan="2"><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
 		</TR>
 		<TR>
-			<TD colspan="<%=cols%>" align="right">
-				<logic:equal name="instructionalOfferingConfigEditForm" property="configId" value="0">
-					<logic:equal name="subpartsExist" scope="request" value="true">
-						<html:submit property="op" 
-							accesskey="<%=MSG.accessSaveConfiguration() %>" 
-							title="<%=MSG.titleSaveConfiguration(MSG.accessSaveConfiguration()) %>" 
-							onclick="if (confirmNumClasses()) {document.forms[0].elements['click'].value='y'; return true; } else {return false; }">			
-							<loc:message name="actionSaveConfiguration" />
-						</html:submit>						
-					</logic:equal>
-				</logic:equal>
-				
-				<logic:notEqual name="instructionalOfferingConfigEditForm" property="configId" value="0">
-					<logic:equal name="subpartsExist" scope="request" value="true">
-						<html:submit property="op" 
-							styleClass="btn" 
-								accesskey="<%=MSG.accessUpdateConfiguration() %>" 
-								title="<%=MSG.titleUpdateConfiguration(MSG.accessUpdateConfiguration()) %>" 
-								onclick="return (confirmDelete1());" >			
-								<loc:message name="actionUpdateConfiguration" />						</html:submit>						
-					</logic:equal>
-					<sec:authorize access="hasPermission(#instructionalOfferingConfigEditForm.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessDeleteConfiguration() %>" 
-							title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
-							onclick="return (confirmDelete2());" >			
-							<loc:message name="actionDeleteConfiguration" />
-						</html:submit>
-					</sec:authorize>						
-				</logic:notEqual>
-
-				<bean:define id="instrOfferingId">
-					<bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingId" />				
-				</bean:define>
-				 
-				<html:button property="op" 
-					styleClass="btn" 
-						accesskey="<%=MSG.accessBackToIODetail() %>" 
-						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>" 
-						onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
-						<loc:message name="actionBackToIODetail" />
-				</html:button>
-					
+			<TD colspan="2" align="right">
+					<s:if test="form.configId == 0 && #request.subpartsExist == 'true'">
+						<s:submit
+							name='op' value='%{#msg.actionSaveConfiguration()}'
+							accesskey='%{#msg.accessSaveConfiguration()}' title='%{#msg.titleSaveConfiguration(#msg.accessSaveConfiguration())}'
+						/>
+					</s:if>
+					<s:if test="form.configId != 0 && #request.subpartsExist == 'true'">
+						<s:submit
+							name='op' value='%{#msg.actionUpdateConfiguration()}'
+							accesskey='%{#msg.accessUpdateConfiguration()}' title='%{#msg.titleUpdateConfiguration(#msg.accessUpdateConfiguration())}'
+							onclick="return confirmUpdate();"
+						/>
+						<sec:authorize access="hasPermission(#form.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
+							<s:submit
+								name='op' value='%{#msg.actionDeleteConfiguration()}'
+								accesskey='%{#msg.accessDeleteConfiguration()}' title='%{#msg.titleDeleteConfiguration(#msg.accessDeleteConfiguration())}'
+								onclick="return confirmDeleteConfig();"
+							/>
+						</sec:authorize>
+					</s:if>
+					<s:submit
+						name='op' value='%{#msg.actionBackToIODetail()}'
+						accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'
+					/>			
 			</TD>
 		</TR>
-		
 	</TABLE>
-
-</html:form>
-
-
-<SCRIPT language="javascript">
-	<!--
-
-	function checkClick() {
-		
-		if(document.forms[0].elements["click"].value=="y")
-			return true;
-		else
-			return false;
-	}
-	// -->
-</SCRIPT>
-
-<SCRIPT type="text/javascript" language="javascript">
+</s:form>
+<SCRIPT type="text/javascript">
 	function itypeChanged(itypeObj) {
 		var options = itypeObj.options;
 		var currentId = itypeObj.options[itypeObj.selectedIndex].value;
@@ -413,9 +305,9 @@
 							options[i+1] = new Option(optVal, optId, (currentId==optId));
 						}
 						if (basic)
-							options[count+1] = new Option("More Options >>>","more",false);
+							options[count+1] = new Option("${MSG.selectMoreOptions()}","more",false);
 						else
-							options[count+1] = new Option("<<< Less Options","less",false);
+							options[count+1] = new Option("${MSG.selectLessOptions()}","less",false);
 						options[count+1].style.backgroundColor='rgb(223,231,242)';
 					}
 				}
@@ -431,5 +323,4 @@
 		req.send(vars);
 	}
 </SCRIPT>
-
 </loc:bundle>

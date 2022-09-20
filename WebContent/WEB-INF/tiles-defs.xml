@@ -129,12 +129,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
  
-  	<definition	name="instructionalOfferingConfigEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Instructional Offering Configuration"/>
-		<put name="body" value="/user/instructionalOfferingConfigEdit.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-
 	<definition	name="settingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Default Manager Settings"/>
 		<put name="body" value="/admin/settings.jsp" />

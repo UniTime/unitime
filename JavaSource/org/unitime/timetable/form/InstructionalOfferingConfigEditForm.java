@@ -20,20 +20,14 @@
 package org.unitime.timetable.form;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -45,25 +39,12 @@ import org.unitime.timetable.util.IdValue;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 05-19-2005
- * 
- * XDoclet definition:
- * @struts:form name="InstructionalOfferingConfigEditForm"
- *
  * @author Stephanie Schluttenhofer, Zuzana Mullerova, Tomas Muller
  */
-public class InstructionalOfferingConfigEditForm extends ActionForm {
-
+public class InstructionalOfferingConfigEditForm implements UniTimeForm {
+	private static final long serialVersionUID = 3257570611432993077L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 3257570611432993077L;
-	
-	// --------------------------------------------------------- Instance Variables
-
 	private Long configId;
     private String instrOfferingName;
     private String courseOfferingId;
@@ -92,58 +73,42 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     private final short ERR_CL = -2;
     private final short ERR_LS = -3;
     
-    // --------------------------------------------------------- Methods
+    public InstructionalOfferingConfigEditForm() {
+    	reset();
+    }
 
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-        
+    @Override
+    public void validate(UniTimeAction action) {
         // Check limit in all cases
         if(limit<0) {
-            errors.add("limit", new ActionMessage("errors.integerGtEq", "Limit", "0"));
+        	action.addFieldError("form.limit", MSG.errorIntegerGtEq(MSG.columnLimit(), "0"));
         }
         
-        String lblMax = "Limit";
-        if (request.getParameter("varLimits")!=null) {
-            lblMax = "Max limit";
+        String lblMax = MSG.columnLimit();
+        if (action.getRequest().getParameter("varLimits")!=null) {
+            lblMax = MSG.columnMaxLimit();
         }
         
         // Check Itype is specified
-        if(op.equals(rsc.getMessage("button.add"))) {
-            if(itype==null || itype.trim().length()==0
-                    || itype.equals(Constants.BLANK_OPTION_VALUE)) {
-                errors.add("itype", new ActionMessage("errors.required", "Instructional Type"));
+        if (MSG.actionAddInstructionalTypeToConfig().equals(op)) {
+            if(itype==null || itype.trim().length()==0 || itype.equals(Constants.BLANK_OPTION_VALUE)) {
+            	action.addFieldError("form.itype", MSG.errorRequiredField(MSG.columnInstructionType().replace("\n", " ")));
             }
         }
         
-        if( op.equals(MSG.actionSaveConfiguration()) 
-                || op.equals(MSG.actionUpdateConfiguration()) ) {
+        if (MSG.actionSaveConfiguration().equals(op) || MSG.actionUpdateConfiguration().equals(op)) {
 
-            HttpSession webSession = request.getSession();
-            Vector sp = (Vector) webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+            HttpSession webSession = action.getRequest().getSession();
+            Collection<SimpleItypeConfig> sp = (Collection<SimpleItypeConfig>)webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
             // Check that config name doesn't already exist
             InstructionalOffering io = new InstructionalOfferingDAO().get( Long.valueOf(this.getInstrOfferingId()) );
             if (io.existsConfig(this.getName(), this.getConfigId())) {
-                errors.add("subparts", new ActionMessage("errors.generic", "A configuration with this name already exists in this offering. Use a unique name"));
+            	action.addFieldError("form.subparts", MSG.errorConfigurationAlreadyExists());
             }
             
             // Read user defined config
-            for(int i=0; i<sp.size(); i++) {
-                SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
+            for (SimpleItypeConfig sic: sp) {
                 
                 // Check top level subparts
                 if (!this.getUnlimited().booleanValue() && ApplicationProperty.ConfigEditCheckLimits.isTrue()) {
@@ -152,54 +117,40 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 	
 	                if (numClasses == 1 && maxLimitPerClass!=this.limit) {
 	                    sic.setHasError(true);
-	                    errors.add("subparts", 
-	                           	new ActionMessage("errors.equal", lblMax + " per class for <u>" + sic.getItype().getDesc() +  "</u>", "Configuration limit of " + this.limit ) );
+	                    action.addFieldError("form.subparts", MSG.errorEqual(MSG.messageLimitPerClassForIType(lblMax, sic.getItype().getDesc()),MSG.messageConfigurationLimit(this.limit))); 
 	                }
 	                    
 	                if (numClasses>1 && (maxLimitPerClass*numClasses)<this.limit) {
 	                    sic.setHasError(true);
-	                    errors.add("subparts", 
-	                           	new ActionMessage("errors.integerGtEq", "Sum of class limits <u>" + sic.getItype().getDesc() +  "</u>", "Configuration limit of " + this.limit ) );
+	                    action.addFieldError("form.subparts", MSG.errorIntegerGtEq(MSG.messageSumClassLimitsForIType(sic.getItype().getDesc()),MSG.messageConfigurationLimit(this.limit)));
 	                }
                 }
                 
                 // Check input text fields
-                checkInputfields(request, errors, sic, lblMax, this.getUnlimited().booleanValue());
+                checkInputfields(action, sic, lblMax, this.getUnlimited().booleanValue());
                 
                 // Check child subparts
-                short errCode = checkChildSubpart(request, errors, sic, lblMax, this.getUnlimited().booleanValue());    
+                short errCode = checkChildSubpart(action, sic, lblMax, this.getUnlimited().booleanValue());    
                 
-                if(errCode!=NO_ERR) {
-                    String errM = "Subparts that are grouped under <u>" + sic.getItype().getDesc() +  "</u> must <br>";
+                if (errCode!=NO_ERR) {
                     if (errCode==ERR_NC)
-                        errM += "&nbsp; &nbsp; &nbsp; have number of classes that is a multiple of " + sic.getNumClasses() + ".";
+                    	action.addFieldError("form.subparts",
+                    			MSG.errorConfigurationNC(sic.getItype().getDesc(), sic.getNumClasses()));
                     if (errCode==ERR_CL)
-                        errM += "&nbsp; &nbsp; &nbsp; have a " + lblMax.toLowerCase() + " per class <= " + lblMax.toLowerCase() + " per class of " + sic.getMaxLimitPerClass() + ".";
+                    	action.addFieldError("form.subparts",
+                    			MSG.errorConfigurationCL(sic.getItype().getDesc(), lblMax.toLowerCase(), sic.getMaxLimitPerClass()));
                     if (errCode==ERR_LS)
-                        errM += "&nbsp; &nbsp; &nbsp; not accomodate lesser number of students.";
-                        
-                    errors.add("subparts", 
-                       	new ActionMessage("errors.generic", errM ) );
+                    	action.addFieldError("form.subparts",
+                    			MSG.errorConfigurationLS(sic.getItype().getDesc()));
                 }
             }
         }
-        
-        return errors;
     }
 
     /**
      * Checks input fields 
-     * @param request
-     * @param errors
-     * @param sic
-     * @param lblMax
      */
-    private void checkInputfields (
-            HttpServletRequest request, 
-            ActionErrors errors, 
-            SimpleItypeConfig sic, 
-            String lblMax,
-            boolean unlimited ) {
+    private void checkInputfields (UniTimeAction action, SimpleItypeConfig sic, String lblMax, boolean unlimited) {
         
         int mxlpc = sic.getMaxLimitPerClass();
         int mnlpc = sic.getMinLimitPerClass();
@@ -208,66 +159,89 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         int mpw = sic.getMinPerWeek();
         float rc = sic.getRoomRatio();
         
-        String lblSubpart = " for <u>" + sic.getItype().getDesc() + "</u>";
         long indx = sic.getId();
-        int ct = errors.size();
+        int ct = action.getFieldErrors().size();
         
         if (!unlimited) {
-	        if(mxlpc<0) 
-	            errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", lblMax + " per class" + lblSubpart, "0"));
+	        if (mxlpc<0) 
+	        	action.addFieldError("form.subparts"+indx,
+	        			MSG.errorIntegerGtEq(MSG.messageLimitPerClassForIType(lblMax, sic.getItype().getDesc()), "0"));
 	        else {
 	            if(mxlpc>limit && ApplicationProperty.ConfigEditCheckLimits.isTrue()) {
 	                if (nc>1)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", lblMax + " per class of " + mxlpc + lblSubpart, " Configuration limit of "+limit ));
-	            }
-	            else {
-	                
-	                if (request.getParameter("varLimits")==null) {
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerLtEq(
+	                					MSG.messageLimitPerClassOfLimitForIType(lblMax, mxlpc, sic.getItype().getDesc()),
+	                					MSG.messageConfigurationLimit(limit)));
+	            } else {
+	                if (action.getRequest().getParameter("varLimits")==null) {
 	                    mnlpc = mxlpc;
 	                }
 	                
-	                if(mnlpc<0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Min limit per class" + lblSubpart, "0"));
-	                if(mnlpc>mxlpc)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", "Min limit per class" + lblSubpart, "Max limit per class"));
-	                
+	                if (mnlpc<0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerGtEq(
+	                					MSG.messageLimitPerClassForIType(MSG.columnMinLimit(), sic.getItype().getDesc()),
+	                					"0"));
+	                if (mnlpc>mxlpc)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerLtEq(
+	                					MSG.messageLimitPerClassForIType(MSG.columnMinLimit(), sic.getItype().getDesc()),
+	                					MSG.messageMaxLimitPerClass()
+	                					));
+
 	                // Check no. of classes
-	                if(nc<=0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGt", "Number of classes" + lblSubpart, "0" ));
+	                if (nc<=0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerGt(MSG.messageNumberOfClassesForIType(sic.getItype().getDesc()), "0"));
 	                
-	                if(nc>ApplicationProperty.SubpartMaxNumClasses.intValue())
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", "Number of classes" + lblSubpart, ApplicationProperty.SubpartMaxNumClasses.value() ));
+	                if (nc>ApplicationProperty.SubpartMaxNumClasses.intValue())
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerLtEq(
+	                					MSG.messageNumberOfClassesForIType(sic.getItype().getDesc()),
+	                					ApplicationProperty.SubpartMaxNumClasses.value()
+	                					));
 
 	                // Check no. of rooms
-	                if(nr<0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Number of rooms" + lblSubpart, "0" ));
+	                if (nr<0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerGtEq(MSG.messageNumberOfRoomsForIType(sic.getItype().getDesc()), "0"));
 	                
 	                // Check min per week
-	                if(mpw<0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Minutes per week" + lblSubpart, "0" ));
-	                if(mpw==0 && nr!=0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.generic", "Minutes per week " + lblSubpart + " can be 0 only if number of rooms is 0" ));
+	                if (mpw<0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerGtEq(MSG.messageMinsPerWeekForIType(sic.getItype().getDesc()), "0"));
+
+	                if (mpw==0 && nr!=0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.messageMinsPerWeekForITypeCanBeZeroWhenNbrRoomsIsZero(sic.getItype().getDesc()));
 	                    
 	                // Check room ratio
-	                if(rc<0)
-	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Room ratio" + lblSubpart, "0.0" ));
+	                if (rc<0)
+	                	action.addFieldError("form.subparts"+indx,
+	                			MSG.errorIntegerGtEq(MSG.messageRoomRatioForIType(sic.getItype().getDesc()), "0"));
 	            }
 	        }               
-        }
-        else {
+        } else {
             
             // Check no. of classes
             if(nc<=0)
-                errors.add("subparts"+indx, new ActionMessage("errors.integerGt", "Number of classes" + lblSubpart, "0" ));
+            	action.addFieldError("form.subparts"+indx,
+            			MSG.errorIntegerGt(MSG.messageNumberOfClassesForIType(sic.getItype().getDesc()), "0"));
         	
             if(nc>ApplicationProperty.SubpartMaxNumClasses.intValue())
-                errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", "Number of classes" + lblSubpart, ApplicationProperty.SubpartMaxNumClasses.value() ));
+            	action.addFieldError("form.subparts"+indx,
+            			MSG.errorIntegerLtEq(
+            					MSG.messageNumberOfClassesForIType(sic.getItype().getDesc()),
+            					ApplicationProperty.SubpartMaxNumClasses.value()
+            					));
 
             if(mpw<0)
-                errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Minutes per week" + lblSubpart, "0" ));
+            	action.addFieldError("form.subparts"+indx,
+            			MSG.errorIntegerGtEq(MSG.messageMinsPerWeekForIType(sic.getItype().getDesc()), "0"));
         }
         
-        if (errors.size()>ct)
+        if (action.getFieldErrors().size()>ct)
             sic.setHasError(true);
     }
     
@@ -275,25 +249,13 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
      * Checks child subparts do not have a limit more than the parent
      * and that the number of classes in the child is a multiple of the 
      * parent
-     * @param request
-     * @param errors
-     * @param sic
-     * @param lblMax
      * @return code indicating error or no error
      */
-    private short checkChildSubpart (
-            HttpServletRequest request, 
-            ActionErrors errors, 
-            SimpleItypeConfig sic, 
-            String lblMax,
-            boolean unlimited ) {
-        
-        Vector csp = sic.getSubparts();
+    private short checkChildSubpart (UniTimeAction action, SimpleItypeConfig sic, String lblMax, boolean unlimited) {
+        List<SimpleItypeConfig> csp = sic.getSubparts();
         if(csp!=null && csp.size()>0) {
-	        for(int i=0; i<csp.size(); i++) {
-	            SimpleItypeConfig csic = (SimpleItypeConfig)  csp.elementAt(i);
-	            
-                checkInputfields(request, errors, csic, lblMax, unlimited);
+	        for(SimpleItypeConfig csic: csp) {
+                checkInputfields(action, csic, lblMax, unlimited);
 
                 if (!unlimited) {
 	                if(sic.getNumClasses()!=0 && csic.getNumClasses() % sic.getNumClasses() != 0) {
@@ -316,7 +278,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
                 }
                 
                 //csic.setHasError(false);
-                short errCode = checkChildSubpart(request, errors, csic, lblMax, unlimited);	      
+                short errCode = checkChildSubpart(action, csic, lblMax, unlimited);	      
                 if(errCode!=NO_ERR) 
                     return errCode;
 	        }
@@ -325,12 +287,8 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         return NO_ERR;
     }
     
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         courseOfferingId ="";
         subjectArea = "";
         courseNumber = "";

@@ -85,8 +85,8 @@ import org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder;
  */
 @Action(value = "instructionalOfferingDetail", results = {
 		@Result(name = "showConfigDetail", type = "tiles", location = "instructionalOfferingDetail.tiles"),
-		@Result(name = "addConfig", type = "redirect", location = "/instructionalOfferingConfigEdit.do",
-			params = { "instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
+		@Result(name = "addConfig", type = "redirect", location = "/instructionalOfferingConfigEdit.action",
+			params = { "form.instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
 		@Result(name = "showInstructionalOfferings", type = "redirect", location = "/instructionalOfferingSearch.action",
 				params = { "backType", "InstructionalOffering", "backId", "${form.instrOfferingId}",
 						"anchor", "back"}),
@@ -140,7 +140,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 		
 		Debug.debug ("Op: " + op);
 		// Delete insructional offering
-		if (op.equals(MSG.actionDeleteIO()) && request.getAttribute("cfgDelete") == null) {
+		if (op.equals(MSG.actionDeleteIO())) {
 	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete);
 			doDelete(request, form);
 			sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);

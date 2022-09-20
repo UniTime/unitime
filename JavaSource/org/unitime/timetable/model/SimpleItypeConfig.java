@@ -20,7 +20,8 @@
 package org.unitime.timetable.model;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.unitime.timetable.defaults.SessionAttribute;
 
@@ -28,7 +29,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
  * Config for user manipulations
  * Not stored in database till user hits commit 
  */
-public class SimpleItypeConfig implements Serializable {
+public class SimpleItypeConfig implements Serializable, Comparable<SimpleItypeConfig> {
     
     private static final long serialVersionUID = 1L;
     
@@ -39,7 +40,7 @@ public class SimpleItypeConfig implements Serializable {
     private long subpartId;
     private ItypeDesc itype;
     private SimpleItypeConfig parent;
-    private Vector subparts;
+    private List<SimpleItypeConfig> subparts;
     private int numClasses;
     private int numRooms;
     private int minLimitPerClass;
@@ -72,7 +73,7 @@ public class SimpleItypeConfig implements Serializable {
         this.roomRatio=1.0f;
         this.minPerWeek=-1;
         this.managingDeptId=-1;
-        subparts = new Vector();
+        subparts = new ArrayList<SimpleItypeConfig>();
         disabled = false;
         notOwned = false;
         hasError = false;
@@ -84,19 +85,19 @@ public class SimpleItypeConfig implements Serializable {
      */
     public void addSubpart(SimpleItypeConfig config) {
         config.setParent(this);
-        subparts.addElement(config);
+        subparts.add(config);
     }    
     
     /**
      * @return Returns the subparts.
      */
-    public Vector getSubparts() {
+    public List<SimpleItypeConfig> getSubparts() {
         return subparts;
     }
     /**
      * @param subparts The children to set.
      */
-    public void setSubparts(Vector subparts) {
+    public void setSubparts(List<SimpleItypeConfig> subparts) {
         this.subparts = subparts;
     }
     /**
@@ -243,4 +244,9 @@ public class SimpleItypeConfig implements Serializable {
     public void setManagingDeptId(long managingDeptId) {
         this.managingDeptId = managingDeptId;
     }
+
+	@Override
+	public int compareTo(SimpleItypeConfig sic) {
+		return getItype().getItype().compareTo(sic.getItype().getItype());
+	}
 }
