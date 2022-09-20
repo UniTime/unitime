@@ -33,7 +33,6 @@
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
 	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
-	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
 	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
 	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
 	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
@@ -259,24 +258,6 @@
         <forward 
         	name="instructionalOfferingDetail" 
         	path="/instructionalOfferingDetail.action" />
-      </action>
-      
-      <action
-         path="/managerSettings"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="mgrSettingsForm"
-         input="managerSettingsTile"
-         name="mgrSettingsForm"
-         scope="request"
-         validate="false">
-         <forward
-            name="showManagerSettings"
-            path="managerSettingsTile"
-            redirect="true" />      
-         <forward
-            name="editManagerSettings"
-            path="managerSettingsEditTile"
-            redirect="true" />      
       </action>
       
       <action

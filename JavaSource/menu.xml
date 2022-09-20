@@ -1087,7 +1087,7 @@
 				<hasPermission name="Chameleon"/>
 			</condition>
 		</item>
-		<item name="Settings" page="managerSettings.do">
+		<item name="Settings" page="managerSettings.action">
 				<condition>
 					<hasPermission name="SettingsUser"/>
 				</condition>

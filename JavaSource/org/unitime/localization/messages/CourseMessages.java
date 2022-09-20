@@ -3590,4 +3590,34 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No user has been selected.")
 	String warnNoUser();
+	
+	@DefaultMessage("Back")
+	String actionBackToManagerSettings();
+	
+	@DefaultMessage("Update")
+	String actionUpdateManagerSetting();
+	
+	@DefaultMessage("B")
+	String accessBackToManagerSettings();
+	
+	@DefaultMessage("U")
+	String accessUpdateManagerSetting();
+	
+	@DefaultMessage("Back to Manager Settings (Alt + {0})")
+	String titleBackToManagerSettings(String access);
+	
+	@DefaultMessage("Update Setting (Alt + {0})")
+	String titleUpdateManagerSetting(String access);
+	
+	@DefaultMessage("Manager Settings")
+	String sectionManagerSettings();
+	
+	@DefaultMessage("Setting")
+	String columnManagerSettingKey();
+	
+	@DefaultMessage("Value")
+	String columnManagerSettingValue();
+	
+	@DefaultMessage("(default)")
+	String userSettingDefaultIndicator();
 }

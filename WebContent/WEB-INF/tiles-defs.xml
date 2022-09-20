@@ -135,15 +135,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
 
-	<definition	name="managerSettingsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Manager Settings"/>
-		<put name="body" value="/user/managerSettings.jsp" />
-  	</definition>
-  
-	<definition	name="managerSettingsEditTile" extends="managerSettingsTile">
-		<put name="title" type="string" value="Edit Manager Setting"/>
-  	</definition>
-
 	<definition	name="settingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Default Manager Settings"/>
 		<put name="body" value="/admin/settings.jsp" />

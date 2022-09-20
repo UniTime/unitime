@@ -28,7 +28,6 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -44,7 +43,6 @@ import org.unitime.timetable.util.LookupTables;
 /** 
  * @author Tomas Muller
  */
-@Service("/chameleon")
 @Action(value = "chameleon", results = {
 		@Result(name = "displayForm", type = "tiles", location = "chameleon.tiles"),
 		@Result(name = "reload", type = "redirect", location = "/selectPrimaryRole.action")

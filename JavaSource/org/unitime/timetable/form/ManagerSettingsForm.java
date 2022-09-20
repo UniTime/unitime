@@ -19,27 +19,22 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 
 /** 
- * MyEclipse Struts
- * Creation date: 10-17-2005
- * 
- * XDoclet definition:
- * @struts:form name="managerSettingsForm"
- *
  * @author Tomas Muller
  */
-public class ManagerSettingsForm extends ActionForm {
-
+public class ManagerSettingsForm implements UniTimeForm {
 	private static final long serialVersionUID = -5955499033542263250L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
     // --------------------------------------------------------- Instance Variables
 
@@ -56,40 +51,26 @@ public class ManagerSettingsForm extends ActionForm {
     private String defaultValue;
 
     /** allowedValues property */
-    private String[] allowedValues;
+    private List<String> allowedValues;
+    private Map<String, String> labels;
 
     // --------------------------------------------------------- Methods
 
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-        
-        if(value==null || value.trim().length()==0)
-            errors.add("value", new ActionMessage("errors.required", ""));
-        
-        return errors;
+    @Override
+    public void validate(UniTimeAction action) {
+    	if (value == null || value.isEmpty())
+    		action.addFieldError("form.value", MSG.errorRequiredField(MSG.columnManagerSettingValue()));
     }
 
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         op = null;
         key = "";
         name = "";
         value = "";
         defaultValue = "";
         allowedValues = null;
+        labels = null;
     }
 
     /** 
@@ -139,13 +120,13 @@ public class ManagerSettingsForm extends ActionForm {
     /**
      * @return Returns the allowedValues.
      */
-    public String[] getAllowedValues() {
+    public List<String> getAllowedValues() {
         return allowedValues;
     }
     /**
      * @param allowedValues The allowedValues to set.
      */
-    public void setAllowedValues(String[] allowedValues) {
+    public void setAllowedValues(List<String> allowedValues) {
         this.allowedValues = allowedValues;
     }
 
@@ -153,12 +134,15 @@ public class ManagerSettingsForm extends ActionForm {
      * @param allowedValues The allowedValues to set.
      */
     public void setAllowedValues(String allowedValues) {
-        StringTokenizer strTok = new StringTokenizer(allowedValues, ",");
-        this.allowedValues = new String[strTok.countTokens()];
-        int i =0;
-        
-        while(strTok.hasMoreElements()) {
-            this.allowedValues[i++] = strTok.nextElement().toString().trim();
+        this.allowedValues = new ArrayList<String>();
+        labels = new HashMap<String, String>();
+        for (StringTokenizer strTok = new StringTokenizer(allowedValues, ","); strTok.hasMoreTokens(); ) {
+        	String value = strTok.nextToken().trim();
+        	if (value.indexOf(':') >= 0) {
+        		labels.put(value.substring(0, value.indexOf(':')), value.substring(value.indexOf(':') + 1));
+        		value = value.substring(0, value.indexOf(':'));
+        	}
+        	this.allowedValues.add(value);
         }
     }
     
@@ -167,4 +151,11 @@ public class ManagerSettingsForm extends ActionForm {
 
     public String getDefaultValue() { return defaultValue; }
     public void setDefaultValue(String defaultValue) { this.defaultValue = defaultValue; }
+    
+    public String getLabel(String value) {
+    	if (labels == null) return value;
+    	String label = labels.get(value);
+    	if (label != null && !label.isEmpty()) return label;
+    	return value;
+    }
 }

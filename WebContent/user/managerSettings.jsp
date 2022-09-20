@@ -17,52 +17,40 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<tiles:importAttribute />
-
-<html:form action="/managerSettings">
-
-<logic:equal name="mgrSettingsForm" property="op" value="Edit">
-
-	<html:hidden property="key"/>
-	<html:hidden property="name"/>
-	<html:hidden property="defaultValue"/>
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="managerSettings">
+<s:if test="form.op == 'Edit'">
+	<s:hidden name="form.key"/>
+	<s:hidden name="form.name"/>
+	<s:hidden name="form.defaultValue"/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name="mgrSettingsForm" property="name"/>
+						<s:property value="form.name"/>
 					</tt:section-title>
-					<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateSetting">
-						<bean:message key="button.updateSetting" />
-					</html:submit>
-					<html:submit styleClass="btn" property="op" accesskey="B" titleKey="title.cancelUpdateSetting"> 
-						<bean:message key="button.cancelUpdateSetting" />
-					</html:submit>
+					<s:submit name='op' value='%{#msg.actionUpdateManagerSetting()}'
+						accesskey='%{#msg.accessUpdateManagerSetting()}' title='%{#msg.titleUpdateManagerSetting(#msg.accessUpdateManagerSetting())}'/>
+					<s:submit name='op' value='%{#msg.actionBackToManagerSettings()}'
+						accesskey='%{#msg.accessBackToManagerSettings()}' title='%{#msg.titleBackToManagerSettings(#msg.accessBackToManagerSettings())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="middle">
-				<!-- html :select property="value">
-					<html :options name="mgrSettingsForm" property="allowedValues"/>
-				</html :select -->
-				<logic:iterate id="allowedValue" name="mgrSettingsForm" property="allowedValues">
-					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<html:radio property="value" value="${allowedValue}"> &nbsp; ${allowedValue}</html:radio>
-					<logic:equal property="defaultValue" name="mgrSettingsForm" value="${allowedValue}"><i>(default)</i></logic:equal>
-					<BR>
-				</logic:iterate>				
-				<html:errors property="value"/>
+			<TD valign="middle" style="padding-left: 50px;">
+				<s:iterator value="form.allowedValues" var="allowedValue">
+					<s:radio name="form.value" list="#{#allowedValue:''}"/>
+					<s:property value="%{form.getLabel(#allowedValue)}"/>
+					<s:if test="form.defaultValue == #allowedValue"><i><loc:message name="userSettingDefaultIndicator"/></i></s:if>
+					<br>
+				</s:iterator>
+				<s:fielderror fieldName="form.value"/>
 			</TD>
 		</TR>
 
@@ -74,21 +62,18 @@
 
 		<TR>
 			<TD align="right">
-				<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateSetting">
-					<bean:message key="button.updateSetting" />
-				</html:submit>
-				<html:submit styleClass="btn" property="op" accesskey="B" titleKey="title.cancelUpdateSetting"> 
-					<bean:message key="button.cancelUpdateSetting" />
-				</html:submit>
+				<s:submit name='op' value='%{#msg.actionUpdateManagerSetting()}'
+					accesskey='%{#msg.accessUpdateManagerSetting()}' title='%{#msg.titleUpdateManagerSetting(#msg.accessUpdateManagerSetting())}'/>
+				<s:submit name='op' value='%{#msg.actionBackToManagerSettings()}'
+					accesskey='%{#msg.accessBackToManagerSettings()}' title='%{#msg.titleBackToManagerSettings(#msg.accessBackToManagerSettings())}'/>
 			</TD>
 		</TR>
-	</TABLE>
-
-</logic:equal>
-<logic:notEqual name="mgrSettingsForm" property="op" value="Edit">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="table" scope="request" filter="false"/>
-	</TABLE>
-</logic:notEqual>
-
-</html:form>
+	</table>
+</s:if>
+<s:else>
+	<table class="unitime-MainTable">
+		<s:property value="#request.table" escapeHtml="false"/>
+	</table>
+</s:else>
+</s:form>
+</loc:bundle>
