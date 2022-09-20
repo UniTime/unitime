@@ -17,70 +17,47 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.TimetableManager" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<tiles:importAttribute />
-<html:form action="/chameleon" styleId="form">
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+ <%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="chameleon" id="form"> 
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2" valign="middle">
 				<tt:section-header>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="S" titleKey="title.changeUser">			
-						<bean:message key="button.changeUser" />
-					</html:submit>						
+					<s:submit name='op' value='%{#msg.actionChangeUser()}'
+						accesskey='%{#msg.accessChangeUser()}' title='%{#msg.titleChangeUser(#msg.accessChangeUser())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
-
-		<logic:messagesPresent>
+		<s:if test="!actionErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:actionerror/>
+			</TD></TR>
+		</s:if>
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
-		
-		<TR>
-			<TD width="200">Timetable Manager:</TD>
+			<TD width="200"><loc:message name="propertyTimetableManager"/></TD>
 			<TD>
-				<html:select name="chameleonForm" property="puid">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%= TimetableManager.MGR_LIST_ATTR_NAME %>" 
-						property="externalUniqueId" labelProperty="name"/>
-					</html:select>
-				
+				<s:select name="form.puid"
+					list="#request.managerList" listKey="externalUniqueId" listValue="name"
+					headerKey="" headerValue="%{#msg.itemSelect()}"
+					/>
 			</TD>
 		</TR>
-		<logic:equal value="true" name="chameleonForm" property="canLookup">
+		<s:if test="form.canLookup == true">
 		<tt:propertyEquals name="unitime.chameleon.lookup" value="true">
 		<TR>
-			<TD>Other:</TD>
+			<TD><loc:message name="propertyOtherUser"/></TD>
 			<TD>
-				<input type='hidden' name='uid' id='uid'>
-				<input type='hidden' name='uname' id='uname'>
-				<input type='button' value='Lookup' onclick="lookup();" style="btn">
+				<s:hidden name="uid" id="uid"/>
+				<s:hidden name="uname" id="uname"/>
+				<input type='button' value='${MSG.actionLookupUser()}' onclick="lookup();" style="btn">
 			</TD>
 		</TR>
 		</tt:propertyEquals>
-		</logic:equal>
+		</s:if>
 	
 		<TR>
 			<TD colspan="2" class="WelcomeRowHead">
@@ -90,14 +67,12 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<html:submit property="op" onclick="displayLoading();"
-					styleClass="btn" accesskey="S" titleKey="title.changeUser">			
-					<bean:message key="button.changeUser" />
-				</html:submit>						
+				<s:submit name='op' value='%{#msg.actionChangeUser()}'
+						accesskey='%{#msg.accessChangeUser()}' title='%{#msg.titleChangeUser(#msg.accessChangeUser())}'/>
 			</TD>
 		</TR>
-	</TABLE>
-<script language="javascript">
+	</table>
+<script type="text/javascript">
 	function lookup() {
 		peopleLookup('', function(person) {
 			if (person) {
@@ -107,5 +82,7 @@
 			}
 		}, "mustHaveExternalId");
 	}
-</script></html:form>
+</script>
+</s:form>
+</loc:bundle>
 

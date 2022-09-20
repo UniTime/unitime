@@ -3569,4 +3569,25 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Page is loading, please wait ...")
 	String messagePageLoading();
+	
+	@DefaultMessage("Submit")
+	String actionChangeUser();
+	
+	@DefaultMessage("Switch to another user (Alt + {0})")
+	String titleChangeUser(String access);
+	
+	@DefaultMessage("S")
+	String accessChangeUser();
+	
+	@DefaultMessage("Timetable Manager:")
+	String propertyTimetableManager();
+	
+	@DefaultMessage("Other:")
+	String propertyOtherUser();
+	
+	@DefaultMessage("Lookup")
+	String actionLookupUser();
+	
+	@DefaultMessage("No user has been selected.")
+	String warnNoUser();
 }

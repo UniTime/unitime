@@ -24,8 +24,8 @@
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
 <s:form action="lastChanges">
  
-<script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
- 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+<script type="text/javascript" src="scripts/block.js"></script>
+ 	<script type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 	<table class="unitime-MainTable">
 		<tr>	
 		<th nowrap="nowrap" align="right"><loc:message name="filterDepartment"/></th>
@@ -62,7 +62,7 @@
 			</td>
 		</tr>
 	</TABLE>
-	<script language="JavaScript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
+	<script type="text/javascript">blEnd('dispFilter');blStartCollapsed('dispFilter');</script>
 	<table class="unitime-MainTable">
 		<tr>
 			<td align="right" style="padding-left: 20px;" width="100%;">
@@ -71,7 +71,7 @@
 			</td>
 		</tr>
 		</TABLE>
-	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
+	<script type="text/javascript">blEndCollapsed('dispFilter');</script>
 
 	<BR><BR>
 

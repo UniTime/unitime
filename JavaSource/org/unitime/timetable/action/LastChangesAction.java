@@ -28,8 +28,6 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -46,7 +44,6 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /** 
  * @author Tomas Muller
  */
-@Service("/lastChanges")
 @Action(value="lastChanges", results = {
 		@Result(name = "list", type = "tiles", location = "lastChanges.tiles"),
 	})
@@ -58,8 +55,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
 
 
 public class LastChangesAction extends UniTimeAction<LastChangesForm> {
-	
-
+	private static final long serialVersionUID = -5679046942523976307L;
 	// Messages
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 

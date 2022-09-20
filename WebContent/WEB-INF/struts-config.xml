@@ -50,7 +50,6 @@
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
-      <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
@@ -513,22 +512,6 @@
         	name="instructionalOfferingDetail" 
         	path="/instructionalOfferingDetail.action" />
       </action>
-    
-    <action
-       path="/chameleon"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="chameleonForm"
-       input="chameleonTile"
-       name="chameleonForm"
-       scope="request"
-       validate="false">
-       <forward 
-       		name="displayForm" 
-       		path="chameleonTile" />
-       <forward
-	        name="reload"
-            path="/selectPrimaryRole.action" />
-    </action>
     
     <action
        path="/inquiry"

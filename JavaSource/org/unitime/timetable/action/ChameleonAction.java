@@ -21,26 +21,20 @@ package org.unitime.timetable.action;
 
 import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ChameleonForm;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.ChameleonUserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -48,36 +42,33 @@ import org.unitime.timetable.util.LookupTables;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 10-23-2006
- * 
- * XDoclet definition:
- * @struts:action path="/chameleon" name="chameleonForm" input="/admin/chameleon.jsp" scope="request"
- *
  * @author Tomas Muller
  */
 @Service("/chameleon")
-public class ChameleonAction extends Action {
-
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
+@Action(value = "chameleon", results = {
+		@Result(name = "displayForm", type = "tiles", location = "chameleon.tiles"),
+		@Result(name = "reload", type = "redirect", location = "/selectPrimaryRole.action")
+	})
+@TilesDefinition(name = "chameleon.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Chameleon"),
+		@TilesPutAttribute(name = "body", value = "/admin/chameleon.jsp"),
+		@TilesPutAttribute(name = "checkRole", value = "false")
+	})
+public class ChameleonAction extends UniTimeAction<ChameleonForm> {
+	private static final long serialVersionUID = -8274614976659449939L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private String uid, uname;
+	public String getUid() { return uid; }
+	public void setUid(String uid) { this.uid = uid; }
+	public String getUname() { return uname; }
+	public void setUname(String uname) { this.uname = uname; }
 
-    /** 
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+    public String execute() throws Exception {
+    	if (form == null) {
+    		form = new ChameleonForm();
+    		form.reset();
+    	}
     	
     	UserContext user = sessionContext.getUser();
     	if (user != null && user instanceof UserContext.Chameleon)
@@ -85,70 +76,47 @@ public class ChameleonAction extends Action {
     	else
     		sessionContext.checkPermission(Right.Chameleon);
     	    	
-        MessageResources rsc = getResources(request);
-        
-        ChameleonForm frm = (ChameleonForm) form;
-        frm.setCanLookup(sessionContext.hasPermission(Right.HasRole));
+        form.setCanLookup(sessionContext.hasPermission(Right.HasRole));
 
-		ActionMessages errors = new ActionMessages();
-
-        String op = (request.getParameter("op")==null) 
-					? (frm.getOp()==null || frm.getOp().length()==0)
-					        ? (request.getAttribute("op")==null)
-					                ? null
-					                : request.getAttribute("op").toString()
-					        : frm.getOp()
-					: request.getParameter("op");		        
-	        
-		if(op==null || op.trim().length()==0)
-		    op = rsc.getMessage("op.view");
-		
-		frm.setOp(op);
+        if (op == null) op = form.getOp();
+        else form.setOp(op);
 
 		// Lookup
-		String uid = request.getParameter("uid");
 		if (uid != null && !uid.isEmpty() && ApplicationProperty.ChameleonAllowLookup.isTrue()) {
-			frm.setPuid(uid);
-			frm.setName(request.getParameter("uname"));
-			op = rsc.getMessage("button.changeUser");
+			form.setPuid(uid);
+			form.setName(uname);
+			op = MSG.actionChangeUser();
 		}
         
 		// First Access - display blank form
-        if ( op.equals(rsc.getMessage("op.view")) ) {
-            LookupTables.setupTimetableManagers(request);
+        if (op == null || op.isEmpty()) {
             if (user != null)
-            	frm.setPuid(user.getExternalUserId());
+            	form.setPuid(user.getExternalUserId());
         }
 		
         // Change User
-        if ( op.equals(rsc.getMessage("button.changeUser")) ) {
-            try {
-                doSwitch(request, frm, user);
-                return mapping.findForward("reload");
-			}
-			catch(Exception e) {
-				Debug.error(e);
-	            errors.add("exception", 
-	                    new ActionMessage("errors.generic", e.getMessage()) );
-	            saveErrors(request, errors);
-	            LookupTables.setupTimetableManagers(request);
-				return mapping.findForward("displayForm");
-			}
-        }        
+        if (MSG.actionChangeUser().equals(op)) {
+        	if (form.getPuid() == null || form.getPuid().isEmpty()) {
+        		addActionError(MSG.warnNoUser());
+        	} else {
+                try {
+                    doSwitch(user);
+                    return "reload";
+    			} catch(Exception e) {
+    				Debug.error(e);
+    				addActionError(e.getMessage());
+    			}
+        	}
+        }
 		
-        return mapping.findForward("displayForm");
+        LookupTables.setupTimetableManagers(request);
+        return "displayForm";
     }
 
     /**
      * Reads in new user attributes and reloads Timetabling for the new user
-     * @param request
-     * @param frm
-     * @param u
      */
-    private void doSwitch(
-            HttpServletRequest request, 
-            ChameleonForm frm, 
-            UserContext user) throws Exception {
+    private void doSwitch(UserContext user) throws Exception {
     	
 		for (SessionAttribute a: SessionAttribute.values())
 			request.getSession().removeAttribute(a.key());
@@ -160,12 +128,12 @@ public class ChameleonAction extends Action {
     	if (authentication instanceof ChameleonAuthentication)
     		authentication = ((ChameleonAuthentication)authentication).getOriginalAuthentication();
     	
-    	if (user.getExternalUserId().equals(frm.getPuid())) {
+    	if (user.getExternalUserId().equals(form.getPuid())) {
     		SecurityContextHolder.getContext().setAuthentication(authentication);
     	} else {
     		SecurityContextHolder.getContext().setAuthentication(
         			new ChameleonAuthentication(
-        					authentication, new ChameleonUserContext(frm.getPuid(), frm.getName(), user)
+        					authentication, new ChameleonUserContext(form.getPuid(), form.getName(), user)
         			));
     	}
     }

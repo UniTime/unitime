@@ -1082,7 +1082,7 @@
 					<hasPermission name="HasRole"/>
 				</condition>
 			</item>
-		<item name="Switch User" page="chameleon.do">
+		<item name="Switch User" page="chameleon.action">
 			<condition>
 				<hasPermission name="Chameleon"/>
 			</condition>

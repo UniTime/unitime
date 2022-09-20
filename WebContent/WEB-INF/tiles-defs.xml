@@ -324,12 +324,6 @@
 		<put name="showSolverWarnings" value="assignment" />
   	</definition>
 
-   	<definition	name="chameleonTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Chameleon"/>
-		<put name="body" value="/admin/chameleon.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition>
- 
    	<definition	name="inquiryTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Contact Us"/>
 		<put name="body" value="/user/inquiry.jsp" />

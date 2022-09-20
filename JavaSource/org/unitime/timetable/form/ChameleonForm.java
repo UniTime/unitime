@@ -19,54 +19,24 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 
 /** 
- * MyEclipse Struts
- * Creation date: 10-23-2006
- * 
- * XDoclet definition:
- * @struts:form name="chameleonForm"
- *
  * @author Tomas Muller
  */
-public class ChameleonForm extends ActionForm {
+public class ChameleonForm implements UniTimeForm {
 	private static final long serialVersionUID = -2016021904772358915L;
-
-    // --------------------------------------------------------- Instance Variables
 
 	private String puid;
     private String op;
     private String name;
     private boolean canLookup;
     
-    // --------------------------------------------------------- Methods
+    @Override
+    public void validate(UniTimeAction action) {}
 
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();        
-        return errors;        
-        
-    }
-
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         puid = null;
         op = null;
         name = null;

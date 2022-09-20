@@ -114,7 +114,7 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 					getMiddle().setHint(result.getRole());
 					getMiddle().setInfo(result);
 					if (result.isChameleon()) {
-						getMiddle().setUrl("chameleon.do");
+						getMiddle().setUrl("chameleon.action");
 					} else {
 						getMiddle().setUrl("selectPrimaryRole.action?list=Y");
 					}
