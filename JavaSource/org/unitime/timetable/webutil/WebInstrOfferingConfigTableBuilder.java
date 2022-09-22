@@ -94,7 +94,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        
 	        if (context.hasPermission(ioc, Right.MultipleClassSetup)) {
 		        btnTable.append("<td>");
-		        btnTable.append("	<form method='post' action='instructionalOfferingModify.do' class='FormWithNoPadding'>");
+		        btnTable.append("	<form method='post' action='instructionalOfferingModify.action' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");

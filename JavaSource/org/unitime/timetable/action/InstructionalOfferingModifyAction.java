@@ -28,26 +28,19 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingModifyForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
@@ -80,84 +73,71 @@ import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LearningManagementSystemInfoDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.LookupTables;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-@Service("/instructionalOfferingModify")
-public class InstructionalOfferingModifyAction extends Action {
-
+@Action(value = "instructionalOfferingModify", results = {
+		@Result(name = "instructionalOfferingModify", type = "tiles", location = "instructionalOfferingModify.tiles"),
+		@Result(name = "instructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action", 
+			params = { "io", "${form.instrOfferingId}", "op", "view"}
+		)
+	})
+@TilesDefinition(name = "instructionalOfferingModify.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Multiple Class Setup"),
+		@TilesPutAttribute(name = "body", value = "/user/instructionalOfferingModify.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true")
+	})
+public class InstructionalOfferingModifyAction extends UniTimeAction<InstructionalOfferingModifyForm> {
+	private static final long serialVersionUID = 4233368454875113999L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	
-	@Autowired SessionContext sessionContext;
-	
-	@Autowired PermissionDepartment permissionDepartment;
-	
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	
-	/**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
 
-        MessageResources rsc = getResources(request);
-        InstructionalOfferingModifyForm frm = (InstructionalOfferingModifyForm) form;
+	protected String op2 = null;
+	private String uid;
+	private String id;
+
+	public String getHdnOp() { return op2; }
+	public void setHdnOp(String hdnOp) { this.op2 = hdnOp; }
+	public String getUid() { return uid; }
+	public void setUid(String uid) { this.uid = uid; }
+	public String getId() { return id; }
+	public void setId(String id) { this.id = id; }
+
+    public String execute() throws Exception {
+    	if (form == null)
+    		form = new InstructionalOfferingModifyForm();
         
         // Get operation
-        String op = (request.getParameter("op")==null)
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");
-
-        if(op==null)
-            op = request.getParameter("hdnOp");
+    	if (op == null) op = form.getOp();
+    	if (op2 != null && !op2.isEmpty()) op = op2;
 
         if(op==null || op.trim().length()==0)
             throw new Exception (MSG.errorOperationNotInterpreted() + op);
 
-        // Instructional Offering Config Id
-        String instrOffrConfigId = "";
-
         // Set up Lists
-        frm.setOp(op);
+        form.setOp(op);
 
         // First access to screen
-        if(op.equalsIgnoreCase(MSG.actionClassSetup())) {
-
-        	instrOffrConfigId = (request.getParameter("uid")==null)
-								? (request.getAttribute("uid")==null)
-								        ? null
-								        : request.getAttribute("uid").toString()
-								: request.getParameter("uid");
-								        
-            doLoad(request, frm, instrOffrConfigId);
+        if (op.equalsIgnoreCase(MSG.actionClassSetup())) {
+        	doLoad(uid);
+        }
+        
+        if (MSG.actionBackToIODetail().equals(op)) {
+        	return "instructionalOfferingDetail";
         }
         
 		LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
-		Department contrDept = InstrOfferingConfigDAO.getInstance().get(frm.getInstrOffrConfigId()).getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment();
-		TreeSet ts = new TreeSet();
-		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
-			Department d = (Department) it.next();
+		Department contrDept = InstrOfferingConfigDAO.getInstance().get(form.getInstrOffrConfigId()).getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment();
+		TreeSet<Department> ts = new TreeSet<Department>();
+		for (Iterator<Department> it = ((TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
+			Department d = it.next();
 			if (sessionContext.hasPermission(d, Right.MultipleClassSetupDepartment) && 
-				permissionDepartment.check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
+				getPermissionDepartment().check(sessionContext.getUser(), contrDept, DepartmentStatusType.Status.OwnerEdit, d, DepartmentStatusType.Status.ManagerEdit))
 				ts.add(d);
 		}
 		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
@@ -166,113 +146,70 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		LearningManagementSystemInfo.getDefaultIfExists(sessionContext.getUser().getCurrentAcademicSessionId()));
 
         // Add a class
-        if(op.equalsIgnoreCase(rsc.getMessage("button.add"))) {
-            // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
-
-            if(errors.size()==0) {
-                String addTemplateClass = frm.getAddTemplateClassId().toString();
-                frm.addNewClassesBasedOnTemplate(addTemplateClass);
-            }
-            else {
-                saveErrors(request, errors);
-            }
+        if ("add".equals(op) && id!=null && !id.trim().isEmpty()) {
+        	form.addNewClassesBasedOnTemplate(id);
         }
         // Move a class up
-        if(op.equalsIgnoreCase(rsc.getMessage("button.moveUp"))) {
-            // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
-
-            if(errors.size()==0) {
-                String moveUpClass = frm.getMoveUpClassId().toString();
-                frm.moveClassUp(moveUpClass);
-            }
-            else {
-                saveErrors(request, errors);
-            }
+        if ("moveUp".equals(op) && id!=null && !id.trim().isEmpty()) {
+        	form.moveClassUp(id);
         }
 
         // Move a class down
-        if(op.equalsIgnoreCase(rsc.getMessage("button.moveDown"))) {
-            // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
+        if ("moveDown".equals(op) && id!=null && !id.trim().isEmpty()) {
+        	form.moveClassDown(id);
 
-            if(errors.size()==0) {
-                String moveDownClass = frm.getMoveDownClassId().toString();
-                frm.moveClassDown(moveDownClass);
-            }
-            else {
-                saveErrors(request, errors);
-            }
         }
 
         // Remove a class and its children
-        if(op.equalsIgnoreCase(rsc.getMessage("button.delete"))) {
-            String deletedClass = request.getParameter("deletedClassId");
-            if(deletedClass!=null && deletedClass.trim().length()>0)
-                frm.removeFromClasses(deletedClass);
+        if ("delete".equals(op) && id!=null && !id.trim().isEmpty()) {
+        	form.removeFromClasses(id);
         }
         
-        if ("cancel".equals(op)) {
-            frm.setCancelled(request.getParameter("deletedClassId"), true);
+        if ("cancel".equals(op) && id!=null && !id.trim().isEmpty()) {
+            form.setCancelled(id, true);
         }
 
-        if ("reopen".equals(op)) {
-        	frm.setCancelled(request.getParameter("deletedClassId"), false);
+        if ("reopen".equals(op) && id!=null && !id.trim().isEmpty()) {
+        	form.setCancelled(id, false);
         }
 
-        if (op.equalsIgnoreCase("multipleLimits")){
-        	frm.setDisplayMaxLimit(Boolean.valueOf(!frm.getDisplayMaxLimit().booleanValue()));
-        	if (!frm.getDisplayMaxLimit().booleanValue()){
-        		if (!frm.maxLimitCanBeHidden()){
-        			frm.setDisplayMaxLimit(Boolean.valueOf(true));
-        			frm.setDisplayOptionForMaxLimit(Boolean.valueOf(true));
-        		}
+        if ("multipleLimits".equals(op)) {
+        	form.setDisplayMaxLimit(!form.getDisplayMaxLimit());
+        	if (!form.getDisplayMaxLimit() && !form.maxLimitCanBeHidden()){
+        		form.setDisplayMaxLimit(true);
+        		form.setDisplayOptionForMaxLimit(true);
         	}
         }
 
         // Update the classes
-        if(op.equalsIgnoreCase(MSG.actionUpdateMultipleClassSetup())) {
+        if (op.equalsIgnoreCase(MSG.actionUpdateMultipleClassSetup())) {
             // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
+        	form.validate(this);
 
-            if(errors.size()==0) {
-                doUpdate(request, frm);
-                ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
-                redirect.addParameter("io", frm.getInstrOfferingId());
-                redirect.addParameter("op", "view");
-                return redirect;
-            }
-            else {
-                saveErrors(request, errors);
+            if (!hasFieldErrors()) {
+                doUpdate();
+                return "instructionalOfferingDetail";
             }
         }
 
-        if (frm.getInstrOfferingId()!=null) {
-        	InstructionalOffering io = (new InstructionalOfferingDAO()).get(frm.getInstrOfferingId());
+        if (form.getInstrOfferingId()!=null) {
+        	InstructionalOffering io = (new InstructionalOfferingDAO()).get(form.getInstrOfferingId());
         	if (io!=null)
         		LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), null, io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()); // Facility Groups
         }
 
-        frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
-        frm.initalizeSubpartSubtotalsAndDisplayFlags();
-        frm.initializeEnableAllClassesForStudentScheduling();
-        frm.initializeDisplayAllClassInstructors();
+        form.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
+        form.initalizeSubpartSubtotalsAndDisplayFlags();
+        form.initializeEnableAllClassesForStudentScheduling();
+        form.initializeDisplayAllClassInstructors();
 
-        return mapping.findForward("instructionalOfferingModify");
+        return "instructionalOfferingModify";
     }
 
     /**
      * Loads the form with the classes that are part of the instructional offering config
-     * @param frm Form object
-     * @param instrCoffrConfigId Instructional Offering Config Id
-     * @param user User object
      */
-    private void doLoad(
-    		HttpServletRequest request,
-            InstructionalOfferingModifyForm frm,
-            String instrOffrConfigId) throws Exception {
-
+    private void doLoad(String instrOffrConfigId) throws Exception {
         // Check uniqueid
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
             throw new Exception (MSG.errorMissingIOConfig());
@@ -284,54 +221,54 @@ public class InstructionalOfferingModifyAction extends Action {
         InstrOfferingConfig ioc = iocDao.get(Long.valueOf(instrOffrConfigId));
         InstructionalOffering io = ioc.getInstructionalOffering();
 
-        frm.setDisplayOptionForMaxLimit(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.VariableClassLimits)));
+        form.setDisplayOptionForMaxLimit(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.VariableClassLimits)));
         // Load form properties
-        frm.setInstrOffrConfigId(ioc.getUniqueId());
-        frm.setInstrOffrConfigLimit(ioc.getLimit());
-        frm.setInstrOffrConfigUnlimited(ioc.isUnlimitedEnrollment());
-        frm.setInstrOfferingId(io.getUniqueId());
-        frm.setDisplayDisplayInstructors(ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue());
-        frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
-        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
-        frm.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
-        frm.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
-        frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
-        frm.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
-        frm.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
-		frm.setDisplayLms(Boolean.valueOf(isLmsInfoDefined()));
+        form.setInstrOffrConfigId(ioc.getUniqueId());
+        form.setInstrOffrConfigLimit(ioc.getLimit());
+        form.setInstrOffrConfigUnlimited(ioc.isUnlimitedEnrollment());
+        form.setInstrOfferingId(io.getUniqueId());
+        form.setDisplayDisplayInstructors(ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue());
+        form.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
+        form.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
+        form.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
+        form.setEditSnapshotLimits(ApplicationProperty.ClassSetupEditSnapshotLimits.isTrue() && io.getSnapshotLimitDate() != null && sessionContext.hasPermission(Right.MultipleClassSetupSnapshotLimits));
+        form.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
+        form.setInstructionalMethodDefault(io.getSession().getDefaultInstructionalMethod() == null ? null : io.getSession().getDefaultInstructionalMethod().getLabel());
+        form.setInstructionalMethodEditable(ApplicationProperty.WaitListCanChangeInstructionalMethod.isTrue() || !ioc.getInstructionalOffering().effectiveWaitList() || ioc.getEnrollment() == 0);
+		form.setDisplayLms(Boolean.valueOf(isLmsInfoDefined()));
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
         	name += " [" + ioc.getName() +"]";
         }
-        frm.setInstrOfferingName(name);
+        form.setInstrOfferingName(name);
 
         if (ioc.getSchedulingSubparts() == null || ioc.getSchedulingSubparts().size() == 0)
         	throw new Exception(MSG.errorIOConfigNotDefined());
 
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
         Collections.sort(subpartList, new SchedulingSubpartComparator());
-        ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
-        frm.setInstrOffrConfigUnlimitedReadOnly(false);
+        ClassAssignmentProxy proxy = getClassAssignmentService().getAssignment();
+        form.setInstrOffrConfigUnlimitedReadOnly(false);
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception(MSG.errorInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, ss.getClasses(), Boolean.valueOf(true), new String(), proxy);
+        		loadClasses(ss.getClasses(), Boolean.valueOf(true), new String(), proxy);
         	}
         }
-        frm.initializeOrigSubparts();
-        frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
-        frm.initalizeSubpartSubtotalsAndDisplayFlags();
-        frm.initializeEnableAllClassesForStudentScheduling();
-        frm.initializeDisplayAllClassInstructors();
+        form.initializeOrigSubparts();
+        form.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
+        form.initalizeSubpartSubtotalsAndDisplayFlags();
+        form.initializeEnableAllClassesForStudentScheduling();
+        form.initializeDisplayAllClassInstructors();
     }
 
     private boolean isLmsInfoDefined() {
         return(LearningManagementSystemInfo.isLmsInfoDefinedForSession(sessionContext.getUser().getCurrentAcademicSessionId()));
     }
-    private void loadClasses(InstructionalOfferingModifyForm frm, Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
+    private void loadClasses(Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
@@ -341,8 +278,8 @@ public class InstructionalOfferingModifyAction extends Action {
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
 	    		if (first){
-	    			frm.setDisplayEnrollment(Boolean.valueOf(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
-	    			frm.setDisplaySnapshotLimit(Boolean.valueOf(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
+	    			form.setDisplayEnrollment(Boolean.valueOf(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
+	    			form.setDisplaySnapshotLimit(Boolean.valueOf(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
 	    			first = false;
 	    		}
 	    		if (!isReadOnly.booleanValue()){
@@ -350,29 +287,25 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		} else {
 	    			readOnlyClass = Boolean.valueOf(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
 	    		}
-	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
-				frm.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
+	    		if (readOnlyClass) form.setInstrOffrConfigUnlimitedReadOnly(true);
+				form.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
 						sessionContext.hasPermission(cls, Right.ClassDelete),
 						sessionContext.hasPermission(cls, Right.ClassCancel),
 						(readOnlyClass && !cls.isCancelled()) || (
 								ApplicationProperty.WaitListCanChangeDatePattern.isFalse() && cls.getEnrollment() != null && cls.getEnrollment() > 0 && cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList() 
 						));
-	    		loadClasses(frm, cls.getChildClasses(), Boolean.valueOf(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
+	    		loadClasses(cls.getChildClasses(), Boolean.valueOf(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}
     }
 
     /**
      * Update the instructional offering config
-     * @param request
-     * @param frm
      */
-    private void doUpdate(HttpServletRequest request, InstructionalOfferingModifyForm frm)
-    	throws Exception {
-
+    private void doUpdate() throws Exception {
         // Get Instructional Offering Config
         InstrOfferingConfigDAO iocdao = new InstrOfferingConfigDAO();
-        InstrOfferingConfig ioc = iocdao.get(frm.getInstrOffrConfigId());
+        InstrOfferingConfig ioc = iocdao.get(form.getInstrOffrConfigId());
         Session hibSession = iocdao.getSession();
     	// Get default room group
 		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(ioc.getSession());
@@ -385,16 +318,16 @@ public class InstructionalOfferingModifyAction extends Action {
 	        tx = hibSession.beginTransaction();
 
 	        // If the instructional offering config limit or unlimited flag has changed update it.
-	        if (frm.isInstrOffrConfigUnlimited() != ioc.isUnlimitedEnrollment()) {
-	        	ioc.setUnlimitedEnrollment(frm.isInstrOffrConfigUnlimited());
-	        	ioc.setLimit(frm.isInstrOffrConfigUnlimited() ? 0 : frm.getInstrOffrConfigLimit());
+	        if (form.getInstrOffrConfigUnlimited() != ioc.isUnlimitedEnrollment()) {
+	        	ioc.setUnlimitedEnrollment(form.getInstrOffrConfigUnlimited());
+	        	ioc.setLimit(form.getInstrOffrConfigUnlimited() ? 0 : form.getInstrOffrConfigLimit());
 	        	hibSession.update(ioc);
-	        } else if (!frm.getInstrOffrConfigLimit().equals(ioc.getLimit())) {
-	        	ioc.setLimit(frm.getInstrOffrConfigLimit());
+	        } else if (!form.getInstrOffrConfigLimit().equals(ioc.getLimit())) {
+	        	ioc.setLimit(form.getInstrOffrConfigLimit());
 	        	hibSession.update(ioc);
 	        }
 
-	        InstructionalMethod imeth = (frm.getInstructionalMethod() == null || frm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(frm.getInstructionalMethod(), hibSession));
+	        InstructionalMethod imeth = (form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod(), hibSession));
 	        if (!ToolBox.equals(ioc.getInstructionalMethod(), imeth)) {
 	        	ioc.setInstructionalMethod(imeth);
 	        	hibSession.update(ioc);
@@ -411,16 +344,16 @@ public class InstructionalOfferingModifyAction extends Action {
 	        }
 
 	        // For all added classes, create the classes and save them, get back a map of the temp ids to the new classes
-	        HashMap tmpClassIdsToClasses = addClasses(frm, ioc, hibSession);
+	        HashMap tmpClassIdsToClasses = addClasses(ioc, hibSession);
 
 	        // For all changed classes, update them
-	        modifyClasses(frm, ioc, hibSession, rg, tmpClassIdsToClasses);
+	        modifyClasses(ioc, hibSession, rg, tmpClassIdsToClasses);
 
 	        // Update subpart ownership
 	        modifySubparts(ioc, origSubpartManagingDept, rg, hibSession);
 
 	        // Delete all classes in the original classes that are no longer in the modified classes
-	        deleteClasses(frm, ioc, hibSession, tmpClassIdsToClasses);
+	        deleteClasses(ioc, hibSession, tmpClassIdsToClasses);
 
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
@@ -634,7 +567,7 @@ public class InstructionalOfferingModifyAction extends Action {
     	}
     }
 
-    private void deleteClasses(InstructionalOfferingModifyForm frm, InstrOfferingConfig ioc, Session hibSession, HashMap tmpClassIdsToRealClasses){
+    private void deleteClasses(InstrOfferingConfig ioc, Session hibSession, HashMap tmpClassIdsToRealClasses){
     	if (ioc.getSchedulingSubparts() != null) {
 			SchedulingSubpart ss = null;
 			ArrayList lst = new ArrayList();
@@ -651,7 +584,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	        Class_ c;
 	        for (int i = (lst.size() - 1); i >= 0; i--){
 	        	c = (Class_) lst.get(i);
-	        	if (!frm.getClassIds().contains(c.getUniqueId().toString()) && !tmpClassIdsToRealClasses.containsValue(c)){
+	        	if (!form.getClassIds().contains(c.getUniqueId().toString()) && !tmpClassIdsToRealClasses.containsValue(c)){
 					if (c.getParentClass() != null){
 						Class_ parent = c.getParentClass();
 						parent.getChildClasses().remove(c);
@@ -669,7 +602,7 @@ public class InstructionalOfferingModifyAction extends Action {
     	}
      }
 
-    private HashMap addClasses(InstructionalOfferingModifyForm frm, InstrOfferingConfig ioc, Session hibSession){
+    private HashMap addClasses(InstrOfferingConfig ioc, Session hibSession){
     	HashMap tmpClsToRealClass = new HashMap();
 		SchedulingSubpartDAO ssdao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;
@@ -682,20 +615,20 @@ public class InstructionalOfferingModifyAction extends Action {
 		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
 		LearningManagementSystemInfo lms = null;
 
-		Iterator it1 = frm.getClassIds().listIterator();
-		Iterator it2 = frm.getSubpartIds().listIterator();
-		Iterator it3 = frm.getParentClassIds().listIterator();
-		Iterator it4 = frm.getMinClassLimits().listIterator();
-		Iterator it5 = frm.getDepartments().listIterator();
-		Iterator it6 = frm.getDatePatterns().listIterator();
-		Iterator it7 = frm.getNumberOfRooms().listIterator();
-		Iterator it8 = frm.getMaxClassLimits().listIterator();
-		Iterator it9 = frm.getRoomRatios().listIterator();
-		Iterator it10 = frm.getDisplayInstructors().listIterator();
-		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
-		Iterator it12 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
-		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
-		Iterator it14 = (frm.getDisplayLms() ? frm.getLms().listIterator() : null);
+		Iterator it1 = form.getClassIds().listIterator();
+		Iterator it2 = form.getSubpartIds().listIterator();
+		Iterator it3 = form.getParentClassIds().listIterator();
+		Iterator it4 = form.getMinClassLimits().listIterator();
+		Iterator it5 = form.getDepartments().listIterator();
+		Iterator it6 = form.getDatePatterns().listIterator();
+		Iterator it7 = form.getNumberOfRooms().listIterator();
+		Iterator it8 = form.getMaxClassLimits().listIterator();
+		Iterator it9 = form.getRoomRatios().listIterator();
+		Iterator it10 = form.getDisplayInstructors().listIterator();
+		Iterator it11 = form.getEnabledForStudentScheduling().listIterator();
+		Iterator it12 = (form.getEditExternalId() ? form.getExternalIds().listIterator() : null);
+		Iterator it13 = (form.getEditSnapshotLimits() ? form.getSnapshotLimits().listIterator() : null);
+		Iterator it14 = (form.getDisplayLms() ? form.getLms().listIterator() : null);
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -717,7 +650,7 @@ public class InstructionalOfferingModifyAction extends Action {
 			Integer numberOfRooms = Integer.valueOf(it7.next().toString());
 			Integer maxClassLimit = Integer.valueOf(it8.next().toString());
 			Float roomRatio = Float.valueOf(it9.next().toString());
-			if (frm.isInstrOffrConfigUnlimited()) {
+			if (form.getInstrOffrConfigUnlimited()) {
 				roomRatio = 1.0f;
 				minClassLimit = 0;
 				maxClassLimit = 0;
@@ -727,16 +660,16 @@ public class InstructionalOfferingModifyAction extends Action {
 			if(it10.hasNext())
 				displayInstructorStr = (String) it10.next();
 			Boolean displayInstructor = Boolean.valueOf(false);
-			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
-				displayInstructor = Boolean.valueOf(true);
+			if (displayInstructorStr != null){
+				displayInstructor = "true".equalsIgnoreCase(displayInstructorStr);
 			}
 			String enabledForStudentSchedulingStr = null;
 			if (it11.hasNext()) {
 				enabledForStudentSchedulingStr = (String) it11.next();
 			}
 			Boolean enabledForStudentScheduling = Boolean.valueOf(false);
-			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
-				enabledForStudentScheduling = Boolean.valueOf(true);
+			if (enabledForStudentSchedulingStr != null){
+				enabledForStudentScheduling = "true".equalsIgnoreCase(enabledForStudentSchedulingStr);
 			}
 			String suffix = (it12 == null ? null : it12.next().toString());
 			if (suffix != null && suffix.isEmpty()) suffix = null;
@@ -798,7 +731,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		return(tmpClsToRealClass);
    }
 
-    private void modifyClasses(InstructionalOfferingModifyForm frm, InstrOfferingConfig ioc, Session hibSession, RoomGroup rg, HashMap tmpClassIdsToRealClasses){
+    private void modifyClasses(InstrOfferingConfig ioc, Session hibSession, RoomGroup rg, HashMap tmpClassIdsToRealClasses){
 		Class_DAO cdao = new Class_DAO();
 		DepartmentDAO deptdao = new DepartmentDAO();
 		Department managingDept = null;
@@ -807,20 +740,20 @@ public class InstructionalOfferingModifyAction extends Action {
 		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
 		LearningManagementSystemInfo lms = null;
 
-		Iterator it1 = frm.getClassIds().listIterator();
-		Iterator it2 = frm.getMinClassLimits().listIterator();
-		Iterator it3 = frm.getDepartments().listIterator();
-		Iterator it4 = frm.getDatePatterns().listIterator();
-		Iterator it5 = frm.getNumberOfRooms().listIterator();
-		Iterator it6 = frm.getMaxClassLimits().listIterator();
-		Iterator it7 = frm.getRoomRatios().listIterator();
-		Iterator it8 = frm.getDisplayInstructors().listIterator();
-		Iterator it9 = frm.getEnabledForStudentScheduling().listIterator();
-		Iterator it10 = frm.getParentClassIds().listIterator();
-		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
-		Iterator it12 = frm.getIsCancelled().listIterator();
-		Iterator it13 = (frm.getEditSnapshotLimits() ? frm.getSnapshotLimits().listIterator() : null);
-		Iterator it14 = (frm.getDisplayLms() ? frm.getLms().listIterator() : null);
+		Iterator it1 = form.getClassIds().listIterator();
+		Iterator it2 = form.getMinClassLimits().listIterator();
+		Iterator it3 = form.getDepartments().listIterator();
+		Iterator it4 = form.getDatePatterns().listIterator();
+		Iterator it5 = form.getNumberOfRooms().listIterator();
+		Iterator it6 = form.getMaxClassLimits().listIterator();
+		Iterator it7 = form.getRoomRatios().listIterator();
+		Iterator it8 = form.getDisplayInstructors().listIterator();
+		Iterator it9 = form.getEnabledForStudentScheduling().listIterator();
+		Iterator it10 = form.getParentClassIds().listIterator();
+		Iterator it11 = (form.getEditExternalId() ? form.getExternalIds().listIterator() : null);
+		Iterator it12 = form.getIsCancelled().listIterator();
+		Iterator it13 = (form.getEditSnapshotLimits() ? form.getSnapshotLimits().listIterator() : null);
+		Iterator it14 = (form.getDisplayLms() ? form.getLms().listIterator() : null);
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -834,7 +767,7 @@ public class InstructionalOfferingModifyAction extends Action {
 			Integer numberOfRooms = Integer.valueOf(it5.next().toString());
 			Integer maxClassLimit = Integer.valueOf(it6.next().toString());
 			Float roomRatio = Float.valueOf(it7.next().toString());
-			if (frm.isInstrOffrConfigUnlimited()) {
+			if (form.getInstrOffrConfigUnlimited()) {
 				roomRatio = 1.0f;
 				minClassLimit = 0;
 				maxClassLimit = 0;
@@ -845,19 +778,19 @@ public class InstructionalOfferingModifyAction extends Action {
 				displayInstructorStr = (String) it8.next();
 			}
 			Boolean displayInstructor = Boolean.valueOf(false);
-			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
-				displayInstructor = Boolean.valueOf(true);
+			if (displayInstructorStr != null){
+				displayInstructor = "true".equalsIgnoreCase(displayInstructorStr);
 			}
 			String enabledForStudentSchedulingStr = null;
 			if (it9.hasNext()){
 				enabledForStudentSchedulingStr = (String)it9.next();
 			}
 			Boolean enabledForStudentScheduling = Boolean.valueOf(false);
-			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
-				enabledForStudentScheduling = Boolean.valueOf(true);
+			if (enabledForStudentSchedulingStr != null){
+				enabledForStudentScheduling = "true".equalsIgnoreCase(enabledForStudentSchedulingStr);
 			}
 			String suffix = (it11 != null ? it11.next().toString() : null);
-			Boolean cancelled = Boolean.valueOf("true".equals(it12.next()));
+			Boolean cancelled = Boolean.TRUE.equals(it12.next());
 			Integer snapshotLimit = null;
 			try {
 				snapshotLimit = (it13 == null ? null : Integer.valueOf(it13.next().toString()));
@@ -973,7 +906,7 @@ public class InstructionalOfferingModifyAction extends Action {
 						changed = true;
 					}
 				}
-				if (frm.getEditSnapshotLimits()) {
+				if (form.getEditSnapshotLimits()) {
 					if (snapshotLimit == null ? modifiedClass.getSnapshotLimit() != null : !snapshotLimit.equals(modifiedClass.getSnapshotLimit())) {
 						modifiedClass.setSnapshotLimit(snapshotLimit);
 						modifiedClass.setSnapshotLimitDate(timeStamp);
@@ -991,5 +924,12 @@ public class InstructionalOfferingModifyAction extends Action {
 			}
 		}
     }
-
+    
+    protected PermissionDepartment getPermissionDepartment() {
+    	return (PermissionDepartment)SpringApplicationContextHolder.getBean("permissionDepartment");
+    }
+    
+    public String getCrsNbr() {
+    	return (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
+    }
 }

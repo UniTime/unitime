@@ -26,16 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -52,13 +45,8 @@ import org.unitime.timetable.util.IdValue;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller, Zuzana Mullerova
  */
-public class InstructionalOfferingModifyForm extends ActionForm {
-
-	
+public class InstructionalOfferingModifyForm implements UniTimeForm {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5412595518174343486L;
 	
     // --------------------------------------------------------- Instance Variables
@@ -87,48 +75,44 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean editSnapshotLimits;
 	private Boolean displayLms;
 	
-	private List classIds;
-	private List subpartIds;
-	private List itypes;
-	private List mustHaveChildClasses;
-	private List parentClassIds;
-	private List readOnlyClasses;
-	private List readOnlyDatePatterns;
-	private List classLabels;
-	private List classLabelIndents;
-	private List enrollments;
-	private List snapshotLimits;
-	private List minClassLimits;
-	private List maxClassLimits;
-	private List roomRatios;
-	private List numberOfRooms;
-	private List departments;
-	private List datePatterns;
-	private List displayInstructors;
-	private List enabledForStudentScheduling;
-	private List classCanMoveUp;
-	private List classCanMoveDown;
-	private List subtotalIndexes;
-	private List subtotalLabels;
-	private List subtotalValues;
-	private List subtotalSnapValues;
-	private List enableAllClassesForStudentSchedulingForSubpart;
-	private List displayAllClassesInstructorsForSubpart;
-	private List readOnlySubparts;
-	private List times;
-	private List rooms;
-	private List instructors;	
-	private List externalIds;
-	private List canDelete;
-	private List canCancel;
-	private List isCancelled;
-	private List lms;
+	private List<String> classIds;
+	private List<String> subpartIds;
+	private List<String> itypes;
+	private List<Boolean> mustHaveChildClasses;
+	private List<String> parentClassIds;
+	private List<String> readOnlyClasses;
+	private List<String> readOnlyDatePatterns;
+	private List<String> classLabels;
+	private List<String> classLabelIndents;
+	private List<String> enrollments;
+	private List<String> snapshotLimits;
+	private List<String> minClassLimits;
+	private List<String> maxClassLimits;
+	private List<String> roomRatios;
+	private List<String> numberOfRooms;
+	private List<String> departments;
+	private List<String> datePatterns;
+	private List<String> displayInstructors;
+	private List<String> enabledForStudentScheduling;
+	private List<Boolean> classCanMoveUp;
+	private List<Boolean> classCanMoveDown;
+	private List<Integer> subtotalIndexes;
+	private List<String> subtotalLabels;
+	private List<Integer> subtotalValues;
+	private List<Integer> subtotalSnapValues;
+	private List<Boolean> enableAllClassesForStudentSchedulingForSubpart;
+	private List<Boolean> displayAllClassesInstructorsForSubpart;
+	private List<Boolean> readOnlySubparts;
+	private List<String> times;
+	private List<String> rooms;
+	private List<String> instructors;	
+	private List<String> externalIds;
+	private List<Boolean> canDelete;
+	private List<Boolean> canCancel;
+	private List<Boolean> isCancelled;
+	private List<String> lms;
 	
-	private List classHasErrors;
-	private Long addTemplateClassId;
-	private Long moveUpClassId;
-	private Long moveDownClassId;
-	private Long deletedClassId;
+	private List<Boolean> classHasErrors;
 	
 	private static String CLASS_IDS_TOKEN = "classIds";
 	private static String SUBPART_IDS_TOKEN = "subpartIds";
@@ -162,82 +146,56 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String DISPLAY_LMS_TOKEN = "displayLms";
 	private static String LMS_TOKEN = "lms";
 	
-
-    // --------------------------------------------------------- Classes
-
     /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory factoryClasses = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
+    protected DynamicListObjectFactory<String> factoryClasses;
+    protected DynamicListObjectFactory<Boolean> factoryBoolean;
+    protected DynamicListObjectFactory<Integer> factoryInteger;
+    
+    public InstructionalOfferingModifyForm() {
+    	factoryClasses = new DynamicListObjectFactory<String>() {
+            public String create() {
+                return Preference.BLANK_PREF_VALUE;
+            }
+    	};
+    	factoryBoolean = new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() {
+                return Boolean.FALSE;
+            }
+    	}; 
+    	factoryInteger = new DynamicListObjectFactory<Integer>() {
+            public Integer create() {
+                return 0;
+            }
+    	}; 
+    	reset();
+    }
 		
-    // --------------------------------------------------------- Methods
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-
-        if (op.equals(rsc.getMessage("button.add"))) {
-            // Check Added Course
-	        if (this.addTemplateClassId==null || this.addTemplateClassId.longValue()<=0) {
-	            errors.add("getAddTemplateClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
-	        }
-        }
-        
-        if (op.equals(rsc.getMessage("button.moveUp"))) {
-            // Check Course to move up
-	        if (this.moveUpClassId==null || this.moveUpClassId.longValue()<=0) {
-	            errors.add("getMoveUpClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
-	        }
-        }
-        
-        if (op.equals(rsc.getMessage("button.moveDown"))) {
-            // Check Course to move down
-	        if (this.moveDownClassId==null || this.moveDownClassId.longValue()<=0) {
-	            errors.add("getMoveDownClassId", new ActionMessage("errors.generic", MSG.errorRequiredClass()));            
-	        }
-        }
-        
-        if (op.equals(MSG.actionUpdateMultipleClassSetup())) {
+    public void validate(UniTimeAction action) {
+        if (MSG.actionUpdateMultipleClassSetup().equals(op)) {
 	        // Check Instructional Offering Config
 	        if (this.instrOffrConfigId==null || this.instrOffrConfigId.intValue()<=0) {
-	            errors.add("instrOffrConfigId", new ActionMessage("errors.generic", MSG.errorRequiredIOConfiguration()));            
+	            action.addFieldError("form.instrOffrConfigId", MSG.errorRequiredIOConfiguration());            
 	        }
 	        // Validate class limits provide space that is >= limit for the instructional offering config
-	        validateChildClassExistence(errors);
-	        validateClassLimits(errors);
-	        validateAllSubpartsHaveAtLeastOneClass(errors);
+	        validateChildClassExistence(action);
+	        validateClassLimits(action);
+	        validateAllSubpartsHaveAtLeastOneClass(action);
         }
-        
-        return errors;
     }
     
-    private void validateChildClassExistence(ActionErrors errors){
+    private void validateChildClassExistence(UniTimeAction action){
     	for(int index = 0 ; index < this.getClassIds().size(); index++){
-    		if (Boolean.valueOf((String) this.getMustHaveChildClasses().get(index)).booleanValue()){
+    		if (this.getMustHaveChildClasses().get(index)){
     			String classId = (String) this.getClassIds().get(index);
     			if ((index + 1) == this.getClassIds().size()){
-        			errors.add("mustHaveChildClasses", 
-        					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
+        			action.addFieldError("mustHaveChildClasses", 
+        					MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index)));
         			this.getClassHasErrors().set(index, Boolean.valueOf(true));    				
     			} else {
 	    			String parentOfNextClass = (String) this.getParentClassIds().get(index + 1);
 	    			if (parentOfNextClass == null || !parentOfNextClass.equals(classId)){
-	        			errors.add("mustHaveChildClasses", 
-	        					new ActionMessage("errors.generic", MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index))));
+	        			action.addFieldError("mustHaveChildClasses", 
+	        					MSG.errorClassMustHaveChildClasses((String) this.getClassLabels().get(index)));
 	        			this.getClassHasErrors().set(index, Boolean.valueOf(true));    				    				
 	    			}
     			}
@@ -245,18 +203,18 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	}
     }
     
-    private void validateAllSubpartsHaveAtLeastOneClass(ActionErrors errors){
+    private void validateAllSubpartsHaveAtLeastOneClass(UniTimeAction action){
     	
     	String[] subparts = this.getOrigSubparts().split(",");
     	for(int i = 0; i < subparts.length; i++){
     		if (!this.getSubpartIds().contains(subparts[i])){
-    			errors.add("allSubpartsMustHaveAClass", new ActionMessage("errors.generic", MSG.errorEachSubpartMustHaveClass()));
+    			action.addFieldError("allSubpartsMustHaveAClass", MSG.errorEachSubpartMustHaveClass());
     			break;
     		}
     	}
     }
     
-    private void validateMinLessThanMaxClassLimits(ActionErrors errors){
+    private void validateMinLessThanMaxClassLimits(UniTimeAction action){
     	Iterator it1 = this.getMinClassLimits().iterator();
     	Iterator it2 = this.getMaxClassLimits().iterator();
     	int index = 0;
@@ -278,14 +236,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			maxLimit = 0;
     		}
     		if (minLimit > maxLimit){
-    			errors.add("minLimitGreaterThanMaxLimit", new ActionMessage("errors.generic", MSG.errorMaxLessThanMinLimit((String) this.getClassLabels().get(index))));
+    			action.addFieldError("minLimitGreaterThanMaxLimit", MSG.errorMaxLessThanMinLimit((String) this.getClassLabels().get(index)));
     			this.getClassHasErrors().set(index, Boolean.valueOf(true));
     		}    		
     		index++;
     	}
     }
     
-    private void validateMinOrMaxParentClassLimits(ActionErrors errors, List limits, String errorName, String errorMessage){
+    private void validateMinOrMaxParentClassLimits(UniTimeAction action, List<String> limits, String errorName, String errorMessage){
 		HashMap childClassLimits = new HashMap();
 		Iterator it1 = this.getSubpartIds().iterator();
 		Iterator it2 = limits.iterator();
@@ -352,7 +310,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		
 		// mark classes that are in error and build error messages
 		if (childClassesUnderLimit.size() > 0){
-			errors.add(errorName, new ActionMessage("errors.generic", errorMessage));  			
+			action.addFieldError(errorName, errorMessage);  			
 		}
 		if ((childClassesUnderLimit.size() > 0)){
 			Iterator it6 = this.getParentClassIds().iterator();
@@ -373,7 +331,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}	
     }
     
-    private void validateSubpartClassLimits(ActionErrors errors){
+    private void validateSubpartClassLimits(UniTimeAction action){
     	int limit = getInstrOffrConfigLimit().intValue();
     	HashMap subpartClassLimits = new HashMap();
 		Iterator it1 = this.getSubpartIds().iterator();
@@ -423,9 +381,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		// mark classes that are in error and build error messages
 		if (subpartsUnderLimit.size() > 0){
 			if (getDisplayMaxLimit().booleanValue()){
-				errors.add("maxLimit", new ActionMessage("errors.generic", MSG.errorMaxLimitsTotalTooLow()));
+				action.addFieldError("maxLimit", MSG.errorMaxLimitsTotalTooLow());
 			} else {
-				errors.add("maxLimit", new ActionMessage("errors.generic", MSG.errorLimitsForTopLevelClassesTooLow()));
+				action.addFieldError("maxLimit", MSG.errorLimitsForTopLevelClassesTooLow());
 			}
 		}
 		if ((subpartsUnderLimit.size() > 0)){
@@ -445,7 +403,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
     
     private void initClassHasErrorsToFalse(){
-		this.setClassHasErrors(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		this.setClassHasErrors(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
 			this.getClassHasErrors().add(Boolean.valueOf(false));
 			it.next();
@@ -453,8 +411,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
     
     private void initClassMoveDirections(){
-    	this.setClassCanMoveDown(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setClassCanMoveUp(DynamicList.getInstance(new ArrayList(), factoryClasses));
+    	this.setClassCanMoveDown(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+		this.setClassCanMoveUp(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
 			this.getClassCanMoveDown().add(Boolean.valueOf(false));
 			this.getClassCanMoveUp().add(Boolean.valueOf(false));
@@ -462,24 +420,19 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
     }
     
-    private void validateClassLimits(ActionErrors errors){
-    	boolean unlimited = isInstrOffrConfigUnlimited();
+    private void validateClassLimits(UniTimeAction action){
+    	boolean unlimited = getInstrOffrConfigUnlimited();
     	int limit = getInstrOffrConfigLimit().intValue();
     	if (!unlimited && limit > 0) {
     		initClassHasErrorsToFalse();
-    		validateMinLessThanMaxClassLimits(errors);
-    		validateMinOrMaxParentClassLimits(errors, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())? MSG.errorTotalMaxChildrenAtLeastMaxParent():MSG.errorLimitsChildClasses()));
+    		validateMinLessThanMaxClassLimits(action);
+    		validateMinOrMaxParentClassLimits(action, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())? MSG.errorTotalMaxChildrenAtLeastMaxParent():MSG.errorLimitsChildClasses()));
     		if (ApplicationProperty.ConfigEditCheckLimits.isTrue())
-    			validateSubpartClassLimits(errors);
+    			validateSubpartClassLimits(action);
     	}
     }
  
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    public void reset() {
     	instrOfferingId = null;
     	instrOffrConfigLimit = null;
     	instrOffrConfigUnlimited = false;
@@ -506,43 +459,43 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
     
     private void resetLists(){
-    	classIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	subpartIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	itypes = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	mustHaveChildClasses = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	parentClassIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	readOnlyClasses = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	readOnlyDatePatterns = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	classLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	classLabelIndents = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	enrollments = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	snapshotLimits = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	minClassLimits = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	maxClassLimits = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	roomRatios = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	numberOfRooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
-      	departments = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	datePatterns = DynamicList.getInstance(new ArrayList(), factoryClasses);
-      	displayInstructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	enabledForStudentScheduling = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	subtotalIndexes = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	subtotalLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	subtotalValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	subtotalSnapValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	enableAllClassesForStudentSchedulingForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	classCanMoveDown = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	readOnlySubparts = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	times = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	instructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	canDelete = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	canCancel = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	isCancelled = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	lms = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	classIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	subpartIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	itypes = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	mustHaveChildClasses = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	parentClassIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	readOnlyClasses = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	readOnlyDatePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	classHasErrors = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+       	classLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	classLabelIndents = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	enrollments = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	snapshotLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	minClassLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	maxClassLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	roomRatios = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	numberOfRooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+      	departments = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	datePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+      	displayInstructors = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	enabledForStudentScheduling = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	subtotalIndexes = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
+       	subtotalLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+       	subtotalValues = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
+       	subtotalSnapValues = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
+       	enableAllClassesForStudentSchedulingForSubpart = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+       	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	classCanMoveUp = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	classCanMoveDown = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	readOnlySubparts = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	times = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	rooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	instructors = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	externalIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	canDelete = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	canCancel = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	isCancelled = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
+    	lms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -676,13 +629,13 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
     public void initalizeSubpartSubtotalsAndDisplayFlags(){
 		HashMap subpartToIndex = new HashMap();
-    	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setSubtotalValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setSubtotalSnapValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setEnableAllClassesForStudentSchedulingForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList(), factoryClasses));
+    	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
+		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList<String>(), factoryClasses));
+		this.setSubtotalValues(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
+		this.setSubtotalSnapValues(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
+		this.setEnableAllClassesForStudentSchedulingForSubpart(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
 		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;
     	int i = 0;
@@ -748,7 +701,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
     }
 
-    private boolean determineBooleanValueAtIndex(List l, int index){
+    private boolean determineBooleanValueAtIndex(List<?> l, int index){
     	if (l == null){
     		return(false);
     	}
@@ -777,34 +730,34 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
     	return(false);
     }
-	public List getClassIds() {
+	public List<String> getClassIds() {
 		return classIds;
 	}
-	public void setClassIds(List classIds) {
+	public void setClassIds(List<String> classIds) {
 		this.classIds = classIds;
 	}
-	public List getClassHasErrors() {
+	public List<Boolean> getClassHasErrors() {
 		return classHasErrors;
 	}
-	public void setClassHasErrors(List classHasErrors) {
+	public void setClassHasErrors(List<Boolean> classHasErrors) {
 		this.classHasErrors = classHasErrors;
 	}
-	public List getClassLabels() {
+	public List<String> getClassLabels() {
 		return classLabels;
 	}
-	public void setClassLabels(List classLabels) {
+	public void setClassLabels(List<String> classLabels) {
 		this.classLabels = classLabels;
 	}
-	public List getMinClassLimits() {
+	public List<String> getMinClassLimits() {
 		return minClassLimits;
 	}
-	public void setMinClassLimits(List classLimits) {
+	public void setMinClassLimits(List<String> classLimits) {
 		this.minClassLimits = classLimits;
 	}
-	public List getDatePatterns() {
+	public List<String> getDatePatterns() {
 		return datePatterns;
 	}
-	public void setDatePatterns(List datePatterns) {
+	public void setDatePatterns(List<String> datePatterns) {
 		this.datePatterns = datePatterns;
 	}
 	public Long getInstrOffrConfigId() {
@@ -819,7 +772,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setInstrOffrConfigLimit(Integer instrOffrConfigLimit) {
 		this.instrOffrConfigLimit = instrOffrConfigLimit;
 	}
-	public boolean isInstrOffrConfigUnlimited() {
+	public boolean getInstrOffrConfigUnlimited() {
 		return instrOffrConfigUnlimited;
 	}
 	public void setInstrOffrConfigUnlimited(boolean instrOffrConfigUnlimited) {
@@ -831,16 +784,16 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setInstrOffrConfigUnlimitedReadOnly(boolean instrOffrConfigUnlimitedReadOnly) {
 		this.instrOffrConfigUnlimitedReadOnly = instrOffrConfigUnlimitedReadOnly;
 	}
-	public List getDepartments() {
+	public List<String> getDepartments() {
 		return departments;
 	}
-	public void setDepartments(List managers) {
+	public void setDepartments(List<String> managers) {
 		this.departments = managers;
 	}
-	public List getNumberOfRooms() {
+	public List<String> getNumberOfRooms() {
 		return numberOfRooms;
 	}
-	public void setNumberOfRooms(List numberOfRooms) {
+	public void setNumberOfRooms(List<String> numberOfRooms) {
 		this.numberOfRooms = numberOfRooms;
 	}
 	public String getOp() {
@@ -849,34 +802,34 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setOp(String op) {
 		this.op = op;
 	}
-	public List getParentClassIds() {
+	public List<String> getParentClassIds() {
 		return parentClassIds;
 	}
-	public void setParentClassIds(List parentClassIds) {
+	public void setParentClassIds(List<String> parentClassIds) {
 		this.parentClassIds = parentClassIds;
 	}
-	public List getMaxClassLimits() {
+	public List<String> getMaxClassLimits() {
 		return maxClassLimits;
 	}
-	public void setMaxClassLimits(List roomLimits) {
+	public void setMaxClassLimits(List<String> roomLimits) {
 		this.maxClassLimits = roomLimits;
 	}
-	public List getSubpartIds() {
+	public List<String> getSubpartIds() {
 		return subpartIds;
 	}
-	public void setSubpartIds(List subpartIds) {
+	public void setSubpartIds(List<String> subpartIds) {
 		this.subpartIds = subpartIds;
 	}
-	public List getReadOnlyClasses() {
+	public List<String> getReadOnlyClasses() {
 		return readOnlyClasses;
 	}
-	public void setReadOnlyClasses(List readOnlyClasses) {
+	public void setReadOnlyClasses(List<String> readOnlyClasses) {
 		this.readOnlyClasses = readOnlyClasses;
 	}
-	public List getReadOnlyDatePatterns() {
+	public List<String> getReadOnlyDatePatterns() {
 		return readOnlyDatePatterns;
 	}
-	public void setReadOnlyDatePatterns(List readOnlyDatePatterns) {
+	public void setReadOnlyDatePatterns(List<String> readOnlyDatePatterns) {
 		this.readOnlyDatePatterns = readOnlyDatePatterns;
 	}
 	public Long getInstrOfferingId() {
@@ -885,12 +838,6 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setInstrOfferingId(Long instrOfferingId) {
 		this.instrOfferingId = instrOfferingId;
 	}
-	public Long getAddTemplateClassId() {
-		return addTemplateClassId;
-	}
-	public void setAddTemplateClassId(Long addTemplateClassId) {
-		this.addTemplateClassId = addTemplateClassId;
-	}
 
 	public void removeFromClasses(String classId){
 		removeClass(classId);
@@ -898,7 +845,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		setDirectionsClassesCanMove();
 	}
 	private void removeClass(String classId){
-		ArrayList classesToDel = new ArrayList();
+		ArrayList classesToDel = new ArrayList<String>();
 		Iterator it1 = this.classIds.listIterator();
 		Iterator it2 = this.subpartIds.listIterator();
 		Iterator it3 = this.parentClassIds.listIterator();
@@ -1027,31 +974,31 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 		this.readOnlyClasses.add(isReadOnly.toString());
 		this.readOnlyDatePatterns.add(isReadOnlyDatePattern.toString());
-		this.classHasErrors.add(Boolean.valueOf(false).toString());	
+		this.classHasErrors.add(Boolean.valueOf(false));	
 		this.enrollments.add(StudentClassEnrollment.sessionHasEnrollments(cls.getSessionId())?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
-		if(isInstrOffrConfigUnlimited()) {
+		if(getInstrOffrConfigUnlimited()) {
 			this.snapshotLimits.add("0");
 		} else {
 			this.snapshotLimits.add(cls.getSnapshotLimit() == null ? "" : cls.getSnapshotLimit().toString());	
 		}
-		if (isInstrOffrConfigUnlimited())
+		if (getInstrOffrConfigUnlimited())
 			this.minClassLimits.add("0");
 		else
 			this.minClassLimits.add(cls.getExpectedCapacity().toString());
-		if (isInstrOffrConfigUnlimited())
+		if (getInstrOffrConfigUnlimited())
 			this.numberOfRooms.add("1");
 		else
 			this.numberOfRooms.add(cls.getNbrRooms().toString());
 		this.displayInstructors.add(cls.isDisplayInstructor().toString());
 		this.enabledForStudentScheduling.add(cls.isEnabledForStudentScheduling().toString());
 
-		if (isInstrOffrConfigUnlimited()) 
+		if (getInstrOffrConfigUnlimited()) 
 			this.maxClassLimits.add("0");
 		else if(cls.getMaxExpectedCapacity() != null)
 			this.maxClassLimits.add(cls.getMaxExpectedCapacity().toString());
 		else
 			this.maxClassLimits.add("");
-		if (isInstrOffrConfigUnlimited())
+		if (getInstrOffrConfigUnlimited())
 			this.roomRatios.add("1.0");
 		else if(cls.getRoomRatio() != null)
 			this.roomRatios.add(cls.getRoomRatio().toString());
@@ -1086,9 +1033,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
 		this.instructors.add(cls.buildInstructorHtml(nameFormat));
 		this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
-		this.canDelete.add(canDelete ? "true" : "false");
-		this.canCancel.add(canCancel ? "true" : "false");
-		this.isCancelled.add(cls.isCancelled().toString());
+		this.canDelete.add(canDelete);
+		this.canCancel.add(canCancel);
+		this.isCancelled.add(cls.isCancelled());
 		if (cls.getLms() != null) {
 			this.lms.add(cls.getLms().getUniqueId().toString());
 		} else {
@@ -1154,11 +1101,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	}
 	
 	
-	private Object getObjectFromListMapAtIndex(HashMap hm, String key, int index){
+	private Object getObjectFromListMapAtIndex(HashMap<String, List> hm, String key, int index){
 		if (hm == null || key == null || key.length() == 0 || index < 0){
 			return(null);
 		}
-		List list = (List) hm.get(key);
+		List list = hm.get(key);
 		if (list == null || list.size() == 0) {
 			return(null);
 		}
@@ -1168,11 +1115,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		else
 			return(list.get(index));
 	}
-	private void addToClassesFromOrigClassesIndex(HashMap originalClassesMap, int classIndex){
+	private void addToClassesFromOrigClassesIndex(HashMap<String, List> originalClassesMap, int classIndex){
 		this.getClassIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, CLASS_IDS_TOKEN, classIndex));
 		this.getSubpartIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, SUBPART_IDS_TOKEN, classIndex));
 		this.getItypes().add((String) getObjectFromListMapAtIndex(originalClassesMap, ITYPES_TOKEN, classIndex));
-		this.getMustHaveChildClasses().add((String) getObjectFromListMapAtIndex(originalClassesMap, MUST_HAVE_CHILD_CLASSES_TOKEN, classIndex));
+		this.getMustHaveChildClasses().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, MUST_HAVE_CHILD_CLASSES_TOKEN, classIndex));
 		this.getClassLabels().add((String) getObjectFromListMapAtIndex(originalClassesMap, CLASS_LABELS_TOKEN, classIndex));
 		this.getClassLabelIndents().add((String) getObjectFromListMapAtIndex(originalClassesMap, CLASS_LABEL_INDENTS_TOKEN, classIndex));
 		this.getParentClassIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, PARENT_CLASS_IDS_TOKEN, classIndex));
@@ -1189,14 +1136,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getDatePatterns().add((String) getObjectFromListMapAtIndex(originalClassesMap, DATE_PATTERNS_TOKEN, classIndex));
 		this.getDisplayInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, DISPLAY_INSTRUCTORS_TOKEN, classIndex));
 		this.getEnabledForStudentScheduling().add((String) getObjectFromListMapAtIndex(originalClassesMap, ENABLED_FOR_STUDENT_SCHEDULING_TOKEN, classIndex));
-		this.getSubtotalIndexes().add((String) getObjectFromListMapAtIndex(originalClassesMap, SUBTOTAL_INDEXES_TOKEN, classIndex));
+		this.getSubtotalIndexes().add((Integer) getObjectFromListMapAtIndex(originalClassesMap, SUBTOTAL_INDEXES_TOKEN, classIndex));
 		this.getTimes().add((String) getObjectFromListMapAtIndex(originalClassesMap, TIMES_TOKEN, classIndex));
 		this.getRooms().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOMS_TOKEN, classIndex));
 		this.getInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, INSTRUCTORS_TOKEN, classIndex));
 		this.getExternalIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, EXTERNAL_IDS_TOKEN, classIndex));
-		this.getCanDelete().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_DELETE_TOKEN, classIndex));
-		this.getCanCancel().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_CANCEL_TOKEN, classIndex));
-		this.getIsCancelled().add((String) getObjectFromListMapAtIndex(originalClassesMap, IS_CANCELLED_TOKEN, classIndex));
+		this.getCanDelete().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, CAN_DELETE_TOKEN, classIndex));
+		this.getCanCancel().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, CAN_CANCEL_TOKEN, classIndex));
+		this.getIsCancelled().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, IS_CANCELLED_TOKEN, classIndex));
 		this.getLms().add((String) getObjectFromListMapAtIndex(originalClassesMap, LMS_TOKEN, classIndex));
 	}
 	
@@ -1211,7 +1158,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			this.addToClassesFromOrigClassesIndex(origListsMap, i);
 		}
 		String parentClassId = this.getParentClassIds().get(this.getClassIds().indexOf(clsId.toString())).toString();
-		addNewClassesBasedOnTemplate(clsId, nextTmpClassId((List) origListsMap.get(CLASS_IDS_TOKEN)).toString(), (parentClassId.length() == 0)?null:parentClassId);			
+		addNewClassesBasedOnTemplate(clsId, nextTmpClassId((List<String>) origListsMap.get(CLASS_IDS_TOKEN)).toString(), (parentClassId.length() == 0)?null:parentClassId);			
 		for(int i = (addNewAfterIndex + 1); i < originalListSize; i++){
 			this.addToClassesFromOrigClassesIndex(origListsMap, i);
 		}
@@ -1335,7 +1282,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.classIds.add(tmpClassId);
 		this.subpartIds.add(this.getSubpartIds().get(index).toString());
 		this.itypes.add(this.getItypes().get(index).toString());
-		this.mustHaveChildClasses.add(this.getMustHaveChildClasses().get(index).toString());
+		this.mustHaveChildClasses.add(this.getMustHaveChildClasses().get(index));
 		this.parentClassIds.add((parentClassId != null)?parentClassId.toString():"");
 		this.readOnlyClasses.add(Boolean.valueOf(false).toString());
 		this.readOnlyDatePatterns.add(Boolean.valueOf(false).toString());
@@ -1354,21 +1301,21 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.rooms.add("");
 		this.instructors.add("");
 		this.externalIds.add("");
-		ArrayList childClasses = new ArrayList();
+		ArrayList<String> childClasses = new ArrayList<String>();
 		for(int i = (index + 1); i < this.getClassIds().size(); i++){
 			if (this.getParentClassIds().get(i).toString().equals(clsId))
 				childClasses.add(this.getClassIds().get(i));
 		}
-		for(Iterator it = childClasses.iterator(); it.hasNext();){
-			addNewClassesBasedOnTemplate(it.next().toString(), nextTmpClassId(null).toString(), tmpClassId);
+		for (Iterator<String> it = childClasses.iterator(); it.hasNext();){
+			addNewClassesBasedOnTemplate(it.next(), nextTmpClassId(null).toString(), tmpClassId);
 		}
-		this.canDelete.add("true");
-		this.canCancel.add("false");
-		this.isCancelled.add("false");
+		this.canDelete.add(true);
+		this.canCancel.add(false);
+		this.isCancelled.add(false);
 		this.lms.add(this.getLms().get(index));
 	}
 	
-	private Long nextTmpClassId(List origClassIds){
+	private Long nextTmpClassId(List<String> origClassIds){
 		long nextId = -1;
 		long id;
 		if (origClassIds != null){
@@ -1388,14 +1335,6 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		return (Long.valueOf(nextId));
 	}
 
-	public Long getDeletedClassId() {
-		return deletedClassId;
-	}
-
-	public void setDeletedClassId(Long deletedClassId) {
-		this.deletedClassId = deletedClassId;
-	}
-
 	public Integer getSubjectAreaId() {
 		return subjectAreaId;
 	}
@@ -1412,83 +1351,67 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.instrOfferingName = instrOfferingName;
 	}
 
-	public List getClassLabelIndents() {
+	public List<String> getClassLabelIndents() {
 		return classLabelIndents;
 	}
 
-	public void setClassLabelIndents(List classLabelIndents) {
+	public void setClassLabelIndents(List<String> classLabelIndents) {
 		this.classLabelIndents = classLabelIndents;
 	}
 
-	public List getRoomRatios() {
+	public List<String> getRoomRatios() {
 		return roomRatios;
 	}
 
-	public void setRoomRatios(List roomRatios) {
+	public void setRoomRatios(List<String> roomRatios) {
 		this.roomRatios = roomRatios;
 	}
 
-	public List getEnabledForStudentScheduling() {
+	public List<String> getEnabledForStudentScheduling() {
 		return enabledForStudentScheduling;
 	}
 
-	public void setEnabledForStudentScheduling(List enabledForStudentScheduling) {
+	public void setEnabledForStudentScheduling(List<String> enabledForStudentScheduling) {
 		this.enabledForStudentScheduling = enabledForStudentScheduling;
 	}
 
-	public List getDisplayInstructors() {
+	public List<String> getDisplayInstructors() {
 		return displayInstructors;
 	}
 
-	public void setDisplayInstructors(List displayInstructors) {
+	public void setDisplayInstructors(List<String> displayInstructors) {
 		this.displayInstructors = displayInstructors;
 	}
 
-	public List getClassCanMoveDown() {
+	public List<Boolean> getClassCanMoveDown() {
 		return classCanMoveDown;
 	}
 
-	public void setClassCanMoveDown(List classCanMoveDown) {
+	public void setClassCanMoveDown(List<Boolean> classCanMoveDown) {
 		this.classCanMoveDown = classCanMoveDown;
 	}
 
-	public List getClassCanMoveUp() {
+	public List<Boolean> getClassCanMoveUp() {
 		return classCanMoveUp;
 	}
 
-	public void setClassCanMoveUp(List classCanMoveUp) {
+	public void setClassCanMoveUp(List<Boolean> classCanMoveUp) {
 		this.classCanMoveUp = classCanMoveUp;
 	}
 
-	public List getItypes() {
+	public List<String> getItypes() {
 		return itypes;
 	}
 
-	public void setItypes(List itypes) {
+	public void setItypes(List<String> itypes) {
 		this.itypes = itypes;
 	}
 
-	public Long getMoveUpClassId() {
-		return moveUpClassId;
-	}
-
-	public void setMoveUpClassId(Long moveUpClassId) {
-		this.moveUpClassId = moveUpClassId;
-	}
-
-	public Long getMoveDownClassId() {
-		return moveDownClassId;
-	}
-
-	public void setMoveDownClassId(Long moveDownClassId) {
-		this.moveDownClassId = moveDownClassId;
-	}
-
-	public List getMustHaveChildClasses() {
+	public List<Boolean> getMustHaveChildClasses() {
 		return mustHaveChildClasses;
 	}
 
-	public void setMustHaveChildClasses(List mustHaveChildClasses) {
+	public void setMustHaveChildClasses(List<Boolean> mustHaveChildClasses) {
 		this.mustHaveChildClasses = mustHaveChildClasses;
 	}
 
@@ -1535,35 +1458,35 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		return (true);
 	}
 
-	public List getSubtotalIndexes() {
+	public List<Integer> getSubtotalIndexes() {
 		return subtotalIndexes;
 	}
 
-	public void setSubtotalIndexes(List subtotalIndexes) {
+	public void setSubtotalIndexes(List<Integer> subtotalIndexes) {
 		this.subtotalIndexes = subtotalIndexes;
 	}
 
-	public List getSubtotalLabels() {
+	public List<String> getSubtotalLabels() {
 		return subtotalLabels;
 	}
 
-	public void setSubtotalLabels(List subtotalLabels) {
+	public void setSubtotalLabels(List<String> subtotalLabels) {
 		this.subtotalLabels = subtotalLabels;
 	}
 
-	public List getSubtotalValues() {
+	public List<Integer> getSubtotalValues() {
 		return subtotalValues;
 	}
 
-	public void setSubtotalValues(List subtotalValues) {
+	public void setSubtotalValues(List<Integer> subtotalValues) {
 		this.subtotalValues = subtotalValues;
 	}
 
-	public List getSubtotalSnapValues() {
+	public List<Integer> getSubtotalSnapValues() {
 		return subtotalSnapValues;
 	}
 
-	public void setSubtotalSnapValues(List subtotalSnapValues) {
+	public void setSubtotalSnapValues(List<Integer> subtotalSnapValues) {
 		this.subtotalSnapValues = subtotalSnapValues;
 	}
 
@@ -1583,45 +1506,45 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayAllClassesInstructors = displayAllClassesInstructors;
 	}
 
-	public List getEnableAllClassesForStudentSchedulingForSubpart() {
+	public List<Boolean> getEnableAllClassesForStudentSchedulingForSubpart() {
 		return enableAllClassesForStudentSchedulingForSubpart;
 	}
 
 	public void setEnableAllClassesForStudentSchedulingForSubpart(
-			List enableAllClassesForStudentSchedulingForSubpart) {
+			List<Boolean> enableAllClassesForStudentSchedulingForSubpart) {
 		this.enableAllClassesForStudentSchedulingForSubpart = enableAllClassesForStudentSchedulingForSubpart;
 	}
 
-	public List getDisplayAllClassesInstructorsForSubpart() {
+	public List<Boolean> getDisplayAllClassesInstructorsForSubpart() {
 		return displayAllClassesInstructorsForSubpart;
 	}
 
 	public void setDisplayAllClassesInstructorsForSubpart(
-			List displayAllClassesInstructorsForSubpart) {
+			List<Boolean> displayAllClassesInstructorsForSubpart) {
 		this.displayAllClassesInstructorsForSubpart = displayAllClassesInstructorsForSubpart;
 	}
 
-	public List getReadOnlySubparts() {
+	public List<Boolean> getReadOnlySubparts() {
 		return readOnlySubparts;
 	}
 
-	public void setReadOnlySubparts(List readOnlySubparts) {
+	public void setReadOnlySubparts(List<Boolean> readOnlySubparts) {
 		this.readOnlySubparts = readOnlySubparts;
 	}
 
-	public List getEnrollments() {
+	public List<String> getEnrollments() {
 		return enrollments;
 	}
 
-	public void setEnrollments(List enrollments) {
+	public void setEnrollments(List<String> enrollments) {
 		this.enrollments = enrollments;
 	}
 
-	public List getSnapshotLimits() {
+	public List<String> getSnapshotLimits() {
 		return snapshotLimits;
 	}
 
-	public void setSnapshotLimits(List snapshotLimits) {
+	public void setSnapshotLimits(List<String> snapshotLimits) {
 		this.snapshotLimits = snapshotLimits;
 	}
 
@@ -1641,27 +1564,27 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displaySnapshotLimit = displaySnapshotLimit;
 	}
 
-	public List getTimes() {
+	public List<String> getTimes() {
 		return times;
 	}
 
-	public void setTimes(List times) {
+	public void setTimes(List<String> times) {
 		this.times = times;
 	}
 
-	public List getRooms() {
+	public List<String> getRooms() {
 		return rooms;
 	}
 
-	public void setRooms(List rooms) {
+	public void setRooms(List<String> rooms) {
 		this.rooms = rooms;
 	}
 
-	public List getInstructors() {
+	public List<String> getInstructors() {
 		return instructors;
 	}
 
-	public void setInstructors(List instructors) {
+	public void setInstructors(List<String> instructors) {
 		this.instructors = instructors;
 	}
 
@@ -1705,11 +1628,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayEnabledForStudentScheduling = displayEnabledForStudentScheduling;
 	}
 
-	public List getExternalIds() {
+	public List<String> getExternalIds() {
 		return externalIds;
 	}
 
-	public void setExternalIds(List externalIds) {
+	public void setExternalIds(List<String> externalIds) {
 		this.externalIds = externalIds;
 	}
 	
@@ -1721,20 +1644,20 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayLms = displayLms;
 	}
 
-	public List getLms() {
+	public List<String> getLms() {
 		return lms;
 	}
 
-	public void setLms(List lms) {
+	public void setLms(List<String> lms) {
 		this.lms = lms;
 	}
 
-	public List getCanDelete() { return canDelete; }
-	public void setCanDelete(List canDelete) { this.canDelete = canDelete; }
-	public List getCanCancel() { return canCancel; }
-	public void setCanCancel(List canCancel) { this.canCancel = canCancel; }
-	public List getIsCancelled() { return isCancelled; }
-	public void setIsCancelled(List isCancelled) { this.isCancelled = isCancelled; }
+	public List<Boolean> getCanDelete() { return canDelete; }
+	public void setCanDelete(List<Boolean> canDelete) { this.canDelete = canDelete; }
+	public List<Boolean> getCanCancel() { return canCancel; }
+	public void setCanCancel(List<Boolean> canCancel) { this.canCancel = canCancel; }
+	public List<Boolean> getIsCancelled() { return isCancelled; }
+	public void setIsCancelled(List<Boolean> isCancelled) { this.isCancelled = isCancelled; }
 	public void setCancelled(String classId, boolean cancelled) {
 		if (classId == null || classId.isEmpty()) return;
 		if (cancelled && Long.valueOf(classId) < 0) {
@@ -1743,8 +1666,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 		for (int i = 0; i < classIds.size(); i++) {
     		if (classId.equals(classIds.get(i))) {
-    			boolean wasCancelled = "true".equals(isCancelled.get(i));
-    			isCancelled.set(i, cancelled ? "true" : "false");
+    			boolean wasCancelled = isCancelled.get(i);
+    			isCancelled.set(i, cancelled);
     			if (wasCancelled && !cancelled) setCancelled((String)parentClassIds.get(i), false);
     			if (!wasCancelled && cancelled) {
     				boolean allCancelled = true;
@@ -1776,7 +1699,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
     	return ret;
     }
-    public boolean isInstructionalMethodEditable() { return instructionalMethodEditable; }
+    public boolean getInstructionalMethodEditable() { return instructionalMethodEditable; }
     public void setInstructionalMethodEditable(boolean instructionalMethodEditable) { this.instructionalMethodEditable = instructionalMethodEditable; }
     public String getInstructionalMethodLabel() {
     	if (instructionalMethod != null) {

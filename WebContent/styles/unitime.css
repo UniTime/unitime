@@ -7384,3 +7384,11 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 5px;
 	padding-right: 5px;
 }
+
+.unitime-Table {
+	border-spacing: 0px;
+}
+
+.unitime-Table td {
+	padding: 1px;
+}

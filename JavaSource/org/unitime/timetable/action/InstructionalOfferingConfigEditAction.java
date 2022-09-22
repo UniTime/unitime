@@ -37,7 +37,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -91,7 +90,6 @@ import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-@Service("/instructionalOfferingConfigEdit")
 @Action(value = "instructionalOfferingConfigEdit", results = {
 		@Result(name = "displayForm", type = "tiles", location = "instructionalOfferingConfigEdit.tiles"),
 		@Result(name = "instructionalOfferingSearch", type = "redirect", location = "/instructionalOfferingSearch.action"),

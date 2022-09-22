@@ -41,7 +41,6 @@
       <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
-      <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
@@ -214,22 +213,6 @@
         <forward 
         	name="crossListsModify" 
         	path="crossListsModifyTile" />
-        <forward 
-        	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.action" />
-      </action>
- 
-      <action
-         path="/instructionalOfferingModify"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="instructionalOfferingModifyForm"
-         input="instructionalOfferingModifyTile"
-         name="instructionalOfferingModifyForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="instructionalOfferingModify" 
-        	path="instructionalOfferingModifyTile" />
         <forward 
         	name="instructionalOfferingDetail" 
         	path="/instructionalOfferingDetail.action" />
