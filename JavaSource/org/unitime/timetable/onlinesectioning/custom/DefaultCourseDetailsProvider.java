@@ -72,7 +72,7 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 		}
 		return url
 				.replace(":xterm", URLEncoder.encode(iExternalTermProvider.getExternalTerm(session), "utf-8"))
-				.replace(":xcampus", URLEncoder.encode(iExternalTermProvider.getExternalTerm(session), "utf-8"))
+				.replace(":xcampus", URLEncoder.encode(iExternalTermProvider.getExternalCampus(session), "utf-8"))
 				.replace(":xsubject", URLEncoder.encode(iExternalTermProvider.getExternalSubject(session, subject, courseNbr), "utf-8"))
 				.replace(":xcourseNbr", URLEncoder.encode(iExternalTermProvider.getExternalCourseNumber(session, subject, courseNbr), "utf-8"));
 	}
