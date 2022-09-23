@@ -67,11 +67,14 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 		if (session.getTerm().toLowerCase().startsWith("spr")) return "20";
 		if (session.getTerm().toLowerCase().startsWith("sum")) return "30";
 		if (session.getTerm().toLowerCase().startsWith("fal")) return "10";
+		if (session.getTerm().toLowerCase().startsWith("win")) return "13";
 		throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("academic term "+session.getTerm()+" not known"));
 	}
 	
 	private String getYear(AcademicSessionInfo session) throws SectioningException {
 		if (session.getTerm().toLowerCase().startsWith("fal"))
+			return String.valueOf(Integer.parseInt(session.getYear()) + 1);
+		if (session.getTerm().toLowerCase().startsWith("win"))
 			return String.valueOf(Integer.parseInt(session.getYear()) + 1);
 		return session.getYear();
 	}

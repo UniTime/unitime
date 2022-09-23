@@ -814,6 +814,11 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				} else if (bannerTerm.endsWith("30")) {
 					return (Integer.parseInt(bannerTerm) - 20) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm
 							 + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+				} else if (bannerTerm.endsWith("13")) {
+					return (Integer.parseInt(bannerTerm) - 93) + "," + (Integer.parseInt(bannerTerm) - 83) + ","
+							 + (Integer.parseInt(bannerTerm) - 3) + "," + bannerTerm
+							 + "," + (Integer.parseInt(bannerTerm) + 7) + "," + (Integer.parseInt(bannerTerm) + 17)
+							 + "," + (Integer.parseInt(bannerTerm) + 97);
 				}
 			}
 			if (bannerTerm.endsWith("10")) {
@@ -822,6 +827,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				return (Integer.parseInt(bannerTerm) - 90) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm;
 			} else if (bannerTerm.endsWith("30")) {
 				return (Integer.parseInt(bannerTerm) - 20) + "," + (Integer.parseInt(bannerTerm) - 10) + "," + bannerTerm;
+			} else if (bannerTerm.endsWith("13")) {
+				return (Integer.parseInt(bannerTerm) - 93) + "," + (Integer.parseInt(bannerTerm) - 83) + ","
+						 + (Integer.parseInt(bannerTerm) - 3) + "," + bannerTerm;
 			}
 		}
 		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.criticalIncludeFutureTerm", "true"))) {
@@ -831,7 +839,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 10) + "," + (Integer.parseInt(bannerTerm) + 90);
 			} else if (bannerTerm.endsWith("30")) {
 				return bannerTerm + "," + (Integer.parseInt(bannerTerm) + 80) + "," + (Integer.parseInt(bannerTerm) + 90);
+			} else if (bannerTerm.endsWith("13")) {
+				return bannerTerm
+						+ "," + (Integer.parseInt(bannerTerm) + 7) + "," + (Integer.parseInt(bannerTerm) + 17)
+						+ "," + (Integer.parseInt(bannerTerm) + 97);
 			}
+			
 		}
 		return bannerTerm;
 	}

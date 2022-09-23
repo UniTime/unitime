@@ -34,6 +34,8 @@ public class BannerTermProvider implements ExternalTermProvider {
 		if (session.getTerm().toLowerCase().startsWith("sum")) return session.getYear() + "30";
 		if (session.getTerm().toLowerCase().startsWith("fal"))
 			return String.valueOf(Integer.parseInt(session.getYear()) + 1) + "10";
+		if (session.getTerm().toLowerCase().startsWith("win"))
+			return String.valueOf(Integer.parseInt(session.getYear()) + 1) + "13";
 		return session.getYear() + session.getTerm().toLowerCase();
 	}
 
