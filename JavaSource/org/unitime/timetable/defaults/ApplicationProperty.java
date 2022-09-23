@@ -71,8 +71,6 @@ import org.unitime.timetable.onlinesectioning.custom.CustomClassAttendanceProvid
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
-import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
-import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationDashboardUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
@@ -86,7 +84,6 @@ import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 /**
  * @author Tomas Muller
  */
-@SuppressWarnings("deprecation")
 public enum ApplicationProperty {
 	@Type(Class.class)
 	@Implements(Dialect.class)
@@ -1294,18 +1291,6 @@ public enum ApplicationProperty {
 	@Description("Customization: course catalog link provider (interface ExternalLinkLookup, deprecated)")
 	@Deprecated
 	CourseCatalogLinkProvider("tmtbl.catalogLink.lookup.class"),
-	
-	@Type(Class.class)
-	@Implements(SectionUrlProvider.class)
-	@Deprecated
-	@Description("Customization: section link provider (interface SectionUrlProvider, deprecated)")
-	CustomizationSectionUrl("unitime.custom.SectionUrlProvider"),
-	
-	@Type(Class.class)
-	@Implements(SectionLimitProvider.class)
-	@Deprecated
-	@Description("Customization: section limit provider (interface SectionLimitProvider, deprecated)")
-	CustomizationSectionLimit("unitime.custom.SectionLimitProvider"),
 	
 	@Type(Class.class)
 	@Implements(StudentEmailProvider.class)
