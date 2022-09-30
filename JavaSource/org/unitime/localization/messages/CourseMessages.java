@@ -3689,4 +3689,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Exception: {0}")
 	String errorCaughtException(String errorMessage);
+	
+	@DefaultMessage("Class {0}")
+	String sectClass(String name);
 }

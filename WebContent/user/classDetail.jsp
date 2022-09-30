@@ -55,7 +55,7 @@
 								title="${MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog())}" 
 								class="btn" 
 								accesskey="${MSG.accessOpenClassAssignmentDialog()}"
-								onClick="showGwtDialog('${MSG.dialogClassAssignment()}', 'classInfo.do?classId=${form.classId}','900','90%');"
+								onClick="showGwtDialog('${MSG.dialogClassAssignment()}', 'classInfo.action?classId=${form.classId}','900','90%');"
 						/>
 					</sec:authorize>
 					<s:if test="form.previousId != null">
@@ -392,7 +392,7 @@
 								title="${MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog())}" 
 								class="btn" 
 								accesskey="${MSG.accessOpenClassAssignmentDialog()}"
-								onClick="showGwtDialog('${MSG.dialogClassAssignment()}', 'classInfo.do?classId=${form.classId}','900','90%');"
+								onClick="showGwtDialog('${MSG.dialogClassAssignment()}', 'classInfo.action?classId=${form.classId}','900','90%');"
 						/>
 					</sec:authorize>
 					<s:if test="form.previousId != null">

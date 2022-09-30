@@ -22,26 +22,22 @@ package org.unitime.timetable.form;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class ClassInfoForm extends ActionForm {
+public class ClassInfoForm implements UniTimeForm {
 	private static final long serialVersionUID = -9085986972061220089L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private String iOp;
@@ -78,12 +74,16 @@ public class ClassInfoForm extends ActionForm {
     	}
     }
     
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        return errors;
+    public ClassInfoForm() {
+    	reset();
+    }
+    
+    @Override
+    public void validate(UniTimeAction action) {
     }
 
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         iOp = null;
         iModel = null;
         iMessage = null;
@@ -98,7 +98,6 @@ public class ClassInfoForm extends ActionForm {
         iRoomTypes = null;
         iRoomFeatures = null;
         iRoomGroups = null;
-        iSessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
     }
     
     public void load(HttpSession session) {
@@ -227,4 +226,7 @@ public class ClassInfoForm extends ActionForm {
     public Collection<RoomType> getAllRoomTypes() {
         return RoomType.findAll(iSessionId);
     }
+    
+    public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+    public Long getSessionId() { return iSessionId; }
 }

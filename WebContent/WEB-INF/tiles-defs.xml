@@ -401,12 +401,6 @@
 		<put name="title" type="string" value="Edit Room Type"/>
   	</definition>
   	
-	<definition	name="classInfoTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Class Assignment"/>
-		<put name="body" value="/tt/info.jsp" />
-		<put name="showMenu" value="false" />
-  	</definition>
-
  	<definition	name="enrollmentAuditPdfReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Enrollment Audit PDF Reports"/>
 		<put name="body" value="/user/pdfEnrollmentAuditReport.jsp" />

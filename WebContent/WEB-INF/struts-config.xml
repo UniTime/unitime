@@ -57,7 +57,6 @@
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
-	  <form-bean name="classInfoForm" type="org.unitime.timetable.form.ClassInfoForm" />
 	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
    </form-beans>
 
@@ -594,20 +593,6 @@
        <forward name="edit" path="roomTypeEditTile" />
     </action>
     
-    <action
-    	path="/classInfo"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="classInfoForm"
-    	input="classInfoTile"
-    	name="classInfoForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="classInfoTile"
-    		redirect="true" />
-    </action>
-
     <action
     	path="/enrollmentAuditPdfReport"
     	type="org.springframework.web.struts.DelegatingActionProxy"

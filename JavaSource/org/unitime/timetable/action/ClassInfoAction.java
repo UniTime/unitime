@@ -21,15 +21,10 @@ package org.unitime.timetable.action;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -43,7 +38,6 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
@@ -52,20 +46,47 @@ import org.unitime.timetable.util.RoomAvailability;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-@Service("/classInfo")
-public class ClassInfoAction extends Action {
+@Action(value = "classInfo", results = {
+		@Result(name = "show", type = "tiles", location = "classInfo.tiles")
+	})
+@TilesDefinition(name = "classInfo.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Class Assignment"),
+		@TilesPutAttribute(name = "body", value = "/tt/info.jsp"),
+		@TilesPutAttribute(name = "showMenu", value = "false")
+	})
+public class ClassInfoAction extends UniTimeAction<ClassInfoForm> {
+	private static final long serialVersionUID = 7634412254896426556L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
-    
-    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        ClassInfoForm myForm = (ClassInfoForm) form;
+	protected Long classId = null;
+	protected String op2 = null;
+	protected String time, date, room;
+	protected Long deleteId;
+
+	public Long getClassId() { return classId; }
+	public void setClassId(Long classId) { this.classId = classId; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }
+	
+	public String getTime() { return time; }
+	public void setTime(String time) { this.time = time; }
+	public String getRoom() { return room; }
+	public void setRoom(String room) { this.room = room; }
+	public String getDate() { return date; }
+	public void setDate(String date) { this.date = date; }
+	public Long getDelete() { return deleteId; }
+	public void setDelete(Long deleteId) { this.deleteId = deleteId; }
+	
+	@Override
+    public String execute() throws Exception {
+		if (form == null) {
+			form = new ClassInfoForm();
+		}
+		form.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
         
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0) {
-        	op = request.getParameter("op2");
-        	myForm.setOp(op);
-        }
+		if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
+        form.setOp(op);
 
         ClassInfoModel model = (ClassInfoModel)sessionContext.getAttribute(SessionAttribute.ClassInfoModel);
         if (model==null) {
@@ -88,34 +109,34 @@ public class ClassInfoAction extends Action {
         }
         model.setSessionContext(sessionContext);
         
-        if (op==null && model.getClass()!=null && request.getParameter("classId")==null) {
+        if (op==null && model.getClass()!=null && classId==null) {
             op="Apply";
         }
 
         if (MSG.actionFilterApply().equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            form.save(request.getSession());
         } else if ("Refresh".equals(op)) {
-            myForm.reset(mapping, request);
+            form.reset();
         }
         
-        myForm.load(request.getSession());
-        myForm.setModel(model);
-        model.apply(request, myForm);
+        form.load(request.getSession());
+        form.setModel(model);
+        model.apply(request, form);
         
         if (op==null) {
             model.clear(sessionContext.getUser().getExternalUserId());
         } else if ("Apply".equals(op)) {
             model.refreshRooms();
-            if (model.isKeepConflictingAssignments()!=myForm.getKeepConflictingAssignments())
+            if (model.isKeepConflictingAssignments()!=form.getKeepConflictingAssignments())
             	model.update();
         }
         
-        if (request.getParameter("classId")!=null) {
-            model.setClazz(new Class_DAO().get(Long.valueOf(request.getParameter("classId"))));
+        if (classId!=null) {
+            model.setClazz(new Class_DAO().get(classId));
             if (model.getClassAssignment()!=null && (model.getChange()==null || model.getChange().getCurrent(model.getClazz().getClassId())==null)) {
             	model.setTime(model.getClassAssignment().getTimeId());
             }
-            myForm.save(request.getSession());
+            form.save(request.getSession());
         }
         
         if (model.getClazz()==null) throw new Exception(MSG.errorNoClassGiven());
@@ -131,14 +152,14 @@ public class ClassInfoAction extends Action {
         
         if ("Select".equals(op)) {
             synchronized (model) {
-                if (request.getParameter("time")!=null)
-                    model.setTime(request.getParameter("time"));
-                if (request.getParameter("date")!=null)
-                    model.setDate(request.getParameter("date"));
-                if (request.getParameter("room")!=null)
-                    model.setRooms(request.getParameter("room"));
-                if (request.getParameter("delete")!=null)
-                    model.delete(Long.valueOf(request.getParameter("delete")));
+                if (time!=null)
+                    model.setTime(time);
+                if (date!=null)
+                    model.setDate(date);
+                if (room!=null)
+                    model.setRooms(room);
+                if (deleteId!=null)
+                    model.delete(deleteId);
             }
         }
         
@@ -157,9 +178,9 @@ public class ClassInfoAction extends Action {
             synchronized (model) {
                 String message = model.assign(sessionContext);
                 if (message==null || message.trim().length()==0) {
-                    myForm.setOp("Close");
+                    form.setOp("Close");
                 } else {
-                    myForm.setMessage(message);
+                    form.setMessage(message);
                 }
             }
         }
@@ -171,11 +192,11 @@ public class ClassInfoAction extends Action {
         }
 
         if ("Close".equals(op)) {
-            myForm.setOp("Close");
+            form.setOp("Close");
             
         }
-        if (myForm.getOp() == null || myForm.getOp().equals("Close")){
-        	myForm.setKeepConflictingAssignments(false);
+        if (form.getOp() == null || form.getOp().equals("Close")){
+        	form.setKeepConflictingAssignments(false);
             request.getSession().removeAttribute("ClassInfo.KeepConflictingAssignments");
         }
         
@@ -187,7 +208,7 @@ public class ClassInfoAction extends Action {
                 true, false);
         */
         
-        return mapping.findForward("show");        
+        return "show";        
     }
 
 }

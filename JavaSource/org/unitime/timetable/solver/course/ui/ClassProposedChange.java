@@ -150,13 +150,13 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
             		(canAssign?"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"": "") + ">";
+            		"onclick=\"document.location='classInfo.action?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"": "") + ">";
             ret += "<td nowrap>";
-            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
+            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='classInfo.action?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
             if (!canAssign && context.hasPermission(current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
             	ret += "<img src='images/error.png' border='0' " +
             			"onclick='if (confirm(\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Do you want to lock it?\")) " +
-            			"document.location=\"classInfo.do?offering="+current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
+            			"document.location=\"classInfo.action?offering="+current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
             			"title=\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Click the warning icon to lock it.\" style='cursor: pointer;'>&nbsp;";
             }
             ret += current.getClassNameHtml();
@@ -194,12 +194,12 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
             	(canAssign ? "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
                 "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='classInfo.do?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"" : "") + ">";
+                "onclick=\"document.location='classInfo.action?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"" : "") + ">";
             ret += "<td nowrap>";
             if (!canAssign && context.hasPermission(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
             	ret += "<img src='images/error.png' border='0' " +
             			"onclick='if (confirm(\"" + MSG.messageCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\")) " +
-            			"document.location=\"classInfo.do?offering="+conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
+            			"document.location=\"classInfo.action?offering="+conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
             			"title=\"" + MSG.titleCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\" style='cursor: pointer;'>&nbsp;";
             }
             ret += conflict.getClassNameHtml();
