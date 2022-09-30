@@ -116,12 +116,6 @@
 		<put name="title" type="string" value="Departments"/>
 		<put name="body" value="/admin/departmentList.jsp" />
   	</definition>
-
-  	<definition	name="crossListsModifyTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Instructional Offering Cross Lists"/>
-		<put name="body" value="/user/crossListsModify.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
   	
    	<definition	name="instructionalOfferingModifyTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Multiple Class Setup"/>

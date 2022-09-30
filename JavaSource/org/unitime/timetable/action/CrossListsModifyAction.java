@@ -1,4 +1,5 @@
 /*
+
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -27,28 +28,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.CrossListsModifyForm;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
@@ -71,69 +63,56 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 07-15-2005
- * 
- * XDoclet definition:
- * @struts:action path="/courseOfferingEdit" name="instructionalOfferingListForm" input="/user/instructionalOfferingSearch.jsp" scope="request"
- *
  * @author Tomas Muller, Heston Fernandes, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-@Service("/crossListsModify")
-public class CrossListsModifyAction extends Action {
-	
+@Action(value="crossListsModify", results = {
+		@Result(name = "crossListsModify", type = "tiles", location = "crossListsModify.tiles"),
+		@Result(name = "instructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action", 
+				params = { "io", "${form.instrOfferingId}", "op", "view"})
+	})
+@TilesDefinition(name = "crossListsModify.tiles", extend =  "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Instructional Offering Cross Lists"),
+		@TilesPutAttribute(name = "body", value = "/user/crossListsModify.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true")
+})
+public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> {
+	private static final long serialVersionUID = -6417943409851586772L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String op2 = null;
+	protected Long uid = null;
+	protected Long deletedCourseOfferingId = null;
 
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-
-        MessageResources rsc = getResources(request);
-        CrossListsModifyForm frm = (CrossListsModifyForm) form;
+	public String getHdnOp() { return op2; }
+	public void setHdnOp(String hdnOp) { this.op2 = hdnOp; }
+	public Long getUid() { return uid; }
+	public void setUid(Long uid) { this.uid = uid; }
+	public Long getDeletedCourseOfferingId() { return deletedCourseOfferingId; }
+	public void setDeletedCourseOfferingId(Long deletedCourseOfferingId) { this.deletedCourseOfferingId = deletedCourseOfferingId; }
+	
+    public String execute() throws Exception {
+    	if (form == null) {
+    		form = new CrossListsModifyForm();
+    	}
         
         // Get operation
-        String op = (request.getParameter("op")==null) 
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");		        
-        			        
-        if(op==null)
-            op = request.getParameter("hdnOp");
+    	if (op == null) op = form.getOp();
+    	if (op2 != null && !op2.isEmpty()) op = op2;
         
         if(op==null || op.trim().length()==0)
             throw new Exception (MSG.errorOperationNotInterpreted() + op);
-
-        // Course Offering Id
-        String courseOfferingId = "";
+        
+        if (op.equals(MSG.actionBackToIODetail())) {
+        	return "instructionalOfferingDetail";
+        }
 
         // Set up Lists
-        frm.setOp(op);
+        form.setOp(op);
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {
@@ -143,91 +122,69 @@ public class CrossListsModifyAction extends Action {
         
         // First access to screen
         if(op.equalsIgnoreCase(MSG.actionCrossLists())) {
-            
-		    courseOfferingId = (request.getParameter("uid")==null)
-								? (request.getAttribute("uid")==null)
-								        ? null
-								        : request.getAttribute("uid").toString()
-								: request.getParameter("uid");
-
-            doLoad(frm, courseOfferingId);
+            doLoad(uid);
         }
         
         // Add a course offering
         if(op.equalsIgnoreCase(MSG.actionAddCourseToCrossList())) {
             // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
-
-            if(errors.size()==0) {
-                Long addedOffering = frm.getAddCourseOfferingId();
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+                Long addedOffering = form.getAddCourseOfferingId();
                 CourseOfferingDAO cdao = new CourseOfferingDAO();
                 CourseOffering co = cdao.get(addedOffering);
                 
                 // Check reservations limit
-                frm.addToCourseOfferings(co, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co.getDepartment()), true);
-                frm.setAddCourseOfferingId(null);
-            }
-            else {
-                saveErrors(request, errors);
+                form.addToCourseOfferings(co, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co.getDepartment()), true);
+                form.setAddCourseOfferingId(null);
             }
         }
         
         // Remove a course offering
-        if(op.equalsIgnoreCase(rsc.getMessage("button.delete"))) {
-            String deletedOffering = request.getParameter("deletedCourseOfferingId");
-            if(deletedOffering!=null && deletedOffering.trim().length()>0)
-                frm.removeFromCourseOfferings(deletedOffering);
+        if (op.equalsIgnoreCase("Delete")) {
+            if (deletedCourseOfferingId!=null)
+                form.removeFromCourseOfferings(deletedCourseOfferingId);
         }
         
         // Update the course offering
         if(op.equalsIgnoreCase(MSG.actionUpdateCrossLists())) {
             // Validate data input
-            ActionMessages errors = frm.validate(mapping, request);
-            
-            if(errors.size()==0) {
-                doUpdate(request, frm);
-                ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
-                redirect.addParameter("io", frm.getInstrOfferingId());
-                redirect.addParameter("op", "view");
-                return redirect;
-            }
-            else {
-                saveErrors(request, errors);
+            form.validate(this);
+            if (!hasFieldErrors()) {
+                doUpdate();
+                return "instructionalOfferingDetail";
             }
         }
         
         // Determine if a course offering cannot be deleted
-        setReadOnlyCourseId(request, frm);
+        setReadOnlyCourseId();
         
         // Remove the courses that are already part of this offering from list of courses
-        filterCourseOfferingList(request, frm);
+        filterCourseOfferingList();
         
-        return mapping.findForward("crossListsModify");
+        return "crossListsModify";
     }
 
     /**
      * Ensures that all offerings that are part of the instructional offering
      * does not appear in the drop down list 
-     * @param request
-     * @param frm
      */
-    private void filterCourseOfferingList(HttpServletRequest request, CrossListsModifyForm frm) {
-        Collection existingOfferings = frm.getCourseOfferingIds();
-        Collection offerings = (Collection) request.getAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
+    private void filterCourseOfferingList() {
+        Collection<Long> existingOfferings = form.getCourseOfferingIds();
+        Collection<CourseOffering> offerings = (Collection<CourseOffering>) request.getAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME);
         
-        for (Iterator i=offerings.iterator(); i.hasNext(); ) {
-            CourseOffering co = (CourseOffering) i.next();
+        for (Iterator<CourseOffering> i=offerings.iterator(); i.hasNext(); ) {
+            CourseOffering co = i.next();
             if ((!co.getInstructionalOffering().isNotOffered() && !co.getInstructionalOffering().getInstrOfferingConfigs().isEmpty())
             	|| co.getInstructionalOffering().getCourseOfferings().size() > 1) {
             	i.remove(); continue;
             }
-            for (Iterator j=existingOfferings.iterator(); j.hasNext(); ) {
-                String course = (String) j.next();
-                if (course.equals(co.getUniqueId().toString()))
+            for (Iterator<Long> j=existingOfferings.iterator(); j.hasNext(); ) {
+                Long courseId = (Long) j.next();
+                if (courseId.equals(co.getUniqueId()))
                     i.remove();
             }
         }
-        
         request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, offerings);        
     }
 
@@ -235,49 +192,44 @@ public class CrossListsModifyAction extends Action {
      * Compares the modified offering to the original offering
      * If more than one offering is in common then all offerings show the 'Delete' icon
      * If only one offering is in common that offering cannot be deleted
-     * @param request
-     * @param frm
      */
-    private void setReadOnlyCourseId(HttpServletRequest request, CrossListsModifyForm frm) {
+    private void setReadOnlyCourseId() {
         short ct = 0;
-        String originalOfferings = frm.getOriginalOfferings();
-        List courseOfferingIds = frm.getCourseOfferingIds();
+        List<Long> originalOfferings = form.getOriginalOfferings();
+        List<Long> courseOfferingIds = form.getCourseOfferingIds();
         
-        for (Iterator i=courseOfferingIds.iterator(); i.hasNext(); ) {
-            String cid = i.next().toString();
-            if(originalOfferings.indexOf(cid)>0) {
+        for (Iterator<Long> i=courseOfferingIds.iterator(); i.hasNext(); ) {
+            Long cid = i.next();
+            if (originalOfferings.indexOf(cid)>=0) {
                 
                 // More than one course from the original offering exists in the modified one
                 if(++ct>1) {
-                    frm.setReadOnlyCrsOfferingId(null);
+                    form.setReadOnlyCrsOfferingId(null);
                     break;
                 }
                 else {
-                    frm.setReadOnlyCrsOfferingId(Long.valueOf(cid));
+                    form.setReadOnlyCrsOfferingId(Long.valueOf(cid));
                 }                    
             }
         }        
 
-        Debug.debug("Read Only Ctr Course: " + frm.getReadOnlyCrsOfferingId());
+        Debug.debug("Read Only Ctr Course: " + form.getReadOnlyCrsOfferingId());
     }
 
     /**
      * Update the instructional offering
-     * @param request
-     * @param frm
      */
-    private void doUpdate(HttpServletRequest request, CrossListsModifyForm frm) 
+    private void doUpdate() 
     	throws Exception {
         
         // Get the modified offering
-        List ids = frm.getCourseOfferingIds();
-        String courseIds = Constants.arrayToStr(ids.toArray(), "", " ");
-        String origCourseIds = frm.getOriginalOfferings();
+        List<Long> courseIds = form.getCourseOfferingIds();
+        List<Long> origCourseIds = form.getOriginalOfferings();
         
         // Get Offering
         CourseOfferingDAO cdao = new CourseOfferingDAO();
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
+        InstructionalOffering io = idao.get(form.getInstrOfferingId());
         Session hibSession = idao.getSession();
         hibSession.setFlushMode(FlushMode.MANUAL);
         Transaction tx = null;
@@ -288,20 +240,16 @@ public class CrossListsModifyAction extends Action {
         
         try {
 	        tx = hibSession.beginTransaction();
-	        StringTokenizer strTok = new StringTokenizer(origCourseIds);
 	        
         	List<CourseOffering> deletedOfferings = new ArrayList<CourseOffering>();
-	        while (strTok.hasMoreTokens()) {
-	            
-	            String origCrs = strTok.nextToken();
-	            
+	        for (Long origCrs: origCourseIds) {
 		        // 1. For all deleted courses - create new offering and make 'not offered'
 	            if (courseIds.indexOf(origCrs)<0) {
 	                Debug.debug("Course removed from offering: " + origCrs);
 	                
 	                // Create new instructional offering 
 	                InstructionalOffering io1 = new InstructionalOffering();
-	                CourseOffering co1 = cdao.get(Long.valueOf(origCrs.trim()));
+	                CourseOffering co1 = cdao.get(origCrs);
 	                
 	                sessionContext.checkPermission(co1, Right.CourseOfferingDeleteFromCrossList);
 	                
@@ -403,18 +351,18 @@ public class CrossListsModifyAction extends Action {
 
 	                // Update controlling course attribute
 	                CourseOffering co = cdao.get(Long.valueOf(origCrs));
-	                if(frm.getCtrlCrsOfferingId().equals(co.getUniqueId()))
+	                if(form.getCtrlCrsOfferingId().equals(co.getUniqueId()))
 	                    co.setIsControl(Boolean.valueOf(true));
 	                else
 	                    co.setIsControl(Boolean.valueOf(false));
 	                
 	                // Update course reservation
-	                int indx = frm.getIndex(origCrs);
+	                int indx = form.getIndex(origCrs);
 	                try {
 	                	if (ApplicationProperty.ModifyCrossListSingleCourseLimit.isTrue())
-	                		co.setReservation(Integer.valueOf(frm.getLimits(indx)));
+	                		co.setReservation(form.getLimits(indx));
 	                	else
-	                		co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
+	                		co.setReservation(courseIds.size() > 1 ? form.getLimits(indx) : null);
 	                } catch (NumberFormatException e) {
 	                	co.setReservation(null);
 	                }
@@ -427,18 +375,14 @@ public class CrossListsModifyAction extends Action {
 	        }
 	        
 	        // 3. For all added courses - delete all preferences and change the instr offering id  
-	        Vector<CourseOffering> addedOfferings = new Vector();
-	        StringTokenizer strTok2 = new StringTokenizer(courseIds);
-	
-	        while (strTok2.hasMoreTokens()) {
-	            String course = strTok2.nextToken();
-	            
+	        List<CourseOffering> addedOfferings = new ArrayList<CourseOffering>();
+	        for (Long course: courseIds) {
 	            // Course added to offering
 	            if (origCourseIds.indexOf(course)<0) {
 	                
 	                Debug.debug("Course added to offering: " + course);
 	
-	                CourseOffering co1 = cdao.get(Long.valueOf(course.trim()));                
+	                CourseOffering co1 = cdao.get(course);                
 	                InstructionalOffering io1 = co1.getInstructionalOffering();
 	                SubjectArea sa = io1.getControllingCourseOffering().getSubjectArea();
 	                Set offerings = io1.getCourseOfferings();
@@ -450,7 +394,7 @@ public class CrossListsModifyAction extends Action {
 	                    
 	                    // Create a copy
 	                    CourseOffering co3 = (CourseOffering)co2.clone();
-	                    if(frm.getCtrlCrsOfferingId().equals(co2.getUniqueId()))
+	                    if(form.getCtrlCrsOfferingId().equals(co2.getUniqueId()))
 	                        co3.setIsControl(Boolean.valueOf(true));
 	                    else
 	                        co3.setIsControl(Boolean.valueOf(false));
@@ -476,15 +420,15 @@ public class CrossListsModifyAction extends Action {
 	                    		courseRequests.add(newReq);
 	                    		hibSession.delete(oldReq);
 	                    	}
-	                    
+
 	                    advCourseReqs.put(co3.getCourseName(), (List<AdvisorCourseRequest>)hibSession.createQuery(
 	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId")
 	                			.setLong("courseId", co2.getUniqueId()).list());
-	                    addedOfferings.addElement(co3);
+	                    addedOfferings.add(co3);
 
-    	                int indx = frm.getIndex(course);
+    	                int indx = form.getIndex(course);
     	                try {
-    	                	co3.setReservation(Integer.valueOf(frm.getLimits(indx)));
+    	                	co3.setReservation(form.getLimits(indx));
     	                } catch (NumberFormatException e) {
     	                	co3.setReservation(null);
     	                }
@@ -533,7 +477,7 @@ public class CrossListsModifyAction extends Action {
 	        
 	        // Update Offering - Added Offerings       
 	        for (int i=0; i<addedOfferings.size(); i++) {
-	            CourseOffering co3 = (CourseOffering) addedOfferings.elementAt(i);
+	            CourseOffering co3 = addedOfferings.get(i);
 	            co3.setInstructionalOffering(io);
 	            io.addTocourseOfferings(co3);
 	            hibSession.saveOrUpdate(co3);
@@ -649,45 +593,50 @@ public class CrossListsModifyAction extends Action {
 
     /**
      * Loads the form with the offering detail
-     * @param frm Form object
-     * @param courseOfferingId Course Offering Id of controlling course
-     * @param user User object
      */
-    private void doLoad(
-            CrossListsModifyForm frm, 
-            String courseOfferingId) throws Exception {
+    private void doLoad(Long courseOfferingId) throws Exception {
         
         // Check uniqueid
-        if(courseOfferingId==null || courseOfferingId.trim().length()==0)
+        if(courseOfferingId==null)
             throw new Exception (MSG.errorUniqueIdNeeded());
         
         // Load details
         CourseOfferingDAO coDao = new CourseOfferingDAO();
-        CourseOffering co = coDao.get(Long.valueOf(courseOfferingId));
+        CourseOffering co = coDao.get(courseOfferingId);
         InstructionalOffering io = co.getInstructionalOffering();
         
         sessionContext.checkPermission(io, Right.InstructionalOfferingCrossLists);
 
         // Sort Offerings
-        ArrayList offerings = new ArrayList(io.getCourseOfferings());
+        ArrayList<CourseOffering> offerings = new ArrayList<CourseOffering>(io.getCourseOfferings());
         Collections.sort(
                 offerings, 
                 new CourseOfferingComparator(CourseOfferingComparator.COMPARE_BY_CTRL_CRS));
         
         // Load form properties
-        frm.setInstrOfferingId(io.getUniqueId());
-        frm.setCtrlCrsOfferingId(io.getControllingCourseOffering().getUniqueId());
-        frm.setReadOnlyCrsOfferingId(null);
-        frm.setSubjectAreaId(co.getSubjectArea().getUniqueId());
-        frm.setInstrOfferingName(io.getCourseNameWithTitle());
-        frm.setOwnedInstrOffr(true); //?? Boolean.valueOf(io.isEditableBy(user)));
-        frm.setIoLimit(io.getLimit());
-        frm.setUnlimited(io.hasUnlimitedEnrollment());
+        form.setInstrOfferingId(io.getUniqueId());
+        form.setCtrlCrsOfferingId(io.getControllingCourseOffering().getUniqueId());
+        form.setReadOnlyCrsOfferingId(null);
+        form.setSubjectAreaId(co.getSubjectArea().getUniqueId());
+        form.setInstrOfferingName(io.getCourseNameWithTitle());
+        form.setOwnedInstrOffr(true); //?? Boolean.valueOf(io.isEditableBy(user)));
+        form.setIoLimit(io.getLimit());
+        form.setUnlimited(io.hasUnlimitedEnrollment());
+        if (io.hasUnlimitedEnrollment())
+        	form.setIoLimit(-1);
 
-        for(Iterator i = offerings.iterator(); i.hasNext(); ) {
-            CourseOffering co1 = ((CourseOffering) i.next());
-            frm.addToCourseOfferings(co1, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co1.getDepartment()), sessionContext.hasPermission(co1, Right.CourseOfferingDeleteFromCrossList));
-            frm.addToOriginalCourseOfferings(co1);
+        for(Iterator<CourseOffering> i = offerings.iterator(); i.hasNext(); ) {
+            CourseOffering co1 = i.next();
+            form.addToCourseOfferings(co1, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co1.getDepartment()), sessionContext.hasPermission(co1, Right.CourseOfferingDeleteFromCrossList));
+            form.addToOriginalCourseOfferings(co1);
         }
+    }
+    
+    public String getCrsNbr() {
+    	return (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
+    }
+    
+    public boolean isModifyCrossListSingleCourseLimit() {
+    	return ApplicationProperty.ModifyCrossListSingleCourseLimit.isTrue();
     }
 }

@@ -64,7 +64,7 @@
 							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
 								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8"
-								href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<bean:write name="courseOfferingEditForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="courseOfferingEditForm" property="instrOfferingId" />"
+								href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=<bean:write name="courseOfferingEditForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="courseOfferingEditForm" property="instrOfferingId" />"
 							><bean:write name="courseOfferingEditForm" property="courseName" /></A>
 						</logic:notEqual>
 					</tt:section-title>

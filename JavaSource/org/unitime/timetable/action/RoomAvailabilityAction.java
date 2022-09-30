@@ -36,7 +36,6 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
@@ -70,7 +69,6 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /**
  * @author Tomas Muller
  */
-@Service("/roomAvailability")
 @Action(value = "roomAvailability", results = {
 		@Result(name = "showReport", type = "tiles", location = "roomAvailability.tiles")
 	})

@@ -23,29 +23,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 04-18-2006
- * 
- * XDoclet definition:
- * @struts:form name="crossListsModifyForm"
- *
  * @author Zuzana Mullerova, Tomas Muller
  */
-public class CrossListsModifyForm extends ActionForm {
+public class CrossListsModifyForm implements UniTimeForm {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
@@ -59,195 +48,208 @@ public class CrossListsModifyForm extends ActionForm {
     private Long ctrlCrsOfferingId;
     private String instrOfferingName;
     private Boolean ownedInstrOffr;
-    private List courseOfferingIds;
-    private List courseOfferingNames;
-    private List ownedCourse;
+    private List<Long> originalOfferings;
+    private List<Long> courseOfferingIds;
+    private List<String> courseOfferingNames;
+    private List<Boolean> ownedCourse;
 
-    private List resvId;
-    private List limits;
-    private List requested;
-    private List projected;
-    private List lastTerm;
-    private List canDelete;
+    private List<String> resvId;
+    private List<Integer> limits;
+    private List<Integer> requested;
+    private List<Integer> projected;
+    private List<Integer> lastTerm;
+    private List<Boolean> canDelete;
     
 	private Integer ioLimit;
 	private Boolean unlimited;
 	
     private Long readOnlyCrsOfferingId;
-    private String originalOfferings;
-    
-
-    // --------------------------------------------------------- Classes
 
     /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory factoryCourseOfferings = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String("");
-        }
-    };
+    protected DynamicListObjectFactory<String> factoryCourseOfferings;
+    
+    public CrossListsModifyForm() {
+    	factoryCourseOfferings = new DynamicListObjectFactory<String>() {
+            public String create() {
+                return new String("");
+            }
+        };
+        reset();
+    }
 
-    // --------------------------------------------------------- Methods
 
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-
+    @Override
+    public void validate(UniTimeAction action) {
         if (op.equals(MSG.actionAddCourseToCrossList())) {
             // Check Added Course
 	        if (this.addCourseOfferingId==null || this.addCourseOfferingId.intValue()<=0) {
-	            errors.add("addCourseOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredCourseOffering()));            
+	        	action.addFieldError("form.addCourseOfferingId", MSG.errorRequiredCourseOffering());            
 	        }
         }
         
         if (op.equals(MSG.actionUpdateCrossLists())) {
 	        // Check controlling course
 	        if (this.ctrlCrsOfferingId==null || this.ctrlCrsOfferingId.intValue()<=0) {
-	            errors.add("ctrlCrsOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredControllingCourse()));            
+	        	action.addFieldError("form.ctrlCrsOfferingId", MSG.errorRequiredControllingCourse());            
 	        }
         }
-        
-        return errors;
     }
 
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         subjectAreaId = null;
         instrOfferingId = null;
         ctrlCrsOfferingId = null;
         readOnlyCrsOfferingId = null;
         instrOfferingName = null;
-        courseOfferingIds = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        courseOfferingNames = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        ownedCourse = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        resvId = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        limits = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        requested = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        projected = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        lastTerm = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        canDelete = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
-        originalOfferings = "";
+        originalOfferings = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() { return -1l; }
+        });
+        courseOfferingIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() { return -1l; }
+        });
+        courseOfferingNames = DynamicList.getInstance(new ArrayList<String>(), factoryCourseOfferings);
+        ownedCourse = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+        resvId = DynamicList.getInstance(new ArrayList<String>(), factoryCourseOfferings);
+        limits = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
+            public Integer create() { return null; }
+        });
+        requested = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
+            public Integer create() { return null; }
+        });
+        projected = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
+            public Integer create() { return null; }
+        });
+        lastTerm = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
+            public Integer create() { return null; }
+        });
+        canDelete = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
         ioLimit = null;
         unlimited = null;
     }
 
+    public List<Long> getOriginalOfferings() {
+        return originalOfferings;
+    }
+    public Long getOriginalOfferings(int key) {
+        return originalOfferings.get(key);
+    }
+    public void setOriginalOfferings(int key, Long value) {
+        this.originalOfferings.set(key, value);
+    }
+    public void setOriginalOfferings(List<Long> courseOfferingIds) {
+        this.originalOfferings = courseOfferingIds;
+    }
 
-    public List getCourseOfferingIds() {
+    public List<Long> getCourseOfferingIds() {
         return courseOfferingIds;
     }
-    public String getCourseOfferingIds(int key) {
-        return courseOfferingIds.get(key).toString();
+    public Long getCourseOfferingIds(int key) {
+        return courseOfferingIds.get(key);
     }
-    public void setCourseOfferingIds(int key, Object value) {
+    public void setCourseOfferingIds(int key, Long value) {
         this.courseOfferingIds.set(key, value);
     }
-    public void setCourseOfferingIds(List courseOfferingIds) {
+    public void setCourseOfferingIds(List<Long> courseOfferingIds) {
         this.courseOfferingIds = courseOfferingIds;
     }
 
-    public List getCourseOfferingNames() {
+    public List<String> getCourseOfferingNames() {
         return courseOfferingNames;
     }
     public String getCourseOfferingNames(int key) {
         return courseOfferingNames.get(key).toString();
     }
-    public void setCourseOfferingNames(int key, Object value) {
+    public void setCourseOfferingNames(int key, String value) {
         this.courseOfferingNames.set(key, value);
     }
-    public void setCourseOfferingNames(List courseOfferingNames) {
+    public void setCourseOfferingNames(List<String> courseOfferingNames) {
         this.courseOfferingNames = courseOfferingNames;
     }
 
-    public List getOwnedCourse() {
+    public List<Boolean> getOwnedCourse() {
         return ownedCourse;
     }
-    public String getOwnedCourse(int key) {
-        return ownedCourse.get(key).toString();
+    public Boolean getOwnedCourse(int key) {
+        return ownedCourse.get(key);
     }
-    public void setOwnedCourse(int key, Object value) {
+    public void setOwnedCourse(int key, Boolean value) {
         this.ownedCourse.set(key, value);
     }
-    public void setOwnedCourse(List ownedCourse) {
+    public void setOwnedCourse(List<Boolean> ownedCourse) {
         this.ownedCourse = ownedCourse;
     }
 
-    public List getLimits() {
+    public List<Integer> getLimits() {
         return limits;
     }
-    public String getLimits(int key) {
-        return limits.get(key).toString();
+    public Integer getLimits(int key) {
+        return limits.get(key);
     }
-    public void setLimits(int key, Object value) {
+    public void setLimits(int key, Integer value) {
         this.limits.set(key, value);
     }
-    public void setLimits(List limits) {
+    public void setLimits(List<Integer> limits) {
         this.limits = limits;
     }
 
-    public List getResvId() {
+    public List<String> getResvId() {
         return resvId;
     }
     public String getResvId(int key) {
         return resvId.get(key).toString();
     }
-    public void setResvId(int key, Object value) {
+    public void setResvId(int key, String value) {
         this.resvId.set(key, value);
     }
-    public void setResvId(List resvId) {
+    public void setResvId(List<String> resvId) {
         this.resvId = resvId;
     }
 
-    public List getRequested() {
+    public List<Integer> getRequested() {
         return requested;
     }
-    public String getRequested(int key) {
-        return requested.get(key).toString();
+    public Integer getRequested(int key) {
+        return requested.get(key);
     }
-    public void setRequested(int key, Object value) {
+    public void setRequested(int key, Integer value) {
         this.requested.set(key, value);
     }
-    public void setRequested(List requested) {
+    public void setRequested(List<Integer> requested) {
         this.requested = requested;
     }
 
-    public List getProjected() {
+    public List<Integer> getProjected() {
         return projected;
     }
-    public String getProjected(int key) {
-        return projected.get(key).toString();
+    public Integer getProjected(int key) {
+        return projected.get(key);
     }
-    public void setProjected(int key, Object value) {
+    public void setProjected(int key, Integer value) {
         this.projected.set(key, value);
     }
-    public void setProjected(List projected) {
+    public void setProjected(List<Integer> projected) {
         this.projected = projected;
     }
 
-    public List getLastTerm() {
+    public List<Integer> getLastTerm() {
         return lastTerm;
     }
-    public String getLastTerm(int key) {
-        return lastTerm.get(key).toString();
+    public Integer getLastTerm(int key) {
+        return lastTerm.get(key);
     }
-    public void setLastTerm(int key, Object value) {
+    public void setLastTerm(int key, Integer value) {
         this.lastTerm.set(key, value);
     }
-    public void setLastTerm(List lastTerm) {
+    public void setLastTerm(List<Integer> lastTerm) {
         this.lastTerm = lastTerm;
     }
     
-    public List getCanDelete() {
+    public List<Boolean> getCanDelete() {
         return canDelete;
     }
     public Boolean getCanDelete(int key) {
@@ -256,7 +258,7 @@ public class CrossListsModifyForm extends ActionForm {
     public void setCanDelete(int key, Boolean value) {
         this.canDelete.set(key, value);
     }
-    public void setCanDelete(List canDelete) {
+    public void setCanDelete(List<Boolean> canDelete) {
         this.canDelete = canDelete;
     }
 
@@ -305,13 +307,6 @@ public class CrossListsModifyForm extends ActionForm {
         this.readOnlyCrsOfferingId = readOnlyCrsOfferingId;
     }
     
-    public String getOriginalOfferings() {
-        return originalOfferings;
-    }
-    public void setOriginalOfferings(String originalOfferings) {
-        this.originalOfferings = originalOfferings;
-    }
-    
     public Boolean getOwnedInstrOffr() {
 		return ownedInstrOffr;
 	}
@@ -340,7 +335,7 @@ public class CrossListsModifyForm extends ActionForm {
      * @param co Course Offering object
      */
     public void addToOriginalCourseOfferings(CourseOffering co) {
-        this.originalOfferings += " " + co.getUniqueId().toString();
+        this.originalOfferings.add(co.getUniqueId());
     }
     
     /**
@@ -350,14 +345,14 @@ public class CrossListsModifyForm extends ActionForm {
      * @param isOwner
      */
     public void addToCourseOfferings(CourseOffering co, Boolean isOwner, Boolean canDelete) {
-        this.courseOfferingIds.add(co.getUniqueId().toString());
+        this.courseOfferingIds.add(co.getUniqueId());
         this.courseOfferingNames.add((co.getCourseNameWithTitle()));
         this.ownedCourse.add(isOwner);
         this.resvId.add("");
-        this.limits.add(co.getReservation() == null ? "" : co.getReservation().toString());
-        this.requested.add("");
-        this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
-        this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
+        this.limits.add(co.getReservation());
+        this.requested.add(null);
+        this.projected.add(co.getProjectedDemand());
+        this.lastTerm.add(co.getDemand());
         this.canDelete.add(canDelete);
     }
     
@@ -365,11 +360,10 @@ public class CrossListsModifyForm extends ActionForm {
      * Remove course offering from the list
      * @param courseOfferingId Course Offering Id 
      */
-    public void removeFromCourseOfferings(String courseOfferingId) {
-
+    public void removeFromCourseOfferings(Long courseOfferingId) {
         int ct=0;
-        for (Iterator i=this.courseOfferingIds.listIterator(); i.hasNext(); ) {
-            String co1 = i.next().toString();
+        for (Iterator<Long> i = this.courseOfferingIds.iterator(); i.hasNext(); ) {
+            Long co1 = i.next();
             if(co1.equals(courseOfferingId)) {
                 i.remove();
                 this.courseOfferingNames.remove(ct);
@@ -382,7 +376,7 @@ public class CrossListsModifyForm extends ActionForm {
                 this.canDelete.remove(ct);
                 break;
             }
-            ++ct;
+            ct++;
         }
     }
 
@@ -390,9 +384,9 @@ public class CrossListsModifyForm extends ActionForm {
      * @param course
      * @return -1 if not found
      */
-    public int getIndex(String courseOfferingId) {
+    public int getIndex(Long courseOfferingId) {
         for (int i=0; i<courseOfferingIds.size(); i++ ) {
-            String co1 = (String) courseOfferingIds.get(i);
+        	Long co1 = courseOfferingIds.get(i);
             if(co1.equals(courseOfferingId)) {
                 return i;
             }

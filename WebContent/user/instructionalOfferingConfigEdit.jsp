@@ -62,8 +62,8 @@
 <s:form action="instructionalOfferingConfigEdit">
 	<s:hidden name="form.configId" />
 	<s:hidden name="form.instrOfferingId" />
-	<s:hidden name="form.subjectArea" styleId="subjectId"/>
-	<s:hidden name="form.courseNumber" styleId="course"/>
+	<s:hidden name="form.subjectArea"/>
+	<s:hidden name="form.courseNumber"/>
 	<s:hidden name="form.notOffered" />
 	<s:hidden name="form.configCount" />
 	<INPUT type="hidden" name="id" value = "">
@@ -78,8 +78,8 @@
 						<A  title="Back to Instructional Offering List (Alt+I)" 
 							accesskey="I"
 							class="l8" 
-							href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=${subjArea}&courseNbr=${crsNbr}#A${form.courseOfferingId}">
-						<B><s:property value="name.instrOfferingName"/></B></A>
+							href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${subjArea}&courseNbr=${crsNbr}#A${form.courseOfferingId}">
+						<B><s:property value="form.instrOfferingName"/></B></A>
 						<s:hidden name="form.instrOfferingName"/>											
 						<s:hidden name="form.courseOfferingId"/>
 					</tt:section-title>

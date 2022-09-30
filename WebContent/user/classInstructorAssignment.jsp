@@ -76,7 +76,7 @@
 							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>" 
 								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8" 
-								href="instructionalOfferingSearch.action?doit=Search&subjectAreaId=<bean:write name="<%=frmName%>" 
+								href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=<bean:write name="<%=frmName%>" 
 										property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="<%=frmName%>" property="instrOfferingId" />"
 							><bean:write name="<%=frmName%>" property="instrOfferingName" /></A>
 							<html:hidden property="instrOfferingId"/>
