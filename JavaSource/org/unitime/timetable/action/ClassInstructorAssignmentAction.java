@@ -26,22 +26,15 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.action.ActionRedirect;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
@@ -59,75 +52,64 @@ import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.LookupTables;
 
 /**
  * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
-@Service("/classInstructorAssignment")
-public class ClassInstructorAssignmentAction extends Action {
-
+@Action(value="classInstructorAssignment", results = {
+		@Result(name = "classInstructorAssignment", type = "tiles", location = "classInstructorAssignment.tiles"),
+		@Result(name = "instructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action", 
+				params = { "io", "${form.instrOfferingId}", "op", "view"})
+	})
+@TilesDefinition(name = "classInstructorAssignment.tiles", extend =  "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Assign Instructors"),
+		@TilesPutAttribute(name = "body", value = "/user/classInstructorAssignment.jsp"),
+		@TilesPutAttribute(name = "showNavigation", value = "true"),
+		@TilesPutAttribute(name = "showSolverWarnings", value = "assignment")
+})
+public class ClassInstructorAssignmentAction extends UniTimeAction<ClassInstructorAssignmentForm> {
+	private static final long serialVersionUID = -8297282704645449996L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String op2 = null;
+	private Long uid = null;
 	
-	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
-	/**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+	public String getHdnOp() { return op2; }
+	public void setHdnOp(String hdnOp) { this.op2 = hdnOp; }
+	public Long getUid() { return uid; }
+	public void setUid(Long uid) { this.uid = uid; }
 
-        MessageResources rsc = getResources(request);
-        ClassInstructorAssignmentForm frm = (ClassInstructorAssignmentForm) form;
+
+    public String execute() throws Exception {
+        if (form == null) {
+        	form = new ClassInstructorAssignmentForm();
+        }
 
         // Get operation
-        String op = (request.getParameter("op")==null)
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");
-						        
-        if(op==null)
-            op = request.getParameter("hdnOp");
+    	if (op == null) op = form.getOp();
+    	if (op2 != null && !op2.isEmpty()) op = op2;
 
-        if(op==null || op.trim().length()==0)
+        if (op==null || op.trim().length()==0)
             throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
+        
+        if (op.equals(MSG.actionBackToIODetail()))
+        	return "instructionalOfferingDetail";
 
         // Instructional Offering Config Id
-        String instrOffrConfigId = "";
+        Long instrOffrConfigId = uid;
+        if (uid == null) instrOffrConfigId = form.getInstrOffrConfigId();
 
         // Set the operation
-        frm.setOp(op);
+        form.setOp(op);
 
         // Set the proxy so we can get the class time and room
-        frm.setProxy(WebSolver.getClassAssignmentProxy(request.getSession()));
+        form.setProxy(getClassAssignmentService().getAssignment());
 
-    	instrOffrConfigId = (request.getParameter("uid")==null)
-				? (request.getAttribute("uid")==null)
-				        ? frm.getInstrOffrConfigId()!=null
-				        		? frm.getInstrOffrConfigId().toString()
-				        		: null
-				        : request.getAttribute("uid").toString()
-				: request.getParameter("uid");
-
-        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
-        InstrOfferingConfig ioc = iocDao.get(Long.valueOf(instrOffrConfigId));
-        frm.setInstrOffrConfigId(Long.valueOf(instrOffrConfigId));
+        InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(instrOffrConfigId);
+        form.setInstrOffrConfigId(instrOffrConfigId);
         
         sessionContext.checkPermission(ioc, Right.AssignInstructors);
 
@@ -138,7 +120,7 @@ public class ClassInstructorAssignmentAction extends Action {
 
         // First access to screen
         if(op.equalsIgnoreCase(MSG.actionAssignInstructors())) {
-            doLoad(request, frm, instrOffrConfigId, ioc);
+            doLoad(instrOffrConfigId, ioc);
         }
         
 		if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) ||
@@ -147,19 +129,19 @@ public class ClassInstructorAssignmentAction extends Action {
         		op.equals(MSG.actionUnassignAllInstructorsFromConfig())) {
 
             if (op.equals(MSG.actionUnassignAllInstructorsFromConfig())) {
-            	frm.unassignAllInstructors();
+            	form.unassignAllInstructors();
             }
 
         	// Validate input prefs
-            ActionMessages errors = frm.validate(mapping, request);
+            form.validate(this);
 
             // No errors - Update class
-            if(errors.size()==0) {
+            if (!hasFieldErrors()) {
 
             	try {
-            		frm.updateClasses();
+            		form.updateClasses();
 
-                    InstrOfferingConfig cfg = new InstrOfferingConfigDAO().get(frm.getInstrOffrConfigId());
+                    InstrOfferingConfig cfg = new InstrOfferingConfigDAO().get(form.getInstrOffrConfigId());
 
                     org.hibernate.Session hibSession = InstructionalOfferingDAO.getInstance().getSession();
                     ChangeLog.addChange(
@@ -171,7 +153,7 @@ public class ClassInstructorAssignmentAction extends Action {
                             cfg.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                             null);
                     
-                	if (permissionOfferingLockNeeded.check(sessionContext.getUser(), cfg.getInstructionalOffering())) {
+                	if (getPermissionOfferingLockNeeded().check(sessionContext.getUser(), cfg.getInstructionalOffering())) {
                 		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), cfg.getInstructionalOffering().getSessionId(), cfg.getInstructionalOffering().getUniqueId());
                 	}
                 	
@@ -184,86 +166,72 @@ public class ClassInstructorAssignmentAction extends Action {
                 	}
 
     	            if (op.equals(MSG.actionNextIO())) {
-    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getNextId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
+    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.action?uid="+form.getNextId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
     	            	return null;
     	            }
 
     	            if (op.equals(MSG.actionPreviousIO())) {
-    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getPreviousId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
+    	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.action?uid="+form.getPreviousId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
     	            	return null;
     	            }
-
-                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
-                    redirect.addParameter("io", frm.getInstrOfferingId());
-                    redirect.addParameter("op", "view");
-                    return redirect;
+                    return "instructionalOfferingDetail";
             	} catch (Exception e) {
             		throw e;
             	}
             }
-            else {
-                saveErrors(request, errors);
-            }
         }
 
-        if (op.equals(rsc.getMessage("button.delete"))) {
-        	frm.deleteInstructor();
+        if (op.equals("Delete")) {
+        	form.deleteInstructor();
         }
 
-        if (op.equals(rsc.getMessage("button.addInstructor"))) {
-        	frm.addInstructor();
+        if (op.equals("Add Instructor")) {
+        	form.addInstructor();
         }
 
-        return mapping.findForward("classInstructorAssignment");
+        return "classInstructorAssignment";
     }
 
 	/**
      * Loads the form with the classes that are part of the instructional offering config
-     * @param frm Form object
-     * @param instrCoffrConfigId Instructional Offering Config Id
-     * @param user User object
      */
-    private void doLoad(
-    		HttpServletRequest request,
-    		ClassInstructorAssignmentForm frm,
-            String instrOffrConfigId,
-            InstrOfferingConfig ioc) throws Exception {
+    private void doLoad(Long instrOffrConfigId, InstrOfferingConfig ioc) throws Exception {
 
         // Check uniqueid
-        if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
+        if (instrOffrConfigId==null)
             throw new Exception (MSG.exceptionMissingIOConfig());
 
         // Load details
         InstructionalOffering io = ioc.getInstructionalOffering();
 
         // Load form properties
-        frm.setInstrOffrConfigId(ioc.getUniqueId());
-        frm.setInstrOffrConfigLimit(ioc.getLimit());
-        frm.setInstrOfferingId(io.getUniqueId());
+        form.setInstrOffrConfigId(ioc.getUniqueId());
+        form.setInstrOffrConfigLimit(ioc.getLimit());
+        form.setInstrOfferingId(io.getUniqueId());
 
-        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue());
+        form.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue());
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
         	name += " [" + ioc.getName() +"]";
         }
-        frm.setInstrOfferingName(name);
+        form.setInstrOfferingName(name);
 
         if (ioc.getSchedulingSubparts() == null || ioc.getSchedulingSubparts().size() == 0)
         	throw new Exception(MSG.exceptionIOConfigUndefined());
 
         InstrOfferingConfig config = ioc.getNextInstrOfferingConfig(sessionContext);
         if(config != null) {
-        	frm.setNextId(config.getUniqueId().toString());
+        	form.setNextId(config.getUniqueId().toString());
         } else {
-        	frm.setNextId(null);
+        	form.setNextId(null);
         }
 
         config = ioc.getPreviousInstrOfferingConfig(sessionContext);
         if(config != null) {
-            frm.setPreviousId(config.getUniqueId().toString());
+            form.setPreviousId(config.getUniqueId().toString());
         } else {
-            frm.setPreviousId(null);
+            form.setPreviousId(null);
         }
 
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
@@ -274,7 +242,7 @@ public class ClassInstructorAssignmentAction extends Action {
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception(MSG.exceptionInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, ss.getClasses(), new String());
+        		loadClasses(form, ss.getClasses(), new String());
         	}
         }
         
@@ -289,11 +257,11 @@ public class ClassInstructorAssignmentAction extends Action {
         					" (" + coordinator.getResponsibility().getLabel() + (coordinator.getPercentShare() > 0 ? ", " + coordinator.getPercentShare() + "%" : "") + ")") + 
         			"</a>";
         }
-        frm.setCoordinators(coordinators);
+        form.setCoordinators(coordinators);
 
     }
 
-    private void loadClasses(ClassInstructorAssignmentForm frm, Set classes, String indent){
+    private void loadClasses(ClassInstructorAssignmentForm form, Set classes, String indent){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
 
@@ -301,7 +269,7 @@ public class ClassInstructorAssignmentAction extends Action {
         		Collections.sort(classesList,
         			new ClassCourseComparator(
         					sessionContext.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
-        					frm.getProxy(),
+        					form.getProxy(),
         					false
         			)
         		);
@@ -312,9 +280,24 @@ public class ClassInstructorAssignmentAction extends Action {
 	    	Class_ cls = null;
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
-	    		frm.addToClasses(cls, !sessionContext.hasPermission(cls, Right.AssignInstructorsClass), indent);
-	    		loadClasses(frm, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
+	    		form.addToClasses(cls, !sessionContext.hasPermission(cls, Right.AssignInstructorsClass), indent);
+	    		loadClasses(form, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
 	    	}
     	}
+    }
+    
+    protected Permission<InstructionalOffering> getPermissionOfferingLockNeeded() {
+    	return getPermission("permissionOfferingLockNeeded");
+    }
+    
+    public String getCrsNbr() {
+    	return (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
+    }
+    
+    private String nameFormat = null;
+    public String getNameFormat() {
+    	if (nameFormat == null)
+    		nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
+    	return nameFormat;
     }
 }

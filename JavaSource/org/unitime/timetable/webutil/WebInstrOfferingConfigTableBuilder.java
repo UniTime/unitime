@@ -103,7 +103,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 
 	        if (ApplicationProperty.LegacyCourseAssignInstructors.isTrue() && context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
-		        btnTable.append("	<form method='post' action='classInstructorAssignment.do' class='FormWithNoPadding'>");
+		        btnTable.append("	<form method='post' action='classInstructorAssignment.action' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");

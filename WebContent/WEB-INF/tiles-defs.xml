@@ -284,13 +284,6 @@
 		<put name="body" value="/admin/departmentEdit.jsp" />
   	</definition>
 
-   	<definition	name="classInstructorAssignmentTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Assign Instructors"/>
-		<put name="body" value="/user/classInstructorAssignment.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-
    	<definition	name="inquiryTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Contact Us"/>
 		<put name="body" value="/user/inquiry.jsp" />

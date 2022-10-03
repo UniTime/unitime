@@ -44,7 +44,6 @@
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
-      <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
@@ -398,22 +397,6 @@
        		path="departmentEditTile" />
     </action>
 
-      <action
-         path="/classInstructorAssignment"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="classInstructorAssignmentForm"
-         input="classInstructorAssignmentTile"
-         name="classInstructorAssignmentForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="classInstructorAssignment" 
-        	path="classInstructorAssignmentTile" />
-        <forward 
-        	name="instructionalOfferingDetail" 
-        	path="/instructionalOfferingDetail.action" />
-      </action>
-    
     <action
        path="/inquiry"
        type="org.springframework.web.struts.DelegatingActionProxy"

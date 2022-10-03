@@ -26,15 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -56,12 +51,12 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 /**
  * @author Stephanie Schluttenhofer, Zuzana Mullerova, Tomas Muller
  */
-public class ClassInstructorAssignmentForm extends ActionForm {
-
+public class ClassInstructorAssignmentForm implements UniTimeForm {
+	private static final long serialVersionUID = -203441190483028649L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	private String op;
-    private Integer subjectAreaId;
+    private Long subjectAreaId;
 	private Long instrOfferingId;
     private String instrOfferingName;
 	private Integer instrOffrConfigLimit;
@@ -75,49 +70,44 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private String defaultTeachingResponsibilityId;
     private String coordinators;
 
-	private List classIds;
-	private List classLabels;
-	private List classLabelIndents;
-	private List instructorUids;
-	private List percentShares;
-	private List leadFlags;
-	private List displayFlags;
-	private List times;
-	private List rooms;
-	private List allowDeletes;
-	private List readOnlyClasses;
-	private List classHasErrors;
-	private List showDisplay;
-	private List externalIds;
-	private List responsibilities;
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -203441190483028649L;
-	/**
-	 * 
-	 */
-
-    // --------------------------------------------------------- Classes
+	private List<String> classIds;
+	private List<String> classLabels;
+	private List<String> classLabelIndents;
+	private List<String> instructorUids;
+	private List<String> percentShares;
+	private List<Boolean> leadFlags;
+	private List<Boolean> displayFlags;
+	private List<String> times;
+	private List<String> rooms;
+	private List<Boolean> allowDeletes;
+	private List<String> readOnlyClasses;
+	private List<Boolean> classHasErrors;
+	private List<Boolean> showDisplay;
+	private List<String> externalIds;
+	private List<String> responsibilities;
 
     /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory factoryClasses = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
+    protected DynamicListObjectFactory<String> factoryClasses;
+    
+    public ClassInstructorAssignmentForm() {
+    	factoryClasses = new DynamicListObjectFactory<String>() {
+            public String create() {
+                return new String(Preference.BLANK_PREF_VALUE);
+            }
+        };
+    	reset();
+    }
 		
-	public void reset(ActionMapping arg0, HttpServletRequest arg1) {
+	public void reset() {
 		op = "";
         nextId = previousId = null;
-        subjectAreaId = Integer.valueOf(0);
-    	instrOfferingId = Long.valueOf(0);
+        subjectAreaId = 0l;
+    	instrOfferingId = 0l;
         instrOfferingName = null;
-    	instrOffrConfigLimit = Integer.valueOf(0);
-    	instrOffrConfigId = Long.valueOf(0);
+    	instrOffrConfigLimit = 0;
+    	instrOffrConfigId = 0l;
     	deletedInstrRowNum = null;
-    	displayExternalId = Boolean.valueOf(false);
+    	displayExternalId = false;
     	coordinators = null;
     	TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
     	defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
@@ -126,42 +116,48 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	}
 
 	private void resetLists() {
-    	classIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	classLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	classLabelIndents = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	instructorUids = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	percentShares = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	leadFlags = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	displayFlags = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	times = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	allowDeletes = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	readOnlyClasses = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	classHasErrors = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	showDisplay = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	responsibilities = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	classIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	classLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	classLabelIndents = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	instructorUids = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	percentShares = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	leadFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+    	displayFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+    	times = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	rooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	allowDeletes = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+    	readOnlyClasses = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	classHasErrors = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+    	showDisplay = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+    	externalIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	responsibilities = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
 	}
 
-	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
-		ActionErrors errors = new ActionErrors();
-
-        if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) || op.equals(MSG.actionNextIO()) || op.equals(MSG.actionPreviousIO())) {	
-            // Check Added Instructors
-	        for (int i = 0; i < classIds.size(); i++) {
-	        	String classId = (String) classIds.get(i);
-	        	String instrUid = (String) instructorUids.get(i);
-	        	String resp = (String) responsibilities.get(i);
-	        	for (int j = i + 1; j < classIds.size(); j++) {
-	        		if (((String) instructorUids.get(j)).length() > 0) {
-		        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid) && responsibilities.get(j).equals(resp)) {
-		        			errors.add("duplicateInstructor", new ActionMessage("errors.generic", MSG.errorDuplicateInstructorForClass()));
-		        		}
+	public void validate(UniTimeAction action) {
+        // Check Added Instructors
+        for (int i = 0; i < classIds.size(); i++) {
+        	String classId = (String) classIds.get(i);
+        	String instrUid = (String) instructorUids.get(i);
+        	String resp = (String) responsibilities.get(i);
+        	for (int j = i + 1; j < classIds.size(); j++) {
+        		if (((String) instructorUids.get(j)).length() > 0) {
+	        		if(classIds.get(j).equals(classId) && instructorUids.get(j).equals(instrUid) && responsibilities.get(j).equals(resp)) {
+	        			action.addFieldError("duplicateInstructor", MSG.errorDuplicateInstructorForClass());
+	        			classHasErrors.set(j, true);
 	        		}
-	        	}
-	        }
+        		}
+        	}
         }
-        return errors;
 	}
 
 	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
@@ -280,7 +276,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
             // Class all instructors
             Set<ClassInstructor> classInstrs = new HashSet<ClassInstructor>(c.getClassInstructors());
 
-            c.setDisplayInstructor(Boolean.valueOf("on".equals(getDisplayFlags().get(i))));
+            c.setDisplayInstructor(getDisplayFlags().get(i));
 
             // Save instructor data to class
             for ( ; i < classIds.size(); i++) {
@@ -291,7 +287,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
                 String instrId = (String) getInstructorUids().get(i);
                 if (instrId.length() > 0  && !("-".equals(instrId))) {
 	                String pctShare = (String) getPercentShares().get(i);
-	                Boolean lead = Boolean.valueOf("on".equals(getLeadFlags().get(i)));
+	                Boolean lead = getLeadFlags().get(i);
 	                String responsibility = (String) getResponsibilities().get(i);
 	                
 	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
@@ -383,85 +379,95 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.op = op;
 	}
 
-	public List getAllowDeletes() {
+	public List<Boolean> getAllowDeletes() {
 		return allowDeletes;
 	}
-
-	public void setAllowDeletes(List allowDeletes) {
+	public void setAllowDeletes(List<Boolean> allowDeletes) {
 		this.allowDeletes = allowDeletes;
 	}
+	public void setAllowDeletes(int key, Boolean value) { allowDeletes.set(key, value); }
+	public Boolean getAllowDeletes(int key) { return allowDeletes.get(key); }
 
-	public List getClassIds() {
+	public List<String> getClassIds() {
 		return classIds;
 	}
-
-	public void setClassIds(List classIds) {
+	public void setClassIds(List<String> classIds) {
 		this.classIds = classIds;
 	}
+	public void setClassIds(int key, String value) { classIds.set(key, value); }
+	public String getClassIds(int key) { return classIds.get(key); }
 
-	public List getClassLabelIndents() {
+	public List<String> getClassLabelIndents() {
 		return classLabelIndents;
 	}
-
-	public void setClassLabelIndents(List classLabelIndents) {
+	public void setClassLabelIndents(List<String> classLabelIndents) {
 		this.classLabelIndents = classLabelIndents;
 	}
+	public void setClassLabelIndents(int key, String value) { classLabelIndents.set(key, value); }
+	public String getClassLabelIndents(int key) { return classLabelIndents.get(key); }
 
-	public List getClassLabels() {
+	public List<String> getClassLabels() {
 		return classLabels;
 	}
-
-	public void setClassLabels(List classLabels) {
+	public void setClassLabels(List<String> classLabels) {
 		this.classLabels = classLabels;
 	}
+	public void setClassLabels(int key, String value) { classLabels.set(key, value); }
+	public String getClassLabels(int key) { return classLabels.get(key); }
 
-	public List getDisplayFlags() {
+	public List<Boolean> getDisplayFlags() {
 		return displayFlags;
 	}
-
-	public void setDisplayFlags(List displayFlags) {
+	public void setDisplayFlags(List<Boolean> displayFlags) {
 		this.displayFlags = displayFlags;
 	}
+	public void setDisplayFlags(int key, Boolean value) { displayFlags.set(key, value); }
+	public Boolean getDisplayFlags(int key) { return displayFlags.get(key); }
 
-	public List getInstructorUids() {
+	public List<String> getInstructorUids() {
 		return instructorUids;
 	}
-
-	public void setInstructorUids(List instructorUids) {
+	public void setInstructorUids(List<String> instructorUids) {
 		this.instructorUids = instructorUids;
 	}
+	public void setInstructorUids(int key, String value) { instructorUids.set(key, value); }
+	public String getInstructorUids(int key) { return instructorUids.get(key); }
 
-	public List getLeadFlags() {
+	public List<Boolean> getLeadFlags() {
 		return leadFlags;
 	}
-
-	public void setLeadFlags(List leadFlags) {
+	public void setLeadFlags(List<Boolean> leadFlags) {
 		this.leadFlags = leadFlags;
 	}
+	public void setLeadFlags(int key, Boolean value) { leadFlags.set(key, value); }
+	public Boolean getLeadFlags(int key) { return leadFlags.get(key); }
 
-	public List getPercentShares() {
+	public List<String> getPercentShares() {
 		return percentShares;
 	}
-
-	public void setPercentShares(List percentShares) {
+	public void setPercentShares(List<String> percentShares) {
 		this.percentShares = percentShares;
 	}
+	public void setPercentShares(int key, String value) { percentShares.set(key, value); }
+	public String getPercentShares(int key) { return percentShares.get(key); }
 
-	public List getRooms() {
+	public List<String> getRooms() {
 		return rooms;
 	}
-
-	public void setRooms(List rooms) {
+	public void setRooms(List<String> rooms) {
 		this.rooms = rooms;
 	}
+	public void setRooms(int key, String value) { rooms.set(key, value); }
+	public String getRooms(int key) { return rooms.get(key); }
 
-	public List getTimes() {
+	public List<String> getTimes() {
 		return times;
 	}
-
-	public void setTimes(List times) {
+	public void setTimes(List<String> times) {
 		this.times = times;
 	}
+	public void setTimes(int key, String value) { times.set(key, value); }
+	public String getTimes(int key) { return times.get(key); }
 
 	public Long getInstrOfferingId() {
 		return instrOfferingId;
@@ -495,27 +501,29 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.instrOffrConfigLimit = instrOffrConfigLimit;
 	}
 
-	public List getReadOnlyClasses() {
+	public List<String> getReadOnlyClasses() {
 		return readOnlyClasses;
 	}
-
-	public void setReadOnlyClasses(List readOnlyClasses) {
+	public void setReadOnlyClasses(List<String> readOnlyClasses) {
 		this.readOnlyClasses = readOnlyClasses;
 	}
+	public void setReadOnlyClasses(int key, String value) { readOnlyClasses.set(key, value); }
+	public String getReadOnlyClasses(int key) { return readOnlyClasses.get(key); }
 
-	public List getClassHasErrors() {
+	public List<Boolean> getClassHasErrors() {
 		return classHasErrors;
 	}
-
-	public void setClassHasErrors(List classHasErrors) {
+	public void setClassHasErrors(List<Boolean> classHasErrors) {
 		this.classHasErrors = classHasErrors;
 	}
+	public void setClassHasErrors(int key, Boolean value) { classHasErrors.set(key, value); }
+	public Boolean getClassHasErrors(int key) { return classHasErrors.get(key); }
 
-	public Integer getSubjectAreaId() {
+	public Long getSubjectAreaId() {
 		return subjectAreaId;
 	}
 
-	public void setSubjectAreaId(Integer subjectAreaId) {
+	public void setSubjectAreaId(Long subjectAreaId) {
 		this.subjectAreaId = subjectAreaId;
 	}
 
@@ -551,13 +559,14 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.deletedInstrRowNum = deletedInstrRowNum;
 	}
 
-	public List getShowDisplay() {
+	public List<Boolean> getShowDisplay() {
 		return showDisplay;
 	}
-
-	public void setShowDisplay(List showDisplay) {
+	public void setShowDisplay(List<Boolean> showDisplay) {
 		this.showDisplay = showDisplay;
 	}
+	public void setShowDisplay(int key, Boolean value) { showDisplay.set(key, value); }
+	public Boolean getShowDisplay(int key) { return showDisplay.get(key); }
 
 	public String getAddInstructorId() {
 		return addInstructorId;
@@ -567,13 +576,14 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.addInstructorId = addInstructorId;
 	}
 
-	public List getExternalIds() {
+	public List<String> getExternalIds() {
 		return externalIds;
 	}
-
-	public void setExternalIds(List externalIds) {
+	public void setExternalIds(List<String> externalIds) {
 		this.externalIds = externalIds;
 	}
+	public void setExternalIds(int key, String value) { externalIds.set(key, value); }
+	public String getExternalIds(int key) { return externalIds.get(key); }
 
 	public Boolean getDisplayExternalId() {
 		return displayExternalId;
@@ -583,14 +593,15 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.displayExternalId = displayExternalId;
 	}
 	
-	public List getResponsibilities() {
+	public List<String> getResponsibilities() {
 		return responsibilities;
 	}
-
-	public void setResponsibilities(List responsibilities) {
+	public void setResponsibilities(List<String> responsibilities) {
 		this.responsibilities = responsibilities;
 	}
-	
+	public void setResponsibilities(int key, String value) { responsibilities.set(key, value); }
+	public String getResponsibilities(int key) { return responsibilities.get(key); }
+
 	public String getDefaultTeachingResponsibilityId() { return defaultTeachingResponsibilityId; }
 	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) { this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId; }
 	
