@@ -1049,7 +1049,7 @@
 			</item>
 		</menu>
 		<menu name="Utilities">
-			<item name="Page Statistics" page="stats.do">
+			<item name="Page Statistics" page="stats.action">
 				<condition>
 					<hasPermission name="PageStatistics"/>
 				</condition>

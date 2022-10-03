@@ -17,37 +17,22 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.model.QueryLog"%>
-<%@ page import="org.unitime.commons.web.WebTable"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-
-<sec:authorize access="hasPermission(null, null, 'PageStatistics')">
-<tt:session-context/>
-<table width="100%" cellpadding="10" cellspacing="0">
-	<% for (QueryLog.ChartWindow ch: QueryLog.ChartWindow.values()) { %>
-		<tr><td colspan="<%=QueryLog.ChartType.values().length%>">
-			<tt:section-title><%=ch.getName()%></tt:section-title>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<table class="unitime-MainTable">
+	<s:set var="colspan" value="%{chartWindows.length}"/>
+	<s:iterator value="chartWindows" var="ch">
+		<tr><td colspan="${colspan}">
+			<tt:section-title><s:property value="#ch.name"/></tt:section-title>
 		</td></tr>
 		<tr>
-		<% for (QueryLog.ChartType t: QueryLog.ChartType.values()) { %>
-			<td><img src="<%=QueryLog.getChart(ch, t)%>" border="0"/></td>
-		<% } %>
+		<s:iterator value="chartTypes" var="t">
+			<s:set var="url" value="%{getChartUrl(#ch,#t)}"/>
+			<td><img src="${url}" border="0"/></td>
+		</s:iterator>
 		</tr>
-	<% } %>
+	</s:iterator>
 </table>
-<table width="100%" cellpadding="2" cellspacing="0">
-	<% WebTable.setOrder(sessionContext,"pageStats.ord",request.getParameter("ord"), 1); %>
-	<%=QueryLog.getTopQueries(7).printTable(WebTable.getOrder(sessionContext, "pageStats.ord"))%>
+<table class="unitime-MainTable">
+	<s:property value="queryTable" escapeHtml="false"/>
 </table>
-</sec:authorize>
-<sec:authorize access="!hasPermission(null, null, 'PageStatistics')">
-Access denied.
-</sec:authorize>

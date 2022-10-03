@@ -82,7 +82,7 @@ public class QueryLog extends BaseQueryLog {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(new Date());
 		c.add(Calendar.DAY_OF_YEAR, -days);
-		WebTable table = new WebTable(8, "Page Statistics (last " + days + " days)", "stats.do?ord=%%",
+		WebTable table = new WebTable(8, "Page Statistics (last " + days + " days)", "stats.action?ord=%%",
 				new String[] {"URI", "Calls", "Calls [>10ms]", "Calls [>100ms]", "Calls [>1min]", "AvgTime [ms]", "MaxTime [s]", "Errors"},
 				new String[] {"left", "right", "right", "right", "right", "right", "right", "right"},
 				new boolean[] {true, false, false, false, false, false, false, false});

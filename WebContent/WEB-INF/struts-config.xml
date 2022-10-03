@@ -552,10 +552,6 @@
     		path="enrollmentAuditPdfReportTile"
     		redirect="true" />
     </action>
-    
-    <action
-    	path="/stats"
-    	forward="statsTile" />
 
     </action-mappings>
 

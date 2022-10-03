@@ -380,10 +380,4 @@
 		<put name="title" type="string" value="Enrollment Audit PDF Reports"/>
 		<put name="body" value="/user/pdfEnrollmentAuditReport.jsp" />
   	</definition>
-
- 	<definition	name="statsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Page Statistics"/>
-		<put name="body" value="/admin/stats.jsp" />
-		<put name="checkAdmin" value="true" />
-  	</definition>
 </tiles-definitions>
