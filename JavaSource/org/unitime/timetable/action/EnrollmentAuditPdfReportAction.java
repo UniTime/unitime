@@ -30,20 +30,15 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.Email;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
@@ -52,7 +47,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
@@ -60,58 +55,62 @@ import org.unitime.timetable.util.Constants;
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-@Service("/enrollmentAuditPdfReport")
-public class EnrollmentAuditPdfReportAction extends Action {
+@Action(value = "enrollmentAuditPdfReport", results = {
+		@Result(name = "show", type = "tiles", location = "enrollmentAuditPdfReport.tiles")
+	})
+@TilesDefinition(name = "enrollmentAuditPdfReport.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Enrollment Audit PDF Reports"),
+		@TilesPutAttribute(name = "body", value = "/user/pdfEnrollmentAuditReport.jsp")
+	})
+public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAuditPdfReportForm> {
+	private static final long serialVersionUID = -7475297473237927492L;
 	private static Log sLog = LogFactory.getLog(EnrollmentAuditPdfReportAction.class);
-    
-    @Autowired SessionContext sessionContext;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		EnrollmentAuditPdfReportForm myForm = (EnrollmentAuditPdfReportForm) form;
+	@Override
+	public String execute() throws Exception {
+		if (form == null) {
+			form = new EnrollmentAuditPdfReportForm();
+		}
         // Check Access
 		sessionContext.checkPermission(Right.EnrollmentAuditPDFReports);
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if ("Generate".equals(op)) myForm.save(sessionContext);
-        myForm.load(sessionContext);
+		if (form.getOp() != null) op = form.getOp();
+        if (MSG.actionGenerateReport().equals(op)) form.save(sessionContext);
+        form.load(sessionContext);
         
-        if ("Generate".equals(op)) {
-            ActionMessages errors = myForm.validate(mapping, request);
-            if (!errors.isEmpty()) {
-                saveErrors(request, errors);
-                return mapping.findForward("show");
-            }
+        if (MSG.actionGenerateReport().equals(op)) {
+            form.validate(this);
+            if (hasFieldErrors()) return "show";
                         
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             try {
-                myForm.setReport("");
+                form.setReport("");
 
                 Hashtable<String,File> output = new Hashtable();
-                for (int i=0;i<myForm.getReports().length;i++) {
-                    myForm.log("Generating "+myForm.getReports()[i]+"...");
-                    Class reportClass = EnrollmentAuditPdfReportForm.sRegisteredReports.get(myForm.getReports()[i]);
-                    String reportName = null;
-                    for (Map.Entry<String, Class> entry : PdfEnrollmentAuditReport.sRegisteredReports.entrySet())
-                        if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
-                    if (reportName==null) reportName = "r"+(i+1);
-                    String name = session.getAcademicTerm()+session.getSessionStartYear()+"_"+reportName;
-                    if (myForm.getAll()) {
-                        File file = ApplicationProperties.getTempFile(name, (myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf"));
-                        myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf")+"</a>");
+                for (int i=0;i<form.getReports().length;i++) {
+                    Class reportClass = EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]).getImplementation();
+                    String reportName = form.getReportName(EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]));
+                    String name = session.getAcademicTerm()+session.getSessionStartYear()+"_"+form.getReports()[i];
+                	String ext = PdfLegacyExamReport.getExtension(form.getReportMode().ordinal());
+                    form.log(MSG.statusGeneratingReport(reportName));
+                    if (form.getAll()) {
+                        File file = ApplicationProperties.getTempFile(name, ext);
+                        form.log("&nbsp;&nbsp;"+MSG.infoWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+ext+"</a>"));
                         PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                             getConstructor(int.class, File.class, Session.class).
-                            newInstance(myForm.getModeIdx(), file, session);
-                        report.setShowId(myForm.getExternalId());
-                        report.setShowName(myForm.getStudentName());
+                            newInstance(form.getReportMode().ordinal(), file, session);
+                        report.setShowId(form.getExternalId());
+                        report.setShowName(form.getStudentName());
                         report.printReport();
                         report.close();
-                        output.put(reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf"),file);
+                        output.put(reportName+ext,file);
                     } else {
                     	TreeSet<SubjectArea> subjectAreas = new TreeSet<SubjectArea>();
                     	String subjAbbvs = "";
-                        for (int j=0;j<myForm.getSubjects().length;j++) {
-                            SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(myForm.getSubjects()[j]));
+                        for (int j=0;j<form.getSubjects().length;j++) {
+                            SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(form.getSubjects()[j]));
                             if (subjAbbvs.length() == 0){
                             	subjAbbvs = subject.getSubjectAreaAbbreviation();
                         	}else if (subjAbbvs.length() < 40) {
@@ -121,47 +120,44 @@ public class EnrollmentAuditPdfReportAction extends Action {
                             }
                             subjectAreas.add(subject);
                         }
-                        File file = ApplicationProperties.getTempFile(name+subjAbbvs, (myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf"));
+                        File file = ApplicationProperties.getTempFile(name+subjAbbvs, ext);
                         
-                        myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subjAbbvs+"_"+reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf")+"</a>");
+                        form.log("&nbsp;&nbsp;"+MSG.infoWritingReport("<a href='temp/"+file.getName()+"'>"+subjAbbvs+"_"+reportName+ext+"</a>"));
                         PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, TreeSet.class, String.class).
-                            newInstance(myForm.getModeIdx(), file, session, subjectAreas, subjAbbvs);
-                        report.setShowId(myForm.getExternalId());
-                        report.setShowName(myForm.getStudentName());
+                            newInstance(form.getReportMode().ordinal(), file, session, subjectAreas, subjAbbvs);
+                        report.setShowId(form.getExternalId());
+                        report.setShowName(form.getStudentName());
                         report.printReport();
                         report.close();
-                        output.put(subjAbbvs+"_"+reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf"),file);
+                        output.put(subjAbbvs+"_"+reportName+ext,file);
                     }
                 }
                 byte[] buffer = new byte[32*1024];
                 int len = 0;
                 if (output.isEmpty())
-                    myForm.log("<font color='orange'>No report generated.</font>");
-                else if (myForm.getEmail()) {
-                    myForm.log("Sending email(s)...");
+                    form.log("<font color='orange'>" + MSG.warnNoReportGenerated() + "</font>");
+                else if (form.getEmail()) {
+                    form.log(MSG.statusSendingEmails());
                     try {
                         Email mail = Email.createEmail();
-                        mail.setSubject(myForm.getSubject()==null?"Enrollment Audit Report":myForm.getSubject());
-                        mail.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
-                                "For an up-to-date report, please visit "+
-                                request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\r\n\r\n"+
-                                "This email was automatically generated by "+
-                                "UniTime "+Constants.getVersion()+
-                                " (Univesity Timetabling Application, http://www.unitime.org).");
-                        if (myForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
+                        mail.setSubject(form.getSubject()==null?"Enrollment Audit Report":form.getSubject());
+                        mail.setText((form.getMessage()==null?"":form.getMessage()+"\r\n\r\n")+
+                        		MSG.emailForUpToDateEnrlReportVisit(request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath())+"/\r\n\r\n"+
+                        		MSG.emailFooter(Constants.getVersion()));
+                        if (form.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(form.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(s.nextToken(), null);
-                        if (myForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
+                        if (form.getCc()!=null) for (StringTokenizer s=new StringTokenizer(form.getCc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientCC(s.nextToken(), null);
-                        if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
+                        if (form.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(form.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                         	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
                         }
                         mail.send();
-                        myForm.log("Email sent.");
+                        form.log(MSG.infoEmailSent());
                     } catch (Exception e) {
-                        myForm.log("<font color='red'>Unable to send email: "+e.getMessage()+"</font>");
+                        form.log("<font color='red'>"+MSG.errorUnableToSendEmail(e.getMessage())+"</font>");
                     }
                     
                 }
@@ -174,7 +170,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                     ZipOutputStream zip = null;
                     try {
                         File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear(), "zip");
-                        myForm.log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+".zip</a>...");
+                        form.log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+".zip</a>"));
                         zip = new ZipOutputStream(new FileOutputStream(zipFile));
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                             zip.putNextEntry(new ZipEntry(entry.getKey()));
@@ -190,16 +186,15 @@ public class EnrollmentAuditPdfReportAction extends Action {
                         if (zip!=null) zip.close();
                     }
                 }
-                myForm.log("All done.");
+                form.log(MSG.statusAllDone());
             } catch (Exception e) {
-                myForm.log("<font color='red'>Process failed: "+e.getMessage()+" (exception "+e.getClass().getName()+")</font>");
+                form.log("<font color='red'>" + MSG.errorTaskFailedWithMessage(e.getMessage())+"</font>");
                 sLog.error(e.getMessage(),e);
-                errors.add("report", new ActionMessage("errors.generic", "Unable to generate report, reason: "+e.getMessage()));
-                saveErrors(request, errors);
+                addFieldError("report", MSG.errorUnableToGenerateReport(e.getMessage()));
             }
         }
         
-        return mapping.findForward("show");
+        return "show";
 	}
 	
 	public static class FileGenerator implements InstructorExamReport.FileGenerator {

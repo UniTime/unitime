@@ -67,6 +67,10 @@ public abstract class AbstractReport implements ReportWriter.Listener {
 		iWriter.setListener(this);
 	}
 	
+	public AbstractReport(int mode, File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
+		this(Mode.values()[mode], new FileOutputStream(file), title, title2, subject, session);
+	}
+	
 	public ReportWriter getWriter() { return iWriter; }
 	
 	protected void setFooter(String footer) {

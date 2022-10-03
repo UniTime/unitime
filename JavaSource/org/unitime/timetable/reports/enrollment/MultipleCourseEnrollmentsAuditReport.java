@@ -49,16 +49,16 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 
 	@Override
 	public void printReport() throws DocumentException {
-        setHeader(buildHeaderString());
+        setHeaderLine(buildHeaderString());
         List results = getAuditResults(getSubjectAreas());
-        Vector<String> lines = new Vector<String>();
+        Vector<Line> lines = new Vector<Line>();
         Iterator it = results.iterator();
         while(it.hasNext()) {
         	MultipleCourseEnrollmentsAuditResult result = new MultipleCourseEnrollmentsAuditResult((Object[]) it.next());
         	lines.add(buildLineString(result));
         }
         printHeader();
-        for (String str : lines) {
+        for (Line str : lines) {
                 println(str);
         }
         if (!lines.isEmpty()){
@@ -67,7 +67,6 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 		TreeSet<SubjectArea> subjects = new TreeSet<SubjectArea>();
@@ -91,7 +90,7 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	}
 
 	public static String getTitle() {
-		return ("Multiple Course Enrollments (Same Configuration)");
+		return MSG.reportMultipleCourseEnrollmentsAudit();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -124,42 +123,25 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	
 	}
 	
-	private String buildLineString(MultipleCourseEnrollmentsAuditResult result) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildBaseAuditLine(result));
-		sb.append(" | ")
-		  .append(" ")
-		  .append(rpad(result.classesListStr(), ' ', multipleClassesLength));
-		return(sb.toString());
+	private Line buildLineString(MultipleCourseEnrollmentsAuditResult result) {
+		return new Line(buildBaseAuditLine(result), new Line(
+				rpad(result.classesListStr(), ' ', multipleClassesLength)
+				));
 	}
 
-	private String[] buildHeaderString(){
-		String[] hdr = new String[3];
-		StringBuilder sb0 = new StringBuilder();
-		StringBuilder sb1 = new StringBuilder();
-		StringBuilder sb2 = new StringBuilder();
-		
-		String[] baseHdr = getBaseHeader();
-		sb0.append(baseHdr[0]);
-		sb1.append(baseHdr[1]);
-		sb2.append(baseHdr[2]);
-				
-		sb0.append(" | ");
-		sb1.append(" | ");
-		sb2.append(" | ");
-		
-		sb0.append(" ")
-		   .append(rpad("Multiple Classes", ' ', multipleClassesLength));
-		sb1.append(" ")
-		   .append(rpad("of Same Subpart", ' ', multipleClassesLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', multipleClassesLength));
-
-		hdr[0] = sb0.toString();
-		hdr[1] = sb1.toString();
-		hdr[2] = sb2.toString();
-		
-		return(hdr);
+	private Line[] buildHeaderString(){
+		Line[] baseHdr = getBaseHeader();
+		return new Line[] {
+				new Line(baseHdr[0], new Line(
+						rpad(MSG.lrMultipleClasses(), ' ', multipleClassesLength)
+				)),
+				new Line(baseHdr[1], new Line(
+						rpad(MSG.lrOfSameSubpart(), ' ', multipleClassesLength)
+				)),
+				new Line(baseHdr[2], new Line(
+						rpad("", '-', multipleClassesLength)
+				))
+		};
 	}
 
 	private class MultipleCourseEnrollmentsAuditResult extends EnrollmentAuditResult {

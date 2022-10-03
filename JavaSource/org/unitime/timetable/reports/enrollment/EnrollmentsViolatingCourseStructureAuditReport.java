@@ -50,78 +50,50 @@ public class EnrollmentsViolatingCourseStructureAuditReport extends PdfEnrollmen
 
 	@Override
 	public void printReport() throws DocumentException {
-        setHeader(buildHeaderString());
+        setHeaderLine(buildHeaderString());
         List results = getAuditResults(getSubjectAreas());
-        Vector<String> lines = new Vector<String>();
+        Vector<Line> lines = new Vector<Line>();
         Iterator it = results.iterator();
         while(it.hasNext()) {
         	EnrollmentsViolatingCourseStructureAuditResult result = new EnrollmentsViolatingCourseStructureAuditResult((Object[]) it.next());
         	lines.add(buildLineString(result));
         }
         printHeader();
-        for (String str : lines) {
-                println(str);
+        for (Line str : lines) {
+                printLine(str);
         }
         if (!lines.isEmpty()){
         	lastPage();
         }
 	}
 	
-	private String buildLineString(
-			EnrollmentsViolatingCourseStructureAuditResult result) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(buildBaseAuditLine(result));
-		sb.append(" ")
-		  .append(rpad(result.classString(), ' ', classNameLength))
-		  .append(" | ")
-		  .append(" ")
-		  .append(rpad(result.expectedClassString(), ' ', classNameLength))
-		  .append(" ")
-		  .append(rpad(result.actualClassString(), ' ', classNameLength));
-		return(sb.toString());
+	private Line buildLineString(EnrollmentsViolatingCourseStructureAuditResult result) {
+		return new Line(buildBaseAuditLine(result), new Line(
+				rpad(result.classString(), ' ', classNameLength),
+				rpad(result.expectedClassString(), ' ', classNameLength),
+				rpad(result.actualClassString(), ' ', classNameLength)
+				));
 	}
 
-	private String[] buildHeaderString(){
-		String[] hdr = new String[3];
-		StringBuilder sb0 = new StringBuilder();
-		StringBuilder sb1 = new StringBuilder();
-		StringBuilder sb2 = new StringBuilder();
-		
-		String[] baseHdr = getBaseHeader();
-		sb0.append(baseHdr[0]);
-		sb1.append(baseHdr[1]);
-		sb2.append(baseHdr[2]);
-				
-		sb0.append(" ")
-		   .append(rpad("", ' ', classNameLength));
-		sb1.append(" ")
-		   .append(rpad("Class", ' ', classNameLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', classNameLength));
-		
-		sb0.append(" | ");
-		sb1.append(" | ");
-		sb2.append(" | ");
-		
-		sb0.append(" ")
-		   .append(rpad("Expected", ' ', classNameLength));
-		sb1.append(" ")
-		   .append(rpad("Parent Class", ' ', classNameLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', classNameLength));
-		
-		sb0.append(" ")
-		   .append(rpad("", ' ', classNameLength));
-		sb1.append(" ")
-		   .append(rpad("Error Result", ' ', classNameLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', classNameLength));
-
-		hdr[0] = sb0.toString();
-		hdr[1] = sb1.toString();
-		hdr[2] = sb2.toString();
-		
-		return(hdr);
+	private Line[] buildHeaderString(){
+		Line[] baseHdr = getBaseHeader();
+		return new Line[] {
+				new Line(baseHdr[0], new Line(
+						rpad("", ' ', classNameLength),
+						rpad(MSG.lrExpected(), ' ', classNameLength),
+						rpad("", ' ', classNameLength)
+				)),
+				new Line(baseHdr[1], new Line(
+						rpad(MSG.lrClass(), ' ', classNameLength),
+						rpad(MSG.lrParentClass(), ' ', classNameLength),
+						rpad(MSG.lrErrorResult(), ' ', classNameLength)
+				)),
+				new Line(baseHdr[2], new Line(
+						rpad("", '-', classNameLength),
+						rpad("", '-', classNameLength),
+						rpad("", '-', classNameLength)
+				))
+		};
 	}
 	
 	protected String createQueryString(TreeSet<SubjectArea> subjectAreas){
@@ -215,7 +187,7 @@ public class EnrollmentsViolatingCourseStructureAuditReport extends PdfEnrollmen
 	}
 
 	public static String getTitle() {
-		return ("Enrollments Violating Course Structure");
+		return MSG.reportEnrollmentsViolatingCourseStructureAudit();
 	}
 
 }

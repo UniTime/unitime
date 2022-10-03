@@ -86,12 +86,12 @@ public class ExamPdfReportAction extends UniTimeAction<ExamPdfReportForm> {
         
         // Read operation to be performed
         String op = (form.getOp()!=null?form.getOp():request.getParameter("op"));
-        if ("Generate".equals(op)) form.save(sessionContext);
+        if (MSG.actionGenerateReport().equals(op)) form.save(sessionContext);
         form.load(sessionContext);
         if (form.getAddress() == null)
         	form.setAddress(sessionContext.getUser().getEmail());
         
-        if ("Generate".equals(op)) {
+        if (MSG.actionGenerateReport().equals(op)) {
             form.validate(this);
             if (!hasFieldErrors()) {
             	getSolverServerService().getQueueProcessor().add(new PdfExamReportQueueItem(

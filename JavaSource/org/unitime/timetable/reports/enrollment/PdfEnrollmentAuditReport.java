@@ -25,10 +25,12 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
-import org.unitime.timetable.reports.PdfLegacyReport;
+import org.unitime.timetable.reports.AbstractReport;
 
 import com.lowagie.text.DocumentException;
 
@@ -36,7 +38,8 @@ import com.lowagie.text.DocumentException;
  * @author Stephanie Schluttenhofer
  *
  */
-public abstract class PdfEnrollmentAuditReport extends PdfLegacyReport {
+public abstract class PdfEnrollmentAuditReport extends AbstractReport {
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable<String, Class>();
     public static String sAllRegisteredReports = "";
 	protected static int studentIdLength = 10;
@@ -156,54 +159,32 @@ protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 }
 
-protected String buildBaseAuditLine(EnrollmentAuditResult result) {
-	StringBuilder sb = new StringBuilder();
-	if (isShowId()){
-		sb.append(" ")
-		  .append(lpad(result.getStudentId(), ' ', studentIdLength));
-	}
-	if (isShowName()){
-		sb.append(" ")
-		  .append(rpad(result.getStudentName(), ' ', studentNameLength));
-	}
-	sb.append(" ")
-	  .append(rpad(result.getOffering(), ' ', offeringNameLength));
-	return(sb.toString());
+protected Line buildBaseAuditLine(EnrollmentAuditResult result) {
+	return new Line(
+			(isShowId() ? lpad(result.getStudentId(), ' ', studentIdLength) : new Cell()),
+			(isShowName() ? rpad(result.getStudentName(), ' ', studentNameLength) : new Cell()),
+			rpad(result.getOffering(), ' ', offeringNameLength)
+			);
 }
 
-protected String[] getBaseHeader(){
-	String[] hdr = new String[3];
-	StringBuilder sb0 = new StringBuilder();
-	StringBuilder sb1 = new StringBuilder();
-	StringBuilder sb2 = new StringBuilder();
-	if (isShowId()){
-		sb0.append(" ")
-		   .append(rpad("", ' ', studentIdLength));
-		sb1.append(" ")
-		   .append(rpad("Student ID", ' ', studentIdLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', studentIdLength));
-	}
-	if (isShowName()){
-		sb0.append(" ")
-		   .append(rpad("", ' ', studentNameLength));
-		sb1.append(" ")
-		   .append(rpad("Name", ' ', studentNameLength));
-		sb2.append(" ")
-		   .append(rpad("", '-', studentNameLength));
-	}
-	sb0.append(" ")
-	   .append(rpad("", ' ', offeringNameLength));
-	sb1.append(" ")
-	   .append(rpad("Offering", ' ', offeringNameLength));
-	sb2.append(" ")
-	    .append(rpad("", '-', offeringNameLength));
-	
-	hdr[0] = sb0.toString();
-	hdr[1] = sb1.toString();
-	hdr[2] = sb2.toString();
-
-    return(hdr);
+protected Line[] getBaseHeader(){
+	return new Line[] {
+			new Line(
+					(isShowId() ? rpad("", ' ', studentIdLength) : new Cell()),
+					(isShowName() ? rpad("", ' ', studentNameLength) : new Cell()),
+					rpad("", ' ', offeringNameLength)
+				),
+			new Line(
+					(isShowId() ? rpad(MSG.lrStudentID(), ' ', studentIdLength) : new Cell()),
+					(isShowName() ? rpad(MSG.lrStudentName(), ' ', studentNameLength) : new Cell()),
+					rpad(MSG.lrOffering(), ' ', offeringNameLength)
+				),
+			new Line(
+					(isShowId() ? rpad("", '-', studentIdLength) : new Cell()),
+					(isShowName() ? rpad("", '-', studentNameLength) : new Cell()),
+					rpad("", '-', offeringNameLength)
+				)
+	};
 }
 
 protected abstract class EnrollmentAuditResult  {

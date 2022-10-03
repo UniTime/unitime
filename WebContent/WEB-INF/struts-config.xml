@@ -54,7 +54,6 @@
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
-	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
    </form-beans>
 
    <global-exceptions>
@@ -537,20 +536,6 @@
        <forward name="list" path="roomTypeListTile" />
        <forward name="add" path="roomTypeAddTile" />
        <forward name="edit" path="roomTypeEditTile" />
-    </action>
-    
-    <action
-    	path="/enrollmentAuditPdfReport"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="enrollmentAuditPdfReportForm"
-    	input="enrollmentAuditPdfReportTile"
-    	name="enrollmentAuditPdfReportForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="enrollmentAuditPdfReportTile"
-    		redirect="true" />
     </action>
 
     </action-mappings>

@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.reports.AbstractReport.Cell;
 import org.unitime.timetable.reports.AbstractReport.Line;
@@ -52,6 +54,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfReportWriter implements ReportWriter {
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	private Document iDocument;
 	private PdfWriter iWriter;
 	private String iTitle, iTitle2;
@@ -136,7 +139,7 @@ public class PdfReportWriter implements ReportWriter {
 	@Override
 	public void close() throws IOException, DocumentException {
 		if (iEmpty) {
-			Paragraph p = new Paragraph("Nothing to report.", iFont);
+			Paragraph p = new Paragraph(MSG.lrNothingToReport(), iFont);
         	p.setAlignment(Element.ALIGN_LEFT);
         	iDocument.add(p);
 		}
@@ -181,7 +184,7 @@ public class PdfReportWriter implements ReportWriter {
 		cb.setFontAndSize(iFont.getBaseFont(), iFont.getSize());
 		cb.showTextAligned(PdfContentByte.ALIGN_LEFT, (iFooter == null ? "" : iFooter), document.left(), document.bottom() - 12, 0);
 		cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, (iPageId == null || iPageId.isEmpty() ? "" : iPageId), document.right(), document.bottom() - 12, 0);
-		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, "Page " + (iPageNo + 1), (document.left() + document.right()) / 2, document.bottom() - 12, 0);
+		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, MSG.lrPage(iPageNo + 1), (document.left() + document.right()) / 2, document.bottom() - 12, 0);
 		cb.endText();
         iPageNo++;
     }

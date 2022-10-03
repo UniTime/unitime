@@ -17,59 +17,49 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tiles:importAttribute />
-<html:form action="/enrollmentAuditPdfReport">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<logic:messagesPresent>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="enrollmentAuditPdfReport">
+<table class="unitime-MainTable">
+	<s:if test="!fieldErrors.isEmpty()">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title><font color='red'>Errors</font></tt:section-title>
-					<logic:empty name="enrollmentAuditPdfReportForm" property="report">
-						<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
-					</logic:empty>
-					<logic:notEmpty name="enrollmentAuditPdfReportForm" property="report">
-						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
-					</logic:notEmpty>
+					<tt:section-title><loc:message name="sectErrors"/></tt:section-title>
+					<s:if test="form.report != null && !form.report.isEmpty()">
+						<s:submit accesskey='%{#msg.accesBack()}' name='op' value='%{#msg.actionBack()}' title='%{#msg.titleBack()}'/>
+					</s:if><s:else>
+						<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
+					</s:else>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-				<BLOCKQUOTE>
-				<UL>
-					<html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
+			<TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
 			</TD>
 		</TR>
 		<TR><TD>&nbsp;</TD></TR>
-	</logic:messagesPresent>
-	<logic:notEmpty name="enrollmentAuditPdfReportForm" property="report">
+	</s:if>
+	<s:if test="form.report != null && !form.report.isEmpty()">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title>Log</tt:section-title>
-					<logic:messagesNotPresent>
-						<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
-					</logic:messagesNotPresent>
+					<tt:section-title><loc:message name="sectLog"/></tt:section-title>
+					<s:if test="fieldErrors.isEmpty()">
+						<s:submit accesskey='%{#msg.accesBack()}' name='op' value='%{#msg.actionBack()}' title='%{#msg.titleBack()}'/>
+					</s:if>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
   			<TD colspan='2'>
   				<blockquote>
-  					<bean:write name="enrollmentAuditPdfReportForm" property="report" filter="false"/>
+  					<s:property value="form.report" escapeHtml="false"/>
   				</blockquote>
   			</TD>
 		</TR>
@@ -80,99 +70,97 @@
 		</TR>
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit onclick="displayLoading();" accesskey="B" property="op" value="Back" title="Back (Alt+B)"/>
+				<s:submit accesskey='%{#msg.accesBack()}' name='op' value='%{#msg.actionBack()}' title='%{#msg.titleBack()}'/>
 			</TD>
 		</TR>
-	</logic:notEmpty>
-	<logic:empty name="enrollmentAuditPdfReportForm" property="report">
+	</s:if><s:else>
 	<TR>
 		<TD colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Input Data</tt:section-title>
-				<logic:messagesNotPresent>
-					<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
-				</logic:messagesNotPresent>
+				<tt:section-title><loc:message name="sectInputData"/></tt:section-title>
+				<s:if test="fieldErrors.isEmpty()">
+					<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
+				</s:if>
 			</tt:section-header>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="filterSubjectAreas"/></TD>
 		<TD>
-			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas<br>
-			<html:select property="subjects" multiple="true" size="7">
-				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-			</html:select>
+			<s:checkbox name="form.all" onclick="selectionChanged();"/><loc:message name="checkReportAllSubjectAreas"/><br>
+			<s:select name="form.subjects" list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation" multiple="true"/>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2'>
-			<tt:section-title><br>Report</tt:section-title>
+			<tt:section-title><br><loc:message name="sectReport"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Report:</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="filterReport"/></TD>
 		<TD>
-			<logic:iterate name="enrollmentAuditPdfReportForm" property="allReports" id="report">
-				<html:multibox property="reports" onclick="selectionChanged();">
-					<bean:write name="report"/>
-				</html:multibox>
-				<bean:write name="report"/><br>
-			</logic:iterate>
+			<s:iterator value="form.allReports" var="report">
+				<s:checkboxlist name="form.reports" list="#{#report.value:''}" onchange="selectionChanged();"/>
+				<s:property value="#report.label"/>
+				<br>
+			</s:iterator>
 		</TD>
 	</TR>
 	<TR>
 		<TD colspan='2'>
-			<tt:section-title><br>Parameters</tt:section-title>
+			<tt:section-title><br><loc:message name="sectParameters"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>All Reports:</TD>
-		<TD><html:checkbox property="externalId"/>Display Student Id<br>
-			<html:checkbox property="studentName"/>Display Student Name</TD>
+  		<TD width="10%" nowrap valign='top'><loc:message name="propAllReports"/></TD>
+		<TD><s:checkbox name="form.externalId"/><loc:message name="checkDisplayStudentId"/><br>
+			<s:checkbox name="form.studentName"/><loc:message name="checkDisplayStudentName"/></TD>
 	</TR>
 	<TR>
 		<TD colspan='2' valign='top'>
-			<tt:section-title><br>Output</tt:section-title>
+			<tt:section-title><br><loc:message name="sectOutput"/></tt:section-title>
 		</TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap>Format:</TD>
+  		<TD width="10%" nowrap><loc:message name="propReportFormat"/></TD>
 		<TD>
-			<html:select property="mode">
-				<html:options property="modes"/>
-			</html:select>
+			<s:select name="form.mode" list="form.modes" listKey="value" listValue="label"/>
 		</TD>
 	</TR>
-	<logic:equal name="enrollmentAuditPdfReportForm" property="canEmail" value="false">
-		<html:hidden property="email"/>
-	</logic:equal>
-	<logic:equal name="enrollmentAuditPdfReportForm" property="canEmail" value="true">
+	<s:if test="form.canEmal == false">
+		<s:hidden name="form.email"/>
+	</s:if><s:else>
 	<TR>
-		<TD rowspan='1' valign='top'>Delivery:</TD>
+		<TD rowspan='1' valign='top'><loc:message name="propReportDelivery"/></TD>
 		<TD>
-			<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> Email
-			<bean:define name="enrollmentAuditPdfReportForm" property="email" id="email"/>
-			<table border='0' id='eml' style='display:<%=(Boolean)email?"block":"none"%>;'>
+			<s:checkbox name="form.email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> <loc:message name="checkReportDeliveryEmail"/>
+			<s:set var="email" value="form.email"/>
+			<table id='eml' style='display:none;'>
 				<tr>
-					<td valign='top'>Address:</td>
-					<td><html:textarea property="address" rows="3" cols="70"/></td>
+					<td valign='top'><loc:message name="propEmailAddress"/></td>
+					<td><s:textarea name="form.address" rows="3" cols="70"/></td>
 				</tr>
-				<tr><td valign='top'>CC:</td><td>
-					<html:textarea property="cc" rows="2" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailCC"/></td><td>
+					<s:textarea name="form.cc" rows="2" cols="70"/>
 				</td></tr>
-				<tr><td valign='top'>BCC:</td><td>
-					<html:textarea property="bcc" rows="2" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailBCC"/></td><td>
+					<s:textarea name="form.bcc" rows="2" cols="70"/>
 				</td></tr>
-				<tr><td valign='top' style='border-top: black 1px dashed;'>Subject:</td><td style='border-top: black 1px dashed;'>
-					<html:text property="subject" size="70" style="margin-top:2px;"/>
+				<tr><td valign='top' style='border-top: black 1px dashed;'><loc:message name="propEmailSubject"/></td><td style='border-top: black 1px dashed;'>
+					<s:textfield name="form.subject" size="70" style="margin-top:2px;"/>
 				</td></tr>
-				<tr><td valign='top'>Message:</td><td>
-					<html:textarea property="message" rows="10" cols="70"/>
+				<tr><td valign='top'><loc:message name="propEmailMessage"/></td><td>
+					<s:textarea name="form.message" rows="10" cols="70"/>
 				</td></tr>
 			</table>
+			<s:if test="form.email == true">
+				<script type="text/javascript">
+					document.getElementById('eml').style.display = 'block';
+				</script>
+			</s:if>
 		</TD>
 	</TR>
-	</logic:equal>
+	</s:else>
 	<TR>
 		<TD colspan='2'>
 			<tt:section-title><br>&nbsp;</tt:section-title>
@@ -180,21 +168,22 @@
 	</TR>
 	<TR>
 		<TD colspan='2' align='right'>
-			<html:submit onclick="displayLoading();" accesskey="G" property="op" value="Generate" title="Generate Report (Alt+G)"/>
+			<s:submit accesskey='%{#msg.accessGenerateReport()}' name='op' value='%{#msg.actionGenerateReport()}' title='%{#msg.titleGenerateReport()}'/>
 		</TD>
 	</TR>
-	</logic:empty>
+	</s:else>
 	</TABLE>
-<script type="text/javascript" language="javascript">
+<script type="text/javascript">
 	function selectionChanged() {
-		if (document.getElementsByName('all')==null || document.getElementsByName('all').length==0) return;
-		var allSubjects = document.getElementsByName('all')[0].checked;
-		var objSubjects = document.getElementsByName('subjects')[0];
-		var objReports = document.getElementsByName('reports');
-		var objSince = document.getElementsByName('since')[0];
+		if (document.getElementsByName('form.all')==null || document.getElementsByName('form.all').length==0) return;
+		var allSubjects = document.getElementsByName('form.all')[0].checked;
+		var objSubjects = document.getElementsByName('form.subjects')[0];
+		var objReports = document.getElementsByName('form.reports');
+		var objSince = document.getElementsByName('form.since')[0];
 		var studentSchedule = false;
 		var instructorSchedule = false;
 		objSubjects.disabled=allSubjects;
 	}
 </script>
-</html:form>
+</s:form>
+</loc:bundle>

@@ -27,6 +27,8 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.reports.AbstractReport.Line;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfFont;
@@ -41,6 +43,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfLegacyReport implements ReportWriter {
+	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
     protected int iNrChars = 133;
     protected int iNrLines = 50;
     private OutputStream iOut = null;
@@ -295,7 +298,7 @@ public class PdfLegacyReport implements ReportWriter {
     }
     
     public void close() throws IOException, DocumentException {
-        if (isEmpty()) { println("Nothing to report."); lastPage(); }
+        if (isEmpty()) { println(MSG.lrNothingToReport()); lastPage(); }
         if (iPrint!=null) {
             iPrint.flush(); iPrint.close();
         } else {

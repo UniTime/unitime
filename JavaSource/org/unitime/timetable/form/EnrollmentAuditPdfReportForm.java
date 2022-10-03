@@ -19,36 +19,34 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
+import java.util.List;
 import java.util.TreeSet;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
 import org.unitime.timetable.reports.enrollment.MissingCourseEnrollmentsAuditReport;
 import org.unitime.timetable.reports.enrollment.MultipleConfigEnrollmentsAuditReport;
 import org.unitime.timetable.reports.enrollment.MultipleCourseEnrollmentsAuditReport;
+import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
+import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 /*
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-public class EnrollmentAuditPdfReportForm extends ActionForm {
-    /**
-	 * 
-	 */
+public class EnrollmentAuditPdfReportForm implements UniTimeForm {
 	private static final long serialVersionUID = -4537752846296511516L;
-
 	protected static Log sLog = LogFactory.getLog(EnrollmentAuditPdfReportForm.class);
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
     private String iOp = null;
 	private Long iSubjectArea = null;
@@ -67,41 +65,54 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     private String iMessage = null;
     private String iSubject = null;
     
-    public static Hashtable<String,Class> sRegisteredReports = new Hashtable<String, Class>();
-    public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
-    public static int sDeliveryDownload = 0;
-    public static int sDeliveryEmail = 1;
-    
-    static {
-        sRegisteredReports.put("Enrollments Violating Course Structure", EnrollmentsViolatingCourseStructureAuditReport.class);
-        sRegisteredReports.put("Missing Course Enrollments", MissingCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("Multiple Course Enrollments (Same Config)", MultipleCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("Multiple Course Enrollments (Different Configs)", MultipleConfigEnrollmentsAuditReport.class);
+    public static enum RegisteredReport {
+    	EnrollmentsViolatingCourseStructureAuditReport(EnrollmentsViolatingCourseStructureAuditReport.class),
+    	MissingCourseEnrollmentsAuditReport(MissingCourseEnrollmentsAuditReport.class),
+    	MultipleCourseEnrollmentsAuditReport(MultipleCourseEnrollmentsAuditReport.class),
+    	MultipleConfigEnrollmentsAuditReport(MultipleConfigEnrollmentsAuditReport.class),
+    	;
+    	
+    	private Class<? extends PdfEnrollmentAuditReport> implementation;
+    	RegisteredReport(Class<? extends PdfEnrollmentAuditReport> implementation) {
+    		this.implementation = implementation;
+    	}
+    	public Class<? extends PdfEnrollmentAuditReport> getImplementation() { return implementation; }
     }
     
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-
+    public String getReportName(RegisteredReport report) {
+    	switch (report) {
+    	case EnrollmentsViolatingCourseStructureAuditReport: 
+    		return MSG.reportEnrollmentsViolatingCourseStructureAudit();
+    	case MissingCourseEnrollmentsAuditReport:
+    		return MSG.reportMissingCourseEnrollmentsAudit();
+    	case MultipleCourseEnrollmentsAuditReport:
+    		return MSG.reportMultipleCourseEnrollmentsAudit();
+    	case MultipleConfigEnrollmentsAuditReport:
+    		return MSG.reportMultipleConfigEnrollmentsAudit();
+    	default:
+    		return report.name();
+    	}
+    }
+    
+    @Override
+    public void validate(UniTimeAction action) {
         if (iReports==null || iReports.length==0)
-            errors.add("reports", new ActionMessage("errors.generic", "No report selected."));
-        
+            action.addFieldError("reports", MSG.errorNoReportSelected());
         if (!iAll && (iSubjects==null || iSubjects.length==0))
-            errors.add("subjects", new ActionMessage("errors.generic", "No subject area selected."));
-        
-        return errors;
+            action.addFieldError("reports", MSG.errorNoSubjectAreaSelected());
     }
 
-    
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
     	iOp = null;
         iReports = null;
-        iMode = sModes[0];
+        iMode = getModes().get(0).getValue();
         iAll = false;
         iEmail = false;
         iExternalId = false;
         iStudentName = false;
         iAddr = null; iCc = null; iBcc = null; 
-        iSubject = "Enrollment Audit Report";
+        iSubject = MSG.subjectEnrollmentAuditReport();
         iMessage = null;
         iReport = null;
     }
@@ -119,7 +130,7 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
 
         setAll(context.getAttribute("EnrollmentAuditPdfReport.all")==null ? true : (Boolean)context.getAttribute("EnrollmentAuditPdfReport.all"));
         setReports((String[])context.getAttribute("EnrollmentAuditPdfReport.reports"));
-        setMode(context.getAttribute("EnrollmentAuditPdfReport.mode") == null ? sModes[0] : (String)context.getAttribute("EnrollmentAuditPdfReport.mode"));
+        setMode(context.getAttribute("EnrollmentAuditPdfReport.mode") == null ? getModes().get(0).getValue() : (String)context.getAttribute("EnrollmentAuditPdfReport.mode"));
         setSubjects((String[])context.getAttribute("EnrollmentAuditPdfReport.subjects"));
         setExternalId("1".equals(context.getUser().getProperty("EnrollmentAuditPdfReport.externalId", "0")));
         setStudentName("1".equals(context.getUser().getProperty( "EnrollmentAuditPdfReport.studentName", "0")));
@@ -151,11 +162,6 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     public void setReports(String[] reports) { iReports = reports;}
     public String getMode() { return iMode; }
     public void setMode(String mode) { iMode = mode; }
-    public int getModeIdx() {
-        for (int i=0;i<sModes.length;i++)
-            if (sModes[i].equals(iMode)) return i;
-        return 0;
-    }
     public boolean getAll() { return iAll; }
     public void setAll(boolean all) { iAll = all;}
     public String[] getSubjects() { return iSubjects; }
@@ -180,11 +186,25 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     public String getSubject() { return iSubject; }
     public void setSubject(String subject) { iSubject = subject; }
     
-    public TreeSet<String> getAllReports() {
-        return new TreeSet<String>(sRegisteredReports.keySet());
+    public List<ComboBoxLookup> getAllReports() {
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	for (RegisteredReport r: RegisteredReport.values())
+    		ret.add(new ComboBoxLookup(getReportName(r), r.name()));
+    	return ret;
     }
-    public String[] getModes() { return sModes; }
-
+    public List<ComboBoxLookup> getModes() { 
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	for (PdfLegacyExamReport.Mode m: PdfLegacyExamReport.Mode.values())
+    		ret.add(new ComboBoxLookup(ExamPdfReportForm.getModeLabel(m), m.name()));
+    	return ret;
+    }
+    public PdfLegacyExamReport.Mode getReportMode() {
+    	try {
+    		return PdfLegacyExamReport.Mode.valueOf(getMode());
+    	} catch (Exception e) {
+    		return PdfLegacyExamReport.Mode.LegacyPdfLetter;
+    	}
+    }
 
 	/**
 	 * @return the iOp

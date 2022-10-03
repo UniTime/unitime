@@ -375,9 +375,4 @@
    	<definition	name="roomTypeEditTile" extends="roomTypeListTile">
 		<put name="title" type="string" value="Edit Room Type"/>
   	</definition>
-  	
- 	<definition	name="enrollmentAuditPdfReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Enrollment Audit PDF Reports"/>
-		<put name="body" value="/user/pdfEnrollmentAuditReport.jsp" />
-  	</definition>
 </tiles-definitions>
