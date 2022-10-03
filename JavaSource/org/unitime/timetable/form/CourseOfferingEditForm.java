@@ -26,15 +26,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OverrideType;
@@ -43,24 +38,17 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
 /**
- * MyEclipse Struts
- * Creation date: 07-25-2006
- *
- * XDoclet definition:
- * @struts:form name="courseOfferingEditForm"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-public class CourseOfferingEditForm extends ActionForm {
-
+public class CourseOfferingEditForm implements UniTimeForm {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-	
 	private static final long serialVersionUID = 5719027599139781262L;
-	// --------------------------------------------------------- Instance Variables
+
     private String op;
     private boolean add = false;
     private Long subjectAreaId;
@@ -85,9 +73,9 @@ public class CourseOfferingEditForm extends ActionForm {
     private String catalogLinkLabel;
     private String catalogLinkLocation;
     private Boolean byReservationOnly;
-    private List instructors;
-    private List responsibilities;
-    private List percentShares;
+    private List<String> instructors;
+    private List<String> responsibilities;
+    private List<String> percentShares;
     private String wkEnroll, wkChange, wkDrop;
     private Integer wkEnrollDefault, wkChangeDefault, wkDropDefault;
     private String weekStartDayOfWeek;
@@ -99,93 +87,76 @@ public class CourseOfferingEditForm extends ActionForm {
     private String defaultTeachingResponsibilityId;
     private Set<String> overrides;
     private String waitList;
+    
+    protected DynamicListObjectFactory factory;
 
-    // --------------------------------------------------------- Methods
+    public CourseOfferingEditForm() {
+    	factory = new DynamicListObjectFactory() {
+            public Object create() {
+                return new String(Preference.BLANK_PREF_VALUE);
+            }
+        };
+        reset();
+    }
 
-    /**
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-        
+    @Override
+    public void validate(UniTimeAction action) {
         if (getCourseNbr() != null && ApplicationProperty.CourseOfferingNumberUpperCase.isTrue()) {
         	setCourseNbr(getCourseNbr().toUpperCase());
         }
 
-		if (op.equals(MSG.actionUpdateCourseOffering()) || op.equals(MSG.actionSaveCourseOffering())) {
-			if (subjectAreaId == null || subjectAreaId == 0) {
-				errors.add("subjectAreaId", new ActionMessage("errors.generic", MSG.errorSubjectRequired()));
-			} else if (courseNbr==null || courseNbr.trim().length()==0) {
-				errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseNumberRequired()));
-			}
-			else {
-				
-		    	String courseNbrRegex = ApplicationProperty.CourseOfferingNumberPattern.value(); 
-		    	String courseNbrInfo = ApplicationProperty.CourseOfferingNumberPatternInfo.value();
-		    	try { 
-			    	Pattern pattern = Pattern.compile(courseNbrRegex);
-			    	Matcher matcher = pattern.matcher(courseNbr);
-			    	if (!matcher.find()) {
-				        errors.add("courseNbr", new ActionMessage("errors.generic", courseNbrInfo));
-			    	}
+		if (subjectAreaId == null || subjectAreaId == 0) {
+			action.addFieldError("form.subjectAreaId", MSG.errorSubjectRequired());
+		} else if (courseNbr==null || courseNbr.trim().length()==0) {
+			action.addFieldError("form.courseNbr", MSG.errorCourseNumberRequired());
+		} else {
+	    	String courseNbrRegex = ApplicationProperty.CourseOfferingNumberPattern.value(); 
+	    	String courseNbrInfo = ApplicationProperty.CourseOfferingNumberPatternInfo.value();
+	    	try { 
+		    	Pattern pattern = Pattern.compile(courseNbrRegex);
+		    	Matcher matcher = pattern.matcher(courseNbr);
+		    	if (!matcher.find()) {
+		    		action.addFieldError("form.courseNbr", courseNbrInfo);
 		    	}
-		    	catch (Exception e) {
-			        errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseNumberCannotBeMatched(courseNbrRegex,e.getMessage())));
-		    	}
+	    	}
+	    	catch (Exception e) {
+	    		action.addFieldError("form.courseNbr", MSG.errorCourseNumberCannotBeMatched(courseNbrRegex,e.getMessage()));
+	    	}
 
-				
-		    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()){
-					SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
-					CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
-					if (add && co != null) {
-						errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeCreated()));
-					} else if (!add && co!=null && !co.getUniqueId().equals(courseOfferingId)) {
-			            errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeRenamed()));
-					}
-		    	}
-
-			}
 			
-			for (int i = 0; i < instructors.size(); i++) {
-				String id1 = (String)instructors.get(i);
-				String r1 = (String)responsibilities.get(i);
-				if (Preference.BLANK_PREF_VALUE.equals(id1)) continue;
-				
-				for (int j = i + 1; j < instructors.size(); j++) {
-					String id2 = (String)instructors.get(j);
-					String r2 = (String)responsibilities.get(j);
-					if (id1.equals(id2) && r1.equals(r2)) {
-						errors.add("duplicateCoordinator", new ActionMessage("errors.generic", MSG.errorDuplicateCoordinator()));
-					}
+	    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()){
+				SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
+				CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
+				if (add && co != null) {
+					action.addFieldError("form.courseNbr", MSG.errorCourseCannotBeCreated());
+				} else if (!add && co!=null && !co.getUniqueId().equals(courseOfferingId)) {
+					action.addFieldError("form.courseNbr", MSG.errorCourseCannotBeRenamed());
+				}
+	    	}
+
+		}
+		
+		for (int i = 0; i < instructors.size(); i++) {
+			String id1 = (String)instructors.get(i);
+			String r1 = (String)responsibilities.get(i);
+			if (Preference.BLANK_PREF_VALUE.equals(id1)) continue;
+			
+			for (int j = i + 1; j < instructors.size(); j++) {
+				String id2 = (String)instructors.get(j);
+				String r2 = (String)responsibilities.get(j);
+				if (id1.equals(id2) && r1.equals(r2)) {
+					action.addFieldError("form.instructors", MSG.errorDuplicateCoordinator());
 				}
 			}
-			
-			OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
-			if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? ApplicationProperty.OfferingWaitListDefault.isTrue() : "true".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
-				errors.add("waitList", new ActionMessage("errors.generic", MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel())));
 		}
-
-        return errors;
+		
+		OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
+		if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? ApplicationProperty.OfferingWaitListDefault.isTrue() : "true".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
+			action.addFieldError("form.waitList", MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel()));
     }
     
-    protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /**
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void reset() {
         op = "";
         subjectAreaId = null;
         courseOfferingId = null;
@@ -395,20 +366,20 @@ public class CourseOfferingEditForm extends ActionForm {
 		this.catalogLinkLocation = catalogLinkLocation;
 	}
 	
-    public List getInstructors() { return instructors; }
-    public String getInstructors(int key) { return instructors.get(key).toString(); }
-    public void setInstructors(int key, Object value) { this.instructors.set(key, value); }
-    public void setInstructors(List instructors) { this.instructors = instructors; }
+    public List<String> getInstructors() { return instructors; }
+    public String getInstructors(int key) { return instructors.get(key); }
+    public void setInstructors(int key, String value) { this.instructors.set(key, value); }
+    public void setInstructors(List<String> instructors) { this.instructors = instructors; }
     
-    public List getResponsibilities() { return responsibilities; }
-    public String getResponsibilities(int key) { return responsibilities.get(key).toString(); }
-    public void setResponsibilities(int key, Object value) { this.responsibilities.set(key, value); }
-    public void setResponsibilities(List responsibilities) { this.responsibilities = responsibilities; }
+    public List<String> getResponsibilities() { return responsibilities; }
+    public String getResponsibilities(int key) { return responsibilities.get(key); }
+    public void setResponsibilities(int key, String value) { this.responsibilities.set(key, value); }
+    public void setResponsibilities(List<String> responsibilities) { this.responsibilities = responsibilities; }
 
-    public List getPercentShares() { return percentShares; }
-    public String getPercentShares(int key) { return percentShares.get(key).toString(); }
-    public void setPercentShares(int key, Object value) { this.percentShares.set(key, value); }
-    public void setPercentShares(List percentShares) { this.percentShares = percentShares; }
+    public List<String> getPercentShares() { return percentShares; }
+    public String getPercentShares(int key) { return percentShares.get(key); }
+    public void setPercentShares(int key, String value) { this.percentShares.set(key, value); }
+    public void setPercentShares(List<String> percentShares) { this.percentShares = percentShares; }
 
     public boolean isByReservationOnly() { return byReservationOnly; }
     public void setByReservationOnly(boolean byReservationOnly) { this.byReservationOnly = byReservationOnly; }
@@ -454,10 +425,26 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public void addCourseOverride(String override) { overrides.add(override); }
     public String getCourseOverride(String id) { return String.valueOf(overrides.contains(id)); }
-    public void setCourseOverride(String id, String value) { overrides.add(id); }
+    public void setCourseOverride(String id, String value) {
+    	if ("true".equalsIgnoreCase(value))
+    		overrides.add(id);
+    	else
+    		overrides.remove(id);
+    }
     public Set<String> getCourseOverrides() { return overrides; }
     
     public List<OverrideType> getOverrideTypes() {
     	return OverrideTypeDAO.getInstance().findAll(Order.asc("reference"));
+    }
+    
+    public List<ComboBoxLookup> getWaitListOptions() {
+    	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+    	if (ApplicationProperty.OfferingWaitListDefault.isTrue())
+    		ret.add(new ComboBoxLookup(MSG.waitListDefaultEnabled(), ""));
+    	else
+    		ret.add(new ComboBoxLookup(MSG.waitListDefaultDisabled(), ""));
+    	ret.add(new ComboBoxLookup(MSG.waitListEnabled(), "true"));
+    	ret.add(new ComboBoxLookup(MSG.waitListDisabled(), "false"));
+    	return ret;
     }
 }

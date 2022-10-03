@@ -658,7 +658,7 @@ public class WebInstructionalOfferingTableBuilder {
         while(it.hasNext()){
             tempCo = (org.unitime.timetable.model.CourseOffering) it.next();
             addlCos.append("<br>"); 
-            //addlCos.append("<A href=\"courseOfferingEdit.do?co=" + tempCo.getUniqueId() + "\">");
+            //addlCos.append("<A href=\"courseOfferingEdit.action?co=" + tempCo.getUniqueId() + "\">");
             addlCos.append("<span title='" + tempCo.getCourseNameWithTitle() + "' style='padding-left: " + indent + "px;'>");
             addlCos.append(tempCo.getSubjectAreaAbbv());
             addlCos.append(" ");

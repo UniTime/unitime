@@ -42,7 +42,6 @@
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
-      <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
@@ -366,25 +365,6 @@
 		path="/activeSessions"
 		forward="activeSessionsTile"
 		scope="request" />
-    
-    <action
-       path="/courseOfferingEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="courseOfferingEditForm"
-       input="courseOfferingEditTile"
-       name="courseOfferingEditForm"
-       scope="request"
-       validate="false">
-       <forward 
-       		name="edit" 
-       		path="courseOfferingEditTile" />
-		<forward 
-       		name="add" 
-       		path="courseOfferingAddTile" />       		
-       <forward 
-       		name="instructionalOfferingDetail" 
-       		path="/instructionalOfferingDetail.action" />
-    </action>
     
     <action
        path="/applicationConfig"

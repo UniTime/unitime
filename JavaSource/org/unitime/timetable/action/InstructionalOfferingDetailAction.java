@@ -92,7 +92,7 @@ import org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder;
 						"anchor", "back"}),
 		@Result(name = "modifyCrossLists", type = "redirect", location = "/crossListsModify.action",
 			params = { "instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
-		@Result(name = "editCourse", type = "redirect", location = "/courseOfferingEdit.do",
+		@Result(name = "editCourse", type = "redirect", location = "/courseOfferingEdit.action",
 			params = { "courseOfferingId", "${form.crsOfferingId}", "op", "${op}"})
 	})
 @TilesDefinition(name = "instructionalOfferingDetail.tiles", extend = "baseLayout", putAttributes =  {

@@ -17,280 +17,196 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.CourseOffering" %>
-<%@ page import="org.unitime.timetable.model.OfferingConsentType" %>
-<%@ page import="org.unitime.timetable.model.CourseCreditType" %>
-<%@ page import="org.unitime.timetable.model.CourseCreditUnitType" %>
-<%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
-<%@ page import="org.unitime.timetable.model.FixedCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.ArrangeCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.VariableFixedCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.VariableRangeCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.form.CourseOfferingEditForm" %>
-<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
-
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-<loc:bundle name="CourseMessages">
-<tt:session-context/>
-<%
-	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-%>
-
-<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
-	<html:hidden property="instrOfferingId"/>
-	<html:hidden property="courseOfferingId"/>
-	<html:hidden property="add"/>
-	<html:hidden property="isControl"/>
-	<html:hidden property="courseName"/>
-	<html:hidden property="ioNotOffered"/>
-	<html:hidden property="defaultTeachingResponsibilityId"/>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="courseOfferingEdit">
+	<s:hidden name="form.instrOfferingId"/>
+	<s:hidden name="form.courseOfferingId"/>
+	<s:hidden name="form.add"/>
+	<s:hidden name="form.isControl"/>
+	<s:hidden name="form.courseName"/>
+	<s:hidden name="form.ioNotOffered"/>
+	<s:hidden name="form.defaultTeachingResponsibilityId"/>
 	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
-								accesskey="<%=MSG.accessBackToIOList() %>"
+						<s:if test="form.add != true">
+							<A  title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}"
+								accesskey="${MSG.accessBackToIOList()}"
 								class="l8"
-								href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=<bean:write name="courseOfferingEditForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="courseOfferingEditForm" property="instrOfferingId" />"
-							><bean:write name="courseOfferingEditForm" property="courseName" /></A>
-						</logic:notEqual>
+								href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"
+								><s:property value="form.courseName" /></A>
+						</s:if>
 					</tt:section-title>
-
-					<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-						<html:submit property="op"
-							styleClass="btn" 
-							accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-							title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-							<loc:message name="actionUpdateCourseOffering" />
-						</html:submit>
-					</logic:notEqual>
-				
-					<logic:equal name="courseOfferingEditForm" property="add" value="true">
-						<html:submit property="op"
-							styleClass="btn" 
-							accesskey="<%=MSG.accessSaveCourseOffering() %>" 
-							title="<%=MSG.titleSaveCourseOffering(MSG.accessSaveCourseOffering()) %>">
-							<loc:message name="actionSaveCourseOffering" />
-						</html:submit>
-					</logic:equal>
-										
-					<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-						<bean:define id="instrOfferingId">
-							<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
-						</bean:define>
-						<html:button property="op"
-							styleClass="btn" 
-							accesskey="<%=MSG.accessBackToIODetail() %>" 
-							title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
-							onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
-							<loc:message name="actionBackToIODetail" />
-						</html:button>
-					</logic:notEqual>
-					
-					<logic:equal name="courseOfferingEditForm" property="add" value="true">
-						<html:button property="op"
-							styleClass="btn" 
-							accesskey="<%=MSG.accessBackToIOList()%>" 
-							title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
-							onclick="document.location.href='instructionalOfferingSearch.action';">
-							<loc:message name="actionBackToIOList" />
-						</html:button>
-					</logic:equal>
-
+					<s:if test="form.add == true">
+						<s:submit accesskey='%{#msg.accessSaveCourseOffering()}' name='op' value='%{#msg.actionSaveCourseOffering()}'
+							title='%{#msg.titleSaveCourseOffering(#msg.accessSaveCourseOffering())}'/>
+						<s:submit accesskey='%{#msg.accessBackToIOList()}' name='op' value='%{#msg.actionBackToIOList()}'
+							title='%{#msg.titleBackToIOList(#msg.accessBackToIOList())}'/>
+					</s:if>
+					<s:else>
+						<s:submit accesskey='%{#msg.accessUpdateCourseOffering()}' name='op' value='%{#msg.actionUpdateCourseOffering()}'
+							title='%{#msg.titleUpdateCourseOffering(#msg.accessUpdateCourseOffering())}'/>
+						<s:submit accesskey='%{#msg.accessBackToIODetail()}' name='op' value='%{#msg.actionBackToIODetail()}'
+							title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'/>
+					</s:else>
 				</tt:section-header>
-
 			</TD>
 		</TR>
-
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U><loc:message name="errors"/></U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 		
-	<logic:equal name="courseOfferingEditForm" property="add" value="true">
+	<s:if test="form.add == true">
 		<TR>
 			<TD><loc:message name="filterSubject"/> </TD>
 			<TD>
-				<html:select
-					name="courseOfferingEditForm"
-					property="subjectAreaId"
-					onchange="submit();"
-					styleId="subjectId"
-					>
-					<html:options collection="subjects" property="uniqueId" labelProperty="subjectAreaAbbreviation" />
-				</html:select>
+				<s:select name="form.subjectAreaId"
+					list="#request.subjects" listKey="uniqueId" listValue="subjectAreaAbbreviation"
+					onchange="submit();" id="subjectId"/>
 			</TD>
 		</TR>
-	</logic:equal>
-	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-		<html:hidden property="subjectAreaId" styleId="subjectId"/>
-	</logic:notEqual>
+	</s:if><s:else>
+		<s:hidden name="form.subjectAreaId" id="subjectId"/>
+	</s:else>
 	
 		
-	<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
-						(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+	<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+						(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
-				<html:text property="courseNbr" size="40" maxlength="40" styleId="course" />
+				<s:textfield name="form.courseNbr" size="40" maxlength="40" id="course" />
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="propertyCourseTitle"/> </TD>
 			<TD>
-				<html:text property="title" size="100" maxlength="200" />
+				<s:textfield name="form.title" size="100" maxlength="200" />
 			</TD>
 		</TR>
 		<tt:propertyEquals name="unitime.course.editExternalIds" value="true">
 			<TR>
 				<TD><loc:message name="propertyExternalId"/> </TD>
 				<TD>
-					<html:text property="externalId" maxlength="40" size="20"/>
+					<s:textfield name="form.externalId" maxlength="40" size="20"/>
 				</TD>
 			</TR>
 		</tt:propertyEquals>
 		<tt:propertyNotEquals name="unitime.course.editExternalIds" value="true">
-			<logic:notEmpty name="courseOfferingEditForm" property="externalId">
+			<s:if test="form.externalId != null && !form.externalId.isEmpty()">
 				<TR>
 					<TD><loc:message name="propertyExternalId"/> </TD>
 					<TD>
-						<bean:write name="courseOfferingEditForm" property="externalId"/>
+						<s:property value="form.externalId"/>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-			<html:hidden property="externalId"/>
+			</s:if>
+			<s:hidden name="form.externalId"/>
 		</tt:propertyNotEquals>
 	</sec:authorize>
-	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
-							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-		<html:hidden property="courseNbr" styleId="course"/>
-		<logic:notEmpty name="courseOfferingEditForm" property="title">
+	<sec:authorize access="!(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+							!(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+		<s:hidden name="form.courseNbr" id="course"/>
+		<s:if test="form.title != null && !form.title.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyCourseTitle"/> </TD>
 				<TD>
-					<bean:write name="courseOfferingEditForm" property="title"/>				
+					<s:property value="form.title"/>				
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<html:hidden property="title"/>
-		<logic:notEmpty name="courseOfferingEditForm" property="externalId">
+		</s:if>
+		<s:hidden name="form.title"/>
+		<s:if test="form.externalId != null && !form.externalId.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyExternalId"/> </TD>
 				<TD>
-					<bean:write name="courseOfferingEditForm" property="externalId"/>
+					<s:property value="form.externalId"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<html:hidden property="externalId"/>
+		</s:if>
+		<s:hidden name="form.externalId"/>
 	</sec:authorize>
 	
-	<logic:notEmpty scope="request" name="courseTypes">
-		<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
-							(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+	<s:if test="#request.courseTypes != null && #request.courseTypes.isEmpty()">
+		<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+							(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<TR>
 				<TD><loc:message name="propertyCourseType"/></TD>
 				<TD>
-					<html:select
-						name="courseOfferingEditForm"
-						property="courseTypeId">
-						<html:option value=""></html:option>
-						<html:options collection="courseTypes" property="uniqueId" labelProperty="label" />
-					</html:select>
+					<s:select name="form.courseTypeId"
+						 list="#request.courseTypes" listKey="uniqueId" listValue="label"
+						 headerKey="" headerValue=""/>
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
-								!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-			<html:hidden property="courseTypeId"/>
-			<logic:notEmpty name="courseOfferingEditForm" property="courseTypeId">
-				<logic:iterate name="courseTypes" scope="request" id="type" type="org.unitime.timetable.model.CourseType">
-					<logic:equal name="courseOfferingEditForm" property="courseTypeId" value="<%=type.getUniqueId().toString()%>">
+		<sec:authorize access="!(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+								!(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+			<s:hidden name="form.courseTypeId"/>
+			<s:if test="form.courseTypeId != null">
+				<s:iterator value="#request.courseTypes" var="type">
+					<s:if test="#type.uniqueId == form.courseTypeId">
 						<TR>
 							<TD><loc:message name="propertyCourseType"/></TD>
-							<TD><bean:write name="type" property="label"/></TD>
+							<TD><s:property value="#type.label"/></TD>
 						</TR>
-					</logic:equal>
-				</logic:iterate>
-			</logic:notEmpty>
+					</s:if>
+				</s:iterator>
+			</s:if>
 		</sec:authorize>
-	</logic:notEmpty>
+	</s:if>
 
-	<sec:authorize access="(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
-							 hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
-						or (#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+	<sec:authorize access="(not #form.add and (hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
+							 hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
+						or (#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
 			<TD>
-				<html:textarea property="scheduleBookNote" rows="4" cols="57" />
+				<s:textarea name="form.scheduleBookNote" rows="4" cols="57" />
 			</TD>
 		</TR>
 	</sec:authorize>
-	<sec:authorize access="!(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
-							 hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
-						and !(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-		<logic:notEmpty name="courseOfferingEditForm" property="scheduleBookNote">
+	<sec:authorize access="!(not #form.add and (hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
+							 hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
+						and !(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+		<s:if test="form.scheduleBookNote != null && !form.scheduleBookNote.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
 				<TD>
-					<bean:write name="courseOfferingEditForm" property="scheduleBookNote" filter="false"/>
+					<s:property value="form.scheduleBookNote" escapeHtml="false"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<html:hidden property="scheduleBookNote"/>
+		</s:if>
+		<s:hidden name="form.scheduleBookNote"/>
 	</sec:authorize>
 	
 		
-	<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
-						(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+	<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+						(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD valign="top"><loc:message name="propertyConsent" /></TD>
 			<TD>
-				<html:select name="courseOfferingEditForm" property="consent">
-					<html:option value="-1"><loc:message name="noConsentRequired"/></html:option>
-					<html:options collection="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" labelProperty="label" property="uniqueId" />
-				</html:select>
+				<s:select name="form.consent" 
+					list="#request.consentTypeList" listKey="uniqueId" listValue="label"
+					headerKey="-1" headerValue="%{#msg.noConsentRequired()}"/>
 			</TD>
 		</TR>
-
-		<%
-		// Get Form
-		String frmName = "courseOfferingEditForm";
-		CourseOfferingEditForm frm = (CourseOfferingEditForm) request.getAttribute(frmName);
-		%>
 		<TR>
 			<TD><loc:message name="propertyCredit"/></TD>
 			<TD>
-				<html:select style="width:200px;" property="creditFormat" onchange="<%= \"if (this.value == '\" + FixedCreditUnitConfig.CREDIT_FORMAT + \"') { document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true } else if (this.value == '\" + ArrangeCreditUnitConfig.CREDIT_FORMAT + \"'){document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableFixedCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = true} else if (this.value == '\" + VariableRangeCreditUnitConfig.CREDIT_FORMAT + \"') {document.forms[0].creditType.disabled = false; document.forms[0].creditUnitType.disabled = false; document.forms[0].units.disabled = false; document.forms[0].maxUnits.disabled = false; document.forms[0].fractionalIncrementsAllowed.disabled = false} else {document.forms[0].creditType.disabled = true; document.forms[0].creditUnitType.disabled = true; document.forms[0].units.disabled = true; document.forms[0].maxUnits.disabled = true; document.forms[0].fractionalIncrementsAllowed.disabled = true}\"%>">
-					<loc:bundle name="ConstantsMessages" id="CONST">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
-					</loc:bundle>
-					<html:options collection="<%=org.unitime.timetable.model.CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME%>" property="reference" labelProperty="label"/>
-				</html:select>
+				<s:select name="form.creditFormat"
+					list="#request.courseCreditFormatList" listKey="reference" listValue="label"
+					headerKey="" headerValue="%{#msg.itemSelect()}"
+					style="width:200px;" onchange="creditFormatChanged(this);"
+					/>
 			</TD>
 		</TR>
 		<TR>
@@ -300,132 +216,123 @@
 				<tr>
 				<td nowrap><loc:message name="propertyCreditType"/> </td>
 				<td>
-				<html:select style="width:200px;" property="creditType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
-					<html:options collection="<%=CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-				</html:select>
+					<s:select name="form.creditType"
+						list="#request.courseCreditTypeList" listKey="uniqueId" listValue="label"
+						style="width:200px;" disabled="%{form.creditFormat == null || form.creditFormat.isEmpty()}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyCreditUnitType"/></td>
 				<td>
-				<html:select style="width:200px;" property="creditUnitType" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0)?false:true%>">
-					<html:options collection="<%=CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
-				</html:select>
+				<s:select name="form.creditUnitType"
+					list="#request.courseCreditUnitTypeList" listKey="uniqueId" listValue="label" 
+					style="width:200px;" disabled="%{form.creditFormat == null || form.creditFormat.isEmpty()}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyUnits"/> </td>
 				<td>
-				<html:text property="units" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().length() > 0 && !frm.getCreditFormat().equals(ArrangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
+				<s:textfield name="form.units" maxlength="4" size="4"
+					disabled="%{form.creditFormat == null || form.creditFormat.isEmpty() || form.creditFormat == 'arrangeHours'}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyMaxUnits"/></td>
 				<td>
-				<html:text property="maxUnits" maxlength="4" size="4" disabled="<%=(frm.getCreditFormat() != null && (frm.getCreditFormat().equals(VariableFixedCreditUnitConfig.CREDIT_FORMAT) || frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT)))?false:true%>"/>
+				<s:textfield name="form.maxUnits" maxlength="4" size="4"
+					disabled="%{form.creditFormat != 'variableRange'}"/>
 				</td>
 				</tr>
 				<tr>
 				<td nowrap><loc:message name="propertyFractionalIncrementsAllowed"/></td>
 				<td>
-				<html:checkbox property="fractionalIncrementsAllowed" disabled="<%=(frm.getCreditFormat() != null && frm.getCreditFormat().equals(VariableRangeCreditUnitConfig.CREDIT_FORMAT))?false:true%>"/>
+				<s:checkbox name="form.fractionalIncrementsAllowed"
+					disabled="%{form.creditFormat != 'variableRange'}"/>
 				</td>
 				</tr>
 				</table>
 			</TD>
 		</TR>
 
-		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
-			<logic:notEmpty name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" scope="request">
+		<s:if test="form.allowDemandCourseOfferings == true && #request.crsOfferingList != null && !#request.crsOfferingList.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
 				<TD>
-					<html:select
-						name="courseOfferingEditForm"
-						property="demandCourseOfferingId">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"> </html:option>
-						<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
-					</html:select>
+					<s:select name="form.demandCourseOfferingId"
+						list="#request.crsOfferingList" listKey="uniqueId" listValue="courseNameWithTitle"
+						headerKey="" headerValue=""/>
 				</TD>
 			</TR>
-			</logic:notEmpty>
-		</logic:equal>
+		</s:if>
 
-		<logic:equal name="courseOfferingEditForm" property="allowAlternativeCourseOfferings" value="true">
-			<logic:notEmpty name="altOfferingList" scope="request">
+		<s:if test="form.allowAlternativeCourseOfferings == true && #request.altOfferingList != null && !#request.altOfferingList.isEmpty()">
 			<TR>
 				<TD><loc:message name="propertyAlternativeCourseOffering"/> </TD>
 				<TD>
-					<html:select
-						name="courseOfferingEditForm"
-						property="alternativeCourseOfferingId">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"> </html:option>
-						<html:options collection="altOfferingList" property="uniqueId" labelProperty="courseNameWithTitle" />
-					</html:select>
+					<s:select name="form.alternativeCourseOfferingId"
+						list="#request.altOfferingList" listKey="uniqueId" listValue="courseNameWithTitle"
+						headerKey="" headerValue=""/>
 				</TD>
 			</TR>
-			</logic:notEmpty>
-		</logic:equal>		
+		</s:if>		
 	</sec:authorize>
 	
-	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
-						!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-		<logic:notEqual name="courseOfferingEditForm" property="consent" value="-1">
+	<sec:authorize access="!(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+						!(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+		<s:if test="form.consent != -1">
 			<TR>
 				<TD valign="top"><loc:message name="propertyConsent" /></TD>
 				<TD>
-					<logic:iterate name="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" scope="request" id="consent" type="org.unitime.timetable.model.OfferingConsentType">
-						<logic:equal name="courseOfferingEditForm" property="consent" value="<%=consent.getUniqueId().toString()%>">
-							<bean:write name="consent" property="label"/>
-						</logic:equal>
-					</logic:iterate>
+					<s:iterator value="#request.consentTypeList" var="consent">
+						<s:if test="#consent.uniqueId == form.consent">
+							<s:property value="#consent.label"/>
+						</s:if>
+					</s:iterator>
 				</TD>
 			</TR>
-		</logic:notEqual>
-		<html:hidden property="consent"/>
+		</s:if>
+		<s:hidden name="form.consent"/>
 
-		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
-			<logic:notEmpty name="courseOfferingEditForm" property="creditText">
+		<s:if test="form.isControl == true">
+			<s:if test="form.creditText != null && !form.creditText.isEmpty()">
 				<TR>
 					<TD><loc:message name="propertyCredit"/></TD>
 					<TD>
-						<bean:write name="courseOfferingEditForm" property="creditText"/>
+						<s:property value="form.creditText"/>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-			<html:hidden property="creditFormat"/>
-			<html:hidden property="creditType"/>
-			<html:hidden property="creditUnitType"/>
-			<html:hidden property="units"/>
-			<html:hidden property="maxUnits"/>
-			<html:hidden property="creditText"/>
-		</logic:equal>
+			</s:if>
+			<s:hidden name="form.creditFormat"/>
+			<s:hidden name="form.creditType"/>
+			<s:hidden name="form.creditUnitType"/>
+			<s:hidden name="form.units"/>
+			<s:hidden name="form.maxUnits"/>
+			<s:hidden name="form.creditText"/>
+		</s:if>
 		
-		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
-			<logic:notEmpty name="courseOfferingEditForm" property="demandCourseOfferingId">
-				<logic:iterate name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" scope="request" id="course" type="org.unitime.timetable.model.CourseOffering">
-					<logic:equal name="courseOfferingEditForm" property="demandCourseOfferingId" value="<%=course.getUniqueId().toString()%>">
-						<TR>
-							<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
-							<TD>
-								<bean:write name="course" property="courseNameWithTitle"/>
-							</TD>
-						</TR>				
-					</logic:equal>
-				</logic:iterate>
-			</logic:notEmpty>
-		</logic:equal>
-		<html:hidden property="demandCourseOfferingId"/>
+		<s:if test="form.allowDemandCourseOfferings == true && #request.crsOfferingList != null && !#request.crsOfferingList.isEmpty()">
+			<s:iterator value="#request.crsOfferingList" var="course">
+				<s:if test="#course.uniqueId == form.demandCourseOfferingId">
+					<TR>
+						<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
+						<TD>
+							<s:property value="#course.courseNameWithTitle"/>
+						</TD>
+					</TR>				
+				</s:if>
+			</s:iterator>
+		</s:if>
+		<s:hidden name="form.demandCourseOfferingId"/>
 	</sec:authorize>
 
-	<logic:notEmpty name="courseOfferingEditForm" property="catalogLinkLabel">
+	<s:if test="form.catalogLinkLabel != null && !form.catalogLinkLabel.isEmpty()">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
-				<A href="<bean:write name="courseOfferingEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="courseOfferingEditForm" property="catalogLinkLabel" /></A>
+				<A href="<s:property value="form.catalogLinkLocation" />" target="_blank"><s:property value="form.catalogLinkLabel" /></A>
 			</TD>
 		</TR>
-	</logic:notEmpty>
+	</s:if>
 	<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
@@ -435,133 +342,120 @@
 		</TR>
 	</tt:hasProperty>
 
-	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
-		<sec:authorize access="(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
-								or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
-								or (#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-			<logic:notEmpty name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request">
+	<s:if test="form.isControl == true">
+		<sec:authorize access="(not #form.add and (hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
+								or hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
+								or (#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+			<s:if test="#request.instructorsList != null && !#request.instructorsList.isEmpty()">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
-				<table border='0'>
+				<table class="unitime-Table">
 					<tr>
 						<td>&nbsp;<i><loc:message name="columnInstructorName"/></i>&nbsp;</td>
 						<td>&nbsp;<i><loc:message name="columnInstructorShare"/></i>&nbsp;</td>
 						<td>
-						<logic:notEmpty name="responsibilities" scope="request">
+						<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
 							&nbsp;<i><loc:message name="columnTeachingResponsibility"/></i>&nbsp;
-						</logic:notEmpty>
+						</s:if>
 						</td><td></td>
 					</tr>
-				<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
+				<s:iterator value="form.instructors" var="instructor" status="stat"><s:set var="ctr" value="#stat.index"/>
 					<tr><td>
-					<html:select style="width:200px;"
-						property='<%= "instructors[" + ctr + "]" %>'>
-						<html:option value="-">-</html:option>
-						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
-					</html:select>
+					<s:select name="form.instructors[%{#ctr}]"
+						list="#request.instructorsList" listKey="value" listValue="label"
+						headerKey="-" headerValue="-"
+						style="width:200px;" />
 					</td><td align="center">
-						<html:text property='<%= "percentShares[" + ctr + "]" %>' size="3" maxlength="3" style="text-align: right;"/>
+						<s:textfield name="form.percentShares[%{#ctr}]" size="3" maxlength="3" style="text-align: right;"/>
 					</td><td>
-					<logic:notEmpty name="responsibilities" scope="request">
-						<html:select
-							property='<%= "responsibilities[" + ctr + "]" %>'>
-							<logic:equal name="courseOfferingEditForm" property='<%= "responsibilities[" + ctr + "]" %>' value="">
-								<html:option value="">-</html:option>
-							</logic:equal>
-							<logic:notEqual name="courseOfferingEditForm" property='<%= "responsibilities[" + ctr + "]" %>' value="">
-								<logic:empty name="courseOfferingEditForm" property='defaultTeachingResponsibilityId'>
-									<html:option value="">-</html:option>
-								</logic:empty>
-							</logic:notEqual>
-							<html:options collection="responsibilities" property="uniqueId" labelProperty="label" />
-						</html:select>
-					</logic:notEmpty>
-					<logic:empty name="responsibilities" scope="request">
-						<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
-					</logic:empty>
+					<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
+						<s:if test="form.responsibilities[#ctr] == '' || form.defaultTeachingResponsibilityId == ''">
+							<s:select name="form.responsibilities[%{#ctr}]"
+								list="#request.responsibilities" listKey="uniqueId" listValue="label"
+								headerKey="-" headerValue="-"/>
+						</s:if>
+						<s:else>
+							<s:select name="form.responsibilities[%{#ctr}]"
+								list="#request.responsibilities" listKey="uniqueId" listValue="label"
+								/>
+						</s:else>
+					</s:if>
+					<s:else>
+						<s:hidden name="form.responsibilities[%{#ctr}]"/>
+					</s:else>
 					</td><td>
-					<html:submit property="op" 
-								styleClass="btn"
-								onclick="<%= \"javascript: doDel('coordinator', '\" + ctr + \"');\"%>">
-								<loc:message name="actionRemoveCoordinator" />
-					</html:submit>
+						<s:submit name='op' value='%{#msg.actionRemoveCoordinator()}' onclick="doDel('coordinator', '%{#ctr}');"/>
 					</td></tr>
-   				</logic:iterate>
+   				</s:iterator>
    				<tr><td colspan='4'>
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessAddCoordinator() %>" 
-						title="<%=MSG.titleAddCoordinator(MSG.accessAddCoordinator()) %>">
-						<loc:message name="actionAddCoordinator" />
-					</html:submit> 			
+					<s:submit accesskey='%{#msg.accessAddCoordinator()}' name='op' value='%{#msg.actionAddCoordinator()}'
+						title='%{#msg.titleAddCoordinator(#msg.accessAddCoordinator())}'/>
 				</td></tr>
 				</table>
 				</TD>
 			</TR>
-			</logic:notEmpty>
+			</s:if>
 		</sec:authorize>
-		<sec:authorize access="!(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
-								or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
-								and !(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-			<logic:notEmpty name="courseOfferingEditForm" property="instructors">
+		<sec:authorize access="!(not #form.add and (hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
+								or hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
+								and !(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+			<s:if test="form.instructors != null && !form.instructors.isEmpty()">
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
-					<bean:define name="courseOfferingEditForm" property="responsibilities" id="r" type="java.util.List"/>
-					<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
-						<logic:iterate name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request" id="lookup" type="org.unitime.timetable.util.ComboBoxLookup">
-							<logic:equal name="lookup" property="value" value="<%=instructor.toString()%>">
-								<logic:greaterThan name="ctr" value="0"><br></logic:greaterThan>
-								<bean:write name="lookup" property="label"/>
-								<logic:iterate id="responsibility" name="responsibilities" scope="request">
-									<logic:equal name="responsibility" property="uniqueId" value="<%=(String)r.get(ctr)%>">
-										(<bean:write name="responsibility" property="label"/>)
-									</logic:equal>
-								</logic:iterate>
-							</logic:equal>
-						</logic:iterate>
-					</logic:iterate>
+					<s:iterator value="form.instructors" var="instructor" status="stat"><s:set var="ctr" value="#stat.index"/>
+						<s:iterator value="#request.instructorsList" var="lookup">
+							<s:if test="#lookup.value == #instructor">
+								<s:if test="#ctr > 0"><br></s:if>
+								<s:property value="#lookup.label"/>
+								<s:iterator value="#request.responsibilities" var="responsibility">
+									<s:if test="#responsibility.uniqueId == form.responsibilities[#ctr]">(<s:property value="#responsibility.label"/>)</s:if>
+								</s:iterator>
+							</s:if>
+						</s:iterator>
+					</s:iterator>
 				</TD>
-			</logic:notEmpty>
-			<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
-				<html:hidden property='<%= "instructors[" + ctr + "]" %>'/>
-				<html:hidden property='<%= "responsibilities[" + ctr + "]" %>'/>
-			</logic:iterate>
+			</s:if>
+			<s:iterator value="form.instructors" var="instructor" status="stat"><s:set var="ctr" value="#stat.index"/>
+				<s:hidden name="form.instructors[%{#ctr}]"/>
+				<s:hidden name="form.percentShares[%{#ctr}]"/>
+				<s:hidden name="form.responsibilities[%{#ctr}]"/>
+			</s:iterator>
 		</sec:authorize>
 
-		<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
-							(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+		<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+							(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<TR>
 				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
 				<TD>
-					<html:checkbox name="courseOfferingEditForm" property="byReservationOnly" />
+					<s:checkbox name="form.byReservationOnly" />
 					<i><loc:message name="descriptionByReservationOnly"/></i>
 				</TD>
 			</TR>
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
 				<TD valign="top">
-					<html:text property="wkEnroll" maxlength="4" size="4"/>
-					<i><loc:message name="descriptionLastWeekEnrollment"><bean:write name="courseOfferingEditForm" property="wkEnrollDefault" /></loc:message></i>
-					<html:hidden property="wkEnrollDefault"/>
+					<s:textfield name="form.wkEnroll" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekEnrollment"><s:property value="form.wkEnrollDefault" /></loc:message></i>
+					<s:hidden name="form.wkEnrollDefault"/>
 				</TD>
 			</TR>
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
 				<TD valign="top">
-					<html:text property="wkChange" maxlength="4" size="4"/>
-					<i><loc:message name="descriptionLastWeekChange"><bean:write name="courseOfferingEditForm" property="wkChangeDefault" /></loc:message></i>
-					<html:hidden property="wkChangeDefault"/>
+					<s:textfield name="form.wkChange" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekChange"><s:property value="form.wkChangeDefault" /></loc:message></i>
+					<s:hidden name="form.wkChangeDefault"/>
 				</TD>
 			</TR>
 			<TR>
 				<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
 				<TD valign="top">
-					<html:text property="wkDrop" maxlength="4" size="4"/>
-					<i><loc:message name="descriptionLastWeekDrop"><bean:write name="courseOfferingEditForm" property="wkDropDefault" /></loc:message></i>
-					<html:hidden property="wkDropDefault"/>
-					<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
-					<html:hidden property="weekStartDayOfWeek"/>
+					<s:textfield name="form.wkDrop" maxlength="4" size="4"/>
+					<i><loc:message name="descriptionLastWeekDrop"><s:property value="form.wkDropDefault" /></loc:message></i>
+					<s:hidden name="form.wkDropDefault"/>
+					<br><i><loc:message name="descriptionEnrollmentDeadlines"><s:property value="form.weekStartDayOfWeek" /></loc:message></i>
+					<s:hidden name="form.weekStartDayOfWeek"/>
 				</TD>
 			</TR>
 			
@@ -569,122 +463,112 @@
 			<TR>
 				<TD valign="top"><loc:message name="propertyRequestsNotes"/></TD>
 				<TD align="left">
-				<html:textarea property="notes" rows="4" cols="57"></html:textarea>
+				<s:textarea name="form.notes" rows="4" cols="57"/>
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and 
-							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-			<logic:equal name="courseOfferingEditForm" property="byReservationOnly" value="true">
+		<sec:authorize access="!(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and 
+							!(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+			<s:if test="form.byReservationOnly== true">
 				<TR>
 					<TD><loc:message name="propertyByReservationOnly"/></TD>
 					<TD>
-						<IMG src="images/accept.png" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+						<IMG src="images/accept.png" alt="ENABLED" title="${MSG.descriptionByReservationOnly2()}" border="0">
 						<i><loc:message name="descriptionByReservationOnly2"/></i>
 					</TD>
 				</TR>
-			</logic:equal>
-			<html:hidden property="byReservationOnly"/>
-			<logic:notEmpty name="courseOfferingEditForm" property="wkEnroll">
+			</s:if>
+			<s:hidden name="form.byReservationOnly"/>
+			<s:if test="form.wkEnroll != null && !form.wkEnroll.isEmpty()">
 				<TR>
 					<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
 					<TD>
-						<loc:message name="textLastWeekEnrollment"><bean:write name="courseOfferingEditForm" property="wkEnroll" /></loc:message>
-						<logic:empty name="courseOfferingEditForm" property="wkChange">
-							<logic:empty name="courseOfferingEditForm" property="wkDrop">
-								<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
-							</logic:empty>
-						</logic:empty>
+						<loc:message name="textLastWeekEnrollment"><s:property value="form.wkEnroll" /></loc:message>
+						<s:if test="(form.wkChange == null || form.wkChange.isEmpty()) && (form.wkDrop == null || form.wkDrop.isEmpty())">
+							<br><i><loc:message name="descriptionEnrollmentDeadlines"><s:property value="form.weekStartDayOfWeek" /></loc:message></i>
+						</s:if>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-			<logic:notEmpty name="courseOfferingEditForm" property="wkChange">
+			</s:if>
+			<s:if test="form.wkChange != null && !form.wkChange.isEmpty()">
 				<TR>
 					<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
 					<TD>
-						<loc:message name="textLastWeekChange"><bean:write name="courseOfferingEditForm" property="wkChange" /></loc:message>
-						<logic:empty name="courseOfferingEditForm" property="wkDrop">
-							<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
-						</logic:empty>
+						<loc:message name="textLastWeekChange"><s:property value="form.wkChange" /></loc:message>
+						<s:if test="form.wkDrop == null || form.wkDrop.isEmpty()">
+							<br><i><loc:message name="descriptionEnrollmentDeadlines"><s:property value="form.weekStartDayOfWeek" /></loc:message></i>
+						</s:if>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-			<logic:notEmpty name="courseOfferingEditForm" property="wkDrop">
+			</s:if>
+			<s:if test="form.wkDrop != null && !form.wkDrop.isEmpty()">
 				<TR>
 					<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
 					<TD>
-						<loc:message name="textLastWeekDrop"><bean:write name="courseOfferingEditForm" property="wkDrop" /></loc:message>
-						<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
+						<loc:message name="textLastWeekDrop"><s:property value="form.wkDrop" /></loc:message>
+						<br><i><loc:message name="descriptionEnrollmentDeadlines"><s:property value="form.weekStartDayOfWeek" /></loc:message></i>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-			<html:hidden property="wkEnroll"/>
-			<html:hidden property="wkEnrollDefault"/>
-			<html:hidden property="wkChange"/>
-			<html:hidden property="wkChangeDefault"/>
-			<html:hidden property="wkDrop"/>
-			<html:hidden property="wkDropDefault"/>
-			<html:hidden property="weekStartDayOfWeek"/>
-			<html:hidden property="notes"/>
+			</s:if>
+			<s:hidden name="form.wkEnroll"/>
+			<s:hidden name="form.wkEnrollDefault"/>
+			<s:hidden name="form.wkChange"/>
+			<s:hidden name="form.wkChangeDefault"/>
+			<s:hidden name="form.wkDrop"/>
+			<s:hidden name="form.wkDropDefault"/>
+			<s:hidden name="form.weekStartDayOfWeek"/>
+			<s:hidden name="form.notes"/>
 		</sec:authorize>		
-	</logic:equal>
+	</s:if>
 	
-	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+	<s:if test="form.isControl == true">
 		<TR>
 			<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
 			<TD valign="top">
-				<html:select property="waitList">
-					<tt:propertyEquals name="unitime.offering.waitListDefault" value="true">
-						<html:option value=""><loc:message name="waitListDefaultEnabled"/></html:option>
-					</tt:propertyEquals>
-					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
-						<html:option value=""><loc:message name="waitListDefaultDisabled"/></html:option>
-					</tt:propertyNotEquals>
-					<html:option value="true"><loc:message name="waitListEnabled"/></html:option>
-					<html:option value="false"><loc:message name="waitListDisabled"/></html:option>
-				</html:select>
+				<s:select name="form.waitList" 
+					list="form.waitListOptions" listKey="value" listValue="label"/>
 			</TD>
 		</TR>
-	</logic:equal>
-	<logic:notEqual name="courseOfferingEditForm" property="isControl" value="true">
+	</s:if>
+	<s:else>
 		<TR>
 			<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
 			<TD valign="top">
-				<logic:empty name="courseOfferingEditForm" property="waitList">
+				<s:if test="form.waitList == null">
 					<tt:propertyEquals name="unitime.offering.waitListDefault" value="true">
-						<img src="images/accept.png" alt="<%=MSG.waitListDefaultEnabled() %>" title="<%=MSG.waitListDefaultEnabled() %>" border="0" align="top">
+						<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.waitListDefaultEnabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultEnabled"/>
 					</tt:propertyEquals>
 					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
-					<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+					<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultDisabled"/>
 					</tt:propertyNotEquals>
-				</logic:empty>
-				<logic:equal name="courseOfferingEditForm" property="waitList" value="true">
-					<img src="images/accept.png" alt="<%=MSG.waitListDefaultEnabled() %>" title="<%=MSG.waitListDefaultEnabled() %>" border="0" align="top">
+				</s:if>
+				<s:if test="form.waitList == 'true'">
+					<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.waitListDefaultEnabled()}" border="0" align="top">
 					<loc:message name="waitListEnabled"/>
-				</logic:equal>
-				<logic:equal name="courseOfferingEditForm" property="waitList" value="false">
-					<img src="images/cancel.png" alt="<%=MSG.waitListDisabled() %>" title="<%=MSG.descWaitListDisabled() %>" border="0" align="top">
+				</s:if>
+				<s:if test="form.waitList == 'false'">
+					<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 					<loc:message name="waitListDisabled"/>
-				</logic:equal>
+				</s:if>
 			</TD>
 		</TR>
-		<html:hidden property="waitList"/>
-	</logic:notEqual>
+		<s:hidden name="form.waitList"/>
+	</s:else>
 	
-	<logic:notEmpty name="courseOfferingEditForm" property="overrideTypes">
+	<s:if test="form.overrideTypes != null && !form.overrideTypes.isEmpty()">
 		<TR>
 			<TD valign="top"><loc:message name="propertyDisabledOverrides"/> </TD>
 			<TD>
-				<logic:iterate id="type" name="courseOfferingEditForm" property="overrideTypes" type="org.unitime.timetable.model.OverrideType" indexId="idx">
-					<logic:greaterThan value="0" name="idx"><br></logic:greaterThan>
-					<html:checkbox name="courseOfferingEditForm" property="courseOverride(${type.uniqueId})"/>
-					<bean:write name="type" property="reference"/>: <bean:write name="type" property="label"/>
-				</logic:iterate>
+				<s:iterator value="form.overrideTypes" var="type" status="stat"><s:set var="idx" value="#stat.index"/>
+					<s:if test="#idx > 0"><br></s:if>
+					<s:checkbox name="form.courseOverride[%{#type.uniqueId}]"/>
+					<s:property value="#type.reference"/>: <s:property value="#type.label"/>
+				</s:iterator>
 			</TD>
 		</TR>
-	</logic:notEmpty>
+	</s:if>
 
 <!-- Buttons -->
 		<TR>
@@ -695,46 +579,18 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-					<html:submit property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-						<loc:message name="actionUpdateCourseOffering" />
-					</html:submit>
-				</logic:notEqual>
-				
-				<logic:equal name="courseOfferingEditForm" property="add" value="true">
-					<html:submit property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessSaveCourseOffering() %>" 
-						title="<%=MSG.titleSaveCourseOffering(MSG.accessSaveCourseOffering()) %>">
-						<loc:message name="actionSaveCourseOffering" />
-					</html:submit>
-				</logic:equal>
-
-				<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-					<bean:define id="instrOfferingId">
-						<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
-					</bean:define>
-					<html:button property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToIODetail() %>" 
-						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
-						onclick="document.location.href='instructionalOfferingDetail.action?op=view&io=${instrOfferingId}';">
-						<loc:message name="actionBackToIODetail" />
-					</html:button>
-				</logic:notEqual>
-				
-				<logic:equal name="courseOfferingEditForm" property="add" value="true">
-						<html:button property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToIOList()%>" 
-						title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
-						onclick="document.location.href='instructionalOfferingSearch.action';">
-						<loc:message name="actionBackToIOList" />
-					</html:button>
-				</logic:equal>
+				<s:if test="form.add == true">
+					<s:submit accesskey='%{#msg.accessSaveCourseOffering()}' name='op' value='%{#msg.actionSaveCourseOffering()}'
+						title='%{#msg.titleSaveCourseOffering(#msg.accessSaveCourseOffering())}'/>
+					<s:submit accesskey='%{#msg.accessBackToIOList()}' name='op' value='%{#msg.actionBackToIOList()}'
+						title='%{#msg.titleBackToIOList(#msg.accessBackToIOList())}'/>
+				</s:if>
+				<s:else>
+					<s:submit accesskey='%{#msg.accessUpdateCourseOffering()}' name='op' value='%{#msg.actionUpdateCourseOffering()}'
+						title='%{#msg.titleUpdateCourseOffering(#msg.accessUpdateCourseOffering())}'/>
+					<s:submit accesskey='%{#msg.accessBackToIODetail()}' name='op' value='%{#msg.actionBackToIODetail()}'
+						title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'/>
+				</s:else>
 			</TD>
 		</TR>
 
@@ -742,12 +598,44 @@
 	
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
-	<SCRIPT type="text/javascript" language="javascript">
+	<SCRIPT type="text/javascript" >
 		function doDel(type, id) {
-			document.courseOfferingEditForm.deleteType.value = type;
-			document.courseOfferingEditForm.deleteId.value = id;
+			document.getElementById('deleteType').value = type;
+			document.getElementById('deleteId').value = id;
 		}
-	</SCRIPT>				
-</html:form>
-
+		function creditFormatChanged(creditFormat) {
+			if (creditFormat.value == 'fixedUnit') {
+				document.getElementById('courseOfferingEdit_form_creditType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_creditUnitType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_units').disabled = false;
+				document.getElementById('courseOfferingEdit_form_maxUnits').disabled = true;
+				document.getElementById('courseOfferingEdit_form_fractionalIncrementsAllowed').disabled = true
+			} else if (creditFormat.value == 'arrangeHours') {
+				document.getElementById('courseOfferingEdit_form_creditType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_creditUnitType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_units').disabled = true;
+				document.getElementById('courseOfferingEdit_form_maxUnits').disabled = true;
+				document.getElementById('courseOfferingEdit_form_fractionalIncrementsAllowed').disabled = true
+			} else if (creditFormat.value == 'variableMinMax') {
+				document.getElementById('courseOfferingEdit_form_creditType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_creditUnitType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_units').disabled = false;
+				document.getElementById('courseOfferingEdit_form_maxUnits').disabled = false;
+				document.getElementById('courseOfferingEdit_form_fractionalIncrementsAllowed').disabled = true
+			} else if (creditFormat.value == 'variableRange') {
+				document.getElementById('courseOfferingEdit_form_creditType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_creditUnitType').disabled = false;
+				document.getElementById('courseOfferingEdit_form_units').disabled = false;
+				document.getElementById('courseOfferingEdit_form_maxUnits').disabled = false;
+				document.getElementById('courseOfferingEdit_form_fractionalIncrementsAllowed').disabled = false
+			} else {
+				document.getElementById('courseOfferingEdit_form_creditType').disabled = true;
+				document.getElementById('courseOfferingEdit_form_creditUnitType').disabled = true;
+				document.getElementById('courseOfferingEdit_form_units').disabled = true;
+				document.getElementById('courseOfferingEdit_form_maxUnits').disabled = true;
+				document.getElementById('courseOfferingEdit_form_fractionalIncrementsAllowed').disabled = true
+			}
+		}
+	</SCRIPT>
+</s:form>
 </loc:bundle>

@@ -69,8 +69,8 @@
 	<s:if test="form.session != null">
 	<tt:propertyEquals name="tmtbl.authentication.norole" value="true">
 		<BR>
-		<a name="login"></a>
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<a id="login"></a>
+		<TABLE class='unitime-Table' style="width:100%;">
 		<TR>
 			<TD>
 				<tt:section-title><loc:message name="sectPersonalSchedule"/></tt:section-title>

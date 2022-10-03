@@ -67,7 +67,7 @@ import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
 		@Result(name = "showInstructionalOfferingDetail", type = "redirect", location = "/instructionalOfferingDetail.action",
 			params = {"op" , "${op}", "io", "${io}"}
 		),
-		@Result(name = "showCourseOfferingEdit", type = "redirect", location = "/courseOfferingEdit.do",
+		@Result(name = "showCourseOfferingEdit", type = "redirect", location = "/courseOfferingEdit.action",
 				params = {"op" , "${op}", "subjAreaId", "${form.subjectAreaIds[0]}", "courseNbr", "${form.courseNbr}"}
 		)
 	})

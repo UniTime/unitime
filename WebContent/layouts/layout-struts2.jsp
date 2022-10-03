@@ -117,6 +117,7 @@
 	<s:if test="#request.showSolverWarnings != 'none'">
 		<tt:solver-warnings><s:property value="#request.showSolverWarnings"/></tt:solver-warnings>
 	</s:if>
+	<tt:offering-locks/>
 		
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
