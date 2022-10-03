@@ -25,17 +25,12 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.model.Roles;
@@ -47,26 +42,33 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
  */
-@Service("/studentScheduling")
-public class StudentSchedulingAction extends Action {
+@Action(value = "studentScheduling", results = {
+		@Result(name = "main", type = "redirect", location = "/main.action")
+	})
+public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -287721682089077684L;
 	
-	@Autowired SessionContext sessionContext;
+	private String campus, term, session, prefer;
 	
-	@Autowired SolverServerService solverServerService;
-	
-	@Autowired ApplicationContext applicationContext;
-	
+	public String getCampus() { return campus; }
+	public void setCampus(String campus) { this.campus = campus; }
+	public String getTerm() { return term; }
+	public void setTerm(String term) { this.term = term; }
+	public String getSession() { return session; }
+	public void setSession(String session) { this.session = session; }
+	public String getPrefer() { return prefer; }
+	public void setPrefer(String prefer) { this.prefer = prefer; }
+
 	protected boolean matchCampus(AcademicSessionInfo info, String campus) {
 		if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
 		return campus.equalsIgnoreCase(info.getCampus());
@@ -83,11 +85,8 @@ public class StudentSchedulingAction extends Action {
 	}
 
 	public boolean match(HttpServletRequest request, AcademicSessionInfo info, boolean useDefault) {
-		String campus = request.getParameter("campus");
 		if (campus != null && !matchCampus(info, campus)) return false;
-		String term = request.getParameter("term");
 		if (term != null && !matchTerm(info, term)) return false;
-		String session = request.getParameter("session");
 		if (session != null && !matchSession(info, session)) return false;
 		if (useDefault && campus == null && term == null && session == null)
 			return info.getSessionId().equals(sessionContext.getUser().getCurrentAcademicSessionId());
@@ -95,7 +94,8 @@ public class StudentSchedulingAction extends Action {
 			return true;
 	}
 	
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	@Override
+	public String execute() throws Exception {
 		String target = null;
 		for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
 			for (String value: entry.getValue()) {
@@ -135,7 +135,7 @@ public class StudentSchedulingAction extends Action {
 		}
 		
 		// Select current role -> prefer advisor, than student in the matching academic session
-		SectioningService service = (SectioningService)applicationContext.getBean("sectioning.gwt");
+		SectioningService service = (SectioningService)SpringApplicationContextHolder.getBean("sectioning.gwt");
 		if (sessionContext.isAuthenticated()) {
 			UserAuthority preferredAuthority = null;
 			try {
@@ -205,8 +205,8 @@ public class StudentSchedulingAction extends Action {
 			if (q != null && !q.isEmpty()) {
 				UserQualifier studentQualifier = q.get(0);
 				boolean preferCourseRequests = ApplicationProperty.StudentSchedulingPreferCourseRequests.isTrue();
-				if (request.getParameter("prefer") != null)
-					preferCourseRequests = "cr".equalsIgnoreCase(request.getParameter("prefer")) || "crf".equalsIgnoreCase(request.getParameter("prefer"));
+				if (prefer != null)
+					preferCourseRequests = "cr".equalsIgnoreCase(prefer) || "crf".equalsIgnoreCase(prefer);
 				if (preferCourseRequests) {
 					// 1. Course Requests with the registration enabled
 					try {
@@ -227,7 +227,7 @@ public class StudentSchedulingAction extends Action {
 					try {
 						for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
 							if (match(request, session, useDefault)) {
-								OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
+								OnlineSectioningServer server = getSolverServerService().getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
 								if (server == null || !server.getAcademicSession().isSectioningEnabled()) continue;
 								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
 								if (student == null)
@@ -245,7 +245,7 @@ public class StudentSchedulingAction extends Action {
 					try {
 						for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
 							if (match(request, session, useDefault)) {
-								OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
+								OnlineSectioningServer server = getSolverServerService().getOnlineStudentSchedulingContainer().getSolver(session.getSessionId().toString());
 								if (server == null || !server.getAcademicSession().isSectioningEnabled()) continue;
 								Student student = Student.findByExternalId(session.getSessionId(), studentQualifier.getQualifierReference());
 								if (student == null)
@@ -298,7 +298,6 @@ public class StudentSchedulingAction extends Action {
 		} catch (SectioningException e) {}
 		
 		// 5. Main page fallback
-		response.sendRedirect("main.action");
-		return null;
+		return "main";
 	}
 }

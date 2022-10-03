@@ -556,11 +556,6 @@
     <action
     	path="/stats"
     	forward="statsTile" />
-    
-    <action
-      path="/studentScheduling"
-      type="org.springframework.web.struts.DelegatingActionProxy"
-      validate="false"/>
 
     </action-mappings>
 
