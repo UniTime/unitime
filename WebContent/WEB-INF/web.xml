@@ -339,6 +339,11 @@
 		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>Query Log Filter</filter-name>

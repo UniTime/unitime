@@ -133,7 +133,7 @@ public class QueryLogFilter implements Filter {
 			String uri = r.getRequestURI();
 			if (uri.indexOf('/') >= 0)
 				uri = uri.substring(uri.lastIndexOf('/') + 1);
-			if (uri.endsWith(".do"))
+			if (uri.endsWith(".do") || uri.endsWith(".action"))
 				q.setType(QueryLog.Type.STRUCTS.ordinal());
 			else if (uri.endsWith(".gwt"))
 				q.setType(QueryLog.Type.GWT.ordinal());
