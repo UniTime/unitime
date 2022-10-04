@@ -395,22 +395,6 @@
        		name="edit" 
        		path="departmentEditTile" />
     </action>
-
-    <action
-       path="/inquiry"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="inquiryForm"
-       input="inquiryTile"
-       name="inquiryForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="display" 
-       		path="inquiryTile" />
-       <forward 
-       		name="submit" 
-       		path="/selectPrimaryRole.action" />
-    </action>
     
     <action
        path="/exactTimeEdit"

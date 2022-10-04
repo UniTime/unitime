@@ -19,17 +19,13 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.upload.FormFile;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ContactCategory;
 import org.unitime.timetable.model.dao.ContactCategoryDAO;
 import org.unitime.timetable.util.Constants;
@@ -41,8 +37,9 @@ import org.unitime.timetable.util.IdValue;
 /**
  * @author Tomas Muller
  */
-public class InquiryForm extends ActionForm {
+public class InquiryForm implements UniTimeForm {
 	private static final long serialVersionUID = -2461671741219768003L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	private String iOp;
 
@@ -52,48 +49,46 @@ public class InquiryForm extends ActionForm {
 
 	private long iType;
 
-	private List carbonCopy;
+	private List<String> carbonCopy;
+	private List<String> carbonCopyName;
 
 	private String puid=null;
 	
 	private boolean iNoRole;
 
-	private transient FormFile iFile;
-
-	// --------------------------------------------------------- Classes
+	private transient File iFile;  
+    private String iFileContentType;  
+    private String iFileFileName;
 
 	/** Factory to create dynamic list element for email addresses */
-	protected DynamicListObjectFactory factoryEmails = new DynamicListObjectFactory() {
-		public Object create() {
-			return new String(Constants.BLANK_OPTION_VALUE);
-		}
-	};
-
-	// --------------------------------------------------------- Methods
-
-	public ActionErrors validate(ActionMapping mapping,
-			HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-
-		if (iType < 0)
-			errors.add("type", new ActionMessage("errors.generic",
-					"Please specify category of this inquiry:"));
-
-		if (iMessage.trim().length() == 0)
-			errors.add("message", new ActionMessage("errors.generic",
-					"Message is required."));
-
-		return errors;
+	protected DynamicListObjectFactory<String> factoryEmails;
+	
+	public InquiryForm() {
+		factoryEmails = new DynamicListObjectFactory() {
+			public Object create() {
+				return new String(Constants.BLANK_OPTION_VALUE);
+			}
+		};
+		reset();
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	public void validate(UniTimeAction action) {
+		if (iType < 0)
+			action.addFieldError("form.type", MSG.errorInquiryPleaseSpecifyCategory());
+
+		if (iMessage.trim().length() == 0)
+			action.addFieldError("form.message", MSG.errorInquiryMessageRequired());
+	}
+
+	public void reset() {
 		iOp = null;
 		iSubject = null;
 		iMessage = null;
 		iType = -1;
 		puid = null;
-		carbonCopy = DynamicList.getInstance(new ArrayList(), factoryEmails);
-		iFile = null;
+		carbonCopy = DynamicList.getInstance(new ArrayList<String>(), factoryEmails);
+		carbonCopyName = DynamicList.getInstance(new ArrayList<String>(), factoryEmails);
+		iFile = null; iFileContentType = null; iFileFileName = null;
 	}
 
 	public String getOp() {
@@ -133,8 +128,8 @@ public class InquiryForm extends ActionForm {
 		return cc.getLabel();
 	}
 
-	public Vector getTypeOptions() {
-		Vector ret = new Vector();
+	public List<IdValue> getTypeOptions() {
+		List<IdValue> ret = new ArrayList<IdValue>();
 		for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
 				"from ContactCategory order by reference").setCacheable(true).list()) {
 			if (cc.getHasRole() && iNoRole) continue;
@@ -174,33 +169,54 @@ public class InquiryForm extends ActionForm {
 	public boolean getNoRole() { return  iNoRole; }
 	public void setNoRole(boolean noRole) { iNoRole = noRole; }
 
-	public List getCarbonCopy() {
+	public List<String> getCarbonCopy() {
 		return carbonCopy;
 	}
 
-	public void setCarbonCopy(List carbonCopy) {
+	public void setCarbonCopy(List<String> carbonCopy) {
 		this.carbonCopy = carbonCopy;
 	}
 
 	public String getCarbonCopy(int key) {
-		return carbonCopy.get(key).toString();
+		return carbonCopy.get(key);
 	}
 
-	public void setCarbonCopy(int key, Object value) {
+	public void setCarbonCopy(int key, String value) {
 		this.carbonCopy.set(key, value);
 	}
+	
+	public List<String> getCarbonCopyName() {
+		return carbonCopyName;
+	}
 
-    public void addToCarbonCopy(String carbonCopy) {
-        this.carbonCopy.add(carbonCopy);
+	public void setCarbonCopyName(List<String> carbonCopyName) {
+		this.carbonCopyName = carbonCopyName;
+	}
+
+	public String getCarbonCopyName(int key) {
+		return carbonCopyName.get(key);
+	}
+
+	public void setCarbonCopyName(int key, String value) {
+		this.carbonCopyName.set(key, value);
+	}
+
+    public void addToCarbonCopyName(String email, String name) {
+    	this.carbonCopy.add(email);
+        this.carbonCopyName.add(name);
     }
 
     public void removeCarbonCopy(int rowNum) {
         if (rowNum>=0) {
         	carbonCopy.remove(rowNum);
+        	carbonCopyName.remove(rowNum);
         }
     }
     
-	public FormFile getFile() { return iFile; }
-	public void setFile(FormFile file) { iFile = file; }
-    
+	public File getFile() { return iFile; }
+	public void setFile(File file) { iFile = file; }
+	public String getFileContentType() { return iFileContentType; }
+	public void setFileContentType(String contentType) { iFileContentType = contentType; }
+	public String getFileFileName() { return iFileFileName; }
+	public void setFileFileName(String fileName) { iFileFileName = fileName; }
 }

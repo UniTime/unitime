@@ -17,40 +17,31 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="java.util.Map"%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.TimetableManager" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %> 
-
-<tiles:importAttribute />
-
-<SCRIPT type="text/javascript" language="javascript">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="inquiry" focusElement="type" enctype="multipart/form-data" method="POST" id="form">
+<SCRIPT type="text/javascript">
 	function doDel(id) {
-		var delId = document.inquiryForm.deleteId;
-		delId.value = id;
+		document.getElementById('deleteId').value = id;
+		document.getElementById('form').submit();
 	}
 	function doDelFile(name) {
-		var deleteFile = document.inquiryForm.deleteFile;
-		deleteFile.value = name;
+		document.getElementById('deleteFile').value = name;
+		document.getElementById('form').submit();
 	}
-</SCRIPT>				
-
-<html:form action="/inquiry" focus="type" enctype="multipart/form-data">
-	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
-	<INPUT type="hidden" name="deleteFile" id="deleteFile" value="">
-	<INPUT type="hidden" name="op2" value="Resubmit">
+</SCRIPT>
+	<s:hidden name="deleteId" id="deleteId" value=""/>
+	<s:hidden name="deleteFile" id="deleteFile" value=""/>
+	<s:hidden name="op2" value="Resubmit"/>
 	
-	<logic:equal name="inquiryForm" property="op" value="Sent">
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<s:if test="form.op == 'Sent'">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
-				Your inquiry was successfully submitted. Thank you.
+				<loc:message name="messageInquirySubmitted"/>
 			</TD>
 		</TR>
 		<TR>
@@ -61,111 +52,113 @@
 		
 		<TR>
 			<TD valign="middle" colspan='2' align="right">
-				<html:submit property="op" accesskey="S" value="Submit Another Inquiry" />
-				<html:submit property="op" accesskey="B" value="Back" />
+				<s:submit name='op' value='%{#msg.actionInquirySubmitAnother()}'
+					accesskey='%{#msg.accessInquirySubmitAnother()}' title='%{#msg.titleInquirySubmitAnother(#msg.accessInquirySubmitAnother())}'/>
+				<s:submit name='op' value='%{#msg.actionInquiryBack()}'
+					accesskey='%{#msg.accessInquiryBack()}' title='%{#msg.titleInquiryBack(#msg.accessInquiryBack())}'/>
 			</TD>
 		</TR>
-	</TABLE>
-	</logic:equal>
-	<logic:notEqual name="inquiryForm" property="op" value="Sent">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</table>
+	</s:if>
+	<s:else>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
-					<tt:section-title>Inquiry</tt:section-title>
-					<html:submit property="op" accesskey="S" value="Submit" styleClass="btn" />
-					<html:submit property="op" accesskey="C" value="Cancel" styleClass="btn" />
+					<tt:section-title><loc:message name="sectionInquiry"/></tt:section-title>
+					<s:submit name='op' value='%{#msg.actionInquirySubmit()}'
+						accesskey='%{#msg.accessInquirySubmit()}' title='%{#msg.titleInquirySubmit(#msg.accessInquirySubmit())}'/>
+					<s:submit name='op' value='%{#msg.actionInquiryCancel()}'
+						accesskey='%{#msg.accessInquiryCancel()}' title='%{#msg.titleInquiryCancel(#msg.accessInquiryCancel())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Category:</TD>
+			<TD><loc:message name="propCategory"/></TD>
 			<TD>
-				<html:select property="type" onchange="submit();">
-					<html:optionsCollection name="inquiryForm" property="typeOptions" label="value" value="id" />
-				</html:select>
-				&nbsp;<html:errors property="type"/>
+				<s:select name="form.type" onchange="submit();"
+					list="form.typeOptions" listKey="id" listValue="value"/>
+				&nbsp;<s:fielderror fieldName="form.type"/>
 			</TD>
 		</TR>
 		
-		<logic:equal name="inquiryForm" property="noRole" value="false">
+		<s:if test="form.noRole == false">
 		<TR>
-			<TD>CC:</TD>
+			<TD><loc:message name="propEmailCC"/></TD>
 			<TD>
-				<html:select property="puid">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%= TimetableManager.MGR_LIST_ATTR_NAME %>" 
-						property="emailAddress" labelProperty="name"/>
-					</html:select>
-					<html:submit property="op" accesskey="I" titleKey="title.insertAddress"  styleClass="btn" >
-						<bean:message key="button.insertAddress" />
-					</html:submit>
-				&nbsp;<html:errors property="puid"/>
+				<s:select name="form.puid"
+					list="#request.managerList" listKey="externalUniqueId" listValue="getName(nameFormat)"
+					headerKey="" headerValue="%{#msg.itemSelect()}"/>
+				<s:submit name='op' value='%{#msg.actionAddRecipient()}'
+					accesskey='%{#msg.accessAddRecipient()}' title='%{#msg.titleAddRecipient(#msg.accessAddRecipient())}'/>
+				&nbsp;<s:fielderror fieldName="form.puid"/>
 			</TD>
 		</TR>
 
-		<logic:notEmpty name="inquiryForm" property="carbonCopy">
+		<s:if test="form.carbonCopy != null && !form.carbonCopy.isEmpty()">
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<logic:iterate id="cc" name="inquiryForm" property="carbonCopy" indexId="ctr">
-					<INPUT type="hidden" name='<%= "carbonCopy[" + ctr + "]" %>' value="<%=cc%>" />
-					<font class="font8Gray"><%=cc%></font>
-					<html:image 
-						src="images/cancel.png" border="0" align="absmiddle"						
-						titleKey="title.deleteAddress"  
-						styleClass="btn" style="border:0;background-color:#FFFFFF;"
-						onclick="<%= \"javascript: doDel('\" + ctr + \"');\"%>" />&nbsp;
-				</logic:iterate>
+				<s:iterator value="form.carbonCopy" var="cc" status="stat"><s:set var="ctr" value="#stat.index"/>
+					<s:hidden name="form.carbonCopy[%{#ctr}]"/>
+					<s:hidden name="form.carbonCopyName[%{#ctr}]"/>
+					<s:property value="form.carbonCopyName[#ctr]"/> &lt;<s:property value="#cc"/>&gt;
+					<img src="images/cancel.png" border="0"
+						title="${MSG.titleDeleteRecipient()}"
+						class="btn" style="border:0;background-color:#FFFFFF;vertical-align:middle;"
+						onclick="doDel('${ctr}');"/>
+					<s:if test="#stat.last == false"><br></s:if>
+				</s:iterator>
 			</TD>
 		</TR>
-		</logic:notEmpty>
-		</logic:equal>
+		</s:if>
+		</s:if>
 		
 		<TR>
-			<TD>Subject:</TD>
+			<TD><loc:message name="propEmailSubject"/></TD>
 			<TD>
-				<html:text property="subject" size="120" maxlength="100"/>
-				&nbsp;<html:errors property="subject"/>
+				<s:textfield name="form.subject" size="120" maxlength="100"/>
+				&nbsp;<s:fielderror fieldName="form.subject"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Message:</TD>
+			<TD valign="top"><loc:message name="propEmailMessage"/></TD>
 			<TD>
-				<html:errors property="message"/>
-				<html:textarea property="message" rows="20" cols="120"/>
+				<s:textarea name="form.message" rows="20" cols="120"/>
+				&nbsp;<s:fielderror fieldName="form.message"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD nowrap>Attachment:</TD>
+			<TD nowrap><loc:message name="propEmailAttachment"/></TD>
 			<TD>
-				<html:file name="inquiryForm" property="file" size="100" maxlength="255"/>
-				<html:submit property="op" accesskey="A" value="Attach File" styleClass="btn" />
+				<s:file name="form.file" size="100"/>
+				<s:submit name='op' value='%{#msg.actionAttachFile()}'
+					accesskey='%{#msg.accessAttachFile()}' title='%{#msg.titleAttachFile(#msg.accessAttachFile())}'/>
 			</TD>
 		</TR>
-		<%
-		Map<String,Object> files = (Map<String,Object>)session.getAttribute("ContactUsFiles");
-		if (files != null && !files.isEmpty()) {%><TR><TD>&nbsp;</TD><TD><%
-			for (String name: files.keySet()) {
-				%><font class="font8Gray"><%=name%></font>
-				<html:image 
-					src="images/cancel.png" border="0" align="absmiddle"
-					title='<%="Remove " + name%>' 
-					styleClass="btn" style="border:0;background-color:#FFFFFF;"
-					onclick="<%= \"javascript: doDelFile('\" + name + \"');\"%>" />&nbsp;
-				<%
-			}
-			%></TD></TR><%
-		}
-		%>
+		<s:if test="attachedFiles != null && !attachedFiles.isEmpty()">
+			<TR><TD>&nbsp;</TD><TD>
+			<s:iterator value="attachedFiles" var="name" status="stat">
+				<s:property value="#name"/>
+				<loc:message name="attachmentFileSize"><s:property value="getAttachedFileSize(#name)"/></loc:message>
+				<img src="images/cancel.png" border="0"
+					title="${MSG.titleDeleteAttachedFile(name)}"
+					class="btn" style="border:0;background-color:#FFFFFF;vertical-align:middle;"
+					onclick="doDelFile('${name}');"/>
+				<s:if test="#stat.last == false"><br></s:if>
+			</s:iterator>
+			</TD></TR>
+		</s:if>
 
 		<TR>
 			<TD valign="middle" colspan='2' align="right" style='border-top:1px solid #9CB0CE; padding-top: 4px;'>
-				<html:submit property="op" accesskey="S" value="Submit" styleClass="btn" />
-				<html:submit property="op" accesskey="C" value="Cancel" styleClass="btn" />
+				<s:submit name='op' value='%{#msg.actionInquirySubmit()}'
+					accesskey='%{#msg.accessInquirySubmit()}' title='%{#msg.titleInquirySubmit(#msg.accessInquirySubmit())}'/>
+				<s:submit name='op' value='%{#msg.actionInquiryCancel()}'
+					accesskey='%{#msg.accessInquiryCancel()}' title='%{#msg.titleInquiryCancel(#msg.accessInquiryCancel())}'/>
 			</TD>
 		</TR>
 		
@@ -174,35 +167,35 @@
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
-					<tt:section-title>Contact Information</tt:section-title>
+					<tt:section-title><loc:message name="sectionContactInformation"/></tt:section-title>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<tt:hasProperty name="tmtbl.contact.address">
 			<TR>
-				<TD valign="top">Address:</TD>
+				<TD valign="top"><loc:message name="propContactAddress"/></TD>
 				<TD><tt:property name="tmtbl.contact.address"/></TD>
 			</TR>
 		</tt:hasProperty>
 		
 		<tt:hasProperty name="tmtbl.contact.phone">
 			<TR>
-				<TD valign="top">Phone:</TD>
+				<TD valign="top"><loc:message name="propContactPhone"/></TD>
 				<TD><tt:property name="tmtbl.contact.phone"/></TD>
 			</TR>
 		</tt:hasProperty>
 		
 		<tt:hasProperty name="tmtbl.contact.office_hours">
 			<TR>
-				<TD valign="top">Office Hours:</TD>
+				<TD valign="top"><loc:message name="propContactOfficeHours"/></TD>
 				<TD><tt:property name="tmtbl.contact.office_hours"/></TD>
 			</TR>
 		</tt:hasProperty>
 		
 		<tt:hasProperty name="tmtbl.contact.email">
 			<TR>
-				<TD valign="top">Email:</TD>
+				<TD valign="top"><loc:message name="propContactEmail"/></TD>
 				<TD>
 					<tt:hasProperty name="tmtbl.contact.email_mailto">
 						<a href="mailto:%tmtbl.contact.email_mailto%"><tt:property name="tmtbl.contact.email"/></a>
@@ -213,6 +206,7 @@
 				</TD>
 			</TR>
 		</tt:hasProperty>
-	</TABLE>
-	</logic:notEqual>
-</html:form>
+	</table>
+	</s:else>
+</s:form>
+</loc:bundle>

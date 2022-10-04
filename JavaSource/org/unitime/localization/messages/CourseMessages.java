@@ -3692,4 +3692,157 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Class {0}")
 	String sectClass(String name);
+	
+	@DefaultMessage("Please specify category of this inquiry.")
+	String errorInquiryPleaseSpecifyCategory();
+	
+	@DefaultMessage("Message is required.")
+	String errorInquiryMessageRequired();
+	
+	@DefaultMessage("Recipient has an invalid email address.")
+	String errorInquiryInvalidRecipientAddress();
+	
+	@DefaultMessage("Invalid email address.")
+	String errorInquiryInvalidAddress();
+	
+	@DefaultMessage("Cancel")
+	String actionInquiryCancel();
+	
+	@DefaultMessage("Back")
+	String actionInquiryBack();
+	
+	@DefaultMessage("Submit")
+	String actionInquirySubmit();
+	
+	@DefaultMessage("Submit Another Inquiry")
+	String actionInquirySubmitAnother();
+	
+	@DefaultMessage("Add Recipient")
+	String actionAddRecipient();
+	
+	@DefaultMessage("Attach File")
+	String actionAttachFile();
+	
+	@DefaultMessage("C")
+	String accessInquiryCancel();
+	
+	@DefaultMessage("B")
+	String accessInquiryBack();
+	
+	@DefaultMessage("S")
+	String accessInquirySubmit();
+	
+	@DefaultMessage("S")
+	String accessInquirySubmitAnother();
+	
+	@DefaultMessage("R")
+	String accessAddRecipient();
+	
+	@DefaultMessage("F")
+	String accessAttachFile();
+	
+	@DefaultMessage("Cancel (Alt + {0})")
+	String titleInquiryCancel(String access);
+	
+	@DefaultMessage("Back (Alt + {0})")
+	String titleInquiryBack(String access);
+	
+	@DefaultMessage("Submit (Alt + {0})")
+	String titleInquirySubmit(String access);
+	
+	@DefaultMessage("Submit Another Inquiry (Alt + {0})")
+	String titleInquirySubmitAnother(String access);
+	
+	@DefaultMessage("Add Recipient (Alt + {0})")
+	String titleAddRecipient(String access);
+	
+	@DefaultMessage("Attach File (Alt + {0})")
+	String titleAttachFile(String access);
+	
+	@DefaultMessage("Delete Recipient")
+	String titleDeleteRecipient();
+	
+	@DefaultMessage("Remove {0}")
+	String titleDeleteAttachedFile(String name);
+	
+	@DefaultMessage("User info -------------- ")
+	String emailInquiryUserInfoSection();
+	
+	@DefaultMessage("Login:")
+	String propLogin();
+	
+	@DefaultMessage("Role:")
+	String propertyRole();
+	
+	@DefaultMessage("Academic Session:")
+	String propAcademicSession();
+	
+	@DefaultMessage("Departments:")
+	String propDepartments();
+	
+	@DefaultMessage("Solver Groups:")
+	String propSolverGroups();
+	
+	@DefaultMessage("Application info -------------- ")
+	String emailInquiryApplicationInfoSection();
+	
+	@DefaultMessage("Version:")
+	String propVersion();
+	
+	@DefaultMessage("TimeStamp:")
+	String propTimeStamp();
+	
+	@DefaultMessage("UniTime ({0}): {1}")
+	String emailInquirySubject(String type, String subject);
+	
+	@DefaultMessage("The following inquiry was submitted on your behalf. We will contact you soon. This email was automatically generated, please do not reply.")
+	String emailInquiryCofirmation();
+	
+	@DefaultMessage("Thank you, \r\n{0}")
+	String emailInquiryCofirmationThankYou(String sender);
+	
+	@DefaultMessage("-- INQUIRY ({0}): {1} ---------- ")
+	String emailInquiryBeginSection(String type, String subject);
+	
+	@DefaultMessage("-- END INQUIRY -------------------------------------------")
+	String emailInquiryEndSection();
+	
+	@DefaultMessage("Your inquiry was successfully submitted. Thank you.")
+	String messageInquirySubmitted();
+	
+	@DefaultMessage("Inquiry")
+	String sectionInquiry();
+	
+	@DefaultMessage("Category:")
+	String propCategory();
+	
+	@DefaultMessage("CC:")
+	String propEmailCC();
+	
+	@DefaultMessage("Subject:")
+	String propEmailSubject();
+	
+	@DefaultMessage("Message:")
+	String propEmailMessage();
+	
+	@DefaultMessage("Attachment:")
+	String propEmailAttachment();
+	
+	@DefaultMessage("Contact Information")
+	String sectionContactInformation();
+	
+	@DefaultMessage("Address:")
+	String propContactAddress();
+	
+	@DefaultMessage("Phone:")
+	String propContactPhone();
+	
+	@DefaultMessage("Office Hours:")
+	String propContactOfficeHours();
+	
+	@DefaultMessage("Email:")
+	String propContactEmail();
+	
+	@DefaultMessage("({0} bytes)")
+	String attachmentFileSize(String bytes);
 }

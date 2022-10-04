@@ -284,12 +284,6 @@
 		<put name="body" value="/admin/departmentEdit.jsp" />
   	</definition>
 
-   	<definition	name="inquiryTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Contact Us"/>
-		<put name="body" value="/user/inquiry.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition>
-  	
    	<definition	name="exactTimeEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Exact Time Pattern"/>
 		<put name="body" value="/admin/exactTimeEdit.jsp" />

@@ -1250,7 +1250,7 @@
 		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="tab"/>
 		<item name="FAQ" page="tmtbl.help.faq" type="property" target="tab"/>
 		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="tab"/>
-		<item name="Contact Us" page="inquiry.do">
+		<item name="Contact Us" page="inquiry.action">
 			<condition>
 				<or>
 					<hasProperty name="unitime.email.notif"/>
