@@ -42,7 +42,6 @@
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
-      <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
@@ -363,19 +362,6 @@
 		path="/activeSessions"
 		forward="activeSessionsTile"
 		scope="request" />
-    
-    <action
-       path="/applicationConfig"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="applicationConfigForm"
-       input="applicationConfigTile"
-       name="applicationConfigForm"
-       scope="request"
-       validate="false">
-       <forward name="list" path="applicationConfigTile" />
-       <forward name="add" path="applicationConfigAddTile" />
-       <forward name="edit" path="applicationConfigEditTile" />
-    </action>
     
     <action
        path="/departmentEdit"

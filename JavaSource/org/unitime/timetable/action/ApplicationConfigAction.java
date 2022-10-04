@@ -27,20 +27,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ApplicationConfigForm;
@@ -49,69 +46,68 @@ import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
 import org.unitime.timetable.model.dao.SessionConfigDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.service.SolverServerService;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 08-28-2006
- * 
- * XDoclet definition:
- * @struts:action path="/applicationConfig" name="applicationConfigForm" input="/admin/applicationConfig.jsp" scope="request"
- *
  * @author Tomas Muller
  */
 @Service("/applicationConfig")
-public class ApplicationConfigAction extends Action {
+@Action(value = "applicationConfig", results = {
+		@Result(name = "list", type = "tiles", location = "applicationConfigList.tiles"),
+		@Result(name = "add", type = "tiles", location = "applicationConfigAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "applicationConfigEdit.tiles")
+	})
+@TilesDefinitions({
+	@TilesDefinition(name = "applicationConfigList.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Application Configuration"),
+			@TilesPutAttribute(name = "body", value = "/admin/applicationConfig.jsp")
+		}),
+	@TilesDefinition(name = "applicationConfigAdd.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Add Application Setting"),
+			@TilesPutAttribute(name = "body", value = "/admin/applicationConfig.jsp")
+		}),
+	@TilesDefinition(name = "applicationConfigEdit.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Edit Application Setting"),
+			@TilesPutAttribute(name = "body", value = "/admin/applicationConfig.jsp")
+		})
+})
 
-    // --------------------------------------------------------- Instance Variables
+public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm> {
+	private static final long serialVersionUID = -980973696522046141L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
-	@Autowired SolverServerService solverServerService;
+	private String apply;
+	private String id;
+	
+	public String getApply() { return apply; }
+	public void setApply(String apply) { this.apply = apply; }
+	public String getId() { return id; }
+	public void setId(String id) { this.id = id; }
 
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-    	
+	@Override
+    public String execute() throws Exception {
     	sessionContext.checkPermission(Right.ApplicationConfig);
-        
-        ApplicationConfigForm frm = (ApplicationConfigForm) form;
-        MessageResources rsc = getResources(request);
-
-        String op = (frm.getOp()!=null?frm.getOp():request.getParameter("op"));
-        
-        if (op==null) {
-            frm.reset(mapping, request);
-            op = frm.getOp();
+    	
+    	if (form == null)
+    		form = new ApplicationConfigForm();
+    	
+    	if (op == null) op = form.getOp();
+        if (op == null) {
+            form.reset();
+            op = form.getOp();
         }
         
-        if ("1".equals(request.getParameter("apply"))) {
-        	sessionContext.getUser().setProperty("ApplicationConfig.showAll", frm.getShowAll() ? "1" : "0");
+        if ("1".equals(apply)) {
+        	sessionContext.getUser().setProperty("ApplicationConfig.showAll", form.getShowAll() ? "1" : "0");
         }
 
-        ActionMessages errors = new ActionMessages();
-        
         // Edit Config - Load existing config values to be edited
         if (op.equals("edit")) {
+        	form.setOp("edit");
         	sessionContext.checkPermission(Right.ApplicationConfigEdit);
-            String id = request.getParameter("id");
             if (id == null || id.trim().isEmpty()) {
-                errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
-                saveErrors(request, errors);
+            	addFieldError("form.key", MSG.errorRequiredField(MSG.columnAppConfigKey()));
             } else {
             	SessionConfig sessionConfig = SessionConfig.getConfig(id, sessionContext.getUser().getCurrentAcademicSessionId());
             	if (sessionConfig == null) {
@@ -119,71 +115,68 @@ public class ApplicationConfigAction extends Action {
             		if (appConfig == null) {
                     	ApplicationProperty p = ApplicationProperty.fromKey(id);
                     	if (p != null) {
-                    		frm.setOp("add");
-                    		frm.setKey(id);
-                            frm.setValue(ApplicationProperties.getProperty(id, ""));
-                            frm.setDescription(p.description());
-                            frm.setAllSessions(true);
+                    		form.setOp("add");
+                    		form.setKey(id);
+                            form.setValue(ApplicationProperties.getProperty(id, ""));
+                            form.setDescription(p.description());
+                            form.setAllSessions(true);
                     	} else {
-                    		errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
-                    		saveErrors(request, errors);
+                    		addFieldError("form.key", MSG.errorDoesNotExists(id));
                     	}
             		} else {
-                        frm.setKey(appConfig.getKey());
-                        frm.setValue(appConfig.getValue());
-                        frm.setDescription(appConfig.getDescription());
-                        if (frm.getDescription() == null || frm.getDescription().isEmpty())
-                        	frm.setDescription(ApplicationProperty.getDescription(frm.getKey()));
-                        frm.setAllSessions(true);
+                        form.setKey(appConfig.getKey());
+                        form.setValue(appConfig.getValue());
+                        form.setDescription(appConfig.getDescription());
+                        if (form.getDescription() == null || form.getDescription().isEmpty())
+                        	form.setDescription(ApplicationProperty.getDescription(form.getKey()));
+                        form.setAllSessions(true);
             		}
             	} else {
-            		frm.setKey(sessionConfig.getKey());
-                    frm.setValue(sessionConfig.getValue());
-                    frm.setDescription(sessionConfig.getDescription());
-                    if (frm.getDescription() == null || frm.getDescription().isEmpty())
-                    	frm.setDescription(ApplicationProperty.getDescription(frm.getKey()));
-                    frm.setAllSessions(false);
+            		form.setKey(sessionConfig.getKey());
+                    form.setValue(sessionConfig.getValue());
+                    form.setDescription(sessionConfig.getDescription());
+                    if (form.getDescription() == null || form.getDescription().isEmpty())
+                    	form.setDescription(ApplicationProperty.getDescription(form.getKey()));
+                    form.setAllSessions(false);
                     List<Long> sessionIds = SessionConfigDAO.getInstance().getSession().createQuery("select session.uniqueId from SessionConfig where key = :key and value = :value")
                     		.setString("key", id).setString("value", sessionConfig.getValue()).list();
                     Long[] sessionIdsArry = new Long[sessionIds.size()];
                     for (int i = 0; i < sessionIds.size(); i++)
                     	sessionIdsArry[i] = sessionIds.get(i);
-                    frm.setSessions(sessionIdsArry);
+                    form.setSessions(sessionIdsArry);
                     if (sessionConfig.getDescription() == null || sessionConfig.getDescription().isEmpty()) {
                     	ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(id);
                     	if (appConfig != null)
-                    		frm.setDescription(appConfig.getDescription());
+                    		form.setDescription(appConfig.getDescription());
                     }
             	}
             }
         }
         
-        if (op.equals(rsc.getMessage("button.addAppConfig"))) {
+        if (op.equals(MSG.actionAddSetting())) {
         	sessionContext.checkPermission(Right.ApplicationConfigEdit);
-            frm.reset(mapping, request);
-            frm.setAllSessions(true);
+            form.reset();
+            form.setAllSessions(true);
             if (sessionContext.getUser().getCurrentAcademicSessionId() != null)
-            	frm.setSessions(new Long[] { sessionContext.getUser().getCurrentAcademicSessionId() });
-            frm.setOp(rsc.getMessage("button.createAppConfig"));
+            	form.setSessions(new Long[] { sessionContext.getUser().getCurrentAcademicSessionId() });
+            form.setOp("add");
         }
 
         // Save or update config
-        if(op.equals(rsc.getMessage("button.updateAppConfig")) || op.equals(rsc.getMessage("button.createAppConfig"))) {
+        if(op.equals(MSG.actionSaveSetting()) || op.equals(MSG.actionUpdateSetting())) {
         	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             // Validate input
-            errors = frm.validate(mapping, request);
-            if (!errors.isEmpty()) {
-                saveErrors(request, errors);
-            } else {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
             	try {
                 	org.hibernate.Session hibSession = SessionConfigDAO.getInstance().getSession();
                 	
-                	boolean update = op.equals(rsc.getMessage("button.updateAppConfig")); 
+                	boolean update = op.equals(MSG.actionUpdateSetting()); 
                 	String oldValue = null;
                 	boolean wasSession = false;
-            		SessionConfig sessionConfig = SessionConfig.getConfig(frm.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
+            		SessionConfig sessionConfig = SessionConfig.getConfig(form.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
             		if (sessionConfig == null) {
-            			ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(frm.getKey());
+            			ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(form.getKey());
             			if (appConfig != null)
             				oldValue = appConfig.getValue();
             		} else {
@@ -191,59 +184,59 @@ public class ApplicationConfigAction extends Action {
             			wasSession = true;
             		}
                 	
-                	if (frm.isAllSessions()) {
+                	if (form.isAllSessions()) {
                 		if (wasSession) { // there was a session config for the current session
                 			if (update) { // update --> delete all with the same value
-                        		for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery("from SessionConfig where key = :key and value = :value").setString("key", frm.getKey()).setString("value", oldValue).list()) {
-                        			solverServerService.setApplicationProperty(config.getSession().getUniqueId(), frm.getKey(), null);
+                        		for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery("from SessionConfig where key = :key and value = :value").setString("key", form.getKey()).setString("value", oldValue).list()) {
+                        			getSolverServerService().setApplicationProperty(config.getSession().getUniqueId(), form.getKey(), null);
                         			hibSession.delete(config);
                         		}
                 			} else { // create --> delete just the current one
-                				SessionConfig config = SessionConfig.getConfig(frm.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
+                				SessionConfig config = SessionConfig.getConfig(form.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
                 				if (config != null) {
-                					solverServerService.setApplicationProperty(config.getSession().getUniqueId(), frm.getKey(), null);
+                					getSolverServerService().setApplicationProperty(config.getSession().getUniqueId(), form.getKey(), null);
                         			hibSession.delete(config);
                 				}
                 			}
                 		}
                 		
-                		ApplicationConfig config = ApplicationConfigDAO.getInstance().get(frm.getKey());
+                		ApplicationConfig config = ApplicationConfigDAO.getInstance().get(form.getKey());
                 		if (config == null) {
                 			config = new ApplicationConfig();
-                			config.setKey(frm.getKey());
+                			config.setKey(form.getKey());
                 		}
-                		config.setValue(frm.getValue());
-    	                config.setDescription(frm.getDescription());
+                		config.setValue(form.getValue());
+    	                config.setDescription(form.getDescription());
     	                
-    	                solverServerService.setApplicationProperty(null, frm.getKey(), frm.getValue());
+    	                getSolverServerService().setApplicationProperty(null, form.getKey(), form.getValue());
     	                
     	                hibSession.saveOrUpdate(config);
                 	} else {
                 		if (update && !wasSession) {
                 			// update --> delete global value
-                			ApplicationConfig config = ApplicationConfigDAO.getInstance().get(frm.getKey());
+                			ApplicationConfig config = ApplicationConfigDAO.getInstance().get(form.getKey());
                 			if (config != null) {
-                    			solverServerService.setApplicationProperty(null, frm.getKey(), null);
+                				getSolverServerService().setApplicationProperty(null, form.getKey(), null);
                     			hibSession.delete(config);
                 			}
                 		}
                 		
                 		Set<Long> updatedSessionIds = new HashSet<Long>();
                 		
-                		for (Long sessionId: frm.getSessions()) {
+                		for (Long sessionId: form.getSessions()) {
                 			SessionConfig config = (SessionConfig)hibSession.createQuery(
                 					"from SessionConfig where key = :key and session.uniqueId = :sessionId")
-                					.setLong("sessionId", sessionId).setString("key", frm.getKey()).uniqueResult();
+                					.setLong("sessionId", sessionId).setString("key", form.getKey()).uniqueResult();
                 			if (config == null) {
                 				config = new SessionConfig();
-                				config.setKey(frm.getKey());
+                				config.setKey(form.getKey());
                 				config.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
                 			}
                 			
-                			config.setValue(frm.getValue());
-        	                config.setDescription(frm.getDescription());
+                			config.setValue(form.getValue());
+        	                config.setDescription(form.getDescription());
         	                
-        	                solverServerService.setApplicationProperty(sessionId, frm.getKey(), frm.getValue());
+        	                getSolverServerService().setApplicationProperty(sessionId, form.getKey(), form.getValue());
         	                
         	                hibSession.saveOrUpdate(config);
         	                updatedSessionIds.add(sessionId);
@@ -253,9 +246,9 @@ public class ApplicationConfigAction extends Action {
                 			// update --> delete old session values
                 			for (SessionConfig other: (List<SessionConfig>)hibSession.createQuery(
                 					"from SessionConfig where key = :key and value = :value")
-                					.setString("key", frm.getKey()).setString("value", oldValue).list()) {
+                					.setString("key", form.getKey()).setString("value", oldValue).list()) {
                 				if (!updatedSessionIds.contains(other.getSession().getUniqueId())) {
-                					solverServerService.setApplicationProperty(other.getSession().getUniqueId(), frm.getKey(), null);
+                					getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
                 					hibSession.delete(other);
                 				}
                 			}
@@ -263,24 +256,22 @@ public class ApplicationConfigAction extends Action {
                 	}
                 	
                 	hibSession.flush();
-                	request.setAttribute("hash", frm.getKey());
+                	request.setAttribute("hash", form.getKey());
                 	
-                	frm.reset(mapping, request);
+                	form.reset();
                 } catch (Exception e) {
-                	errors.add("key", new ActionMessage("errors.generic", e.getMessage()));
-                	saveErrors(request, errors);
+                	e.printStackTrace();
+                	addFieldError("form.key", e.getMessage());
                 }
             }
         }
 
         // Delete config
-        if(op.equals(rsc.getMessage("button.deleteAppConfig"))) {
+        if(op.equals(MSG.actionDeleteSetting())) {
         	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             // Validate input
-            errors = frm.validate(mapping, request);
-            if (!errors.isEmpty()) {
-                saveErrors(request, errors);
-            } else {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
             	try {
                 	org.hibernate.Session hibSession = SessionConfigDAO.getInstance().getSession();
                 	
@@ -288,71 +279,74 @@ public class ApplicationConfigAction extends Action {
                 	if (sessionContext.getUser().getCurrentAcademicSessionId() != null) {
                 		sessionConfig = (SessionConfig)hibSession.createQuery(
         					"from SessionConfig where key = :key and session.uniqueId = :sessionId")
-        					.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId()).setString("key", frm.getKey()).uniqueResult();
+        					.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId()).setString("key", form.getKey()).uniqueResult();
                 	}
                 	
                 	if (sessionConfig == null) {
-                		ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(frm.getKey());
+                		ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(form.getKey());
                 		if (appConfig != null) {
                 			hibSession.delete(appConfig);
-                			solverServerService.setApplicationProperty(null, frm.getKey(), null);
+                			getSolverServerService().setApplicationProperty(null, form.getKey(), null);
                 		}
                 	} else {
                 		String oldValue = sessionConfig.getValue();
                 		hibSession.delete(sessionConfig);
-            			solverServerService.setApplicationProperty(sessionContext.getUser().getCurrentAcademicSessionId(), frm.getKey(), null);
+                		getSolverServerService().setApplicationProperty(sessionContext.getUser().getCurrentAcademicSessionId(), form.getKey(), null);
             			
             			for (SessionConfig other: (List<SessionConfig>)hibSession.createQuery(
             					"from SessionConfig where key = :key and value = :value")
-            					.setString("key", frm.getKey()).setString("value", oldValue).list()) {
-            				solverServerService.setApplicationProperty(other.getSession().getUniqueId(), frm.getKey(), null);
+            					.setString("key", form.getKey()).setString("value", oldValue).list()) {
+            				getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
             				hibSession.delete(other);
             			}
                 	}
                 	
                 	hibSession.flush();
                 	
-                	frm.reset(mapping, request);
+                	request.setAttribute("hash", form.getKey());
+                	form.reset();
             	} catch (Exception e) {
                     e.printStackTrace();
-                    errors.add("key", new ActionMessage("errors.generic", e.getMessage()));
-                    saveErrors(request, errors);
+                    addFieldError("form.key", e.getMessage());
                 }
             }
         }
         
         // Cancel update
-        if(op.equals(rsc.getMessage("button.cancelUpdateAppConfig"))) {
-        	request.setAttribute("hash", frm.getKey());
-            frm.reset(mapping, request);
+        if(op.equals(MSG.actionCancelSetting())) {
+        	request.setAttribute("hash", form.getKey());
+            form.reset();
         }
         
-        frm.setShowAll("1".equals(sessionContext.getUser().getProperty("ApplicationConfig.showAll", "0")));
+        form.setShowAll("1".equals(sessionContext.getUser().getProperty("ApplicationConfig.showAll", "0")));
         
-        if ("list".equals(frm.getOp())) {
+        if ("list".equals(form.getOp())) {
             //Read all existing ApplicationConfig and store in request
-            getApplicationConfigList(request, frm.getShowAll());        
-            return mapping.findForward("list");
+            getApplicationConfigList(form.getShowAll());        
+            return "list";
         }
         
-        return mapping.findForward(rsc.getMessage("button.createAppConfig").equals(frm.getOp())?"add":"edit");
+        return (MSG.actionSaveSetting().equals(op) || "add".equals(form.getOp())?"add":"edit");
     }
 
     /**
      * Retrieve all existing defined configs
-     * @param request Request object
-     * @throws Exception
      */
-    private void getApplicationConfigList(HttpServletRequest request, boolean showAll) throws Exception {
+    private void getApplicationConfigList(boolean showAll) throws Exception {
         WebTable.setOrder(sessionContext,"applicationConfig.ord",request.getParameter("ord"),1);
 		
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    null, "applicationConfig.do?ord=%%",
-			    new String[] {"Name", "Value", "Description"},
+			    null, "applicationConfig.action?ord=%%",
+			    new String[] {
+			    		MSG.columnAppConfigKey(),
+			    		MSG.columnAppConfigValue(),
+			    		MSG.columnAppConfigDescription()
+			    		},
 			    new String[] {"left", "left", "left"},
 			    null );
         webTable.enableHR("#9CB0CE");
+        String hash = (String)request.getAttribute("hash");
         
 		Map<String, Object> configs = new HashMap<String, Object>();
 		for (ApplicationConfig config: ApplicationConfigDAO.getInstance().findAll())
@@ -389,7 +383,7 @@ public class ApplicationConfigAction extends Action {
 
 		boolean editable = sessionContext.hasPermission(Right.ApplicationConfigEdit);
 		if (properties.isEmpty()) {
-			webTable.addLine(null, new String[] {"No configuration keys found"}, null, null);
+			webTable.addLine(null, new String[] {MSG.messageNoAppConfKeys()}, null, null);
 		} else {
 			for (String key: new TreeSet<String>(properties.keySet())) {
 				String value = properties.get(key);
@@ -397,6 +391,7 @@ public class ApplicationConfigAction extends Action {
 				ApplicationProperty p = ApplicationProperty.fromKey(key);
 				String description = ApplicationProperty.getDescription(key);
 				if (description == null) description = "";
+				WebTableLine line = null;
 
 				if (o == null) {
 					if (!pattern.matcher(key).matches()) continue;
@@ -409,16 +404,17 @@ public class ApplicationConfigAction extends Action {
 					
 					if (p != null && p.isSecret()) continue;
 					
-					webTable.addLine(
-				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "';\"" : null,
+					line = webTable.addLine(
+				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.action?op=edit&id=" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "';\"" : null,
 				    		new String[] {
-				    			"<a name='" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "'>" +
+				    			"<a id='" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "'>" +
 				    			(reference == null ? HtmlUtils.htmlEscape(key) : HtmlUtils.htmlEscape(key).replace("%", "<i><u>" + reference + "</i></u>")) +
 				    			"</a>",
 				    			"<font color='gray'>" + HtmlUtils.htmlEscape(value) + "</font>",
 				    			(reference == null ? description : description.replace("%", "<i><u>" + reference + "</i></u>")) },
 				    		new String[] {key, value, description}
 				    		);
+					if (key.equals(hash)) line.setBgColor("rgb(168,187,225)");
 					continue;
 				}
 				
@@ -427,9 +423,9 @@ public class ApplicationConfigAction extends Action {
 					if (config.getDescription() != null && !config.getDescription().isEmpty())
 						description = config.getDescription();
 
-					webTable.addLine(
-				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
-				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key)  + " <sup><font color='#2066CE' title='Applies to " + config.getSession().getLabel() + "'>s)</font></sup></a>",
+					line = webTable.addLine(
+				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.action?op=edit&id=" + key + "';\"" : null,
+				    		new String[] {"<a id='"+key+"'>" + HtmlUtils.htmlEscape(key)  + " <sup><font color='#2066CE' title='" + MSG.hintAppConfigAppliesTo(config.getSession().getLabel())+ "'>" + MSG.supAppConfigSessionOnly() + "</font></sup></a>",
 				    			HtmlUtils.htmlEscape(value), description},
 				    		new String[] {key, value, description}
 				    		);
@@ -438,12 +434,13 @@ public class ApplicationConfigAction extends Action {
 					if (config.getDescription() != null && !config.getDescription().isEmpty())
 						description = config.getDescription();
 
-				    webTable.addLine(
-				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
-				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key) + "</a>", HtmlUtils.htmlEscape(value), description},
+				    line = webTable.addLine(
+				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.action?op=edit&id=" + key + "';\"" : null,
+				    		new String[] {"<a id='"+key+"'>" + HtmlUtils.htmlEscape(key) + "</a>", HtmlUtils.htmlEscape(value), description},
 				    		new String[] {key, value, description}
 				    		);
 				}
+				if (key.equals(hash)) line.setBgColor("rgb(168,187,225)");
 			}
 	    }
 

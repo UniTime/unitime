@@ -1031,7 +1031,7 @@
 			</item>
 		</menu>
 		<menu name="Defaults">
-			<item name="Configuration" page="applicationConfig.do">
+			<item name="Configuration" page="applicationConfig.action">
 				<condition>
 					<hasPermission name="ApplicationConfig"/>
 				</condition>

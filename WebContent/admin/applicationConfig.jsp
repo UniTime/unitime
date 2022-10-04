@@ -17,126 +17,115 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tiles:importAttribute />
-
-<tt:session-context/>
-<tt:confirm name="confirmDelete">The application setting will be deleted. Continue?</tt:confirm>
-
-<html:form action="/applicationConfig">
-<logic:notEqual name="applicationConfigForm" property="op" value="list">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+ <%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteAppConfig"/></tt:confirm>
+<s:form action="applicationConfig">
+<s:hidden name="form.op"/>
+<s:if test="form.op != 'list'">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="applicationConfigForm" property="op" value="edit">
-							Edit 
-						</logic:equal>
-						<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-							Add
-						</logic:notEqual>
-						Application Setting
+						<s:if test="form.op == 'add'">
+							<loc:message name="sectAddAppSetting"/>
+						</s:if>
+						<s:else>
+							<loc:message name="sectEditAppSetting"/>
+						</s:else>
 					</tt:section-title>
-					<logic:equal name="applicationConfigForm" property="op" value="edit">
-						<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateAppConfig">
-							<bean:message key="button.updateAppConfig" />
-						</html:submit> 
-						<html:submit property="op" styleClass="btn" accesskey="D" onclick="return confirmDelete();" titleKey="title.deleteAppConfig">
-							<bean:message key="button.deleteAppConfig" />
-						</html:submit> 
-					</logic:equal>
-					<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-						<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.createAppConfig">
-							<bean:message key="button.createAppConfig" />
-						</html:submit> 
-					</logic:notEqual>
-					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.cancelUpdateAppConfig">
-						<bean:message key="button.cancelUpdateAppConfig" />
-					</html:submit> 
+					<s:if test="form.op == 'add'">
+						<s:submit name='op' value='%{#msg.actionSaveSetting()}'
+							accesskey='%{#msg.accessSaveSetting()}' title='%{#msg.titleSaveSetting(#msg.accessSaveSetting())}'/>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateSetting()}'
+							accesskey='%{#msg.accessUpdateSetting()}' title='%{#msg.titleUpdateSetting(#msg.accessUpdateSetting())}'/>
+						<s:submit name='op' value='%{#msg.actionDeleteSetting()}'
+							accesskey='%{#msg.accessDeleteSetting()}' title='%{#msg.titleDeleteSetting(#msg.accessDeleteSetting())}'
+							onclick="return confirmDelete();"/>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionCancelSetting()}'
+						accesskey='%{#msg.accessCancelSetting()}' title='%{#msg.titleCancelSetting(#msg.accessCancelSetting())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Name:</TD>
+			<TD valign="top"><loc:message name="propAppConfigKey"/></TD>
 			<TD valign="top">
-				<logic:equal name="applicationConfigForm" property="op" value="edit">
-					<bean:write name="applicationConfigForm" property="key"/>
-					<html:hidden property="key"/>
-				</logic:equal>
-				<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-					<html:text property="key" size="120" maxlength="1000"/>
-				</logic:notEqual>									
-				&nbsp;<html:errors property="key"/>
+				<s:if test="form.op == 'add'">
+					<s:textfield name="form.key" size="120" maxlength="1000"/>
+				</s:if><s:else>
+					<s:hidden name="form.key"/>
+					<s:property value="form.key"/>
+				</s:else>
+				&nbsp;<s:fielderror fieldName="form.key"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top" rowspan="2">Applies To:</TD>
+			<TD valign="top" rowspan="2"><loc:message name="propAppConfigAppliesTo"/></TD>
 			<TD valign="top">
-				<html:checkbox property="allSessions" onchange="document.getElementById('sessionsCell').style.display = (this.checked ? 'none' : 'table-cell');"/> All Sessions
+				<s:checkbox name="form.allSessions" onchange="document.getElementById('sessionsCell').style.display = (this.checked ? 'none' : 'table-cell');"/> <loc:message name="checkAppConfigAppliesToAllSessions"/>
 			</TD>
 		</TR>
 		
 		<TR>
 			<TD valign="top" id="sessionsCell" style="max-width: 700px;">
-				<logic:iterate name="applicationConfigForm" property="listSessions" id="s" type="org.unitime.timetable.model.Session">
+				<s:iterator value="form.listSessions" var="s">
 					<div style="display: inline-block; width: 200px; white-space: nowrap; margin-left: 20px; overflow: hidden;">
-						<html:multibox property="sessions"><bean:write name="s" property="uniqueId"/></html:multibox> <bean:write name="s" property="label"/>
+						<s:checkboxlist name="form.sessions" list="#{#s.uniqueId:''}"/>
+						<s:property value="#s.label"/>
 					</div>
-				</logic:iterate>
+				</s:iterator>
 			</TD>
-			<logic:equal name="applicationConfigForm" property="allSessions" value="true">
+			<s:if test="form.allSessions == true">
 				<script>document.getElementById('sessionsCell').style.display = 'none';</script>
-			</logic:equal>
+			</s:if>
 		</TR>
 		
-		<logic:notEmpty name="applicationConfigForm" property="type">
+		<s:if test="form.type != null && !form.type.isEmpty()">
 			<TR>
-				<TD valign="top">Type:</TD>
+				<TD valign="top"><loc:message name="propAppConfigType"/></TD>
 				<TD valign="top">
-					<bean:write name="applicationConfigForm" property="type"/>
+					<s:property value="form.type"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
+		
+		<s:if test="form.values != null && !form.values.isEmpty()">
+			<TR>
+				<TD valign="top"><loc:message name="propAppConfigValues"/></TD>
+				<TD valign="top">
+					<s:property value="form.values"/>
+				</TD>
+			</TR>
+		</s:if>
 
-		<logic:notEmpty name="applicationConfigForm" property="values">
+		<s:if test="form.default != null && !form.default.isEmpty()">
 			<TR>
-				<TD valign="top">Vales:</TD>
+				<TD valign="top"><loc:message name="propAppConfigDefault"/></TD>
 				<TD valign="top">
-					<bean:write name="applicationConfigForm" property="values"/>
+					<s:property value="form.default"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-
-		<logic:notEmpty name="applicationConfigForm" property="default">
-			<TR>
-				<TD valign="top">Default:</TD>
-				<TD valign="top">
-					<bean:write name="applicationConfigForm" property="default"/>
-				</TD>
-			</TR>
-		</logic:notEmpty>
+		</s:if>
 
 		<TR>
-			<TD valign="top">Value:</TD>
+			<TD valign="top"><loc:message name="propAppConfigValue"/></TD>
 			<TD valign="top">
-				<html:textarea property="value" rows="10" cols="120"/>
+				<s:textarea name="form.value" rows="10" cols="120"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Description:</TD>
+			<TD valign="top"><loc:message name="propAppConfigDescription"/></TD>
 			<TD valign="top">
-				<html:textarea property="description" rows="5" cols="120"/>
+				<s:textarea name="form.description" rows="5" cols="120"/>
 			</TD>
 		</TR>
 
@@ -148,61 +137,55 @@
 
 		<TR>
 			<TD align="right" colspan="2">
-				<logic:equal name="applicationConfigForm" property="op" value="edit">
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.updateAppConfig">
-						<bean:message key="button.updateAppConfig" />
-					</html:submit> 
-					<html:submit property="op" styleClass="btn" accesskey="D" onclick="return confirmDelete();" titleKey="title.deleteAppConfig">
-						<bean:message key="button.deleteAppConfig" />
-					</html:submit> 
-				</logic:equal>
-				<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-					<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.createAppConfig">
-						<bean:message key="button.createAppConfig" />
-					</html:submit> 
-				</logic:notEqual>
-				<html:submit property="op" styleClass="btn" accesskey="C" titleKey="title.cancelUpdateAppConfig">
-					<bean:message key="button.cancelUpdateAppConfig" />
-				</html:submit> 
+				<s:if test="form.op == 'add'">
+					<s:submit name='op' value='%{#msg.actionSaveSetting()}'
+						accesskey='%{#msg.accessSaveSetting()}' title='%{#msg.titleSaveSetting(#msg.accessSaveSetting())}'/>
+				</s:if><s:else>
+					<s:submit name='op' value='%{#msg.actionUpdateSetting()}'
+						accesskey='%{#msg.accessUpdateSetting()}' title='%{#msg.titleUpdateSetting(#msg.accessUpdateSetting())}'/>
+					<s:submit name='op' value='%{#msg.actionDeleteSetting()}'
+						accesskey='%{#msg.accessDeleteSetting()}' title='%{#msg.titleDeleteSetting(#msg.accessDeleteSetting())}'
+						onclick="return confirmDelete();"/>
+				</s:else>
+				<s:submit name='op' value='%{#msg.actionCancelSetting()}'
+					accesskey='%{#msg.accessCancelSetting()}' title='%{#msg.titleCancelSetting(#msg.accessCancelSetting())}'/>
 			</TD>
 		</TR>
 	</TABLE>
 	
-</logic:notEqual>
-<logic:equal name="applicationConfigForm" property="op" value="list">
-
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3" class="unitime-ApplicationConfigTable">
+</s:if>
+<s:else>
+<table class="unitime-MainTable unitime-ApplicationConfigTable">
 	<TR>
 		<TD colspan='3'>
 			<tt:section-header>
-				<tt:section-title>Application Settings</tt:section-title>
+				<tt:section-title><loc:message name="sectAppSettings"/></tt:section-title>
 				<sec:authorize access="hasPermission(null, null, 'ApplicationConfigEdit')">
-					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
-						<bean:message key="button.addAppConfig" />
-					</html:submit>
+					<s:submit name='op' value='%{#msg.actionAddSetting()}'
+						accesskey='%{#msg.accessAddSetting()}' title='%{#msg.titleAddSetting(#msg.accessAddSetting())}'/>
 				</sec:authorize> 
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%= request.getAttribute(org.unitime.timetable.model.ApplicationConfig.APP_CFG_ATTR_NAME) %> 
-	<logic:notEmpty scope="request" name="hash">
-		<script type="text/javascript" language="javascript">
-			location.hash = '<%=request.getAttribute("hash")%>';
-		</script>
-	</logic:notEmpty>
+	<s:property value="#request.appConfig" escapeHtml="false"/>
 	<TR>
 		<TD colspan='2' valign="top">
-			<span class="unitime-Hint" style="vertical-align: top;">s) Applies to current academic session.</span>
+			<span class="unitime-Hint" style="vertical-align: top;"><loc:message name="descAppConfigAppliesToCurrentAcadSession"/></span>
 		</TD>
 		<TD align="right">
-			<input type='hidden' name='apply' value=''/><html:checkbox property="showAll" onchange="apply.value='1'; submit();"/>Show all properties&nbsp;&nbsp;&nbsp;&nbsp;			
+			<input type='hidden' name='apply' value=''/><s:checkbox name="form.showAll" onchange="apply.value='1'; submit();"/><loc:message name="checkShowAllAppSettings"/>&nbsp;&nbsp;&nbsp;&nbsp;			
 			<sec:authorize access="hasPermission(null, null, 'ApplicationConfigEdit')">
-				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
-					<bean:message key="button.addAppConfig" />
-				</html:submit>
+				<s:submit name='op' value='%{#msg.actionAddSetting()}'
+					accesskey='%{#msg.accessAddSetting()}' title='%{#msg.titleAddSetting(#msg.accessAddSetting())}'/>
 			</sec:authorize> 
 		</TD>
 	</TR>	
 </TABLE>
-</logic:equal>
-</html:form>
+<s:if test="#request.hash != null">
+	<SCRIPT type="text/javascript">
+		location.hash = '<%=request.getAttribute("hash")%>';
+	</SCRIPT>
+</s:if>
+</s:else>
+</s:form>
+</loc:bundle>

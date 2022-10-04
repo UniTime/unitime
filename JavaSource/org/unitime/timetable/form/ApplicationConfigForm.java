@@ -22,30 +22,19 @@ package org.unitime.timetable.form;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 /** 
- * MyEclipse Struts
- * Creation date: 08-28-2006
- * 
- * XDoclet definition:
- * @struts:form name="applicationConfigForm"
- *
  * @author Tomas Muller
  */
-public class ApplicationConfigForm extends ActionForm {
-
-    // --------------------------------------------------------- Instance Variables
-
+public class ApplicationConfigForm implements UniTimeForm {
 	private static final long serialVersionUID = 4677371360700536609L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	private String op;
 
@@ -63,36 +52,19 @@ public class ApplicationConfigForm extends ActionForm {
     private Long[] sessions = null;
     
     private boolean showAll = false;
-
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-        
-        if(key==null || key.trim().length()==0)
-            errors.add("key", new ActionMessage("errors.required", ""));
-
-        if(value==null)
-            value = "";
-        
-        return errors;
+    
+    public ApplicationConfigForm() {
+    	reset();
     }
 
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void validate(UniTimeAction action) {
+        if (key==null || key.trim().length()==0)
+        	action.addFieldError("form.key", MSG.errorRequiredField(MSG.columnAppConfigKey()));
+    }
+
+    @Override
+    public void reset() {
         op = "list";
         key = "";
         value = "";

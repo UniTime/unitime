@@ -3129,6 +3129,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("{0} already exists.")
 	String errorAlreadyExists(String value);
 	
+	@DefaultMessage("{0} does not exists.")
+	String errorDoesNotExists(String value);
+	
 	@DefaultMessage("{0} must be numeric.")
 	String errorNotNumber(String value);
 	
@@ -3845,4 +3848,109 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("({0} bytes)")
 	String attachmentFileSize(String bytes);
+	
+	@DefaultMessage("Name")
+	String columnAppConfigKey();
+	
+	@DefaultMessage("Value")
+	String columnAppConfigValue();
+	
+	@DefaultMessage("Description")
+	String columnAppConfigDescription();
+	
+	@DefaultMessage("Name:")
+	String propAppConfigKey();
+	
+	@DefaultMessage("Value:")
+	String propAppConfigValue();
+	
+	@DefaultMessage("Description:")
+	String propAppConfigDescription();
+	
+	@DefaultMessage("Applies To:")
+	String propAppConfigAppliesTo();
+	
+	@DefaultMessage("Type:")
+	String propAppConfigType();
+	
+	@DefaultMessage("Vales:")
+	String propAppConfigValues();
+	
+	@DefaultMessage("Default:")
+	String propAppConfigDefault();
+	
+	@DefaultMessage("All Sessions")
+	String checkAppConfigAppliesToAllSessions();
+	
+	@DefaultMessage("Applies to {0}")
+	String hintAppConfigAppliesTo(String session);
+	
+	@DefaultMessage("s)")
+	String supAppConfigSessionOnly();
+	
+	@DefaultMessage("s) Applies to current academic session.")
+	String descAppConfigAppliesToCurrentAcadSession();
+	
+	@DefaultMessage("Add Setting")
+	String actionAddSetting();
+	
+	@DefaultMessage("Save")
+	String actionSaveSetting();
+	
+	@DefaultMessage("Update")
+	String actionUpdateSetting();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteSetting();
+	
+	@DefaultMessage("Cancel")
+	String actionCancelSetting();
+	
+	@DefaultMessage("A")
+	String accessAddSetting();
+	
+	@DefaultMessage("S")
+	String accessSaveSetting();
+	
+	@DefaultMessage("U")
+	String accessUpdateSetting();
+	
+	@DefaultMessage("D")
+	String accessDeleteSetting();
+	
+	@DefaultMessage("C")
+	String accessCancelSetting();
+	
+	@DefaultMessage("Add Application Setting (Alt + {0})")
+	String titleAddSetting();
+	
+	@DefaultMessage("Save Application Setting (Alt + {0})")
+	String titleSaveSetting(String access);
+	
+	@DefaultMessage("Update Application Setting (Alt + {0})")
+	String titleUpdateSetting(String access);
+	
+	@DefaultMessage("Delete Application Setting (Alt + {0})")
+	String titleDeleteSetting(String access);
+	
+	@DefaultMessage("Cancel Save/Update (Alt + {0})")
+	String titleCancelSetting(String access);
+	
+	@DefaultMessage("No application configuration keys found.")
+	String messageNoAppConfKeys();
+	
+	@DefaultMessage("The application setting will be deleted. Continue?")
+	String confirmDeleteAppConfig();
+	
+	@DefaultMessage("Add Application Setting")
+	String sectAddAppSetting();
+	
+	@DefaultMessage("Edit Application Setting")
+	String sectEditAppSetting();
+	
+	@DefaultMessage("Application Settings")
+	String sectAppSettings();
+	
+	@DefaultMessage("Show all properties")
+	String checkShowAllAppSettings();
 }

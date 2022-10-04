@@ -261,19 +261,6 @@
 		<put name="body" value="/admin/activeSessions.jsp" />
   	</definition>
   	
-  	<definition name="applicationConfigTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Application Configuration"/>
-		<put name="body" value="/admin/applicationConfig.jsp" />
-  	</definition>
-
-  	<definition name="applicationConfigAddTile" extends="applicationConfigTile">
-		<put name="title" type="string" value="Add Application Setting"/>
-  	</definition>
-
-  	<definition name="applicationConfigEditTile" extends="applicationConfigTile">
-		<put name="title" type="string" value="Edit Application Setting"/>
-  	</definition>
-
   	<definition name="departmentAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Department"/>
 		<put name="body" value="/admin/departmentEdit.jsp" />
