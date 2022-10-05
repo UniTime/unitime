@@ -19,12 +19,9 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.spring.security.MD5PasswordEncoder;
 
@@ -33,42 +30,46 @@ import org.unitime.timetable.spring.security.MD5PasswordEncoder;
  * @author Tomas Muller
  * 
  */
-public class UserEditForm extends ActionForm {
+public class UserEditForm implements UniTimeForm {
 	private static final long serialVersionUID = 8703608968811726905L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String iOp = null;
     private String iExternalId = null;
     private String iName = null;
     private String iPassword = null;
     private String iToken = null;
+    
+    public UserEditForm() {
+    	reset();
+    }
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        if (iExternalId ==null || iExternalId.trim().length()==0)
-            errors.add("externalId", new ActionMessage("errors.required", ""));
-        else if (!"Update".equals(getOp()) && User.findByExternalId(getExternalId())!=null) {
-            errors.add("externalId", new ActionMessage("errors.exists", iExternalId));
+    @Override
+	public void validate(UniTimeAction action) {
+        if (iExternalId ==null || iExternalId.trim().isEmpty()) {
+        	action.addFieldError("form.externalId", MSG.errorRequiredField(MSG.columnExternalId()));
+        } else if (!MSG.actionUpdateUser().equals(getOp()) && User.findByExternalId(getExternalId())!=null) {
+        	action.addFieldError("form.externalId", MSG.errorAlreadyExists(iExternalId));
         }
 
-        if (iName==null || iName.trim().length()==0)
-            errors.add("name", new ActionMessage("errors.required", ""));
-        else {
+        if (iName==null || iName.trim().isEmpty()) {
+        	action.addFieldError("form.name", MSG.errorRequiredField(MSG.columnUserName()));
+        } else {
             try {
                 User user = User.findByUserName(iName);
                 if (user!=null && !user.getExternalUniqueId().equals(iExternalId))
-                    errors.add("name", new ActionMessage("errors.exists", iName));
+                	action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
             } catch (Exception e) {
-                errors.add("name", new ActionMessage("errors.generic", e.getMessage()));
+            	action.addFieldError("form.name", e.getMessage());
             }
         }
 
-        if (iPassword==null || iPassword.trim().length()==0)
-            errors.add("password", new ActionMessage("errors.required", ""));
-        
-        return errors;
+        if (MSG.actionSaveUser().equals(getOp()) && (iPassword==null || iPassword.trim().length()==0))
+        	action.addFieldError("form.password", MSG.errorRequiredField(MSG.columnUserPassword()));
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+	public void reset() {
 		iOp = "List"; iExternalId = null; iName = null; iPassword = null; iToken = null;
 	}
 	
@@ -85,9 +86,9 @@ public class UserEditForm extends ActionForm {
     
     public void load(User user) {
         if (user==null) {
-            setOp("Save");
+            setOp(MSG.actionSaveUser());
         } else {
-            setOp("Update");
+            setOp(MSG.actionUpdateUser());
             setExternalId(user.getExternalUniqueId());
             setName(user.getUsername());
             setPassword(user.getPassword());
@@ -99,10 +100,10 @@ public class UserEditForm extends ActionForm {
 	}
     
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
-        if ("Update".equals(getOp())) {
+        if (MSG.actionUpdateUser().equals(getOp())) {
             User u = User.findByExternalId(getExternalId());
             if (u.getUsername().equals(getName())) {
-                if (!getPassword().equals(u.getPassword())) {
+                if (getPassword() != null && !getPassword().equals(u.getPassword()) && !getPassword().isEmpty()) {
                     u.setPassword(encodePassword(getPassword()));
                 }
                 hibSession.update(u);
@@ -110,8 +111,8 @@ public class UserEditForm extends ActionForm {
                 User w = new User();
                 w.setExternalUniqueId(u.getExternalUniqueId());
                 w.setUsername(getName());
-                if (getPassword().equals(u.getPassword())) {
-                    w.setPassword(getPassword());
+                if (getPassword() == null || getPassword().equals(u.getPassword()) || getPassword().isEmpty()) {
+                    w.setPassword(u.getPassword());
                 } else {
                     w.setPassword(encodePassword(getPassword()));
                 }

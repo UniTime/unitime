@@ -23,7 +23,7 @@
 	<!-- Add custom administration menu with users -->
 	<menu name="Administration">
 		<menu name="Other">
-			<item name="Users" page="userEdit.do" position="5">
+			<item name="Users" page="userEdit.action" position="5">
 				<!-- Only when LDAP is not configured -->
 				<condition>
 					<propertyEquals name="tmtbl.authenticate.ldap.provider" value="" defaultValue=""/>

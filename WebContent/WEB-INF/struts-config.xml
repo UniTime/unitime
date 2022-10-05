@@ -47,7 +47,6 @@
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
-      <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
       <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
@@ -406,19 +405,6 @@
        <forward name="list" path="deptStatusTypeListTile" />
        <forward name="add" path="deptStatusTypeAddTile" />
        <forward name="edit" path="deptStatusTypeEditTile" />
-    </action>
-
-    <action
-       path="/userEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="userEditForm"
-       input="userEditTile"
-       name="userEditForm"
-       scope="request"
-       validate="false" >
-       <forward name="list" path="userListTile" />
-       <forward name="add" path="userAddTile" />
-       <forward name="edit" path="userEditTile" />
     </action>
 
     <action

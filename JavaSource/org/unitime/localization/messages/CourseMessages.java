@@ -3953,4 +3953,88 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Show all properties")
 	String checkShowAllAppSettings();
+	
+	@DefaultMessage("Update")
+	String actionUpdateUser();
+	
+	@DefaultMessage("Save")
+	String actionSaveUser();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteUser();
+	
+	@DefaultMessage("Back")
+	String actionBackToUsers();
+	
+	@DefaultMessage("Add User")
+	String actionAddUser();
+	
+	@DefaultMessage("Request Password Change")
+	String actionRequestPasswordChange();
+	
+	@DefaultMessage("U")
+	String accessUpdateUser();
+	
+	@DefaultMessage("S")
+	String accessSaveUser();
+	
+	@DefaultMessage("D")
+	String accessDeleteUser();
+	
+	@DefaultMessage("B")
+	String accessBackToUsers();
+	
+	@DefaultMessage("A")
+	String accessAddUser();
+	
+	@DefaultMessage("P")
+	String accessRequestPasswordChange();
+	
+	@DefaultMessage("Update User (Alt + {0})")
+	String titleUpdateUser(String access);
+	
+	@DefaultMessage("Save User (Alt + {0})")
+	String titleSaveUser(String access);
+	
+	@DefaultMessage("Delete User (Alt + {0})")
+	String titleDeleteUser(String access);
+	
+	@DefaultMessage("Return to Users (Alt + {0})")
+	String titleBackToUsers(String access);
+	
+	@DefaultMessage("Add User (Alt + {0})")
+	String titleAddUser(String access);
+	
+	@DefaultMessage("Request Password Change (Alt + {0})")
+	String titleRequestPasswordChange(String access);
+	
+	@DefaultMessage("Username")
+	String columnUserName();
+	
+	@DefaultMessage("Password")
+	String columnUserPassword();
+	
+	@DefaultMessage("Manager")
+	String columnTimetableManager();
+	
+	@DefaultMessage("API Secret")
+	String columnAPIKey();
+	
+	@DefaultMessage("No users defined.")
+	String messageNoUsers();
+	
+	@DefaultMessage("The user will be deleted. Continue?")
+	String confirmUserDelete();
+	
+	@DefaultMessage("Add User")
+	String sectAddUser();
+	
+	@DefaultMessage("Edit User")
+	String sectEditUser();
+	
+	@DefaultMessage("Users")
+	String sectUsers();
+	
+	@DefaultMessage("API Token:")
+	String propAPIKey();
 }

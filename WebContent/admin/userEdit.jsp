@@ -17,83 +17,80 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<tiles:importAttribute />
-
-<tt:confirm name="confirmDelete">The user will be deleted. Continue?</tt:confirm>
-
-<html:form action="/userEdit">
-<logic:notEqual name="userEditForm" property="op" value="List">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmUserDelete"/></tt:confirm>
+<s:form action="userEdit">
+<s:hidden name="form.op"/>
+<s:if test="form.op != 'List'">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="userEditForm" property="op" value="Save">
-							Add
-						</logic:equal>
-						<logic:notEqual name="userEditForm" property="op" value="Save">
-							Edit
-						</logic:notEqual>
-						User
+						<s:if test="form.op == #msg.actionSaveUser()">
+							<loc:message name="sectAddUser"/>
+						</s:if><s:else>
+							<loc:message name="sectEditUser"/>
+						</s:else>
 					</tt:section-title>
-					<logic:equal name="userEditForm" property="op" value="Save">
-						<html:submit property="op" value="Save" accesskey="S" title="Save User (Alt+S)"/>
-					</logic:equal>
-					<logic:notEqual name="userEditForm" property="op" value="Save">
-						<html:submit property="op" value="Update" accesskey="U" title="Update User (Alt+U)"/>
-						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete User (Alt+D)"/> 
-					</logic:notEqual>
-					<html:submit property="op" value="Back" title="Return to Users (Alt+B)" accesskey="B"/> 
+					<s:if test="form.op == #msg.actionSaveUser()">
+						<s:submit name='op' value='%{#msg.actionSaveUser()}'
+							accesskey='%{#msg.accessSaveUser()}' title='%{#msg.titleSaveUser(#msg.accessSaveUser())}'/>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateUser()}'
+							accesskey='%{#msg.accessUpdateUser()}' title='%{#msg.titleUpdateUser(#msg.accessUpdateUser())}'/>
+						<s:submit name='op' value='%{#msg.actionDeleteUser()}'
+							accesskey='%{#msg.accessDeleteUser()}' title='%{#msg.titleDeleteUser(#msg.accessDeleteUser())}'
+							onclick="return confirmDelete();"/>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionBackToUsers()}'
+						accesskey='%{#msg.accessBackToUsers()}' title='%{#msg.titleBackToUsers(#msg.accessBackToUsers())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>External ID:</TD>
+			<TD><loc:message name="propertyExternalId"/></TD>
 			<TD>
-				<logic:equal name="userEditForm" property="op" value="Save">
-					<html:text property="externalId" size="40" maxlength="40"/>
-				</logic:equal>
-				<logic:notEqual name="userEditForm" property="op" value="Save">
-					<bean:write name="userEditForm" property="externalId"/>
-					<html:hidden property="externalId"/>
-				</logic:notEqual>
-				&nbsp;<html:errors property="externalId"/>
+				<s:if test="form.op == #msg.actionSaveUser()">
+					<s:textfield name="form.externalId" size="40" maxlength="40"/>
+				</s:if><s:else>
+					<s:property value="form.externalId"/>
+					<s:hidden name="form.externalId"/>
+				</s:else>
+				&nbsp;<s:fielderror fieldName="form.externalId"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>User Name:</TD>
+			<TD><loc:message name="propertyUsername"/></TD>
 			<TD>
-				<html:text property="name" size="15" maxlength="15"/>
-				&nbsp;<html:errors property="name"/>
+				<s:textfield name="form.name" size="15" maxlength="15"/>
+				&nbsp;<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Password:</TD>
+			<TD><loc:message name="propUserPassword"/></TD>
 			<TD>
-				<html:password property="password" size="25" maxlength="40"/>
-				&nbsp;<html:errors property="password"/>
+				<s:password name="form.password" size="25" maxlength="40"/>
+				&nbsp;<s:fielderror fieldName="form.password"/>
 			</TD>
 		</TR>
 		
-		<logic:notEmpty name="userEditForm" property="token">
+		<s:if test="form.token != null && !form.token.isEmpty()">
 			<TR>
-				<TD>API Token:</TD>
+				<TD><loc:message name="propAPIKey"/></TD>
 				<TD>
-					<bean:write name="userEditForm" property="token"/>
-					<html:hidden property="token"/>
+					<s:property value="form.token"/>
+					<s:hidden value="form.token"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
+		</s:if>
 		
 		<TR>
 			<TD colspan="2">
@@ -103,31 +100,36 @@
 		
 		<TR>
 			<TD align="right" colspan="2">
-				<logic:equal name="userEditForm" property="op" value="Save">
-					<html:submit property="op" value="Save" accesskey="S" title="Save User (Alt+S)"/>
-				</logic:equal>
-				<logic:notEqual name="userEditForm" property="op" value="Save">
-					<html:submit property="op" value="Update" accesskey="U" title="Update User (Alt+U)"/>
-					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete User (Alt+D)"/> 
-				</logic:notEqual>
-				<html:submit property="op" value="Back" title="Return to Users (Alt+B)" accesskey="B"/> 
+				<s:if test="form.op == #msg.actionSaveUser()">
+					<s:submit name='op' value='%{#msg.actionSaveUser()}'
+						accesskey='%{#msg.accessSaveUser()}' title='%{#msg.titleSaveUser(#msg.accessSaveUser())}'/>
+				</s:if><s:else>
+					<s:submit name='op' value='%{#msg.actionUpdateUser()}'
+						accesskey='%{#msg.accessUpdateUser()}' title='%{#msg.titleUpdateUser(#msg.accessUpdateUser())}'/>
+					<s:submit name='op' value='%{#msg.actionDeleteUser()}'
+						accesskey='%{#msg.accessDeleteUser()}' title='%{#msg.titleDeleteUser(#msg.accessDeleteUser())}'
+						onclick="return confirmDelete();"/>
+				</s:else>
+				<s:submit name='op' value='%{#msg.actionBackToUsers()}'
+					accesskey='%{#msg.accessBackToUsers()}' title='%{#msg.titleBackToUsers(#msg.accessBackToUsers())}'/> 
 			</TD>
 		</TR>
 	</TABLE>
 
-</logic:notEqual>
-<logic:equal name="userEditForm" property="op" value="List">
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+</s:if><s:else>
+<table class="unitime-MainTable">
 		<tr>
 			<td colspan='3'>
 				<tt:section-header>
-					<tt:section-title>Users</tt:section-title>
-					<html:submit property="op" value="Request Password Change" accesskey="R" title="Request password change (Alt+R)"/>
-					<html:submit property="op" value="Add User" accesskey="A" title="Create New User (Alt+A)"/>
+					<tt:section-title><loc:message name="sectUsers"/></tt:section-title>
+					<s:submit name='op' value='%{#msg.actionRequestPasswordChange()}'
+						accesskey='%{#msg.accessRequestPasswordChange()}' title='%{#msg.titleRequestPasswordChange(#msg.accessRequestPasswordChange())}'/>
+					<s:submit name='op' value='%{#msg.actionAddUser()}'
+						accesskey='%{#msg.accessAddUser()}' title='%{#msg.titleAddUser(#msg.accessAddUser())}'/>
 				</tt:section-header>
 			</td>
 		</tr>
-		<%= request.getAttribute("Users.table") %> 
+		<s:property value="usersTable" escapeHtml="false"/>
 		<tr>
 			<td colspan='3'>
 				<tt:section-title/>
@@ -135,11 +137,13 @@
 		</tr>
 		<tr>
 			<td colspan='3' align="right">
-				<html:submit property="op" value="Request Password Change" accesskey="R" title="Request password change (Alt+R)"/>
-				<html:submit property="op" value="Add User" accesskey="A" title="Create New User (Alt+A)"/>
+				<s:submit name='op' value='%{#msg.actionRequestPasswordChange()}'
+					accesskey='%{#msg.accessRequestPasswordChange()}' title='%{#msg.titleRequestPasswordChange(#msg.accessRequestPasswordChange())}'/>
+				<s:submit name='op' value='%{#msg.actionAddUser()}'
+					accesskey='%{#msg.accessAddUser()}' title='%{#msg.titleAddUser(#msg.accessAddUser())}'/>
 			</td>
 		</tr>
-</TABLE>
-</logic:equal>
-
-</html:form>
+</table>
+</s:else>
+</s:form>
+</loc:bundle>

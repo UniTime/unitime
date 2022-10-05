@@ -32,7 +32,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesDefinitions;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
@@ -52,7 +51,6 @@ import org.unitime.timetable.security.rights.Right;
 /** 
  * @author Tomas Muller
  */
-@Service("/applicationConfig")
 @Action(value = "applicationConfig", results = {
 		@Result(name = "list", type = "tiles", location = "applicationConfigList.tiles"),
 		@Result(name = "add", type = "tiles", location = "applicationConfigAdd.tiles"),
@@ -72,7 +70,6 @@ import org.unitime.timetable.security.rights.Right;
 			@TilesPutAttribute(name = "body", value = "/admin/applicationConfig.jsp")
 		})
 })
-
 public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm> {
 	private static final long serialVersionUID = -980973696522046141L;
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
