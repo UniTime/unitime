@@ -238,11 +238,6 @@
 		<put name="title" type="string" value="Edit Date Pattern"/>
   	</definition>
 
-  	<definition name="activeSessionsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Active User Sessions"/>
-		<put name="body" value="/admin/activeSessions.jsp" />
-  	</definition>
-  	
   	<definition name="departmentAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Department"/>
 		<put name="body" value="/admin/departmentEdit.jsp" />

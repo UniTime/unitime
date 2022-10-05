@@ -194,13 +194,6 @@
 	</tag>
 	
 	<tag>
-		<name>activeSessions</name>
-		<tag-class>org.unitime.timetable.tags.SessionsTag</tag-class>
-		<body-content>empty</body-content>
-		<description>Displays all active user sessions</description>
-	</tag>
-	
-	<tag>
 		<name>solver-warnings</name>
 		<tag-class>org.unitime.timetable.tags.SolverWarnings</tag-class>
 		<body-content>JSP</body-content>

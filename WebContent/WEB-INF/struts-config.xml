@@ -54,13 +54,6 @@
    </global-exceptions>
 
    <action-mappings >
-
-	  <action
-         path="/getCourseNumbers"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" />
-         
       <action
          path="/sessionEdit"
          attribute="sessionEditForm"
@@ -257,19 +250,6 @@
     		redirect="true" />
     </action>
     <action
-    	path="/solver"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="solverForm"
-    	input="solverTile"
-    	name="solverForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showSolver"
-    		path="solverTile"
-	        redirect="true" />
-    </action>
-    <action
 		path="/manageSolvers"
 		type="org.springframework.web.struts.DelegatingActionProxy"
 		attribute="manageSolversForm"
@@ -325,11 +305,6 @@
       <forward name="add" path="addDatePatternTile" />
       <forward name="edit" path="editDatePatternTile" />
     </action>
-
-	<action 
-		path="/activeSessions"
-		forward="activeSessionsTile"
-		scope="request" />
     
     <action
        path="/departmentEdit"
