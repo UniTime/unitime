@@ -199,11 +199,6 @@
 		<put name="title" type="string" value="Edit Distribution Preference"/>
   	</definition>
 
-	<definition	name="hibernateQueryTestTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Test HQL"/>
-		<put name="body" value="/admin/hibernateQueryTest.jsp" />
-  	</definition>
-
   	<definition name="timePatternsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Time Patterns"/>
 		<put name="body" value="/admin/timePatterns.jsp" />

@@ -37,7 +37,6 @@
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
-      <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
 	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
@@ -287,19 +286,6 @@
     <action 
     	path="/hibernateStats" 
     	forward="hibrenateStatsTile" />
-     
-      <action
-         path="/hibernateQueryTest"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="hibernateQueryTestForm"
-         input="hibernateQueryTestTile"
-         name="hibernateQueryTestForm"
-         scope="request"
-         validate="false">
-        <forward 
-        	name="displayQueryForm" 
-        	path="hibernateQueryTestTile" />
-      </action>
       
 	    <action
 	      path="/timePatternEdit"

@@ -19,27 +19,16 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 
 /** 
- * MyEclipse Struts
- * Creation date: 12-16-2005
- * 
- * XDoclet definition:
- * @struts:form name="hibernateQueryTestForm"
- *
  * @author Tomas Muller
  */
-public class HibernateQueryTestForm extends ActionForm {
-
+public class HibernateQueryTestForm implements UniTimeForm {
 	private static final long serialVersionUID = 5970479864977610427L;
-
-    // --------------------------------------------------------- Instance Variables
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	/** query property */
     private String query;
@@ -50,32 +39,19 @@ public class HibernateQueryTestForm extends ActionForm {
     private int start = 0;
     private boolean next = false;
     private boolean export = false;
-
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method validate
-     * @param mapping
-     * @param request
-     * @return ActionErrors
-     */
-    public ActionErrors validate(
-        ActionMapping mapping,
-        HttpServletRequest request) {
-
-        ActionErrors errors = new ActionErrors();
-        if(query==null || query.trim().length()==0)
-            errors.add("query", new ActionMessage("errors.generic", "Invalid value for query" ));
-        
-        return errors;
+    
+    public HibernateQueryTestForm() {
+    	reset();
     }
 
-    /** 
-     * Method reset
-     * @param mapping
-     * @param request
-     */
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+    public void validate(UniTimeAction action) {
+        if (query==null || query.trim().isEmpty())
+        	action.addFieldError("form.query", MSG.errorQueryIsRequired());
+    }
+
+    @Override
+    public void reset() {
         query = "";
         listSize = "";
         start = 0;

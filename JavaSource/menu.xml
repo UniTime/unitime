@@ -1062,7 +1062,7 @@
 					<hasPermission name="HibernateStatistics"/>
 				</condition>
 			</item>
-			<item name="Test HQL" page="hibernateQueryTest.do">
+			<item name="Test HQL" page="hibernateQueryTest.action">
 				<condition>
 					<hasPermission name="TestHQL"/>
 				</condition>

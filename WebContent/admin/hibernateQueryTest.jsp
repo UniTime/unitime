@@ -17,50 +17,41 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" %>
-<%@ page errorPage="../error.jsp" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<html:form action="/hibernateQueryTest">
-	<html:hidden property="start"/>
-	<html:hidden property="next"/>
-
-	<TABLE width="100%">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="hibernateQueryTest">
+	<s:hidden name="form.start"/>
+	<s:hidden name="form.next"/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
-					<tt:section-title>HQL</tt:section-title>
-					<html:submit property="op" accesskey="S" titleKey="button.submit">
-						<bean:message key="button.submit"/>
-					</html:submit>
-					<html:submit property="op" accesskey="C" value="Clear Cache" title="Clear Hibernate Cache (Alt+C)"/>
+					<tt:section-title><loc:message name="sectHQL"/></tt:section-title>
+					<s:submit name='op' value='%{#msg.actionSubmitQuery()}'
+						accesskey='%{#msg.accessSubmitQuery()}' title='%{#msg.titleSubmitQuery(#msg.accessSubmitQuery())}'/>
+					<s:submit name='op' value='%{#msg.actionClearCache()}'
+						accesskey='%{#msg.accessClearCache()}' title='%{#msg.titleClearCache(#msg.accessClearCache())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
-		<logic:messagesPresent>
-		<TR>
-			<TD valign="top">
-				Errors:
-			</TD>
-			<TD class="errorCell">
-				<html:messages id="error">
-					${error}<br>
-			    </html:messages>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD valign="top">
+				<loc:message name="propError"/>
+			</TD><TD>
+				<s:fielderror/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
 			<TD valign="top">
-				Query:
+				<loc:message name="propQuery"/>
 			</TD>
 			<TD>
-				<html:textarea property="query" rows="12" cols="120"></html:textarea>
+				<s:textarea name="form.query" rows="12" cols="120"/>
 			</TD>
 		</TR>
 		
@@ -70,45 +61,52 @@
 			</TD>
 		</TR>
 
-		<logic:notEmpty name="hibernateQueryTestForm" property="listSize">		
+		<s:if test="form.listSize != null && !form.listSize.isEmpty()">
 			<TR>
 				<TD colspan='2'>
 					<tt:section-header>
-						<tt:section-title>Result (<bean:write name="hibernateQueryTestForm" property="listSize" />)</tt:section-title>
-						<logic:greaterThan value="0" name="hibernateQueryTestForm" property="start">
-							<html:submit property="op" accesskey="P" value="Previous" title="Previous (Alt+P)"/>
-						</logic:greaterThan>
-						<logic:equal value="true" name="hibernateQueryTestForm" property="next">
-							<html:submit property="op" accesskey="N" value="Next" title="Next (Alt+N)"/>
-						</logic:equal>
-						<logic:equal value="true" name="hibernateQueryTestForm" property="export">
-							<html:submit property="op" accesskey="E" value="Export CSV" title="Export CSV (Alt+E)"/>
-						</logic:equal>
+						<tt:section-title><loc:message name="sectQueryResult"><s:property value="form.listSize"/></loc:message></tt:section-title>
+						<s:if test="form.start > 0">
+							<s:submit name='op' value='%{#msg.actionPreviousQueryResults()}'
+								accesskey='%{#msg.accessPreviousQueryResults()}' title='%{#msg.titlePreviousQueryResults(#msg.accessPreviousQueryResults())}'/>
+						</s:if>
+						<s:if test="form.next == true">
+							<s:submit name='op' value='%{#msg.actionNextQueryResults()}'
+								accesskey='%{#msg.accessNextQueryResults()}' title='%{#msg.titleNextQueryResults(#msg.accessNextQueryResults())}'/>
+						</s:if>
+						<s:if test="form.export == true">
+							<s:submit name='op' value='%{#msg.actionExportCsv()}'
+								accesskey='%{#msg.accessExportCsv()}' title='%{#msg.titleExportCsv(#msg.accessExportCsv())}'/>
+						</s:if>
 					</tt:section-header>
 				</TD>
 			</TR>
-		
-			<logic:notEmpty scope="request" name="result">
+			
+			<s:if test="#request.result != null && !#request.result.isEmpty()">
 				<TR>
 					<TD colspan='2'>
-						<bean:write scope="request" name="result" filter="false"/>
+						<div style="position: relative; overflow-x: scroll; max-width: 99vw;">
+							<s:property value="#request.result" escapeHtml="false"/>
+						</div>
 					</TD>
 				</TR>
-			</logic:notEmpty>
-		</logic:notEmpty>
+			</s:if>
+		</s:if>
 		
-		<logic:notEmpty scope="request" name="sql">
+		<s:if test="#request.sql != null && !#request.sql.isEmpty()">
 			<TR>
 				<TD colspan='2'>
-					<br><tt:section-title>Generated SQL</tt:section-title>
+					<br><tt:section-title><loc:message name="sectGeneratedSQL"/></tt:section-title>
 				</TD>
 			</TR>
 			<TR>
 				<TD colspan='2'>
-					<bean:write scope="request" name="sql" filter="false"/>
+					<div style="position: relative; overflow-x: scroll; max-width: 99vw;">
+						<s:property value="#request.sql" escapeHtml="false"/>
+					</div>
 				</TD>
 			</TR>
-		</logic:notEmpty>	
+		</s:if>
 		
 		<TR>
 			<TD colspan='2'>
@@ -118,13 +116,13 @@
 		
 		<TR>
 			<TD colspan='2' align="right">
-				<html:submit property="op" accesskey="S" titleKey="button.submit">
-					<bean:message key="button.submit"/>
-				</html:submit>
-				<html:submit property="op" accesskey="C" value="Clear Cache" title="Clear Hibernate Cache (Alt+C)"/>
+				<s:submit name='op' value='%{#msg.actionSubmitQuery()}'
+					accesskey='%{#msg.accessSubmitQuery()}' title='%{#msg.titleSubmitQuery(#msg.accessSubmitQuery())}'/>
+				<s:submit name='op' value='%{#msg.actionClearCache()}'
+					accesskey='%{#msg.accessClearCache()}' title='%{#msg.titleClearCache(#msg.accessClearCache())}'/>
 			</TD>
 		</TR>
-
 	</TABLE>
 
-</html:form>	
+</s:form>
+</loc:bundle>

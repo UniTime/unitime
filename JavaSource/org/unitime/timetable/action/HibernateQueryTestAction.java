@@ -26,17 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringEscapeUtils;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.dom4j.Document;
 import org.hibernate.MappingException;
 import org.hibernate.Query;
@@ -52,10 +46,10 @@ import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.BufferedPrinter;
 import org.unitime.timetable.export.CSVPrinter;
@@ -63,85 +57,69 @@ import org.unitime.timetable.export.hql.TestHqlExportToCSV;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 12-16-2005
- * 
- * XDoclet definition:
- * @struts:action path="/hibernateQueryTest" name="hibernateQueryTestForm" input="/form/hibernateQueryTest.jsp" scope="request"
- *
- * @author Tomas Muller
+ *  @author Tomas Muller
  */
-@Service("/hibernateQueryTest")
-public class HibernateQueryTestAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "hibernateQueryTest", results = {
+		@Result(name = "displayQueryForm", type = "tiles", location = "hibernateQueryTest.tiles")
+	})
+@TilesDefinition(name = "hibernateQueryTest.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Test HQL"),
+		@TilesPutAttribute(name = "body", value = "/admin/hibernateQueryTest.jsp")
+	})
 
-    // --------------------------------------------------------- Instance Variables
+public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestForm> {
+	private static final long serialVersionUID = 4379704237143143345L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
-    // --------------------------------------------------------- Methods
-
-    /** 
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-
+	@Override
+    public String execute() throws Exception {
     	sessionContext.checkPermission(Right.TestHQL);
-
-		String op = request.getParameter("op");
-		if(op==null || (!op.equals("Submit") && !op.equals("Export CSV") && !op.equals("Next") && !op.equals("Previous") && !op.equals("Back"))) {
-		    if ("Clear Cache".equals(op)) 
-		        HibernateUtil.clearCache();
-		    return mapping.findForward("displayQueryForm");
+    	if (form == null)
+    		form = new HibernateQueryTestForm();
+    	
+    	if (op == null)
+    		return "displayQueryForm";
+    	
+    	if (MSG.actionClearCache().equals(op)) {
+    		HibernateUtil.clearCache();
+		    return "displayQueryForm";
 		}
-		
-        HibernateQueryTestForm frm = (HibernateQueryTestForm) form;
 
-        if ("Back".equals(op)) {
-        	if (frm.getQuery() == null || frm.getQuery().isEmpty()) {
+        if ("Back".equals(op) || MSG.actionBackToDetail().equals(op)) {
+        	if (form.getQuery() == null || form.getQuery().isEmpty()) {
         		String q = (String)request.getSession().getAttribute("TestHQL.LastQuery");
-        		if (q != null) frm.setQuery(q);
+        		if (q != null) form.setQuery(q);
         	}
         }
 		
-        ActionMessages errors =  frm.validate(mapping, request);
+        form.validate(this);
         
-        if ("Next".equals(op)) {
-        	frm.setStart(frm.getStart() + ApplicationProperty.TestHQLMaxLines.intValue());
+        if (MSG.actionNextQueryResults().equals(op)) {
+        	form.setStart(form.getStart() + ApplicationProperty.TestHQLMaxLines.intValue());
         }
-        if ("Previous".equals(op)) {
-        	frm.setStart(Math.max(0, frm.getStart() - ApplicationProperty.TestHQLMaxLines.intValue()));
+        if (MSG.actionPreviousQueryResults().equals(op)) {
+        	form.setStart(Math.max(0, form.getStart() - ApplicationProperty.TestHQLMaxLines.intValue()));
         }
-        if ("Submit".equals(op)) {
-        	frm.setStart(0);
+        if (MSG.actionSubmitQuery().equals(op)) {
+        	form.setStart(0);
         }
         
-        if ("Export CSV".equals(op) && errors.size()==0) {
-        	String query = frm.getQuery();
+        if (MSG.actionExportCsv().equals(op) && !hasFieldErrors()) {
+        	String query = form.getQuery();
 	        for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (query.indexOf("%" + o.name() + "%") >= 0) {
 					String value = null;
 					if (value == null || value.isEmpty()) {
 						Map<Long, String> vals = o.values(sessionContext.getUser());
 						if (vals == null || vals.isEmpty()) {
-							errors.add("query", new ActionMessage("errors.generic", "Unable to set parameter " + o.name() + ": no available values."));
-							saveErrors(request, errors);        
-					        return mapping.findForward("displayQueryForm");
+							addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues());
+					        return "displayQueryForm";
 						}
 						value = "";
 						for (Long id: vals.keySet()) {
@@ -170,19 +148,21 @@ public class HibernateQueryTestAction extends Action {
         	return null;
         }
         
-        frm.setExport(false);
+        form.setExport(false);
         
-        if(errors.size()==0) {
+        if (!hasFieldErrors()) {
             try {
             	int limit = ApplicationProperty.TestHQLMaxLines.intValue();
-		        String query = frm.getQuery();
+		        String query = form.getQuery();
 		        for (SavedHQL.Option o: SavedHQL.Option.values()) {
 					if (query.indexOf("%" + o.name() + "%") >= 0) {
 						String value = null;
 						if (value == null || value.isEmpty()) {
 							Map<Long, String> vals = o.values(sessionContext.getUser());
-							if (vals == null || vals.isEmpty())
-								throw new Exception("Unable to set parameter " + o.name() + ": no available values.");
+							if (vals == null || vals.isEmpty()) {
+								addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues());
+						        return "displayQueryForm";
+							}
 							value = "";
 							for (Long id: vals.keySet()) {
 								if (!value.isEmpty()) value += ",";
@@ -208,7 +188,7 @@ public class HibernateQueryTestAction extends Action {
 		        	Debug.error(e);
 		        }
 		        
-		        q.setFirstResult(frm.getStart());
+		        q.setFirstResult(form.getStart());
 		        if (limit > 0) q.setMaxResults(limit + 1);
 		        try {
 	                List l = q.list();
@@ -231,21 +211,21 @@ public class HibernateQueryTestAction extends Action {
 	                    printFooter(s);
 	                    request.setAttribute("result", s.toString());
 	                }
-	                if (frm.getStart() == 0) {
+	                if (form.getStart() == 0) {
 	                	if (limit > 0 && l.size() > limit) {
-	                		frm.setListSize(limit + "+ lines");
+	                		form.setListSize(limit + "+ " + MSG.queryLines());
 	                	} else {
-	                		frm.setListSize(l.size() + " lines");
+	                		form.setListSize(l.size() + " " + MSG.queryLines());
 	                	}
 	                } else {
 	                	if (limit > 0 && l.size() > limit) {
-	                		frm.setListSize("lines " + frm.getStart() + " ... " + (frm.getStart() + limit));
+	                		form.setListSize(MSG.queryLines() + " " + form.getStart() + " ... " + (form.getStart() + limit));
 	                	} else {
-	                		frm.setListSize("lines " + frm.getStart() + " ... " + (frm.getStart() + l.size()));
+	                		form.setListSize(MSG.queryLines() + " " + form.getStart() + " ... " + (form.getStart() + l.size()));
 	                	}
 	                }
-	                frm.setExport(!l.isEmpty());
-	                frm.setNext(limit > 0 && l.size() > limit);
+	                form.setExport(!l.isEmpty());
+	                form.setNext(limit > 0 && l.size() > limit);
 			        if (!ids.isEmpty() && alias != null && alias.length > 0 && alias[0].startsWith("__")) {
 			        	if ("__Class".equals(alias[0]))
 			    			Navigation.set(sessionContext, Navigation.sClassLevel, ids);
@@ -267,8 +247,8 @@ public class HibernateQueryTestAction extends Action {
 		            try {
 		                tx = hibSession.beginTransaction();
 		                int i = q.executeUpdate();
-	                    request.setAttribute("result", i+" lines updated.");
-	                    frm.setListSize(i + " lines updated");
+	                    request.setAttribute("result", MSG.queryLinesUpdated(i));
+	                    form.setListSize(MSG.queryLinesUpdated(i));
 		                tx.commit();
 		            } catch (Exception ex) {
 		                if (tx!=null && tx.isActive()) tx.rollback();
@@ -279,18 +259,16 @@ public class HibernateQueryTestAction extends Action {
 		        }
             } catch (SQLGrammarException e) {
             	if (e.getSQLException() != null)
-            		errors.add("query", new ActionMessage("errors.generic", e.getSQLException().getMessage()));
+            		addFieldError("form.query", e.getSQLException().getMessage());
             	else
-            		errors.add("query", new ActionMessage("errors.generic", e.getMessage()));
-            	Debug.error(e);
+            		addFieldError("form.query", e.getMessage());
             } catch (Exception e) {
-                errors.add("query", 
-                        	new ActionMessage("errors.generic", e.getMessage()));
+            	addFieldError("form.query", e.getMessage());
                 Debug.error(e);
             }
         }
         
-        String url = "hibernateQueryTest.do?query="+URLEncoder.encode(frm.getQuery(), "utf-8")+"&start="+frm.getStart()+"&op=Back";
+        String url = "hibernateQueryTest.action?form.query="+URLEncoder.encode(form.getQuery(), "utf-8")+"&form.start="+form.getStart()+"&op=Back";
         if (url.length() <= 2000) {
         	request.getSession().removeAttribute("TestHQL.LastQuery");
             BackTracker.markForBack(
@@ -298,17 +276,15 @@ public class HibernateQueryTestAction extends Action {
     				url, "HQL", 
     				true, true);
         } else {
-        	request.getSession().setAttribute("TestHQL.LastQuery", frm.getQuery());
+        	request.getSession().setAttribute("TestHQL.LastQuery", form.getQuery());
         	BackTracker.markForBack(
         			request,
-        			"hibernateQueryTest.do?start="+frm.getStart()+"&op=Back", "HQL", 
+        			"hibernateQueryTest.action?form.start="+form.getStart()+"&op=Back", "HQL", 
     				true, true);
         }
         	
 
-        saveErrors(request, errors);        
-        return mapping.findForward("displayQueryForm");
-        
+        return "displayQueryForm";
     }
     
     private void header(StringBuffer s, int idx, String text) {

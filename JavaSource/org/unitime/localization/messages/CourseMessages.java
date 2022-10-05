@@ -4037,4 +4037,67 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("API Token:")
 	String propAPIKey();
+	
+	@DefaultMessage("Query is required.")
+	String errorQueryIsRequired();
+	
+	@DefaultMessage("Unable to set parameter {0}: no available values.")
+	String errorCannotSetQueryParameterNoValues();
+	
+	@DefaultMessage("Clear Cache")
+	String actionClearCache();
+	
+	@DefaultMessage("Next")
+	String actionNextQueryResults();
+	
+	@DefaultMessage("Previous")
+	String actionPreviousQueryResults();
+	
+	@DefaultMessage("Submit")
+	String actionSubmitQuery();
+	
+	@DefaultMessage("C")
+	String accessClearCache();
+	
+	@DefaultMessage("N")
+	String accessNextQueryResults();
+	
+	@DefaultMessage("P")
+	String accessPreviousQueryResults();
+	
+	@DefaultMessage("S")
+	String accessSubmitQuery();
+	
+	@DefaultMessage("Clear Hibernate Cache (Alt + {0})")
+	String titleClearCache(String access);
+	
+	@DefaultMessage("Next Page (Alt + {0})")
+	String titleNextQueryResults(String access);
+	
+	@DefaultMessage("Previous Page (Alt + {0})")
+	String titlePreviousQueryResults(String access);
+	
+	@DefaultMessage("Submit Query (ALt + {0})")
+	String titleSubmitQuery(String access);
+	
+	@DefaultMessage("lines")
+	String queryLines();
+	
+	@DefaultMessage("{0} lines updated")
+	String queryLinesUpdated(int number);
+	
+	@DefaultMessage("HQL")
+	String sectHQL();
+	
+	@DefaultMessage("Generated SQL")
+	String sectGeneratedSQL();
+	
+	@DefaultMessage("Result ({0})")
+	String sectQueryResult(String lines);
+	
+	@DefaultMessage("Error:")
+	String propError();
+	
+	@DefaultMessage("Query:")
+	String propQuery();
 }
