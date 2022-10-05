@@ -4100,4 +4100,22 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Query:")
 	String propQuery();
+	
+	@DefaultMessage("Detailed Statistics")
+	String sectDetailedStatistics();
+	
+	@DefaultMessage("Summary Statistics")
+	String sectSummaryStatistics();
+	
+	@DefaultMessage("Enable Statistics")
+	String actionEnableStatistics();
+	
+	@DefaultMessage("Disable Statistics")
+	String actionDisableStatistics();
+	
+	@DefaultMessage("Show Details")
+	String actionShowDetails();
+	
+	@DefaultMessage("Hide Details")
+	String actionHideDetails();
 }

@@ -73,9 +73,7 @@ public class StatsProvider {
             // Generate HTML table
             Table table = new Table();
             table.setWidth("100%");
-            table.setBorder(0);
-            table.setCellSpacing(0);
-            table.setCellPadding(3);
+            table.setStyleClass("unitime-Table");
 
             // Links
             StringBuffer links = new StringBuffer("");
@@ -103,12 +101,19 @@ public class StatsProvider {
         	// Link to top
         	TableRow linkToTop = new TableRow();
         	linkToTop.addContent(cell("<A class=\"l7\" href=\"#BackToTop\">Back to Top</A>", 1, 2, true, "right", "middle"));
+        	
+        	
+        	hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
             
         	
             // ---------------------- Overall Stats ------------------------
         	row = new TableRow();
-        	row.addContent(headerCell("<A name=\"BackToTop\">Metric</A>", 1, 1));
-        	row.addContent(headerCell("Value", 1, 1));
+        	TableHeaderCell xc = headerCell("<A id=\"BackToTop\"></A>Metric", 1, 2);
+            xc.setStyleClass("WelcomeRowHead");
+            row.addContent(xc);
+            xc.setStyle("min-width:400px;");
         	table.addContent(row);
 
         	row = new TableRow();
@@ -162,13 +167,20 @@ public class StatsProvider {
             table.addContent(row);
 
             row = new TableRow();
-            row.addContent(cell("<hr>", 1, 2, false));
+            row.addContent(cell("&nbsp;", 1, 2, false));
             table.addContent(row);
+            
+            hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
 
  
             // ---------------------- Entity Stats ------------------------
             row = new TableRow();
-            row.addContent(headerCell("<A name=\"Entity\">Entity</A>:", 1, 2));
+            xc = headerCell("<A id=\"Entity\"></A>Entity", 1, 2);
+            xc.setStyleClass("WelcomeRowHead");
+            xc.setStyle("min-width:400px;");
+            row.addContent(xc);
             table.addContent(row);
 
             row = new TableRow();
@@ -196,19 +208,24 @@ public class StatsProvider {
             row.addContent(cell(stats.getEntityDeleteCount()+"", 1, 1, false));
             table.addContent(row);
 
-            row = new TableRow();
-            row.addContent(cell("<hr>", 1, 2, false));
-            table.addContent(row);
-
         	table.addContent(linkToTop);
+
+        	row = new TableRow();
+            row.addContent(cell("&nbsp;", 1, 2, false));
+            table.addContent(row);
+        	
+        	hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
             
 
             // ---------------------- Detailed Entity Stats ------------------------
             
             if(!summaryOnly) {
-
 	            row = new TableRow();
-	            row.addContent(headerCell("<A name=\"EntityDetail\">Entity Statistics Detail</A>:", 1, 2));
+	            TableHeaderCell hc = headerCell("<A id=\"EntityDetail\"></A>Entity Statistics Detail", 1, 2);
+	            hc.setStyleClass("WelcomeRowHead");
+	            row.addContent(hc);
 	            table.addContent(row);
 	
 	            String[] cEntityNames = stats.getEntityNames();
@@ -220,8 +237,7 @@ public class StatsProvider {
 	            }
 	            else {
 	                Table subTable = new Table();
-	                subTable.setCellSpacing(1);
-	                subTable.setCellPadding(3);
+	                subTable.setStyleClass("unitime-Table");
 	
 	            	row = new TableRow();
 	            	row.addContent(headerCell(" &nbsp; ", 1, 1));
@@ -253,17 +269,24 @@ public class StatsProvider {
 	                table.addContent(row);
 	            }
 	
-	            row = new TableRow();
-	            row.addContent(cell("<hr>", 1, 2, false));
+	        	table.addContent(linkToTop);
+
+	        	row = new TableRow();
+	            row.addContent(cell("&nbsp;", 1, 2, false));
 	            table.addContent(row);
 
-	        	table.addContent(linkToTop);
-            }            
+	        	hibStats.append(table.toHtml());
+	        	table = new Table();
+	            table.setStyleClass("unitime-Table");
+            }
            
             
             // ---------------------- Collection Stats ------------------------
             row = new TableRow();
-            row.addContent(headerCell("<A name=\"Collection\">Collection</A>:", 1, 2));
+            xc = headerCell("<A id=\"Collection\"></A>Collection", 1, 2);
+            xc.setStyleClass("WelcomeRowHead");
+            xc.setStyle("min-width:400px;");
+            row.addContent(xc);
             table.addContent(row);
 
             row = new TableRow();
@@ -291,18 +314,24 @@ public class StatsProvider {
             row.addContent(cell(stats.getCollectionRecreateCount()+"", 1, 1, false));
             table.addContent(row);
 
-            row = new TableRow();
-            row.addContent(cell("<hr>", 1, 2, false));
+        	table.addContent(linkToTop);
+
+        	row = new TableRow();
+            row.addContent(cell("&nbsp;", 1, 2, false));
             table.addContent(row);
 
-        	table.addContent(linkToTop);
+        	hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
 
 
             // ---------------------- Detailed Collection Stats ------------------------
             if(!summaryOnly) {
 
 	            row = new TableRow();
-	            row.addContent(headerCell("<A name=\"CollectionDetail\">Collection Statistics Detail</A>:", 1, 2));
+	            TableHeaderCell hc = headerCell("<A id=\"CollectionDetail\"></A>Collection Statistics Detail", 1, 2);
+	            hc.setStyleClass("WelcomeRowHead");
+	            row.addContent(hc);
 	            table.addContent(row);
 	
 	            String[] cRoleNames = stats.getCollectionRoleNames();
@@ -314,8 +343,7 @@ public class StatsProvider {
 	            }
 	            else {
 	                Table subTable = new Table();
-	                subTable.setCellSpacing(1);
-	                subTable.setCellPadding(3);
+	                subTable.setStyleClass("unitime-Table");
 	
 	            	row = new TableRow();
 	            	row.addContent(headerCell(" &nbsp; ", 1, 1));
@@ -352,12 +380,18 @@ public class StatsProvider {
 	            table.addContent(row);
 
 	        	table.addContent(linkToTop);
+	        	hibStats.append(table.toHtml());
+	        	table = new Table();
+	            table.setStyleClass("unitime-Table");
             }
             
             
             // ---------------------- Second Level Cache Stats ------------------------
             row = new TableRow();
-            row.addContent(headerCell("<A name=\"SecondLevelCache\">Second Level Cache</A>:", 1, 2));
+            xc = headerCell("<A id=\"SecondLevelCache\"></A>Second Level Cache", 1, 2);
+            xc.setStyleClass("WelcomeRowHead");
+            xc.setStyle("min-width:400px;");
+            row.addContent(xc);
             table.addContent(row);
 
             row = new TableRow();
@@ -375,18 +409,24 @@ public class StatsProvider {
             row.addContent(cell(stats.getSecondLevelCachePutCount()+"", 1, 1, false));
             table.addContent(row);
 
-            row = new TableRow();
-            row.addContent(cell("<hr>", 1, 2, false));
+        	table.addContent(linkToTop);
+
+        	row = new TableRow();
+            row.addContent(cell("&nbsp;", 1, 2, false));
             table.addContent(row);
 
-        	table.addContent(linkToTop);
+        	hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
 
             
             // ---------------------- Detailed Second Level Cache Stats ------------------------
             if(!summaryOnly) {
 
 	            row = new TableRow();
-	            row.addContent(headerCell("<A name=\"SecondLevelCacheDetail\">Second Level Cache Statistics Detail</A>:", 1, 2));
+	            TableHeaderCell hc = headerCell("<A id=\"SecondLevelCacheDetail\"></A>Second Level Cache Statistics Detail", 1, 2);
+	            hc.setStyleClass("WelcomeRowHead");
+	            row.addContent(hc);
 	            table.addContent(row);
 	
 	            String[] cRegionNames = stats.getSecondLevelCacheRegionNames();
@@ -398,8 +438,7 @@ public class StatsProvider {
 	            }
 	            else {
 	                Table subTable = new Table();
-	                subTable.setCellSpacing(1);
-	                subTable.setCellPadding(3);
+	                subTable.setStyleClass("unitime-Table");
 	
 	            	row = new TableRow();
 	            	row.addContent(headerCell(" &nbsp; ", 1, 1));
@@ -410,6 +449,9 @@ public class StatsProvider {
 	            	row.addContent(headerCell(" In Memory ", 1, 1));
 	            	row.addContent(headerCell(" On Disk ", 1, 1));
 	            	row.addContent(headerCell(" Memory ", 1, 1));
+	            	
+	            	for (int i = 1; i < row.getContents().size(); i++)
+	            		((TableHeaderCell)row.getContents().get(i)).setAlign("right");
 	            	subTable.addContent(row);
 	            	
 	            	long elementsInMem = 0, elementsOnDisk = 0, putCnt = 0, missCnt = 0, hitCnt = 0, size = 0;
@@ -447,6 +489,8 @@ public class StatsProvider {
 	            	row.addContent(headerCell(""+elementsInMem, 1, 1));
 	            	row.addContent(headerCell(""+elementsOnDisk, 1, 1));
 	            	row.addContent(headerCell(size+" bytes", 1, 1));
+	            	for (Object x: row.getContents())
+	            		((TableHeaderCell)x).setStyleClass(null);
 	            	subTable.addContent(row);
 	                
 	
@@ -455,17 +499,25 @@ public class StatsProvider {
 	                table.addContent(row);
 	            }
 	
-	            row = new TableRow();
-	            row.addContent(cell("<hr>", 1, 2, false));
+	        	table.addContent(linkToTop);
+
+	        	row = new TableRow();
+	            row.addContent(cell("&nbsp;", 1, 2, false));
 	            table.addContent(row);
 
-	        	table.addContent(linkToTop);
+	        	hibStats.append(table.toHtml());
+	        	table = new Table();
+	            table.setStyleClass("unitime-Table");
+
             }
 
             
             // ---------------------- Query Stats ------------------------
            row = new TableRow();
-            row.addContent(headerCell("<A name=\"Query\">Query</A>:", 1, 2));
+            xc = headerCell("<A id=\"Query\"></A>Query", 1, 2);
+            xc.setStyleClass("WelcomeRowHead");
+            xc.setStyle("min-width:400px;");
+            row.addContent(xc);
             table.addContent(row);
 
             row = new TableRow();
@@ -493,18 +545,22 @@ public class StatsProvider {
             row.addContent(cell(stats.getQueryCachePutCount()+"", 1, 1, false));
             table.addContent(row);
 
-            row = new TableRow();
-            row.addContent(cell("<hr>", 1, 2, false));
-            table.addContent(row);
-
         	table.addContent(linkToTop);
 
+        	row = new TableRow();
+            row.addContent(cell("&nbsp;", 1, 2, false));
+            table.addContent(row);
+
+        	hibStats.append(table.toHtml());
+        	table = new Table();
+            table.setStyleClass("unitime-Table");
 
             // ---------------------- Detailed Query Stats ------------------------
             if(!summaryOnly) {
-
-	            row = new TableRow();
-	           	row.addContent(headerCell("<A name=\"QueryDetail\">Query Statistics Detail</A>:", 1, 2));
+            	row = new TableRow();
+            	TableHeaderCell hc = headerCell("<A id='QueryDetail'></a>Query Statistics Detail", 1, 2);
+            	hc.setStyleClass("WelcomeRowHead");
+	           	row.addContent(hc);
 	           	table.addContent(row);
 	
 	           	String[] cQueryStrings = stats.getQueries();
@@ -516,8 +572,7 @@ public class StatsProvider {
 	            }
 	            else {
 	                Table subTable = new Table();
-	                subTable.setCellSpacing(1);
-	                subTable.setCellPadding(3);
+	                subTable.setStyleClass("unitime-Table");
 	
 	            	row = new TableRow();
 	            	row.addContent(headerCell(" &nbsp; ", 1, 1));
@@ -538,11 +593,17 @@ public class StatsProvider {
 	                    row = new TableRow();
 	                    if(i%2==0)
 	                        row.setBgColor(evenRowColor);
-	                    row.addContent(cell(cQueryString + " &nbsp;", 1, 1, false));
+	                    TableCell c = cell(cQueryString + " &nbsp;", 1, 1, false);
+	                    c.setStyle("white-space:normal;");
+	                    row.addContent(c);
 	                    row.addContent(cell(qStats.getExecutionCount()+"", 1, 1, false));
 	                    row.addContent(cell(qStats.getExecutionRowCount()+"", 1, 1, false));
 	                    row.addContent(cell(qStats.getExecutionMaxTime()+" ms", 1, 1, false));
-	                    row.addContent(cell(qStats.getExecutionMinTime()+" ms", 1, 1, false));
+	                    if (qStats.getExecutionMinTime() > qStats.getExecutionMaxTime()) {
+	                    	row.addContent(cell("", 1, 1, false));
+	                    } else {
+	                    	row.addContent(cell(qStats.getExecutionMinTime()+" ms", 1, 1, false));
+	                    }
 	                    row.addContent(cell(qStats.getExecutionAvgTime()+" ms", 1, 1, false));
 	                    row.addContent(cell(qStats.getCacheHitCount()+"", 1, 1, false));
 	                    row.addContent(cell(qStats.getCacheMissCount()+"", 1, 1, false));
@@ -555,15 +616,14 @@ public class StatsProvider {
 	                table.addContent(row);
 	            }
 	
-	            row = new TableRow();
-	            row.addContent(cell("<hr>", 1, 2, false));
+	        	table.addContent(linkToTop);
+
+	        	row = new TableRow();
+	            row.addContent(cell("&nbsp;", 1, 2, false));
 	            table.addContent(row);
 
-	        	table.addContent(linkToTop);
+	            hibStats.append(table.toHtml());
             }
-            
-            // Add to generated HTML
-            hibStats.append(table.toHtml());
         }
         catch (Exception e) {
             hibStats.append("Exception occured: " + e.getMessage());
@@ -582,14 +642,17 @@ public class StatsProvider {
      */
     private TableHeaderCell headerCell(String content, int rowSpan, int colSpan){
     	TableHeaderCell cell = new TableHeaderCell();
+    	cell.setStyleClass("unitime-TableHeader");
     	cell.setRowSpan(rowSpan);
     	cell.setColSpan(colSpan);
     	cell.setNoWrap(true);
-    	cell.setAlign("left");
+    	cell.setAlign(content.matches(" ?[0-9]+ ?[a-z]*") ? "right" : "left");
     	cell.setValign("top");
-    	cell.addContent("<font size=\"-1\">");
     	cell.addContent(content);
-    	cell.addContent("</font>");
+    	if ("Value".equals(content)) {
+    		cell.setStyle("min-width: 100px;");
+    		cell.setAlign("right");
+    	}
     	return(cell);
      }
         
@@ -602,7 +665,8 @@ public class StatsProvider {
      * @return TableCell Object
      */
     private TableCell cell(String content, int rowSpan, int colSpan, boolean noWrap){
-    	TableCell cell = cell(content, rowSpan, colSpan, noWrap, "left", "top");
+    	TableCell cell = cell(content, rowSpan, colSpan, noWrap,
+    			content.matches(" ?[0-9]+ ?[a-z]*") ? "right" : "left", "top");
     	return(cell);
     }
     
@@ -623,9 +687,7 @@ public class StatsProvider {
     	cell.setNoWrap(noWrap);
     	cell.setAlign(align);
     	cell.setValign(valign);
-    	cell.addContent("<font size=\"-1\">");
     	cell.addContent(content);
-    	cell.addContent("</font>");
     	return(cell);
     }
     

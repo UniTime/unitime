@@ -25,12 +25,9 @@ import java.util.Locale;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.configuration.event.ConfigurationEvent;
-import org.apache.commons.configuration.event.ConfigurationListener;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.listeners.SessionListener;
 
 
 /**
@@ -99,8 +96,6 @@ public class MessageResources extends org.apache.struts.util.MessageResources {
 				FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
 				strategy.setRefreshDelay(refreshDelay); 
 				pc.setReloadingStrategy(strategy);
-				
-				pc.addConfigurationListener(new MessageResourcesCfgListener(pc.getBasePath()));
 			}			
 			
 			try {
@@ -128,20 +123,6 @@ public class MessageResources extends org.apache.struts.util.MessageResources {
 
 	public static void setResourceFile(String resourceFile) {
 		MessageResources.resourceFile = resourceFile;
-	}
-	
-	class MessageResourcesCfgListener implements ConfigurationListener {
-
-		private String basePath;
-		
-		public MessageResourcesCfgListener(String basePath) {
-			this.basePath = basePath;
-		}
-		
-		public void configurationChanged(ConfigurationEvent arg0) {
-			SessionListener.reloadMessageResources(basePath);
-		}
-		
 	}
 }
 

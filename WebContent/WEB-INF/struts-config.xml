@@ -263,10 +263,6 @@
         redirect="true" />
     </action>
     
-    <action 
-    	path="/hibernateStats" 
-    	forward="hibrenateStatsTile" />
-      
 	    <action
 	      path="/timePatternEdit"
 	      attribute="timePatternEditForm"

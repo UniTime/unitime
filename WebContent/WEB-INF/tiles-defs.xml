@@ -171,12 +171,6 @@
 		<put name="title" type="string" value="Manage Solvers"/>
 		<put name="body" value="/tt/manageSolvers.jsp" />
   	</definition>
-
-	<definition	name="hibrenateStatsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Hibernate Statistics"/>
-		<put name="body" value="/admin/hibernateStats.jsp" />
-		<put name="checkAdmin" value="true" />
-  	</definition>
   	
   	<definition	name="classDetailTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Class Detail"/>

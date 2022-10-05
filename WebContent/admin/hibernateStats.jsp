@@ -17,38 +17,43 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" %>
-<%@ page errorPage="../error.jsp" %>
-<%@ page import="org.hibernate.SessionFactory" %>
-<%@ page import="org.unitime.timetable.model.dao._RootDAO" %>
-<%@ page import="org.unitime.commons.hibernate.stats.StatsProvider" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<sec:authorize access="hasPermission(null, null, 'HibernateStatistics')">
-<%
-    boolean details = "true".equals(request.getParameter("details"));
-	if (request.getParameter("enable")!=null) {
-		new _RootDAO().getSession().getSessionFactory().getStatistics().setStatisticsEnabled("true".equals(request.getParameter("enable")));
-	}
-	boolean enabled = new _RootDAO().getSession().getSessionFactory().getStatistics().isStatisticsEnabled();
-%>
-<TABLE width="100%">
-		<TR>
-			<TD>
-				<tt:section-header>
-					<tt:section-title>
-						<%=details?"Detailed Statistics":"Summary Statistics"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="hibernateStats">
+	<s:hidden name="details"/>
+<table class="unitime-MainTable">
+	<TR>
+		<TD>
+			<tt:section-header>
+				<tt:section-title>
+					<s:if test="details == true">
+						<loc:message name="sectDetailedStatistics"/>
+					</s:if><s:else>
+						<loc:message name="sectSummaryStatistics"/>
+					</s:else>
 					</tt:section-title>
-					<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value='<%=enabled?"Disable":"Enable"%> Statistics'>
-					<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value='<%=details?"Hide Details":"Show Details"%>'>
+					<s:if test="enabled == true">
+						<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+						<s:if test="details == true">
+							<s:submit name='op' value='%{#msg.actionHideDetails()}'/>
+						</s:if><s:else>
+							<s:submit name='op' value='%{#msg.actionShowDetails()}'/>
+						</s:else>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+					</s:else>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
 		<TR>
 			<TD>
-				<%=StatsProvider.getStatsHtml(!details)%>
+				<div style="position: relative; overflow-x: scroll; max-width: 99vw;">
+					<s:property value="stats" escapeHtml="false"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
@@ -58,12 +63,18 @@
 		</TR>
 		<TR>
 			<TD align='right'>
-				<input type='button' onclick="document.location='hibernateStats.do?details=<%=details%>&enable=<%=!enabled%>';" value='<%=enabled?"Disable":"Enable"%> Statistics'>
-				<input type='button' onclick="document.location='hibernateStats.do?details=<%=!details%>';" value='<%=details?"Hide Details":"Show Details"%>'>
+				<s:if test="enabled == true">
+					<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+					<s:if test="details == true">
+						<s:submit name='op' value='%{#msg.actionHideDetails()}'/>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionShowDetails()}'/>
+					</s:else>
+				</s:if><s:else>
+					<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+				</s:else>
 			</TD>
 		</TR>
-</TABLE>
-</sec:authorize>
-<sec:authorize access="!hasPermission(null, null, 'HibernateStatistics')">
-Access denied.
-</sec:authorize>
+</table>
+</s:form>
+</loc:bundle>

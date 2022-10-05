@@ -1057,7 +1057,7 @@
 					<hasPermission name="PageStatistics"/>
 				</condition>
 			</item>
-			<item name="Hibernate Statistics" page="hibernateStats.do">
+			<item name="Hibernate Statistics" page="hibernateStats.action">
 				<condition>
 					<hasPermission name="HibernateStatistics"/>
 				</condition>
