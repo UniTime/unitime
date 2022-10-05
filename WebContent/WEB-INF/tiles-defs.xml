@@ -330,20 +330,6 @@
 		<put name="showSolverWarnings" value="exams" />
   	</definition>
 
- 	<definition	name="sponsoringOrgListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Sponsoring Organizations"/>
-		<put name="body" value="/admin/sponsoringOrgList.jsp" />
-  	</definition>
-
- 	<definition	name="sponsoringOrgEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Sponsoring Organization"/>
-		<put name="body" value="/admin/sponsoringOrgEdit.jsp" />
-  	</definition>
-
- 	<definition	name="sponsoringOrgAddTile" extends="sponsoringOrgEditTile">
-		<put name="title" type="string" value="Add Sponsoring Organization"/>
-  	</definition>
-  	
    	<definition	name="roomTypeListTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Room Types"/>
 		<put name="body" value="/admin/roomTypeEdit.jsp" />

@@ -3839,6 +3839,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageAdvisorCourseRequests();
 	
+	@DefaultMessage("Sponsoring Organization")
+	@DoNotTranslate
+	String pageSponsoringOrganization();
+	
+	@DefaultMessage("Sponsoring Organizations")
+	@DoNotTranslate
+	String pageSponsoringOrganizations();
+	
 	@DefaultMessage("Buildings")
 	@DoNotTranslate
 	String pageBuildings();
