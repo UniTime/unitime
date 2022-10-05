@@ -323,23 +323,4 @@
   	<definition name="midtermExamPeriodTile" extends="examPeriodsTile">
 		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
-  	
- 	<definition	name="examPdfReportTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination PDF Reports"/>
-		<put name="body" value="/exam/pdfReport.jsp" />
-		<put name="showSolverWarnings" value="exams" />
-  	</definition>
-
-   	<definition	name="roomTypeListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Room Types"/>
-		<put name="body" value="/admin/roomTypeEdit.jsp" />
-  	</definition>
-  	
-   	<definition	name="roomTypeAddTile" extends="roomTypeListTile">
-		<put name="title" type="string" value="Add Room Type"/>
-  	</definition>
-
-   	<definition	name="roomTypeEditTile" extends="roomTypeListTile">
-		<put name="title" type="string" value="Edit Room Type"/>
-  	</definition>
 </tiles-definitions>

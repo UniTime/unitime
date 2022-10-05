@@ -891,7 +891,8 @@
 					<hasPermission name="StatusTypes"/>
 				</condition>
 			</item>
-			<item name="Room Types" page="roomTypeEdit.do">
+			<item name="Room Types" page="admin" type="gwt">
+				<parameter name="type">roomType</parameter>
 				<condition>
 					<hasPermission name="RoomTypes"/>
 				</condition>

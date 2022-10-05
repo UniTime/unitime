@@ -3847,6 +3847,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSponsoringOrganizations();
 	
+	@DefaultMessage("Room Type")
+	@DoNotTranslate
+	String pageRoomType();
+	
+	@DefaultMessage("Room Types")
+	@DoNotTranslate
+	String pageRoomTypes();
+	
 	@DefaultMessage("Buildings")
 	@DoNotTranslate
 	String pageBuildings();
@@ -7191,4 +7199,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Export of {0}")
 	String itemExportActionName(String type);
+	
+	@DefaultMessage("Label")
+	String fieldLabel();
+	
+	@DefaultMessage("Type")
+	String fieldRoomClassType();
+	
+	@DefaultMessage("Rooms")
+	String fieldNbrRooms();
+	
+	@DefaultMessage("Room")
+	String typeRoomClass();
+	
+	@DefaultMessage("Other Location")
+	String typeNonUniversityLocationClass();
 }
