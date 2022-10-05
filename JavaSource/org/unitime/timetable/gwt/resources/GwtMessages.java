@@ -3855,6 +3855,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageRoomTypes();
 	
+	@DefaultMessage("Default Manager Setting")
+	@DoNotTranslate
+	String pageDefaultSetting();
+	
+	@DefaultMessage("Default Manager Settings")
+	@DoNotTranslate
+	String pageDefaultSettings();
+	
 	@DefaultMessage("Buildings")
 	@DoNotTranslate
 	String pageBuildings();
@@ -7214,4 +7222,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Other Location")
 	String typeNonUniversityLocationClass();
+	
+	@DefaultMessage("Default Value")
+	String fieldDefaulValue();
+	
+	@DefaultMessage("Allowed Values")
+	String fieldAllowedValues();
+	
+	@DefaultMessage("Description")
+	String fieldDescription();
 }

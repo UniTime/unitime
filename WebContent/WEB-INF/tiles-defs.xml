@@ -123,19 +123,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
  
-	<definition	name="settingsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Default Manager Settings"/>
-		<put name="body" value="/admin/settings.jsp" />
-  	</definition>
-
-	<definition	name="settingsAddTile" extends="settingsTile">
-		<put name="title" type="string" value="Add Default Manager Setting"/>
-  	</definition>
-
-	<definition	name="settingsEditTile" extends="settingsTile">
-		<put name="title" type="string" value="Edit Default Manager Setting"/>
-  	</definition>
-  
 	<definition	name="solverParamGroupsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Parameter Groups"/>
 		<put name="body" value="/admin/solverParamGroups.jsp" />

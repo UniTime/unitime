@@ -1038,7 +1038,8 @@
 					<hasPermission name="ApplicationConfig"/>
 				</condition>
 			</item>
-			<item name="User Settings" page="settings.do">
+			<item name="User Settings" page="admin" type="gwt">
+				<parameter name="type">defaultSettings</parameter>
 				<condition>
 					<hasPermission name="SettingsAdmin"/>
 				</condition>

@@ -32,7 +32,6 @@
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
 	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
 	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
@@ -192,19 +191,6 @@
             redirect="true" />
       </action>
 
-      <action
-         path="/settings"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="settingsForm"
-         input="settingsTile"
-         name="settingsForm"
-         scope="request"
-         validate="false">
-         <forward name="list" path="settingsTile"/>      
-         <forward name="add" path="settingsAddTile"/>
-         <forward name="edit" path="settingsEditTile"/>
-      </action>
-      
       <action
       	path="/solverParamGroups"
       	type="org.springframework.web.struts.DelegatingActionProxy"
