@@ -136,7 +136,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
 					.list();
     	List<IdValue> availableDepts = new ArrayList<IdValue>();
     	for (Department d: list) {
-    		availableDepts.add(new IdValue(d.getUniqueId(), d.getDeptCode() + "-" + d.getName()));
+    		availableDepts.add(new IdValue(d.getUniqueId(), d.getLabel()));
     	}
     	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);        	
         

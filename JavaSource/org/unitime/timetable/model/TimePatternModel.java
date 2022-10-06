@@ -39,6 +39,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
@@ -152,7 +153,14 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	}
 	
 	public int getType() {
-		return (iTimePattern==null?TimePattern.sTypeStandard:iTimePattern.getType().intValue());
+		return (iTimePattern==null?TimePatternType.Standard.ordinal():iTimePattern.getType().intValue());
+	}
+	
+	public TimePatternType getTimePatternType() {
+		if (iTimePattern == null)
+			return null;
+		else
+			return iTimePattern.getTimePatternType();
 	}
 	
 	public String getName() {
@@ -580,7 +588,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     }
     
     public boolean isExactTime() {
-   		return getType()==TimePattern.sTypeExactTime;
+   		return getType()==TimePatternType.ExactTime.ordinal();
     }
     
     public int getExactDays() {

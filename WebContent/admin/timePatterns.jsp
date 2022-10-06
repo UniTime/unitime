@@ -17,195 +17,161 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<tiles:importAttribute />
-
-<html:form action="/timePatternEdit">
-<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-<html:hidden property="editable"/><html:errors property="editable"/>
-<html:hidden property="nextId"/>
-<html:hidden property="previousId"/>
-
-<logic:notEqual name="timePatternEditForm" property="op" value="List">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmTimeDatePattern"/></tt:confirm>
+<s:form action="timePatternEdit">
+<s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
+<s:if test="form.op != 'List'">
+ 	<s:hidden name="form.editable"/>
+	<s:hidden name="form.nextId"/>
+	<s:hidden name="form.previousId"/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="timePatternEditForm" property="op" value="Save">
-							Add
-						</logic:equal>
-						<logic:notEqual name="timePatternEditForm" property="op" value="Save">
-							Edit
-						</logic:notEqual>
-						Time Pattern
+						<s:if test="form.op == #msg.actionSaveTimePattern()">
+							<loc:message name="sectAddTimePattern"/>
+						</s:if><s:else>
+							<loc:message name="sectEditTimePattern"/>
+						</s:else>
 					</tt:section-title>
-					<html:submit property="op">
-						<bean:write name="timePatternEditForm" property="op" />
-					</html:submit> 
-					<logic:equal name="timePatternEditForm" property="hasPrevious" value="true">
-						<html:submit property="op" value="Previous"/>
-					</logic:equal>
-					<logic:equal name="timePatternEditForm" property="hasNext" value="true">
-						<html:submit property="op" value="Next"/>
-					</logic:equal>
-					<logic:notEqual name="timePatternEditForm" property="op" value="Save">
-					<logic:equal name="timePatternEditForm" property="editable" value="true">
-						<html:submit property="op" value="Delete"/> 
-					</logic:equal>
-					</logic:notEqual>
-					<html:submit property="op" value="Back" /> 
+					<s:submit name='op' value='%{form.op}'/>
+					<s:if test="form.hasPrevious == true">
+						<s:submit name='op' value='%{#msg.actionPreviousTimePattern()}'/>
+					</s:if>
+					<s:if test="form.hasNext == true">
+						<s:submit name='op' value='%{#msg.actionNextTimePattern()}'/>
+					</s:if>
+					<s:if test="form.op == #msg.actionUpdateTimePattern() && form.editable == true">
+						<s:submit name='op' value='%{#msg.actionDeleteTimePattern()}' onclick="return confirmDelete();"/>
+					</s:if>
+					<s:submit name='op' value='%{#msg.actionBackToTimePatterns()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Name:</TD>
+			<TD><loc:message name="propTimePatternName"/></TD>
 			<TD>
-				<html:text property="name" size="50" maxlength="100"/>
-				&nbsp;<html:errors property="name"/>
+				<s:textfield name="form.name" size="50" maxlength="100"/>
+				<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Type:</TD>
+			<TD><loc:message name="propTimePatternType"/></TD>
 			<TD>
-				<logic:equal name="timePatternEditForm" property="editable" value="true">
-					<html:text property="nrMtgs" size="2" maxlength="2"/>
+				<s:if test="form.editable == true">
+					<s:textfield name="form.nrMtgs" size="2" maxlength="2"/>
 					&times;
-					<html:text property="minPerMtg" size="3" maxlength="3"/>
+					<s:textfield name="form.minPerMtg" size="3" maxlength="3"/>
 					&nbsp;
-					<html:select property="type">
-						<html:options name="timePatternEditForm" property="types"/>
-					</html:select>
-					&nbsp;<html:errors property="nrMtgs"/>
-					&nbsp;<html:errors property="minPerMtg"/>
-					&nbsp;<html:errors property="type"/>
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
-					<bean:write name="timePatternEditForm" property="nrMtgs" />
-					<html:hidden name="timePatternEditForm" property="nrMtgs" />
+					<s:select name="form.type" list="form.types" listKey="value" listValue="label"/>
+					<s:fielderror fieldName="form.nrMtgs"/>
+					<s:fielderror fieldName="form.minPerMtg"/>
+					<s:fielderror fieldName="form.type"/>
+				</s:if><s:else>
+					<s:property value="form.nrMtgs"/><s:hidden name="form.nrMtgs"/>
 					&times;
-					<bean:write name="timePatternEditForm" property="minPerMtg" />
-					<html:hidden name="timePatternEditForm" property="minPerMtg" />
+					<s:property value="form.minPerMtg"/><s:hidden name="form.minPerMtg"/>
 					&nbsp;
-					<html:select property="type">
-						<html:options name="timePatternEditForm" property="types"/>
-					</html:select>
-					&nbsp;<html:errors property="type"/>
-				</logic:notEqual>
+					<s:select name="form.type" list="form.types" listKey="value" listValue="label"/>
+					<s:fielderror fieldName="form.type"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Visible:</TD>
+			<TD><loc:message name="propTimePatternVisible"/></TD>
 			<TD>
-				<html:checkbox property="visible"/>
-				&nbsp;<html:errors property="visible"/>
+				<s:checkbox name="form.visible"/>
+				<s:fielderror fieldName="form.visible"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Number of slots per meeting:</TD>
+			<TD><loc:message name="propTimePatternSlotsPerMeeting"/></TD>
 			<TD>
-				<logic:equal name="timePatternEditForm" property="editable" value="true">
-					<html:text property="slotsPerMtg" size="3" maxlength="3"/>
-					(one slot represent <%=org.unitime.timetable.util.Constants.SLOT_LENGTH_MIN%> minutes)
-					&nbsp;<html:errors property="slotsPerMtg"/>
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
-					<bean:write name="timePatternEditForm" property="slotsPerMtg" />
-					<html:hidden name="timePatternEditForm" property="slotsPerMtg" />
-					(one slot represent <%=org.unitime.timetable.util.Constants.SLOT_LENGTH_MIN%> minutes)
-				</logic:notEqual>
-				
+				<s:if test="form.editable == true">
+					<s:textfield name="form.slotsPerMtg" size="3" maxlength="3"/>
+					<loc:message name="hintTimePatternSlotsPerMeeting"/>
+					<s:fielderror fieldName="form.slotsPerMtg"/>
+				</s:if><s:else>
+					<s:property value="form.slotsPerMtg"/><s:hidden name="form.slotsPerMtg"/>
+					<loc:message name="hintTimePatternSlotsPerMeeting"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Break time [minutes]:</TD>
+			<TD><loc:message name="propTimePatternBreakTime"/></TD>
 			<TD>
-				<html:text property="breakTime" size="3" maxlength="3"/>&nbsp;<html:errors property="breakTime"/>
+				<s:textfield name="form.breakTime" size="3" maxlength="3"/>
+				<s:fielderror fieldName="form.breakTime"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Days:</TD>
+			<TD style="vertical-align: top;"><loc:message name="propTimePatternDays"/></TD>
 			<TD>
-				<logic:equal name="timePatternEditForm" property="editable" value="true">
-					<html:textarea property="dayCodes" rows="5" cols="10"/>
-					&nbsp;<html:errors property="dayCodes"/>
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
-					<bean:write name="timePatternEditForm" property="dayCodes" />
-					<html:hidden name="timePatternEditForm" property="dayCodes" />
-					<html:errors property="dayCodes"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textarea name="form.dayCodes" rows="5" cols="10"/>
+				</s:if><s:else>
+					<s:property value="form.dayCodes"/><s:hidden name="form.dayCodes"/>
+				</s:else>
+				<s:fielderror fieldName="form.dayCodes"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Start times:</TD>
+			<TD style="vertical-align: top;"><loc:message name="propTimePatternStartTimes"/></TD>
 			<TD>
-				<logic:equal name="timePatternEditForm" property="editable" value="true">
-					<html:textarea property="startTimes" rows="5" cols="10"/>
-					&nbsp;<html:errors property="startTimes"/>
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
-					<bean:write name="timePatternEditForm" property="startTimes" />
-					<html:hidden name="timePatternEditForm" property="startTimes" />
-					<html:errors property="startTimes"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textarea name="form.startTimes" rows="5" cols="10"/>
+				</s:if><s:else>
+					<s:property value="form.startTimes"/><s:hidden name="form.startTimes"/>
+				</s:else>
+				<s:fielderror fieldName="form.startTimes"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top">Departments:</TD>
+			<TD valign="top"><loc:message name="propTimePatternDepartments"/></TD>
 			<TD>
-				<logic:iterate name="timePatternEditForm" property="departmentIds" id="deptId">
-					<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="dept">
-						<logic:equal name="dept" property="value" value="<%=deptId.toString()%>">
-							<bean:write name="dept" property="label"/>
-							<input type="hidden" name="depts" value="<%=deptId%>">
-							<BR>
-						</logic:equal>
-					</logic:iterate>
-				</logic:iterate>
-				<html:select property="departmentId">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
-				</html:select>
+				<s:iterator value="form.departmentIds" var="deptId" status="stat"><s:set var="ctr" value="#stat.index"/>
+					<s:iterator value="#request.deptsList" var="dept">
+						<s:if test="#dept.id == #deptId">
+							<s:property value="#dept.value"/>
+							<s:hidden name="form.departmentIds[%{#ctr}]"/>
+							<br>
+						</s:if>
+					</s:iterator>
+				</s:iterator>
+				<s:select name="form.departmentId"
+					list="#request.deptsList" listKey="id" listValue="value"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" value="Add Department"/>
+				<s:submit name='op' value='%{#msg.actionAddDepartment()}'/>
 				&nbsp;
-				<html:submit property="op" value="Remove Department"/>
+				<s:submit name='op' value='%{#msg.actionRemoveDepartment()}'/>
 				&nbsp;
-				<html:errors property="department"/>
+				<s:fielderror fieldName="form.department"/>
 			</TD>
 		</TR>
 		
-<%
-	String example = (String)request.getAttribute("TimePatterns.example");
-	if (example!=null) {
-%>
+		<s:if test="#request.example != null">
 		<TR>
-			<TD valign='top'>Example:</TD>
+			<TD valign='top'><loc:message name="propTimePatternExample"/></TD>
 			<TD>
-				<%=example%>
+				<s:property value="#request.example" escapeHtml="false"/>
 			</TD>
 		</TR>
-<%
-	}
-%>		
-
+		</s:if>
 		<TR>
 			<TD align="right" colspan="2">
 				<tt:section-title/>
@@ -214,57 +180,36 @@
 		
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="timePatternEditForm" property="op" />
-				</html:submit> 
-				<logic:equal name="timePatternEditForm" property="hasPrevious" value="true">
-					<html:submit property="op" value="Previous"/>
-				</logic:equal>
-				<logic:equal name="timePatternEditForm" property="hasNext" value="true">
-					<html:submit property="op" value="Next"/>
-				</logic:equal>
-				<logic:notEqual name="timePatternEditForm" property="op" value="Save">
-				<logic:equal name="timePatternEditForm" property="editable" value="true">
-					<html:submit property="op" value="Delete"/> 
-				</logic:equal>
-				</logic:notEqual>
-				<html:submit property="op" value="Back" /> 
+				<s:submit name='op' value='%{form.op}'/>
+				<s:if test="form.hasPrevious == true">
+					<s:submit name='op' value='%{#msg.actionPreviousTimePattern()}'/>
+				</s:if>
+				<s:if test="form.hasNext == true">
+					<s:submit name='op' value='%{#msg.actionNextTimePattern()}'/>
+				</s:if>
+				<s:if test="form.op == #msg.actionUpdateTimePattern() && form.editable == true">
+					<s:submit name='op' value='%{#msg.actionDeleteTimePattern()}' onclick="return confirmDelete();"/>
+				</s:if>
+				<s:submit name='op' value='%{#msg.actionBackToTimePatterns()}'/>			
 			</TD>
 		</TR>
 	</TABLE>
 
 <BR>&nbsp;<BR>
-</logic:notEqual>
-<logic:equal name="timePatternEditForm" property="op" value="List">
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<logic:messagesPresent>
-		<TR>
-			<TD colspan='10' align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-	</logic:messagesPresent>
+</s:if><s:else>
+<table class="unitime-MainTable">
 	<TR>
 		<TD colspan='10'>
 			<tt:section-header>
-				<tt:section-title>Time Patterns</tt:section-title>
-				<html:submit property="op" value="Add Time Pattern" title="Create a new time pattern"/>
-				<html:submit property="op" value="Assign Departments" title="Assign departments to extended time patterns"/> 
-				<html:submit property="op" value="Exact Times CSV" title="Generate a CSV report with all classes that are using exact times"/> 
-				<html:submit property="op" value="Export CSV" title="Export time patterns to CSV"/> 
+				<tt:section-title><loc:message name="sectTimePatterns"/></tt:section-title>
+				<s:submit name='op' value='%{#msg.actionAddTimePattern()}' title='%{#msg.titleAddTimePattern()}'/>
+				<s:submit name='op' value='%{#msg.actionAssingDepartmentsToTimePatterns()}' title='%{#msg.titleAssingDepartmentsToTimePatterns()}'/>
+				<s:submit name='op' value='%{#msg.actionExactTimesCSV()}' title='%{#msg.titleExactTimesCSV()}'/>
+				<s:submit name='op' value='%{#msg.actionExportCsv()}' title='%{#msg.titleExportTimePatternsCSV()}'/>
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%= request.getAttribute("TimePatterns.table") %>
+	<s:property value="#request.table" escapeHtml="false"/>
 	<TR>
 		<TD colspan='10'>
 			<tt:section-title/>
@@ -272,18 +217,18 @@
 	</TR>
 	<TR>
 		<TD colspan='10' align="right">
-			<html:submit property="op" value="Add Time Pattern" title="Create a new time pattern"/>
-			<html:submit property="op" value="Assign Departments" title="Assign departments to extended time patterns"/> 
-			<html:submit property="op" value="Exact Times CSV" title="Generate a CSV report with all classes that are using exact times"/> 
-			<html:submit property="op" value="Export CSV" title="Export time patterns to CSV"/> 
+			<s:submit name='op' value='%{#msg.actionAddTimePattern()}' title='%{#msg.titleAddTimePattern()}'/>
+			<s:submit name='op' value='%{#msg.actionAssingDepartmentsToTimePatterns()}' title='%{#msg.titleAssingDepartmentsToTimePatterns()}'/>
+			<s:submit name='op' value='%{#msg.actionExactTimesCSV()}' title='%{#msg.titleExactTimesCSV()}'/>
+			<s:submit name='op' value='%{#msg.actionExportCsv()}' title='%{#msg.titleExportTimePatternsCSV()}'/>
 		</TD>
 	</TR>
-	<% if (request.getAttribute("hash") != null) { %>
-		<SCRIPT type="text/javascript" language="javascript">
-			location.hash = '<%=request.getAttribute("hash")%>';
-		</SCRIPT>
-	<% } %>
 </TABLE>
-</logic:equal>
-
-</html:form>
+<s:if test="#request.hash != null">
+	<SCRIPT type="text/javascript">
+		location.hash = '<%=request.getAttribute("hash")%>';
+	</SCRIPT>
+</s:if>
+</s:else>
+</s:form>
+</loc:bundle>

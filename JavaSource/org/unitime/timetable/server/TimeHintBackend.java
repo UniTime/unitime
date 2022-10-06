@@ -34,7 +34,6 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
@@ -75,7 +74,7 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 			
 			Class_ clazz = Class_DAO.getInstance().get(classId);
 			for (TimePref p: (Set<TimePref>)clazz.effectivePreferences(TimePref.class)) {
-				if (p.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+				if (p.getTimePattern().isExactTime()) continue;
 				boolean match = false;
 				for (TimePatternDays d: p.getTimePattern().getDays()) {
 					if (d.getDayCode() == days) { match = true; break; }

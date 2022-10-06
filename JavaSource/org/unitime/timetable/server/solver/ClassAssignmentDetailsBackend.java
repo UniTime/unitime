@@ -67,7 +67,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.security.SessionContext;
@@ -332,7 +331,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		}
 		int length = assignment.getTimePattern().getSlotsPerMtg();
 		int breakTime = assignment.getTimePattern().getBreakTime();
-		if (assignment.getTimePattern().getType().intValue() == TimePattern.sTypeExactTime) {
+		if (assignment.getTimePattern().isExactTime()) {
 			DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays()); 
 			length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);

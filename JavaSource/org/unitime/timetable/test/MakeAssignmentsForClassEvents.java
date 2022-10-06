@@ -239,7 +239,7 @@ public class MakeAssignmentsForClassEvents {
         iExactTimePattern.setNrMeetings(0);
         iExactTimePattern.setSession(iSession);
         iExactTimePattern.setSlotsPerMtg(0);
-        iExactTimePattern.setType(TimePattern.sTypeExactTime);
+        iExactTimePattern.setTimePatternType(TimePattern.TimePatternType.ExactTime);
         iExactTimePattern.setVisible(true);
         iHibSession.save(iExactTimePattern);
         return iExactTimePattern;

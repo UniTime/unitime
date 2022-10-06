@@ -189,7 +189,7 @@ public class Assignment extends BaseAssignment {
 		if (iSlotsPerMtg>=0) return iSlotsPerMtg;
 		TimePattern pattern = getTimePattern();
 		iSlotsPerMtg = pattern.getSlotsPerMtg().intValue();
-		if (pattern.getType().intValue()==TimePattern.sTypeExactTime) {
+		if (pattern.isExactTime()) {
 			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
 			iSlotsPerMtg = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
@@ -205,7 +205,7 @@ public class Assignment extends BaseAssignment {
 		if (iBreakTime>=0) return iBreakTime;
 		TimePattern pattern = getTimePattern();
 		iBreakTime = pattern.getBreakTime().intValue();
-		if (pattern.getType().intValue()==TimePattern.sTypeExactTime) {
+		if (pattern.isExactTime()) {
 			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
 			iBreakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
@@ -339,7 +339,7 @@ public class Assignment extends BaseAssignment {
 	
 	public int getMinutesPerMeeting() {
 		TimePattern pattern = getTimePattern();
-		if (pattern.getType().intValue() == TimePattern.sTypeExactTime) {
+		if (pattern.isExactTime()) {
 			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			return dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
 		} else {

@@ -847,7 +847,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 						for(Iterator it = timePrefs.iterator(); it.hasNext();){
                             TimePref timePref = (TimePref)it.next();
 							TimePattern timePattern = timePref.getTimePattern();
-							if (TimePattern.sTypeExactTime==timePattern.getType().intValue()) continue;
+							if (timePattern.isExactTime()) continue;
 							TimePref tp = new TimePref();
 							tp.setOwner(modifiedClass);
 							tp.setPrefLevel(timePref.getPrefLevel());

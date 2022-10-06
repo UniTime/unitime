@@ -46,7 +46,7 @@ public class SemesterHours extends SemesterMinutes {
 	@Override
 	public boolean isValidCombination(int semesterHours, DatePattern datePattern, TimePattern timePattern) {
 		if (datePattern == null) return false;
-		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
+		if (timePattern.isExactTime())
 			return true;
 		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())

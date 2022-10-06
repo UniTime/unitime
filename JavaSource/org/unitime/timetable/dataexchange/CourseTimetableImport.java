@@ -403,7 +403,7 @@ public class CourseTimetableImport extends BaseImport {
 		if (timePattern == null) {
 			TimePatternModel model = null;
 			tp: for (TimePattern tp: iTimePatterns) {
-				if (tp.getType() == TimePattern.sTypeExactTime || dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, tp)) {
+				if (tp.isExactTime() || dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, tp)) {
 					TimePatternModel m = tp.getTimePatternModel();
 					if (m.isExactTime()) {
 						m.setExactDays(dayCode); m.setExactStartSlot(startSlot);

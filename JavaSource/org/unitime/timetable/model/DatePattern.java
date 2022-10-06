@@ -292,7 +292,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 			for (@SuppressWarnings("unchecked")
 			Iterator<TimePref> k=clazz.effectivePreferences(TimePref.class).iterator();k.hasNext();) {
 				TimePref tp = (TimePref)k.next();
-				if (tp.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
+				if (tp.getTimePattern().isExactTime()) {
 					//System.out.println("    -- exact time "+tp.getTimePatternModel().getExactDays());
 					int dayCode = tp.getTimePatternModel().getExactDays();
 					

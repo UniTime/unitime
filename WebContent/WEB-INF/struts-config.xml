@@ -37,7 +37,6 @@
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
 	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
-	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
@@ -261,19 +260,6 @@
         redirect="true" />
     </action>
     
-	    <action
-	      path="/timePatternEdit"
-	      attribute="timePatternEditForm"
-	      input="timePatternsTile"
-	      name="timePatternEditForm"
-	      scope="request"
-	      type="org.springframework.web.struts.DelegatingActionProxy" 
-	      validate="false">
-	      <forward name="list" path="timePatternsTile" />
-	      <forward name="add" path="addTimePatternTile" />
-	      <forward name="edit" path="editTimePatternTile" />
-	    </action>
-	     
 	    <action
 	      path="/solverGroupEdit"
 	      attribute="solverGroupEditForm"

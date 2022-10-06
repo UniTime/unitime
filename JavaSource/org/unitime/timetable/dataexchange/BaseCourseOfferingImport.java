@@ -76,6 +76,7 @@ import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePatternTime;
@@ -496,8 +497,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			getHibSession().
 			createQuery("select distinct tp from TimePattern as tp where tp.session.uniqueId=:sessionId and ( tp.type = :standard or tp.type = :evening )").
 			setLong("sessionId", sessionId.longValue()).
-			setInteger("standard", TimePattern.sTypeStandard).
-			setInteger("evening", TimePattern.sTypeEvening).
+			setInteger("standard", TimePatternType.Standard.ordinal()).
+			setInteger("evening", TimePatternType.Evening.ordinal()).
 			setCacheable(true).
 			list();
 		for (Iterator<?> tpIt = patterns.iterator(); tpIt.hasNext();) {

@@ -94,4 +94,8 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	protected <X> Permission<X> getPermission(String name) {
 		return (Permission<X>)SpringApplicationContextHolder.getBean(name);
 	}
+	
+	public SessionContext getSessionContext() {
+		return sessionContext;
+	}
 }

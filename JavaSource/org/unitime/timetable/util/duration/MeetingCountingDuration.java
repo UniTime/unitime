@@ -41,7 +41,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 	@Override
 	public boolean isValidCombination(int minutes, DatePattern datePattern, TimePattern timePattern) {
 		if (datePattern == null) return false;
-		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
+		if (timePattern.isExactTime())
 			return true;
 		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())

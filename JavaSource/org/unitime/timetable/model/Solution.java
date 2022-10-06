@@ -272,7 +272,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -289,7 +289,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -306,7 +306,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -328,7 +328,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
 							.setLong("solutionId",getUniqueId())
 							.setLong("sessionId",getOwner().getSession().getUniqueId())
-							.setInteger("exactType", TimePattern.sTypeExactTime)
+							.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 							.list()) {
 				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
 				Assignment a = (Assignment)o[1];
@@ -346,7 +346,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setLong("ownerId",getOwner().getUniqueId())
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -363,7 +363,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setLong("ownerId",getOwner().getUniqueId())
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -380,7 +380,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
 					.setLong("ownerId",getOwner().getUniqueId())
 					.setLong("solutionId",getUniqueId())
-					.setInteger("exactType", TimePattern.sTypeExactTime)
+					.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -402,7 +402,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							.setLong("ownerId",getOwner().getUniqueId())
 							.setLong("solutionId",getUniqueId())
 							.setLong("sessionId",getOwner().getSession().getUniqueId())
-							.setInteger("exactType", TimePattern.sTypeExactTime)
+							.setInteger("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 							.list()) {
 				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
 				Assignment a = (Assignment)o[1];

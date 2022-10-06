@@ -295,7 +295,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 			patternEl.addAttribute("name", tp.getName());
 			patternEl.addAttribute("nbrMeetings", tp.getNrMeetings().toString());
 			patternEl.addAttribute("minsPerMeeting", tp.getMinPerMtg().toString());
-			patternEl.addAttribute("type", TimePattern.sTypes[tp.getType()]);
+			patternEl.addAttribute("type", tp.getTimePatternType().name());
 			patternEl.addAttribute("visible", tp.getVisible() != null && tp.getVisible().booleanValue() ? "true" : "false");
 			patternEl.addAttribute("nbrSlotsPerMeeting", tp.getSlotsPerMtg().toString());
 			patternEl.addAttribute("breakTime", tp.getBreakTime() == null ? "0" : tp.getBreakTime().toString());

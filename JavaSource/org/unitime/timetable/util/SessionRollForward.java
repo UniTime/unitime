@@ -1619,7 +1619,7 @@ public class SessionRollForward {
 						if (fromTimePref.getTimePattern() == null) {
 							toTimePref = (TimePref)fromTimePref.clone();
 						} else {
-							if (fromTimePref.getTimePattern().getType().intValue() == (TimePattern.sTypeExactTime)){
+							if (fromTimePref.getTimePattern().isExactTime()){
 								continue;
 							}
 							toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
@@ -1639,7 +1639,7 @@ public class SessionRollForward {
 				}
 
 				for(TimePattern fromTp : timePatterns){
-					if (fromTp.getType().intValue() == (TimePattern.sTypeExactTime)){
+					if (fromTp.isExactTime()){
 						continue;
 					}			
 					TimePattern toTp = TimePattern.getMatchingTimePattern(toSession.getUniqueId(), fromTp);

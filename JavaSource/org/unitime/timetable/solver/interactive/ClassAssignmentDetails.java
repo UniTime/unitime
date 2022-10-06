@@ -65,7 +65,6 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -280,7 +279,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 			int length = assignment.getTimePattern().getSlotsPerMtg().intValue();
 			int breakTime = assignment.getTimePattern().getBreakTime().intValue();
-			if (assignment.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
+			if (assignment.getTimePattern().isExactTime()) {
 				DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 				int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays()); 
 				length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);

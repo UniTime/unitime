@@ -39,7 +39,6 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -70,7 +69,7 @@ public class XTime implements Serializable, Externalizable {
 	public XTime(Assignment assignment, XExactTimeConversion conversion, String datePatternFormat) {
 		iDays = assignment.getDays();
 		iSlot = assignment.getStartSlot();
-		if (assignment.getTimePattern().getType() == TimePattern.sTypeExactTime) {
+		if (assignment.getTimePattern().isExactTime()) {
 			DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			int minPerMtg = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays());
 			iLength = conversion.getLength(minPerMtg);

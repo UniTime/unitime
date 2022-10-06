@@ -171,40 +171,6 @@
 		<put name="title" type="string" value="Manage Solvers"/>
 		<put name="body" value="/tt/manageSolvers.jsp" />
   	</definition>
-  	
-  	<definition	name="classDetailTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Class Detail"/>
-		<put name="body" value="/user/classDetail.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="showSolverWarnings" value="assignment" />
-  	</definition>
-
-	<definition	name="distributionPrefsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Distribution Preferences"/>
-		<put name="body" value="/user/distributionPrefs.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-  	
-	<definition	name="adddistributionPrefTile" extends="distributionPrefsTile">
-		<put name="title" type="string" value="Add Distribution Preference"/>
-  	</definition>
-
-	<definition	name="editDistributionPrefTile" extends="distributionPrefsTile">
-		<put name="title" type="string" value="Edit Distribution Preference"/>
-  	</definition>
-
-  	<definition name="timePatternsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Time Patterns"/>
-		<put name="body" value="/admin/timePatterns.jsp" />
-  	</definition>
-
-  	<definition name="addTimePatternTile" extends="timePatternsTile">
-		<put name="title" type="string" value="Add Time Pattern"/>
-  	</definition>
-
-  	<definition name="editTimePatternTile" extends="timePatternsTile">
-		<put name="title" type="string" value="Edit Time Pattern"/>
-  	</definition>
 
   	<definition name="solverGroupTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Groups"/>

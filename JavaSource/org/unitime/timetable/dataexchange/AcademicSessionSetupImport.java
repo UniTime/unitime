@@ -40,6 +40,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePattern.DatePatternType;
+import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -1084,9 +1085,9 @@ public class AcademicSessionSetupImport extends BaseImport {
         	pattern.setVisible("true".equalsIgnoreCase(element.attributeValue("visible", "true")));
         	pattern.setSlotsPerMtg(Integer.parseInt(element.attributeValue("nbrSlotsPerMeeting", "12")));
         	pattern.setBreakTime(Integer.parseInt(element.attributeValue("breakTime", "0")));
-        	String type = element.attributeValue("type", TimePattern.sTypes[0]);
-        	for (int tId = 0; tId < TimePattern.sTypes.length; tId++) {
-        		if (TimePattern.sTypes[tId].equalsIgnoreCase(type)) pattern.setType(tId);
+        	String type = element.attributeValue("type", TimePatternType.Standard.name());
+        	for (TimePatternType t: TimePatternType.values()) {
+        		if (t.name().equals(type) || t.getLabel().equals(type)) { pattern.setType(t.ordinal()); }
         	}
         	
         	Set<Department> departments = new HashSet<Department>(pattern.getDepartments());

@@ -29,6 +29,8 @@ import java.util.TreeSet;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -44,16 +46,42 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public class TimePattern extends BaseTimePattern implements Comparable<TimePattern> {
     private static final long serialVersionUID = 1L;
+    protected static CourseMessages MSG = Localization.create(CourseMessages.class);
     
-    public static final int sTypeStandard = 0;
-    public static final int sTypeEvening  = 1;
-    public static final int sTypeSaturday = 2;
-    public static final int sTypeMorning  = 3;
-    public static final int sTypeExtended = 4;
-    public static final int sTypeExactTime = 5;
-    public static final String[] sTypes = new String[] {
-    	"Standard", "Evening", "Saturday", "Morning", "Extended", "Exact Time"
-    };
+    @Deprecated
+    public static final int sTypeStandard = TimePatternType.Standard.ordinal();
+    @Deprecated
+    public static final int sTypeEvening  = TimePatternType.Evening.ordinal();
+    @Deprecated
+    public static final int sTypeSaturday = TimePatternType.Saturday.ordinal();
+    @Deprecated
+    public static final int sTypeMorning  = TimePatternType.Morning.ordinal();
+    @Deprecated
+    public static final int sTypeExtended = TimePatternType.Extended.ordinal();
+    @Deprecated
+    public static final int sTypeExactTime = TimePatternType.ExactTime.ordinal();
+
+    public static enum TimePatternType {
+    	Standard,
+    	Evening,
+    	Saturday,
+    	Morning,
+    	Extended,
+    	ExactTime,
+    	;
+    	
+    	public String getLabel() {
+    		switch(this) {
+    		case Standard: return MSG.timePatterTypeStandard();
+    		case Evening: return MSG.timePatterTypeEvening();
+    		case Saturday: return MSG.timePatterTypeSaturday();
+    		case Morning: return MSG.timePatterTypeMorning();
+    		case Extended: return MSG.timePatterTypeExtended();
+    		case ExactTime: return MSG.timePatterTypeExactTime();
+    		default: return name();
+    		}
+    	}
+    }
 
     /** Request attribute name for available time patterns **/
     public static String TIME_PATTERN_ATTR_NAME = "timePatternsList";
@@ -113,8 +141,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         			createQuery("select distinct p from TimePattern as p "+
         					"where p.session.uniqueId=:sessionId and "+
         					(!includeHidden?"p.visible=true and ":"")+
-        					"(p.type="+sTypeExactTime+" or ( p.type!="+sTypeExactTime+" and "+
-        					(!includeExtended?"p.type!="+sTypeExtended+" and ":"")+
+        					"(p.type="+TimePatternType.ExactTime.ordinal()+" or ( p.type!="+TimePatternType.ExactTime.ordinal()+" and "+
+        					(!includeExtended?"p.type!="+TimePatternType.Extended.ordinal()+" and ":"")+
         					"p.minPerMtg * p.nrMeetings = :minPerWeek ))").
         					setLong("sessionId",sessionId.longValue()).
         					setInteger("minPerWeek",minPerWeek).
@@ -123,9 +151,9 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     		list = (List<TimePattern>)(new TimePatternDAO()).getSession().
     			createQuery("select distinct p from TimePattern as p "+
     					"where p.session.uniqueId=:sessionId and "+
-    					"p.type!="+sTypeExactTime+" and "+
+    					"p.type!="+TimePatternType.ExactTime.ordinal()+" and "+
     					(!includeHidden?"p.visible=true and ":"")+
-    					(!includeExtended?"p.type!="+sTypeExtended+" and ":"")+
+    					(!includeExtended?"p.type!="+TimePatternType.Extended.ordinal()+" and ":"")+
     					"p.minPerMtg * p.nrMeetings = :minPerWeek").
     					setLong("sessionId",sessionId.longValue()).
     					setInteger("minPerWeek",minPerWeek).
@@ -136,7 +164,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     		for (Iterator i=department.getTimePatterns().iterator();i.hasNext();) {
     			TimePattern tp = (TimePattern)i.next();
     			if (tp.getMinPerMtg().intValue()*tp.getNrMeetings().intValue()!=minPerWeek) continue;
-    			if (tp.getType().intValue()!=sTypeExtended) continue;
+    			if (!tp.isExactTime()) continue;
     			if (!includeHidden && !tp.isVisible().booleanValue()) continue;
     			list.add(tp);
     		}
@@ -145,7 +173,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	if (includeExactTime && department!=null) {
     		for (Iterator i=department.getTimePatterns().iterator();i.hasNext();) {
     			TimePattern tp = (TimePattern)i.next();
-    			if (tp.getType().intValue()!=sTypeExactTime) continue;
+    			if (!tp.isExactTime()) continue;
     			list.add(tp);
     			break;
     		}
@@ -171,14 +199,14 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     			"from TimePattern where session.uniqueId = :sessionId")
     			.setLong("sessionId", sessionId).setCacheable(true).list()) {
     		if (!includeHidden && !pattern.isVisible()) continue;
-    		if (!includeExtended && pattern.getType() == sTypeExtended) {
+    		if (!includeExtended && pattern.isExactTime()) {
     			if (department != null) {
     				if (!department.getTimePatterns().contains(pattern)) continue;
     			} else {
     				continue;
     			}
     		}
-    		if (pattern.getType() == sTypeExactTime) {
+    		if (pattern.isExactTime()) {
     			if (includeExactTime && (includeExtended || pattern.getDepartments().isEmpty() || (department != null && pattern.getDepartments().contains(department))))
     				list.add(pattern);
     			continue;
@@ -210,7 +238,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         List list = (new TimePatternDAO()).getSession().
         createQuery("select distinct p from TimePattern as p "+
                     "where p.session.uniqueId=:sessionId and " +
-                    "p.type="+sTypeExactTime).
+                    "p.type="+TimePatternType.ExactTime.ordinal()).
                     setLong("sessionId",sessionId.longValue()).
                     setCacheable(true).list();
         if (list==null || list.isEmpty()) return null;
@@ -282,11 +310,15 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	return ret;
     }
     
+    public boolean isUsed() {
+    	return findAllUsed(getSession()).contains(this);
+    }
+    
     public boolean isEditable() {
     	if (isTimePatternEditableInitialDataLoad() && getSession().getStatusType().isAllowRollForward()) {
-    		return(true);
+    		return true;
     	} else {
-    		return !findAllUsed(getSession()).contains(this);
+    		return !isUsed();
     	}
     }
     
@@ -320,7 +352,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 			return Integer.valueOf(10);
 		if (getSlotsPerMtg().intValue()>6)
 			return Integer.valueOf(15);
-		if (getType().intValue()==sTypeExactTime)
+		if (isExactTime())
 			return Integer.valueOf(10);
 		return Integer.valueOf(0);
     }
@@ -405,7 +437,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
      */
     public static TimePattern getMatchingTimePattern(Long sessionId, TimePattern pattern) {
         //if exact time -> return exact time
-        if (pattern.getType()==sTypeExactTime) {
+        if (pattern.isExactTime()) {
             return findExactTime(sessionId);
         }
         
@@ -509,4 +541,22 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 		return ApplicationProperty.TimePatternEditableDuringInitialDataLoad.isTrue();
 	}
 	
+	public TimePatternType getTimePatternType() {
+		if (getType() == null)
+			return null;
+		else
+			return TimePatternType.values()[getType()];
+	}
+	public void setTimePatternType(TimePatternType type) {
+		if (type == null)
+			setType(null);
+		else
+			setType(type.ordinal());
+	}
+	public boolean isExtended() {
+		return getTimePatternType() == TimePatternType.Extended;
+	}
+	public boolean isExactTime() {
+		return getTimePatternType() == TimePatternType.ExactTime;
+	}
 }

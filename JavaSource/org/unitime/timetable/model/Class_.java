@@ -434,7 +434,7 @@ public class Class_ extends BaseClass_ {
 			Preference pref = (Preference)i.next();
 			if (pref instanceof TimePref) {
 				TimePref tp = (TimePref) pref;
-				if (tp.getTimePattern().getType() != null && tp.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+				if (tp.getTimePattern().getType() != null && tp.getTimePattern().isExactTime()) continue;
 				Set<Integer> days = dm.getDayCodes(getSchedulingSubpart().getMinutesPerWk(), dp, tp.getTimePattern());
 				if (days.isEmpty()) {
 					i.remove();
@@ -562,7 +562,7 @@ public class Class_ extends BaseClass_ {
     		if (classPrefs != null && !classPrefs.isEmpty()) {
     			for (Iterator i=classPrefs.iterator();i.hasNext();) {
     				TimePref tp = (TimePref)i.next();
-    				if (tp.getTimePattern()!=null && tp.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
+    				if (tp.getTimePattern()!=null && tp.getTimePattern().isExactTime()) {
     					hasExactTimePattern = true; break;
     				}
     			}

@@ -70,7 +70,6 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
@@ -236,7 +235,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	}
     	
 		cell.setLength(assignment.getTimePattern().getSlotsPerMtg());
-		if (assignment.getTimePattern().getType() == TimePattern.sTypeExactTime) {
+		if (assignment.getTimePattern().isExactTime()) {
 			DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays());
 			cell.setLength(ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting));

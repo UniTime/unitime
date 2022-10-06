@@ -29,29 +29,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.LabelValueBean;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.CSVFile;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimePatternEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -59,15 +51,16 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -75,96 +68,104 @@ import org.unitime.timetable.webutil.Navigation;
 /** 
  * @author Tomas Muller
  */
-@Service("/timePatternEdit")
-public class TimePatternEditAction extends Action {
+@Action(value = "timePatternEdit", results = {
+		@Result(name = "list", type = "tiles", location = "timePatternList.tiles"),
+		@Result(name = "add", type = "tiles", location = "timePatternAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "timePatternEdit.tiles")
+	})
+@TilesDefinitions({
+	@TilesDefinition(name = "timePatternList.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Time Patterns"),
+			@TilesPutAttribute(name = "body", value = "/admin/timePatterns.jsp")
+		}),
+	@TilesDefinition(name = "timePatternAdd.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Add Time Pattern"),
+			@TilesPutAttribute(name = "body", value = "/admin/timePatterns.jsp")
+		}),
+	@TilesDefinition(name = "timePatternEdit.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Edit Time Pattern"),
+			@TilesPutAttribute(name = "body", value = "/admin/timePatterns.jsp")
+		})
+})
+public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
+	private static final long serialVersionUID = 4079082627336504012L;
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private Long id;
+	
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		try {
-		TimePatternEditForm myForm = (TimePatternEditForm) form;
+	@Override
+	public String execute() throws Exception {
+		if (form == null)
+			form = new TimePatternEditForm();
 		
         // Check Access
 		sessionContext.checkPermission(Right.TimePatterns);
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
-        if (request.getParameterValues("depts")!=null) {
-        	String[] depts = request.getParameterValues("depts");
-        	for (int i=0;i<depts.length;i++)
-        		myForm.getDepartmentIds().add(Long.valueOf(depts[i]));
-        }
+		if (op == null) op = form.getOp();
 
         if (op==null) {
-            myForm.load(null, null);
-            myForm.setOp("List");
+            form.reset();
         }
         
     	Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 
-    	List list = (new DepartmentDAO()).getSession()
+    	List<Department> list = (new DepartmentDAO()).getSession()
 					.createCriteria(Department.class)
 					.add(Restrictions.eq("session.uniqueId", sessionId))
 					.addOrder(Order.asc("deptCode"))
 					.list();
-    	Vector availableDepts = new Vector();
-    	for (Iterator iter = list.iterator();iter.hasNext();) {
-    		Department d = (Department) iter.next();
-    		availableDepts.add(new LabelValueBean(d.getDeptCode() + "-" + d.getName(), d.getUniqueId().toString()));
+    	List<IdValue> availableDepts = new ArrayList<IdValue>();
+    	for (Department d: list) {
+    		availableDepts.add(new IdValue(d.getUniqueId(), d.getLabel()));
     	}
     	request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
         
         // Reset Form
-        if ("Back".equals(op)) {
-            if (myForm.getUniqueId()!=null)
-                request.setAttribute("hash", myForm.getUniqueId());
-            myForm.load(null, null);
-            myForm.setOp("List");
+        if (MSG.actionBackToTimePatterns().equals(op)) {
+            if (form.getUniqueId()!=null)
+                request.setAttribute("hash", form.getUniqueId());
+            form.reset();
         }
         
-        if ("Add Department".equals(op)) {
-            ActionMessages errors = new ActionErrors();
-			if (myForm.getDepartmentId()==null || myForm.getDepartmentId().longValue()<0)
-				errors.add("department", new ActionMessage("errors.generic", "No department selected."));
+        if (MSG.actionAddDepartment().equals(op)) {
+			if (form.getDepartmentId()==null || form.getDepartmentId() < 0)
+				addFieldError("form.department", MSG.errorNoDepartmentSelected());
 			else {
-				boolean contains = myForm.getDepartmentIds().contains(myForm.getDepartmentId());
+				boolean contains = form.getDepartmentIds().contains(form.getDepartmentId());
 				if (contains)
-					errors.add("department", new ActionMessage("errors.generic", "Department already present in the list of departments."));
+					addFieldError("form.department", MSG.errorDepartmentAlreadyListed());
 			}
-            if(errors.size()>0) {
-                saveErrors(request, errors);
-            } else {
-            	myForm.getDepartmentIds().add(myForm.getDepartmentId());
-            }
-            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
+            if (!hasFieldErrors())
+            	form.getDepartmentIds().add(form.getDepartmentId());
+            form.setOp(form.getUniqueId().longValue() < 0 ? MSG.actionSaveTimePattern() : MSG.actionUpdateTimePattern());
         }
 
-        if ("Remove Department".equals(op)) {
-            ActionMessages errors = new ActionErrors();
-			if (myForm.getDepartmentId()==null || myForm.getDepartmentId().longValue()<0)
-				errors.add("department", new ActionMessage("errors.generic", "No department selected."));
+        if (MSG.actionRemoveDepartment().equals(op)) {
+			if (form.getDepartmentId()==null || form.getDepartmentId() < 0)
+				addFieldError("form.department", MSG.errorNoDepartmentSelected());
 			else {
-				boolean contains = myForm.getDepartmentIds().contains(myForm.getDepartmentId());
+				boolean contains = form.getDepartmentIds().contains(form.getDepartmentId());
 				if (!contains)
-					errors.add("department", new ActionMessage("errors.generic", "Department not present in the list of departments."));
+					addFieldError("form.department", MSG.errorDepartmentNotListed());
 			}
-            if(errors.size()>0) {
-                saveErrors(request, errors);
-            } else {
-            	myForm.getDepartmentIds().remove(myForm.getDepartmentId());
-            }	
-            myForm.setOp(myForm.getUniqueId().longValue()<0?"Save":"Update");
+			if (!hasFieldErrors())
+            	form.getDepartmentIds().remove(form.getDepartmentId());
+        	form.setOp(form.getUniqueId().longValue() < 0 ? MSG.actionSaveTimePattern() : MSG.actionUpdateTimePattern());
         }
         
 
         // Add / Update
-        if ("Update".equals(op) || "Save".equals(op) || "Previous".equals(op) || "Next".equals(op)) {
+        if (MSG.actionSaveTimePattern().equals(op) || MSG.actionUpdateTimePattern().equals(op) ||
+        		MSG.actionPreviousTimePattern().equals(op) || MSG.actionNextTimePattern().equals(op)) {
             // Validate input
-            ActionMessages errors = myForm.validate(mapping, request);
-            if(errors.size()>0) {
-                saveErrors(request, errors);
+        	form.validate(this);
+        	if (hasFieldErrors()) {
+            	form.setOp(form.getUniqueId() < 0 ? MSG.actionSaveDatePattern() : MSG.actionUpdateDatePattern());
             } else {
         		Transaction tx = null;
         		
@@ -173,7 +174,7 @@ public class TimePatternEditAction extends Action {
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(sessionContext, hibSession);
+                	form.saveOrUpdate(sessionContext, hibSession);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -181,42 +182,39 @@ public class TimePatternEditAction extends Action {
         	    	throw e;
         	    }
 
-                if ("Next".equals(op) && myForm.getNextId() != null) {
-                	response.sendRedirect(response.encodeURL("timePatternEdit.do?op=Edit&id="+myForm.getNextId()));
-                } else if ("Previous".equals(op) && myForm.getPreviousId() != null) {
-                	response.sendRedirect(response.encodeURL("timePatternEdit.do?op=Edit&id="+myForm.getPreviousId()));
+                if (MSG.actionNextTimePattern().equals(op) && form.getNextId() != null) {
+                	response.sendRedirect(response.encodeURL("timePatternEdit.action?op=Edit&id="+form.getNextId()));
+                } else if (MSG.actionPreviousTimePattern().equals(op) && form.getPreviousId() != null) {
+                	response.sendRedirect(response.encodeURL("timePatternEdit.action?op=Edit&id="+form.getPreviousId()));
                 } else {
-                	if (myForm.getUniqueId()!=null)
-                		request.setAttribute("hash", myForm.getUniqueId());
-                	myForm.setOp("List");
+                	if (form.getUniqueId()!=null)
+                		request.setAttribute("hash", form.getUniqueId());
+                	form.reset();
                 }
             }
         }
 
         // Edit
-        if("Edit".equals(op)) {
-            String id = request.getParameter("id");
-            ActionMessages errors = new ActionMessages();
-            if(id==null || id.trim().length()==0) {
-                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                saveErrors(request, errors);
-                return mapping.findForward("list");
+        if ("Edit".equals(op)) {
+        	if (id == null && form.getUniqueId() != null) id = form.getUniqueId();
+            if (id==null) {
+            	addFieldError("form.uniqueId", MSG.errorRequiredField("Id"));
+                return "list";
             } else {
             	TimePattern pattern = (new TimePatternDAO()).get(Long.valueOf(id));
-            	myForm.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
-            	myForm.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
+            	form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
+            	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
                 if(pattern==null) {
-                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                    saveErrors(request, errors);
-                    return mapping.findForward("list");
+                	addFieldError("form.uniqueId", MSG.errorDoesNotExists(MSG.columnTimePattern()));
+                    return "list";
                 } else {
-                	myForm.load(pattern, sessionId);
+                	form.load(pattern, sessionId);
                 }
             }
         }
 
         // Delete 
-        if("Delete".equals(op)) {
+        if (MSG.actionDeleteTimePattern().equals(op)) {
     		Transaction tx = null;
     		
             try {
@@ -224,7 +222,7 @@ public class TimePatternEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	myForm.delete(sessionContext, hibSession);
+            	form.delete(sessionContext, hibSession);
             	
     			tx.commit();
     	    } catch (Exception e) {
@@ -232,11 +230,10 @@ public class TimePatternEditAction extends Action {
     	    	throw e;
     	    }
 
-    	    myForm.load(null, null);
-    	    myForm.setOp("List");
+    	    form.reset();
         }
         
-        if ("Exact Times CSV".equals(op)) {
+        if (MSG.actionExactTimesCSV().equals(op)) {
     		Transaction tx = null;
     		
     		try {
@@ -247,15 +244,11 @@ public class TimePatternEditAction extends Action {
             	TimePattern tp = TimePattern.findExactTime(sessionId);
             	
             	if (tp == null) {
-                    myForm.load(null, null);
-                    myForm.setOp("List");
-                    getTimePatterns(request, sessionId);
+                    form.reset();
+                    getTimePatterns(sessionId);
                     
-            		ActionMessages errors = new ActionMessages();
-                    errors.add("key", new ActionMessage("errors.generic", "There is no Exact Time time pattern defined."));
-                    saveErrors(request, errors);
-
-                    return mapping.findForward("list");
+                    addFieldError("form.uniqueId", MSG.errorNoExactTimePatternDefined());
+                    return "list";
             	}
             	
             	List timePrefs = 
@@ -267,9 +260,9 @@ public class TimePatternEditAction extends Action {
             	CSVFile csv = new CSVFile();
             	csv.setHeader(
             			new CSVFile.CSVField[] {
-            					new CSVFile.CSVField("Class"),
-            					new CSVFile.CSVField("Pattern"),
-            					new CSVFile.CSVField("Time")
+            					new CSVFile.CSVField(MSG.columnClass()),
+            					new CSVFile.CSVField(MSG.columnTimePattern()),
+            					new CSVFile.CSVField(MSG.columnAssignedTime())
             			});
             	
             	for (Iterator i=timePrefs.iterator();i.hasNext();) {
@@ -324,7 +317,7 @@ public class TimePatternEditAction extends Action {
                 for (Iterator i=patterns.iterator();i.hasNext();) {
                     TimePattern tp = (TimePattern)i.next();
                     
-                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (tp.isExtended()) continue;
                     if (!tp.isVisible()) continue;
                     
                     if (mysql) {
@@ -360,7 +353,7 @@ public class TimePatternEditAction extends Action {
                 for (Iterator i=patterns.iterator();i.hasNext();) {
                     TimePattern tp = (TimePattern)i.next();
                     
-                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (tp.isExtended()) continue;
                     if (!tp.isVisible()) continue;
                     
                     for (Iterator j=tp.getDays().iterator();j.hasNext();) {
@@ -395,7 +388,7 @@ public class TimePatternEditAction extends Action {
                 for (Iterator i=patterns.iterator();i.hasNext();) {
                     TimePattern tp = (TimePattern)i.next();
                     
-                    if (tp.getType()==TimePattern.sTypeExtended) continue;
+                    if (tp.isExtended()) continue;
                     if (!tp.isVisible()) continue;
                     
                     for (Iterator j=tp.getTimes().iterator();j.hasNext();) {
@@ -429,7 +422,7 @@ public class TimePatternEditAction extends Action {
         }
         
         
-        if ("Assign Departments".equals(op)) {
+        if (MSG.actionAssingDepartmentsToTimePatterns().equals(op)) {
     		Transaction tx = null;
     		
         	PrintWriter out = null;
@@ -448,7 +441,7 @@ public class TimePatternEditAction extends Action {
             	for (Iterator i=patterns.iterator();i.hasNext();) {
             		TimePattern tp = (TimePattern)i.next();
             		
-            		if (tp.getType().intValue()!=TimePattern.sTypeExtended) continue;
+            		if (!tp.isExtended()) continue;
             		
             		out.println("Checking "+tp.getName()+" ...");
             		
@@ -519,11 +512,10 @@ public class TimePatternEditAction extends Action {
     	    	if (out!=null) out.close();
     	    }
     	    
-    	    myForm.load(null, null);
-    	    myForm.setOp("List");
+    	    form.reset();
         }
 
-        if ("Export CSV".equals(op)) {
+        if (MSG.actionExportCsv().equals(op)) {
     		Transaction tx = null;
     		
     		try {
@@ -534,18 +526,18 @@ public class TimePatternEditAction extends Action {
             	CSVFile csv = new CSVFile();
             	csv.setHeader(
             			new CSVFile.CSVField[] {
-            					new CSVFile.CSVField("Name"),
-            					new CSVFile.CSVField("Type"),
-            					new CSVFile.CSVField("Visible"),
-                                new CSVFile.CSVField("Used"),
-            					new CSVFile.CSVField("NbrMtgs"),
-            					new CSVFile.CSVField("MinPerMtg"),
-            					new CSVFile.CSVField("SlotsPerMtg"),
-                                new CSVFile.CSVField("BreakTime"),
-            					new CSVFile.CSVField("Days"),
-            					new CSVFile.CSVField("Times"),
-            					new CSVFile.CSVField("Departments"),
-            					new CSVFile.CSVField("Classes")
+            					new CSVFile.CSVField(MSG.columnTimePatternName()),
+            					new CSVFile.CSVField(MSG.columnTimePatternType()),
+            					new CSVFile.CSVField(MSG.columnTimePatternVisible()),
+                                new CSVFile.CSVField(MSG.columnTimePatternUsed()),
+            					new CSVFile.CSVField(MSG.columnTimePatternNbrMtgs()),
+            					new CSVFile.CSVField(MSG.columnTimePatternMinPerMtg()),
+            					new CSVFile.CSVField(MSG.columnTimePatternSlotsPerMtg()),
+                                new CSVFile.CSVField(MSG.columnTimePatternBreakTime()),
+            					new CSVFile.CSVField(MSG.columnTimePatternDays()),
+            					new CSVFile.CSVField(MSG.columnTimePatternTimes()),
+            					new CSVFile.CSVField(MSG.columnTimePatternDepartments()),
+            					new CSVFile.CSVField(MSG.columnTimePatternClasses())
             			});
             	
             	TreeSet patterns = new TreeSet(TimePattern.findAll(sessionId,null));
@@ -563,7 +555,7 @@ public class TimePatternEditAction extends Action {
                 	}
                 	
                 	String classStr = "";
-                	if (tp.getType().intValue()!=TimePattern.sTypeStandard) {
+                	if (tp.getTimePatternType() != TimePatternType.Standard) {
                     	List timePrefs = 
                 			hibSession.
                     		createQuery("select distinct p.owner from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
@@ -586,7 +578,7 @@ public class TimePatternEditAction extends Action {
 	            		}
 	            		
                         if (allOwners.isEmpty()) {
-                            classStr += "not used";
+                            classStr += MSG.notUsed();
                         } else {
                             int idx = 0;
                             classStr += allOwners.size()+" / "; 
@@ -603,9 +595,9 @@ public class TimePatternEditAction extends Action {
                 	csv.addLine(
                 			new CSVFile.CSVField[] {
 	            					new CSVFile.CSVField(tp.getName()),
-	            					new CSVFile.CSVField(TimePattern.sTypes[tp.getType().intValue()]),
-	            					new CSVFile.CSVField(tp.isVisible().booleanValue()?"Y":"N"),
-                                    new CSVFile.CSVField(tp.isEditable()?"N":"Y"),
+	            					new CSVFile.CSVField(tp.getTimePatternType().getLabel()),
+	            					new CSVFile.CSVField(tp.isVisible()?MSG.csvTrue():MSG.csvFalse()),
+                                    new CSVFile.CSVField(tp.isEditable()?MSG.csvFalse():MSG.csvTrue()),
 	            					new CSVFile.CSVField(tp.getNrMeetings()),
 	            					new CSVFile.CSVField(tp.getMinPerMtg()),
 	            					new CSVFile.CSVField(tp.getSlotsPerMtg()),
@@ -627,47 +619,51 @@ public class TimePatternEditAction extends Action {
     	    }
         }
 
-        if ("Add Time Pattern".equals(op)) {
-            myForm.load(null, null);
-            myForm.setOp("Save");
+        if (MSG.actionAddTimePattern().equals(op)) {
+            form.load(null, null);
         }
 
-        if ("List".equals(myForm.getOp())) {
+        if ("List".equals(form.getOp())) {
             // Read all existing settings and store in request
-            getTimePatterns(request, sessionId);
-            return mapping.findForward("list");
+            getTimePatterns(sessionId);
+            return "list";
         }
 
-        String example = myForm.getExample();
+        String example = form.getExample();
         if (example!=null) {
-            request.setAttribute("TimePatterns.example", example);
+            request.setAttribute("example", example);
         }
-        return mapping.findForward(myForm.getUniqueId().longValue()<0?"add":"edit");
-        
-		} catch (Exception e) {
-			Debug.error(e);
-			throw e;
-		}
+        return (form.getUniqueId().longValue()<0?"add":"edit");
 	}
 	
-    private void getTimePatterns(HttpServletRequest request, Long sessionId) throws Exception {
+    private void getTimePatterns(Long sessionId) throws Exception {
 		WebTable.setOrder(sessionContext,"timePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 10,
-			    null, "timePatternEdit.do?ord=%%",
-			    new String[] {"Name", "Type", "Used", "NrMtgs", "MinPerMtg", "SlotsPerMtg", "Break Time", "Days", "Times", "Departments"},
+			    null, "timePatternEdit.action?ord=%%",
+			    new String[] {
+			    		MSG.columnTimePatternName(),
+			    		MSG.columnTimePatternType(),
+			    		MSG.columnTimePatternUsed(),
+			    		MSG.columnTimePatternNbrMtgs(),
+			    		MSG.columnTimePatternMinPerMtg(),
+			    		MSG.columnTimePatternSlotsPerMtg(),
+			    		MSG.columnTimePatternBreakTime(),
+			    		MSG.columnTimePatternDays(),
+			    		MSG.columnTimePatternTimes(),
+			    		MSG.columnTimePatternDepartments()},
 			    new String[] {"left", "left", "left", "left", "left","left", "left", "left", "left", "left"},
 			    null );
         
         List<TimePattern> patterns = TimePattern.findAll(sessionId,null);
 		if(patterns.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No time pattern defined for this academic initiative and term."}, null, null );			    
+		    webTable.addLine(null, new String[] {MSG.errorNoTimePatternsDefined()}, null, null );			    
 		}
 		
 		Set used = TimePattern.findAllUsed(sessionId);
 
         for (TimePattern pattern: patterns) {
-        	String onClick = "onClick=\"document.location='timePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
+        	String onClick = "onClick=\"document.location='timePatternEdit.action?op=Edit&id=" + pattern.getUniqueId() + "';\"";
         	String deptStr = "";
         	String deptCmp = "";
         	for (Iterator i=pattern.getDepartments(sessionId).iterator();i.hasNext();) {
@@ -681,10 +677,9 @@ public class TimePatternEditAction extends Action {
         	        (pattern.isVisible()?"":"<font color='grey'>")+
         	            pattern.getName().replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
-        	        (pattern.isVisible()?"":"<font color='gray'>")+
-        	            TimePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
+        	        (pattern.isVisible()?"":"<font color='gray'>")+pattern.getTimePatternType().getLabel().replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
-        			(isUsed?"<IMG border='0' title='This time pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
+        			(isUsed?"<IMG border='0' title='" + MSG.hintTimePatternUsed() + "' alt='Default' align='absmiddle' src='images/accept.png'>":""),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getNrMeetings().toString()+(pattern.isVisible()?"":"</font>"),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getMinPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getSlotsPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
@@ -706,7 +701,7 @@ public class TimePatternEditAction extends Action {
         		}, pattern.getUniqueId().toString());
         }
         
-	    request.setAttribute("TimePatterns.table", webTable.printTable(WebTable.getOrder(sessionContext,"timePatterns.ord")));
+	    request.setAttribute("table", webTable.printTable(WebTable.getOrder(sessionContext,"timePatterns.ord")));
 	    
 	    List<Long> ids = new ArrayList<Long>();
 	    for (Enumeration<WebTableLine> e = webTable.getLines().elements(); e.hasMoreElements(); ) {

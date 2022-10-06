@@ -60,7 +60,7 @@ public class WeeklyMinutes extends MinutesPerWeek {
 	 */
 	@Override
 	public boolean isValidCombination(int weeklyMinutes, DatePattern datePattern, TimePattern timePattern) {
-		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
+		if (timePattern.isExactTime())
 			return true;
 		if (datePattern == null) return false;
 		if (datePattern.isPatternSet()) {

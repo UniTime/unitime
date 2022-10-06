@@ -24,9 +24,9 @@
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDatePattern"/></tt:confirm>
 <s:form action="datePatternEdit">
+<s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
 <s:if test="form.op != 'List'">
-	<s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
-	<s:hidden name="form.isUsed"/><s:fielderror fieldName="form.isUsed"/>
+	<s:hidden name="form.isUsed"/>
 	<s:hidden name="form.sessionId"/>
 	<s:hidden name="form.nextId"/>
 	<s:hidden name="form.previousId"/>

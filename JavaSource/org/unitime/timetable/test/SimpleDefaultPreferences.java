@@ -244,7 +244,7 @@ public class SimpleDefaultPreferences {
 						subpart.getPreferences().clear();
 						
 						// Set time preferences on the subpart (if all the classes have the same time pattern)
-						if (timePattern != null && sameTimePattern && timePattern.getType() != TimePattern.sTypeExactTime) {
+						if (timePattern != null && sameTimePattern && !timePattern.isExactTime()) {
 	                		TimePref tp = new TimePref();
 	                		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 	                		TimePatternModel m = timePattern.getTimePatternModel();

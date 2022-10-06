@@ -4328,4 +4328,199 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Break time")
 	String columnExactTimeBreakTime();
+	
+	@DefaultMessage("Name")
+	String columnTimePatternName();
+	
+	@DefaultMessage("Type")
+	String columnTimePatternType();
+	
+	@DefaultMessage("Visible")
+	String columnTimePatternVisible();
+	
+	@DefaultMessage("Used")
+	String columnTimePatternUsed();
+	
+	@DefaultMessage("NbrMtgs")
+	String columnTimePatternNbrMtgs();
+	
+	@DefaultMessage("MinPerMtg")
+	String columnTimePatternMinPerMtg();
+	
+	@DefaultMessage("SlotsPerMtg")
+	String columnTimePatternSlotsPerMtg();
+	
+	@DefaultMessage("Break Time")
+	String columnTimePatternBreakTime();
+	
+	@DefaultMessage("Days")
+	String columnTimePatternDays();
+	
+	@DefaultMessage("Times")
+	String columnTimePatternTimes();
+	
+	@DefaultMessage("Departments")
+	String columnTimePatternDepartments();
+	
+	@DefaultMessage("Classes")
+	String columnTimePatternClasses();
+	
+	@DefaultMessage("Number of slots per meeting is required.")
+	String errorNumberOfSlotsPerMeetingRequired();
+	
+	@DefaultMessage("Minutes per meeting is required.")
+	String errorMinutesPerMeetingRequired();
+	
+	@DefaultMessage("Number of meetings per week is required.")
+	String errorNumberOfMeetingsPerWeekRequired();
+	
+	@DefaultMessage("Only extended or exact time pattern can contain relations with departments.")
+	String errorOnlyExtTimePatternHasDepartments();
+	
+	@DefaultMessage("Save")
+	String actionSaveTimePattern();
+	
+	@DefaultMessage("Update")
+	String actionUpdateTimePattern();
+	
+	@DefaultMessage("Back")
+	String actionBackToTimePatterns();
+	
+	@DefaultMessage("Next")
+	String actionNextTimePattern();
+	
+	@DefaultMessage("Previous")
+	String actionPreviousTimePattern();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteTimePattern();
+	
+	@DefaultMessage("Add Time Pattern")
+	String actionAddTimePattern();
+	
+	@DefaultMessage("Create a new time pattern")
+	String titleAddTimePattern();
+	
+	@DefaultMessage("Exact Times CSV")
+	String actionExactTimesCSV();
+	
+	@DefaultMessage("Generate a CSV report with all classes that are using exact times")
+	String titleExactTimesCSV();
+	
+	@DefaultMessage("Assign Departments")
+	String actionAssingDepartmentsToTimePatterns();
+	
+	@DefaultMessage("Assign departments to extended time patterns")
+	String titleAssingDepartmentsToTimePatterns();
+	
+	@DefaultMessage("Export time patterns to CSV")
+	String titleExportTimePatternsCSV();
+	
+	@DefaultMessage("Standard")
+	String timePatterTypeStandard();
+	
+	@DefaultMessage("Evening")
+	String timePatterTypeEvening();
+	
+	@DefaultMessage("Saturday")
+	String timePatterTypeSaturday();
+	
+	@DefaultMessage("Morning")
+	String timePatterTypeMorning();
+	
+	@DefaultMessage("Extended")
+	String timePatterTypeExtended();
+	
+	@DefaultMessage("Exact Time")
+	String timePatterTypeExactTime();
+	
+	@DefaultMessage("Invalid days '{0}'.")
+	String errorInvalidDaysForToken(String token);
+	
+	@DefaultMessage("Days {0} invalid -- wrong number of days.")
+	String errorWrongNumberOfDaysForToken(String token);
+	
+	@DefaultMessage("Days '{0}' included more than once.")
+	String errorDuplicateDaysToken(String token);
+	
+	@DefaultMessage("Invalid time '{0}' -- hour ({1}) must be between 0 and 23.")
+	String errorWrongHoursForTimeToken(String token, int hours);
+	
+	@DefaultMessage("Invalid time '{0}' -- minute ({1}) must be between 0 and 59.")
+	String errorWrongMinutesForTimeToken(String token, int min);
+	
+	@DefaultMessage("Invalid time '{0}' -- minute ({1}) must be divisible by 5.")
+	String errorMinutesNotDivisibleByFiveForTimeToken(String token, int min);
+	
+	@DefaultMessage("Invalid time '{0}' -- the time cannot go over midnight.")
+	String errorTimeGoesOverMidnightForToken(String token);
+	
+	@DefaultMessage("Invalid time '{0}' -- not a number.")
+	String errorTimeNotNumberForToken(String token);
+	
+	@DefaultMessage("Invalid time '{0}'.")
+	String errorNotValidTimeForToken(String token);
+	
+	@DefaultMessage("Time '{0}' included more than once.")
+	String errorDiplicateTimeToken(String token);
+	
+	@DefaultMessage("There is no Exact Time time pattern defined.")
+	String errorNoExactTimePatternDefined();
+	
+	@DefaultMessage("not used")
+	String notUsed();
+	
+	@DefaultMessage("Y")
+	String csvTrue();
+	
+	@DefaultMessage("N")
+	String csvFalse();
+	
+	@DefaultMessage("No time pattern defined for this academic session.")
+	String errorNoTimePatternsDefined();
+	
+	@DefaultMessage("This time pattern is being used.")
+	String hintTimePatternUsed();
+	
+	@DefaultMessage("The time pattern will be deleted. Continue?")
+	String confirmTimeDatePattern();
+	
+	@DefaultMessage("Add Time Pattern")
+	String sectAddTimePattern();
+	
+	@DefaultMessage("Edit Time Pattern")
+	String sectEditTimePattern();
+	
+	@DefaultMessage("Time Patterns")
+	String sectTimePatterns();
+	
+	@DefaultMessage("Name:")
+	String propTimePatternName();
+	
+	@DefaultMessage("Type:")
+	String propTimePatternType();
+	
+	@DefaultMessage("Visible:")
+	String propTimePatternVisible();
+	
+	@DefaultMessage("Number of slots per meeting:")
+	String propTimePatternSlotsPerMeeting();
+	
+	@DefaultMessage("(one slot represent 5 minutes)")
+	String hintTimePatternSlotsPerMeeting();
+	
+	@DefaultMessage("Break time [minutes]:")
+	String propTimePatternBreakTime();
+	
+	@DefaultMessage("Days:")
+	String propTimePatternDays();
+	
+	@DefaultMessage("Start times:")
+	String propTimePatternStartTimes();
+	
+	@DefaultMessage("Departments:")
+	String propTimePatternDepartments();
+	
+	@DefaultMessage("Example:")
+	String propTimePatternExample();
 }

@@ -66,7 +66,6 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SimpleItypeConfig;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
@@ -1370,7 +1369,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 
 		                        // Weaken time preferences if the new manager is external, remove exact times
 		                        if (a instanceof TimePref) {
-			                    	if (((TimePref)a).getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
+			                    	if (((TimePref)a).getTimePattern().isExactTime()) {
 			                    		prefI.remove();
 			                    	} else {
                                         if (c.getManagingDept().isExternalManager().booleanValue()) {

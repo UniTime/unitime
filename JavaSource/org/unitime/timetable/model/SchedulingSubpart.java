@@ -409,7 +409,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 			Preference pref = (Preference)i.next();
 			if (pref instanceof TimePref) {
 				TimePref tp = (TimePref) pref;
-				if (tp.getTimePattern().getType() != null && tp.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+				if (tp.getTimePattern().getType() != null && tp.getTimePattern().isExactTime()) continue;
 				Set<Integer> days = dm.getDayCodes(getMinutesPerWk(), dp, tp.getTimePattern());
 				if (days.isEmpty()) {
 					i.remove();
