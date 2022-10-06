@@ -19,43 +19,43 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.ExactTimeEditForm;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
 
 /** 
  * @author Tomas Muller
  */
-@Service("/exactTimeEdit")
-public class ExactTimeEditAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "exactTimeEdit", results = {
+		@Result(name = "display", type = "tiles", location = "exactTimeEdit.tiles")
+	})
+@TilesDefinition(name = "exactTimeEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Exact Time Pattern"),
+		@TilesPutAttribute(name = "body", value = "/admin/exactTimeEdit.jsp")
+	})
+public class ExactTimeEditAction extends UniTimeAction<ExactTimeEditForm> {
+	private static final long serialVersionUID = -741923666126157505L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		ExactTimeEditForm myForm = (ExactTimeEditForm) form;
+	public String execute() throws Exception {
+		if (form == null)
+			form = new ExactTimeEditForm();
 		
         // Check Access
 		sessionContext.checkPermission(Right.ExactTimes);
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-
-        if ("Update".equals(op)) {
-        	myForm.save();
+        if (MSG.actionUpdateExactTimeMins().equals(op)) {
+        	form.save();
         }
         
-        
-        return mapping.findForward("display");
+        return "display";
 	}
 }
 

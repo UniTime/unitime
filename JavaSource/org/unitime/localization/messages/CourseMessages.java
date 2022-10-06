@@ -4313,4 +4313,19 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("The number of weeks will be computed from the pattern when left blank.")
 	String infoDatePatternNbrWeeks();
+	
+	@DefaultMessage("Update")
+	String actionUpdateExactTimeMins();
+	
+	@DefaultMessage("Number of 5 minute time slots per meeting &amp; break times")
+	String sectExactTimeMins();
+	
+	@DefaultMessage("Number of minutes<br>per meeting")
+	String columnExactTimeMinuesRange();
+	
+	@DefaultMessage("Number of slots<br>per meeting")
+	String columnExactTimeSlotsPerMeeting();
+	
+	@DefaultMessage("Break time")
+	String columnExactTimeBreakTime();
 }

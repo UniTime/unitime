@@ -229,11 +229,6 @@
 		<put name="body" value="/admin/departmentEdit.jsp" />
   	</definition>
 
-   	<definition	name="exactTimeEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Exact Time Pattern"/>
-		<put name="body" value="/admin/exactTimeEdit.jsp" />
-  	</definition>
-
    	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />

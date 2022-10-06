@@ -19,16 +19,12 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.hibernate.Transaction;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 
@@ -36,21 +32,20 @@ import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 /** 
  * @author Tomas Muller
  */
-public class ExactTimeEditForm extends ActionForm {
+public class ExactTimeEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -7288169370839578510L;
-	private String iOp;
-    private Vector iExactTimeMins = new Vector();
+    private List<ExactTimeMins> iExactTimeMins;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-        
-		return errors;
+	public ExactTimeEditForm() {
+		reset();
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; 
-		iExactTimeMins.clear();
-		iExactTimeMins.addAll((new ExactTimeMinsDAO()).findAll());
+	@Override
+	public void validate(UniTimeAction action) {
+	}
+
+	public void reset() {
+		iExactTimeMins = new ArrayList<ExactTimeMins>(ExactTimeMinsDAO.getInstance().findAll());
 		Collections.sort(iExactTimeMins);
 	}
 	
@@ -60,8 +55,7 @@ public class ExactTimeEditForm extends ActionForm {
             org.hibernate.Session hibSession = (new ExactTimeMinsDAO()).getSession();
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 tx = hibSession.beginTransaction();
-            for (Enumeration e=iExactTimeMins.elements();e.hasMoreElements();) {
-                ExactTimeMins ex = (ExactTimeMins)e.nextElement();
+            for (ExactTimeMins ex: iExactTimeMins) {
                 hibSession.saveOrUpdate(ex);
             }
             if (tx!=null) tx.commit();
@@ -71,35 +65,33 @@ public class ExactTimeEditForm extends ActionForm {
         }
 	}
 
-	public String getOp() { return iOp; }
-	public void setOp(String op) { iOp = op; }
 	public int getSize() { return iExactTimeMins.size(); }
-	public Vector getExactTimeMins() {
+	public List<ExactTimeMins> getExactTimeMins() {
 		return iExactTimeMins;
 	}
 	public int getMinsPerMtgMin(int idx) {
-		return ((ExactTimeMins)iExactTimeMins.elementAt(idx)).getMinsPerMtgMin().intValue();
+		return iExactTimeMins.get(idx).getMinsPerMtgMin();
 	}
 	public int getMinsPerMtgMax(int idx) {
-		return ((ExactTimeMins)iExactTimeMins.elementAt(idx)).getMinsPerMtgMax().intValue();
+		return iExactTimeMins.get(idx).getMinsPerMtgMax();
 	}
 	public int getNrTimeSlots(int idx) {
-		return ((ExactTimeMins)iExactTimeMins.elementAt(idx)).getNrSlots().intValue();
+		return iExactTimeMins.get(idx).getNrSlots();
 	}
 	public int getBreakTime(int idx) {
-		return ((ExactTimeMins)iExactTimeMins.elementAt(idx)).getBreakTime().intValue();
+		return iExactTimeMins.get(idx).getBreakTime();
 	}
 	public void setMinsPerMtgMin(int idx, int minsPerMtgMin) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMin(Integer.valueOf(minsPerMtgMin));
+		iExactTimeMins.get(idx).setMinsPerMtgMin(minsPerMtgMin);
 	}
 	public void setMinsPerMtgMax(int idx, int minsPerMtgMax) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setMinsPerMtgMax(Integer.valueOf(minsPerMtgMax));
+		iExactTimeMins.get(idx).setMinsPerMtgMax(minsPerMtgMax);
 	}
 	public void setNrTimeSlots(int idx, int nrTimeSlots) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setNrSlots(Integer.valueOf(nrTimeSlots));
+		iExactTimeMins.get(idx).setNrSlots(nrTimeSlots);
 	}
 	public void setBreakTime(int idx, int breakTime) {
-		((ExactTimeMins)iExactTimeMins.elementAt(idx)).setBreakTime(Integer.valueOf(breakTime));
+		iExactTimeMins.get(idx).setBreakTime(breakTime);
 	}
 }
 
