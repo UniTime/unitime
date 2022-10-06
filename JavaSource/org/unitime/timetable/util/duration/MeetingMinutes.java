@@ -62,7 +62,7 @@ public class MeetingMinutes extends MeetingCountingDuration {
 	@Override
 	public Integer getArrangedHours(int minutes, DatePattern datePattern) {
 		if (minutes <= 0 || datePattern == null) return null;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				return Integer.valueOf(Math.round(minutes / (50f * child.getEffectiveNumberOfWeeks())));
 		}

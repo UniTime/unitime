@@ -1041,8 +1041,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		if (pattern != null) {
 			String datePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
 	    	if ("never".equals(datePatternFormat)) event.setMessage(pattern.getName());
-	    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) event.setMessage(pattern.getName());
-	    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) event.setMessage(pattern.getName());
+	    	else if ("extended".equals(datePatternFormat) && !pattern.isExtended()) event.setMessage(pattern.getName());
+	    	else if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) event.setMessage(pattern.getName());
 	    	else {
 	    		Date first = pattern.getStartDate();
 	    		Date last = pattern.getEndDate();

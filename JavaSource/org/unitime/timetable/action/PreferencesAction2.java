@@ -1182,7 +1182,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				if (timePattern != null && !rtt.getModel().isExactTime()) {
 					if (dpat == null) {
 						name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
-					} else if (dpat.getType() != null && dpat.getType() == DatePattern.sTypePatternSet) {
+					} else if (dpat.isPatternSet()) {
 						boolean allPatterns = true;
 						String matching = "";
 						for (DatePattern dch: dpat.findChildren()) {

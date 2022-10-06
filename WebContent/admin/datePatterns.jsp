@@ -17,164 +17,173 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.timetable.model.DatePattern" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tiles:importAttribute />
-
-<html:form action="/datePatternEdit">
-
-<logic:notEqual name="datePatternEditForm" property="op" value="List">
-	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-	<html:hidden property="isUsed"/><html:errors property="isUsed"/>
-	<html:hidden property="sessionId"/>
-	<html:hidden property="nextId"/>
-	<html:hidden property="previousId"/>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDatePattern"/></tt:confirm>
+<s:form action="datePatternEdit">
+<s:if test="form.op != 'List'">
+	<s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
+	<s:hidden name="form.isUsed"/><s:fielderror fieldName="form.isUsed"/>
+	<s:hidden name="form.sessionId"/>
+	<s:hidden name="form.nextId"/>
+	<s:hidden name="form.previousId"/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="datePatternEditForm" property="op" value="Save">
-							Add
-						</logic:equal>
-						<logic:notEqual name="datePatternEditForm" property="op" value="Save">
-							Edit
-						</logic:notEqual>
-						Date Pattern
+						<s:if test="form.op == #msg.actionSaveDatePattern()">
+							<loc:message name="sectAddDatePattern"/>
+						</s:if><s:else>
+							<loc:message name="sectEditDatePattern"/>
+						</s:else>
 					</tt:section-title>
-					<html:submit property="op">
-						<bean:write name="datePatternEditForm" property="op" />
-					</html:submit>
-					<logic:equal name="datePatternEditForm" property="hasPrevious" value="true">
-						<html:submit property="op" value="Previous"/>
-					</logic:equal>
-					<logic:equal name="datePatternEditForm" property="hasNext" value="true">
-						<html:submit property="op" value="Next"/>
-					</logic:equal>
-					<logic:notEqual name="datePatternEditForm" property="op" value="Save">
-						<logic:equal name="datePatternEditForm" property="isUsed" value="false">
-							<logic:equal name="datePatternEditForm" property="isDefault" value="false">
-								<html:submit property="op" value="Delete"/> 
-							</logic:equal>
-						</logic:equal>
-					</logic:notEqual>
-					<logic:equal name="datePatternEditForm" property="isDefault" value="false">
-						<html:submit property="op" value="Make Default"/> 
-					</logic:equal>
-					<html:submit property="op" value="Back" /> 
+					<s:submit name='op' value='%{form.op}'/>
+					<s:if test="form.hasPrevious == true">
+						<s:submit name='op' value='%{#msg.actionPreviousDatePattern()}'/>
+					</s:if>
+					<s:if test="form.hasNext == true">
+						<s:submit name='op' value='%{#msg.actionNextDatePattern()}'/>
+					</s:if>
+					<s:if test="form.op == #msg.actionUpdateDatePattern() && form.isUsed == false && form.isDefault == false">
+						<s:submit name='op' value='%{#msg.actionDeleteDatePattern()}' onclick="return confirmDelete();"/>
+					</s:if>
+					<s:if test="form.isDefault == false && form.typeInt <= 2">
+						<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}'/>
+					</s:if>
+					<s:submit name='op' value='%{#msg.actionBackToDatePatterns()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Name:</TD>
+			<TD><loc:message name="propDatePatternName"/></TD>
 			<TD>
-				<html:text property="name" size="50" maxlength="100"/>
-				&nbsp;<html:errors property="name"/>
+				<s:textfield name="form.name" size="50" maxlength="100"/>
+				<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Type:</TD>
+			<TD><loc:message name="propDatePatternType"/></TD>
 			<TD>
-				<html:select property="type" onchange="hideParentsIfNeeded();" styleId="__type">
-					<html:options name="datePatternEditForm" property="types"/>
-				</html:select>
-				&nbsp;<html:errors property="type"/>
+				<s:select name="form.type" id="__type" onchange="hideParentsIfNeeded();"
+					list="form.types" listKey="value" listValue="label"/>
+				<s:fielderror fieldName="form.type"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Number of Weeks:</TD>
+			<TD><loc:message name="propDatePatternNbrWeeks"/></TD>
 			<TD>
-				<html:text property="numberOfWeeks" size="10" maxlength="10"/>
-				&nbsp;<html:errors property="numberOfWeeks"/>
-				<i>The number of weeks will be computed from the pattern when left blank.</i>
+				<s:textfield name="form.numberOfWeeks" size="10" maxlength="10"/>
+				<s:fielderror fieldName="form.numberOfWeeks"/>
+				<i><loc:message name="infoDatePatternNbrWeeks"/></i>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Visible:</TD>
+			<TD><loc:message name="propDatePatternVisible"/></TD>
 			<TD>
-				<html:checkbox property="visible"/>
-				&nbsp;<html:errors property="visible"/>
+				<s:checkbox name="form.visible"/>
+				<s:fielderror fieldName="form.visible"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Default:</TD>
+			<TD><loc:message name="propDatePatternDefault"/></TD>
 			<TD>
-				<html:checkbox property="isDefault" disabled="true"/>
-				&nbsp;<html:errors property="isDefault"/>
+				<s:checkbox name="form.isDefault" disabled="true"/>
+				<s:fielderror fieldName="form.isDefault"/>
 			</TD>
 		</TR>
 		
-		<TR>
-			<TD valign="top">Departments:</TD>
+		<TR id="__departments">
+			<TD valign="top"><loc:message name="propDatePatternDepartments"/></TD>
 			<TD>
-				<logic:iterate name="datePatternEditForm" property="departmentIds" id="deptId">
-					<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="dept">
-						<logic:equal name="dept" property="value" value="<%=deptId.toString()%>">
-							<bean:write name="dept" property="label"/>
-							<input type="hidden" name="depts" value="<%=deptId%>">
-							<BR>
-						</logic:equal>
-					</logic:iterate>
-				</logic:iterate>
-				<html:select property="departmentId">
-					<html:option value="-1"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
-				</html:select>
+				<s:iterator value="form.departmentIds" var="deptId" status="stat"><s:set var="ctr" value="#stat.index"/>
+					<s:iterator value="#request.deptsList" var="dept">
+						<s:if test="#dept.id == #deptId">
+							<s:property value="#dept.value"/>
+							<s:hidden name="form.departmentIds[%{#ctr}]"/>
+							<br>
+						</s:if>
+					</s:iterator>
+				</s:iterator>
+				<s:select name="form.departmentId"
+					list="#request.deptsList" listKey="id" listValue="value"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" value="Add Department"/>
+				<s:submit name='op' value='%{#msg.actionAddDepartment()}'/>
 				&nbsp;
-				<html:submit property="op" value="Remove Department"/>
+				<s:submit name='op' value='%{#msg.actionRemoveDepartment()}'/>
 				&nbsp;
-				<html:errors property="department"/>
+				<s:fielderror fieldName="form.department"/>
 			</TD>
 		</TR>
 		
-		<logic:notEmpty scope="request" name="<%=DatePattern.DATE_PATTERN_PARENT_LIST_ATTR%>">
+		<s:if test="#request.datePatternParentsList != null && !#request.datePatternParentsList.isEmpty()">
 		<TR id="__parents">		
-		    <TD valign="top">Alternative Pattern Sets:</TD>
+		    <TD valign="top"><loc:message name="propDatePatternAltPatternSets"/></TD>
 			<TD>
-				<logic:iterate name="datePatternEditForm" property="parentIds" id="parentId">
-					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_PARENT_LIST_ATTR%>" id="parent">
-						<logic:equal name="parent" property="uniqueId" value="<%=parentId.toString()%>">							
-							<bean:write name="parent" property="name"/>
-							<input type="hidden" name="prnts" value="<%=parentId%>">
-							<BR>
-						</logic:equal>
-					</logic:iterate>
-				</logic:iterate>
-				<html:select property="parentId">
-					<html:option value="-1"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=DatePattern.DATE_PATTERN_PARENT_LIST_ATTR%>" property="uniqueId" labelProperty="name"/>
-				</html:select>
+				<s:iterator value="form.parentIds" var="parentId" status="stat"><s:set var="ctr" value="#stat.index"/>
+					<s:iterator value="#request.datePatternParentsList" var="parent">
+						<s:if test="#parent.uniqueId == #parentId">
+							<s:property value="#parent.name"/>
+							<s:hidden name="form.parentIds[%{#ctr}]"/>
+							<br>
+						</s:if>
+					</s:iterator>
+				</s:iterator>
+				<s:select name="form.parentId"
+					list="#request.datePatternParentsList" listKey="uniqueId" listValue="name"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" value="Add Pattern Set"/>
+				<s:submit name='op' value='%{#msg.actionAddAltPatternSet()}'/>
 				&nbsp;
-				<html:submit property="op" value="Remove Pattern Set"/>
+				<s:submit name='op' value='%{#msg.actionRemovePatternSet()}'/>
 				&nbsp;
-				<html:errors property="parent"/>
-			</TD>			
+				<s:fielderror fieldName="form.parent"/>
+			</TD>
 		</TR>
-		</logic:notEmpty>
+		</s:if>
+		
+		<s:if test="#request.datePatternChildrenList != null && !#request.datePatternChildrenList.isEmpty()">
+		<TR id="__children">		
+		    <TD valign="top"><loc:message name="propDatePatternChildren"/></TD>
+			<TD>
+				<s:iterator value="form.childrenIds" var="childId" status="stat"><s:set var="ctr" value="#stat.index"/>
+					<s:iterator value="#request.datePatternChildrenList" var="child">
+						<s:if test="#child.uniqueId == #childId">
+							<s:property value="#child.name"/>
+							<s:hidden name="form.childrenIds[%{#ctr}]"/>
+							<br>
+						</s:if>
+					</s:iterator>
+				</s:iterator>
+				<s:select name="form.childId"
+					list="#request.datePatternChildrenList" listKey="uniqueId" listValue="name"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionAddDatePattern()}'/>
+				&nbsp;
+				<s:submit name='op' value='%{#msg.actionRemoveDatePattern()}'/>
+				&nbsp;
+				<s:fielderror fieldName="form.child"/>
+			</TD>
+		</TR>
+		</s:if>
 		
 
 		<TR id="__pattern">
-			<TD>Pattern:</TD><TD><html:errors property="pattern"/></TD>
+			<TD><loc:message name="propDatePatternPattern"/></TD><TD><s:fielderror fieldName="form.pattern"/></TD>
 		</TR>
 		<TR id="__patternTable">
 			<TD colspan='2'>
-				<%=request.getAttribute("DatePatterns.pattern")%>
+				<s:property value="#request.pattern" escapeHtml="false"/>
 			</TD>
 		</TR>
 
@@ -186,46 +195,39 @@
 		
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="datePatternEditForm" property="op" />
-				</html:submit> 
-				<logic:equal name="datePatternEditForm" property="hasPrevious" value="true">
-					<html:submit property="op" value="Previous"/>
-				</logic:equal>
-				<logic:equal name="datePatternEditForm" property="hasNext" value="true">
-					<html:submit property="op" value="Next"/>
-				</logic:equal>
-				<logic:notEqual name="datePatternEditForm" property="op" value="Save">
-					<logic:equal name="datePatternEditForm" property="isUsed" value="false">
-						<logic:equal name="datePatternEditForm" property="isDefault" value="false">
-							<html:submit property="op" value="Delete"/> 
-						</logic:equal>
-					</logic:equal>
-				</logic:notEqual>
-				<logic:equal name="datePatternEditForm" property="isDefault" value="false">
-					<html:submit property="op" value="Make Default"/> 
-				</logic:equal>
-				<html:submit property="op" value="Back" /> 
+				<s:submit name='op' value='%{form.op}'/>
+				<s:if test="form.hasPrevious == true">
+					<s:submit name='op' value='%{#msg.actionPreviousDatePattern()}'/>
+				</s:if>
+				<s:if test="form.hasNext == true">
+					<s:submit name='op' value='%{#msg.actionNextDatePattern()}'/>
+				</s:if>
+				<s:if test="form.op == #msg.actionUpdateDatePattern() && form.isUsed == false && form.isDefault == false">
+					<s:submit name='op' value='%{#msg.actionDeleteDatePattern()}' onclick="return confirmDelete();"/>
+				</s:if>
+				<s:if test="form.isDefault == false && form.typeInt <= 2">
+					<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}'/>
+				</s:if>
+				<s:submit name='op' value='%{#msg.actionBackToDatePatterns()}'/>
 			</TD>
 		</TR>
 	</TABLE>
 
 <BR>
-</logic:notEqual>
-<logic:equal name="datePatternEditForm" property="op" value="List">
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+</s:if><s:else>
+<table class="unitime-MainTable">
 	<TR>
 		<TD colspan='6'>
 			<tt:section-header>
-				<tt:section-title>Date Patterns</tt:section-title>
-				<html:submit property="op" value="Add Date Pattern" title="Create a new date pattern"/>
-				<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
-				<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
-				<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
+				<tt:section-title><loc:message name="sectDatePatterns"/></tt:section-title>
+				<s:submit name='op' value='%{#msg.actionAddDatePattern()}' title='%{#msg.titleAddDatePattern()}'/>
+				<s:submit name='op' value='%{#msg.actionAssingDepartmentsToDatePatterns()}' title='%{#msg.titleAssingDepartmentsToDatePatterns()}'/>
+				<s:submit name='op' value='%{#msg.actionPushUpDatePatterns()}' title='%{#msg.titlePushUpDatePatterns()}'/>
+				<s:submit name='op' value='%{#msg.actionExportCsv()}' title='%{#msg.titleExportDatePatternsCSV()}'/>
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%= request.getAttribute("DatePatterns.table") %>
+	<s:property value="#request.table" escapeHtml="false"/>
 	<TR>
 		<TD colspan='6'>
 			<tt:section-title/>
@@ -233,35 +235,37 @@
 	</TR>
 	<TR>
 		<TD colspan='6' align="right">
-			<html:submit property="op" value="Add Date Pattern" title="Add a new date pattern"/>
-			<html:submit property="op" value="Assign Departments" title="Assign departments to extended date patterns"/> 
-			<html:submit property="op" value="Push Up" title="Move date patterns from classes to subparts whenever possible"/> 
-			<html:submit property="op" value="Export CSV" title="Export date patterns to CSV"/> 
+			<s:submit name='op' value='%{#msg.actionAddDatePattern()}' title='%{#msg.titleAddDatePattern()}'/>
+			<s:submit name='op' value='%{#msg.actionAssingDepartmentsToDatePatterns()}' title='%{#msg.titleAssingDepartmentsToDatePatterns()}'/>
+			<s:submit name='op' value='%{#msg.actionPushUpDatePatterns()}' title='%{#msg.titlePushUpDatePatterns()}'/>
+			<s:submit name='op' value='%{#msg.actionExportCsv()}' title='%{#msg.titleExportDatePatternsCSV()}'/>
 		</TD>
 	</TR>
-	<% if (request.getAttribute("hash") != null) { %>
-		<SCRIPT type="text/javascript" language="javascript">
-			location.hash = '<%=request.getAttribute("hash")%>';
-		</SCRIPT>
-	<% } %>
 </TABLE>
-</logic:equal>
+<s:if test="#request.hash != null">
+	<SCRIPT type="text/javascript">
+		location.hash = '<%=request.getAttribute("hash")%>';
+	</SCRIPT>
+</s:if>
+</s:else>
 <script>
-function isParentSelected() {
-	var type = document.getElementById('__type');
-	return type.selectedIndex >= 0 && type.options[type.selectedIndex].value == '<%=DatePattern.sTypes[DatePattern.sTypePatternSet]%>';
-}
 function hideParentsIfNeeded() {
 	var type = document.getElementById('__type');
 	if (type == null) return;
-	var selected = type.selectedIndex >= 0 && type.options[type.selectedIndex].value == '<%=DatePattern.sTypes[DatePattern.sTypePatternSet]%>';
+	var selected = type.selectedIndex >= 0 && type.options[type.selectedIndex].value == 'PatternSet';
 	var parents = document.getElementById('__parents');
 	if (parents != null) parents.style.display = ( selected ? 'none' : 'table-row');
+	var children = document.getElementById('__children');
+	if (children != null) children.style.display = ( selected ? 'table-row' : 'none');
 	var pattern = document.getElementById('__pattern');
 	if (pattern != null) pattern.style.display = ( selected ? 'none' : 'table-row');
 	var patternTable = document.getElementById('__patternTable');
 	if (patternTable != null) patternTable.style.display = ( selected ? 'none' : 'table-row');
+	var showDepts = type.selectedIndex >= 0 && (type.options[type.selectedIndex].value == 'PatternSet' || type.options[type.selectedIndex].value == 'Extended');
+	var departments = document.getElementById('__departments');
+	if (departments != null) departments.style.display = (showDepts ? 'table-row' : 'none');
 }
 hideParentsIfNeeded();
 </script>
-</html:form>
+</s:form>
+</loc:bundle>

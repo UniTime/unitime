@@ -543,7 +543,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
             } else if (assignment!=null && assignment.getDatePattern()!=null) {
                 DatePattern dp = assignment.getDatePattern();
                 if (dp!=null && !dp.isDefault()) {
-                    if (dp.getType().intValue()==DatePattern.sTypeAlternate)
+                    if (dp.isAlternate())
                         meetingTime += dp.getName();
                     else {
                         meetingTime += dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate());
@@ -1345,13 +1345,13 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
             if (dp==null || !dp.isDefault()) {
                 Date first = ((Meeting)meetings.first()).getMeetingDate();
                 Date last = ((Meeting)meetings.last()).getMeetingDate();
-                if (dp!=null && dp.getType()==DatePattern.sTypeAlternate) 
+                if (dp!=null && dp.isAlternate()) 
                     meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+" "+dp.getName()+")";
                 else
                     meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+")";
             }
         } else if (dp!=null && !dp.isDefault()) {
-            if (dp.getType()==DatePattern.sTypeAlternate) 
+            if (dp.isAlternate()) 
                 meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+" "+dp.getName()+")";
             else
                 meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+")";

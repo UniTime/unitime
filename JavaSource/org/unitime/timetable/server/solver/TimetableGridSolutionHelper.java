@@ -432,8 +432,8 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	if (dp == null || dp.isDefault()) return null;
     	String format = ApplicationProperty.DatePatternFormatUseDates.value();
     	if ("never".equals(format)) return dp.getName();
-    	if ("extended".equals(format) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
-    	if ("alternate".equals(format) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
+    	if ("extended".equals(format) && !dp.isExtended()) return dp.getName();
+    	if ("alternate".equals(format) && dp.isAlternate()) return dp.getName();
     	BitSet weekCode = dp.getPatternBitSet();
     	if (weekCode.isEmpty()) return dp.getName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);

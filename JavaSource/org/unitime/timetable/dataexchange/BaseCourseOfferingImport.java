@@ -2071,7 +2071,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		DatePattern datePattern = clazz.effectiveDatePattern();
 		if (datePattern == null) return null;
 		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren(getHibSession())) {
 				String timePatternLookupString = days+"x"+dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, days)+"x"+timeObject.getStartPeriod().toString();
 				TimePattern pattern = timePatterns.get(timePatternLookupString);

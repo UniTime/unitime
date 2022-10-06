@@ -49,6 +49,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -680,7 +681,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	        cal.add(Calendar.DAY_OF_YEAR, 1);
 		}
 		dp.setPattern(sb.toString());
-		dp.setType(DatePattern.sTypeExtended);
+		dp.setDatePatternType(DatePatternType.Extended);
 		dp.setVisible(true);
 		dp.setUniqueId((Long)hibSession.save(dp));
 		    
@@ -707,15 +708,15 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		sb.append("from DatePattern dp")
 		  .append(" where dp.session.uniqueId = :sessionId")
 		  .append(" and dp.type = ")
-		  .append(DatePattern.sTypeExtended)
+		  .append(DatePatternType.Extended.ordinal())
 		  .append(" and dp.name = '")
 		  .append(generatedVariableTitleDatePatternName(variableTitleQuery))
 		  .append("'");
 		DatePattern dp = (DatePattern)hibSession.createQuery(sb.toString()).setLong("sessionId", s.getUniqueId()).uniqueResult();
 		if (dp == null) {
 			for (DatePattern sdp : DatePattern.findAll(s, false, null, null)) {
-				if ((sdp.getType().equals(DatePattern.sTypeStandard) 
-						|| sdp.getType().equals(DatePattern.sTypeNonStandard)) 
+				if ((sdp.getType().equals(DatePatternType.Standard.ordinal()) 
+						|| sdp.getType().equals(DatePatternType.NonStandard.ordinal())) 
 					&& sdp.getStartDate().equals(variableTitleQuery.getStartDate())
 					&& sdp.getEndDate().equals(variableTitleQuery.getEndDate())) {
 					if (sdp.getPattern().contains("0") && sdp.respectsSessionHolidaysAndHasNoNonHolidayBreaks()) {

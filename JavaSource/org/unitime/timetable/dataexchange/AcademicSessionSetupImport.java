@@ -39,6 +39,7 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.Degree;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -1183,9 +1184,9 @@ public class AcademicSessionSetupImport extends BaseImport {
             
         	pattern.setName(name);
         	pattern.setVisible("true".equalsIgnoreCase(element.attributeValue("visible", "true")));
-        	String type = element.attributeValue("type", DatePattern.sTypes[0]);
-        	for (int tId = 0; tId < DatePattern.sTypes.length; tId++) {
-        		if (DatePattern.sTypes[tId].equalsIgnoreCase(type)) pattern.setType(tId);
+        	String type = element.attributeValue("type", DatePatternType.Standard.name());
+        	for (DatePatternType dpt: DatePatternType.values()) {
+        		if (dpt.name().equals(type) || dpt.getLabel().equals(type)) pattern.setType(dpt.ordinal());
         	}
         	if ("true".equalsIgnoreCase(element.attributeValue("default", "false")))
         		defaultDatePattern = pattern;
@@ -1203,7 +1204,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             	pattern.getDepartments().remove(department);
             }
             
-            if (pattern.getType() == DatePattern.sTypePatternSet) {
+            if (pattern.isPatternSet()) {
             	for (Iterator dIt = element.elementIterator("datePattern"); dIt.hasNext(); ) {
                 	Element dEl = (Element)dIt.next();
                 	String child = dEl.attributeValue("name");
@@ -1237,7 +1238,7 @@ public class AcademicSessionSetupImport extends BaseImport {
     				for (int j = i1; j <= i2; j++)
     					weekCode.set(j, true);
     		}
-    		if (pattern.getType() != DatePattern.sTypePatternSet)
+    		if (!pattern.isPatternSet())
     			pattern.setPatternBitSet(weekCode);
     		
     		updatedPatterns.put(pattern.getName(), pattern);

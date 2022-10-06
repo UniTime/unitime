@@ -318,7 +318,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	CSVField cell = createCell();
     	if (dp != null) {
 			setText(cell,dp.getName());
-    		if (dp.getType() == DatePattern.sTypePatternSet && isEditable) {
+    		if (dp.isPatternSet() && isEditable) {
     			boolean hasReq = false;
     			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
     				Preference pref = (Preference)i.next();

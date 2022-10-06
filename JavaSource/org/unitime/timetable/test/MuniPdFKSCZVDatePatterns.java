@@ -37,6 +37,7 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -59,7 +60,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
             		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name order by dp.offset desc")
             		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
-            		.setInteger("type", org.unitime.timetable.model.DatePattern.sTypeExtended)
+            		.setInteger("type", DatePatternType.Extended.ordinal())
             		.setString("name", "T%den %")
             		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
@@ -318,7 +319,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
                 	p.setSession(session);
                 	p.setName("Týden " + dp);
                 	p.setOffset(fullTerm.nextSetBit(0) - weekCode.nextSetBit(0));
-                	p.setType(org.unitime.timetable.model.DatePattern.sTypeExtended);
+                	p.setDatePatternType(DatePatternType.Extended);
                 	p.setVisible(true);
                 	String pattern = "";
                 	for (int j = weekCode.nextSetBit(0); j < weekCode.length(); j++)
@@ -331,7 +332,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
                 		pattern += (weekCode.get(j) ? "1" : "0");
                 	p.setOffset(fullTerm.nextSetBit(0) - weekCode.nextSetBit(0));
                 	p.setPattern(pattern);
-                	p.setType(org.unitime.timetable.model.DatePattern.sTypeExtended);
+                	p.setDatePatternType(DatePatternType.Extended);
                 	p.setVisible(true);
                 	hibSession.saveOrUpdate(p);
                 }

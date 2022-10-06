@@ -236,14 +236,14 @@ public class AcademicSessionSetupExport extends BaseExport {
 				"from DatePattern where session = :sessionId").setLong("sessionId", session.getUniqueId()).list())) {
 			Element patternEl = patternsEl.addElement("datePattern");			
 			patternEl.addAttribute("name", dp.getName());
-			patternEl.addAttribute("type", DatePattern.sTypes[dp.getType()]);
+			patternEl.addAttribute("type", dp.getDatePatternType().name());
 			patternEl.addAttribute("visible", dp.getVisible() != null && dp.getVisible().booleanValue() ? "true": "false");
 			patternEl.addAttribute("default", dp.isDefault() ? "true" : "false");
 			if (dp.getNumberOfWeeks() != null)
 				patternEl.addAttribute("nbrWeeks", sFloatFormat.format(dp.getNumberOfWeeks()));
 			for (Department d: dp.getDepartments())
 				patternEl.addElement("department").addAttribute("code", d.getDeptCode());
-			if (dp.getType() == DatePattern.sTypePatternSet) {
+			if (dp.isPatternSet()) {
 				for (DatePattern p: dp.findChildren(getHibSession()))
 					patternEl.addElement("datePattern").addAttribute("name", p.getName());
 				continue;

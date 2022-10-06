@@ -91,8 +91,8 @@ public class XTime implements Serializable, Externalizable {
 		iBreakTime = 0;
 		iDatePatternId = pattern.getUniqueId();
     	if ("never".equals(datePatternFormat)) iDatePatternName = pattern.getName();
-    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) iDatePatternName = pattern.getName();
-    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) iDatePatternName = pattern.getName();
+    	else if ("extended".equals(datePatternFormat) && !pattern.isExtended()) iDatePatternName = pattern.getName();
+    	else if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) iDatePatternName = pattern.getName();
     	else {
     		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
     		Date first = pattern.getStartDate();
@@ -221,8 +221,8 @@ public class XTime implements Serializable, Externalizable {
 	
     public static String datePatternName(Assignment assignment, String format) {
     	if ("never".equals(format)) return assignment.getDatePattern().getName();
-    	if ("extended".equals(format) && assignment.getDatePattern().getType() != DatePattern.sTypeExtended) return assignment.getDatePattern().getName();
-    	if ("alternate".equals(format) && assignment.getDatePattern().getType() == DatePattern.sTypeAlternate) return assignment.getDatePattern().getName();
+    	if ("extended".equals(format) && !assignment.getDatePattern().isExtended()) return assignment.getDatePattern().getName();
+    	if ("alternate".equals(format) && assignment.getDatePattern().isAlternate()) return assignment.getDatePattern().getName();
     	BitSet weekCode = assignment.getDatePattern().getPatternBitSet();
     	if (weekCode.isEmpty()) return assignment.getDatePattern().getName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);

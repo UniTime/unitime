@@ -2783,8 +2783,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			DatePattern pattern = clazz.effectiveDatePattern();
 				    			if (pattern != null) {
 				    		    	if ("never".equals(datePatternFormat)) event.setMessage(pattern.getName());
-				    		    	else if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) event.setMessage(pattern.getName());
-				    		    	else if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) event.setMessage(pattern.getName());
+				    		    	else if ("extended".equals(datePatternFormat) && !pattern.isExtended()) event.setMessage(pattern.getName());
+				    		    	else if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) event.setMessage(pattern.getName());
 				    		    	else {
 				    		    		Date first = pattern.getStartDate();
 				    		    		Date last = pattern.getEndDate();

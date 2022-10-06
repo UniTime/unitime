@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -139,7 +140,7 @@ public class MakeAssignmentsForClassEvents {
         dp = new DatePattern();
         dp.setName(patternName);
         dp.setSession(iSession);
-        dp.setType(DatePattern.sTypeStandard);
+        dp.setDatePatternType(DatePatternType.Standard);
         dp.setVisible(true);
         Calendar date = Calendar.getInstance(Locale.US);
         int week = weeks.first();

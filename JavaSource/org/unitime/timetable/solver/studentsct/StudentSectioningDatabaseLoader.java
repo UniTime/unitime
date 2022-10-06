@@ -2293,8 +2293,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	
     private String datePatternName(DatePattern dp, TimeLocation time) {
     	if ("never".equals(iDatePatternFormat)) return dp.getName();
-    	if ("extended".equals(iDatePatternFormat) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
-    	if ("alternate".equals(iDatePatternFormat) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
+    	if ("extended".equals(iDatePatternFormat) && !dp.isExtended()) return dp.getName();
+    	if ("alternate".equals(iDatePatternFormat) && dp.isAlternate()) return dp.getName();
     	if (time == null) {
     		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
     		Date first = dp.getStartDate();

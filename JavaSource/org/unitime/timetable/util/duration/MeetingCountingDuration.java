@@ -43,7 +43,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 		if (datePattern == null) return false;
 		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
 			return true;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				if (isValidCombination(minutes, child, timePattern)) return true;
 			return false;
@@ -82,7 +82,7 @@ public abstract class MeetingCountingDuration implements DurationModel {
 	@Override
 	public boolean isValidSelection(int minutes, DatePattern datePattern, TimePattern timePattern, int dayCode) {
 		if (!isValidCombination(minutes, datePattern, timePattern)) return false;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				if (check(minutes, nbrMeetings(child, dayCode) * timePattern.getMinPerMtg()))
 					return true;

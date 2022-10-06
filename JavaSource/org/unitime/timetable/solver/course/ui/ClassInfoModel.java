@@ -139,7 +139,7 @@ public class ClassInfoModel implements Serializable {
     	} catch (Exception e){}
     	DatePattern dp = getClazz().getClazz().effectiveDatePattern();
     	if (dp == null) return null;
-    	if (dp.getType() != DatePattern.sTypePatternSet) {
+    	if (!dp.isPatternSet()) {
     		return new ClassDateInfo(
     				dp.getUniqueId(),
     				getClazz().getClassId(),
@@ -774,7 +774,7 @@ public class ClassInfoModel implements Serializable {
             	return iTimes;
             }
             ClassTimeInfo time = (getClassAssignment() == null ? null : getClassAssignment().getTime());
-            if (datePattern.getType() == DatePattern.sTypePatternSet) {
+            if (datePattern.isPatternSet()) {
             	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
             	boolean hasReq = false;
             	for (DatePatternPref p: datePatternPrefs) {
@@ -876,7 +876,7 @@ public class ClassInfoModel implements Serializable {
         Class_ clazz = getClazz().getClazz();
         DatePattern datePattern = clazz.effectiveDatePattern();
         if (datePattern == null) return times;
-        if (datePattern.getType() == DatePattern.sTypePatternSet) {
+        if (datePattern.isPatternSet()) {
         	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
         	boolean hasReq = false;
         	for (DatePatternPref p: datePatternPrefs) {

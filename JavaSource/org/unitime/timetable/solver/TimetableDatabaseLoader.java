@@ -932,7 +932,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             	TimePref timePref = (TimePref)i1.next();
             	TimePatternModel pattern = timePref.getTimePatternModel();
             	if (pattern.isExactTime()) {
-                    if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                    if (datePattern.isPatternSet()) {
                     	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                     	boolean hasReq = false;
                     	for (DatePatternPref p: datePatternPrefs) {
@@ -1023,7 +1023,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         	iProgress.trace("time is not required :-(");
                         	continue;
                         }
-                        if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                        if (datePattern.isPatternSet()) {
                         	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                         	boolean hasReq = false;
                         	for (DatePatternPref p: datePatternPrefs) {
@@ -1109,7 +1109,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		iProgress.trace("adding prohibited pattern "+model.getName());
                     for (int time=0;time<model.getNrTimes(); time++) {
                         for (int day=0;day<model.getNrDays(); day++) {
-                        	if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                        	if (datePattern.isPatternSet()) {
                             	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                             	for (DatePattern child: datePattern.findChildren()) {
                             		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern, model.getDayCode(day))) continue;

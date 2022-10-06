@@ -219,19 +219,6 @@
 		<put name="title" type="string" value="Edit Solver Group"/>
   	</definition>
 
-  	<definition name="datePatternsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Date Patterns"/>
-		<put name="body" value="/admin/datePatterns.jsp" />
-  	</definition>
-
-  	<definition name="addDatePatternTile" extends="datePatternsTile">
-		<put name="title" type="string" value="Add Date Pattern"/>
-  	</definition>
-
-  	<definition name="editDatePatternTile" extends="datePatternsTile">
-		<put name="title" type="string" value="Edit Date Pattern"/>
-  	</definition>
-
   	<definition name="departmentAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Department"/>
 		<put name="body" value="/admin/departmentEdit.jsp" />

@@ -39,7 +39,7 @@ public class SemesterMinutes extends MinutesPerWeek {
 		if (datePattern == null) return false;
 		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
 			return true;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				if (isValidCombination(semesterMinutes, child, timePattern)) return true;
 			return false;
@@ -51,7 +51,7 @@ public class SemesterMinutes extends MinutesPerWeek {
 	@Override
 	public int getExactTimeMinutesPerMeeting(int semesterMinutes, DatePattern datePattern, int dayCode) {
 		if (datePattern == null) return 0;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				return Math.round(semesterMinutes / (DayCode.nrDays(dayCode) * child.getEffectiveNumberOfWeeks()));
 		}
@@ -61,7 +61,7 @@ public class SemesterMinutes extends MinutesPerWeek {
 	@Override
 	public Integer getArrangedHours(int semesterMinutes, DatePattern datePattern) {
 		if (semesterMinutes <= 0 || datePattern == null) return null;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				return Integer.valueOf(Math.round(semesterMinutes / (50f * child.getEffectiveNumberOfWeeks())));
 		}

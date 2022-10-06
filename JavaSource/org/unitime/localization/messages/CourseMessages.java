@@ -4118,4 +4118,199 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Hide Details")
 	String actionHideDetails();
+	
+	@DefaultMessage("Name")
+	String columnDatePatternName();
+	
+	@DefaultMessage("Type")
+	String columnDatePatternType();
+	
+	@DefaultMessage("Used")
+	String columnDatePatternUsed();
+	
+	@DefaultMessage("Weeks")
+	String columnDatePatternWeeks();
+	
+	@DefaultMessage("Dates")
+	String columnDatePatternDates();
+	
+	@DefaultMessage("Dates / Patterns")
+	String columnDatePatternDatesOrPatterns();
+	
+	@DefaultMessage("Pattern Sets")
+	String columnDatePatternPatternSets();
+	
+	@DefaultMessage("Departments")
+	String columnDatePatternDepartments();
+	
+	@DefaultMessage("Pattern")
+	String columnDatePatternPattern();
+	
+	@DefaultMessage("Parent")
+	String columnDatePatternParent();
+	
+	@DefaultMessage("NrDays")
+	String columnDatePatternNbrDays();
+	
+	@DefaultMessage("From")
+	String columnDatePatternFrom();
+	
+	@DefaultMessage("To")
+	String columnDatePatternTo();
+	
+	@DefaultMessage("Classes")
+	String columnDatePatternClasses();
+	
+	@DefaultMessage("Only extended pattern and alternative pattern set can contain relations with departments.")
+	String errorOnyExtDatePatternsHaveDepartments();
+	
+	@DefaultMessage("Number of weeks must be a number.")
+	String errorNumberOfWeeksIsNotNumber();
+	
+	@DefaultMessage("Alternative pattern set date pattern can not have any dates selected.")
+	String errorAltPatternSetCannotHaveDates();
+	
+	@DefaultMessage("Alternative pattern set date pattern can not have a pattern set.")
+	String errorAltPatternSetCannotHavePatternSet();
+	
+	@DefaultMessage("Date Patterns cannot contain more than 1 year.")
+	String errorDatePatternCannotContainMoreThanAYear();
+	
+	@DefaultMessage("No department selected.")
+	String errorNoDepartmentSelected();
+	
+	@DefaultMessage("Department already present in the list of departments.")
+	String errorDepartmentAlreadyListed();
+	
+	@DefaultMessage("Department not present in the list of departments.")
+	String errorDepartmentNotListed();
+	
+	@DefaultMessage("No date pattern selected.")
+	String errorNoDatePatternSelected();
+	
+	@DefaultMessage("Date pattern already present in the list.")
+	String errorDatePatternAlreadyListed();
+	
+	@DefaultMessage("Date pattern not present in the list.")
+	String errorDatePatternNotListed();
+	
+	@DefaultMessage("No date pattern defined for this session.")
+	String errorNoDatePatterns();
+	
+	@DefaultMessage("This date pattern is being used.")
+	String infoDatePatternUsed();
+	
+	@DefaultMessage("Back")
+	String actionBackToDatePatterns();
+	
+	@DefaultMessage("Add Date Pattern")
+	String actionAddDatePattern();
+	
+	@DefaultMessage("Remove Date Pattern")
+	String actionRemoveDatePattern();
+	
+	@DefaultMessage("Create a new date pattern")
+	String titleAddDatePattern();
+	
+	@DefaultMessage("Add Department")
+	String actionAddDepartment();
+	
+	@DefaultMessage("Remove Department")
+	String actionRemoveDepartment();
+	
+	@DefaultMessage("Add Pattern Set")
+	String actionAddAltPatternSet();
+	
+	@DefaultMessage("Remove Pattern Set")
+	String actionRemovePatternSet();
+	
+	@DefaultMessage("Save")
+	String actionSaveDatePattern();
+	
+	@DefaultMessage("Update")
+	String actionUpdateDatePattern();
+	
+	@DefaultMessage("Previous")
+	String actionPreviousDatePattern();
+	
+	@DefaultMessage("Next")
+	String actionNextDatePattern();
+	
+	@DefaultMessage("Make Default")
+	String actionMakeDatePatternDefaulf();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteDatePattern();
+	
+	@DefaultMessage("Push Up")
+	String actionPushUpDatePatterns();
+	
+	@DefaultMessage("Move date patterns from classes to subparts whenever possible")
+	String titlePushUpDatePatterns();
+	
+	@DefaultMessage("Assign Departments")
+	String actionAssingDepartmentsToDatePatterns();
+	
+	@DefaultMessage("Assign departments to extended date patterns")
+	String titleAssingDepartmentsToDatePatterns();
+	
+	@DefaultMessage("Export date patterns to CSV")
+	String titleExportDatePatternsCSV();
+	
+	@DefaultMessage("The date pattern will be deleted. Continue?")
+	String confirmDeleteDatePattern();
+	
+	@DefaultMessage("Standard")
+	String datePatternTypeStandard();
+	
+	@DefaultMessage("Alternate Weeks")
+	String datePatternTypeAlternateWeeks();
+	
+	@DefaultMessage("Non-standard")
+	String datePatternTypeNonStandard();
+	
+	@DefaultMessage("Extended")
+	String datePatternTypeExtended();
+	
+	@DefaultMessage("Alternative Pattern Set")
+	String datePatternTypeAltPatternSet();
+	
+	@DefaultMessage("Add Date Pattern")
+	String sectAddDatePattern();
+	
+	@DefaultMessage("Edit Date Pattern")
+	String sectEditDatePattern();
+	
+	@DefaultMessage("Date Patterns")
+	String sectDatePatterns();
+	
+	@DefaultMessage("Name:")
+	String propDatePatternName();
+	
+	@DefaultMessage("Type:")
+	String propDatePatternType();
+	
+	@DefaultMessage("Number of Weeks:")
+	String propDatePatternNbrWeeks();
+	
+	@DefaultMessage("Visible:")
+	String propDatePatternVisible();
+	
+	@DefaultMessage("Default:")
+	String propDatePatternDefault();
+	
+	@DefaultMessage("Departments:")
+	String propDatePatternDepartments();
+	
+	@DefaultMessage("Alternative Pattern Sets:")
+	String propDatePatternAltPatternSets();
+	
+	@DefaultMessage("Date Patterns:")
+	String propDatePatternChildren();
+	
+	@DefaultMessage("Pattern:")
+	String propDatePatternPattern();
+	
+	@DefaultMessage("The number of weeks will be computed from the pattern when left blank.")
+	String infoDatePatternNbrWeeks();
 }

@@ -216,7 +216,7 @@ public class PdfWorksheet {
         String dpat = "";
         DatePattern dp = clazz.effectiveDatePattern();
         if (dp!=null && !dp.isDefault()) {
-            if (dp.getType().intValue()==DatePattern.sTypeAlternate)
+            if (dp.isAlternate())
                 dpat = " "+dp.getName();
             else {
                 SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");

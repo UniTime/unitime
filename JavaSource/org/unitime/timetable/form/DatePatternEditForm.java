@@ -22,31 +22,33 @@ package org.unitime.timetable.form;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class DatePatternEditForm extends ActionForm {
+public class DatePatternEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -929558620061783652L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String iOp;
     private String iName;
     private Long iUniqueId;
@@ -54,74 +56,79 @@ public class DatePatternEditForm extends ActionForm {
     private boolean iIsUsed;
     private boolean iIsDefault;
     private boolean iVisible;
-    private Vector iDepartmentIds = new Vector();
+    private List<Long> iDepartmentIds = new ArrayList<Long>();
     private Long iDepartmentId;
-    private Vector iParentIds = new Vector();
+    private List<Long> iParentIds = new ArrayList<Long>();
     private Long iParentId;
     private Long iSessionId;
     private String iNumberOfWeeks;
     private Long iPreviousId, iNextId;
+    private List<Long> iChildrenIds = new ArrayList<Long>();
+    private Long iChildId;
+    
+    public DatePatternEditForm() {
+    	reset();
+    }
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-        
-		if(iName==null || iName.trim().length()==0)
-			errors.add("name", new ActionMessage("errors.required", ""));
+    @Override
+	public void validate(UniTimeAction action) {
+		if (iName==null || iName.trim().isEmpty())
+			action.addFieldError("form.name", MSG.errorRequiredField(MSG.columnDatePatternName()));
 		else {
 			try {
 				DatePattern pat = DatePattern.findByName(iSessionId,iName);
 				if (pat!=null && !pat.getUniqueId().equals(iUniqueId))
-					errors.add("name", new ActionMessage("errors.exists", iName));
+					action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
 			} catch (Exception e) {
-				errors.add("name", new ActionMessage("errors.generic", e.getMessage()));
+				action.addFieldError("form.name", e.getMessage());	
 			}
         }
         
 		if (getTypeInt()<0)
-			errors.add("type", new ActionMessage("errors.required", ""));
+			action.addFieldError("form.type", MSG.errorRequiredField(MSG.columnDatePatternType()));
 		
-		if (getTypeInt()!=DatePattern.sTypeExtended && !iDepartmentIds.isEmpty() && getTypeInt()!=DatePattern.sTypePatternSet)
-			errors.add("type", new ActionMessage("errors.generic", "Only extended pattern and alternative pattern set can contain relations with departments."));
+		if (getTypeInt()!=DatePatternType.Extended.ordinal() && !iDepartmentIds.isEmpty() && getTypeInt()!=DatePatternType.PatternSet.ordinal())
+			action.addFieldError("form.type", MSG.errorOnyExtDatePatternsHaveDepartments());
 		
 		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
 			DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
 			try {
 				df.parse(getNumberOfWeeks());
 			} catch (ParseException e) {
-				errors.add("numberOfWeeks", new ActionMessage("errors.generic", "Not a number."));
+				action.addFieldError("form.numberOfWeeks", MSG.errorNumberOfWeeksIsNotNumber());
 			}
 		}
 		
 		try {
-			DatePattern dp = getDatePattern(request);
-			if (getTypeInt() == DatePattern.sTypePatternSet) {
+			DatePattern dp = getDatePattern(action.getRequest());
+			if (getTypeInt() == DatePatternType.PatternSet.ordinal()) {
 				if (dp.size()!=0)
-					errors.add("type", new ActionMessage("errors.generic", "Alternative pattern set date pattern can not have any dates selected."));
+					action.addFieldError("form.type", MSG.errorAltPatternSetCannotHaveDates());
 				if (getParentIds() != null && !getParentIds().isEmpty()) {
-					errors.add("type", new ActionMessage("errors.generic", "Alternative pattern set date pattern can not have a pattern set."));
+					action.addFieldError("form.type", MSG.errorAltPatternSetCannotHavePatternSet());
 				}
 			} else {
 				if (dp.size()==0)
-					errors.add("pattern", new ActionMessage("errors.required", ""));
+					action.addFieldError("form.pattern", MSG.errorRequiredField(MSG.columnDatePatternPattern()));
 			}
 			if (dp.getPattern().length() > 366)
-				errors.add("pattern", new ActionMessage("errors.generic", "Date Patterns cannot contain more than 1 year."));
+				action.addFieldError("form.pattern", MSG.errorDatePatternCannotContainMoreThanAYear());
 		} catch (Exception e) {}
-
-        return errors;
 	}
 	
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iUniqueId = Long.valueOf(-1); iType = DatePattern.sTypes[0]; 
+    @Override
+	public void reset() {
+		iOp = null; iUniqueId = Long.valueOf(-1); iType = DatePatternType.Standard.name(); 
 		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false; iNumberOfWeeks = null;
 		iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear();
 		iPreviousId = null; iNextId = null;
+		iChildrenIds.clear(); iChildId = null;
 	}
 	
 	public void load(DatePattern dp) {
 		if (dp==null) {
-			reset(null, null);
-			iOp = "Save";
+			reset();
+			iOp = MSG.actionSaveDatePattern();
 			iVisible = true; iIsUsed = false; iIsDefault = false;
 		} else {
 			setName(dp.getName());
@@ -146,7 +153,11 @@ public class DatePatternEditForm extends ActionForm {
 				Department d = (Department)i.next();
 				iDepartmentIds.add(d.getUniqueId());
 			}
-			iOp = "Update";
+			iChildrenIds.clear();
+			for (DatePattern ch: dp.findChildren()) {
+				iChildrenIds.add(ch.getUniqueId());
+			}
+			iOp = MSG.actionUpdateDatePattern();
 		}
 	}
 	
@@ -167,8 +178,7 @@ public class DatePatternEditForm extends ActionForm {
 		}
 		
 		HashSet oldParents = new HashSet(dp.getParents());
-		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
-			Long parentId = (Long)e.nextElement();
+		for (Long parentId: iParentIds) {
 			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
 			if (d==null) continue;
 			if (oldParents.remove(d)) {
@@ -185,8 +195,7 @@ public class DatePatternEditForm extends ActionForm {
 		}
 		
 		HashSet oldDepts = new HashSet(dp.getDepartments());
-		for (Enumeration e=iDepartmentIds.elements();e.hasMoreElements();) {
-			Long departmentId = (Long)e.nextElement();
+		for (Long departmentId: iDepartmentIds) {
 			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
 			if (d==null) continue;
 			if (oldDepts.remove(d)) {
@@ -204,6 +213,30 @@ public class DatePatternEditForm extends ActionForm {
 			hibSession.saveOrUpdate(d);
 		}
 		hibSession.saveOrUpdate(dp);
+		
+		if (dp.isPatternSet()) {
+			List<DatePattern> oldChildren = dp.findChildren(hibSession);
+			for (Long childId: iChildrenIds) {
+				DatePattern d = (new DatePatternDAO()).get(childId,hibSession);
+				if (d==null) continue;
+				if (oldChildren.remove(d)) {
+					//not changed -> do nothing
+				} else {
+					d.getParents().add(dp);
+					hibSession.saveOrUpdate(d);
+				}
+			}
+			for (DatePattern d: oldChildren) {
+				d.getParents().remove(dp);
+				hibSession.saveOrUpdate(d);
+			}
+		} else {
+			List<DatePattern> oldChildren = dp.findChildren(hibSession);
+			for (DatePattern d: oldChildren) {
+				d.getParents().remove(dp);
+				hibSession.saveOrUpdate(d);
+			}
+		}
 	}
 	
 	public DatePattern create(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
@@ -225,16 +258,14 @@ public class DatePatternEditForm extends ActionForm {
 		}
 		
 		HashSet newParents = new HashSet();
-		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
-			Long parentId = (Long)e.nextElement();
+		for (Long parentId: iParentIds) {
 			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
 			if (d==null) continue;
 			newParents.add(d);
 		}
 		dp.setParents(newParents);
 		HashSet newDepts = new HashSet();
-		for (Enumeration e=iDepartmentIds.elements();e.hasMoreElements();) {
-			Long departmentId = (Long)e.nextElement();
+		for (Long departmentId: iDepartmentIds) {
 			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
 			if (d==null) continue;
 			newDepts.add(d);
@@ -247,6 +278,14 @@ public class DatePatternEditForm extends ActionForm {
 			hibSession.saveOrUpdate(d);
 		}
 		setUniqueId(dp.getUniqueId());
+		if (dp.isPatternSet()) {
+			for (Long childId: iChildrenIds) {
+				DatePattern d = (new DatePatternDAO()).get(childId,hibSession);
+				if (d==null) continue;
+				d.getParents().add(dp);
+				hibSession.saveOrUpdate(d);
+			}
+		}
 		return dp;
 	}
 	
@@ -286,13 +325,18 @@ public class DatePatternEditForm extends ActionForm {
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 	public String getType() { return iType; }
 	public void setType(String type) { iType = type; }
-	public String[] getTypes() { return DatePattern.sTypes; }
+	public List<ComboBoxLookup> getTypes() {
+		List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+		for (DatePatternType t: DatePatternType.values())
+			ret.add(new ComboBoxLookup(t.getLabel(), t.name()));
+		return ret;
+	}
 	public int getTypeInt() {
-		for (int i=0;i<DatePattern.sTypes.length;i++)
-			if (DatePattern.sTypes[i].equals(iType)) return i;
+		for (int i=0;i<DatePatternType.values().length;i++)
+			if (DatePatternType.values()[i].name().equals(iType)) return i;
 		return -1;
 	}
-	public void setTypeInt(int type) { iType = (type<0?"":DatePattern.sTypes[type]); }
+	public void setTypeInt(int type) { iType = (type<0?"":DatePatternType.values()[type].name()); }
 	public boolean getIsUsed() { return iIsUsed; }
 	public void setIsUsed(boolean isUsed) { iIsUsed = isUsed; }
 	public boolean getVisible() { return iVisible; }
@@ -301,14 +345,18 @@ public class DatePatternEditForm extends ActionForm {
 	public void setName(String name) { iName = name; }
 	public boolean getIsDefault() { return iIsDefault; }
 	public void setIsDefault(boolean isDefault) { iIsDefault = isDefault; }
-	public Vector getDepartmentIds() { return iDepartmentIds; }
-	public void setDepartmentIds(Vector departmentIds) { iDepartmentIds = departmentIds; }
+	public List<Long> getDepartmentIds() { return iDepartmentIds; }
+	public void setDepartmentIds(List<Long> departmentIds) { iDepartmentIds = departmentIds; }
+	public Long getDepartmentIds(int idx) { return iDepartmentIds.get(idx); }
+	public void setDepartmentIds(int idx, Long value) { iDepartmentIds.set(idx, value); }
 	public Long getDepartmentId() { return iDepartmentId; }
 	public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
 	public Long getParentId() {return iParentId;}
 	public void setParentId(Long parentId) {iParentId = parentId;}
-	public Vector getParentIds() {return iParentIds;}
-	public void setParentIds(Vector parentIds) {iParentIds = parentIds;}
+	public List<Long> getParentIds() {return iParentIds;}
+	public void setParentIds(List<Long> parentIds) {iParentIds = parentIds;}
+	public Long getParentIds(int idx) { return iParentIds.get(idx); }
+	public void setParentIds(int idx, Long value) { iParentIds.set(idx, value); }
 	public String getNumberOfWeeks() { return iNumberOfWeeks; }
 	public void setNumberOfWeeks(String numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 	
@@ -321,6 +369,13 @@ public class DatePatternEditForm extends ActionForm {
 	public Long getPreviousId() { return iPreviousId; }
 	public void setPreviousId(Long previousId) { iPreviousId = previousId; }
 	public boolean getHasPrevious() { return iPreviousId != null && iPreviousId >= 0; }
+	
+	public Long getChildId() {return iChildId;}
+	public void setChildId(Long childId) {iChildId = childId;}
+	public List<Long> getChildrenIds() {return iChildrenIds;}
+	public void setChildrenIds(List<Long> ChildrenIds) {iChildrenIds = ChildrenIds;}
+	public Long getChildrenIds(int idx) { return iChildrenIds.get(idx); }
+	public void setChildrenIds(int idx, Long value) { iChildrenIds.set(idx, value); }
 	
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
 		DatePattern dp = null;

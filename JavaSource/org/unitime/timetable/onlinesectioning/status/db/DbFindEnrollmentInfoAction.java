@@ -104,8 +104,8 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 	
 	protected String datePatternName(DatePattern pattern, String datePatternFormat) {
     	if ("never".equals(datePatternFormat)) return pattern.getName();
-    	if ("extended".equals(datePatternFormat) && pattern.getType() != DatePattern.sTypeExtended) return pattern.getName();
-    	if ("alternate".equals(datePatternFormat) && pattern.getType() == DatePattern.sTypeAlternate) return pattern.getName();
+    	if ("extended".equals(datePatternFormat) && !pattern.isExtended()) return pattern.getName();
+    	if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) return pattern.getName();
 		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
 		Date first = pattern.getStartDate();
 		Date last = pattern.getEndDate();

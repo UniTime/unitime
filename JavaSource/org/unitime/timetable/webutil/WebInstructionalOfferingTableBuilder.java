@@ -723,7 +723,7 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (dp==null) {
     		cell = initNormalCell("", isEditable);
-    	} else if (dp.getType() == DatePattern.sTypePatternSet && isEditable) {
+    	} else if (dp.isPatternSet() && isEditable) {
     		String text = "";
     		boolean hasReq = false;
 			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
@@ -1638,7 +1638,7 @@ public class WebInstructionalOfferingTableBuilder {
 			try {
 				a = classAssignment.getAssignment(aClass);
 				if(a != null && a.isCommitted() && a.getDatePattern() != null && !a.getDatePattern().equals(aClass.effectiveDatePattern())) {
-					if (aClass.effectiveDatePattern().getType() == DatePattern.sTypePatternSet 
+					if (aClass.effectiveDatePattern().isPatternSet()
 							&& a.getDatePattern().getParents() != null 
 							&& a.getDatePattern().getParents().contains(aClass.effectiveDatePattern())) {
 						changedSinceCommit = false;

@@ -335,7 +335,7 @@ public class CourseTimetableImport extends BaseImport {
 		
 		DatePattern classDatePattern = clazz.effectiveDatePattern();
 		if (classDatePattern != null) {
-			if (classDatePattern.getType() == DatePattern.sTypePatternSet) {
+			if (classDatePattern.isPatternSet()) {
 				for (DatePattern d: iDatePatterns) {
 					if (d.getParents().contains(classDatePattern) && match(d, classElement, dayCode)) {
 						datePattern = classDatePattern;

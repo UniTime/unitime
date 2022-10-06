@@ -63,7 +63,7 @@ public class WeeklyMinutes extends MinutesPerWeek {
 		if (timePattern.getType() != null && timePattern.getType() == TimePattern.sTypeExactTime)
 			return true;
 		if (datePattern == null) return false;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				if (isValidCombination(weeklyMinutes, child, timePattern)) return true;
 			return false;
@@ -80,7 +80,7 @@ public class WeeklyMinutes extends MinutesPerWeek {
 	@Override
 	public int getExactTimeMinutesPerMeeting(int weeklyMinutes, DatePattern datePattern, int dayCode) {
 		if (datePattern == null) return 0;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				return Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (DayCode.nrDays(dayCode) * child.getEffectiveNumberOfWeeks()));
 		}
@@ -90,7 +90,7 @@ public class WeeklyMinutes extends MinutesPerWeek {
 	@Override
 	public Integer getArrangedHours(int weeklyMinutes, DatePattern datePattern) {
 		if (weeklyMinutes <= 0 || datePattern == null) return null;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				return Integer.valueOf(Math.round((getSemesterWeeks(datePattern) * weeklyMinutes) / (child.getEffectiveNumberOfWeeks() * 50f)));
 		}

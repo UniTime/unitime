@@ -1198,7 +1198,7 @@ public class Class_ extends BaseClass_ {
 	}
 	
 	public boolean isOddOrEvenWeeksOnly(){
-		if (effectiveDatePattern() != null && effectiveDatePattern().getType().equals(Integer.valueOf(DatePattern.sTypeAlternate))){
+		if (effectiveDatePattern() != null && effectiveDatePattern().isAlternate()){
 			return(true);
 		}
 		return(false);

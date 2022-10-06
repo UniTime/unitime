@@ -686,7 +686,7 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Date Patterns" page="datePatternEdit.do">
+			<item name="Date Patterns" page="datePatternEdit.action">
 				<condition>
 					<hasPermission name="DatePatterns"/>
 				</condition>

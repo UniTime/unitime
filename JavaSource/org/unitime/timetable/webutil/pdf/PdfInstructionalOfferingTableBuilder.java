@@ -589,7 +589,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (dp!=null) {
     		Color color = (isEditable ? sEnableColor : sDisableColor);
 			addText(cell,dp.getName(), false, false, Element.ALIGN_CENTER, color, true);
-    		if (dp.getType() == DatePattern.sTypePatternSet && isEditable) {
+    		if (dp.isPatternSet() && isEditable) {
     			boolean hasReq = false;
     			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
     				Preference pref = (Preference)i.next();

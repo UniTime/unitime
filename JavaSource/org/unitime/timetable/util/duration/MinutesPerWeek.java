@@ -57,7 +57,7 @@ public class MinutesPerWeek implements DurationModel {
 	@Override
 	public boolean isValidSelection(int minsPerWeek, DatePattern datePattern, TimePattern timePattern, int dayCode) {
 		if (!isValidCombination(minsPerWeek, datePattern, timePattern)) return false;
-		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+		if (datePattern.isPatternSet()) {
 			for (DatePattern child: datePattern.findChildren())
 				if (hasDates(child, dayCode)) return true;
 			return false;

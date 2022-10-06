@@ -260,13 +260,13 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
             if (dp==null || !dp.isDefault()) {
                 Date first = ((Meeting)meetings.first()).getMeetingDate();
                 Date last = ((Meeting)meetings.last()).getMeetingDate();
-                if (dp!=null && dp.getType()==DatePattern.sTypeAlternate) 
+                if (dp!=null && dp.isAlternate()) 
                     meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+" "+dp.getName()+")";
                 else
                     meetingTime += " ("+dpf.format(first)+" - "+dpf.format(last)+")";
             }
         } else if (dp!=null && !dp.isDefault()) {
-            if (dp.getType()==DatePattern.sTypeAlternate) 
+            if (dp.isAlternate()) 
                 meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+" "+dp.getName()+")";
             else
                 meetingTime += " ("+dpf.format(dp.getStartDate())+" - "+dpf.format(dp.getEndDate())+")";

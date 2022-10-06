@@ -37,6 +37,8 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseDatePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -52,13 +54,38 @@ import org.unitime.timetable.util.Formats;
  */
 public class DatePattern extends BaseDatePattern implements Comparable<DatePattern> {
 	private static final long serialVersionUID = 1L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	public static enum DatePatternType {
+		Standard,
+		Alternate,
+		NonStandard,
+		Extended,
+		PatternSet,
+		;
+		
+		public String getLabel() {
+			switch (this) {
+			case Standard: return MSG.datePatternTypeStandard();
+			case Alternate: return MSG.datePatternTypeAlternateWeeks();
+			case NonStandard: return MSG.datePatternTypeNonStandard();
+			case Extended: return MSG.datePatternTypeExtended();
+			case PatternSet: return MSG.datePatternTypeAltPatternSet();
+			default: return name();
+			}
+		}
+	}
 
-    public static final int sTypeStandard = 0;
-    public static final int sTypeAlternate = 1;
-    public static final int sTypeNonStandard = 2;
-    public static final int sTypeExtended = 3;
-    public static final int sTypePatternSet = 4;
-    public static final String[] sTypes = new String[] {"Standard", "Alternate Weeks", "Non-standard", "Extended", "Alternative Pattern Set" };
+	@Deprecated
+    public static final int sTypeStandard = DatePatternType.Standard.ordinal();
+	@Deprecated
+    public static final int sTypeAlternate = DatePatternType.Alternate.ordinal();
+	@Deprecated
+    public static final int sTypeNonStandard = DatePatternType.NonStandard.ordinal();
+	@Deprecated
+    public static final int sTypeExtended = DatePatternType.Extended.ordinal();
+	@Deprecated
+    public static final int sTypePatternSet = DatePatternType.PatternSet.ordinal();
     
     public static String DATE_PATTERN_LIST_ATTR = "datePatternList";
     public static String DATE_PATTERN_PARENT_LIST_ATTR = "datePatternParentsList";
@@ -458,21 +485,21 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     public static List<DatePattern> findAll(Long sessionId, boolean includeExtended, Department department, DatePattern includeGiven) {
     	@SuppressWarnings("unchecked")
 		List<DatePattern> list = (List<DatePattern>)DatePatternDAO.getInstance().getSession().createQuery(
-    			"select distinct p from DatePattern as p where p.session.uniqueId=:sessionId" + (!includeExtended ? " and p.type!="+sTypeExtended : ""))
+    			"select distinct p from DatePattern as p where p.session.uniqueId=:sessionId" + (!includeExtended ? " and p.type!="+DatePatternType.Extended.ordinal() : ""))
     			.setLong("sessionId",sessionId)
     			.setCacheable(true).list();
     	
     	if (!includeExtended) {
     		for (Iterator<DatePattern> i = list.iterator(); i.hasNext(); ) {
     			DatePattern p = i.next();
-    			if (p.getType() == sTypePatternSet && !p.getDepartments().isEmpty() && (department == null || !p.getDepartments().contains(department)))
+    			if (p.getType() == DatePatternType.PatternSet.ordinal() && !p.getDepartments().isEmpty() && (department == null || !p.getDepartments().contains(department)))
     				i.remove();
     		}
     	}
 
     	if (!includeExtended && department != null)
     		for (DatePattern dp: department.getDatePatterns()) {
-    			if (dp.getType() == sTypeExtended)
+    			if (dp.getType() == DatePatternType.Extended.ordinal())
     				list.add(dp);
     		}
     	
@@ -513,7 +540,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     
     @SuppressWarnings("unchecked")
 	public List<DatePattern> findChildren(org.hibernate.Session hibSession) {
-    	if (getType() != null && getType() != sTypePatternSet) return new ArrayList<DatePattern>();
+    	if (getType() != null && getType() != DatePatternType.PatternSet.ordinal()) return new ArrayList<DatePattern>();
     	return (List<DatePattern>)(hibSession != null ? hibSession : DatePatternDAO.getInstance().getSession()).
         		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId").
         		setLong("parentId",getUniqueId()).setCacheable(true).list();
@@ -523,7 +550,13 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	public static List<DatePattern> findAllParents(Long sessionId) {    	
     	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
         		createQuery("from DatePattern where type = :parentType and session.uniqueId=:sessionId order by name").
-        		setInteger("parentType", sTypePatternSet).setLong("sessionId", sessionId).setCacheable(true).list();
+        		setInteger("parentType", DatePatternType.PatternSet.ordinal()).setLong("sessionId", sessionId).setCacheable(true).list();
+    }
+    
+	public static List<DatePattern> findAllChildren(Long sessionId) {    	
+    	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
+        		createQuery("from DatePattern where type != :parentType and session.uniqueId=:sessionId order by name").
+        		setInteger("parentType", DatePatternType.PatternSet.ordinal()).setLong("sessionId", sessionId).setCacheable(true).list();
     }
 
     public boolean isUsed() {
@@ -547,9 +580,9 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     	DatePattern dp = (DatePattern)o;
     	int cmp = getType().compareTo(dp.getType());
     	if (cmp!=0) return cmp;
-    	if (dp.getType().intValue() == sTypePatternSet) {
+    	if (dp.getType().intValue() == DatePatternType.PatternSet.ordinal()) {
     		// compare just by name
-    	} else if (dp.getType().intValue()==sTypeStandard) {
+    	} else if (dp.getType().intValue()==DatePatternType.Standard.ordinal()) {
     		cmp = Float.compare(dp.getEffectiveNumberOfWeeks(), getEffectiveNumberOfWeeks());
     		if (cmp != 0) return cmp;
     		cmp = dp.getOffset().compareTo(getOffset());
@@ -684,7 +717,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	}
 	
 	public float getComputedNumberOfWeeks() {
-		if (getType() != null && getType() == sTypePatternSet) {
+		if (getType() != null && getType() == DatePatternType.PatternSet.ordinal()) {
 			for (DatePattern dp: findChildren())
 				return dp.getEffectiveNumberOfWeeks();
 		}
@@ -756,5 +789,27 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	
 	public boolean respectsSessionHolidaysAndHasNoNonHolidayBreaks() {
 		return(respectsSessionHolidays(true));
+	}
+	
+	public DatePatternType getDatePatternType() {
+		if (getType() == null) return null;
+		return DatePatternType.values()[getType()];
+	}
+	
+	public void setDatePatternType(DatePatternType type) {
+		if (type == null)
+			setType(null);
+		else
+			setType(type.ordinal());
+	}
+	
+	public boolean isAlternate() {
+		return getDatePatternType() == DatePatternType.Alternate;
+	}
+	public boolean isExtended() {
+		return getDatePatternType() == DatePatternType.Extended;
+	}
+	public boolean isPatternSet() {
+		return getDatePatternType() == DatePatternType.PatternSet;
 	}
 }

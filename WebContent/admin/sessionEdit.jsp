@@ -158,7 +158,7 @@
 						<html:optionsCollection name="<%=DatePattern.DATE_PATTERN_LIST_ATTR %>" value="id" label="value" />
 					</html:select>
 				</logic:notEmpty>
-				<!--  A href="datePatternEdit.do"><I>Edit</I></A -->
+				<!--  A href="datePatternEdit.action"><I>Edit</I></A -->
 			</TD>
 		</TR>
 		</logic:notEqual>
