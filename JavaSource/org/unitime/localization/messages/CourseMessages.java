@@ -4583,4 +4583,157 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Default\nIM")
 	String columnAcademicSessionDefaultInstructionalMethod();
+	
+	@DefaultMessage("Academic Term")
+	String columnAcademicTerm();
+	
+	@DefaultMessage("Academic Year")
+	String columnAcademicYear();
+	
+	@DefaultMessage("Default Date Pattern")
+	String columnDefaultDatePattern();
+	
+	@DefaultMessage("Session Status")
+	String columnSessionStatus();
+	
+	@DefaultMessage("Session Start Date")
+	String columnSessionStartDate();
+	
+	@DefaultMessage("Session End Date")
+	String columnSessionEndDate();
+	
+	@DefaultMessage("Classes End Date")
+	String columnClassesEndDate();
+	
+	@DefaultMessage("Examination Start Date")
+	String columnExamStartDate();
+	
+	@DefaultMessage("Event Start Date")
+	String columnEventStartDate();
+	
+	@DefaultMessage("Event End Date")
+	String columnEventEndDate();
+	
+	@DefaultMessage("Default Class Duration")
+	String columnDefaultClassDuration();
+	
+	@DefaultMessage("Default Instructional Method")
+	String columnDefailtInstructionalMethod();
+	
+	@DefaultMessage("Holidays")
+	String columnHolidays();
+	
+	@DefaultMessage("An academic session for the initiative, year and term already exists.")
+	String errorAcademicSessionAlreadyExists();
+	
+	@DefaultMessage("Another academic session for the same initiative, year and term already exists.")
+	String errorAcademicSessionSameAlreadyExists();
+	
+	@DefaultMessage("{0} has not a valid date.")
+	String errorNotValidDate(String column);
+	
+	@DefaultMessage("Session End Date must occur AFTER Session Start Date.")
+	String errorSessionEndDateNotAfterSessionStartDate();
+	
+	@DefaultMessage("Classes End Date must occur AFTER Session Start Date.")
+	String errorClassesEndDateNotAfterSessionStartDate();
+	
+	@DefaultMessage("Classes End Date must occur ON or BEFORE Session End Date.")
+	String errorClassesEndDateNotOnOrBeforeSessionEndDate();
+	
+	@DefaultMessage("Event End Date must occur AFTER Event Start Date.")
+	String errorEventEndDateNotAfterEventStartDate();
+	
+	@DefaultMessage("Dates associated with a session cannot cover more than one year.")
+	String errorSessionDatesOverAYear();
+	
+	@DefaultMessage("Current academic session cannot be deleted -- please change your session first.")
+	String errorCannotDeleteCurrentAcademicSession();
+	
+	@DefaultMessage("Save")
+	String actionSaveAcademicSession();
+	
+	@DefaultMessage("Update")
+	String actionUpdateAcademicSession();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteAcademicSession();
+	
+	@DefaultMessage("Back")
+	String actionBackToAcademicSessions();
+	
+	@DefaultMessage("S")
+	String accessSaveAcademicSession();
+	
+	@DefaultMessage("U")
+	String accessUpdateAcademicSession();
+	
+	@DefaultMessage("D")
+	String accessDeleteAcademicSession();
+	
+	@DefaultMessage("B")
+	String accessBackToAcademicSessions();
+	
+	@DefaultMessage("Save Academic Session (Alt + {0})")
+	String titleSaveAcademicSession(String access);
+	
+	@DefaultMessage("Update Academic Session (Alt + {0})")
+	String titleUpdateAcademicSession(String access);
+	
+	@DefaultMessage("Delete Academic Session (Alt + {0})")
+	String titleDeleteAcademicSession(String access);
+	
+	@DefaultMessage("Back to Academic Sessions (Alt + {0})")
+	String titleBackToAcademicSessions(String access);
+	
+	@DefaultMessage("Default date pattern not set")
+	String infoNoDefaultDatePattern();
+	
+	@DefaultMessage("The academic session and all associated data will be deleted. Continue?'")
+	String confirmDeleteAcademicSession();
+	
+	@DefaultMessage("Add Academic Session")
+	String sectAddAcademicSession();
+	
+	@DefaultMessage("Edit Academic Session")
+	String sectEditAcademicSession();
+	
+	@DefaultMessage("Online Student Scheduling Default Settings")
+	String sectOnlineStudentSchedulingDefaultSettings();
+	
+	@DefaultMessage("No date patterns are available for this academic session.")
+	String infoNoDatePatternsAvailable();
+	
+	@DefaultMessage("System Default (Minutes per Week)")
+	String itemDefaultClassDuration();
+	
+	@DefaultMessage("No Default")
+	String itemNoDefault();
+	
+	@DefaultMessage("System Default (No Restrictions)")
+	String itemDefaultStudentStatus();
+	
+	@DefaultMessage("New Enrollment Deadline:")
+	String propNewEnrollmentDeadline();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to enroll to a new course.\n"+
+			"Weeks start on the day of session start date, number of weeks is relative to class start.\n"+
+			"For instance, 1 means that new enrollments will be allowed during the first week of classes.")
+	String descNewEnrollmentDeadline();
+	
+	@DefaultMessage("Class Changes Deadline:")
+	String propClassChangesDeadline();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to change existing enrollments.\n"+
+			"If smaller than new enrollment deadline, they will not be able to add a new course to their schedule during the weeks between the two.")
+	String descClassChangesDeadline();
+	
+	@DefaultMessage("Course Drop Deadline:")
+	String propCourseDropDeadline();
+	
+	@DefaultMessage("Number of weeks during which students are allowed to drop from courses they are enrolled into.")
+	String descCourseDropDeadline();
+	
+	@DefaultMessage("Default Student Scheduling Status:")
+	String propDefaultStudentStatus();
 }

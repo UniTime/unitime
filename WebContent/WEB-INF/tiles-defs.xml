@@ -80,16 +80,6 @@
 		<put name="body" value="/admin/distributionTypeEdit.jsp" />
   	</definition>
 
-	<definition	name="sessionEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Academic Session"/>
-		<put name="body" value="/admin/sessionEdit.jsp" />
-  	</definition>
-
-	<definition	name="sessionAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Academic Session"/>
-		<put name="body" value="/admin/sessionEdit.jsp" />
-  	</definition>
-  	
 	<definition	name="subjectListTile" extends="pageLayoutDef">
 		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Subject Areas"/>

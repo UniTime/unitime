@@ -894,13 +894,15 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 			selector.iFormat = DateTimeFormat.getFormat(format);
 		else
 			selector.iFormat = DateTimeFormat.getFormat(CONSTANTS.dateEntryFormat());
-		if (onchange != null)
+		if (onchange != null) {
+			panel.getElement().removeAttribute("onchange");
 			selector.addValueChangeHandler(new ValueChangeHandler<Date>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Date> event) {
 					ToolBox.eval(onchange);
 				}
 			});
+		}
 		if (text.getText() != null && !text.getText().isEmpty()) {
 			Date date = null;
 			try {

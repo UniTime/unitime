@@ -73,7 +73,7 @@ public class TimetableGridContext implements Serializable {
 		iLocale = Localization.getLocale();
 		DatePattern dp = session.getDefaultDatePatternNotNull();
 		if (dp == null)
-			throw new RuntimeException("No default date pattern is defined for " + session.getLabel() + ". Use the <a href='sessionEdit.do?doit=editSession&sessionId=" + session.getUniqueId() + "'>Edit Academic Session</a> page to set a default date pattern.");
+			throw new RuntimeException("No default date pattern is defined for " + session.getLabel() + ". Use the <a href='sessionEdit.action?op=editSession&sessionId=" + session.getUniqueId() + "'>Edit Academic Session</a> page to set a default date pattern.");
 		iFilter = filter.getParameterValue("filter", "");
 		String cf = filter.getParameterValue("classFilter", "");
 		if (cf != null && !cf.isEmpty())

@@ -27,7 +27,6 @@
    <form-beans >
 	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />
 	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
-	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
@@ -50,22 +49,6 @@
    </global-exceptions>
 
    <action-mappings >
-      <action
-         path="/sessionEdit"
-         attribute="sessionEditForm"
-         name="sessionEditForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward name="showEdit" path="sessionEditTile" />
-         <forward name="showAdd" path="sessionAddTile" />
-         <forward
-            name="showSessionList"
-            path="/sessionList.action"
-            redirect="true" />
-      </action>
-
       <action
          path="/distributionTypeEdit"
          attribute="distributionTypeEditForm"

@@ -17,42 +17,26 @@
  * limitations under the License.
  * 
  --%>
-<%@ page import="org.unitime.timetable.model.DatePattern" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tt:session-context/>
-<SCRIPT language="javascript">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="sessionEdit">
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteAcademicSession"/></tt:confirm>
+<SCRIPT type="text/javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if(confirm('The academic session and all associated data will be deleted. Continue?')) {
-				return true;
-			}
-			return false;
-		}
-
 		function trim(str) {
 			return str.replace(/^\s*(\S*(\s+\S+)*)\s*$/, "$1");		
 		}
-		
 		function doRefresh() {
-			var ss = document.forms[0].sessionStart.value;
-			var se = document.forms[0].sessionEnd.value;
-			var ce = document.forms[0].classesEnd.value;
-			var es = document.forms[0].examStart.value;
-			var evs = document.forms[0].eventStart.value;
-			var eve = document.forms[0].eventEnd.value;
-			var year = document.forms[0].academicYear.value;
+			var ss = document.getElementsByName('form.sessionStart')[0].value;
+			var se = document.getElementsByName('form.sessionEnd')[0].value;
+			var ce = document.getElementsByName('form.classesEnd')[0].value;
+			var es = document.getElementsByName('form.examStart')[0].value;
+			var evs = document.getElementsByName('form.eventStart')[0].value;
+			var eve = document.getElementsByName('form.eventEnd')[0].value;
+			var year = document.getElementsByName('form.academicYear')[0].value;
 			
 			if (ss!=null && trim(ss)!=''
 				 && se!=null && trim(se)!=''
@@ -61,231 +45,208 @@
 				 && evs!=null && trim(evs)!=''
 				 && eve!=null && trim(eve)!=''
 				 && year!=null && trim(year)!='' && !isNaN(year)) {
-				document.forms[0].refresh.value='1';
+				document.getElementById('refresh').value='true';
 				var btn = document.getElementById('save');
 				btn.click();
 			}
 		}
-		
 	// -->
 </SCRIPT>
-
-<html:form method="post" action="sessionEdit.do">
-	<INPUT type="hidden" name="refresh" value="">
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
+	<s:hidden name="refresh" value="false" id="refresh"/>
+	<s:hidden name="form.sessionId"/>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="3">
 				<tt:section-header>
 					<tt:section-title>
-						
+						<s:if test="form.sessionId == null">
+							<loc:message name="sectAddAcademicSession"/>
+						</s:if><s:else>
+							<loc:message name="sectEditAcademicSession"/>
+						</s:else>
 					</tt:section-title>
-					<logic:equal name="sessionEditForm" property="sessionId"	value="">
-						<html:submit styleClass="btn" property="doit" accesskey="S" titleKey="title.saveSession">
-							<bean:message key="button.saveSession" />
-						</html:submit>
-					</logic:equal>
-	
-					<logic:notEqual name="sessionEditForm" property="sessionId"	value="">
-						<html:submit styleClass="btn" property="doit" accesskey="U" titleKey="title.updateSession">
-							<bean:message key="button.updateSession" />
-						</html:submit>
-
-						<sec:authorize access="hasPermission(#sessionEditForm.sessionId, 'Session', 'AcademicSessionDelete')">
-							<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
-								<bean:message key="button.deleteSession" />
-							</html:submit>
+					<s:if test="form.sessionId == null">
+						<s:submit name='op' value='%{#msg.actionSaveAcademicSession()}' id="save"
+							accesskey="%{#msg.accessSaveAcademicSession()}" title="%{#msg.titleSaveAcademicSession(#msg.accessSaveAcademicSession())}"/>
+					</s:if>
+					<s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateAcademicSession()}' id="save"
+							accesskey="%{#msg.accessUpdateAcademicSession()}" title="%{#msg.titleUpdateAcademicSession(#msg.accessUpdateAcademicSession())}"/>
+						<sec:authorize access="hasPermission(#form.sessionId, 'Session', 'AcademicSessionDelete')">
+							<s:submit name='op' value='%{#msg.actionDeleteAcademicSession()}'
+								accesskey="%{#msg.accessDeleteAcademicSession()}" title="%{#msg.titleDeleteAcademicSession(#msg.accessDeleteAcademicSession())}"
+								onclick="return confirmDelete();"/>
 						</sec:authorize>
-					</logic:notEqual>
-				
-					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
-						<bean:message key="button.cancelSessionEdit" />
-					</html:submit>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionBackToAcademicSessions()}'
+						accesskey="%{#msg.accessBackToAcademicSessions()}" title="%{#msg.titleBackToAcademicSessions(#msg.accessBackToAcademicSessions())}"/>
 				</tt:section-header>			
 			</TD>
 		</TR>
-		
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="3" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="3" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
-			<TD>Academic Initiative:</TD>
+			<TD><loc:message name="columnAcademicInitiative"/>:</TD>
 			<TD colspan='2'>
-				<html:text property="academicInitiative" maxlength="20" size="20"/>
+				<s:textfield name="form.academicInitiative" maxlength="20" size="20"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Academic Term:</TD>
+			<TD><loc:message name="columnAcademicTerm"/>:</TD>
 			<TD colspan='2'>
-				<html:text property="academicTerm" maxlength="20" size="20"/>
+				<s:textfield name="form.academicTerm" maxlength="20" size="20"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Academic Year:</TD>
+			<TD><loc:message name="columnAcademicYear"/>:</TD>
 			<TD colspan='2'>
-				<html:text property="academicYear" onchange="doRefresh();" maxlength="4" size="4"/>
+				<s:textfield name="form.academicYear" onchange="doRefresh();" maxlength="4" size="4"/>
 			</TD>
 		</TR>
 		
-		<logic:notEqual name="sessionEditForm" property="sessionId"	value="">
+		<s:if test="form.sessionId != null">
 		<TR>
-			<TD>Default Date Pattern:</TD>
+			<TD><loc:message name="columnDefaultDatePattern"/>:</TD>
 			<TD colspan='2'>
-				<logic:empty name="<%=DatePattern.DATE_PATTERN_LIST_ATTR %>">
-					No date patterns are available for this academic session
-					<html:hidden property="defaultDatePatternId" />
-				</logic:empty>
-				
-				<logic:notEmpty name="<%=DatePattern.DATE_PATTERN_LIST_ATTR %>">
-					<html:select property="defaultDatePatternId">
-						<html:optionsCollection name="<%=DatePattern.DATE_PATTERN_LIST_ATTR %>" value="id" label="value" />
-					</html:select>
-				</logic:notEmpty>
-				<!--  A href="datePatternEdit.action"><I>Edit</I></A -->
+				<s:if test="#request.datePatternList == null || #request.datePatternList.isEmpty()">
+					<loc:message name="infoNoDatePatternsAvailable"/>					
+					<s:hidden name="form.defaultDatePatternId"/>
+				</s:if>
+				<s:else>
+					<s:select name="form.defaultDatePatternId" list="#request.datePatternList" listKey="id" listValue="value"/>
+				</s:else>
 			</TD>
 		</TR>
-		</logic:notEqual>
+		</s:if>
 		
 		<TR>
-			<TD>Session Start Date:</TD>
+			<TD><loc:message name="columnSessionStartDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="sessionStart" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.sessionStart" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Classes End Date:</TD>
+			<TD><loc:message name="columnClassesEndDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="classesEnd" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.classesEnd" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Examination Start Date:</TD>
+			<TD><loc:message name="columnExamStartDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="examStart" onchange="$wnd.doRefresh();" style="border: #999933 2px solid;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.examStart" cssStyle="border: #999933 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Session End Date:</TD>
+			<TD><loc:message name="columnSessionEndDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="sessionEnd" onchange="$wnd.doRefresh();" style="border: #333399 2px solid;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.sessionEnd" cssStyle="border: #333399 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Event Start Date:</TD>
+			<TD><loc:message name="columnEventStartDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="eventStart" onchange="$wnd.doRefresh();" style="border: 2px solid yellow;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.eventStart" cssStyle="border: 2px solid yellow;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Event End Date:</TD>
+			<TD><loc:message name="columnEventEndDate"/>:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="eventEnd" onchange="$wnd.doRefresh();" style="border: 2px solid red;"/>
+				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
+					<s:textfield name="form.eventEnd" cssStyle="border: 2px solid red;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+				</div>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Session Status:</TD>
+			<TD><loc:message name="columnSessionStatus"/>:</TD>
 			<TD colspan='2'>
-				<html:select property="status">
-					<html:option value="<%= Constants.BLANK_OPTION_VALUE %>"><%= Constants.BLANK_OPTION_LABEL %></html:option>
-					<html:optionsCollection property="statusOptions" value="reference" label="label" />
-				</html:select>
+				<s:select name="form.status"
+					list="form.statusOptions" listKey="reference" listValue="label"
+					headerKey="" headerValue="%{#msg.itemSelect()}"/>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Default Class Duration:</TD>
+			<TD><loc:message name="columnDefaultClassDuration"/>:</TD>
 			<TD colspan="2">
-				<html:select property="durationType">
-					<html:option value="-1">System Default (Minutes per Week)</html:option>
-					<html:optionsCollection property="durationTypes" value="id" label="value" />
-				</html:select>
+				<s:select name="form.durationType"
+					list="form.durationTypes" listKey="id" listValue="value"
+					headerKey="-1" headerValue="%{#msg.itemDefaultClassDuration()}"/>
 			</TD>
 		</TR>
 
-		<logic:notEmpty name="sessionEditForm" property="instructionalMethods">
+		<s:if test="form.instructionalMethods != null && !form.instructionalMethods.isEmpty()">
 			<TR>
-				<TD>Default Instructional Method:</TD>
+				<TD><loc:message name="columnDefailtInstructionalMethod"/>:</TD>
 				<TD colspan="2">
-					<html:select property="instructionalMethod">
-						<html:option value="-1">No Default</html:option>
-						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
-					</html:select>
+					<s:select name="form.instructionalMethod"
+					list="form.instructionalMethods" listKey="id" listValue="value"
+					headerKey="-1" headerValue="%{#msg.itemNoDefault()}"/>
 				</TD>
 			</TR>
-		</logic:notEmpty>
-		<logic:empty name="sessionEditForm" property="instructionalMethods">
-			<html:hidden property="instructionalMethod"/>
-		</logic:empty>
+		</s:if><s:else>
+			<s:hidden name="form.instructionalMethod"/>
+		</s:else>
 
-		<% if (request.getAttribute("Sessions.holidays")!=null) { %>
+		<s:if test="#request.holidays != null">
 			<TR>
-				<TD>Holidays:</TD><TD colspan='2'></TD>
+				<TD><loc:message name="columnHolidays"/>:</TD><TD colspan='2'></TD>
 			</TR><TR>
-				<TD colspan='3'><%=request.getAttribute("Sessions.holidays")%></TD>
+				<TD colspan='3'><s:property value="#request.holidays" escapeHtml="false"/></TD>
 			</TR>
-		<% } %>
+		</s:if>
 
 		<TR>
 			<TD colspan='3'>
-				<tt:section-title><br>Online Student Scheduling Default Settings</tt:section-title>
+				<tt:section-title><br><loc:message name="sectOnlineStudentSchedulingDefaultSettings"/></tt:section-title>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD valign="top">New Enrollment Deadline:</TD>
+			<TD valign="top"><loc:message name="propNewEnrollmentDeadline"/></TD>
 			<TD valign="top">
-				<html:text property="wkEnroll" maxlength="4" size="4"/>
-			</TD><TD>
-				<i>Number of weeks during which students are allowed to enroll to a new course.<br>
-				Weeks start on the day of session start date, number of weeks is relative to class start.<br>
-				For instance, 1 means that new enrollments will be allowed during the first week of classes.</i>
-			</TD>
+				<s:textfield name="form.wkEnroll" maxlength="4" size="4"/>
+			</TD><TD style="white-space: pre-wrap; font-style: italic;"><loc:message name="descNewEnrollmentDeadline"/></TD>
 		</TR>
 		<TR>
-			<TD valign="top">Class Changes Deadline:</TD>
+			<TD valign="top"><loc:message name="propClassChangesDeadline"/></TD>
 			<TD valign="top">
-				<html:text property="wkChange" maxlength="4" size="4"/>
-			</TD><TD>
-				<i>Number of weeks during which students are allowed to change existing enrollments.<br>
-				If smaller than new enrollment deadline, they will not be able to add a new course to their schedule during the weeks between the two.</i>
-			</TD>
+				<s:textfield name="form.wkChange" maxlength="4" size="4"/>
+			</TD><TD style="white-space: pre-wrap; font-style: italic;"><loc:message name="descClassChangesDeadline"/></TD>
 		</TR>
 		<TR>
-			<TD valign="top">Course Drop Deadline:</TD>
+			<TD valign="top"><loc:message name="propCourseDropDeadline"/></TD>
 			<TD valign="top">
-				<html:text property="wkDrop" maxlength="4" size="4"/>
-			</TD><TD>
-				<i>Number of weeks during which students are allowed to drop from courses they are enrolled into.<br>
-			</TD>
+				<s:textfield name="form.wkDrop" maxlength="4" size="4"/>
+			</TD><TD style="white-space: pre-wrap; font-style: italic;"><loc:message name="descCourseDropDeadline"/></TD>
 		</TR>
 		<TR>
-			<TD>Deafult Student Scheduling Status:</TD>
+			<TD><loc:message name="propDefaultStudentStatus"/></TD>
 			<TD colspan="2">
-				<html:select property="sectStatus">
-					<html:option value="-1">System Default (No Restrictions)</html:option>
-					<html:optionsCollection property="sectStates" value="id" label="value" />
-				</html:select>
+				<s:select name="form.sectStatus"
+					list="form.sectStates" listKey="id" listValue="value"
+					headerKey="-1" headerValue="%{#msg.itemDefaultStudentStatus()}"/>
 			</TD>
 		</TR>
 		
-		</TR>
+		<TR>
 			<TD colspan="3">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
 			</TD>
@@ -293,39 +254,23 @@
 		
 		<TR>
 			<TD colspan="3" align="right">
-
-			<TABLE>
-				<TR>
-					<TD align="right" nowrap>
-						<logic:equal name="sessionEditForm" property="sessionId" value="">
-							<html:submit styleClass="btn" property="doit" styleId="save" accesskey="S" titleKey="title.saveSession">
-								<bean:message key="button.saveSession" />
-							</html:submit>
-						</logic:equal>
-		
-						<logic:notEqual name="sessionEditForm" property="sessionId"	value="">
-							<html:submit styleClass="btn" property="doit" styleId="save" accesskey="U" titleKey="title.updateSession">
-								<bean:message key="button.updateSession" />
-							</html:submit>
-	
-							<sec:authorize access="hasPermission(#sessionEditForm.sessionId, 'Session', 'AcademicSessionDelete')">
-								<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
-									<bean:message key="button.deleteSession" />
-								</html:submit>
-							</sec:authorize>
-						</logic:notEqual>
-					
-					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
-						<bean:message key="button.cancelSessionEdit" />
-					</html:submit>
-					</TD>
-				</TR>
-				
-			</TABLE>
-			
+					<s:if test="form.sessionId == null">
+						<s:submit name='op' value='%{#msg.actionSaveAcademicSession()}' id="save"
+							accesskey="%{#msg.accessSaveAcademicSession()}" title="%{#msg.titleSaveAcademicSession(#msg.accessSaveAcademicSession())}"/>
+					</s:if>
+					<s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateAcademicSession()}'
+							accesskey="%{#msg.accessUpdateAcademicSession()}" title="%{#msg.titleUpdateAcademicSession(#msg.accessUpdateAcademicSession())}"/>
+						<sec:authorize access="hasPermission(#form.sessionId, 'Session', 'AcademicSessionDelete')">
+							<s:submit name='op' value='%{#msg.actionDeleteAcademicSession()}'
+								accesskey="%{#msg.accessDeleteAcademicSession()}" title="%{#msg.titleDeleteAcademicSession(#msg.accessDeleteAcademicSession())}"
+								onclick="return confirmDelete();"/>
+						</sec:authorize>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionBackToAcademicSessions()}'
+						accesskey="%{#msg.accessBackToAcademicSessions()}" title="%{#msg.titleBackToAcademicSessions(#msg.accessBackToAcademicSessions())}"/>
 			</TD>
 		</TR>
-	</TABLE>
-	
-	<html:hidden property="sessionId" />
-</html:form>
+	</table>
+</s:form>
+</loc:bundle>

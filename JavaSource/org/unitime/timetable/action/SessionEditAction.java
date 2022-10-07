@@ -21,23 +21,16 @@ package org.unitime.timetable.action;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.hibernate.HibernateException;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SessionEditForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
@@ -54,155 +47,132 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 02-18-2005
- * 
- * XDoclet definition:
- * @struts:action path="/sessionEdit" name="sessionEditForm" parameter="do" scope="request" validate="true"
- * @struts:action-forward name="showEdit" path="/admin/sessionEdit.jsp"
- * @struts:action-forward name="showAdd" path="/admin/sessionAdd.jsp"
- * @struts:action-forward name="showSessionList" path="/sessionList.do" redirect="true"
- *
  * @author Tomas Muller
  */
-@Service("/sessionEdit")
-public class SessionEditAction extends SpringAwareLookupDispatchAction {
+@Action(value="sessionEdit", results = {
+		@Result(name = "showAdd", type = "tiles", location = "sessionAdd.tiles"),
+		@Result(name = "showEdit", type = "tiles", location = "sessionEdit.tiles"),
+		@Result(name = "showSessionList", type = "redirect", location = "/sessionList.action")
+	})
+@TilesDefinitions({
+	@TilesDefinition(name = "sessionAdd.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Add Academic Session"),
+		@TilesPutAttribute(name = "body", value = "/admin/sessionEdit.jsp")
+	}),
+	@TilesDefinition(name = "sessionEdit.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Edit Academic Session"),
+			@TilesPutAttribute(name = "body", value = "/admin/sessionEdit.jsp")
+	})
+})
+public class SessionEditAction extends UniTimeAction<SessionEditForm> {
+	private static final long serialVersionUID = 8818504076997048439L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+
+	private Long sessionId;
+	private Boolean refresh;
 	
-	@Autowired SessionContext sessionContext;
-
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
+	public Long getSessionId() { return sessionId; }
+	public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+	public Boolean getRefresh() { return refresh; }
+	public void setRefresh(Boolean refresh) { this.refresh = refresh; }
 	
-	protected Map getKeyMethodMap() {
-	      Map map = new HashMap();
-	      map.put("editSession", "editSession");
-	      map.put("button.addSession", "addSession");
-	      map.put("button.saveSession", "saveSession");
-	      map.put("button.updateSession", "saveSession");
-	      map.put("button.deleteSession", "deleteSession");
-	      map.put("button.cancelSessionEdit", "cancelSessionEdit");
-	      map.put("button.loadCrsOffrDemand", "loadCrsOffrDemand");
-	      map.put("button.viewCrsOffrDemand", "viewCrsOffrDemand");
-	      return map;
-	  }
-
+	@Override
+	public String execute() throws Exception {
+		if (form == null)
+			form = new SessionEditForm();
+		if (MSG.actionAddAcademicSession().equals(op)) {
+			return addSession();
+		} else if (MSG.actionSaveAcademicSession().equals(op)) {
+			return saveSession();
+		} else if (MSG.actionUpdateAcademicSession().equals(op)) {
+			return saveSession();
+		} else if ("editSession".equals(op)) {
+			return editSession();
+		} else if (MSG.actionDeleteAcademicSession().equals(op)) {
+			return deleteSession();
+		} else if (MSG.actionBackToAcademicSessions().equals(op)) {
+			return cancelSessionEdit();
+		} else {
+			return "showSessionList";
+		}
+	}
 	
-	public ActionForward editSession(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-		
-		SessionEditForm sessionEditForm = (SessionEditForm) form;		
-		Long id =  Long.valueOf(Long.parseLong(request.getParameter("sessionId")));
-		Session acadSession = Session.getSessionById(id);
+	public String editSession() throws Exception {
+		Session acadSession = Session.getSessionById(sessionId);
 		
 		sessionContext.checkPermission(acadSession, Right.AcademicSessionEdit);
-		sessionEditForm.setIncludeTestSession(sessionContext.hasPermission(Right.AllowTestSessions));
+		form.setIncludeTestSession(sessionContext.hasPermission(Right.AllowTestSessions));
 		
-		sessionEditForm.setSession(acadSession);
+		form.setSession(acadSession);
 		DatePattern d = acadSession.getDefaultDatePattern();
 		
 		if (d!=null) {
-		    sessionEditForm.setDefaultDatePatternId(d.getUniqueId().toString());
-		    sessionEditForm.setDefaultDatePatternLabel(d.getName());
+		    form.setDefaultDatePatternId(d.getUniqueId());
+		    form.setDefaultDatePatternLabel(d.getName());
 		}
 		else {
-		    sessionEditForm.setDefaultDatePatternId("");
-		    sessionEditForm.setDefaultDatePatternLabel("Default date pattern not set");
+		    form.setDefaultDatePatternId(-1l);
+		    form.setDefaultDatePatternLabel(MSG.infoNoDefaultDatePattern());
 		}
-		sessionEditForm.setAcademicInitiative(acadSession.getAcademicInitiative());
-		sessionEditForm.setAcademicYear(acadSession.getAcademicYear());
-		sessionEditForm.setAcademicTerm(acadSession.getAcademicTerm());
+		form.setAcademicInitiative(acadSession.getAcademicInitiative());
+		form.setAcademicYear(acadSession.getAcademicYear());
+		form.setAcademicTerm(acadSession.getAcademicTerm());
 		
 		Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
-		sessionEditForm.setSessionStart(sdf.format(acadSession.getSessionBeginDateTime()));
-		sessionEditForm.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
-		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
-		sessionEditForm.setExamStart(acadSession.getExamBeginDate()==null?"":sdf.format(acadSession.getExamBeginDate()));
-		sessionEditForm.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
-		sessionEditForm.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
+		form.setSessionStart(sdf.format(acadSession.getSessionBeginDateTime()));
+		form.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
+		form.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
+		form.setExamStart(acadSession.getExamBeginDate()==null?"":sdf.format(acadSession.getExamBeginDate()));
+		form.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
+		form.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
 		
-        Session sessn = Session.getSessionById(id);
-		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-		request.setAttribute("Sessions.holidays", sessionEditForm.getSession().getHolidaysHtml());
+		LookupTables.setupDatePatterns(request, acadSession, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+		request.setAttribute("holidays", form.getSession().getHolidaysHtml());
 		
-		sessionEditForm.setWkEnroll(acadSession.getLastWeekToEnroll());
-		sessionEditForm.setWkChange(acadSession.getLastWeekToChange());
-		sessionEditForm.setWkDrop(acadSession.getLastWeekToDrop());
-		sessionEditForm.setSectStatus(acadSession.getDefaultSectioningStatus() == null ? -1 : acadSession.getDefaultSectioningStatus().getUniqueId());
-		sessionEditForm.setDurationType(acadSession.getDefaultClassDurationType() == null ? -1 : acadSession.getDefaultClassDurationType().getUniqueId());
-		sessionEditForm.setInstructionalMethod(acadSession.getDefaultInstructionalMethod() == null ? -1 : acadSession.getDefaultInstructionalMethod().getUniqueId());
+		form.setWkEnroll(acadSession.getLastWeekToEnroll());
+		form.setWkChange(acadSession.getLastWeekToChange());
+		form.setWkDrop(acadSession.getLastWeekToDrop());
+		form.setSectStatus(acadSession.getDefaultSectioningStatus() == null ? -1 : acadSession.getDefaultSectioningStatus().getUniqueId());
+		form.setDurationType(acadSession.getDefaultClassDurationType() == null ? -1 : acadSession.getDefaultClassDurationType().getUniqueId());
+		form.setInstructionalMethod(acadSession.getDefaultInstructionalMethod() == null ? -1 : acadSession.getDefaultInstructionalMethod().getUniqueId());
 		
-		return mapping.findForward("showEdit");
+		return "showEdit";
 	}
 	
-	public ActionForward deleteSession(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-
-		Long id =  Long.valueOf(Long.parseLong(request.getParameter("sessionId")));
+	public String deleteSession() throws Exception {
+		Long id = form.getSessionId();
 		
         if (id.equals(sessionContext.getUser().getCurrentAcademicSessionId())) {
-            ActionMessages errors = new ActionMessages();
-            errors.add("sessionId", new ActionMessage("errors.generic", "Current academic session cannot be deleted -- please change your session first."));
-            saveErrors(request, errors);
-            return mapping.findForward("showEdit");
+        	addFieldError("form.sessionId", MSG.errorCannotDeleteCurrentAcademicSession());
+            return "showEdit";
         }
         
 		sessionContext.checkPermission(id, "Session", Right.AcademicSessionDelete);
 		
 		Session.deleteSessionById(id);
 		
-		return mapping.findForward("showSessionList");
+		return "showSessionList";
 	}
 	
-	public ActionForward addSession(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		
+	public String addSession() throws Exception {
 		sessionContext.checkPermission(Right.AcademicSessionAdd);
 		((SessionEditForm)form).setIncludeTestSession(sessionContext.hasPermission(Right.AllowTestSessions));
 
-		return mapping.findForward("showAdd");
+		return "showAdd";
 	}
 	
-	public ActionForward saveSession(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-				
-        SessionEditForm sessionEditForm = (SessionEditForm) form;
-        
-        if (sessionEditForm.getSessionId() == null || sessionEditForm.getSessionId().equals(0l)) {
+	public String saveSession() throws Exception {
+        if (form.getSessionId() == null || form.getSessionId().equals(0l)) {
         	sessionContext.checkPermission(Right.AcademicSessionAdd);
         } else {
-        	sessionContext.checkPermission(sessionEditForm.getSessionId(), "Session", Right.AcademicSessionEdit);
+        	sessionContext.checkPermission(form.getSessionId(), "Session", Right.AcademicSessionEdit);
         }
 
         Transaction tx = null;
@@ -211,52 +181,45 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
         try {
             tx = hibSession.beginTransaction();
 
-            Session sessn = sessionEditForm.getSession();
+            Session sessn = form.getSession();
             
-            if (sessionEditForm.getSessionId()!=null && !sessn.getSessionId().equals(0l)) 
-                sessn = (new SessionDAO()).get(sessionEditForm.getSessionId(),hibSession);
+            if (form.getSessionId()!=null && !sessn.getSessionId().equals(0l)) 
+                sessn = (new SessionDAO()).get(form.getSessionId(),hibSession);
             else 
                 sessn.setSessionId(null);
             
-            String refresh = request.getParameter("refresh");
-            
-            if (refresh!=null && refresh.equals("1")) {
-                
-                ActionErrors errors = new ActionErrors(); 
-                setHolidays(request, sessionEditForm, errors, sessn);
-                if (sessn.getSessionId()!=null){
+            if (Boolean.TRUE.equals(refresh)) {
+                setHolidays(sessn);
+                if (sessn.getSessionId() != null){
                     LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-                    request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
-                    return mapping.findForward("showEdit");
-                }
-                else
-                    return mapping.findForward("showAdd");
+                    request.setAttribute("holidays", sessn.getHolidaysHtml());     
+                    return "showEdit";
+                } else
+                    return "showAdd";
             }
             
-            ActionMessages errors = sessionEditForm.validate(mapping, request);
-            if (errors.size()>0) {
-                saveErrors(request, errors);
+            form.validate(this);
+            if (hasFieldErrors()) {
                 if (sessn.getSessionId()!=null) {
                     LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-                    request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
-                    return mapping.findForward("showEdit");
-                }
-                else {
-                    ActionErrors errors2 = new ActionErrors(); 
-                    setHolidays(request, sessionEditForm, errors2, sessn);
-                    return mapping.findForward("showAdd");
+                    request.setAttribute("holidays", sessn.getHolidaysHtml());     
+                    return "showEdit";
+                } else {
+                    setHolidays(sessn);
+                    return "showAdd";
                 }
             }
 
-            if (sessionEditForm.getDefaultDatePatternId()!=null && 
-                    sessionEditForm.getDefaultDatePatternId().trim().length()>0) {
-                DatePattern d = new DatePatternDAO().get(Long.valueOf(sessionEditForm.getDefaultDatePatternId()));
+            if (form.getDefaultDatePatternId() != null && form.getDefaultDatePatternId() >= 0) {
+                DatePattern d = new DatePatternDAO().get(form.getDefaultDatePatternId());
                 sessn.setDefaultDatePattern(d);
+            } else {
+            	sessn.setDefaultDatePattern(null);;
             }
             
-            sessn.setAcademicInitiative(sessionEditForm.getAcademicInitiative());
-            sessn.setStatusType(sessionEditForm.getStatusType());
-            setSessionData(request, sessionEditForm, sessn);
+            sessn.setAcademicInitiative(form.getAcademicInitiative());
+            sessn.setStatusType(form.getStatusType());
+            setSessionData(sessn);
 
             hibSession.saveOrUpdate(sessn);
 
@@ -269,8 +232,8 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
                     null, 
                     null);
             
-            if (sessionEditForm.getSessionId() != null)
-            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionContext.getUser(), sessionEditForm.getSessionId(), false);
+            if (form.getSessionId() != null)
+            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionContext.getUser(), form.getSessionId(), false);
             
             EventContact contact = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
             if (contact==null) {
@@ -347,62 +310,39 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             throw e;
         }
                 
-		return mapping.findForward("showSessionList");
+		return "showSessionList";
 	}
 
-	/**
-	 * 
-	 */
-	private void setHolidays(
-			HttpServletRequest request,
-			SessionEditForm sessionEditForm,
-			ActionErrors errors,
-			Session sessn) throws ParseException {
-		
-		sessionEditForm.validateDates(errors);
-		
-		if (errors.size()==0) {			
-			setSessionData(request, sessionEditForm, sessn);
-			request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());		
+	private void setHolidays(Session sessn) throws ParseException {
+		if (form.validateDates(this)) {			
+			setSessionData(sessn);
+			request.setAttribute("holidays", sessn.getHolidaysHtml());		
 		}
-		else
-			saveErrors(request, new ActionMessages(errors));
 	}
 
 
-	/**
-	 * 
-	 */
-	private void setSessionData(
-			HttpServletRequest request,
-			SessionEditForm sessionEditForm,
-			Session sessn ) throws ParseException {
-		
+	private void setSessionData(Session sessn) throws ParseException {
 		Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
-		sessn.setAcademicYear(sessionEditForm.getAcademicYear());
-		sessn.setAcademicTerm(sessionEditForm.getAcademicTerm());
-		sessn.setSessionBeginDateTime(sdf.parse(sessionEditForm.getSessionStart()));
-		sessn.setSessionEndDateTime(sdf.parse(sessionEditForm.getSessionEnd()));
-		sessn.setClassesEndDateTime(sdf.parse(sessionEditForm.getClassesEnd()));
-		sessn.setExamBeginDate(sdf.parse(sessionEditForm.getExamStart()));
-		sessn.setEventBeginDate(sdf.parse(sessionEditForm.getEventStart()));
-		sessn.setEventEndDate(sdf.parse(sessionEditForm.getEventEnd()));
+		sessn.setAcademicYear(form.getAcademicYear());
+		sessn.setAcademicTerm(form.getAcademicTerm());
+		sessn.setSessionBeginDateTime(sdf.parse(form.getSessionStart()));
+		sessn.setSessionEndDateTime(sdf.parse(form.getSessionEnd()));
+		sessn.setClassesEndDateTime(sdf.parse(form.getClassesEnd()));
+		sessn.setExamBeginDate(sdf.parse(form.getExamStart()));
+		sessn.setEventBeginDate(sdf.parse(form.getEventStart()));
+		sessn.setEventEndDate(sdf.parse(form.getEventEnd()));
 		sessn.setHolidays(request);
-		sessn.setLastWeekToEnroll(sessionEditForm.getWkEnroll());
-		sessn.setLastWeekToChange(sessionEditForm.getWkChange());
-		sessn.setLastWeekToDrop(sessionEditForm.getWkDrop());
-		sessn.setDefaultSectioningStatus(sessionEditForm.getSectStatus() == null || sessionEditForm.getSectStatus() < 0 ? null : StudentSectioningStatusDAO.getInstance().get(sessionEditForm.getSectStatus()));
-		sessn.setDefaultClassDurationType(sessionEditForm.getDurationType() == null || sessionEditForm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(sessionEditForm.getDurationType()));
-		sessn.setDefaultInstructionalMethod(sessionEditForm.getInstructionalMethod() == null || sessionEditForm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(sessionEditForm.getInstructionalMethod())); 
+		sessn.setLastWeekToEnroll(form.getWkEnroll());
+		sessn.setLastWeekToChange(form.getWkChange());
+		sessn.setLastWeekToDrop(form.getWkDrop());
+		sessn.setDefaultSectioningStatus(form.getSectStatus() == null || form.getSectStatus() < 0 ? null : StudentSectioningStatusDAO.getInstance().get(form.getSectStatus()));
+		sessn.setDefaultClassDurationType(form.getDurationType() == null || form.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(form.getDurationType()));
+		sessn.setDefaultInstructionalMethod(form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod())); 
 	}
 
 
-	public ActionForward cancelSessionEdit(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) {
-		return mapping.findForward("showSessionList");
+	public String cancelSessionEdit() {
+		return "showSessionList";
 	}
 	
 }

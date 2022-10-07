@@ -26,12 +26,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -44,19 +41,11 @@ import org.unitime.timetable.util.ReferenceList;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 02-18-2005
- * 
- * XDoclet definition:
- * @struts:form name="sessionEditForm"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class SessionEditForm extends ActionForm {
-
+public class SessionEditForm implements UniTimeForm {
 	private static final long serialVersionUID = 3258410646873060656L;
-	
-	// --------------------------------------------------------- Instance Variables
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	Session session = new Session();
 	ReferenceList statusOptions;
@@ -70,7 +59,7 @@ public class SessionEditForm extends ActionForm {
 	String examStart;
 	String eventStart;
 	String eventEnd;
-	String defaultDatePatternId;
+	Long defaultDatePatternId;
 	String defaultDatePatternLabel;
 	Integer wkEnroll = 1, wkChange = 1, wkDrop = 4;
 	Long sectStatus;
@@ -78,143 +67,160 @@ public class SessionEditForm extends ActionForm {
 	Long durationType;
 	Long instructionalMethod;
 	
-	// --------------------------------------------------------- Methods
+	public SessionEditForm() {
+		reset();
+	}
 	
-	public ActionErrors validate(ActionMapping arg0, HttpServletRequest arg1) {
-		ActionErrors errors = new ActionErrors();
-		
+	@Override
+	public void reset() {
+		academicInitiative = null;
+		academicYear = null;
+		academicTerm = null;
+		sessionStart = null;
+		sessionEnd = null;
+		classesEnd = null;
+		examStart = null;
+		eventStart = null;
+		eventEnd = null;
+		defaultDatePatternId = null;
+		defaultDatePatternLabel = null;
+		wkEnroll = 1; wkChange = 1; wkDrop = 4;
+		sectStatus = null;
+		includeTestSession = false;
+		durationType = null;
+		instructionalMethod = null;
+	}
+	
+	@Override
+	public void validate(UniTimeAction action) {
 		// Check data fields
-		if (academicInitiative==null || academicInitiative.trim().length()==0) 
-			errors.add("academicInitiative", new ActionMessage("errors.required", "Academic Initiative"));
+		if (academicInitiative==null || academicInitiative.trim().length()==0)
+			action.addFieldError("form.academicInitiative", MSG.errorRequiredField(MSG.columnAcademicInitiative()));
 		
 		if (academicTerm==null || academicTerm.trim().length()==0) 
-			errors.add("academicTerm", new ActionMessage("errors.required", "Academic Term"));
+			action.addFieldError("form.academicTerm", MSG.errorRequiredField(MSG.columnAcademicTerm()));
 
 		if (academicYear==null || academicYear.trim().length()==0) 
-			errors.add("academicYear", new ActionMessage("errors.required", "Academic Year"));
+			action.addFieldError("form.academicYear", MSG.errorRequiredField(MSG.columnAcademicYear()));
 		else {
 			try {
 				Integer.parseInt(academicYear); 
 			}
 			catch (Exception e) {
-				errors.add("academicYear", new ActionMessage("errors.numeric", "Academic Year"));
+				action.addFieldError("form.academicYear", MSG.errorNotNumber(MSG.columnAcademicYear()));
 			}
 		}
 		
-		validateDates(errors);
+		validateDates(action);
 		
 		if (getStatus()==null || getStatus().trim().length()==0) 
-			errors.add("status", new ActionMessage("errors.required", "Session Status"));
-		
+			action.addFieldError("form.status", MSG.errorRequiredField(MSG.columnSessionStatus()));
 		
 		// Check for duplicate academic initiative, year & term
-		if (errors.size()==0) {
+		if (!action.hasFieldErrors()) {
 			Session sessn = Session.getSessionUsingInitiativeYearTerm(academicInitiative, academicYear, academicTerm);
 			if (session.getSessionId()==null && sessn!=null)
-				errors.add("sessionId", new ActionMessage("errors.generic", "An academic session for the initiative, year and term already exists"));
-				
+				action.addFieldError("form.sessionId", MSG.errorAcademicSessionAlreadyExists());
 			if (session.getSessionId()!=null && sessn!=null) {
 				if (!session.getSessionId().equals(sessn.getSessionId()))
-					errors.add("sessionId", new ActionMessage("errors.generic", "Another academic session for the same initiative, year and term already exists"));
+					action.addFieldError("form.sessionId", MSG.errorAcademicSessionSameAlreadyExists());
 			}
 		}
-		
-		return errors;
 	}
 
 	
 	/**
 	 * Validates all the dates
-	 * @param errors
 	 */
-	public void validateDates(ActionErrors errors) {
+	public boolean validateDates(UniTimeAction action) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		Date dStart = null;
 		try {
 			dStart = df.parse(sessionStart);
 		} catch (Exception e) {}
-		if (dStart == null)
-			errors.add("sessionStart", new ActionMessage("errors.invalidDate", "Session Start Date"));
-		else {
-			Date dEnd = null;
-			try {
-				dEnd = df.parse(sessionEnd);
-			} catch (Exception e) {}
-			if (dEnd == null)
-				errors.add("sessionEnd", new ActionMessage("errors.invalidDate", "Session End Date"));
-			else {
-				if (!dEnd.after(dStart)) 
-					errors.add("sessionEnd", new ActionMessage("errors.generic", "Session End Date must occur AFTER Session Start Date"));
-				else {
-					Date dClassEnd = null;
-					try {
-						dClassEnd = df.parse(classesEnd);
-					} catch (Exception e) {}
-					if (dClassEnd == null)
-						errors.add("classesEnd", new ActionMessage("errors.invalidDate", "Classes End Date"));
-					else {
-						if (!dClassEnd.after(dStart)) {
-							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur AFTER Session Start Date"));
-						} else if (!(dClassEnd.before(dEnd) || dClassEnd.equals(dEnd))) { 
-							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur ON or BEFORE Session End Date"));
-						} else {
-							Date dExamStart = null;
-							try {
-								dExamStart = df.parse(examStart);
-							} catch (Exception e) {}
-							if (dExamStart == null)
-						        errors.add("examStart", new ActionMessage("errors.invalidDate", "Examinations Start Date"));
-
-							Date dEventStart = null;
-							try {
-								dEventStart = df.parse(eventStart);
-							} catch (Exception e) {}
-							Date dEventEnd = null;
-							try {
-								dEventEnd = df.parse(eventEnd);
-							} catch (Exception e) {}
-							if (dEventStart == null)
-                                errors.add("eventStart", new ActionMessage("errors.invalidDate", "Event Start Date"));
-                            else if (dEventEnd == null)
-                                errors.add("eventEnd", new ActionMessage("errors.invalidDate", "Event End Date"));
-                            if (errors.isEmpty() && !dEventStart.before(dEventEnd)) {
-                                errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
-                            }
-                            Calendar start = Calendar.getInstance(Locale.US);
-                            if (dEventStart != null){
-	                            if (dEventStart.before(dStart)){
-	                            	start.setTime(dEventStart);
-	                            } else {
-	                            	start.setTime(dStart);
-	                            }
-                            } else {
-                            	start.setTime(dStart);
-                            }
-                            Calendar end = Calendar.getInstance(Locale.US);
-                            if(dEventEnd != null){
-	                            if (dEventEnd.after(dEnd)){
-	                            	end.setTime(dEventEnd);
-	                            } else {
-	                            	end.setTime(dEnd);
-	                            }
-                            } else {
-                            	end.setTime(dEnd);
-                            }
-                            int startYear = start.get(Calendar.YEAR);
-                            int endYear = end.get(Calendar.YEAR);
-                            int startMonth = start.get(Calendar.MONTH);
-                            int endMonth = end.get(Calendar.MONTH);
-                            int startDay = start.get(Calendar.DAY_OF_MONTH);
-                            int endDay = end.get(Calendar.DAY_OF_MONTH);
-                            if (startYear < endYear) {
-                            	if (startYear + 1 < endYear || startMonth < endMonth || (startMonth == endMonth && startDay <= endDay))
-                            		errors.add("sessionDays", new ActionMessage("errors.generic", "Dates associated with a session cannot cover more than one year."));
-                            }
-						}
-					}
-				}
-			}
+		if (dStart == null) {
+			action.addFieldError("form.sessionStart", MSG.errorNotValidDate(MSG.columnSessionStartDate()));
+			return false;
 		}
+		Date dEnd = null;
+		try {
+			dEnd = df.parse(sessionEnd);
+		} catch (Exception e) {}
+		if (dEnd == null) {
+			action.addFieldError("form.sessionEnd", MSG.errorNotValidDate(MSG.columnSessionEndDate()));
+			return false;
+		}
+		if (!dEnd.after(dStart)) { 
+			action.addFieldError("form.sessionEnd", MSG.errorSessionEndDateNotAfterSessionStartDate());
+			return false;
+		}
+		Date dClassEnd = null;
+		try {
+			dClassEnd = df.parse(classesEnd);
+		} catch (Exception e) {}
+		if (dClassEnd == null) {
+			action.addFieldError("form.classesEnd", MSG.errorNotValidDate(MSG.columnClassesEndDate()));
+			return false;
+		}
+		if (!dClassEnd.after(dStart)) {
+			action.addFieldError("form.classesEnd", MSG.errorClassesEndDateNotAfterSessionStartDate());
+			return false;
+		} else if (!(dClassEnd.before(dEnd) || dClassEnd.equals(dEnd))) { 
+			action.addFieldError("form.classesEnd", MSG.errorClassesEndDateNotOnOrBeforeSessionEndDate());
+			return false;
+		}
+		Date dExamStart = null;
+		try {
+			dExamStart = df.parse(examStart);
+		} catch (Exception e) {}
+		if (dExamStart == null) {
+	        action.addFieldError("form.examStart", MSG.errorNotValidDate(MSG.columnExamStartDate()));
+	        return false;
+		}
+		Date dEventStart = null;
+		try {
+			dEventStart = df.parse(eventStart);
+		} catch (Exception e) {}
+		Date dEventEnd = null;
+		try {
+			dEventEnd = df.parse(eventEnd);
+		} catch (Exception e) {}
+		if (dEventStart == null) {
+            action.addFieldError("form.eventStart", MSG.errorNotValidDate(MSG.columnEventStartDate()));
+            return false;
+		} else if (dEventEnd == null) {
+            action.addFieldError("form.eventEnd", MSG.errorNotValidDate(MSG.columnEventEndDate()));
+            return false;
+		}
+		if (!dEventStart.before(dEventEnd)) {
+            action.addFieldError("form.eventEnd", MSG.errorEventEndDateNotAfterEventStartDate());
+            return false;
+        }
+		Calendar start = Calendar.getInstance(Locale.US);
+		if (dEventStart.before(dStart)){
+        	start.setTime(dEventStart);
+        } else {
+        	start.setTime(dStart);
+        }
+        Calendar end = Calendar.getInstance(Locale.US);
+        if (dEventEnd.after(dEnd)){
+        	end.setTime(dEventEnd);
+        } else {
+        	end.setTime(dEnd);
+        }
+        int startYear = start.get(Calendar.YEAR);
+        int endYear = end.get(Calendar.YEAR);
+        int startMonth = start.get(Calendar.MONTH);
+        int endMonth = end.get(Calendar.MONTH);
+        int startDay = start.get(Calendar.DAY_OF_MONTH);
+        int endDay = end.get(Calendar.DAY_OF_MONTH);
+        if (startYear < endYear) {
+        	if (startYear + 1 < endYear || startMonth < endMonth || (startMonth == endMonth && startDay <= endDay)) {
+        		action.addFieldError("form.sessionDays", MSG.errorSessionDatesOverAYear());
+        		return false; 
+        	}
+        }
+        return true;
 	}
 
 
@@ -323,10 +329,10 @@ public class SessionEditForm extends ActionForm {
 		this.academicYear = academicYear;
 	}
 	
-	public String getDefaultDatePatternId() {
+	public Long getDefaultDatePatternId() {
         return defaultDatePatternId;
     }
-    public void setDefaultDatePatternId(String defaultDatePatternId) {
+    public void setDefaultDatePatternId(Long defaultDatePatternId) {
         this.defaultDatePatternId = defaultDatePatternId;
     }
     
