@@ -17,37 +17,30 @@
  * limitations under the License.
  * 
  --%>
-<%@ taglib uri="http://struts.apache.org/tags-bean"	prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html"	prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic"	prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-
-<html:form action="sessionEdit">
-
-	<table width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="sessionEdit">
+	<table class="unitime-MainTable">
 		<tr>
 			<td>
 				<tt:section-header>
 					<tt:section-title>
-						
 					</tt:section-title>
 					<sec:authorize access="hasPermission(null, null, 'AcademicSessionAdd')">
-						<html:submit property="doit" styleClass="btn" accesskey="A" titleKey="title.addSession">
-							<bean:message key="button.addSession" />
-						</html:submit>
+						<s:submit name='op' value='%{#msg.actionAddAcademicSession()}'
+							accesskey="%{#msg.accessAddAcademicSession()}" title="%{#msg.titleAddAcademicSession(#msg.accessAddAcademicSession())}"/>
 					</sec:authorize>
 				</tt:section-header>
 			</td>
 		</tr>
 	</table>
-
-	<table width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="table" scope="request" filter="false"/>
+	<table class="unitime-MainTable">
+		<s:property value="#request.table" escapeHtml="false"/>
 	</table>
-	
-	<table width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable">
 		<tr>
 			<td align="center" class="WelcomeRowHead">
 			&nbsp;
@@ -56,13 +49,11 @@
 		<tr>
 			<td align="right">
 				<sec:authorize access="hasPermission(null, null, 'AcademicSessionAdd')">
-					<html:submit property="doit" styleClass="btn" accesskey="A" titleKey="title.addSession">
-						<bean:message key="button.addSession" />
-					</html:submit>
+					<s:submit name='op' value='%{#msg.actionAddAcademicSession()}'
+						accesskey="%{#msg.accessAddAcademicSession()}" title="%{#msg.titleAddAcademicSession(#msg.accessAddAcademicSession())}"/>
 				</sec:authorize>
 			</td>
 		</tr>
 	</table>
-
-</html:form>
-	
+</s:form>
+</loc:bundle>

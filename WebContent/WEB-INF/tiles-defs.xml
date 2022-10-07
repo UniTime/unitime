@@ -80,11 +80,6 @@
 		<put name="body" value="/admin/distributionTypeEdit.jsp" />
   	</definition>
 
-	<definition	name="sessionListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Academic Sessions"/>
-		<put name="body" value="/admin/sessionList.jsp" />
-  	</definition>
-
 	<definition	name="sessionEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Academic Session"/>
 		<put name="body" value="/admin/sessionEdit.jsp" />

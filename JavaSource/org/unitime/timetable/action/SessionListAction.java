@@ -24,68 +24,60 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Formats;
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 02-18-2005
- * 
- * XDoclet definition:
- * @struts:action path="/sessionList" name="sessionListForm" input="/admin/sessionList.jsp" scope="request" validate="true"
- *
  * @author Tomas Muller
  */
-@Service("/sessionList")
-public class SessionListAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value="sessionList", results = {
+		@Result(name = "showSessionList", type = "tiles", location = "sessionList.tiles")
+	})
+@TilesDefinition(name = "sessionList.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Academic Sessions"),
+		@TilesPutAttribute(name = "body", value = "/admin/sessionList.jsp")
+	})
+public class SessionListAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -6663444732727632201L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
-
+	public String execute() throws Exception {
         // Check access
 		sessionContext.checkPermission(Right.AcademicSessions);
 
 		WebTable webTable = new WebTable(
-				12, "", "sessionList.do?order=%%",
+				12, "", "sessionList.action?order=%%",
 				new String[] {
-					"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
-					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Class<br>Duration", 
-					"Events<br>Begins", "Events<br>Ends", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status", "Default<br>IM" },
+					MSG.columnAcademicSessionDefault().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionTermYear().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionInitiative().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionStartDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionClassesEndDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEndDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionExamStartDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionDefaultDatePattern().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionCurrentStatus().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionClassDuration().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEventStartDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEventEndDate().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEnrollmentAddDeadline().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEnrollmentChangeDeadline().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionEnrollmentDropDeadline().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionSectioningStatus().replace("\\n", "<br>"),
+					MSG.columnAcademicSessionDefaultInstructionalMethod().replace("\\n", "<br>") },
 				new String[] { "center", "left", "left", "left", "left",
 					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
 				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
@@ -156,8 +148,7 @@ public class SessionListAction extends Action {
 		}
 		request.setAttribute("table", webTable.printTable(orderCol));
 		
-		return mapping.findForward("showSessionList");
-		
+		return "showSessionList";
 	}
 
 }

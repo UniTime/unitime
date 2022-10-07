@@ -640,7 +640,7 @@
 			<hasPermission name="IsAdmin"/>
 		</condition>
 		<menu name="Academic Sessions">
-			<item name="Academic Sessions" page="sessionList.do">
+			<item name="Academic Sessions" page="sessionList.action">
 				<condition>
 					<hasPermission name="AcademicSessions"/>
 				</condition>

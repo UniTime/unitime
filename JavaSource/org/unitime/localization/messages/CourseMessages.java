@@ -4523,4 +4523,64 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Example:")
 	String propTimePatternExample();
+	
+	@DefaultMessage("Add Session")
+	String actionAddAcademicSession();
+	
+	@DefaultMessage("A")
+	String accessAddAcademicSession();
+	
+	@DefaultMessage("Add New Academic Session (Alt + {0})")
+	String titleAddAcademicSession(String access);
+	
+	@DefaultMessage("Default")
+	String columnAcademicSessionDefault();
+	
+	@DefaultMessage("Academic\nSession")
+	String columnAcademicSessionTermYear();
+	
+	@DefaultMessage("Academic\nInitiative")
+	String columnAcademicSessionInitiative();
+	
+	@DefaultMessage("Session\nBegins")
+	String columnAcademicSessionStartDate();
+	
+	@DefaultMessage("Classes\nEnd")
+	String columnAcademicSessionClassesEndDate();
+	
+	@DefaultMessage("Session\nEnds")
+	String columnAcademicSessionEndDate();
+	
+	@DefaultMessage("Exams\nBegins")
+	String columnAcademicSessionExamStartDate();
+	
+	@DefaultMessage("Date\nPattern")
+	String columnAcademicSessionDefaultDatePattern();
+	
+	@DefaultMessage("Status")
+	String columnAcademicSessionCurrentStatus();
+	
+	@DefaultMessage("Class\nDuration")
+	String columnAcademicSessionClassDuration();
+	
+	@DefaultMessage("Events\nBegins")
+	String columnAcademicSessionEventStartDate();
+	
+	@DefaultMessage("Events\nEnds")
+	String columnAcademicSessionEventEndDate();
+	
+	@DefaultMessage("\nEnrollment")
+	String columnAcademicSessionEnrollmentAddDeadline();
+	
+	@DefaultMessage("Deadline\nChange")
+	String columnAcademicSessionEnrollmentChangeDeadline();
+	
+	@DefaultMessage("\nDrop")
+	String columnAcademicSessionEnrollmentDropDeadline();
+	
+	@DefaultMessage("Sectioning\nStatus")
+	String columnAcademicSessionSectioningStatus();
+	
+	@DefaultMessage("Default\nIM")
+	String columnAcademicSessionDefaultInstructionalMethod();
 }

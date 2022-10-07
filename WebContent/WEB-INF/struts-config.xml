@@ -27,7 +27,6 @@
    <form-beans >
 	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />
 	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
-	  <form-bean name="sessionListForm" type="org.unitime.timetable.form.SessionListForm" />
 	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
@@ -63,19 +62,8 @@
          <forward name="showAdd" path="sessionAddTile" />
          <forward
             name="showSessionList"
-            path="/sessionList.do"
+            path="/sessionList.action"
             redirect="true" />
-      </action>
-
-      <action
-         path="/sessionList"
-         attribute="sessionListForm"
-         input="sessionListTile"
-         name="sessionListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward name="showSessionList" path="sessionListTile" />
       </action>
 
       <action
