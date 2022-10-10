@@ -344,7 +344,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             DistanceConflict dc = new DistanceConflict(server.getDistanceMetric(), server.getConfig());
             TimeOverlapsCounter toc = new TimeOverlapsCounter(null, server.getConfig());
 
-			int nrVars = 0, assgnVars = 0, nrStud = 0, compStud = 0, dist = 0, overlap = 0, free = 0, unav = 0;
+			int nrVars = 0, assgnVars = 0, nrStud = 0, compStud = 0, dist = 0, overlap = 0, free = 0, unav = 0, fc = 0;
             double value = 0.0;
 
             for (Student student: students.values()) {
@@ -355,6 +355,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
                 	if (enrollment != null) {
                 		assgnVars ++; nrVars ++;
                 		value += w.getWeight(assignment, enrollment);
+                		if (((CourseRequest)request).getCourses().get(0).equals(enrollment.getCourse()) && !request.isAlternative()) fc ++;
                 	} else if (student.canAssign(assignment, request)) {
                 		nrVars ++; complete = false;
                 	}
@@ -385,6 +386,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             info.put("Time overlapping conflicts", df.format(overlap / 12.0 / nrStud) + "h (" + overlap + ")");
             info.put("Free time overlapping conflicts", df.format(free / 12.0 / nrStud) + "h (" + free + ")");
             info.put("Instructing class overlapping conflicts", df.format(unav / 12.0 / nrStud) + "h (" + unav + ")");
+            info.put("Assigned priority course requests", df.format(100.0 * fc / assgnVars) + "% (" + fc + "/" + assgnVars + ")");
             
             double disbWeight = 0;
             int disbSections = 0;

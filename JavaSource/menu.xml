@@ -846,7 +846,7 @@
 						
 		</menu>
 		<menu name="Solver">
-			<item name="Manage Solvers" page="manageSolvers.do">
+			<item name="Manage Solvers" page="manageSolvers.action">
 				<condition>
 					<hasPermission name="ManageSolvers"/>
 				</condition>

@@ -17,63 +17,37 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" autoFlush="true"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<script type="text/javascript" src="scripts/block.js"></script>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="manageSolvers">
+	<s:iterator value="solverTypes" var="type">
+		<table class="unitime-MainTable" style="padding-bottom: 20px;">
+			<s:property value="getSolverTable(#type)" escapeHtml="false"/>
+		</table>	
+	</s:iterator>
+	<table class="unitime-MainTable" style="padding-bottom: 20px;">
+		<s:property value="onlineSolvers" escapeHtml="false"/>
+	</table>
+	<s:if test="hasServers() == true">
+		<table class="unitime-MainTable">
+			<s:property value="servers" escapeHtml="false"/>
+		</table>
+	</s:if>
+	<table class="unitime-MainTable">
+		<TR>
+			<TD colspan='2'><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
+		</TR>
+		<TR>
+			<TD align='right'>
+				<s:if test="canDeselect() == true">
+					<s:submit name="op" value="%{deselect}" onclick="displayLoading();"/>
+				</s:if>
+				<s:submit name="op" value="%{#msg.buttonRefresh()}" onclick="displayLoading();"/>
+			</TD>
+		</TR>
+	</table>
+</s:form>
+</loc:bundle>
 
-<tiles:importAttribute />
-
-<html:form action="/manageSolvers">
-
-<logic:notEmpty name="ManageSolvers.table[COURSE]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[COURSE]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table[INSTRUCTOR]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[INSTRUCTOR]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table[EXAM]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[EXAM]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table[STUDENT]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[STUDENT]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table[ONLINE]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[ONLINE]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<logic:notEmpty name="ManageSolvers.table[SERVERS]" scope="request">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="ManageSolvers.table[SERVERS]" scope="request" filter="false"/> 
-	</TABLE>
-	<BR>
-</logic:notEmpty>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<TR>
-		<TD colspan='2'><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
-	</TR>
-	<TR>
-		<TD align='right'>
-			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null || session.getAttribute("ManageSolver.instrPuid") != null) { %>
-				<html:submit onclick="displayLoading();" property="op" value="Deselect"/>
-			<% } %>
-			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-		</TD>
-	</TR>
-</TABLE>
-</html:form>

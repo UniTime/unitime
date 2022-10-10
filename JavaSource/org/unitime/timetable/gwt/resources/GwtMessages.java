@@ -7231,4 +7231,289 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Description")
 	String fieldDescription();
+	
+	@DefaultMessage("Unload")
+	String actionSolverUnload();
+	
+	@DefaultMessage("Deselect")
+	String actionSolverDeselect();
+	
+	@DefaultMessage("Reload")
+	String actionOnlineSolverReload();
+	
+	@DefaultMessage("Shutdown")
+	String actionOnlineSolverShutdown();
+	
+	@DefaultMessage("Shutdown All")
+	String actionOnlineSolverShutdownAll();
+	
+	@DefaultMessage("Un-Master")
+	String actionOnlineSolverUnmaster();
+	
+	@DefaultMessage("Shutdown")
+	String actionServerShutdown();
+	
+	@DefaultMessage("Reset")
+	String actionServerReset();
+
+	@DefaultMessage("Enable")
+	String actionServerEnable();
+	
+	@DefaultMessage("Disable")
+	String actionServerDisable();
+
+	@DefaultMessage("{0} as {1}")
+	String solverOwner(String owner, String problem);
+	
+	@DefaultMessage("Do you really want to unload this solver?")
+	String confirmUnloadSolver();
+	
+	@DefaultMessage("Created")
+	String colSolverCreated();
+	
+	@DefaultMessage("Last Used")
+	String colSolverLastUsed();
+	
+	@DefaultMessage("Session")
+	String colSolverSession();
+	
+	@DefaultMessage("Host")
+	String colSolverHost();
+	
+	@DefaultMessage("Config")
+	String colSolverConfigShort();
+	
+	@DefaultMessage("Status")
+	String colSolverStatus();
+	
+	@DefaultMessage("Owner")
+	String colSolverOwner();
+	
+	@DefaultMessage("Mode")
+	String colSolverMode();
+	
+	@DefaultMessage("Mem")
+	String colSolverMem();
+	
+	@DefaultMessage("Cores")
+	String colSolverCores();
+	
+	@DefaultMessage("Assigned<br>Variables")
+	String colSolverAssignedVariables();
+	
+	@DefaultMessage("Total<br>Value")
+	String colSolverOverallValue();
+	
+	@DefaultMessage("Time<br>Prefs")
+	String colSolverTimePrefs();
+	
+	@DefaultMessage("Student<br>Conflicts")
+	String colSolverStudentConfs();
+	
+	@DefaultMessage("Room<br>Prefs")
+	String colSolverRoomPrefs();
+	
+	@DefaultMessage("Distribution<br>Prefs")
+	String colSolverDistrPrefs();
+	
+	@DefaultMessage("BTB Instr<br>Prefs")
+	String colSolverBtbInstrPrefs();
+	
+	@DefaultMessage("MPP")
+	String colSolverPerturbations();
+	
+	@DefaultMessage("Note")
+	String colSolverNote();
+	
+	@DefaultMessage("Student<br>Confs")
+	String colSolverExamStudentConfs();
+	
+	@DefaultMessage("Instr<br>Conf")
+	String colSolverExamInstrConfs();
+	
+	@DefaultMessage("Period<br>Prefs")
+	String colSolverExamPeriodPref();
+	
+	@DefaultMessage("Room<br>Prefs")
+	String colSolverExamRoomPref();
+	
+	@DefaultMessage("Room<br>Split")
+	String colSolverExamRoomSplits();
+	
+	@DefaultMessage("Room<br>Size")
+	String colSolverExamRoomSize();
+	
+	@DefaultMessage("Distr<br>Prefs")
+	String colSolverExamDistrPrefs();
+	
+	@DefaultMessage("Exam<br>Rotation")
+	String colSolverExamRotation();
+	
+	@DefaultMessage("MPP")
+	String colSolverExamPerturbations();
+	
+	@DefaultMessage("Course<br>Requests")
+	String colSolverStudCourseReqs();
+	
+	@DefaultMessage("1st Choice<br>Assigned")
+	String colSolverStud1stChoice();
+	
+	@DefaultMessage("Complete<br>Schedule")
+	String colSolverStudCompleteStuds();
+	
+	@DefaultMessage("Class / IM<br>Preference")
+	String colSolverStudSelection();
+	
+	@DefaultMessage("Distance<br>Conflicts")
+	String colSolverStudDistanceConfs();
+	
+	@DefaultMessage("Time<br>Conflicts")
+	String colSolverStudTimeOverlaps();
+	
+	@DefaultMessage("Unbalanced<br>Sections")
+	String colSolverStudAvgDisbalance();
+	
+	@DefaultMessage("Unbalanced<br>Over 10%")
+	String colSolverStudDisbOver10();
+	
+	@DefaultMessage("Free<br>Confs")
+	String colSolverStudFreeConf();
+	
+	@DefaultMessage("MPP")
+	String colSolverStudPerturbations();
+	
+	@DefaultMessage("Operation(s)")
+	String colSolverOperations();
+	
+	@DefaultMessage("Attribute<br>Prefs")
+	String colSolverInstrAtributePrefs();
+	
+	@DefaultMessage("Course<br>Prefs")
+	String colSolverInstrCoursePrefs();
+	
+	@DefaultMessage("Instructor<br>Prefs")
+	String colSolverInstrInstructorPrefs();
+	
+	@DefaultMessage("Teaching<br>Prefs")
+	String colSolverInstrTeachingPrefs();
+	
+	@DefaultMessage("Time<br>Prefs")
+	String colSolverInstrTimePrefs();
+	
+	@DefaultMessage("Same<br>Inst")
+	String colSolverInstrSameInstructor();
+	
+	@DefaultMessage("Same<br>Lect")
+	String colSolverInstrSameLecture();
+	
+	@DefaultMessage("Same<br>Days")
+	String colSolverInstrSameDays();
+	
+	@DefaultMessage("Same<br>Room")
+	String colSolverInstrSameRoom();
+	
+	@DefaultMessage("BTB")
+	String colSolverInstrBTB();
+	
+	@DefaultMessage("Original")
+	String colSolverInstrOriginalInstructor();
+	
+	@DefaultMessage("Manage Course Timetabling Solvers")
+	String sectManageSolversCourse();
+	
+	@DefaultMessage("Manage Examination Timetabling Solvers")
+	String sectManageSolversExam();
+	
+	@DefaultMessage("Manage Batch Student Scheduling Solvers")
+	String sectManageSolversStudent();
+	
+	@DefaultMessage("Manage Instructor Scheduling Solvers")
+	String sectManageSolversInstructor();
+	
+	@DefaultMessage("Manage Online Scheduling Servers")
+	String sectManageSolversOnline();
+	
+	@DefaultMessage("Available Servers")
+	String sectAvailableServers();
+	
+	@DefaultMessage("No solver is running.")
+	String infoNoSolver();
+	
+	@DefaultMessage("Host")
+	String colServerHost();
+	
+	@DefaultMessage("Version")
+	String colServerVersion();
+
+	@DefaultMessage("Started")
+	String colServerStarted();
+	
+	@DefaultMessage("Available Memory")
+	String colServerAvailableMemory();
+	
+	@DefaultMessage("NrCores")
+	String colServerNrCores();
+	
+	@DefaultMessage("Ping")
+	String colServerPing();
+	
+	@DefaultMessage("Usage")
+	String colServerUsage();
+	
+	@DefaultMessage("NrInstances")
+	String colServerNrInstances();
+	
+	@DefaultMessage("Active")
+	String colServerActive();
+	
+	@DefaultMessage("Working")
+	String colServerWorking();
+	
+	@DefaultMessage("Passivated")
+	String colServerPassivated();
+	
+	@DefaultMessage("Operation(s)")
+	String colServerOperations();
+	
+	@DefaultMessage("inactive")
+	String serverInactive();
+	
+	@DefaultMessage("Do you really want to enable server {0} for the new solver instances?")
+	String configServerEnable(String host);
+	
+	@DefaultMessage("Do you really want to disable server {0} for the new solver instances?")
+	String confirmServerDisable(String host);
+	
+	@DefaultMessage("Do you really want to reset server {0}?")
+	String confirmServerReset(String host);
+	
+	@DefaultMessage("Do you really want to shutdown server {0}?")
+	String confirmServerShutdown(String host);
+	
+	@DefaultMessage("tomcat")
+	String serverFlagTomcat();
+	
+	@DefaultMessage("coordinator")
+	String serverFlagCoordinator();
+	
+	@DefaultMessage("unavailable")
+	String serverFlagUnavailable();
+	
+	@DefaultMessage("(master)")
+	String serverFlagMaster();
+	
+	@DefaultMessage("No solver server is running.")
+	String infoNoServerRunning();
+	
+	@DefaultMessage("There is no online student scheduling server running at the moment.")
+	String infoNoOnlineSolverRunning();
+	
+	@DefaultMessage("Do you really want to reload this server?")
+	String confirmOnlineReload();
+	
+	@DefaultMessage("Do you really want to shutdown this server?")
+	String confrimOnlineShutdown();
+	
+	@DefaultMessage("Do you really want to un-master this server?")
+	String confirmOnlineUnMaster();
 }

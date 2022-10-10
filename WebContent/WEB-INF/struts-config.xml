@@ -34,7 +34,6 @@
 	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
 	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
 	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
-	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
       <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
@@ -215,19 +214,6 @@
     		name="showLog"
     		path="solverLogTile"
     		redirect="true" />
-    </action>
-    <action
-		path="/manageSolvers"
-		type="org.springframework.web.struts.DelegatingActionProxy"
-		attribute="manageSolversForm"
-		input="manageSolversTile"
-		name="manageSolversForm"
-		scope="request"
-		validate="false">
-      <forward
-        name="showSolvers"
-        path="manageSolversTile"
-        redirect="true" />
     </action>
     
 	    <action

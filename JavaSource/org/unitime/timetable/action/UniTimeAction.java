@@ -34,8 +34,10 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.ExaminationSolverService;
+import org.unitime.timetable.solver.service.InstructorSchedulingSolverService;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 import com.opensymphony.xwork2.ActionContext;
@@ -77,6 +79,14 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	
 	protected ExaminationSolverService getExaminationSolverService() {
 		return (ExaminationSolverService)SpringApplicationContextHolder.getBean("examinationSolverService");
+	}
+	
+	protected StudentSectioningSolverService getStudentSectioningSolverService() {
+		return (StudentSectioningSolverService)SpringApplicationContextHolder.getBean("studentSectioningSolverService");
+	}
+	
+	protected InstructorSchedulingSolverService getInstructorSchedulingSolverService() {
+		return (InstructorSchedulingSolverService)SpringApplicationContextHolder.getBean("instructorSchedulingSolverService");
 	}
 	
 	protected AssignmentService<ClassAssignmentProxy> getClassAssignmentService() {
