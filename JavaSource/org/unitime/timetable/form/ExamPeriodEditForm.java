@@ -33,10 +33,9 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -47,7 +46,6 @@ import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -56,11 +54,10 @@ import org.unitime.timetable.util.Formats;
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class ExamPeriodEditForm extends ActionForm {
-    /**
-	 * 
-	 */
+public class ExamPeriodEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -8152697759737310033L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	
 	private Long iUniqueId;
     private String iOp;
     private String iDate;
@@ -90,9 +87,12 @@ public class ExamPeriodEditForm extends ActionForm {
     private Session iSession;
     private Boolean iEditable;
     
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-	    ActionErrors errors = new ActionErrors();
-	    
+    public ExamPeriodEditForm() {
+    	reset();
+    }
+    
+    @Override
+	public void validate(UniTimeAction action) {
 	    if (!iAutoSetup) {
 		    Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		    Date date = null;
@@ -100,42 +100,42 @@ public class ExamPeriodEditForm extends ActionForm {
 		    	date = df.parse(iDate);
 		    } catch (Exception e) {}
 		    if (date == null)
-		    	errors.add("date", new ActionMessage("errors.invalidDate", "Examination Date"));
+		    	action.addFieldError("form.date", MSG.errorExamDateIsNotValid());
 	    }
 
         if (iType==null || iType < 0)
-        	errors.add("examType", new ActionMessage("errors.required", ""));
+        	action.addFieldError("form.examType", MSG.errorExamTypeIsRequired());
 
         if (iStart==null || iStart<=0) {
-            if (!iAutoSetup) errors.add("start", new ActionMessage("errors.required", ""));
+            if (!iAutoSetup) action.addFieldError("form.start", MSG.errorStartTimeIsRequired());
         } else {
             int hour = iStart/100;
             int min = iStart%100;
             if (hour>=24)
-                errors.add("start", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                action.addFieldError("form.start", MSG.errorInvalidStartTimeHour(hour));
             if (min>=60)
-                errors.add("start", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                action.addFieldError("form.start", MSG.errorInvalidStartTimeMin(min));
             if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-                errors.add("start", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                action.addFieldError("form.start", MSG.errorInvalidStartTimeMin5(min));
 
             if (iLength==null || iLength<=0)
-                errors.add("length", new ActionMessage("errors.required", ""));
+                action.addFieldError("form.length", MSG.errorLengthIsRequired());
             else if ((iLength%Constants.SLOT_LENGTH_MIN)!=0)
-                errors.add("length", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                action.addFieldError("form.length", MSG.errorInvalidLength5(iLength));
             if (iStartOffset != null) {
             	if(iStartOffset.intValue() < 0){
-                  	errors.add("start offset", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                  	action.addFieldError("form.start offset", MSG.errorInvalidStartOffsetNegative(iStartOffset));    
             	}
             	if ((iStartOffset.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                    errors.add("start offset", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                    action.addFieldError("form.start offset", MSG.errorInvalidStartOffset5(iStartOffset));            		
             	}
             }
             if (iStopOffset != null) {
             	if(iStopOffset.intValue() < 0){
-                  	errors.add("stop offset", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                  	action.addFieldError("form.stop offset", MSG.errorInvalidStopOffsetNegative(iStopOffset));    
             	}
             	if ((iStopOffset.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                    errors.add("stop offset", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                    action.addFieldError("form.stop offset", MSG.errorInvalidStopOffset5(iStopOffset));            		
             	}
             }
        }
@@ -145,29 +145,29 @@ public class ExamPeriodEditForm extends ActionForm {
 	            int hour = iStart2/100;
 	            int min = iStart2%100;
 	            if (hour>=24)
-	                errors.add("start2", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+	                action.addFieldError("form.start2", MSG.errorInvalidStartTimeHour(hour));
 	            if (min>=60)
-	                errors.add("start2", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+	                action.addFieldError("form.start2", MSG.errorInvalidStartTimeMin(min));
 	            if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-	                errors.add("start2", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+	                action.addFieldError("form.start2", MSG.errorInvalidStartTimeMin5(min));
 	            if (iLength2==null || iLength2<=0)
-	                errors.add("length2", new ActionMessage("errors.required", ""));
+	                action.addFieldError("form.length2", MSG.errorLengthIsRequired());
 	            else if ((iLength2%Constants.SLOT_LENGTH_MIN)!=0)
-	                errors.add("length2", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+	                action.addFieldError("form.length2", MSG.errorInvalidLength5(iLength2));
 	            if (iStartOffset2 != null) {
 	            	if(iStartOffset2.intValue() < 0){
-	                  	errors.add("start offset2", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+	                  	action.addFieldError("form.startOffset2", MSG.errorInvalidStartOffsetNegative(iStartOffset2));    
 	            	}
 	            	if ((iStartOffset2.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-	                    errors.add("start offset2", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset2.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+	                    action.addFieldError("form.startOffset2", MSG.errorInvalidStartOffset5(iStartOffset2));            		
 	            	}
 	            }
 	            if (iStopOffset2 != null) {
 	            	if(iStopOffset2.intValue() < 0){
-	                  	errors.add("stop offset2", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+	                  	action.addFieldError("form.stopOffset2", MSG.errorInvalidStopOffsetNegative(iStopOffset2));    
 	            	}
 	            	if ((iStopOffset2.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-	                    errors.add("stop offset2", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset2.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+	                    action.addFieldError("form.stopOffset2", MSG.errorInvalidStopOffset5(iStopOffset2));            		
 	            	}
 	            }
 	        }
@@ -176,29 +176,29 @@ public class ExamPeriodEditForm extends ActionForm {
                 int hour = iStart3/100;
                 int min = iStart3%100;
                 if (hour>=24)
-                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                    action.addFieldError("form.start3", MSG.errorInvalidStartTimeHour(hour));
                 if (min>=60)
-                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                    action.addFieldError("form.start3", MSG.errorInvalidStartTimeMin(min));
                 if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("start3", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.start3", MSG.errorInvalidStartTimeMin5(min));
                 if (iLength3==null || iLength3<=0)
-                    errors.add("length3", new ActionMessage("errors.required", ""));
+                    action.addFieldError("form.length3", MSG.errorLengthIsRequired());
                 else if ((iLength3%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("length3", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.length3", MSG.errorInvalidLength5(iLength3));
                 if (iStartOffset3 != null) {
                 	if(iStartOffset3.intValue() < 0){
-                      	errors.add("start offset3", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.startOffset3", MSG.errorInvalidStartOffsetNegative(iStartOffset3));    
                 	}
                 	if ((iStartOffset3.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("start offset3", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset3.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.startOffset3", MSG.errorInvalidStartOffset5(iStartOffset3));            		
                 	}
                 }
                 if (iStopOffset3 != null) {
                 	if(iStopOffset3.intValue() < 0){
-                      	errors.add("stop offset3", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.stopOffset3", MSG.errorInvalidStopOffsetNegative(iStopOffset3));    
                 	}
                 	if ((iStopOffset3.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("stop offset3", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset3.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.stopOffset3", MSG.errorInvalidStopOffset5(iStopOffset3));
                 	}
                 }
            }
@@ -207,29 +207,29 @@ public class ExamPeriodEditForm extends ActionForm {
                 int hour = iStart4/100;
                 int min = iStart4%100;
                 if (hour>=24)
-                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                    action.addFieldError("form.start4", MSG.errorInvalidStartTimeHour(hour));
                 if (min>=60)
-                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                    action.addFieldError("form.start4", MSG.errorInvalidStartTimeMin(min));
                 if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("start4", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.start4", MSG.errorInvalidStartTimeMin5(min));
                 if (iLength4==null || iLength4<=0)
-                    errors.add("length4", new ActionMessage("errors.required", ""));
+                    action.addFieldError("form.length4", MSG.errorLengthIsRequired());
                 else if ((iLength4%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("length4", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.length4", MSG.errorInvalidLength5(iLength4));
                 if (iStartOffset4 != null) {
                 	if(iStartOffset4.intValue() < 0){
-                      	errors.add("start offset4", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.startOffset4", MSG.errorInvalidStartOffsetNegative(iStartOffset4));
                 	}
                 	if ((iStartOffset4.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("start offset4", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset4.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.startOffset4", MSG.errorInvalidStartOffset5(iStartOffset4));
                 	}
                 }
                 if (iStopOffset4 != null) {
                 	if(iStopOffset4.intValue() < 0){
-                      	errors.add("stop offset4", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.stopOffset4", MSG.errorInvalidStopOffsetNegative(iStopOffset4));
                 	}
                 	if ((iStopOffset4.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("stop offset4", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset4.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.stopOffset4", MSG.errorInvalidStopOffset5(iStopOffset4));
                 	}
                 }
             }
@@ -238,37 +238,37 @@ public class ExamPeriodEditForm extends ActionForm {
                 int hour = iStart5/100;
                 int min = iStart5%100;
                 if (hour>=24)
-                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- hour ("+hour+") must be between 0 and 23."));
+                    action.addFieldError("form.start5", MSG.errorInvalidStartTimeHour(hour));
                 if (min>=60)
-                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be between 0 and 59."));
+                    action.addFieldError("form.start5", MSG.errorInvalidStartTimeMin(min));
                 if ((min%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("start5", new ActionMessage("errors.generic","Invalid start time -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.start5", MSG.errorInvalidStartTimeMin5(min));
                 if (iLength5==null || iLength5<=0)
-                    errors.add("length5", new ActionMessage("errors.required", ""));
+                    action.addFieldError("form.length5", MSG.errorLengthIsRequired());
                 else if ((iLength5%Constants.SLOT_LENGTH_MIN)!=0)
-                    errors.add("length5", new ActionMessage("errors.generic","Invalid length -- period length must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));
+                    action.addFieldError("form.length5", MSG.errorInvalidLength5(iLength5));
                 if (iStartOffset5 != null) {
                 	if(iStartOffset5.intValue() < 0){
-                      	errors.add("start offset5", new ActionMessage("errors.generic", "Invalid event start offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.startOffset5", MSG.errorInvalidStartOffsetNegative(iStartOffset5));
                 	}
                 	if ((iStartOffset5.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("start offset5", new ActionMessage("errors.generic","Invalid event start offset -- value ("+iStartOffset5.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.startOffset5", MSG.errorInvalidStartOffset5(iStartOffset5));
                 	}
                 }
                 if (iStopOffset5 != null) {
                 	if(iStopOffset5.intValue() < 0){
-                      	errors.add("stop offset5", new ActionMessage("errors.generic", "Invalid event stop offset -- value must be a positive integer."));    
+                      	action.addFieldError("form.stopOffset5", MSG.errorInvalidStopOffsetNegative(iStopOffset5));
                 	}
                 	if ((iStopOffset5.intValue()%Constants.SLOT_LENGTH_MIN)!=0){
-                        errors.add("stop offset5", new ActionMessage("errors.generic","Invalid event stop offset -- value ("+iStopOffset5.intValue()+") must be divisible by "+Constants.SLOT_LENGTH_MIN+"."));            		
+                        action.addFieldError("form.stopOffset5", MSG.errorInvalidStopOffset5(iStopOffset5));
                 	}
                 }
             }
 	    }
 	    
 	    try {
-	        if (errors.isEmpty()) {
-	            Session session = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
+	        if (!action.hasFieldErrors()) {
+	            Session session = SessionDAO.getInstance().get(action.getSessionContext().getUser().getCurrentAcademicSessionId());
 	            Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 	            Date startDate = df.parse(iDate);
 	            long diff = startDate.getTime()-session.getExamBeginDate().getTime();
@@ -278,15 +278,14 @@ public class ExamPeriodEditForm extends ActionForm {
 	            int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
 	            ExamPeriod period = ExamPeriod.findByDateStart(session.getUniqueId(), dateOffset, slot, iType);
 	            if (period!=null && !period.getUniqueId().equals(getUniqueId())) {
-	                errors.add("date", new ActionMessage("errors.exists", "An examination period with given date and start time"));
+	                action.addFieldError("form.date", MSG.errorDuplicateExaminationPeriod());
 	            }
 	        }
 	    } catch (Exception e) {}
-	    
-	    return errors;
 	}
 	
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+    @Override
+	public void reset() {
 		iOp = null; iUniqueId = Long.valueOf(-1); iDate = null; 
 		iStart = null; iLength = null; iStartOffset = null; iStopOffset = null;
 		iStart2 = null; iLength2 = null; iStartOffset2 = null; iStopOffset2 = null;
@@ -297,14 +296,12 @@ public class ExamPeriodEditForm extends ActionForm {
 		iType = null;
 		iAutoSetup = false;
 		iEditable = false;
-		if (request != null)
-			iSession = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
 	}
 	
 	public void load(ExamPeriod ep, SessionContext context) throws Exception {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		if (ep==null) {
-			reset(null, null);
+			reset();
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			iDate = df.format(session.getExamBeginDate());
 			iLength = 120;
@@ -843,4 +840,6 @@ public class ExamPeriodEditForm extends ActionForm {
 	public Integer getDefaultStopOffset(Long type) {
 		return Constants.getDefaultExamStopOffset(ExamTypeDAO.getInstance().get(type));
 	}
+	
+	public void setSession(Session session) { iSession = session; }
 }

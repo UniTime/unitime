@@ -775,7 +775,7 @@
 					<hasPermission name="ExaminationStatuses"/>
 				</condition>
 			</item>
-			<item name="Examination Periods" page="examPeriodEdit.do">
+			<item name="Examination Periods" page="examPeriodEdit.action">
 				<condition>
 					<hasPermission name="ExaminationPeriods"/>
 				</condition>
@@ -1167,7 +1167,7 @@
 				<hasPermission name="ExaminationStatuses"/>
 			</condition>
 		</item>
-		<item name="Examination Periods" page="examPeriodEdit.do">
+		<item name="Examination Periods" page="examPeriodEdit.action">
 			<condition>
 				<not>
 					<hasPermission name="IsAdmin"/>

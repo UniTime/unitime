@@ -2171,4 +2171,181 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("of Same Course")
 	String lrOfSameCourse();
+
+	@DefaultMessage("Examination Date is not set or it is not a valid date.")
+	String errorExamDateIsNotValid();
+	
+	@DefaultMessage("<b>Start Time</b> is required.")
+	String errorStartTimeIsRequired();
+	
+	@DefaultMessage("Invalid start time: hour ({0}) must be between 0 and 23.")
+	String errorInvalidStartTimeHour(int hour);
+	
+	@DefaultMessage("Invalid start time: minute ({0}) must be between 0 and 59.")
+	String errorInvalidStartTimeMin(int min);
+	
+	@DefaultMessage("Invalid start time -- minute ({0}) must be divisible by 5.")
+	String errorInvalidStartTimeMin5(int min);
+	
+	@DefaultMessage("<b>Length</b> is required.")
+	String errorLengthIsRequired();
+	
+	@DefaultMessage("Invalid length: period length ({0}) must be divisible by 5.")
+	String errorInvalidLength5(int length);
+	
+	@DefaultMessage("Invalid event start offset: value ({0}) must be a positive integer.")
+	String errorInvalidStartOffsetNegative(int offset);
+	
+	@DefaultMessage("Invalid event start offset: value ({0}) must be divisible by 5.")
+	String errorInvalidStartOffset5(int offset);
+	
+	@DefaultMessage("Invalid event stop offset: value ({0}) must be a positive integer.")
+	String errorInvalidStopOffsetNegative(int offset);
+	
+	@DefaultMessage("Invalid event stop offset: value ({0}) must be divisible by 5.")
+	String errorInvalidStopOffset5(int offset);
+	
+	@DefaultMessage("An examination period with given date and start time already exists.")
+	String errorDuplicateExaminationPeriod();
+	
+	@DefaultMessage("Examination <b>id</b> not valid or not provided.")
+	String errorExaminationIdNotProvided();
+	
+	@DefaultMessage("Back")
+	String actionBackToExaminationPeriods();
+	
+	@DefaultMessage("Add Period")
+	String actionAddExaminationPeriod();
+	
+	@DefaultMessage("Create a new examination period")
+	String titleAddExaminationPeriod();
+	
+	@DefaultMessage("Save")
+	String actionSaveExaminationPeriod();
+	
+	@DefaultMessage("Update")
+	String actionUpdateExaminationPeriod();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteExaminationPeriod();
+	
+	@DefaultMessage("{0} Periods")
+	String actionSetupExaminationPeriods(String type);
+	
+	@DefaultMessage("Setup {0} examination period")
+	String titleSetupExaminationPeriods(String type);
+	
+	@DefaultMessage("Event Start Offset")
+	String colEventStartOffset();
+	
+	@DefaultMessage("Event Stop Offset")
+	String colEventStopOffset();
+	
+	@DefaultMessage("No examination periods defined for this session.")
+	String infoNoExaminationPeriodsDefined();
+	
+	@DefaultMessage("The examination period will be deleted. Continue?")
+	String confirmDeleteExamPerid();
+	
+	@DefaultMessage("Setup Examination Periods")
+	String sectSetupExaminationPeriods();
+	
+	@DefaultMessage("Add Examination Period")
+	String sectAddExaminationPeriod();
+	
+	@DefaultMessage("Edit Examination Period")
+	String sectEditExaminationPeriod();
+	
+	@DefaultMessage("Examination Periods")
+	String sectExaminationPeriods();
+	
+	@DefaultMessage("Select...")
+	String itemSelect();
+	
+	@DefaultMessage("Start Time:")
+	String propPeriodStartTime();
+	
+	@DefaultMessage("Length:")
+	String propPeriodLength();
+	
+	@DefaultMessage("Event Start Offset:")
+	String propEventStartOffset();
+	
+	@DefaultMessage("Event Stop Offset:")
+	String propEventStopOffset();	
+	
+	@DefaultMessage("Preference:")
+	String propPeriodPreference();
+	
+	@DefaultMessage("1st Period Start Time:")
+	String prop1stPeriodStartTime();
+	
+	@DefaultMessage("1st Period Length:")
+	String prop1stPeriodLength();
+	
+	@DefaultMessage("1st Period Event Start Offset:")
+	String prop1stEventStartOffset();
+	
+	@DefaultMessage("1st Period Event Stop Offset:")
+	String prop1stEventStopOffset();
+	
+	@DefaultMessage("2nd Period Start Time:")
+	String prop2ndPeriodStartTime();
+	
+	@DefaultMessage("2nd Period Length:")
+	String prop2ndPeriodLength();
+	
+	@DefaultMessage("2nd Period Event Start Offset:")
+	String prop2ndEventStartOffset();
+	
+	@DefaultMessage("2nd Period Event Stop Offset:")
+	String prop2ndEventStopOffset();
+	
+	@DefaultMessage("3rd Period Start Time:")
+	String prop3rdPeriodStartTime();
+	
+	@DefaultMessage("3rd Period Length:")
+	String prop3rdPeriodLength();
+	
+	@DefaultMessage("3rd Period Event Start Offset:")
+	String prop3rdEventStartOffset();
+	
+	@DefaultMessage("3rd Period Event Stop Offset:")
+	String prop3rdEventStopOffset();
+	
+	@DefaultMessage("4th Period Start Time:")
+	String prop4thPeriodStartTime();
+	
+	@DefaultMessage("4th Period Length:")
+	String prop4thPeriodLength();
+	
+	@DefaultMessage("4th Period Event Start Offset:")
+	String prop4thEventStartOffset();
+	
+	@DefaultMessage("4th Period Event Stop Offset:")
+	String prop4thEventStopOffset();
+	
+	@DefaultMessage("5th Period Start Time:")
+	String prop5thPeriodStartTime();
+	
+	@DefaultMessage("5th Period Length:")
+	String prop5thPeriodLength();
+	
+	@DefaultMessage("5th Period Event Start Offset:")
+	String prop5thEventStartOffset();
+	
+	@DefaultMessage("5th Period Event Stop Offset:")
+	String prop5thEventStopOffset();
+	
+	@DefaultMessage("Examination Dates:")
+	String propExaminationDates();
+	
+	@DefaultMessage("(in military format)")
+	String noteTimeInMilitaryFormat();
+	
+	@DefaultMessage("(in minutes)")
+	String noteLengthInMinutes();
+	
+	@DefaultMessage("minutes")
+	String noteMinutes();
 }

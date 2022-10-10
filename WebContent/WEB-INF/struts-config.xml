@@ -41,7 +41,6 @@
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
-      <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
    </form-beans>
 
    <global-exceptions>
@@ -291,20 +290,6 @@
        		name="submit" 
        		path="/rollForwardSession.do" />
       </action>
-
-    <action
-      attribute="examPeriodEditForm"
-      input="examPeriodsTile"
-      name="examPeriodEditForm"
-      path="/examPeriodEdit"
-      scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy" 
-      validate="false">
-      <forward name="list" path="examPeriodsTile" />
-      <forward name="add" path="addExamPeriodTile" />
-      <forward name="edit" path="editExamPeriodTile" />
-      <forward name="midterm" path="midtermExamPeriodTile" />
-    </action>
 
     </action-mappings>
 

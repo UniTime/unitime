@@ -17,216 +17,212 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true"%>
-<%@page import="org.unitime.timetable.model.Exam"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<tiles:importAttribute />
-
-<html:form action="/examPeriodEdit">
-
-<logic:notEqual name="examPeriodEditForm" property="op" value="List">
-	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
-	<html:hidden property="autoSetup"/>
-	<html:hidden property="editable"/>
-	<logic:equal name="examPeriodEditForm" property="autoSetup" value="true">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteExamPerid"/></tt:confirm>
+<s:form action="examPeriodEdit">
+<s:hidden name="form.op"/>
+<s:if test="form.op != 'List'">
+	<s:hidden name="form.uniqueId"/><s:fielderror escape="false" fieldName="form.uniqueId"/>
+	<s:hidden name="form.autoSetup"/>
+	<s:hidden name="form.editable"/>
+	<s:if test="form.autoSetup == true">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						Setup Examination Periods
+						<loc:message name="sectSetupExaminationPeriods"/>
 					</tt:section-title>
-					<html:submit property="op">
-						<bean:write name="examPeriodEditForm" property="op" />
-					</html:submit> 
-					<html:submit property="op" value="Back" /> 
+					<s:submit name='op' value='%{form.op}'/>
+					<s:submit name='op' value='%{#msg.actionBackToExaminationPeriods()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Type:</TD>
+			<TD><loc:message name="propExamType"/></TD>
 			<TD>
-				<html:select property="examType" disabled="true">
-					<html:option value="">Select...</html:option>
-					<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
-				</html:select>
-				<html:hidden property="examType"/>
-				&nbsp;<html:errors property="examType"/>
+				<s:iterator value="#request.examTypes" var="type">
+					<s:if test="#type.uniqueId == form.examType">
+						<s:property value="#type.label"/>
+					</s:if>
+				</s:iterator>
+				<s:hidden name="form.examType"/>
+				<s:fielderror escape="false" fieldName="form.examType"/>
 			</TD>
 		</TR>
 		
 
 		<TR>
-			<TD>1st Period Start Time:</TD>
+			<TD><loc:message name="prop1stPeriodStartTime"/></TD>
 			<TD>
-			<html:text property="start" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start"/>
+			<s:textfield name="form.start" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+			<s:fielderror escape="false" fieldName="form.start"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>1st Period Length:</TD>
+			<TD><loc:message name="prop1stPeriodLength"/> </TD>
 			<TD>
-			<html:text property="length" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length"/>
+			<s:textfield name="form.length" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.length"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>1st Period Event Start Offset:</TD>
+			<TD><loc:message name="prop1stEventStartOffset"/></TD>
 			<TD>
-			<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset"/>
+			<s:textfield name="form.startOffset" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.startOffset"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>1st Period Event Stop Offset:</TD>
+			<TD><loc:message name="prop1stEventStopOffset"/></TD>
 			<TD>
-			<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset"/>
+			<s:textfield name="form.stopOffset" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.stopOffset"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>2nd Period Start Time:</TD>
+			<TD><loc:message name="prop2ndPeriodStartTime"/></TD>
 			<TD>
-			<html:text property="start2" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start2"/>
+			<s:textfield name="form.start2" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+			<s:fielderror escape="false" fieldName="form.start2"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>2nd Period Length:</TD>
+			<TD><loc:message name="prop2ndPeriodLength"/></TD>
 			<TD>
-			<html:text property="length2" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length2"/>
+			<s:textfield name="form.length2" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.length2"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>2nd Period Event Start Offset:</TD>
+			<TD><loc:message name="prop2ndEventStartOffset"/></TD>
 			<TD>
-			<html:text property="startOffset2" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset2"/>
+			<s:textfield name="form.startOffset2" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.startOffset2"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>2nd Period Event Stop Offset:</TD>
+			<TD><loc:message name="prop2ndEventStopOffset"/></TD>
 			<TD>
-			<html:text property="stopOffset2" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset2"/>
+			<s:textfield name="form.stopOffset2" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.stopOffset2"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>3rd Period Start Time:</TD>
+			<TD><loc:message name="prop3rdPeriodStartTime"/></TD>
 			<TD>
-			<html:text property="start3" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start3"/>
+			<s:textfield name="form.start3" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+			<s:fielderror escape="false" fieldName="form.start3"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>3rd Period Length:</TD>
+			<TD><loc:message name="prop3rdPeriodLength"/></TD>
 			<TD>
-			<html:text property="length3" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length3"/>
+			<s:textfield name="form.length3" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.length3"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>3rd Period Event Start Offset:</TD>
+			<TD><loc:message name="prop3rdEventStartOffset"/></TD>
 			<TD>
-			<html:text property="startOffset3" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset3"/>
+			<s:textfield name="form.startOffset3" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.startOffset3"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>3rd Period Event Stop Offset:</TD>
+			<TD><loc:message name="prop3rdEventStopOffset"/></TD>
 			<TD>
-			<html:text property="stopOffset3" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset3"/>
+			<s:textfield name="form.stopOffset3" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.stopOffset3"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>4th Period Start Time:</TD>
+			<TD><loc:message name="prop4thPeriodStartTime"/></TD>
 			<TD>
-			<html:text property="start4" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start4"/>
+			<s:textfield name="form.start4" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+			<s:fielderror escape="false" fieldName="form.start4"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>4th Period Length:</TD>
+			<TD><loc:message name="prop4thPeriodLength"/></TD>
 			<TD>
-			<html:text property="length4" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length4"/>
+			<s:textfield name="form.length4" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.length4"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>4th Period Event Start Offset:</TD>
+			<TD><loc:message name="prop4thEventStartOffset"/></TD>
 			<TD>
-			<html:text property="startOffset4" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset4"/>
+			<s:textfield name="form.startOffset4" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.startOffset4"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>4th Period Event Stop Offset:</TD>
+			<TD><loc:message name="prop4thEventStopOffset"/></TD>
 			<TD>
-			<html:text property="stopOffset4" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset4"/>
+			<s:textfield name="form.stopOffset4" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.stopOffset4"/>
 			</TD>
 		</TR>
 		<TR>
-			<TD>5th Period Start Time:</TD>
+			<TD><loc:message name="prop5thPeriodStartTime"/></TD>
 			<TD>
-			<html:text property="start5" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start5"/>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD>5th Period Length:</TD>
-			<TD>
-			<html:text property="length5" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length5"/>
+			<s:textfield name="form.start5" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+			<s:fielderror escape="false" fieldName="form.start5"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>5th Period Event Start Offset:</TD>
+			<TD><loc:message name="prop5thPeriodLength"/></TD>
 			<TD>
-			<html:text property="startOffset5" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset5"/>
+			<s:textfield name="form.length5" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.length5"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>5th Period Event Stop Offset:</TD>
+			<TD><loc:message name="prop5thEventStartOffset"/></TD>
 			<TD>
-			<html:text property="stopOffset5" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset5"/>
+			<s:textfield name="form.startOffset5" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.startOffset5"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD colspan='2'><br>Examination Dates:</TD>
+			<TD><loc:message name="prop5thEventStopOffset"/></TD>
+			<TD>
+			<s:textfield name="form.stopOffset5" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+			<s:fielderror escape="false" fieldName="form.stopOffset5"/>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan='2'><br><loc:message name="propExaminationDates"/></TD>
 		</TR>
 		
 		<TR>
 			<TD colspan='2'>
-				<bean:write name="examPeriodEditForm" property="patternHtml" filter="false"/>
+				<s:property value="form.patternHtml" escapeHtml="false"/>
 			</TD>
 		</TR>
 
@@ -238,138 +234,127 @@
 		
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="examPeriodEditForm" property="op" />
-				</html:submit> 
-				<html:submit property="op" value="Back" /> 
+				<s:submit name='op' value='%{form.op}'/>
+					<s:submit name='op' value='%{#msg.actionBackToExaminationPeriods()}'/> 
 			</TD>
 		</TR>
 	</TABLE>
-	</logic:equal>
-	<logic:equal name="examPeriodEditForm" property="autoSetup" value="false">
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	</s:if><s:else>
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="examPeriodEditForm" property="op" value="Save">
-							Add
-						</logic:equal>
-						<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-							Edit
-						</logic:notEqual>
-						Examination Period
+						<s:if test="form.op == #msg.actionSaveExaminationPeriod()">
+							<loc:message name="sectAddExaminationPeriod"/>
+						</s:if><s:else>
+							<loc:message name="sectEditExaminationPeriod"/>
+						</s:else>
 					</tt:section-title>
-					<html:submit property="op">
-						<bean:write name="examPeriodEditForm" property="op" />
-					</html:submit>
-					<logic:equal name="examPeriodEditForm" property="editable" value="true"> 
-						<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-							<html:submit property="op" value="Delete"/> 
-						</logic:notEqual>
-					</logic:equal>
-					<html:submit property="op" value="Back" /> 
+					<s:submit name='op' value='%{form.op}'/>
+					<s:if test="form.editable == true && form.op != #msg.actionSaveExaminationPeriod()">
+						<s:submit name='op' value='%{#msg.actionDeleteExaminationPeriod()}' onclick="return confirmDelete();"/>
+					</s:if>
+					<s:submit name='op' value='%{#msg.actionBackToExaminationPeriods()}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Type:</TD>
+			<TD><loc:message name="propExamType"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="op" value="Save">
-					<input type='hidden' name='op2' value=''>
-					<html:select property="examType" onchange="op2.value='Reload'; submit();">
-						<html:option value="-1">Select...</html:option>
-						<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
-					</html:select>
-					&nbsp;<html:errors property="examType"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-					<html:select property="examType" disabled="true">
-						<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
-					</html:select>
-					<html:hidden property="examType"/>
-				</logic:notEqual>
+				<s:if test="form.op == #msg.actionSaveExaminationPeriod()">
+					<s:hidden name="op2" value="" id="op2"/>
+					<s:select name="form.examType"
+						list="#request.examTypes" listKey="uniqueId" listValue="label"
+						headerKey="" headerValue="%{#msg.itemSelect()}"
+						onchange="document.getElementById('op2').value='Reload'; submit();" />
+					<s:fielderror escape="false" fieldName="form.examType"/>
+				</s:if><s:else>
+					<s:iterator value="#request.examTypes" var="type">
+						<s:if test="#type.uniqueId == form.examType">
+							<s:property value="#type.label"/>
+						</s:if>
+					</s:iterator>
+					<s:hidden name="form.examType"/>
+					<s:fielderror escape="false" fieldName="form.examType"/>
+				</s:else>
 			</TD>
 		</TR>
 		
 
 		<TR>
-			<TD>Date:</TD>
+			<TD><loc:message name="propertyPeriodDate"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<tt:calendar property="date"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
-					<bean:write name="examPeriodEditForm" property="date"/>
-					<html:hidden property="date"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<div id='UniTimeGWT:Calendar'>
+						<s:textfield name="form.date" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+					</div>
+				</s:if><s:else>
+					<s:property value="form.date"/>
+					<s:hidden name="form.date"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Start Time:</TD>
+			<TD><loc:message name="propPeriodStartTime"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<html:text property="start" size="4" maxlength="4"/> (in military format)
-					&nbsp;<html:errors property="start"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
-					<bean:write name="examPeriodEditForm" property="start"/>  (in military format)
-					<html:hidden property="start"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textfield name="form.start" size="4" maxlength="4"/> <loc:message name="noteTimeInMilitaryFormat"/>
+					<s:fielderror escape="false" fieldName="form.start"/>
+				</s:if><s:else>
+					<s:property value="form.start"/> <loc:message name="noteTimeInMilitaryFormat"/>
+					<s:hidden name="form.start"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Length:</TD>
+			<TD><loc:message name="propPeriodLength"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<html:text property="length" size="4" maxlength="4"/> (in minutes)
-					&nbsp;<html:errors property="length"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
-					<bean:write name="examPeriodEditForm" property="length"/> minutes
-					<html:hidden property="length"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textfield name="form.length" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+					<s:fielderror escape="false" fieldName="form.length"/>
+				</s:if><s:else>
+					<s:property value="form.length"/> <loc:message name="noteMinutes"/>
+					<s:hidden name="form.length"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Event Start Offset:</TD>
+			<TD><loc:message name="propEventStartOffset"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
-					&nbsp;<html:errors property="startOffset"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
-					<bean:write name="examPeriodEditForm" property="startOffset"/> minutes
-					<html:hidden property="startOffset"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textfield name="form.startOffset" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+					<s:fielderror escape="false" fieldName="form.startOffset"/>
+				</s:if><s:else>
+					<s:property value="form.startOffset"/> <loc:message name="noteMinutes"/>
+					<s:hidden name="form.startOffset"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Event Stop Offset:</TD>
+			<TD><loc:message name="propEventStopOffset"/></TD>
 			<TD>
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
-					&nbsp;<html:errors property="stopOffset"/>
-				</logic:equal>
-				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
-					<bean:write name="examPeriodEditForm" property="stopOffset"/> minutes
-					<html:hidden property="stopOffset"/>
-				</logic:notEqual>
+				<s:if test="form.editable == true">
+					<s:textfield name="form.stopOffset" size="4" maxlength="4"/> <loc:message name="noteLengthInMinutes"/>
+					<s:fielderror escape="false" fieldName="form.stopOffset"/>
+				</s:if><s:else>
+					<s:property value="form.stopOffset"/> <loc:message name="noteMinutes"/>
+					<s:hidden name="form.stopOffset"/>
+				</s:else>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Preference:</TD>
+			<TD><loc:message name="propPeriodPreference"/></TD>
 			<TD>
-			<html:select property="prefLevel">
-				<html:optionsCollection property="prefLevels" label="prefName" value="uniqueId"/>
-			</html:select>
-			&nbsp;<html:errors property="prefLevel"/>
+				<s:select name="form.prefLevel"
+					list="form.prefLevels" listKey="uniqueId" listValue="prefName"/>
+				<s:fielderror escape="false" fieldName="form.prefLevel"/>
 			</TD>
 		</TR>
 
@@ -381,37 +366,34 @@
 		
 		<TR>
 			<TD align="right" colspan="2">
-				<html:submit property="op">
-					<bean:write name="examPeriodEditForm" property="op" />
-				</html:submit> 
-				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-						<html:submit property="op" value="Delete"/> 
-					</logic:notEqual>
-				</logic:equal>
-				<html:submit property="op" value="Back" /> 
+				<s:submit name='op' value='%{form.op}'/>
+				<s:if test="form.editable == true && form.op != #msg.actionSaveExaminationPeriod()">
+					<s:submit name='op' value='%{#msg.actionDeleteExaminationPeriod()}' onclick="return confirmDelete();"/>
+				</s:if>
+				<s:submit name='op' value='%{#msg.actionBackToExaminationPeriods()}'/>
 			</TD>
 		</TR>
 	</TABLE>
-	</logic:equal>
+	</s:else>
 <BR>
-</logic:notEqual>
-<logic:equal name="examPeriodEditForm" property="op" value="List">
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+</s:if><s:else>
+<table class="unitime-MainTable">
 	<TR>
 		<TD colspan='8'>
 			<tt:section-header>
-				<tt:section-title>Examination Periods</tt:section-title>
-				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
-				<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
-					<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
-						<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for exams"/>
-					</logic:equal>
-				</logic:iterate>
+				<tt:section-title><loc:message name="sectExaminationPeriods"/></tt:section-title>
+				<s:submit name='op' value='%{#msg.actionAddExaminationPeriod()}'
+					title="%{#msg.titleAddExaminationPeriod()}"/>
+				<s:iterator value="#request.examTypes" var="type">
+					<s:if test="form.getCanAutoSetup(#type.uniqueId) == true">
+						<s:submit name='op' value='%{#msg.actionSetupExaminationPeriods(#type.label)}'
+							title='%{#msg.titleSetupExaminationPeriods(#type.label)}'/>
+					</s:if>
+				</s:iterator>
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%= request.getAttribute("ExamPeriods.table") %>
+	<s:property value="examPeriods" escapeHtml="false"/>
 	<TR>
 		<TD colspan='8'>
 			<tt:section-title/>
@@ -419,20 +401,22 @@
 	</TR>
 	<TR>
 		<TD colspan='8' align="right">
-			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
-			<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
-				<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
-					<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for exams"/>
-				</logic:equal>
-			</logic:iterate>
+				<s:submit name='op' value='%{#msg.actionAddExaminationPeriod()}'
+					title="%{#msg.titleAddExaminationPeriod()}"/>
+				<s:iterator value="#request.examTypes" var="type">
+					<s:if test="form.getCanAutoSetup(#type.uniqueId) == true">
+						<s:submit name='op' value='%{#msg.actionSetupExaminationPeriods(#type.label)}'
+							title='%{#msg.titleSetupExaminationPeriods(#type.label)}'/>
+					</s:if>
+				</s:iterator>
 		</TD>
 	</TR>
-	<% if (request.getAttribute("hash") != null) { %>
-		<SCRIPT type="text/javascript" language="javascript">
-			location.hash = '<%=request.getAttribute("hash")%>';
-		</SCRIPT>
-	<% } %>
 </TABLE>
-</logic:equal>
-
-</html:form>
+</s:else>
+<s:if test="#request.hash != null">
+	<SCRIPT type="text/javascript">
+		location.hash = '<%=request.getAttribute("hash")%>';
+	</SCRIPT>
+</s:if>
+</s:form>
+</loc:bundle>

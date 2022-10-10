@@ -197,34 +197,4 @@
    	<definition	name="deptStatusTypeEditTile" extends="deptStatusTypeListTile">
 		<put name="title" type="string" value="Edit Status Type"/>
   	</definition>
-
-   	<definition	name="userListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Users (Database Authentication)"/>
-		<put name="body" value="/admin/userEdit.jsp" />
-  	</definition>
-
-   	<definition	name="userAddTile" extends="userListTile">
-		<put name="title" type="string" value="Add User"/>
-  	</definition>
-
-   	<definition	name="userEditTile" extends="userListTile">
-		<put name="title" type="string" value="Edit User"/>
-  	</definition>
-
-  	<definition name="examPeriodsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Examination Periods"/>
-		<put name="body" value="/admin/examPeriods.jsp" />
-  	</definition>
-
-  	<definition name="addExamPeriodTile" extends="examPeriodsTile">
-		<put name="title" type="string" value="Add Examination Period"/>
-  	</definition>
-
-  	<definition name="editExamPeriodTile" extends="examPeriodsTile">
-		<put name="title" type="string" value="Edit Examination Period"/>
-  	</definition>
-
-  	<definition name="midtermExamPeriodTile" extends="examPeriodsTile">
-		<put name="title" type="string" value="Setup Examination Periods"/>
-  	</definition>
 </tiles-definitions>
