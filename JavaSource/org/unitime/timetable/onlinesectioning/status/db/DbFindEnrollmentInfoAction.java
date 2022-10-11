@@ -1505,7 +1505,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				else if ("disc".equalsIgnoreCase(term) || "discourage".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
 					return student().getModalityPreference() == ModalityPreference.ONILNE_DISCOURAGED;
 				else if ("no".equalsIgnoreCase(term) || "no-preference".equalsIgnoreCase(term))
-					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+					return student().getModalityPreference() == ModalityPreference.NO_PREFERENCE;
 			}
 			
 			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
@@ -2134,6 +2134,22 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					return student().getAdvisorCourseRequests().isEmpty();
 				}
 				return true;
+			} else if ("btb".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_PREFERRED;
+				else if ("disc".equalsIgnoreCase(term) || "discourage".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_DISCOURAGED;
+				else
+					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+			} else if ("online".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_PREFERRED;
+				else if ("require".equalsIgnoreCase(term) || "required".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_REQUIRED;
+				else if ("disc".equalsIgnoreCase(term) || "discourage".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONILNE_DISCOURAGED;
+				else if ("no".equalsIgnoreCase(term) || "no-preference".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.NO_PREFERENCE;
 			} else if (attr != null) {
 				for (StudentGroup group: student().getGroups())
 					if (group.getType() != null && eq(group.getType().getReference(), attr.replace('_', ' ')) && eq(group.getGroupAbbreviation(), term)) return true;

@@ -1197,7 +1197,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				else if ("disc".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
 					return student().getModalityPreference() == ModalityPreference.ONILNE_DISCOURAGED;
 				else if ("no".equalsIgnoreCase(term) || "no-preference".equalsIgnoreCase(term))
-					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+					return student().getModalityPreference() == ModalityPreference.NO_PREFERENCE;
 			}
 
 			if ("online".equals(attr) || "face-to-face".equals(attr) || "f2f".equals(attr) || "no-time".equals(attr) || "has-time".equals(attr)) {
@@ -1894,6 +1894,22 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return !student().hasAdvisorRequests();
 				}
 				return true;
+			} else if ("btb".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_PREFERRED;
+				else if ("disc".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getBackToBackPreference() == BackToBackPreference.BTB_DISCOURAGED;
+				else
+					return student().getBackToBackPreference() == BackToBackPreference.NO_PREFERENCE;
+			} else if ("online".equals(attr)) {
+				if ("prefer".equalsIgnoreCase(term) || "preferred".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_PREFERRED;
+				else if ("require".equalsIgnoreCase(term) || "required".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONLINE_REQUIRED;
+				else if ("disc".equalsIgnoreCase(term) || "discouraged".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.ONILNE_DISCOURAGED;
+				else if ("no".equalsIgnoreCase(term) || "no-preference".equalsIgnoreCase(term))
+					return student().getModalityPreference() == ModalityPreference.NO_PREFERENCE;
 			} else if (attr != null) {
 				for (XStudent.XGroup group: student().getGroups())
 					if (eq(group.getType(), attr.replace('_', ' ')) && eq(group.getAbbreviation(), term)) return true;
