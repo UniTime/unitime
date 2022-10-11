@@ -133,6 +133,10 @@ public class EduNavPlansProvider implements DegreePlansProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("edunav.fallbackCombine"));
 	}
 	
+	public String getEduNavIncludePlanContent() {
+		return ApplicationProperties.getProperty("edunav.includePlanContent", "true");
+	}
+	
 	protected String getBannerId(XStudentId student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -298,6 +302,7 @@ public class EduNavPlansProvider implements DegreePlansProvider {
 				resource = new ClientResource(getEduNavApiSite());
 				resource.setNext(iClient);
 				resource.addQueryParameter("studentId", studentId);
+				resource.addQueryParameter("includePlanContent", getEduNavIncludePlanContent());
 				Series<Header> headers = (Series<Header>)resource.getRequestAttributes().get(HeaderConstants.ATTRIBUTE_HEADERS);
 				if (headers == null) {
 					headers = new Series<>(Header.class);
