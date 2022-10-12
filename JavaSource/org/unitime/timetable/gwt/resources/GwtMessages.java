@@ -3875,6 +3875,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageEditBuilding();
 	
+	@DefaultMessage("Solution Information Definition")
+	@DoNotTranslate
+	String pageSolverInfoDef();
+	
+	@DefaultMessage("Solution Information Definitions")
+	@DoNotTranslate
+	String pageSolverInfoDefs();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
