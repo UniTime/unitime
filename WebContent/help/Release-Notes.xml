@@ -36,6 +36,14 @@
 					UniTime 4.7 includes various improvements in wait-listing,
 					including the ability to swap a course or wait-list for a different section of a course that the student is already enrolled in.
 				</line>
+				<line>
+					Also, there is a new Wait-List Preferences dialog that provides additional options to the student, including setting up a swap or
+					providing section requirements.
+				</line>
+				<line>
+					The course re-scheduling (automatic updates to student schedules after the course change) has been updated and
+					made more robust. It also currently only triggers on courses that allow for wait-listing while the wait-listing is enabled.
+				</line>
 			</description>
 		</item>
 		<item>
@@ -45,6 +53,28 @@
 					UniTime 4.7 includes various improvements in student scheduling,
 					including the ability for a student to indicate whether he/she prefers dense vs sparse schedule or online vs face-to-face classes.
 				</line>
+				<line>
+					When enabled, a student may also require only online classes, or limit the days during which he/she can attend classes.
+					<line>
+						This is to better support Summer (or similar) sessions that contain multiple optional modules,
+						and where students may be allowed to take some courses while not being present at the campus. 
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Override Requests: Course-specific Notes</name>
+			<description>
+				<line>Requests Override dialog updated to allow for course-specific notes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Request Priorities</name>
+			<description>
+				<line>A new course request priority named Vital has been added.
+					<line>The scale is now Critical &gt; Vital &gt; Important &gt; No Priority</line>
+				</line>
+				<line>Advisors can now set the course request priority separately from no-subs/wait-list toggle.</line>
 			</description>
 		</item>
 	</category>
@@ -79,6 +109,21 @@
 					</line>
 				</line>
 				<line>Added support for conflict checking in the events, and for the computation and display of conflicting events.</line>
+			</description>
+		</item>
+		<item>
+			<name>Timetable Grid: Class Filter</name>
+			<description>
+				<line>Added ability to filter classes that will be listed on the Timetable page.</line>
+				<line>Enable by setting unitime.timeGrid.classFilter to true in the Application Configuration.</line>
+				<line>The filter may contain a boolean expression (for example: ALG or BIOL or C S).</line>
+				<line>The following tags are supported:
+					<line>without any tags, both class name and instructor name are matched</line>
+					<line>class: match class name only</line>
+					<line>instructor: match instructor name or external id only</line>
+					<line>room: match assigned room</line>
+					<line>limit: match class limit (e.g., limit:>100 for classes over 100)</line>
+				</line>
 			</description>
 		</item>
 	</category>
