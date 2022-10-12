@@ -1334,6 +1334,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("OVERLAP".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -1349,6 +1350,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							ch.operation = ChangeOperation.ADD;
 							req.changes.add(ch);
 							overrides.remove(subject + " " + courseNbr);
+							for (CourseMessage m: request.getConfirmations()) {
+								if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && course.getCourseName().equals(m.getCourse())) {
+									ch.requestorNotes = m.getMessage();
+								}
+							}
 						}
 					}
 				}
