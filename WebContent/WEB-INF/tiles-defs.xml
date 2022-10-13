@@ -108,19 +108,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
  
-	<definition	name="solverParamGroupsTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver Parameter Groups"/>
-		<put name="body" value="/admin/solverParamGroups.jsp" />
-  	</definition>
-
-	<definition	name="solverParamGroupsAddTile" extends="solverParamGroupsTile">
-		<put name="title" type="string" value="Add Solver Parameter Group"/>
-  	</definition>
-
-	<definition	name="solverParamGroupsEditTile" extends="solverParamGroupsTile">
-		<put name="title" type="string" value="Edit Solver Parameter Group"/>
-  	</definition>
-
 	<definition	name="solverParamDefTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Parameters"/>
 		<put name="body" value="/admin/solverParamDef.jsp" />

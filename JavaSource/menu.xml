@@ -852,7 +852,8 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Parameter Groups" page="solverParamGroups.do">
+			<item name="Parameter Groups" page="admin" type="gwt">
+				<parameter name="type">solverParamGroup</parameter>
 				<condition>
 					<hasPermission name="SolverParameterGroups"/>
 				</condition>
