@@ -52,6 +52,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		LAZY,
 		NO_CYCLE,
 		NO_DETAIL,
+		NO_LIST,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -98,8 +99,9 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	public List<Record> getRecords() { return iRecords; }
 	public Record addRecord(Long uniqueId, boolean deletable) {
 		Record r = new Record(uniqueId, iFields.length, deletable);
-		for (int i = 0; i < iFields.length; i++)
-			if (!iFields[i].isEditable()) r.setField(i, null, false);
+		for (int i = 0; i < iFields.length; i++) {
+			r.setField(i, iFields[i].getDefault(), iFields[i].isEditable());
+		}
 		iRecords.add(r);
 		return r;
 	}
@@ -130,7 +132,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	public List<Record> getNewRecords() {
 		List<Record> ret = new ArrayList<Record>();
 		for (Record r: iRecords) {
-			if (r.getUniqueId() != null || r.isEmpty()) continue;
+			if (r.getUniqueId() != null || r.isEmpty(this)) continue;
 			ret.add(r);
 		}
 		return ret;
@@ -298,11 +300,24 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		}
 		
 		public boolean isEmpty() {
-			if (getUniqueId() != null) return false;
-			for (String v: iValues) {
-				if (v != null && !v.isEmpty()) return false;
+			return isEmpty(null);
+		}
+		
+		public boolean isEmpty(SimpleEditInterface data) {
+			if (data == null) {
+				if (getUniqueId() != null) return false;
+				for (String v: iValues) {
+					if (v != null && !v.isEmpty()) return false;
+				}
+				return true;
+			} else {
+				for (int i = 0; i < data.getFields().length; i++) {
+					String v = getField(i);
+					if (v != null && !v.isEmpty() && !v.equals(data.getFields()[i].getDefault()))
+						return false;
+				}
+				return true;
 			}
-			return true;
 		}
 		
 		public boolean isDeletable() { return iDeletable; }
@@ -367,6 +382,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		private FieldType iType = null;
 		private int iLength = 0, iWidth = 0, iHeight = 1, iFlags = 0;
 		private List<ListItem> iValues = null;
+		private String iDefault;
 		
 		public Field() {}
 		
@@ -395,12 +411,18 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			iValues = values;
 		}
 		
+		public Field withDefault(String defaultValue) {
+			iDefault = defaultValue;
+			return this;
+		}
+		
 		public String getName() { return iName; }
 		public FieldType getType() { return iType; }
 		public int getLength() { return iLength; }
 		public int getWidth() { return iWidth; }
 		public int getHeight() { return iHeight; }
 		public List<ListItem> getValues() { return iValues; }
+		public String getDefault() { return iDefault; }
 		public void addValue(ListItem item) {
 			if (iValues == null) iValues = new ArrayList<ListItem>();
 			iValues.add(item);
@@ -418,6 +440,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isLazy() { return Flag.LAZY.has(iFlags); }
 		public boolean isNoCycle() { return Flag.NO_CYCLE.has(iFlags); }
 		public boolean isNoDetail() { return Flag.NO_DETAIL.has(iFlags); }
+		public boolean isNoList() { return Flag.NO_LIST.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();

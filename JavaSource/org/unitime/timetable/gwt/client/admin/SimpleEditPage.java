@@ -78,7 +78,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.TextAlign;
+import com.google.gwt.dom.client.Style.TextOverflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -559,7 +561,7 @@ public class SimpleEditPage extends Composite {
 					public void execute() {
 						iSimple.setWidget(iPanel);
 						record.copyFrom(backup);
-						if (record.isEmpty())
+						if (record.isEmpty(iData))
 							iData.getRecords().remove(record);
 						iEditable = false;
 						iSimple.setWidget(iPanel);
@@ -1041,14 +1043,17 @@ public class SimpleEditPage extends Composite {
 		
 		if (iVisible == null) {
 			iVisible = new boolean[iData.getFields().length];
-			for (int i = 0; i < iVisible.length; i++) iVisible[i] = iData.getFields()[i].isVisible() && (hidden == null || !hidden.contains("|" + iData.getFields()[i].getName() + "|"));
+			for (int i = 0; i < iVisible.length; i++)
+				iVisible[i] = iData.getFields()[i].isVisible() &&
+					(hidden == null || !hidden.contains("|" + iData.getFields()[i].getName() + "|")) &&
+					!iData.getFields()[i].isNoList();
 		}
 		
 		boolean empty = false;
 		int row = 1;
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
-			empty = r.isEmpty();
+			empty = r.isEmpty(iData);
 			if ((row % 31) == 0 && !hasDetails() && !iData.isCanMoveUpAndDown()) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
@@ -1218,6 +1223,7 @@ public class SimpleEditPage extends Composite {
 					text.setMaxLength(field.getLength());
 					text.setText(record.getField(index));
 					text.setWidth(field.getWidth() + "px");
+					if (!detail) text.getElement().getStyle().setProperty("max-width", "20vw");
 					text.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -1599,10 +1605,19 @@ public class SimpleEditPage extends Composite {
 				case textarea:
 					HTML html = new HTML(getValue());
 					html.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
+					html.getElement().getStyle().setProperty("max-width", (10*field.getWidth())+ "px");
+					html.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					html.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
+					html.setTitle(getValue());
 					initWidget(html);
 					break;
 				default:
 					Label label = new Label(getValue());
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.NORMAL);
+					label.getElement().getStyle().setProperty("max-width", field.getWidth()+ "px");
+					label.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					label.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
+					label.setTitle(getValue());
 					initWidget(label);
 					if (field.getType() == FieldType.number)
 						label.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -1768,7 +1783,7 @@ public class SimpleEditPage extends Composite {
 		Map<Integer, Map<String, String>> fallbackMap = new HashMap<Integer, Map<String, String>>();
 		for (int row = 0; row < iTable.getRowCount(); row++) {
 			SimpleEditInterface.Record record = iTable.getData(row);
-			if (record == null || record.isEmpty()) continue;
+			if (record == null || record.isEmpty(iData)) continue;
 			if (detailRecord != null && detailRecord.getUniqueId() != null && detailRecord.getUniqueId().equals(record.getUniqueId())) continue;
 			for (int col = 0; col < iData.getFields().length; col ++) {
 				Field field = iData.getFields()[col];
