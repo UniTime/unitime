@@ -3883,6 +3883,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSolverInfoDefs();
 	
+	@DefaultMessage("Solver Parameter Group")
+	@DoNotTranslate
+	String pageSolverParamGroup();
+	
+	@DefaultMessage("Solver Parameter Groups")
+	@DoNotTranslate
+	String pageSolverParamGroups();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -7524,4 +7532,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to un-master this server?")
 	String confirmOnlineUnMaster();
+	
+	@DefaultMessage("Move this record up.")
+	String titleMoveUp();
+	
+	@DefaultMessage("Move this record down.")
+	String titleMoveDown();
+	
+	@DefaultMessage("Order")
+	String colOrder();
 }

@@ -126,7 +126,8 @@ public class SimpleEditPage extends Composite {
 	private PageName iPageName = null;
 	private UniTimeTable<Record> iTable;
 	private boolean iHasLazy = false;
-	
+	private Integer iOrderColumn = null;
+
 	private SimpleEditInterface iData;
 	private SimplePanel iSimple;
 	
@@ -294,6 +295,7 @@ public class SimpleEditPage extends Composite {
 
 			@Override
 			public void onDataMoved(List<DataChangedEvent<Record>> event) {
+				fixOrderArrows();
 				timer.schedule(5000);
 			}
 
@@ -762,7 +764,7 @@ public class SimpleEditPage extends Composite {
 	private List<UniTimeTableHeader> header(boolean top) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		int col = 0;
-		iHasLazy = false; 
+		iHasLazy = false;
 		for (final Field field: iData.getFields()) {
 			if (field.isLazy()) iHasLazy = true;
 			String name = field.getName();
@@ -869,7 +871,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public boolean isApplicable() {
-						return true;
+						return iData.isAllowSort();
 					}
 					
 					@Override
@@ -892,7 +894,7 @@ public class SimpleEditPage extends Composite {
 						
 						@Override
 						public boolean isApplicable() {
-							return true;
+							return iData.isAllowSort();
 						}
 						
 						@Override
@@ -1011,6 +1013,13 @@ public class SimpleEditPage extends Composite {
 				col ++;
 			}
 		}
+		iOrderColumn = null;
+		if (iData.isEditable() && iEditable) {
+			if (iData.isCanMoveUpAndDown()) {
+				iOrderColumn = col;
+				header.add(new UniTimeTableHeader(MESSAGES.colOrder(), 2));
+			}
+		}
 		if (iData.isEditable() && iEditable) {
 			header.add(new UniTimeTableHeader());
 			header.add(new UniTimeTableHeader());
@@ -1040,10 +1049,11 @@ public class SimpleEditPage extends Composite {
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
 			empty = r.isEmpty();
-			if ((row % 31) == 0 && !hasDetails()) { iTable.addRow(null, header(false)); row++; }
+			if ((row % 31) == 0 && !hasDetails() && !iData.isCanMoveUpAndDown()) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);
+		fixOrderArrows();
 		
 		iBottom.setVisible(true);
 		if (iData.isEditable()) {
@@ -1066,12 +1076,70 @@ public class SimpleEditPage extends Composite {
 		iHeader.clearMessage();
 	}
 	
+	protected void fixOrderArrows() {
+		if (iOrderColumn == null) return;
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			if (iTable.getData(row) == null) continue;
+			Widget up = iTable.getWidget(row, iOrderColumn);
+			if (up != null && up instanceof Image) {
+				up.setVisible(iTable.canMoveUp(row));
+			}
+			Widget down = iTable.getWidget(row, iOrderColumn + 1);
+			if (down != null && down instanceof Image) {
+				down.setVisible(iTable.canMoveDown(row));
+			}
+		}
+	}
+	
+	protected void fixOrderArrows(Integer row) {
+		if (iOrderColumn == null) return;
+		for (int idx = -1; idx <= 1; idx++) {
+			if (iTable.getData(row + idx) == null) continue;
+			Widget up = iTable.getWidget(row + idx, iOrderColumn);
+			if (up != null && up instanceof Image) {
+				up.setVisible(iTable.canMoveUp(row + idx));
+			}
+			Widget down = iTable.getWidget(row + idx, iOrderColumn + 1);
+			if (down != null && down instanceof Image) {
+				down.setVisible(iTable.canMoveDown(row + idx));
+			}
+		}
+	}
+	
 	private void fillRow(Record record, int row) {
 		List<Widget> line = new ArrayList<Widget>();
 		int col = 0;
 		for (Field field: iData.getFields()) {
 			MyCell cell = new MyCell(iData.isEditable() && iEditable && record.isEditable(col), field, record, col, false);
 			line.add(cell);
+			col++;
+		}
+		if (iEditable && iData.isCanMoveUpAndDown()) {
+			final Image up = new Image(RESOURCES.orderUp());
+			up.getElement().getStyle().setCursor(Cursor.POINTER);
+			up.setTitle(MESSAGES.titleMoveUp());
+			up.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					int row = iTable.getRowForWidget(up);
+					iTable.moveUp(row, true);
+					fixOrderArrows(row);
+				}
+			});
+			line.add(up);
+			col++;
+			final Image down = new Image(RESOURCES.orderDown());
+			down.getElement().getStyle().setCursor(Cursor.POINTER);
+			down.setTitle(MESSAGES.titleMoveDown());
+			down.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					int row = iTable.getRowForWidget(down);
+					iTable.moveDown(row, true);
+					fixOrderArrows(row);
+				}
+			});
+			line.add(down);
 			col++;
 		}
 		if (iData.isAddable() && iEditable) {
@@ -1083,6 +1151,7 @@ public class SimpleEditPage extends Composite {
 				public void onClick(ClickEvent event) {
 					int row = iTable.getCellForEvent(event).getRowIndex();
 					fillRow(iData.addRecord(null), iTable.insertRow(row));
+					fixOrderArrows(row);
 				}
 			});
 			line.add(add);
@@ -1099,6 +1168,7 @@ public class SimpleEditPage extends Composite {
 					int row = iTable.getCellForEvent(event).getRowIndex();
 					iData.getRecords().remove(iTable.getData(row));
 					iTable.removeRow(row);
+					fixOrderArrows(row);
 				}
 			});
 			line.add(delete);
@@ -1160,8 +1230,10 @@ public class SimpleEditPage extends Composite {
 						text.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1189,8 +1261,10 @@ public class SimpleEditPage extends Composite {
 						textarea.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1214,8 +1288,10 @@ public class SimpleEditPage extends Composite {
 						number.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}	
 							}
 						});
 					}
@@ -1245,8 +1321,10 @@ public class SimpleEditPage extends Composite {
 						list.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1279,8 +1357,10 @@ public class SimpleEditPage extends Composite {
 						multi.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<List<String>> event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1301,8 +1381,10 @@ public class SimpleEditPage extends Composite {
 						check.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1444,8 +1526,10 @@ public class SimpleEditPage extends Composite {
 						date.addValueChangeHandler(new ValueChangeHandler<Date>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Date> event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}
@@ -1465,8 +1549,10 @@ public class SimpleEditPage extends Composite {
 						time.addValueChangeHandler(new ValueChangeHandler<Integer>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Integer> event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
 							}
 						});
 					}

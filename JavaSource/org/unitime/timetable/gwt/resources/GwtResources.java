@@ -116,4 +116,10 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/cancel.png")
 	ImageResource cancel();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_up.png")
+	ImageResource orderUp();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_down.png")
+	ImageResource orderDown();
 }

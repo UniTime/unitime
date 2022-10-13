@@ -61,7 +61,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	// private Type iType = null;
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
-	private boolean iEditable = true, iAddable = true, iSaveOrder = true;
+	private boolean iEditable = true, iAddable = true, iSaveOrder = true, iCanMoveUpAndDown = false, iAllowSort = true;
 	private int[] iSort = null;
 	private Long iSessionId = null;
 	private String iSessionName = null;
@@ -76,6 +76,12 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public boolean isSaveOrder() { return iSaveOrder; }
 	public void setSaveOrder(boolean saveOrder) { iSaveOrder = saveOrder; } 
+	
+	public boolean isCanMoveUpAndDown() { return iCanMoveUpAndDown; }
+	public void setCanMoveUpAndDown(boolean canMoveUpAndDown) { iCanMoveUpAndDown = canMoveUpAndDown; }
+	
+	public boolean isAllowSort() { return iAllowSort; }
+	public void setAllowSort(boolean allowSort) { iAllowSort = allowSort; }
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
@@ -206,6 +212,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		private String[] iValues = null;
 		private boolean[] iEditable = null;
 		private boolean iDeletable = true;
+		private Integer iOrder = null;
 		
 		public Record() {
 		}
@@ -328,6 +335,9 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			}
 			return r;
 		}
+		
+		public Integer getOrder() { return iOrder; }
+		public void setOrder(Integer order) { iOrder = order; }
 	}
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {

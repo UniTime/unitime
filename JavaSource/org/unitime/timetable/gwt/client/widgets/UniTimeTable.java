@@ -478,6 +478,58 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		return true;
 	}
 	
+	public boolean canMoveUp(int row) {
+		SmartTableRow<T> r = getSmartRow(row);
+		SmartTableRow<T> up = getSmartRow(row - 1);
+		return r != null && r.getData() != null && up != null && up.getData() != null && canSwapRows(r.getData(), up.getData());
+	}
+	
+	public boolean moveUp(int row, boolean fireEvents) {
+		SmartTableRow<T> r = getSmartRow(row);
+		SmartTableRow<T> up = getSmartRow(row - 1);
+		if (r != null && r.getData() != null && up != null && up.getData() != null && canSwapRows(r.getData(), up.getData())) {
+			getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+			getRowFormatter().removeStyleName(row - 1, "unitime-TableRowHover");
+			swapRows(row - 1, row);
+			if (fireEvents && !iDataChangedListeners.isEmpty()) {
+				List<DataChangedEvent<T>> e = new ArrayList<DataChangedEvent<T>>();
+				e.add(new DataChangedEvent<T>(up.getData(), row));
+				e.add(new DataChangedEvent<T>(r.getData(), row - 1));
+				for (DataChangedListener<T> listener: iDataChangedListeners) {
+					listener.onDataMoved(e);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean canMoveDown(int row) {
+		SmartTableRow<T> r = getSmartRow(row);
+		SmartTableRow<T> dn = getSmartRow(row + 1);
+		return r != null && r.getData() != null && dn != null && dn.getData() != null && canSwapRows(r.getData(), dn.getData());
+	}
+	
+	public boolean moveDown(int row, boolean fireEvents) {
+		SmartTableRow<T> r = getSmartRow(row);
+		SmartTableRow<T> dn = getSmartRow(row + 1);
+		if (r != null && r.getData() != null && dn != null && dn.getData() != null && canSwapRows(r.getData(), dn.getData())) {
+			getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+			getRowFormatter().removeStyleName(row + 1, "unitime-TableRowHover");
+			swapRows(row + 1, row);
+			if (fireEvents && !iDataChangedListeners.isEmpty()) {
+				List<DataChangedEvent<T>> e = new ArrayList<DataChangedEvent<T>>();
+				e.add(new DataChangedEvent<T>(dn.getData(), row));
+				e.add(new DataChangedEvent<T>(r.getData(), row + 1));
+				for (DataChangedListener<T> listener: iDataChangedListeners) {
+					listener.onDataMoved(e);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	public void onBrowserEvent(final Event event) {
 		Element td = getEventTargetCell(event);
 		if (td==null) return;
