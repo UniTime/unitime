@@ -104,7 +104,7 @@ public class RoomTypes implements AdminTable {
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		int ord = 0;
 		for (Record r: data.getRecords()) {
-			if (r.isEmpty()) continue;
+			if (r.isEmpty(data)) continue;
 			r.setOrder(ord++);
 		}
 		for (RoomType type: RoomType.findAll()) {

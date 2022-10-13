@@ -104,7 +104,7 @@ public class Loggers implements AdminTable {
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		Map<String, SimpleEditInterface.Record> records = new HashMap<String, SimpleEditInterface.Record>();
 		for (Record r: data.getRecords()) {
-			if (r.isEmpty()) continue;
+			if (r.isEmpty(data)) continue;
 			boolean root = r.getUniqueId() != null && r.getUniqueId() == 0;
 			if (root) {
 				update(r, context, hibSession);

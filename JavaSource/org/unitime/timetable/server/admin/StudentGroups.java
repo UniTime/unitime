@@ -97,12 +97,16 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
 			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
 		}
+		String defaultType = null;
+		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
+			defaultType = filter[0];
+		}
 		boolean lazy = ApplicationProperty.AdminStudentGroupsLazyStudents.isTrue();
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
 				new Field(MESSAGES.fieldCode(), FieldType.text, 200, 30, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 500, 90, Flag.UNIQUE),
-				new Field(MESSAGES.fieldStudentGroupType(), FieldType.list, 100, types),
+				new Field(MESSAGES.fieldStudentGroupType(), FieldType.list, 100, types).withDefault(defaultType),
 				new Field(MESSAGES.fieldExpectedSize(), FieldType.number, 80, 10),
 				(lazy ? new Field(MESSAGES.fieldStudents(), FieldType.students, 200, Flag.LAZY) : new Field(MESSAGES.fieldStudents(), FieldType.students, 200)));
 		data.setSortBy(1,2);

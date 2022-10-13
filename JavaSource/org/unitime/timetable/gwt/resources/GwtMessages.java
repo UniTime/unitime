@@ -3891,6 +3891,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSolverParamGroups();
 	
+	@DefaultMessage("Solver Parameter")
+	@DoNotTranslate
+	String pageSolverParam();
+	
+	@DefaultMessage("Solver Parameters")
+	@DoNotTranslate
+	String pageSolverParams();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -7541,4 +7549,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Order")
 	String colOrder();
+	
+	@DefaultMessage("Students: {0}")
+	String solverSolverParameterGroupStudents(String group);
+	
+	@DefaultMessage("Examinations: {0}")
+	String solverSolverParameterGroupExams(String group);
+	
+	@DefaultMessage("Courses: {0}")
+	String solverSolverParameterGroupCourses(String group);
+	
+	@DefaultMessage("Instructors: {0}")
+	String solverSolverParameterGroupInstructors(String group);
+	
+	@DefaultMessage("Group")
+	String fieldSolverParameterGroup();
 }

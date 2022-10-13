@@ -143,6 +143,7 @@ public class AdminExportToCSV implements Exporter {
 			
 			for (int i = 0; i < data.getFields().length; i++) {
 				boolean visible = data.getFields()[i].isVisible() && (hidden == null || !hidden.contains("|" + data.getFields()[i].getName() + "|"));
+				if (data.getFields()[i].isNoList()) visible = false;
 				if (!visible)
 					out.hideColumn(i);
 			}

@@ -858,7 +858,8 @@
 					<hasPermission name="SolverParameterGroups"/>
 				</condition>
 			</item>
-			<item name="Parameters" page="solverParamDef.do">
+			<item name="Parameters" page="admin" type="gwt">
+				<parameter name="type">solverParamDef</parameter>
 				<condition>
 					<hasPermission name="SolverParameters"/>
 				</condition>

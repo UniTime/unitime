@@ -89,9 +89,14 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 		types.add(new ListItem(String.valueOf(SolverType.STUDENT.ordinal()), MESSAGES.solverStudent()));
 		types.add(new ListItem(String.valueOf(SolverType.INSTRUCTOR.ordinal()), MESSAGES.solverInstructor()));
 		
+		String defaultType = null;
+		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
+			defaultType = filter[0];
+		}
+
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldReference(), FieldType.text, 300, 100, Flag.UNIQUE, Flag.NOT_EMPTY),
-				new Field(MESSAGES.fieldType(), FieldType.list, 200, types, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldType(), FieldType.list, 200, types, Flag.NOT_EMPTY).withDefault(defaultType),
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 1000, Flag.NOT_EMPTY)
 				);
 		data.setSaveOrder(false);
@@ -140,7 +145,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 	@PreAuthorize("checkPermission('SolverParameterGroups')")
 	public void save(String[] filter, SimpleEditInterface data, SessionContext context, Session hibSession) {
 		Set<Integer> ords = new HashSet<Integer>();
-		if (filter != null && filter[0] != null && !filter[0].isEmpty()) {
+		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
 			for (SolverParameterGroup group: (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
 					"from SolverParameterGroup where type != :type"
 					).setInteger("type", Integer.valueOf(filter[0])).list()) {
@@ -148,7 +153,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 			}
 		}
 		for (Record r: data.getRecords()) {
-			if (r.isEmpty()) continue;
+			if (r.isEmpty(data)) continue;
 			r.setOrder(nextOrd(ords));
 		}
 		for (SolverParameterGroup group: getSolverParameterGroups(filter, context)) {

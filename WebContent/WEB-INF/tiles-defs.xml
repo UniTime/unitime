@@ -108,19 +108,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
  
-	<definition	name="solverParamDefTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Solver Parameters"/>
-		<put name="body" value="/admin/solverParamDef.jsp" />
-  	</definition>
-
-	<definition	name="solverParamDefAddTile" extends="solverParamDefTile">
-		<put name="title" type="string" value="Add Solver Parameter"/>
-  	</definition>
-
-	<definition	name="solverParamDefEditTile" extends="solverParamDefTile">
-		<put name="title" type="string" value="Edit Solver Parameter"/>
-  	</definition>
-
 	<definition	name="solverSettingsTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Solver Configurations"/>
 		<put name="body" value="/admin/solverSettings.jsp" />
