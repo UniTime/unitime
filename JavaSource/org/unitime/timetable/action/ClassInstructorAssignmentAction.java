@@ -23,6 +23,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -113,8 +114,11 @@ public class ClassInstructorAssignmentAction extends UniTimeAction<ClassInstruct
         
         sessionContext.checkPermission(ioc, Right.AssignInstructors);
 
-        ArrayList instructors = new ArrayList(ioc.getDepartment().getInstructors());
-	    Collections.sort(instructors, new DepartmentalInstructorComparator());
+        List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>(ioc.getDepartment().getInstructors());
+        if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+        	Collections.sort(instructors, new DepartmentalInstructorComparator(UserProperty.NameFormat.get(sessionContext.getUser())));
+        else
+        	Collections.sort(instructors, new DepartmentalInstructorComparator());
         request.setAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME, instructors);
         LookupTables.setupInstructorTeachingResponsibilities(request);
 
@@ -280,7 +284,7 @@ public class ClassInstructorAssignmentAction extends UniTimeAction<ClassInstruct
 	    	Class_ cls = null;
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
-	    		form.addToClasses(cls, !sessionContext.hasPermission(cls, Right.AssignInstructorsClass), indent);
+	    		form.addToClasses(cls, !sessionContext.hasPermission(cls, Right.AssignInstructorsClass), indent, getNameFormat());
 	    		loadClasses(form, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
 	    	}
     	}

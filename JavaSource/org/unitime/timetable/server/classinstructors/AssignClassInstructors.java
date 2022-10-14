@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +62,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
+import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -112,14 +112,18 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 			case CLASS_EXTERNAL_UID : return new Field(MESSAGES.fieldExternalId(), FieldType.textarea, 120, Flag.READ_ONLY);
 			case ADD : return new Field(MESSAGES.fieldAdd(), FieldType.add, 40, Flag.HIDE_LABEL);
 			case DELETE : return new Field(MESSAGES.fieldDelete(), FieldType.delete, 40, Flag.HIDE_LABEL);
-			case INSTR_NAME : 			
+			case INSTR_NAME :
+					String nf = UserProperty.NameFormat.get(context.getUser());
 			        ArrayList<DepartmentalInstructor> instructorList = new ArrayList<DepartmentalInstructor>(ioc.getDepartment().getInstructors());
-				    Collections.sort(instructorList, new DepartmentalInstructorComparator());
+			        if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+			        	Collections.sort(instructorList, new DepartmentalInstructorComparator(nf));
+			        else
+			        	Collections.sort(instructorList, new DepartmentalInstructorComparator());
 			
 					List<ListItem> instructors = new ArrayList<ListItem>();
 					instructors.add(new ListItem("-1", MESSAGES.itemSelect()));
 					for (DepartmentalInstructor di : instructorList) {
-						instructors.add(new ListItem(di.getUniqueId().toString(), di.getName(UserProperty.NameFormat.get(context.getUser()))));
+						instructors.add(new ListItem(di.getUniqueId().toString(), di.getName(nf)));
 					}
 					return new Field(MESSAGES.fieldName(), FieldType.list, 300, instructors);
 			case PCT_SHARE : return new Field(MESSAGES.fieldPercentShare(), FieldType.number, 60, 40);
@@ -187,7 +191,9 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 
         String coordinators = "";
         String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
-        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(ioc.getInstructionalOffering().getOfferingCoordinators())) {
+        List<OfferingCoordinator> coordinatorList = new ArrayList<OfferingCoordinator>(ioc.getInstructionalOffering().getOfferingCoordinators());
+        Collections.sort(coordinatorList, new OfferingCoordinatorComparator(context));
+        for (OfferingCoordinator coordinator: coordinatorList) {
         	if (!coordinators.isEmpty()) coordinators += "\n";
         	coordinators += coordinator.getInstructor().getName(instructorNameFormat) +
         			(coordinator.getResponsibility() == null ? 
@@ -249,16 +255,16 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
         	}
 
 	    	for(Class_ cls : classesList){
-	    		addClassRecords(data, cls, !context.hasPermission(cls, Right.AssignInstructorsClass), indent);
+	    		addClassRecords(data, cls, !context.hasPermission(cls, Right.AssignInstructorsClass), indent, context);
 	    		loadClasses(data, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", context);
 	    	}
     	}
     }
 	
 	@SuppressWarnings("unchecked")
-	public void addClassRecords(AssignClassInstructorsInterface data, Class_ cls, Boolean isReadOnly, String indent){
+	public void addClassRecords(AssignClassInstructorsInterface data, Class_ cls, Boolean isReadOnly, String indent, SessionContext cx){
 		ArrayList<ClassInstructor> instructors = new ArrayList<ClassInstructor>(cls.getClassInstructors());
-		Collections.sort(instructors, new InstructorComparator());
+		Collections.sort(instructors, new InstructorComparator(cx));
 		ClassInstructor instructor = null;
 		boolean isEditable = !isReadOnly;
 

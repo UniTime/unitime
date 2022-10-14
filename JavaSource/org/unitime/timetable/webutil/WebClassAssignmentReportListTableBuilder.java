@@ -29,6 +29,7 @@ import javax.servlet.jsp.JspWriter;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -173,7 +174,9 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.isDisplayInstructor() && !aClass.getClassInstructors().isEmpty()) {
-            	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    			InstructorComparator ic = new InstructorComparator();
+    	    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(getInstructorNameFormat());
+            	TreeSet sortedInstructors = new TreeSet(ic);
             	sortedInstructors.addAll(aClass.getClassInstructors());
         		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
         			ClassInstructor ci = (ClassInstructor)i.next();

@@ -30,6 +30,7 @@ import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -160,9 +161,11 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
         }
 	}
 
-	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent){
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, String nameFormat){
 		ArrayList instructors = new ArrayList(cls.getClassInstructors());
-		Collections.sort(instructors, new InstructorComparator());
+		InstructorComparator ic = new InstructorComparator();
+    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(nameFormat);
+		Collections.sort(instructors, ic);
 		ClassInstructor instructor = null;
 		int i = 0;
 		do {

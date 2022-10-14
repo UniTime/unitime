@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.server.courses;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -39,6 +41,7 @@ import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
@@ -121,7 +124,9 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.setCourseTypeId(courseOffering.getCourseType().getUniqueId());
 		}
 
-		for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(instructionalOffering.getOfferingCoordinators())) {
+		List<OfferingCoordinator> coordinatorList = new ArrayList<OfferingCoordinator>(instructionalOffering.getOfferingCoordinators());
+        Collections.sort(coordinatorList, new OfferingCoordinatorComparator(context));
+		for (OfferingCoordinator coordinator: coordinatorList) {
 			CoordinatorInterface coordinatorObject = new CoordinatorInterface();
 			coordinatorObject.setInstructorId(coordinator.getInstructor().getUniqueId().toString());
 			coordinatorObject.setPercShare(coordinator.getPercentShare() == null ? "0" : coordinator.getPercentShare().toString());

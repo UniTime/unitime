@@ -33,6 +33,7 @@ import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.CourseCreditFormat;
@@ -63,6 +64,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
+import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -319,10 +321,13 @@ public class LookupTables {
 		q.setCacheable(true);
 		q.setLong("acadSessionId", acadSessionId);
         
-		List result = q.list();
-        Vector v = new Vector(result.size());
-        Vector h = new Vector(result.size());
-        Collections.sort(result);
+		List<DepartmentalInstructor> result = q.list();
+        Vector<ComboBoxLookup> v = new Vector<ComboBoxLookup>(result.size());
+        Vector<Long> h = new Vector<Long>(result.size());
+        if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+        	Collections.sort(result, new DepartmentalInstructorComparator(UserProperty.NameFormat.get(context.getUser())));
+        else
+        	Collections.sort(result, new DepartmentalInstructorComparator());
 	    for (Iterator i=result.iterator();i.hasNext();) {
             DepartmentalInstructor di = (DepartmentalInstructor)i.next();
             String name = di.getName(instructorNameFormat);

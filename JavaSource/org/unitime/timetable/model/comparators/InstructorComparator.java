@@ -21,7 +21,11 @@ package org.unitime.timetable.model.comparators;
 
 import java.util.Comparator;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.NameFormat;
 
 
 /**
@@ -31,60 +35,64 @@ import org.unitime.timetable.model.ClassInstructor;
  *  
  *  @author Heston Fernandes
  */
-public class InstructorComparator implements Comparator {
+public class InstructorComparator implements Comparator<ClassInstructor> {
+	
+	public static enum CompareBy {
+		NAME,
+		LEAD,
+		PCT_SHARE,
+	}
 
-    public final short COMPARE_BY_NAME = 1;
-    public final short COMPARE_BY_LEAD = 2;
-    public final short COMPARE_BY_PCT_SHARE = 3;
-    private short compareBy;
+    private CompareBy iCompareBy = CompareBy.LEAD;
+    private NameFormat iNameFormat = NameFormat.defaultFormat();
     
-    public InstructorComparator() {
-        this.compareBy = COMPARE_BY_NAME;
+    public InstructorComparator() {}
+    
+    public InstructorComparator(SessionContext cx) {
+    	if (cx != null && ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+    		setNameFormat(UserProperty.NameFormat.get(cx.getUser()));
     }
     
-    public void setCompareBy(short compareBy) {
-        this.compareBy = compareBy;
+    public InstructorComparator setCompareBy(CompareBy compareBy) {
+        iCompareBy = compareBy;
+        return this;
+    }
+    
+    public InstructorComparator setNameFormat(NameFormat nf) {
+    	iNameFormat = nf;
+    	return this;
+    }
+    
+    public InstructorComparator setNameFormat(String nf) {
+    	iNameFormat = NameFormat.fromReference(nf);
+    	return this;
     }
     
     public static int compareStrings(String s1, String s2) {
     	return (s1==null?"":s1.toUpperCase()).compareTo(s2==null?"":s2.toUpperCase());
     }
     
-    public int compare(Object o1, Object o2) {
-        
-        // Check if objects are of class Instructional Offering
-        if (!(o1 instanceof ClassInstructor)) {
-            throw new ClassCastException(
-                    "o1 Class must be of type ClassInstructor");
-        }
-        if (!(o2 instanceof ClassInstructor)) {
-            throw new ClassCastException(
-                    "o2 Class must be of type ClassInstructor");
-        }
-
-        ClassInstructor ci1 = (ClassInstructor) o1;
-        ClassInstructor ci2 = (ClassInstructor) o2;
-
+    public int compare(ClassInstructor ci1, ClassInstructor ci2) {
         if (ci1.getUniqueId().equals(ci2.getUniqueId())) return 0;
         
-       	int cmp = Double.compare(ci1.isLead().booleanValue()?0:1,ci2.isLead().booleanValue()?0:1);
-       	if (cmp!=0) return cmp;
-        
-        if (compareBy==COMPARE_BY_LEAD || compareBy==COMPARE_BY_PCT_SHARE) {
-            cmp = ci1.getPercentShare().compareTo(ci1.getPercentShare());
-            if (cmp!=0) return cmp;
+        if (iCompareBy == CompareBy.LEAD && !ci1.isLead().equals(ci2.isLead())) {
+            // lead goes first
+        	return ci1.isLead() ? -1 : 1;
         }
         
-        cmp = compareStrings(ci1.getInstructor().getLastName(),ci2.getInstructor().getLastName());
-        if (cmp!=0) return cmp;
-        cmp = compareStrings(ci1.getInstructor().getFirstName(),ci2.getInstructor().getFirstName());
-        if (cmp!=0) return cmp;
-        cmp = compareStrings(ci1.getInstructor().getMiddleName(),ci2.getInstructor().getMiddleName());
-        if (cmp!=0) return cmp;
+        if ((iCompareBy == CompareBy.LEAD || iCompareBy == CompareBy.PCT_SHARE) && !ci1.getPercentShare().equals(ci2.getPercentShare())) {
+        	// highest share first
+            return ci2.getPercentShare().compareTo(ci1.getPercentShare());
+        }
         
-        cmp = compareStrings(ci1.getResponsibility() == null ? "" : ci1.getResponsibility().getAbbreviation(), ci2.getResponsibility() == null ? "" : ci2.getResponsibility().getAbbreviation());
-        if (cmp!=0) return cmp;
+        int cmp = iNameFormat.format(ci1.getInstructor()).compareToIgnoreCase(iNameFormat.format(ci2.getInstructor()));
+        if (cmp != 0) return cmp;
         
+        // same instructor -> check responsibility
+        cmp = (ci1.getResponsibility() == null ? "" : ci1.getResponsibility().getAbbreviation()).compareToIgnoreCase(ci2.getResponsibility() == null ? "" : ci2.getResponsibility().getAbbreviation());
+        if (cmp != 0) return cmp;
+        
+        // fall back to unique ids
         return ci1.getInstructor().getUniqueId().compareTo(ci2.getInstructor().getUniqueId());
     }
 }

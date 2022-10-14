@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -173,7 +174,9 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.isDisplayInstructor()) {
-            	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    			InstructorComparator ic = new InstructorComparator();
+    	    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(getInstructorNameFormat());
+            	TreeSet sortedInstructors = new TreeSet(ic);
             	sortedInstructors.addAll(aClass.getClassInstructors());
         		for (Iterator i=sortedInstructors.iterator(); i.hasNext();) {
         			ClassInstructor ci = (ClassInstructor)i.next();

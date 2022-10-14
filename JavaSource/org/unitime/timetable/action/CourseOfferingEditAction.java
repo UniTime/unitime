@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -727,7 +729,9 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         LookupTables.setupConsentType(request);
         LookupTables.setupCoordinatorTeachingResponsibilities(request);
 
-        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
+        List<OfferingCoordinator> coordinatorList = new ArrayList<OfferingCoordinator>(io.getOfferingCoordinators());
+        Collections.sort(coordinatorList, new OfferingCoordinatorComparator(sessionContext));
+        for (OfferingCoordinator coordinator: coordinatorList) {
             form.getInstructors().add(coordinator.getInstructor().getUniqueId().toString());
             form.getResponsibilities().add(coordinator.getResponsibility() == null ? Constants.BLANK_OPTION_VALUE : coordinator.getResponsibility().getUniqueId().toString());
             form.getPercentShares().add(coordinator.getPercentShare() == null ? "0" : coordinator.getPercentShare().toString());

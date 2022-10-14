@@ -593,7 +593,9 @@ public class Class_ extends BaseClass_ {
     public String instructorHtml(String instructorNameFormat){
     	StringBuffer sb = new StringBuffer();
     	if (this.getClassInstructors()==null) return "";
-    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    	InstructorComparator ic = new InstructorComparator();
+    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(instructorNameFormat);
+    	TreeSet sortedInstructors = new TreeSet(ic);
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	Iterator it = sortedInstructors.iterator();
@@ -624,7 +626,9 @@ public class Class_ extends BaseClass_ {
     public String instructorText(String instructorNameFormat, String separator){
     	if (getClassInstructors() == null) return "";
     	
-    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    	InstructorComparator ic = new InstructorComparator();
+    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(instructorNameFormat);
+    	TreeSet sortedInstructors = new TreeSet(ic);
     	sortedInstructors.addAll(this.getClassInstructors());
 
     	StringBuffer sb = new StringBuffer();

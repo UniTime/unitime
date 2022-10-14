@@ -157,7 +157,7 @@ public class InstructorListBuilder {
 			}
 			
 			// Create new table
-			WebTable webTable = new WebTable(headers.length, "", "instructorList.action?order=%%&deptId=" + deptId, headers, aligns, asc);
+			WebTable webTable = new WebTable(headers.length, "", "instructorSearch.action?order=%%&deptId=" + deptId, headers, aligns, asc);
 			webTable.setRowStyle("white-space:nowrap;");
 			webTable.enableHR("#9CB0CE");
 

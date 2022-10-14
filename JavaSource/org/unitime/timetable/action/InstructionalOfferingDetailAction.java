@@ -68,6 +68,7 @@ import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
+import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -436,7 +437,9 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         }
         String coordinators = "";
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
-        for (OfferingCoordinator coordinator: new TreeSet<OfferingCoordinator>(io.getOfferingCoordinators())) {
+        List<OfferingCoordinator> coordinatorList = new ArrayList<OfferingCoordinator>(io.getOfferingCoordinators());
+        Collections.sort(coordinatorList, new OfferingCoordinatorComparator(sessionContext));
+        for (OfferingCoordinator coordinator: coordinatorList) {
         	if (!coordinators.isEmpty()) coordinators += "<br>";
         	coordinators += "<a href='instructorDetail.action?instructorId=" + coordinator.getInstructor().getUniqueId() + "' class='noFancyLinks'>" +
         			coordinator.getInstructor().getName(instructorNameFormat) +

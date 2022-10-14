@@ -22,6 +22,7 @@ package org.unitime.timetable.model.comparators;
 import java.util.Comparator;
 
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.util.NameFormat;
 
 
 /**
@@ -30,51 +31,48 @@ import org.unitime.timetable.model.DepartmentalInstructor;
  * 
  * @author Heston Fernandes
  */
-public class DepartmentalInstructorComparator implements Comparator {
-
-    public static final short COMPARE_BY_NAME = 1;
-    public static final short COMPARE_BY_POSITION = 2;
+public class DepartmentalInstructorComparator implements Comparator<DepartmentalInstructor> {
+	
+	public static enum CompareBy {
+		NAME, POSITION;
+	}
     
-    private short compareBy;
+    private CompareBy iCompareBy = CompareBy.NAME;
+    private NameFormat iFormat = NameFormat.LAST_FIRST_MIDDLE;
     
     public DepartmentalInstructorComparator() {
-        compareBy = COMPARE_BY_NAME;
     }
     
-    public DepartmentalInstructorComparator(short compareBy) {
-        if (compareBy!=COMPARE_BY_NAME 
-                && compareBy!=COMPARE_BY_POSITION) {
-            this.compareBy = COMPARE_BY_NAME;
-        }
-        else {
-            this.compareBy = compareBy;
-        }
+    public DepartmentalInstructorComparator(NameFormat nameFormat) {
+    	iFormat = nameFormat;
+    }
+    
+    public DepartmentalInstructorComparator(String nameFormat) {
+    	iFormat = NameFormat.fromReference(nameFormat);
+    }
+    		
+    public DepartmentalInstructorComparator(CompareBy compareBy) {
+    	iCompareBy = compareBy;
+    }
+    
+    public DepartmentalInstructorComparator(CompareBy compareBy, NameFormat nameFormat) {
+    	iCompareBy = compareBy;
+    	iFormat = nameFormat;
+    }
+    
+    public DepartmentalInstructorComparator(CompareBy compareBy, String nameFormat) {
+    	iCompareBy = compareBy;
+    	iFormat = NameFormat.fromReference(nameFormat);
     }
 
-    public int compare(Object o1, Object o2) {
-        if (!(o1 instanceof DepartmentalInstructor) || o1==null)
-            throw new ClassCastException("o1 Class must be of type DepartmentalInstructor and cannot be null");
-        if (!(o2 instanceof DepartmentalInstructor) || o2==null)
-            throw new ClassCastException("o2 Class must be of type DepartmentalInstructor and cannot be null");
-        
-        DepartmentalInstructor s1 = (DepartmentalInstructor) o1;
-        DepartmentalInstructor s2 = (DepartmentalInstructor) o2;
-        
-        if (compareBy==COMPARE_BY_POSITION) {
-            Integer l1 = Integer.valueOf(-1);
-            if (s1.getPositionType()!=null) 
-                l1 = s1.getPositionType().getSortOrder();
-            
-            Integer l2 = Integer.valueOf(-1);
-            if (s2.getPositionType()!=null)
-                l2 = s2.getPositionType().getSortOrder();
-            
-            int ret = l1.compareTo(l2);
-            if (ret!=0)
-                return ret;
+
+    public int compare(DepartmentalInstructor s1, DepartmentalInstructor s2) {
+        if (iCompareBy == CompareBy.POSITION) {
+        	Integer l1 = (s1.getPositionType() == null ? -1 : s1.getPositionType().getSortOrder());
+        	Integer l2 = (s2.getPositionType() == null ? -1 : s2.getPositionType().getSortOrder());
+        	if (!l1.equals(l2)) return l1.compareTo(l2);
         }
-        
-        return  s1.nameLastNameFirst().compareToIgnoreCase(s2.nameLastNameFirst());
+        return  iFormat.format(s1).compareToIgnoreCase(iFormat.format(s2));
     }
 
 }

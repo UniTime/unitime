@@ -307,7 +307,10 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 		String deptId = (String)sessionContext.getAttribute(SessionAttribute.DepartmentId);
 		if (deptId != null) {
 			List<DepartmentalInstructor> assigned = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
-			Collections.sort(assigned, new DepartmentalInstructorComparator(DepartmentalInstructorComparator.COMPARE_BY_POSITION));
+			if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+				Collections.sort(assigned, new DepartmentalInstructorComparator(DepartmentalInstructorComparator.CompareBy.POSITION, UserProperty.NameFormat.get(sessionContext.getUser())));
+			else
+				Collections.sort(assigned, new DepartmentalInstructorComparator(DepartmentalInstructorComparator.CompareBy.POSITION));
 			return assigned;
 		} else {
 			return null;

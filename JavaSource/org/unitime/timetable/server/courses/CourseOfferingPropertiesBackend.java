@@ -66,6 +66,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
+import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -207,7 +208,10 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			q.setLong("acadSessionId", acadSessionId);
 	        
 			List result = q.list();
-	        Collections.sort(result);
+			if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+				Collections.sort(result, new DepartmentalInstructorComparator(instructorNameFormat));
+			else
+				Collections.sort(result, new DepartmentalInstructorComparator());
 		    for (Iterator i=result.iterator();i.hasNext();) {
 	            DepartmentalInstructor di = (DepartmentalInstructor)i.next();
 	            String name = di.getName(instructorNameFormat);

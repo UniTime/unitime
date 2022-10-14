@@ -479,7 +479,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
         form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 
 	    List instructors = new ArrayList(c.getClassInstructors());
-	    Collections.sort(instructors, new InstructorComparator());
+	    Collections.sort(instructors, new InstructorComparator(sessionContext));
 
 	    for(Iterator iter = instructors.iterator(); iter.hasNext(); ) {
 	    	ClassInstructor classInstr = (ClassInstructor) iter.next();

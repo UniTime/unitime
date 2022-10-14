@@ -3077,6 +3077,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Course Recommendations: show Degree Plan button on the Advisor Course Recommendations page (when custom DegreePlansProvider is configured)")
 	DegreePlanForAdvisors("unitime.degreePlan.advisors"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Assign Instructors: use the user's preferred name format when ordering instructors in the dropdown (instead of the default last name first)")
+	InstructorsDropdownFollowNameFormatting("unitime.instructors.useNameFormatInDropdowns"),
 
 	;
 
