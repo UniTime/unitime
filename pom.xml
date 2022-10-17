@@ -174,18 +174,18 @@
 			<version>${protobuf.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.gwt</groupId>
+			<groupId>org.gwtproject</groupId>
 			<artifactId>gwt-servlet</artifactId>
 			<version>${gwt.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.google.gwt</groupId>
+			<groupId>org.gwtproject</groupId>
 			<artifactId>gwt-user</artifactId>
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.google.gwt</groupId>
+			<groupId>org.gwtproject</groupId>
 			<artifactId>gwt-dev</artifactId>
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
@@ -549,6 +549,8 @@
 					<exclude>org/unitime/commons/ant/**/*.*</exclude>
 					<exclude>org/unitime/commons/JDTCompiler15.java</exclude>
 					<exclude>org/unitime/timetable/gwt/command/generator/**/*.*</exclude>
+					<exclude>org/unitime/localization/impl/ImportTranslations.java</exclude>
+					<exclude>org/unitime/localization/impl/ExportTranslations.java</exclude>
 				</excludes>
 			</resource>
 			<resource>
@@ -616,12 +618,12 @@
 				</executions>
 				<dependencies>
 					<dependency>
-						<groupId>com.google.gwt</groupId>
+						<groupId>org.gwtproject</groupId>
 						<artifactId>gwt-user</artifactId>
 						<version>${gwt.version}</version>
 					</dependency>
 					<dependency>
-						<groupId>com.google.gwt</groupId>
+						<groupId>org.gwtproject</groupId>
 						<artifactId>gwt-dev</artifactId>
 						<version>${gwt.version}</version>
 					</dependency>
@@ -789,7 +791,7 @@
 		<itext.version>2.1.7</itext.version>
 		<struts.version>1.3.10</struts.version>
 		<protobuf.version>3.19.2</protobuf.version>
-		<gwt.version>2.9.0</gwt.version>
+		<gwt.version>2.10.0</gwt.version>
 		<spring.version>5.3.20</spring.version>
 		<spring-security.version>5.7.1</spring-security.version>
 		<spring-integration.version>5.4.12</spring-integration.version>
@@ -826,6 +828,7 @@
 		<dom4j.version>2.1.3</dom4j.version>
 		<jaxen.version>1.1.6</jaxen.version>
 		<jackson.version>2.13.0</jackson.version>
+		<ant.version>1.10.12</ant.version>
 	</properties>
 
 	<distributionManagement>
