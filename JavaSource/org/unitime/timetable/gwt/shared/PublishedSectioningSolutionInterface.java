@@ -79,6 +79,12 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		return (value == null ? "" : value.replace(" (", "\n("));
 	}
 	
+	public boolean hasValue(String attribute) {
+		if (iInfo == null) return false;
+		String value = iInfo.get(attribute);
+		return value != null && !value.isEmpty();
+	}
+	
 	public static enum Operation implements IsSerializable {
 		LIST, REMOVE, LOAD, UNLOAD, PUBLISH, UNPUBLISH, SELECT, DESELECT, NOTE,
 	}
@@ -115,6 +121,7 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		PRIORITY_REQUESTS("Assigned priority course requests"),
 		CRITICAL("Assigned critical course requests"),
 		IMPORTANT("Assigned important course requests"),
+		VITAL("Assigned vital course requests"),
 		COMPLETE("Students with complete schedule"),
 		SELECTION("Selection"),
 		DISTANCE("Student distance conflicts"),

@@ -355,6 +355,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		case PRIORITY_REQUESTS: return MESSAGES.colAssignedPriorityCourseRequests();
 		case CRITICAL: return MESSAGES.colAssignedCriticalCourseRequests();
 		case IMPORTANT: return MESSAGES.colAssignedImportantCourseRequests();
+		case VITAL: return MESSAGES.colAssignedVitalCourseRequests();
 		case TIME: return MESSAGES.colTimeConflicts();
 		case DISTANCE: return MESSAGES.colDistanceConflicts();
 		case SELECTION: return MESSAGES.colSectioningSelection();
@@ -396,6 +397,22 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			return new OperationsCell(solution);
 		default:
 			return new Label(solution.getValue(column.getAttribute()));
+		}
+	}
+	
+	protected boolean isEmpty(final PublishedSectioningSolutionInterface solution, final TableColumn column, final int idx) {
+		switch (column) {
+		case DATE_TIME:
+		case OWNER:
+			return false;
+		case CONFIG:
+			return solution.getConfig() == null || solution.getConfig().isEmpty();
+		case NOTE:
+			return solution.getNote() == null || solution.getNote().isEmpty();
+		case OPERATIONS:
+			return false;
+		default:
+			return !solution.hasValue(column.getAttribute());
 		}
 	}
 	
@@ -660,6 +677,17 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 			for (PublishedSectioningSolutionInterface solution: value)
 				addSolution(solution);
 		sort();
+		for (TableColumn column: TableColumn.values())
+			for (int idx = 0; idx < getNbrCells(column); idx++) {
+				boolean empty = true;
+				if (value != null)
+					for (PublishedSectioningSolutionInterface solution: value)
+						if (!isEmpty(solution, column, idx)) {
+							empty = false;
+							break;
+						}
+				setColumnVisible(getCellIndex(column) + idx, !empty);
+			}
 	}
 
 	@Override

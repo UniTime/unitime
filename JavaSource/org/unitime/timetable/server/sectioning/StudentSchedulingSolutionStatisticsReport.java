@@ -56,7 +56,6 @@ import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
-import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookup;
 
 /**
  * @author Tomas Muller
@@ -501,7 +500,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }),
         VITAL(new String[] {"Vital courses", "Assigned vital courses"},
         		new String[] {
-        				"Number of course requests marked as vital (~ course/group/placeholder vital in degree plan)"
+        				"Number of course requests marked as vital by advisors"
         		},
         		new Statistic() {
             @Override
