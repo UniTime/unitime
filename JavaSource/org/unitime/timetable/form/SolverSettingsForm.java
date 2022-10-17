@@ -19,108 +19,96 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
+import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
  * @author Tomas Muller
  */
-public class SolverSettingsForm extends ActionForm {
+public class SolverSettingsForm implements UniTimeForm {
 	private static final long serialVersionUID = -9205033432561871308L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String op;
 	private Long uniqueId;
 	private String name;
 	private String description;
 	private String appearance;
-	private Map params;
-	private Map useDefaults;
+	private Map<Long, String> params;
+	private Map<Long, Boolean> useDefaults;
+	
+	public SolverSettingsForm() {
+		reset();
+	}
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
-        
-        if(name==null || name.trim().length()==0)
-            errors.add("name", new ActionMessage("errors.required", ""));
-        else {
-        	if ("Add New".equals(op)) {
-        		SolverPredefinedSetting set = SolverPredefinedSetting.findByName(name);
+	public void validate(UniTimeAction action) {
+        if (name==null || name.isEmpty()) {
+        	action.addFieldError("form.name", MSG.errorRequiredField(MSG.fieldReference()));
+        } else {
+        	SolverPredefinedSetting set = SolverPredefinedSetting.findByName(name);
+        	if (uniqueId != null) { // update
+        		if (set != null && !set.getUniqueId().equals(uniqueId))
+        			action.addFieldError("form.name", MSG.errorAlreadyExists(name));
+        	} else { // save
         		if (set!=null)
-        			errors.add("name", new ActionMessage("errors.exists", name));
+        			action.addFieldError("form.name", MSG.errorAlreadyExists(name));
         	}
         }
         
-        if(description==null || description.trim().length()==0)
-            errors.add("description", new ActionMessage("errors.required", ""));
+        if (description==null || description.isEmpty())
+        	action.addFieldError("form.description", MSG.errorRequiredField(MSG.fieldName()));
         
-        if(appearance==null || appearance.trim().length()==0)
-            errors.add("appearance", new ActionMessage("errors.required", ""));
+        if(appearance==null || appearance.isEmpty())
+        	action.addFieldError("form.appearance", MSG.errorRequiredField(MSG.fieldAppearance()));
 
-        for (Iterator i=params.entrySet().iterator();i.hasNext();) {
-        	Map.Entry entry = (Map.Entry)i.next();
-            Long parm = (Long)entry.getKey();
-        	String val = (String)entry.getValue();
-        	Boolean useDefault = (Boolean)useDefaults.get(parm);
-        	if (!useDefault.booleanValue() && (val==null || val.trim().length()==0))
-        		errors.add("parameter["+parm+"]", new ActionMessage("errors.required", ""));
+        for (Map.Entry<Long, String> entry: params.entrySet()) {
+            Long parm = entry.getKey();
+        	String val = entry.getValue();
+        	Boolean useDefault = useDefaults.get(parm);
+        	if (!useDefault.booleanValue() && (val==null || val.isEmpty()))
+        		action.addFieldError("form.parameter["+parm+"]", MSG.errorRequiredField(SolverParameterDefDAO.getInstance().get(parm).getDescription()));
         }
-
-        return errors;
 	}
 
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	public void reset() {
 		name=""; description="";
 		op=null; uniqueId=null;
-		params = new Hashtable();
-		useDefaults = new Hashtable();
-		for (Iterator i=(new SolverParameterDefDAO()).findAll().iterator();i.hasNext();) {
-			SolverParameterDef def = (SolverParameterDef)i.next();
+		appearance = SolverPredefinedSetting.Appearance.SOLVER.name();
+		params = new HashMap<Long, String>();
+		useDefaults = new HashMap<Long, Boolean>();
+	}
+
+	public void loadDefaults() {
+		params.clear(); useDefaults.clear();
+		for (SolverParameterDef def: SolverParameterDefDAO.getInstance().findAll()) {
 			if (!def.isVisible().booleanValue()) continue;
-			if ("boolean".equals(def.getType()))
-				params.put(def.getUniqueId(),"false");
-			else
-				params.put(def.getUniqueId(),"");
-			useDefaults.put(def.getUniqueId(),Boolean.FALSE);
+			params.put(def.getUniqueId(), def.getDefault());
+			useDefaults.put(def.getUniqueId(), Boolean.TRUE);
 		}
 	}
 
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void loadDefaults() {
-		for (Iterator i=(new SolverParameterDefDAO()).findAll().iterator();i.hasNext();) {
-			SolverParameterDef def = (SolverParameterDef)i.next();
-			if (!def.isVisible().booleanValue()) continue;
-			params.put(def.getUniqueId(),def.getDefault());
-			useDefaults.put(def.getUniqueId(),Boolean.TRUE);
-		}
-	}
     public void loadDefaults(HttpServletRequest request) {
-        for (Iterator i=(new SolverParameterDefDAO()).findAll().iterator();i.hasNext();) {
-            SolverParameterDef def = (SolverParameterDef)i.next();
-            if (!def.isVisible().booleanValue()) continue;
-            params.put(def.getUniqueId(),(request.getParameter("parameter["+def.getUniqueId()+"]")==null?def.getDefault():request.getParameter("parameter["+def.getUniqueId()+"]")));
-            useDefaults.put(def.getUniqueId(),(request.getParameter("useDefault["+def.getUniqueId()+"]")==null || "false".equals(request.getParameter("useDefault["+def.getUniqueId()+"]"))?Boolean.FALSE:Boolean.TRUE));
+    	params.clear(); useDefaults.clear();
+    	for (SolverParameterDef def: SolverParameterDefDAO.getInstance().findAll()) {
+			if (!def.isVisible().booleanValue()) continue;
+            params.put(def.getUniqueId(), (request.getParameter("parameter["+def.getUniqueId()+"]")==null?def.getDefault():request.getParameter("parameter["+def.getUniqueId()+"]")));
+            useDefaults.put(def.getUniqueId(), (request.getParameter("useDefault["+def.getUniqueId()+"]")==null || "false".equals(request.getParameter("useDefault["+def.getUniqueId()+"]"))?Boolean.FALSE:Boolean.TRUE));
         }
     }
 
@@ -132,28 +120,28 @@ public class SolverSettingsForm extends ActionForm {
 	public void setDescription(String description) { this.description = description;}
 	public String getAppearance() { return appearance;}
 	public void setAppearance(String appearance) { this.appearance = appearance;}
-	public int getAppearanceIdx() {
-		for (int i=0;i<SolverPredefinedSetting.sAppearances.length;i++)
-			if (SolverPredefinedSetting.sAppearances[i].equals(appearance)) return i;
-		return -1;
+	public SolverPredefinedSetting.Appearance getAppearanceType() {
+		for (SolverPredefinedSetting.Appearance a: SolverPredefinedSetting.Appearance.values())
+			if (a.name().equals(appearance)) return a;
+		return null;
 	}
-	public void setAppearanceIdx(int idx) {
-		if (idx<0) appearance="";
-		appearance=SolverPredefinedSetting.sAppearances[idx];
+	public void setAppearanceType(SolverPredefinedSetting.Appearance appearance) {
+		if (appearance == null) this.appearance="";
+		this.appearance = appearance.name();
 	}
 	public String getName() { return name;}
 	public void setName(String name) { this.name = name;}
-	public Boolean getUseDefault(Long id) {
-		return (Boolean)useDefaults.get(id); 
-	}
+	public Boolean getUseDefault(Long id) { return useDefaults.get(id); }
 	public void setUseDefault(Long id, Boolean useDefault) { useDefaults.put(id,useDefault); }
-	public boolean getUseDefault(int id) { return getUseDefault(Long.valueOf(id)).booleanValue(); }
-	public void setUseDefault(int id, boolean useDefault) { setUseDefault(Long.valueOf(id), Boolean.valueOf(useDefault)); }
-	public String getParameter(Long id) { return (String)params.get(id); }
+
+	public String getParameter(Long id) { return params.get(id); }
 	public void setParameter(Long id, String value) { params.put(id, value); }
-	public String getParameter(int id) { return getParameter(Long.valueOf(id)); }
-	public void setParameter(int id, String value) { setParameter(Long.valueOf(id), value); }
-	public String[] getAppearances() { return SolverPredefinedSetting.sAppearances; }
+	public List<ComboBoxLookup> getAppearances() {
+		List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
+		for (SolverPredefinedSetting.Appearance a: SolverPredefinedSetting.Appearance.values())
+			ret.add(new ComboBoxLookup(a.getLabel(), a.name()));
+		return ret;
+	}
 	public Collection getEnum(String type) {
 		Vector options = new Vector();
 		StringTokenizer stk = new StringTokenizer(type,",");

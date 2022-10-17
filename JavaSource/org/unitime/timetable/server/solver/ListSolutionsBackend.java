@@ -316,7 +316,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 	}
 	
 	protected void fillConfigurations(ListSolutionsResponse response, SessionContext context) {
-		int appearance = SolverPredefinedSetting.APPEARANCE_TIMETABLES;
+		int appearance = SolverPredefinedSetting.Appearance.TIMETABLES.ordinal();
 		String defaultConfig = "Interactive";
 
 		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
@@ -485,7 +485,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			response.setConfigurationId(config.getPropertyLong("General.SettingsId", null));
 			if (response.getConfigurationId() != null && response.getConfiguration(response.getConfigurationId()) == null) {
 				SolverPredefinedSetting cfg = SolverPredefinedSettingDAO.getInstance().get(response.getConfigurationId());
-				if (cfg != null && cfg.getAppearance() == SolverPredefinedSetting.APPEARANCE_SOLVER) {
+				if (cfg != null && cfg.getAppearanceType() == SolverPredefinedSetting.Appearance.SOLVER) {
 					SolverConfiguration c = new SolverConfiguration();
 					c.setId(cfg.getUniqueId());
 					c.setName(cfg.getDescription());

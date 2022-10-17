@@ -409,31 +409,31 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 	protected void fillParameters(SessionContext context, SolverPageRequest request, SolverPageResponse response) {
 		SolverParameterGroup.SolverType type = null;
 		String group = null;
-		int appearance = 0;
+		SolverPredefinedSetting.Appearance appearance = SolverPredefinedSetting.Appearance.SOLVER;
 		String defaultConfig = null;
 		switch (request.getType()) {
 		case COURSE:
 			type = SolverParameterGroup.SolverType.COURSE;
 			group = "Basic";
-			appearance = SolverPredefinedSetting.APPEARANCE_SOLVER;
+			appearance = SolverPredefinedSetting.Appearance.SOLVER;
 			defaultConfig = "Default.Solver";
 			break;
 		case EXAM:
 			type = SolverParameterGroup.SolverType.EXAM;
 			group = "ExamBasic";
-			appearance = SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER;
+			appearance = SolverPredefinedSetting.Appearance.EXAM_SOLVER;
 			defaultConfig = "Exam.Default";
 			break;
 		case STUDENT:
 			type = SolverParameterGroup.SolverType.STUDENT;
 			group = "StudentSctBasic";
-			appearance = SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER;
+			appearance = SolverPredefinedSetting.Appearance.STUDENT_SOLVER;
 			defaultConfig = "StudentSct.Default";
 			break;
 		case INSTRUCTOR:
 			type = SolverParameterGroup.SolverType.INSTRUCTOR;
 			group = "InstrSchd.Basic";
-			appearance = SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER;
+			appearance = SolverPredefinedSetting.Appearance.INSTRUCTOR_SOLVER;
 			defaultConfig = "InstrSchd.Default";
 			break;
 		default:
@@ -455,7 +455,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		}
 		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
 				"from SolverPredefinedSetting s where s.appearance = :appearance"
-				).setInteger("appearance", appearance).setCacheable(true).list();
+				).setInteger("appearance", appearance.ordinal()).setCacheable(true).list();
 		
 		response.setConfigurationId(request.getConfigurationId());
 		for (SolverPredefinedSetting config: configs) {
@@ -626,7 +626,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			response.setConfigurationId(config.getPropertyLong("General.SettingsId", null));
 			if (response.getConfigurationId() != null && response.getConfiguration(response.getConfigurationId()) == null && response.getSolverType() == SolverType.COURSE) {
 				SolverPredefinedSetting cfg = SolverPredefinedSettingDAO.getInstance().get(response.getConfigurationId());
-				if (cfg != null && cfg.getAppearance() == SolverPredefinedSetting.APPEARANCE_TIMETABLES) {
+				if (cfg != null && cfg.getAppearance() == SolverPredefinedSetting.Appearance.TIMETABLES.ordinal()) {
 					SolverConfiguration c = new SolverConfiguration();
 					c.setId(cfg.getUniqueId());
 					c.setName(cfg.getDescription());

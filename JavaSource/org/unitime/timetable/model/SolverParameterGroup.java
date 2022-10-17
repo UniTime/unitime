@@ -21,6 +21,8 @@ package org.unitime.timetable.model;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -98,4 +100,20 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 
 	public SolverParameterGroup.SolverType getSolverType() { return getType() == null ? null : SolverParameterGroup.SolverType.values()[getType()]; }
 	public void setSolverType(SolverParameterGroup.SolverType type) { setType(type == null ? null : Integer.valueOf(type.ordinal())); }
+	
+	public boolean isVisible() {
+		for (SolverParameterDef d: getParameters()) {
+			if (d.isVisible()) return true;
+		}
+		return false;
+	}
+	
+	public Set<SolverParameterDef> getVisibleParameters() {
+		Set<SolverParameterDef> ret = new TreeSet<SolverParameterDef>();
+		for (SolverParameterDef d: getParameters()) {
+			if (d.isVisible())
+				ret.add(d);
+		}
+		return ret;
+	}
 }

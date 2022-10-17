@@ -7396,3 +7396,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Table td {
 	padding: 1px;
 }
+
+.unitime-SolverConfigEdit input[type="text"]:disabled {
+	color: -internal-light-dark(graytext, rgb(170, 170, 170));
+    opacity: 0.7;
+}

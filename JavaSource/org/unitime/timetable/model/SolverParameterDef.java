@@ -159,4 +159,11 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
     	String ret = super.getDefault();
     	return ret == null ? "" : ret;
     }
+    
+    public String[] getOptions() {
+    	if (getType() != null && getType().startsWith("enum(") && getType().endsWith(")"))
+    		return getType().substring(5, getType().length() - 1).split(",");
+    	else
+    		return null;
+    }
 }

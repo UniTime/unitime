@@ -17,49 +17,27 @@
  * limitations under the License.
  * 
  --%>
-<%@page import="org.unitime.timetable.defaults.UserProperty"%>
-<%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.model.dao.SolverParameterGroupDAO" %>
-<%@ page import="org.hibernate.criterion.Order" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.Iterator" %>
-<%@ page import="org.unitime.timetable.model.SolverParameterGroup" %>
-<%@ page import="org.unitime.timetable.model.SolverParameterDef" %>
-<%@ page import="org.unitime.timetable.model.TimePattern" %>
-<%@ page import="org.unitime.timetable.model.TimePatternModel" %>
-<%@ page import="org.unitime.timetable.webutil.RequiredTimeTable" %>
-<%@ page import="org.unitime.timetable.form.SolverSettingsForm" %>
-<%@page import="org.unitime.timetable.model.SolverParameter"%>
-<%@page import="org.unitime.timetable.model.SolverPredefinedSetting"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<tiles:importAttribute />
-
-<tt:confirm name="confirmDelete">The solver configuration will be deleted. Continue?</tt:confirm>
-<tt:session-context/>
-
-	<html:form action="/solverSettings">
-<%  try {
-	String frmName = "solverSettingsForm";		
-	SolverSettingsForm frm = (SolverSettingsForm)request.getAttribute(frmName);
-	if (request.getAttribute("SolverSettings.table")!=null) {
-%>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteSolverConfig"/></tt:confirm>
+<s:form action="solverSettings">
+<s:if test="form.op == #msg.actionAddNewSolverConfig()">
+ 	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="4">
 				<tt:section-header>
 					<tt:section-title>
-						Solver Configurations		
+						<loc:message name="sectSolverConfigurations"/>
 					</tt:section-title>
-					<html:submit property="op" value="Add Solver Configuration" accesskey="A" title="Create New Solver Configuration (Alt+A)"/>
+					<s:submit name='op' value='%{#msg.actionAddNewSolverConfig()}'
+							accesskey='%{#msg.accessAddNewSolverConfig()}' title='%{#msg.titleAddNewSolverConfig(#msg.accessAddNewSolverConfig())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
-		<%= request.getAttribute("SolverSettings.table") %> 
+		<s:property value="getSolverSettingsTable()" escapeHtml="false"/>
 		<TR>
 			<TD align="right" colspan="4">
 				<tt:section-title/>
@@ -67,225 +45,135 @@
 		</TR>
 		<TR>
 			<TD align="right" colspan="4">
-				<html:submit property="op" value="Add Solver Configuration" accesskey="A" title="Create New Solver Configuration (Alt+A)"/> 
+				<s:submit name='op' value='%{#msg.actionAddNewSolverConfig()}'
+						accesskey='%{#msg.accessAddNewSolverConfig()}' title='%{#msg.titleAddNewSolverConfig(#msg.accessAddNewSolverConfig())}'/>			
 			</TD>
 		</TR>
 	</TABLE>
-	<BR>&nbsp;<BR>
-<% 
-	} else { %>
-	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
+</s:if><s:else>
+	<s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
 	<input type='hidden' name='op2' value=''>
 
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable unitime-Table unitime-SolverConfigEdit">
 		<TR>
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:equal name="solverSettingsForm" property="op" value="Save">
-						Add
-						</logic:equal>
-						<logic:notEqual name="solverSettingsForm" property="op" value="Save">
-						Edit
-						</logic:notEqual>
-						Solver Configuration
+						<s:if test="form.op == #msg.actionSaveSolverConfig()">
+							<loc:message name="sectAddSolverConfiguration"/>
+						</s:if><s:else>
+							<loc:message name="sectEditSolverConfiguration"/>
+						</s:else>
 					</tt:section-title>
-					<logic:equal name="solverSettingsForm" property="op" value="Save">
-						<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
-					</logic:equal>
-					<logic:notEqual name="solverSettingsForm" property="op" value="Save">
-						<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
-						<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
-						<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
-					</logic:notEqual>
-					<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
+					<s:if test="form.op == #msg.actionSaveSolverConfig()">
+						<s:submit name='op' value='%{#msg.actionSaveSolverConfig()}'
+							accesskey='%{#msg.accessSaveSolverConfig()}' title='%{#msg.titleSaveSolverConfig(#msg.accessSaveSolverConfig())}'/>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateSolverConfig()}'
+							accesskey='%{#msg.accessUpdateSolverConfig()}' title='%{#msg.titleUpdateSolverConfig(#msg.accessUpdateSolverConfig())}'/>
+						<s:submit name='op' value='%{#msg.actionDeleteSolverConfig()}'
+							accesskey='%{#msg.accessDeleteSolverConfig()}' title='%{#msg.titleDeleteSolverConfig(#msg.accessDeleteSolverConfig())}'
+							onclick="return confirmDelete();"/>
+						<s:submit name='op' value='%{#msg.actionExportSolverConfig()}'
+							accesskey='%{#msg.accessExportSolverConfig()}' title='%{#msg.titleExportSolverConfig(#msg.accessExportSolverConfig())}'/>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionBackToSolverConfigs()}'
+						accesskey='%{#msg.accessBackToSolverConfigs()}' title='%{#msg.titleBackToSolverConfigs(#msg.accessBackToSolverConfigs())}'/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
-			<TD>Reference:</TD>
+			<TD><loc:message name="fieldReference"/>:</TD>
 			<TD>
-				<html:text property="name" size="30" maxlength="100"/>
-				&nbsp;<html:errors property="name"/>
+				<s:textfield name="form.name" size="30" maxlength="100"/>
+				<s:fielderror fieldName="form.name"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Name:</TD>
+			<TD><loc:message name="fieldName"/>:</TD>
 			<TD>
-				<html:text property="description" size="30" maxlength="1000"/>
-				&nbsp;<html:errors property="description"/>
+				<s:textfield name="form.description" size="30" maxlength="1000"/>
+				<s:fielderror fieldName="form.description"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Appearance:</TD>
+			<TD><loc:message name="fieldAppearance"/>:</TD>
 			<TD>
-				<html:select property="appearance" onchange="op2.value='Refresh'; submit();">
-					<html:options name="solverSettingsForm" property="appearances"/>
-				</html:select>
-				&nbsp;<html:errors property="appearance"/>
+				<s:select name="form.appearance" onchange="op2.value='Refresh'; submit();"
+					list="form.appearances" listKey="value" listValue="label"
+					/>
+				<s:fielderror fieldName="form.appearance"/>
 			</TD>
 		</TR>
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
-
-<%
-		List groups = (new SolverParameterGroupDAO()).findAll(Order.asc("order"));
-		for (Iterator i=groups.iterator();i.hasNext();) {
-			SolverParameterGroup group = (SolverParameterGroup)i.next();
-			boolean groupVisible = false;
-			boolean correctType = true;
-			if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
-				if (group.getSolverType()!=SolverParameterGroup.SolverType.STUDENT) correctType=false;
-			} else if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
-				if (group.getSolverType()!=SolverParameterGroup.SolverType.EXAM) correctType=false;
-			} else if (frm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER) {
-				if (group.getSolverType()!=SolverParameterGroup.SolverType.INSTRUCTOR) correctType=false;
-			} else {
-				if (group.getSolverType()!=SolverParameterGroup.SolverType.COURSE) correctType=false;
-			}
-			List defs = SolverParameterDef.findByGroup(group);
-			for (Iterator j=defs.iterator();j.hasNext();) {
-				SolverParameterDef def = (SolverParameterDef)j.next();
-				if (def.isVisible().booleanValue()) {
-					groupVisible = true; break;
-				}
-			}
-			if (!groupVisible) continue;
-			if (correctType) {
-%>
-		<TR>
-			<TD colspan="2">
-				<DIV class="WelcomeRowHead">
-				<%=group.getDescription()%>
-				</DIV>
-			</TD>
-		</TR>
-<%
-			}
-			defs: for (Iterator j=defs.iterator();j.hasNext();) {
-				SolverParameterDef def = (SolverParameterDef)j.next();
-				if (!def.isVisible().booleanValue()) continue;
-				if (!correctType) {
-%>
-			<html:hidden property='<%="useDefault["+def.getUniqueId()+"]"%>' />
-			<html:hidden property='<%="parameter["+def.getUniqueId()+"]"%>' />
-<%
-				
-					continue defs;
-				}
-%>
- 		<TR>
-			<TD>
-<%
-				if (def.getDefault()!=null) {
-					if ("boolean".equals(def.getType())) { 
-%>
-						<html:checkbox onclick="<%=\"solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].disabled=this.checked;solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].checked=\"+def.getDefault()+\";\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
-<%
-					} else if ("timepref".equals(def.getType())) {
-%>
-						<html:checkbox onclick="<%=\"document.getElementById('tp_enable_\"+def.getUniqueId()+\"').style.display=(this.checked?'none':'block');document.getElementById('tp_disable_\"+def.getUniqueId()+\"').style.display=(this.checked?'block':'none');\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
-<%
-					} else {
-%>
-						<html:checkbox onclick="<%=\"solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].disabled=this.checked;solverSettingsForm['parameter[\"+def.getUniqueId()+\"]'].value='\"+def.getDefault()+\"';\"%>" property='<%="useDefault["+def.getUniqueId()+"]"%>'/>
-<%
-					}
-				}
-%>
-				<%=def.getDescription()%>:
-			</TD>
-			<TD>
-<%
-				if ("boolean".equals(def.getType())) { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:checkbox property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false"/>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:checkbox property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true"/>
-				</logic:equal>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
- 				} else if (def.getType().startsWith("enum(") && def.getType().endsWith(")")) { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="false">
-						<html:options property='<%=def.getType()%>'/>
-					</html:select>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:select property='<%="parameter["+def.getUniqueId()+"]"%>' disabled="true">
-						<html:options property='<%=def.getType()%>'/>
-					</html:select>
-				</logic:equal>
-<%
- 				} else if ("double".equals(def.getType())) { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="false"/>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="true"/>
-				</logic:equal>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
- 				} else if ("date".equals(def.getType())) { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<tt:calendar property='<%="parameter["+def.getUniqueId()+"]"%>' format="yyyy-MM-dd" disabled="false"/>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<tt:calendar property='<%="parameter["+def.getUniqueId()+"]"%>' format="yyyy-MM-dd" disabled="true"/>
-				</logic:equal>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
- 				} else if ("integer".equals(def.getType())) { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="false"/>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="10" maxlength="10" disabled="true"/>
-				</logic:equal>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
- 				} else if ("timepref".equals(def.getType())) { 
-%>
-					<div id='tp_disable_<%=def.getUniqueId()%>' style='display:<%=frm.getUseDefault(def.getUniqueId()).booleanValue()?"block":"none"%>'>
-						<img border="0"
-							onmouseover="showGwtInstructorAvailabilityHint(this, '<%=def.getDefault()%>');"
-							onmouseout="hideGwtInstructorAvailabilityHint();"
-							src="<%="pattern?v=" + RequiredTimeTable.getTimeGridVertical(sessionContext.getUser()) + "&amp;s=" + UserProperty.GridSize.get(sessionContext.getUser()) + "&amp;p=" + def.getDefault()%>">
-					</div>
-
-					</TD></TR><TR><TD colspan='2'>
-						<div id='tp_enable_<%=def.getUniqueId()%>' style='display:<%=frm.getUseDefault(def.getUniqueId()).booleanValue()?"none":"block"%>'>
-							<div id='UniTimeGWT:InstructorAvailability'><html:hidden property='<%="parameter["+def.getUniqueId()+"]"%>'/></div>
-						</div>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
- 				} else { 
-%>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="2048" disabled="false"/>
-				</logic:equal>
-				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="2048" disabled="true"/>
-				</logic:equal>
-  				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
-<%
-				}
-%>
-			</TD>
-		</TR>
-<%
-			}
-		}
-%>		
-		<TR></TR>
-		
+		<s:iterator value="solverParameterGroups" var="group">
+			<s:if test="#group.solverType == form.appearanceType.solverType && #group.visible">
+				<TR><TD colspan="2">
+					<DIV class="WelcomeRowHead"><s:property value="#group.description"/></DIV>
+				</TD></TR>
+				<s:iterator value="#group.visibleParameters" var="def">
+					<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
+						onmouseout="this.style.backgroundColor='transparent';"><TD>
+						<s:if test="#def.type == 'boolean'">
+							<s:checkbox name='form.useDefault[%{#def.uniqueId}]'
+								onclick="var e = document.getElementById('p%{#def.uniqueId}'); e.disabled = this.checked; e.checked = %{#def.default};"
+								/>
+						</s:if><s:elseif test="#def.type == 'timepref'">
+							<s:checkbox name='form.useDefault[%{#def.uniqueId}]'
+								onclick="document.getElementById('pe%{#def.uniqueId}').style.display=(this.checked?'none':'block'); document.getElementById('pd%{#def.uniqueId}').style.display=(this.checked?'block':'none');"
+								/>
+						</s:elseif><s:else>
+							<s:checkbox name='form.useDefault[%{#def.uniqueId}]'
+								onclick="var e = document.getElementById('p%{#def.uniqueId}'); e.disabled = this.checked; e.value = '%{#def.default}';"
+								/>
+						</s:else>
+						<s:property value="#def.description" escapeHtml="false"/>:
+					</TD><TD>
+						<s:if test="#def.type == 'boolean'">
+							<s:checkbox name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"/>
+						</s:if><s:elseif test="#def.type.startsWith('enum(') && #def.type.endsWith(')')">
+							<s:select name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" list="#def.options" id="p%{#def.uniqueId}"/>
+						</s:elseif><s:elseif test="#def.type == 'double' || #def.type == 'integer'">
+							<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
+								size="10" maxlength="10" cssStyle="text-align: right;"/>
+						</s:elseif><s:elseif test="#def.type == 'date'">
+							<div name='UniTimeGWT:Calendar'>
+								<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
+									cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
+							</div>
+						</s:elseif><s:elseif test="#def.type == 'timepref'">
+							<div id='pd${def.uniqueId}' style="display: block;">
+								<img border="0"
+									onmouseover="showGwtInstructorAvailabilityHint(this, '${def.getDefault()}');"
+									onmouseout="hideGwtInstructorAvailabilityHint();"
+									src="pattern?p=${def.getDefault()}">
+							</div>
+							</TD></TR><TR><TD colspan='2'>
+							<div id='pe${def.uniqueId}' style="display: none;">
+								<div id='UniTimeGWT:InstructorAvailability'><s:hidden name='form.parameter[%{#def.uniqueId}]' id="p%{#def.uniqueId}"/></div>
+							</div>
+							<s:if test="form.useDefault[#def.uniqueId] == false">
+								<script type="text/javascript">
+									document.getElementById('pd${def.uniqueId}').style.display = 'none';
+									document.getElementById('pe${def.uniqueId}').style.display = 'block';
+								</script>
+							</s:if>
+						</s:elseif><s:else>
+							<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
+								size="30" maxlength="2048"/>
+						</s:else>						
+						<s:fielderror fieldName="form.parameter[%{#def.uniqueId}]"/>
+					</TD></TR>
+				</s:iterator>
+			</s:if><s:else>
+				<s:iterator value="#group.visibleParameters" var="def">
+					<s:hidden name="form.parameter[%{#def.uniqueId}]"/>
+					<s:hidden name="form.useDefault[%{#def.uniqueId}]"/>
+				</s:iterator>
+			</s:else>
+		</s:iterator>
 		<TR>
 			<TD colspan='2'>
 				<tt:section-title/>
@@ -293,23 +181,23 @@
 		</TR>		
 		<TR>
 			<TD align="right" colspan="2">
-				<logic:equal name="solverSettingsForm" property="op" value="Save">
-					<html:submit property="op" value="Save" accesskey="S" title="Save Solver Parameter (Alt+S)"/>
-				</logic:equal>
-				<logic:notEqual name="solverSettingsForm" property="op" value="Save">
-					<html:submit property="op" value="Update" accesskey="U" title="Update Solver Parameter (Alt+U)"/>
-					<html:submit property="op" value="Delete" onclick="return confirmDelete();" accesskey="D" title="Delete Solver Parameter (Alt+D)"/> 
-					<html:submit property="op" value="Export" title="Export to Property File (Alt+E)" accesskey="E"/> 
-				</logic:notEqual>
-				<html:submit property="op" value="Back" title="Return to Solver Parameters (Alt+B)" accesskey="B"/> 
+				<s:if test="form.op == #msg.actionSaveSolverConfig()">
+						<s:submit name='op' value='%{#msg.actionSaveSolverConfig()}'
+							accesskey='%{#msg.accessSaveSolverConfig()}' title='%{#msg.titleSaveSolverConfig(#msg.accessSaveSolverConfig())}'/>
+					</s:if><s:else>
+						<s:submit name='op' value='%{#msg.actionUpdateSolverConfig()}'
+							accesskey='%{#msg.accessUpdateSolverConfig()}' title='%{#msg.titleUpdateSolverConfig(#msg.accessUpdateSolverConfig())}'/>
+						<s:submit name='op' value='%{#msg.actionDeleteSolverConfig()}'
+							accesskey='%{#msg.accessDeleteSolverConfig()}' title='%{#msg.titleDeleteSolverConfig(#msg.accessDeleteSolverConfig())}'
+							onclick="return confirmDelete();"/>
+						<s:submit name='op' value='%{#msg.actionExportSolverConfig()}'
+							accesskey='%{#msg.accessExportSolverConfig()}' title='%{#msg.titleExportSolverConfig(#msg.accessExportSolverConfig())}'/>
+					</s:else>
+					<s:submit name='op' value='%{#msg.actionBackToSolverConfigs()}'
+						accesskey='%{#msg.accessBackToSolverConfigs()}' title='%{#msg.titleBackToSolverConfigs(#msg.accessBackToSolverConfigs())}'/>
 			</TD>
 		</TR>
 	</TABLE>
-<% 
-	}
-	} catch (Exception e) {
-		e.printStackTrace();
-		out.println("<font color='red'>ERROR: "+e.getMessage()+"</font>");
-	}
-%>
-</html:form>
+</s:else>
+</s:form>
+</loc:bundle>

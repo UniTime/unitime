@@ -864,7 +864,7 @@
 					<hasPermission name="SolverParameters"/>
 				</condition>
 			</item>
-			<item name="Configurations" page="solverSettings.do">
+			<item name="Configurations" page="solverSettings.action">
 				<condition>
 					<hasPermission name="SolverConfigurations"/>
 				</condition>

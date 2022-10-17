@@ -28,22 +28,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.DataProperties;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SolverSettingsForm;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
@@ -51,73 +46,85 @@ import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverParameterDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
+import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.ExportUtils;
 
 
 /** 
  * @author Tomas Muller
  */
-@Service("/solverSettings")
-public class SolverSettingsAction extends Action {
+@Action(value = "solverSettings", results = {
+		@Result(name = "list", type = "tiles", location = "solverSettingsList.tiles"),
+		@Result(name = "add", type = "tiles", location = "solverSettingAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "solverSettingEdit.tiles")
+	})
+@TilesDefinitions({
+	@TilesDefinition(name = "solverSettingsList.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Solver Configurations"),
+			@TilesPutAttribute(name = "body", value = "/admin/solverSettings.jsp")
+		}),
+	@TilesDefinition(name = "solverSettingAdd.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Add Solver Configuration"),
+			@TilesPutAttribute(name = "body", value = "/admin/solverSettings.jsp")
+		}),
+	@TilesDefinition(name = "solverSettingEdit.tiles", extend = "baseLayout", putAttributes =  {
+			@TilesPutAttribute(name = "title", value = "Edit Solver Configuration"),
+			@TilesPutAttribute(name = "body", value = "/admin/solverSettings.jsp")
+		})
+})
+public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
+	private static final long serialVersionUID = 2993473779756335885L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	protected String id = null;
+	protected String op2 = null;
 
-	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
-	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
-
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		SolverSettingsForm myForm = (SolverSettingsForm) form;
+	public String getId() { return id; }
+	public void setId(String id) { this.id = id; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }	
+	
+	public String execute() throws Exception {
+		if (form == null) form = new SolverSettingsForm();
 		
         // Check Access
 		sessionContext.checkPermission(Right.SolverConfigurations);
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null) op = request.getParameter("op2");
-        boolean list = true;
+		if (op == null) op = form.getOp();
+        if (op2 != null && !op2.isEmpty()) op = op2;
         
         
         if (op==null) {
-            myForm.setOp("Add Solver Configuration");
-	        op = "list";
-	        myForm.loadDefaults();
+        	form.reset();
+            form.setOp(MSG.actionAddNewSolverConfig());
+            op = "list";
         }
         
         // Reset Form
-        if ("Back".equals(op)) {
-            myForm.reset(mapping, request);
-            myForm.setOp("Add Solver Configuration");
-            myForm.loadDefaults();
+        if (MSG.actionBackToSolverConfigs().equals(op)) {
+            form.reset();
+            form.setOp(MSG.actionAddNewSolverConfig());
         }
         
-        if ("Add Solver Configuration".equals(op)) {
-        	myForm.setOp("Save");
-        	myForm.loadDefaults();
-        	list = false;
+        if (MSG.actionAddNewSolverConfig().equals(op)) {
+        	form.reset();
+        	form.setOp(MSG.actionSaveSolverConfig());
+        	form.loadDefaults();
         }
         
         if ("Refresh".equals(op)) {
-            myForm.setOp(myForm.getUniqueId()==null || myForm.getUniqueId()<=0?"Save":"Update");
-            myForm.loadDefaults(request);
-            list = false;
+            form.setOp(form.getUniqueId()==null || form.getUniqueId()<=0 ? MSG.actionSaveSolverConfig(): MSG.actionUpdateSolverConfig());
+            // form.loadDefaults();
         }
         
         // Add / Update
-        if ("Update".equals(op) || "Save".equals(op)) {
+        if (MSG.actionSaveSolverConfig().equals(op) || MSG.actionUpdateSolverConfig().equals(op)) {
             // Validate input
-            ActionMessages errors = myForm.validate(mapping, request);
-            if(errors.size()>0) {
-            	list=false;
-                saveErrors(request, errors);
-            } else {
+            form.validate(this);
+            if (!hasFieldErrors()) {
             	Transaction tx = null;
             	try {
             		SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
@@ -127,14 +134,14 @@ public class SolverSettingsAction extends Action {
                     	tx = hibSession.beginTransaction();
             		SolverPredefinedSetting setting = null;
 
-            		if(op.equals("Save"))
+            		if (MSG.actionSaveSolverConfig().equals(op))
             			setting = new SolverPredefinedSetting();
             		else 
-            			setting = dao.get(myForm.getUniqueId(), hibSession);
+            			setting = dao.get(form.getUniqueId(), hibSession);
                 
-            		setting.setName(myForm.getName());
-            		setting.setDescription(myForm.getDescription());                
-            		setting.setAppearance(Integer.valueOf(myForm.getAppearanceIdx()));
+            		setting.setName(form.getName());
+            		setting.setDescription(form.getDescription());                
+            		setting.setAppearanceType(form.getAppearanceType());
             		Set params = setting.getParameters();
             		if (params==null) {
             			params = new HashSet();
@@ -155,8 +162,8 @@ public class SolverSettingsAction extends Action {
             					pDao.delete(param, hibSession);
             				}
             			} else {
-                			String value = myForm.getParameter(def.getUniqueId());
-                			boolean useDefault = myForm.getUseDefault(def.getUniqueId()).booleanValue();
+                			String value = form.getParameter(def.getUniqueId());
+                			Boolean useDefault = form.getUseDefault(def.getUniqueId());
                 			if (useDefault) {
                 				if (param!=null) {
                 					params.remove(param);
@@ -180,19 +187,15 @@ public class SolverSettingsAction extends Action {
             		Debug.error(e);
             	}
                 
-                myForm.reset(mapping, request);
-                myForm.loadDefaults();
-                myForm.setOp("Add Solver Configuration");
+                form.reset();
+                form.setOp(MSG.actionAddNewSolverConfig());
             }
         }
 
         // Edit
-        if(op.equals("Edit")) {
-            String id = request.getParameter("id");
-            ActionMessages errors = new ActionMessages();
-            if(id==null || id.trim().length()==0) {
-                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                saveErrors(request, errors);
+        if (op.equals("Edit")) {
+            if (id == null) {
+            	addFieldError("form.uniqueId", MSG.errorRequiredField("Id"));
             } else {
             	Transaction tx = null;
             	try {
@@ -202,22 +205,20 @@ public class SolverSettingsAction extends Action {
                     	tx = hibSession.beginTransaction();
             	
             		SolverPredefinedSetting setting = dao.get(Long.valueOf(id), hibSession);
-            		if(setting==null) {
-            			errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
-            			saveErrors(request, errors);
+            		if (setting==null) {
+            			addFieldError("form.name", MSG.errorDoesNotExists(id));
             		} else {
-            			myForm.reset(mapping, request);
-            			myForm.loadDefaults();
-                        myForm.setUniqueId(setting.getUniqueId());
-                        myForm.setName(setting.getName());
-                        myForm.setDescription(setting.getDescription());
-            			myForm.setAppearanceIdx(setting.getAppearance().intValue());
-            			myForm.setOp("Update");
-            			for (Iterator i=setting.getParameters().iterator();i.hasNext();) {
-            				SolverParameter param = (SolverParameter)i.next();
+            			form.reset();
+            			form.loadDefaults();
+                        form.setUniqueId(setting.getUniqueId());
+                        form.setName(setting.getName());
+                        form.setDescription(setting.getDescription());
+            			form.setAppearanceType(setting.getAppearanceType());
+            			form.setOp(MSG.actionUpdateSolverConfig());
+            			for (SolverParameter param: setting.getParameters()) {
             				if (!param.getDefinition().isVisible().booleanValue()) continue;
-            				myForm.setParameter(param.getDefinition().getUniqueId(),param.getValue());
-            				myForm.setUseDefault(param.getDefinition().getUniqueId(),Boolean.FALSE);
+            				form.setParameter(param.getDefinition().getUniqueId(), param.getValue());
+            				form.setUseDefault(param.getDefinition().getUniqueId(), Boolean.FALSE);
             			}
                 	}
             		if (tx!=null) tx.commit();
@@ -225,52 +226,50 @@ public class SolverSettingsAction extends Action {
             		if (tx!=null) tx.rollback();
             		Debug.error(e);
             	}
-            	list=false;
             }
         }
         
         // Export
-        if ("Export".equals(op)) {
-            String id = request.getParameter("id");
-            if ((id==null || id.trim().length()==0) && myForm.getUniqueId()!=null)
-                id = myForm.getUniqueId().toString();
-            ActionMessages errors = new ActionMessages();
-            if(id==null || id.trim().length()==0) {
-                errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                saveErrors(request, errors);
+        if (MSG.actionExportSolverConfig().equals(op)) {
+        	if (form.getUniqueId() == null) {
+            	addFieldError("form.uniqueId", MSG.errorRequiredField("Id"));
             } else {
                 SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
                 org.hibernate.Session hibSession = dao.getSession();
             
-                SolverPredefinedSetting setting = dao.get(Long.valueOf(id), hibSession);
+                SolverPredefinedSetting setting = dao.get(form.getUniqueId(), hibSession);
                 
-                if(setting==null) {
-                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                    saveErrors(request, errors);
+                if (setting==null) {
+        			addFieldError("form.name", MSG.errorDoesNotExists(String.valueOf(form.getUniqueId())));
                 } else {
                     PrintWriter pw = ExportUtils.getPlainTextWriter(response, setting.getName() + ".txt");
                     DataProperties properties = null;
-                    switch (myForm.getAppearanceIdx()) {
-                    case SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER:
-                    	properties = studentSectioningSolverService.createConfig(setting.getUniqueId(), null);
+                    switch (setting.getAppearanceType().getSolverType()) {
+                    case STUDENT:
+                    	properties = getStudentSectioningSolverService().createConfig(setting.getUniqueId(), null);
                     	break;
-                    case SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER:
-                    	properties = examinationSolverService.createConfig(setting.getUniqueId(), null);
+                    case EXAM:
+                    	properties = getExaminationSolverService().createConfig(setting.getUniqueId(), null);
+                    	break;
+                    case INSTRUCTOR:
+                    	properties = getInstructorSchedulingSolverService().createConfig(setting.getUniqueId(), null);
                     	break;
                     default:
-                    	properties = courseTimetablingSolverService.createConfig(setting.getUniqueId(), null);
+                    	properties = getCourseTimetablingSolverService().createConfig(setting.getUniqueId(), null);
                     }
                     pw.println("## Solver Configuration File");
-                    pw.println("## Name: "+setting.getDescription());
-                    pw.println("## Date: "+new Date());
+                    pw.println("## Reference: " + setting.getName());
+                    pw.println("## Name: " + setting.getDescription());
+                    pw.println("## Appearance: " + SolverPredefinedSetting.Appearance.values()[setting.getAppearance()].getLabel());
+                    pw.println("## Date: " + new Date());
                     pw.println("######################################");
                     for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
                         SolverParameterGroup g = (SolverParameterGroup)i.next();
-                        if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
+                        if (setting.getAppearanceType() == SolverPredefinedSetting.Appearance.STUDENT_SOLVER) {
                             if (g.getSolverType() != SolverParameterGroup.SolverType.STUDENT) continue;
-                        } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+                        } else if (setting.getAppearanceType() == SolverPredefinedSetting.Appearance.EXAM_SOLVER) {
                         	if (g.getSolverType() != SolverParameterGroup.SolverType.EXAM) continue;
-                        } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_INSTRUCTOR_SOLVER) {
+                        } else if (setting.getAppearanceType() == SolverPredefinedSetting.Appearance.INSTRUCTOR_SOLVER) {
                         	if (g.getSolverType() != SolverParameterGroup.SolverType.INSTRUCTOR) continue;
                         } else {
                         	if (g.getSolverType() != SolverParameterGroup.SolverType.COURSE) continue;
@@ -301,13 +300,12 @@ public class SolverSettingsAction extends Action {
                     pw.flush(); pw.close();
                     return null;
                 }
-                list=false;
             }
         }
         
 
         // Delete 
-        if("Delete".equals(op)) {
+        if(MSG.actionDeleteSolverConfig().equals(op)) {
         	Transaction tx = null;
     		
             try {
@@ -316,7 +314,7 @@ public class SolverSettingsAction extends Action {
                 if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 	tx = hibSession.beginTransaction();
     			
-    			SolverPredefinedSetting setting = dao.get(myForm.getUniqueId(), hibSession);
+    			SolverPredefinedSetting setting = dao.get(form.getUniqueId(), hibSession);
 
     			dao.delete(setting, hibSession);
     			
@@ -325,27 +323,26 @@ public class SolverSettingsAction extends Action {
     	    	if (tx!=null) tx.rollback();
     			Debug.error(e);
     	    }
-            myForm.reset(mapping, request);
-            myForm.setOp("Add Solver Configuration");
+            form.reset();
+            form.setOp(MSG.actionAddNewSolverConfig());
         }
 
-        if ("Add Solver Configuration".equals(myForm.getOp())) {
+        if (MSG.actionAddNewSolverConfig().equals(form.getOp())) {
             // Read all existing settings and store in request
-            if (list) getSolverSettingsTable(request);        
-            return mapping.findForward("list");
+            return "list";
         } 
         
-        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
+        return (MSG.actionSaveSolverConfig().equals(form.getOp()) ? "add" : "edit");
 	}
 	
-    private void getSolverSettingsTable(HttpServletRequest request) throws Exception {
+    public String getSolverSettingsTable() {
     	Transaction tx = null;
 		
-		WebTable.setOrder(sessionContext,"solverSettings.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"solverSettings.ord",request.getParameter("ord"), 1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
-			    null, "solverSettings.do?ord=%%",
-			    new String[] {"Reference", "Name", "Appearance"},
+			    null, "solverSettings.action?ord=%%",
+			    new String[] {MSG.fieldReference(), MSG.fieldName(), MSG.fieldAppearance()},
 			    new String[] {"left", "left", "left"},
 			    null );
         
@@ -358,16 +355,16 @@ public class SolverSettingsAction extends Action {
 			List list = hibSession.createCriteria(SolverPredefinedSetting.class).list();
 			
 			if(list.isEmpty()) {
-			    webTable.addLine(null, new String[] {"No solver settings defined."}, null, null );			    
+			    webTable.addLine(null, new String[] {MSG.infoNoSolverConfigs()}, null, null );			    
 			} else {
 				for (Iterator i=list.iterator();i.hasNext();) {
 					SolverPredefinedSetting setting = (SolverPredefinedSetting)i.next();
-					String onClick = "onClick=\"document.location='solverSettings.do?op=Edit&id=" + setting.getUniqueId() + "';\"";
+					String onClick = "onClick=\"document.location='solverSettings.action?op=Edit&id=" + setting.getUniqueId() + "';\"";
 					
 					webTable.addLine(onClick, new String[] {
 							setting.getName(), 
 							setting.getDescription(), 
-							SolverPredefinedSetting.sAppearances[setting.getAppearance().intValue()]},
+							setting.getAppearanceType().getLabel()},
 						new Comparable[] {
 							setting.getName(), 
 							setting.getDescription(),
@@ -382,9 +379,14 @@ public class SolverSettingsAction extends Action {
 	    	throw e;
 	    }
 
-	    request.setAttribute("SolverSettings.table", webTable.printTable(WebTable.getOrder(sessionContext,"solverSettings.ord")));
+	    return webTable.printTable(WebTable.getOrder(sessionContext,"solverSettings.ord"));
     }	
 	
+    
+    public List<SolverParameterGroup> getSolverParameterGroups() {
+    	return (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
+    			"from SolverParameterGroup order by order").list();
+    }
 
 }
 

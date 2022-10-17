@@ -4736,4 +4736,91 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Default Student Scheduling Status:")
 	String propDefaultStudentStatus();
+	
+	@DefaultMessage("Appearance")
+	String fieldAppearance();
+	
+	@DefaultMessage("Courses Saved Timetables")
+	String solverConfigAppearanceTimetables();
+	
+	@DefaultMessage("Course Timetabling Solver")
+	String solverConfigAppearanceSolver();
+	
+	@DefaultMessage("Examination Timetabling Solver")
+	String solverConfigAppearanceExamSolver();
+	
+	@DefaultMessage("Student Scheduling Solver")
+	String solverConfigAppearanceStudentSolver();
+	
+	@DefaultMessage("Instructor Scheduling Solver")
+	String solverConfigAppearanceInstructorSolver();
+	
+	@DefaultMessage("Add Solver Configuration")
+	String actionAddNewSolverConfig();
+	
+	@DefaultMessage("A")
+	String accessAddNewSolverConfig();
+	
+	@DefaultMessage("Create New Solver Configuration (Alt + {0})")
+	String titleAddNewSolverConfig(String access);
+	
+	@DefaultMessage("Save")
+	String actionSaveSolverConfig();
+	
+	@DefaultMessage("S")
+	String accessSaveSolverConfig();
+	
+	@DefaultMessage("Save Solver Configuration (Alt + {0})")
+	String titleSaveSolverConfig(String access);
+	
+	@DefaultMessage("Update")
+	String actionUpdateSolverConfig();
+	
+	@DefaultMessage("U")
+	String accessUpdateSolverConfig();
+	
+	@DefaultMessage("Update Solver Configuration (Alt + {0})")
+	String titleUpdateSolverConfig(String access);
+	
+	@DefaultMessage("Delete")
+	String actionDeleteSolverConfig();
+	
+	@DefaultMessage("D")
+	String accessDeleteSolverConfig();
+	
+	@DefaultMessage("Delete Solver Configuration (Alt + {0})")
+	String titleDeleteSolverConfig(String access);
+	
+	@DefaultMessage("Export")
+	String actionExportSolverConfig();
+	
+	@DefaultMessage("X")
+	String accessExportSolverConfig();
+	
+	@DefaultMessage("Export Solver Configuration (Alt + {0})")
+	String titleExportSolverConfig(String access);
+	
+	@DefaultMessage("Back")
+	String actionBackToSolverConfigs();
+	
+	@DefaultMessage("B")
+	String accessBackToSolverConfigs();
+	
+	@DefaultMessage("Back to Solver Configurations (Alt + {0})")
+	String titleBackToSolverConfigs(String access);
+	
+	@DefaultMessage("No solver configurations defined.")
+	String infoNoSolverConfigs();
+	
+	@DefaultMessage("The solver configuration will be deleted. Continue?")
+	String confirmDeleteSolverConfig();
+	
+	@DefaultMessage("Solver Configurations")
+	String sectSolverConfigurations();
+	
+	@DefaultMessage("Add Solver Configuration")
+	String sectAddSolverConfiguration();
+	
+	@DefaultMessage("Edit Solver Configuration")
+	String sectEditSolverConfiguration();
 }
