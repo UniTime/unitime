@@ -137,6 +137,10 @@ public class EduNavPlansProvider implements DegreePlansProvider {
 		return ApplicationProperties.getProperty("edunav.includePlanContent", "true");
 	}
 	
+	protected String getDegreeWorksNoPlansMessage() {
+		return ApplicationProperties.getProperty("edunav.noPlansMessage", "No EduNav plan is available.");
+	}
+	
 	protected String getBannerId(XStudentId student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -250,8 +254,12 @@ public class EduNavPlansProvider implements DegreePlansProvider {
 
 	@Override
 	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CourseMatcher matcher) throws SectioningException {
-		if (iFallback == null)
-			return _getDegreePlans(server, helper, student, matcher);
+		if (iFallback == null) {
+			List<DegreePlanInterface> ret = _getDegreePlans(server, helper, student, matcher);
+			if (ret == null || ret.isEmpty())
+				throw new SectioningException(getDegreeWorksNoPlansMessage()).withTypeInfo();
+			return ret;
+		}
 		if (getEduNavFallbackCombine()) {
 			List<DegreePlanInterface> ret1 = null, ret2 = null;
 			SectioningException e1 = null, e2 = null;

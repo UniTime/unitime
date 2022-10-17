@@ -91,8 +91,21 @@ public class EduNavPilotPlansProvider implements DegreePlansProvider {
 		if (isStudentInPilot(server, helper, student)) {
 			boolean activeOnly = getDegreeWorksActiveOnly();
 			List<DegreePlanInterface> plans = new ArrayList<DegreePlanInterface>();
-			List<DegreePlanInterface> eduNavPlans = iEduNav.getDegreePlans(server, helper, student, matcher);
-			List<DegreePlanInterface> dgwPlans = iDGW.getDegreePlans(server, helper, student, matcher);
+			
+			List<DegreePlanInterface> eduNavPlans = null;
+			SectioningException eduNavErr = null;
+			try {
+				eduNavPlans = iEduNav.getDegreePlans(server, helper, student, matcher);
+			} catch (SectioningException e) {
+				eduNavErr = e;
+			}
+			List<DegreePlanInterface> dgwPlans = null;
+			SectioningException dgwErr = null;
+			try {
+				dgwPlans = iDGW.getDegreePlans(server, helper, student, matcher);
+			} catch (SectioningException e) {
+				dgwErr = e;	
+			}
 			if (eduNavPlans != null) {
 				for (DegreePlanInterface plan: eduNavPlans) {
 					plan.setName("EduNav: " + plan.getName());
@@ -112,6 +125,12 @@ public class EduNavPilotPlansProvider implements DegreePlansProvider {
 					plans.add(plan);
 				}
 			}
+			if (!plans.isEmpty())
+				return plans;
+			if (eduNavErr != null)
+				throw eduNavErr;
+			if (dgwErr != null)
+				throw dgwErr;
 			return plans;
 		} else {
 			return iFallback.getDegreePlans(server, helper, student, matcher);
