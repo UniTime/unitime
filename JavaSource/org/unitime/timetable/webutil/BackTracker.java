@@ -26,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
-import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 
@@ -37,10 +35,6 @@ import org.unitime.timetable.security.SessionContext;
 public class BackTracker {
 	public static int MAX_BACK_STEPS = 10;
 	public static String BACK_LIST = SessionAttribute.Back.key();
-	
-    protected static MessageResources getResources(HttpServletRequest request) {
-    	return ((MessageResources) request.getAttribute(Globals.MESSAGES_KEY));
-    }	
 	
 	public static Vector getBackList(HttpSession session) {
 		synchronized (session) {
@@ -137,10 +131,6 @@ public class BackTracker {
 	}
 	
 	public static String getBackButton(HttpServletRequest request, int nrBackSteps, String name, String title, String accessKey, String style, String clazz, String backType, String backId) {
-		MessageResources rsc = getResources(request);
-		if (rsc!=null && rsc.getMessage(name)!=null) {
-			name = rsc.getMessage(name);
-		}
 		synchronized (request.getSession()) {
 			Vector backList = getBackList(request.getSession());
 			if (backList.size()<nrBackSteps) return "";

@@ -19,25 +19,9 @@
 */
 package org.unitime.localization.messages;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.unitime.localization.impl.LocalizedLookupDispatchAction;
-import org.unitime.timetable.action.UniTimeAction;
-
 /**
  * @author Tomas Muller
  */
 public interface Messages extends org.unitime.timetable.gwt.resources.Messages {
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.METHOD)
-	public @interface StrutsAction {
-		String value();
-		Class<? extends LocalizedLookupDispatchAction>[] apply() default {};
-		Class<? extends UniTimeAction>[] action() default {};
-	}
-	
 	public String translateMessage(String name, String defaultMessage, Object... arguments);
 }

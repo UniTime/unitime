@@ -20,15 +20,11 @@
 package org.unitime.commons;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 
-import org.apache.struts.upload.FormFile;
 import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
@@ -78,31 +74,6 @@ public abstract class Email {
 		addAttachment(name == null ? file.getName() : name, new DataHandler(new FileDataSource(file)));
 	}
 
-	public void addAttachment(final FormFile file) throws Exception {
-		addAttachment(file.getFileName(), 
-				new DataHandler(new DataSource() {
-					@Override
-					public OutputStream getOutputStream() throws IOException {
-						throw new IOException("No output stream.");
-					}
-					
-					@Override
-					public String getName() {
-						return file.getFileName();
-					}
-					
-					@Override
-					public InputStream getInputStream() throws IOException {
-						return file.getInputStream();
-					}
-					
-					@Override
-					public String getContentType() {
-						return file.getContentType();
-					}
-				}));
-	}
-	
 	public void addAttachment(DataSource source) throws Exception {
 		addAttachment(source.getName(), new DataHandler(source));
 	}

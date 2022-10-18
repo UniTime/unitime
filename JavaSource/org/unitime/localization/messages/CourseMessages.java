@@ -19,10 +19,6 @@
 */
 package org.unitime.localization.messages;
 
-import org.unitime.timetable.action.ClassAssignmentsReportSearchAction;
-import org.unitime.timetable.action.ClassSearchAction;
-import org.unitime.timetable.action.InstructionalOfferingSearchAction;
-
 /**
  * @author Tomas Muller, Zuzana Mullerova
  */
@@ -896,46 +892,30 @@ public interface CourseMessages extends Messages {
 	String filterCourseNumber();
 
 	@DefaultMessage("Search")
-	@StrutsAction(
-		value = "searchInstructionalOfferings",
-		action = InstructionalOfferingSearchAction.class
-	)
 	String actionSearchInstructionalOfferings();
 	
 	@DefaultMessage("Search")
 	String actionSearchDistributionPreferences();
 	
 	@DefaultMessage("Search")
-	@StrutsAction(
-		value = "searchClasses",
-		action = ClassSearchAction.class
-	)
 	String actionSearchClasses();
 	
 	@DefaultMessage("Search")
-	@StrutsAction(
-		value = "searchClasses",
-		action = ClassAssignmentsReportSearchAction.class
-	)
 	String actionSearchClassAssignments();
 
 	@DefaultMessage("Search")
 	String actionSearchInstructors();
 
 	@DefaultMessage("Export PDF")
-	@StrutsAction("exportPdf")
 	String actionExportPdf();
 
 	@DefaultMessage("Export CSV")
-	@StrutsAction("exportCsv")
 	String actionExportCsv();
 
 	@DefaultMessage("Worksheet PDF")
-	@StrutsAction("worksheetPdf")
 	String actionWorksheetPdf();
 
 	@DefaultMessage("Add New")
-	@StrutsAction("addInstructionalOfferings")
 	String actionAddNewInstructionalOffering();
 	
 	@DefaultMessage("Edit Class")

@@ -29,7 +29,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
@@ -119,14 +118,14 @@ public class LookupTables {
     	if (includeExternal)
     		departments.addAll(Department.findAllExternal(context.getUser().getCurrentAcademicSessionId()));
     	
-		List<LabelValueBean> deptList = new ArrayList<LabelValueBean>();
+		List<ComboBoxLookup> deptList = new ArrayList<ComboBoxLookup>();
 		for (Department d: departments) {
 			String code = d.getDeptCode().trim();
 			String abbv = d.getName().trim();
 			if (d.isExternalManager())
-				deptList.add(new LabelValueBean(code + " - " + abbv + " (" + d.getExternalMgrLabel() + ")", code));
+				deptList.add(new ComboBoxLookup(code + " - " + abbv + " (" + d.getExternalMgrLabel() + ")", code));
 			else	
-				deptList.add(new LabelValueBean(code + " - " + abbv, code)); 
+				deptList.add(new ComboBoxLookup(code + " - " + abbv, code)); 
 		}
 		request.setAttribute(Department.DEPT_ATTR_NAME, deptList);
     }
