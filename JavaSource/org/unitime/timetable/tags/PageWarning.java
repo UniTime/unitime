@@ -22,7 +22,7 @@ package org.unitime.timetable.tags;
 import javax.servlet.ServletRequest;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.apache.struts.Globals;
+import org.apache.struts2.ServletActionContext;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.security.SessionContext;
@@ -71,11 +71,11 @@ public class PageWarning extends TagSupport {
 				String warning = ApplicationProperties.getProperty(getPrefix() + page);
 				if (warning != null && !warning.isEmpty()) return warning;
 			}
-			String action = (String)request.getAttribute(Globals.ORIGINAL_URI_KEY);
-			if (action != null && action.endsWith(".do")) {
-				String warning = ApplicationProperties.getProperty(getPrefix() + action.substring(action.lastIndexOf('/') + 1, action.length() - 3));
+			if (ServletActionContext.getContext() != null) {
+				String action = ServletActionContext.getActionMapping().getName();
+				String warning = ApplicationProperties.getProperty(getPrefix() + action);
 				if (warning != null && !warning.isEmpty()) return warning;
-			}			
+			}
 		}
 		SessionContext context = getSessionContext();
 		UserContext user = (context != null && context.isAuthenticated() ? context.getUser() : null);
