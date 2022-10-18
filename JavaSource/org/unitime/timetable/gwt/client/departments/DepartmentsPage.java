@@ -184,8 +184,8 @@ public class DepartmentsPage extends Composite {
 
 			//DepartmentEdit page
 			@Override
-			protected boolean isAbbreviationUnique(
-					DepartmentInterface department) {
+			protected boolean isAbbreviationUnique(DepartmentInterface department) {
+				if (!departmentsDataFullList.hasDepartments()) return true;
 				List<DepartmentInterface> departmentFullList = departmentsDataFullList.getDepartments();
 				for (int i = 0; i < departmentFullList.size(); i++) {
 					DepartmentInterface b = departmentFullList.get(i);
@@ -204,8 +204,8 @@ public class DepartmentsPage extends Composite {
 			}
 			
 			@Override
-			protected boolean isDeptCodeUnique(
-					DepartmentInterface department) {
+			protected boolean isDeptCodeUnique(DepartmentInterface department) {
+				if (!departmentsDataFullList.hasDepartments()) return true;
 				List<DepartmentInterface> departmentFullList = departmentsDataFullList.getDepartments();
 				for (int i = 0; i < departmentFullList.size(); i++) {
 					DepartmentInterface b = departmentFullList.get(i);
