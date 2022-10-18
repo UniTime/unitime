@@ -4862,4 +4862,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("N/A")
 	String notApplicable();
+	
+	@DefaultMessage("Update")
+	String actionUpdateDistributionType();
+	
+	@DefaultMessage("Back")
+	String actionBackToDistributionTypes();
+	
+	@DefaultMessage("Restrict Access")
+	String sectRestrictAccess();
 }

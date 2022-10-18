@@ -19,121 +19,156 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.PreferenceLevel;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 02-18-2005
- * 
- * XDoclet definition:
- * @struts:form name="distributionTypeEditForm"
- *
  * @author Tomas Muller
  */
-public class DistributionTypeEditForm extends RefTableEntryEditForm {
-	String iOp = null;
-    private Vector iDepartmentIds = new Vector();
-    private Long iDepartmentId;
-	
-	/**
-     * Comment for <code>serialVersionUID</code>
-     */
+public class DistributionTypeEditForm implements UniTimeForm {
     private static final long serialVersionUID = 3252210646873060656L;
 
- 	// --------------------------------------------------------- Instance Variables
+    private DistributionType iDistributionType;
+    private String iOp = null;
+    private List<Long> iDepartmentIds = new ArrayList<Long>();
+    private Long iDepartmentId;
+
 	public DistributionTypeEditForm() {
-	    super();
-	    refTableEntry = new DistributionType();
+		reset();
 	}
-	// --------------------------------------------------------- Methods
 	
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; refTableEntry = new DistributionType();
+	@Override
+	public void reset() {
+		iOp = null; iDistributionType = new DistributionType();
 		iDepartmentId = null; iDepartmentIds.clear();
 	}
 	
-	public void setRefTableEntry(RefTableEntry refTableEntry, Long sessionId) {
-		super.setRefTableEntry(refTableEntry);
-		DistributionType distType = (DistributionType)refTableEntry;
+	@Override
+	public void validate(UniTimeAction action) {
+	}
+	
+	public void setDistributionType(DistributionType distributionType, Long sessionId) {
+		iDistributionType = distributionType;
 		iDepartmentIds.clear();
-		for (Iterator i=distType.getDepartments(sessionId).iterator();i.hasNext();) {
-			Department d = (Department)i.next();
+		for (Department d: distributionType.getDepartments(sessionId)) {
 			iDepartmentIds.add(d.getUniqueId());
 		}
 	}
-
+	
+	public DistributionType getDistributionType() {
+		return iDistributionType;
+	}
 	
 	public void setSequencingRequired(boolean sequencingRequired){
-	    ((DistributionType) refTableEntry).setSequencingRequired(sequencingRequired);
+	    iDistributionType.setSequencingRequired(sequencingRequired);
 	}
 	
 	public boolean isSequencingRequired(){
-	    return(((DistributionType) refTableEntry).isSequencingRequired());
+	    return(iDistributionType.isSequencingRequired());
 	}
 	public void setRequirementId(String requirementId){
 	    Integer reqId = Integer.valueOf(requirementId);
-	    ((DistributionType) refTableEntry).setRequirementId(reqId);
+	    iDistributionType.setRequirementId(reqId);
 	}
 	
 	public String getRequirementId(){
-	    if (((DistributionType) refTableEntry).getRequirementId() == null){
+	    if (iDistributionType.getRequirementId() == null){
 	        return ("");
 	    } else {
-	        return(((DistributionType) refTableEntry).getRequirementId().toString());
+	        return(iDistributionType.getRequirementId().toString());
 	    }
 	}
 	
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp=op; }
 	public String getAbbreviation() {
-		return ((DistributionType)refTableEntry).getAbbreviation();
+		return iDistributionType.getAbbreviation();
 	}
 	public void setAbbreviation(String abbreviation) {
-		((DistributionType)refTableEntry).setAbbreviation(abbreviation);
+		iDistributionType.setAbbreviation(abbreviation);
 	}
 	public boolean isInstructorPref() {
-		return (((DistributionType)refTableEntry).isInstructorPref()==null?false:((DistributionType)refTableEntry).isInstructorPref().booleanValue());
+		return (iDistributionType.isInstructorPref()==null?false:iDistributionType.isInstructorPref().booleanValue());
 	}
 	public void setInstructorPref(boolean instructorPref) {
-		((DistributionType)refTableEntry).setInstructorPref(Boolean.valueOf(instructorPref));
+		iDistributionType.setInstructorPref(Boolean.valueOf(instructorPref));
 	}
     public boolean isExamPref() {
-        return (((DistributionType)refTableEntry).isExamPref()==null?false:((DistributionType)refTableEntry).isExamPref().booleanValue());
+        return (iDistributionType.isExamPref()==null?false:iDistributionType.isExamPref().booleanValue());
     }
     public void setExamPref(boolean examPref) {
-        ((DistributionType)refTableEntry).setExamPref(Boolean.valueOf(examPref));
+        iDistributionType.setExamPref(Boolean.valueOf(examPref));
     }
 	public String getAllowedPref() {
-		return ((DistributionType)refTableEntry).getAllowedPref();
+		return iDistributionType.getAllowedPref();
 	}
 	public void setAllowedPref(String allowedPref) {
-		((DistributionType)refTableEntry).setAllowedPref(allowedPref);
+		iDistributionType.setAllowedPref(allowedPref);
 	}
 	public String getDescription() {
-		return ((DistributionType)refTableEntry).getDescr();
+		return iDistributionType.getDescr();
 	}
 	public void setDescription(String description) {
-		((DistributionType)refTableEntry).setDescr(description);
+		iDistributionType.setDescr(description);
 	}
 	public boolean isVisible() {
-		return ((DistributionType)refTableEntry).isVisible();
+		return iDistributionType.isVisible();
 	}
 	public void setVisible(boolean visible) {
-		((DistributionType)refTableEntry).setVisible(visible);
+		iDistributionType.setVisible(visible);
 	}
 	
-	public Vector getDepartmentIds() { return iDepartmentIds; }
-	public void setDepartmentIds(Vector departmentIds) { iDepartmentIds = departmentIds; }
+	public Long getUniqueId() {
+		return iDistributionType.getUniqueId();
+	}
+	public void setUniqueId(Long uniqueId) {
+		iDistributionType.setUniqueId(uniqueId);
+	}
+	public String getReference() {
+		return iDistributionType.getReference();
+	}
+	public void setReference(String reference) {
+		iDistributionType.setReference(reference);
+	}
+	public String getLabel() {
+		return iDistributionType.getLabel();
+	}
+	public void setLabel(String label) {
+		iDistributionType.setLabel(label);
+	}
+	
+	public List<Long> getDepartmentIds() { return iDepartmentIds; }
+	public void setDepartmentIds(List<Long> departmentIds) { iDepartmentIds = departmentIds; }
+	public Long getDepartmentIds(int idx) { return iDepartmentIds.get(idx); }
+	public void setDepartmentIds(int idx, Long departmentId) { iDepartmentIds.add(idx, departmentId); }
 	public Long getDepartmentId() { return iDepartmentId; }
 	public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
 	
+	public Boolean getAllowedPreference(int prefId) {
+		PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(prefId);
+		return iDistributionType.getAllowedPref() != null && iDistributionType.getAllowedPref().indexOf(PreferenceLevel.prolog2char(pref.getPrefProlog())) >= 0;
+	}
+	
+	public void setAllowedPreference(int prefId, Boolean value) {
+		PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(prefId);
+		String original = iDistributionType.getAllowedPref();
+		String allowedPref = "";
+		for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+			char ch = PreferenceLevel.prolog2char(p.getPrefProlog());
+			if (p.equals(pref)) {
+				if (value)
+					allowedPref += ch;
+			} else {
+				if (original != null && original.indexOf(ch) >= 0)
+					allowedPref += ch;
+			}
+		}
+		iDistributionType.setAllowedPref(allowedPref);
+	}
 }

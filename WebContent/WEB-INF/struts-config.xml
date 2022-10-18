@@ -25,7 +25,6 @@
    <description>University Timetabling Application</description>
    
    <form-beans >
-	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
@@ -40,22 +39,7 @@
    <global-exceptions>
    		<exception key="errors.exception" type="Exception" path="/error.jsp" />
    </global-exceptions>
-
-   <action-mappings >
-      <action
-         path="/distributionTypeEdit"
-         attribute="distributionTypeEditForm"
-         name="distributionTypeEditForm"
-         parameter="do"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showEdit" path="distributionTypeEditTile" />
-         <forward
-            name="showDistributionTypeList"
-            path="/distributionTypeList.action"
-            redirect="true" />
-      </action>
-     
+   <action-mappings>
       <action
          path="/subjectList"
          attribute="subjectListForm"

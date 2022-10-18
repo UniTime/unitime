@@ -17,108 +17,105 @@
  * limitations under the License.
  * 
  --%>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-
-<html:form action="/distributionTypeEdit">
-	<html:hidden property="uniqueId"/>
-	<table width="100%" border="0" cellspacing="0" cellpadding="3">	
+ <%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
+<s:form action="distributionTypeEdit">
+	<s:hidden name="form.uniqueId"/>
+	<table class="unitime-MainTable">	
 		<TR>
 			<TD colspan='2'>
 			<tt:section-header>
 				<tt:section-title>
-					<bean:write name="distributionTypeEditForm" property="reference"/>
-					<html:hidden property="reference"/>
+					<s:property value="form.reference"/>
+					<s:hidden name="form.reference"/>
 				</tt:section-title>
-				<html:submit property="op" value="Save"/>
-				<html:submit property="op" value="Back"/>
+				<s:submit name='op' value='%{#msg.actionUpdateDistributionType()}'/>
+				<s:submit name='op' value='%{#msg.actionBackToDistributionTypes()}'/>
 			</tt:section-header>
 			</TD>
 		</TR>
-
 		<tr>
-			<td>Id:</td>
+			<td><loc:message name="fieldId"/>:</td>
 			<td>
-				<bean:write name="distributionTypeEditForm" property="requirementId"/>
-				<html:hidden property="requirementId"/>
-				<html:errors property="requirementId"/>
+				<s:property value="form.requirementId"/>
+				<s:hidden name="form.requirementId"/>
+				<s:fielderror fieldName="form.requirementId"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Abbreviation:</td>
+			<td><loc:message name="fieldAbbreviation"/>:</td>
 			<td>
-				<html:text property="abbreviation" size="60"/>
-				<html:errors property="abbreviation"/>
+				<s:textfield name="form.abbreviation" size="60"/>
+				<s:fielderror fieldName="form.abbreviation"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Name:</td>
+			<td><loc:message name="fieldName"/>:</td>
 			<td>
-				<html:text property="label" size="60"/>
-				<html:errors property="label"/>
+				<s:textfield name="form.label" size="60"/>
+				<s:fielderror fieldName="form.label"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Type:</td>
+			<td><loc:message name="fieldType"/>:</td>
 			<td>
-				<logic:equal name="distributionTypeEditForm" property="examPref" value="false">
-					Course
-				</logic:equal>
-				<logic:equal name="distributionTypeEditForm" property="examPref" value="true">
-					Examination
-				</logic:equal>
-				<html:hidden property="examPref"/>
-				<html:errors property="examPref"/>
+				<s:if test="form.examPref == true">
+					<loc:message name="itemDistTypeExams"/>
+				</s:if><s:else>
+					<loc:message name="itemDistTypeCourses"/>
+				</s:else>
+				<s:hidden name="form.examPref"/>
+				<s:fielderror fieldName="form.examPref"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Visible:</td>
+			<td><loc:message name="fieldVisible"/>:</td>
 			<td>
-				<html:checkbox property="visible"/>
-				<html:errors property="visible"/>
+				<s:checkbox name="form.visible"/>
+				<s:fielderror fieldName="form.visible"/>
 			</td>
 		</tr>
-		<logic:equal name="distributionTypeEditForm" property="examPref" value="false">
+		<s:if test="form.examPref == false">
 			<tr>
-				<td>Allow Instructor Preference:</td>
+				<td><loc:message name="fieldAllowInstructorPreference"/>:</td>
 				<td>
-					<html:checkbox property="instructorPref"/>
-					<html:errors property="instructorPref"/>
+					<s:checkbox name="form.instructorPref"/>
+					<s:fielderror fieldName="form.instructorPref"/>
 				</td>
 			</tr>
-		</logic:equal>
-		<logic:equal name="distributionTypeEditForm" property="examPref" value="true">
-			<html:hidden property="instructorPref"/>			
-		</logic:equal>
+		</s:if><s:else>
+			<s:hidden name="form.instructorPref"/>			
+		</s:else>
 		<tr>
-			<td>Sequencing Required:</td>
+			<td><loc:message name="fieldSequencingRequired"/>:</td>
 			<td>
-				<logic:equal name="distributionTypeEditForm" property="sequencingRequired" value="true">
-					Yes
-				</logic:equal>
-				<logic:equal name="distributionTypeEditForm" property="sequencingRequired" value="false">
-					No
-				</logic:equal>
-				<html:hidden property="sequencingRequired"/>
-				<html:errors property="sequencingRequired"/>
+				<s:if test="form.sequencingRequired == true">
+					<loc:message name="yes"/>
+				</s:if><s:else>
+					<loc:message name="no"/>
+				</s:else>
+				<s:hidden name="form.sequencingRequired"/>
+				<s:fielderror fieldName="form.sequencingRequired"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Allow Preferences:</td>
+			<td><loc:message name="fieldAllowPreferences"/>:</td>
 			<td>
-				<html:text property="allowedPref" size="10"/>
-				<html:errors property="allowedPref"/>
+				<s:iterator value="#request.prefLevelsList" var="p" status="stat"><s:set var="idx" value="%{#stat.index}"/>
+					<s:if test="#idx > 0"><br></s:if>
+					<s:checkbox name="form.allowedPreference[%{#p.prefId}]"/><s:property value="#p.prefName"/>
+				</s:iterator>
+				<s:fielderror fieldName="form.allowedPref"/>
 			</td>
 		</tr>
 		<tr>
-			<td>Description:</td>
+			<td><loc:message name="fieldDescription"/>:</td>
 			<td>
-				<html:textarea property="description" rows="4" cols="160"/>
-				<html:errors property="description"/>
+				<s:textarea name="form.description" rows="4" cols="160"/>
+				<s:fielderror fieldName="form.description"/>
 			</td>
 		</tr>
 		
@@ -130,32 +127,27 @@
 
 		<TR>
 			<TD colspan='2'>
-			<tt:section-title>Restrict Access</tt:section-title>
+			<tt:section-title><loc:message name="sectRestrictAccess"/></tt:section-title>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD valign="top">Departments:</TD>
 			<TD>
-				<logic:iterate name="distributionTypeEditForm" property="departmentIds" id="deptId">
-					<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="dept">
-						<logic:equal name="dept" property="value" value="<%=deptId.toString()%>">
-							<bean:write name="dept" property="label"/>
-							<input type="hidden" name="depts" value="<%=deptId%>">
-							<BR>
-						</logic:equal>
-					</logic:iterate>
-				</logic:iterate>
-				<html:select property="departmentId">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
-				</html:select>
-				&nbsp;
-				<html:submit property="op" value="Add Department"/>
-				&nbsp;
-				<html:submit property="op" value="Remove Department"/>
-				&nbsp;
-				<html:errors property="department"/>
+				<s:iterator value="form.departmentIds" var="deptId" status="stat"><s:set var="idx" value="%{#stat.index}"/>
+					<s:hidden name="form.departmentIds[%{#idx}]"/>
+					<s:iterator value="#request.deptsList" var="dept">
+						<s:if test="#dept.value == #deptId">
+							<s:property value="#dept.label"/><br>
+						</s:if>
+					</s:iterator>
+				</s:iterator>
+				<s:select name="form.departmentId"
+					list="#request.deptsList" listKey="value" listValue="label"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
+				<s:submit name='op' value='%{#msg.actionAddDepartment()}'/>
+				<s:submit name='op' value='%{#msg.actionRemoveDepartment()}'/>
+				<s:fielderror fieldName="form.department"/>
 			</TD>
 		</TR>
 		
@@ -167,9 +159,10 @@
 		
 		<TR>
 			<TD colspan='2' align='right'>
-				<html:submit property="op" value="Save"/>
-				<html:submit property="op" value="Back"/>
+				<s:submit name='op' value='%{#msg.actionUpdateDistributionType()}'/>
+				<s:submit name='op' value='%{#msg.actionBackToDistributionTypes()}'/>
 			</TD>
 		</TR>
 	</table>	
-</html:form>
+</s:form>
+</loc:bundle>

@@ -28,7 +28,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.HibernateException;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
@@ -43,7 +42,6 @@ import org.unitime.timetable.security.rights.Right;
 /** 
  * @author Tomas Muller
  */
-@Service("/distributionTypeList")
 @Action(value = "distributionTypeList", results = {
 		@Result(name = "showDistributionTypeList", type = "tiles", location = "distributionTypeList.tiles")
 	})
@@ -92,7 +90,7 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    String allowPref = null;
 		    if ("".equals(d.getAllowedPref())) {
 		    	allowPref = "<i>" + MSG.itemNone() + "</i>";
-		    } else if ("P43210R".equals(d.getAllowedPref())) {
+		    } else if ("P43210R".equals(d.getAllowedPref()) || "R01234P".equals(d.getAllowedPref())) {
 		    	allowPref = "<i>" + MSG.itemAll() + "</i>";
 		    } else {
 		    	for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
@@ -116,7 +114,7 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    	if (i.hasNext()) { deptStr += ", "; deptCmp += ","; }
 		    }
 		    WebTableLine line = webTable.addLine(
-		    	edit ? "onClick=\"document.location='distributionTypeEdit.do?id="+d.getUniqueId()+"';\"" : null,
+		    	edit ? "onClick=\"document.location='distributionTypeEdit.action?id="+d.getUniqueId()+"';\"" : null,
 		    	new String[] {
 		    		d.getRequirementId().toString(),
 		    		d.getReference(),
@@ -143,6 +141,8 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    		deptCmp,
 		    		d.getDescr()
 		    	},null);
+		    if (d.getRequirementId() != null)
+		    	line.setUniqueId(d.getRequirementId().toString());
 		    if (!d.isVisible())
 		    	line.setStyle("color:gray;");
 	    }
