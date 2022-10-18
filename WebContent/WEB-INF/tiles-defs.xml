@@ -70,11 +70,6 @@
 		<put name="body" value="/admin/timetableManagerList.jsp" />
   	</definition>
 
-	<definition	name="distributionTypeListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Distribution Types"/>
-		<put name="body" value="/admin/distributionTypeList.jsp" />
-  	</definition>
-
 	<definition	name="distributionTypeEditTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Edit Distribution Type"/>
 		<put name="body" value="/admin/distributionTypeEdit.jsp" />

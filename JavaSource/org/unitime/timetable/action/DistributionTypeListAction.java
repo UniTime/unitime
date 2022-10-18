@@ -23,66 +23,65 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 02-18-2005
- * 
- * XDoclet definition:
- * @struts:action path="/distributionTypeList" name="distributionTypeListForm" input="/admin/distributionTypeList.jsp" scope="request" validate="true"
- *
  * @author Tomas Muller
  */
 @Service("/distributionTypeList")
-public class DistributionTypeListAction extends Action {
+@Action(value = "distributionTypeList", results = {
+		@Result(name = "showDistributionTypeList", type = "tiles", location = "distributionTypeList.tiles")
+	})
+@TilesDefinition(name = "distributionTypeList.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Distribution Types"),
+		@TilesPutAttribute(name = "body", value = "/admin/distributionTypeList.jsp")
+	})
+public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -5869733478310566508L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	@Autowired SessionContext sessionContext;
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws HibernateException {
+	@Override
+	public String execute() throws HibernateException {
 		sessionContext.checkPermission(Right.DistributionTypes);
-		
+		return "showDistributionTypeList";
+	}
+	
+	public String getTable() {
 		List<DistributionType> distTypes = new ArrayList<DistributionType>();
 		distTypes.addAll(DistributionType.findAll(false, false, null));
 		distTypes.addAll(DistributionType.findAll(false, true, null));
 		
 	    WebTable webTable = new WebTable( 11,
-	    	    "Distribution Types",
-	    	    "distributionTypeList.do?ord=%%",
-	    	    new String[] {"Id", "Reference", "Abbreviation", "Name", "Type", "Visible", "Allow Instructor Preference", "Sequencing Required", "Allow Preferences", "Departments", "Description"},
+	    	    MSG.sectDistributionTypes(),
+	    	    "distributionTypeList.action?ord=%%",
+	    	    new String[] {
+	    	    		MSG.fieldId(),
+	    	    		MSG.fieldReference(),
+	    	    		MSG.fieldAbbreviation(),
+	    	    		MSG.fieldName(),
+	    	    		MSG.fieldType(),
+	    	    		MSG.fieldVisible(),
+	    	    		MSG.fieldAllowInstructorPreference(),
+	    	    		MSG.fieldSequencingRequired(),
+	    	    		MSG.fieldAllowPreferences(),
+	    	    		MSG.fieldDepartments(),
+	    	    		MSG.fieldDescription()
+	    	    		},
 	    	    new String[] {"left", "left", "left", "left", "left", "center", "center", "center", "center", "left", "left"}, 
 	    	    new boolean[] {true, true, true, true, true, true, true, true, true, true, true} );
 	    
@@ -92,9 +91,9 @@ public class DistributionTypeListAction extends Action {
 	    for (DistributionType d: distTypes) {
 		    String allowPref = null;
 		    if ("".equals(d.getAllowedPref())) {
-		    	allowPref = "<i>None</i>";
+		    	allowPref = "<i>" + MSG.itemNone() + "</i>";
 		    } else if ("P43210R".equals(d.getAllowedPref())) {
-		    	allowPref = "<i>All</i>";
+		    	allowPref = "<i>" + MSG.itemAll() + "</i>";
 		    } else {
 		    	for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
 		    		if (d.getAllowedPref().indexOf(PreferenceLevel.prolog2char(p.getPrefProlog()))<0) continue;
@@ -123,12 +122,12 @@ public class DistributionTypeListAction extends Action {
 		    		d.getReference(),
 		    		d.getAbbreviation(),
 		    		d.getLabel(),
-		    		d.isExamPref().booleanValue()?"Examination":"Course",
-		    		d.isVisible() ? "Yes" : "No",
-		    		d.isExamPref().booleanValue()?"N/A":d.isInstructorPref().booleanValue()?"Yes":"No",
-		    		d.isSequencingRequired()?"Yes":"No",
+		    		d.isExamPref().booleanValue() ? MSG.itemDistTypeExams() : MSG.itemDistTypeCourses(),
+		    		d.isVisible() ? MSG.yes() : MSG.no(),
+		    		d.isExamPref().booleanValue()? MSG.notApplicable() : d.isInstructorPref().booleanValue() ? MSG.yes() : MSG.no(),
+		    		d.isSequencingRequired() ? MSG.yes() : MSG.no(),
 		    		allowPref,
-		    		(deptStr.length()==0?"<i>All</i>":deptStr),
+		    		(deptStr.length()==0?"<i>" + MSG.itemAll() + "</i>":deptStr),
 		    		d.getDescr()
 		    	}, 
 		    	new Comparable[] {
@@ -147,11 +146,7 @@ public class DistributionTypeListAction extends Action {
 		    if (!d.isVisible())
 		    	line.setStyle("color:gray;");
 	    }
-	    
-	    request.setAttribute("table",webTable.printTable(WebTable.getOrder(sessionContext,"DistributionTypeList.ord")));
-		
-		return mapping.findForward("showDistributionTypeList");
-		
+	    return webTable.printTable(WebTable.getOrder(sessionContext,"DistributionTypeList.ord"));
 	}
 
 }

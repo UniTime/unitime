@@ -60,7 +60,7 @@ import org.apache.struts.util.LabelValueBean;
  * XDoclet definition:
  * @struts:action path="/distributionTypeEdit" name="distributionTypeEditForm" parameter="do" scope="request" validate="true"
  * @struts:action-forward name="showEdit" path="/admin/distributionTypeEdit.jsp"
- * @struts:action-forward name="showDistributionTypeList" path="/distributionTypeList.do" redirect="true"
+ * @struts:action-forward name="showDistributionTypeList" path="/distributionTypeList.action" redirect="true"
  *
  * @author Tomas Muller
  */

@@ -4823,4 +4823,43 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Edit Solver Configuration")
 	String sectEditSolverConfiguration();
+	
+	@DefaultMessage("Distribution Types")
+	String sectDistributionTypes();
+	
+	@DefaultMessage("Id")
+	String fieldId();
+	
+	@DefaultMessage("Visible")
+	String fieldVisible();
+	
+	@DefaultMessage("Allow Instructor Preference")
+	String fieldAllowInstructorPreference();
+	
+	@DefaultMessage("Sequencing Required")
+	String fieldSequencingRequired();
+	
+	@DefaultMessage("Allow Preferences")
+	String fieldAllowPreferences();
+	
+	@DefaultMessage("Departments")
+	String fieldDepartments();
+	
+	@DefaultMessage("Description")
+	String fieldDescription();
+	
+	@DefaultMessage("None")
+	String itemNone();
+	
+	@DefaultMessage("All")
+	String itemAll();
+	
+	@DefaultMessage("Examination")
+	String itemDistTypeExams();
+	
+	@DefaultMessage("Course")
+	String itemDistTypeCourses();
+	
+	@DefaultMessage("N/A")
+	String notApplicable();
 }

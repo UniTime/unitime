@@ -25,7 +25,6 @@
    <description>University Timetabling Application</description>
    
    <form-beans >
-	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />
 	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
@@ -53,19 +52,9 @@
          <forward name="showEdit" path="distributionTypeEditTile" />
          <forward
             name="showDistributionTypeList"
-            path="/distributionTypeList.do"
+            path="/distributionTypeList.action"
             redirect="true" />
       </action>
-      <action
-         path="/distributionTypeList"
-         attribute="distributionTypeListForm"
-         input="distributionTypeListTile"
-         name="distributionTypeListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward name="showDistributionTypeList" path="distributionTypeListTile" />
-      </action> 
      
       <action
          path="/subjectList"

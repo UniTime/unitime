@@ -870,7 +870,7 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Distribution Types" page="distributionTypeList.do">
+			<item name="Distribution Types" page="distributionTypeList.action">
 				<condition>
 					<hasPermission name="DistributionTypes"/>
 				</condition>
