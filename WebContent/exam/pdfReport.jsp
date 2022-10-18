@@ -163,7 +163,7 @@
 			<span style="display: table;">
 				<span style="display: table-row;">
 					<span style="display: table-cell; vertical-align: middle; padding-right: 5px;"><loc:message name="propReportStartDate"/> </span>
-					<span name='UniTimeGWT:Calendar' style="display: table-cell;"><s:textfield name="form.since"/></span>
+					<tt:calendar name="form.since" outerStyle="display: table-cell;"/>
 					<span style="display: table-cell; font-style: italic; padding-left: 5px; vertical-align: middle;"><loc:message name="hintReportStartDate"/></span>
 				</span>
 			</span>

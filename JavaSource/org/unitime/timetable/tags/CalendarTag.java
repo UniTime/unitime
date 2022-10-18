@@ -22,45 +22,32 @@ package org.unitime.timetable.tags;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts2.components.TextField;
-import org.apache.struts2.views.annotations.StrutsTag;
-import org.apache.struts2.views.annotations.StrutsTagAttribute;
+import org.apache.struts2.components.Component;
+import org.apache.struts2.views.jsp.ui.TextFieldTag;
 
 import com.opensymphony.xwork2.util.ValueStack;
 
-/**
- * @author Tomas Muller
- */
-@StrutsTag(name = "calendar", tldTagClass = "org.unitime.timetable.tags.CalendarTag", description = "GWT-based calendar")
-public class Calendar extends TextField {
-	final public static String TEMPLATE = "calendar";
+public class CalendarTag extends TextFieldTag {
+	private static final long serialVersionUID = -5915871382762128064L;
 	
 	private String format = null;
 	private String outerStyle = null;
-	
-	@StrutsTagAttribute(description="Date format", type="String")
+
 	public void setFormat(String format) { this.format = format; }
+	public String getFormat() { return format; }
 	
-	@StrutsTagAttribute(description="Outer style", type="String")
 	public void setOuterStyle(String outerStyle) { this.outerStyle = outerStyle; }
-	
-	public Calendar(final ValueStack stack, final HttpServletRequest request, final HttpServletResponse response) {
-        super(stack, request, response);
+	public String getOuterStyle() { return outerStyle; }
+
+	@Override
+    public Component getBean(final ValueStack stack, final HttpServletRequest req, final HttpServletResponse res) {
+        return new Calendar(stack, req, res);
     }
 	
-	@Override
-	protected String getDefaultTemplate() {
-		return TEMPLATE;
-	} 
-
-	protected void evaluateExtraParams() {
-        super.evaluateExtraParams();
-        if (format != null) {
-            addParameter("format", findValue(format, String.class));
-        }
-        
-        if (outerStyle != null) {
-            addParameter("outerStyle", findValue(outerStyle, String.class));
-        }
+	protected void populateParams() {
+        super.populateParams();
+        Calendar calendar = ((Calendar) component);
+        calendar.setFormat(format);
+        calendar.setOuterStyle(outerStyle);
 	}
 }

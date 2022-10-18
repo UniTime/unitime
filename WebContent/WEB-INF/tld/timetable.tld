@@ -515,16 +515,16 @@
 	
 	<tag>
 		<name>calendar</name>
-		<tag-class>org.unitime.timetable.tags.Calendar</tag-class>
+		<tag-class>org.unitime.timetable.tags.CalendarTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
-			<name>property</name>
+			<name>name</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.String</type>
 		</attribute>
 		<attribute>
-			<name>style</name>
+			<name>cssStyle</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.String</type>
@@ -552,6 +552,12 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.Boolean</type>
+		</attribute>
+		<attribute>
+			<name>id</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
 		</attribute>
 	</tag>
 	

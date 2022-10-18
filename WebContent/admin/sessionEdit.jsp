@@ -129,49 +129,37 @@
 		<TR>
 			<TD><loc:message name="columnSessionStartDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.sessionStart" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.sessionStart" cssStyle="border: #660000 2px solid;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="columnClassesEndDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.classesEnd" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.classesEnd" cssStyle="border: #660000 2px solid;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="columnExamStartDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.examStart" cssStyle="border: #999933 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.examStart" cssStyle="border: #999933 2px solid;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="columnSessionEndDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.sessionEnd" cssStyle="border: #333399 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.sessionEnd" cssStyle="border: #333399 2px solid;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="columnEventStartDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.eventStart" cssStyle="border: 2px solid yellow;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.eventStart" cssStyle="border: 2px solid yellow;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD><loc:message name="columnEventEndDate"/>:</TD>
 			<TD colspan='2'>
-				<div name='UniTimeGWT:Calendar' onchange="$wnd.doRefresh();">
-					<s:textfield name="form.eventEnd" cssStyle="border: 2px solid red;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-				</div>
+				<tt:calendar name="form.eventEnd" cssStyle="border: 2px solid red;" onchange="$wnd.doRefresh();"/>
 			</TD>
 		</TR>
 

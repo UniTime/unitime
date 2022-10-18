@@ -139,10 +139,7 @@
 							<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
 								size="10" maxlength="10" cssStyle="text-align: right;"/>
 						</s:elseif><s:elseif test="#def.type == 'date'">
-							<div name='UniTimeGWT:Calendar'>
-								<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
-									cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-							</div>
+							<tt:calendar name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"/>
 						</s:elseif><s:elseif test="#def.type == 'timepref'">
 							<div id='pd${def.uniqueId}' style="display: block;">
 								<img border="0"

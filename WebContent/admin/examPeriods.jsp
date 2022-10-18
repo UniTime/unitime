@@ -287,9 +287,7 @@
 			<TD><loc:message name="propertyPeriodDate"/></TD>
 			<TD>
 				<s:if test="form.editable == true">
-					<div id='UniTimeGWT:Calendar'>
-						<s:textfield name="form.date" cssStyle="border: #660000 2px solid;" cssClass="gwt-SuggestBox unitime-DateSelectionBox"/>
-					</div>
+					<tt:calendar name="form.date"/>
 				</s:if><s:else>
 					<s:property value="form.date"/>
 					<s:hidden name="form.date"/>
