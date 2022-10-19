@@ -42,9 +42,8 @@
 				headerKey="" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<loc:message name="filterCourseNumber"/>
-			<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="sessionId=\${sessionId};subjectAbbv=\${subjectAbbv};notOffered=exclude">
-				<s:textfield name="form.courseNumber" title="%{#msg.tooltipCourseNumber()}" size="15"/>
-			</span>
+			<tt:course-number name="form.courseNumber" title="%{#msg.tooltipCourseNumber()}" size="15"
+				configuration="sessionId=\${sessionId};subjectAbbv=\${subjectAbbv};notOffered=exclude"/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<s:submit name='form.op' value="%{#msg.buttonApply()}" onclick="displayLoading();"/>
 		</TD>

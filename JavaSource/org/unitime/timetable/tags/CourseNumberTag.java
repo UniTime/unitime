@@ -30,27 +30,27 @@ import com.opensymphony.xwork2.util.ValueStack;
 /**
  * @author Tomas Muller
  */
-public class CalendarTag extends TextFieldTag {
-	private static final long serialVersionUID = -5915871382762128064L;
+public class CourseNumberTag extends TextFieldTag {
+	private static final long serialVersionUID = 1274583930265084946L;
 	
-	private String format = null;
 	private String outerStyle = null;
-
-	public void setFormat(String format) { this.format = format; }
-	public String getFormat() { return format; }
+	private String configuration = null;
 	
 	public void setOuterStyle(String outerStyle) { this.outerStyle = outerStyle; }
 	public String getOuterStyle() { return outerStyle; }
+	
+	public void setConfiguration(String configuration) { this.configuration = configuration; }
+	public String getConfiguration() { return configuration; }
 
 	@Override
     public Component getBean(final ValueStack stack, final HttpServletRequest req, final HttpServletResponse res) {
-        return new Calendar(stack, req, res);
+        return new CourseNumber(stack, req, res);
     }
 	
 	protected void populateParams() {
         super.populateParams();
-        Calendar calendar = ((Calendar) component);
-        calendar.setFormat(format);
-        calendar.setOuterStyle(outerStyle);
+        CourseNumber cn = ((CourseNumber) component);
+        cn.setOuterStyle(outerStyle);
+        cn.setConfiguration(configuration);
 	}
 }

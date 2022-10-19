@@ -563,10 +563,10 @@
 	
 	<tag>
 		<name>course-number</name>
-		<tag-class>org.unitime.timetable.tags.CourseNumberSuggestBox</tag-class>
+		<tag-class>org.unitime.timetable.tags.CourseNumberTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
-			<name>property</name>
+			<name>name</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.String</type>
@@ -578,7 +578,7 @@
 			<type>java.lang.String</type>
 		</attribute>
 		<attribute>
-			<name>style</name>
+			<name>cssStyle</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.String</type>
@@ -609,6 +609,12 @@
 		</attribute>
 		<attribute>
 			<name>title</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>id</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.String</type>

@@ -312,9 +312,8 @@
 				<B><loc:message name="filterCourseNumber"/></B>
 			</TD>
 			<TD valign="top">
-				<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectAreaIds};notOffered=exclude">
-					<s:textfield name="form.courseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
-				</span>
+				<tt:course-number name="form.courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=exclude"
+					title="%{#msg.tooltipCourseNumber()}" size="15"/>
 			</TD>
 			<TD valign="top" style="padding-left: 10px;" nowrap>
 				<s:submit name='doit' value="%{#msg.actionSearchClasses()}"

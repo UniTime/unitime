@@ -23,34 +23,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.components.Component;
-import org.apache.struts2.views.jsp.ui.TextFieldTag;
+import org.apache.struts2.views.freemarker.tags.TextFieldModel;
 
 import com.opensymphony.xwork2.util.ValueStack;
 
 /**
  * @author Tomas Muller
  */
-public class CalendarTag extends TextFieldTag {
-	private static final long serialVersionUID = -5915871382762128064L;
-	
-	private String format = null;
-	private String outerStyle = null;
+public class CourseNumberModel extends TextFieldModel {
 
-	public void setFormat(String format) { this.format = format; }
-	public String getFormat() { return format; }
-	
-	public void setOuterStyle(String outerStyle) { this.outerStyle = outerStyle; }
-	public String getOuterStyle() { return outerStyle; }
-
-	@Override
-    public Component getBean(final ValueStack stack, final HttpServletRequest req, final HttpServletResponse res) {
-        return new Calendar(stack, req, res);
+	public CourseNumberModel(final ValueStack stack, final HttpServletRequest req, final HttpServletResponse res) {
+        super(stack, req, res);
     }
-	
-	protected void populateParams() {
-        super.populateParams();
-        Calendar calendar = ((Calendar) component);
-        calendar.setFormat(format);
-        calendar.setOuterStyle(outerStyle);
-	}
+
+    @Override
+    protected Component getBean() {
+        return new CourseNumber(stack, req, res);
+    }
 }

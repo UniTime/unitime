@@ -32,9 +32,8 @@
 				<s:select name="form.subjectAreaId" id="subjectId" list="form.subjectAreas" listKey="id" listValue="value"/>
 			</td>
 			<th nowrap="nowrap" style="padding-left: 10px;"><loc:message name="propExamCourseNumber"/></th><td>
-				<span name='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectId};notOffered=exclude">
-					<s:textfield name="form.courseNbr" size="15" title="%{#msg.titleCourseNumberSuggestBox()}"/>
-				</span>
+				<tt:course-number name="form.courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude"
+					size="15" title="%{#msg.titleCourseNumberSuggestBox()}"/>
 			</td>
 			<td align="right" style="padding-left: 20px;" width="100%;">
 				<s:submit name='form.op' value="%{#msg.buttonSearch()}"/>

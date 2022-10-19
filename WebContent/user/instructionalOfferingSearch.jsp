@@ -315,9 +315,8 @@
 			</TD>
 			<TH valign="top" nowrap style='padding-top: 12px;'><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top" nowrap style='padding-top: 10px;'>
-				<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectAreaIds};notOffered=include;waitlist=\${waitlistFilter}">
-					<s:textfield name="form.courseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
-				</span>
+				<tt:course-number name="form.courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include;waitlist=\${waitlistFilter}"
+					title="%{#msg.tooltipCourseNumber()}" size="15"/>
 			</TD>
 			<TD valign="top" nowrap style='padding-top: 10px; padding-left: 10px;'>
 				<s:submit name='doit' value="%{#msg.actionSearchInstructionalOfferings()}"

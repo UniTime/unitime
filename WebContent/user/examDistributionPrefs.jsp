@@ -263,9 +263,8 @@
 						list="form.subjectAreas" listKey="id" listValue="value"
 						/>
 					<B><loc:message name="propExamCourseNumber"/> </B>
-					<span id='UniTimeGWT:CourseNumberSuggestBox' configuration="subjectId=\${subjectId};notOffered=exclude">
-						<s:textfield name="form.filterCourseNbr" title="%{#msg.tooltipCourseNumber()}" size="15"/>
-					</span>
+					<tt:course-number name="form.filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude"
+						title="%{#msg.tooltipCourseNumber()}" size="15"/>
 					&nbsp;&nbsp;&nbsp;
 					<s:submit name='op' value="%{#msg.actionSearchDistributionPreferences()}"
 						title="%{#msg.titleSearchDistributionPreferences(#msg.accessSearchDistributionPreferences())}"
