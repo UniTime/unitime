@@ -662,7 +662,7 @@
 					<propertyEquals name="unitime.legacy.admin.departments" value="false" defaultValue="false"/>
 				</condition>
 			</item>
-			<item name="Solver Groups" page="solverGroupEdit.do">
+			<item name="Solver Groups" page="solverGroupEdit.action">
 				<condition>
 					<hasPermission name="SolverGroups"/>
 				</condition>

@@ -19,24 +19,21 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.Debug;
+import org.springframework.web.util.HtmlUtils;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
@@ -46,7 +43,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -54,74 +50,102 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
 /** 
  * @author Tomas Muller
  */
-public class SolverGroupEditForm extends ActionForm {
+public class SolverGroupEditForm implements UniTimeForm {
 	private static final long serialVersionUID = 150007237399797836L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String iOp;
     private Long iUniqueId;
     private String iName;
     private String iAbbv;
     private boolean iDepartmentsEditable;
-    private List iDepartmentIds;
-    private List iDepartmentNames;
-    private List iAssignedDepartments;
-    private List iManagerIds;
-    private List iManagerNames;
-    private List iAssignedManagers;
+    private List<Long> iDepartmentIds;
+    private List<String> iDepartmentNames;
+    private List<Boolean> iAssignedDepartments;
+    private List<Long> iManagerIds;
+    private List<String> iManagerNames;
+    private List<Boolean> iAssignedManagers;
+    
+    public SolverGroupEditForm() {
+        reset();
+    }
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
+	public void validate(UniTimeAction action) {
+		Long sessionId = action.getSessionContext().getUser().getCurrentAcademicSessionId();
+
+		if (iName==null || iName.trim().length()==0)
+			action.addFieldError("form.name", MSG.errorRequiredField(MSG.fieldName()));
+		else {
+			try {
+				SolverGroup g = SolverGroup.findBySessionIdName(sessionId, iName);
+				if (g!=null && !g.getUniqueId().equals(iUniqueId))
+					action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
+			} catch (Exception e) {
+				action.addFieldError("form.name", e.getMessage());
+			}
+        }
+
 		
-		try {
-			Long sessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
-
-			if(iName==null || iName.trim().length()==0)
-				errors.add("name", new ActionMessage("errors.required", ""));
-			else {
-				try {
-					SolverGroup g = SolverGroup.findBySessionIdName(sessionId, iName);
-					if (g!=null && !g.getUniqueId().equals(iUniqueId))
-						errors.add("name", new ActionMessage("errors.exists", iName));
-				} catch (Exception e) {
-					errors.add("name", new ActionMessage("errors.generic", e.getMessage()));
-				}
-	        }
-
-			
-			if(iAbbv==null || iAbbv.trim().length()==0)
-				errors.add("abbv", new ActionMessage("errors.required", ""));
-			else {
-				try {
-					SolverGroup g = SolverGroup.findBySessionIdAbbv(sessionId, iAbbv);
-					if (g!=null && !g.getUniqueId().equals(iUniqueId))
-						errors.add("abbv", new ActionMessage("errors.exists", iAbbv));
-				} catch (Exception e) {
-					errors.add("abbv", new ActionMessage("errors.generic", e.getMessage()));
-				}
-	        }
-			
-		} catch (Exception e) {
-			Debug.error(e);
-			errors.add("name", new ActionMessage("errors.generic", e.getMessage()));
-		}
-		
-		return errors;
+		if(iAbbv==null || iAbbv.trim().length()==0)
+			action.addFieldError("form.abbv", MSG.errorRequiredField(MSG.fieldAbbreviation()));
+		else {
+			try {
+				SolverGroup g = SolverGroup.findBySessionIdAbbv(sessionId, iAbbv);
+				if (g!=null && !g.getUniqueId().equals(iUniqueId))
+					action.addFieldError("form.abbv", MSG.errorAlreadyExists(iAbbv));
+			} catch (Exception e) {
+				action.addFieldError("form.abbv", e.getMessage());
+			}
+        }
 	}
 	
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	public void reset() {
 		iOp = null; iUniqueId = null;
 		iName = null; iAbbv = null;
-		iAssignedDepartments = DynamicList.getInstance(new Vector(), iDynamicListFactory);
-		iAssignedManagers = DynamicList.getInstance(new Vector(), iDynamicListFactory);
-		iManagerIds = DynamicList.getInstance(new Vector(), iDynamicListFactory);
-		iManagerNames = DynamicList.getInstance(new Vector(), iDynamicListFactory);
-		iDepartmentIds = DynamicList.getInstance(new Vector(), iDynamicListFactory);
-		iDepartmentNames = DynamicList.getInstance(new Vector(), iDynamicListFactory);
+		iAssignedDepartments = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() {
+                return false;
+            }
+        });
+		iAssignedManagers = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() {
+                return false;
+            }
+        });
+		iManagerIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() {
+                return -1l;
+            }
+        });
+		iManagerNames = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() {
+                return "";
+            }
+        });
+		iDepartmentIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() {
+                return -1l;
+            }
+        });
+		iDepartmentNames = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() {
+                return "";
+            }
+        });
 		iDepartmentsEditable = false;
 	}
 	
-	public void load(SolverGroup group, Session session) throws Exception {
-        Collection departments = Department.findAllBeingUsed(session.getUniqueId());
-        Collection managers = new TreeSet((new TimetableManagerDAO()).findAll());
+	public void load(SolverGroup group, Session session, final String nameFormat) throws Exception {
+        Set<Department> departments = Department.findAllBeingUsed(session.getUniqueId());
+        List<TimetableManager> managers = new ArrayList<TimetableManager>(TimetableManagerDAO.getInstance().findAll());
+        Collections.sort(managers, new Comparator<TimetableManager>() {
+			@Override
+			public int compare(TimetableManager m1, TimetableManager m2) {
+				int cmp = m1.getName(nameFormat).compareToIgnoreCase(m2.getName(nameFormat));
+				if (cmp != 0) return cmp;
+				return m1.compareTo(m2);
+			}
+		});
 		iDepartmentIds.clear();
 		iDepartmentNames.clear();
 		iManagerIds.clear();
@@ -133,25 +157,27 @@ public class SolverGroupEditForm extends ActionForm {
 			iUniqueId = Long.valueOf(-1);
 			iName = null; iAbbv = null;
 			iOp = "Save";
-			for (Iterator i=departments.iterator();i.hasNext();) {
-				Department d = (Department)i.next();
+			for (Department d: departments) {
 				if (d.getSolverGroup()==null) {
 					iAssignedDepartments.add(Boolean.FALSE);
-					iDepartmentIds.add(d.getUniqueId().toString());
-					iDepartmentNames.add(d.getDeptCode()+" - "+d.getName());
+					iDepartmentIds.add(d.getUniqueId());
+					iDepartmentNames.add(d.getLabel());
 				} 
 			}
 			for (Iterator i=managers.iterator();i.hasNext();) {
 				TimetableManager m = (TimetableManager)i.next();
+				boolean hasSession = false;
+				for (Department d: m.getDepartments()) {
+					if (d.getSession().equals(session)) { hasSession = true; break; }
+				}
+				if (!hasSession) continue;
 				iAssignedManagers.add(Boolean.FALSE);
-				iManagerIds.add(m.getUniqueId().toString());
+				iManagerIds.add(m.getUniqueId());
 	        	String deptStr = "";
-	        	for (Iterator j=(new TreeSet(m.departmentsForSession(session.getUniqueId()))).iterator();j.hasNext();) {
-	        		Department d = (Department)j.next();
-	        		deptStr += "<span title='"+d.getDeptCode()+" - "+d.getName()+"'>"+d.getDeptCode()+"</span>";
-	        		if (j.hasNext()) deptStr += ", ";
+	        	for (Department d: new TreeSet<Department>(m.departmentsForSession(session.getUniqueId()))) {
+	        		deptStr += (deptStr.isEmpty() ? "" : ", ") + "<span title='"+HtmlUtils.htmlEscape(d.getLabel())+"'>"+d.getDeptCode()+"</span>";
 	        	}
-				iManagerNames.add(m.getName()+(deptStr.length()==0?"":" ("+deptStr+")"));
+				iManagerNames.add(m.getName(nameFormat) + (deptStr.isEmpty() ? "" : " ("+deptStr+")"));
 			}
 		} else {
 			iUniqueId = group.getUniqueId();
@@ -162,24 +188,28 @@ public class SolverGroupEditForm extends ActionForm {
 				Department d = (Department)i.next();
 				if (group.equals(d.getSolverGroup())) {
 					iAssignedDepartments.add(Boolean.TRUE);
-					iDepartmentIds.add(d.getUniqueId().toString());
-					iDepartmentNames.add(d.getDeptCode()+" - "+d.getName());
+					iDepartmentIds.add(d.getUniqueId());
+					iDepartmentNames.add(d.getLabel());
 				} else if (d.getSolverGroup()==null) {
 					iAssignedDepartments.add(Boolean.FALSE);
-					iDepartmentIds.add(d.getUniqueId().toString());
-					iDepartmentNames.add(d.getDeptCode()+" - "+d.getName());
+					iDepartmentIds.add(d.getUniqueId());
+					iDepartmentNames.add(d.getLabel());
 				} else i.remove();
 			}
 			for (Iterator i=managers.iterator();i.hasNext();) {
 				TimetableManager m = (TimetableManager)i.next();
-	        	String deptStr = "";
-	        	for (Iterator j=(new TreeSet(m.departmentsForSession(session.getUniqueId()))).iterator();j.hasNext();) {
-	        		Department d = (Department)j.next();
-	        		deptStr += "<span title='"+d.getDeptCode()+" - "+d.getName()+"'>"+d.getDeptCode()+"</span>";
-	        		if (j.hasNext()) deptStr += ", ";
+				String deptStr = "";
+	        	for (Department d: new TreeSet<Department>(m.departmentsForSession(session.getUniqueId()))) {
+	        		deptStr += (deptStr.isEmpty() ? "" : ", ") + "<span title='"+HtmlUtils.htmlEscape(d.getLabel())+"'>"+d.getDeptCode()+"</span>";
 	        	}
-				iManagerIds.add(m.getUniqueId().toString());
-				iManagerNames.add(m.getName()+(deptStr.length()==0?"":" ("+deptStr+")"));
+	        	boolean hasSession = group.getTimetableManagers().contains(m);
+	        	if (!hasSession)
+					for (Department d: m.getDepartments()) {
+						if (d.getSession().equals(session)) { hasSession = true; break; }
+					}
+				if (!hasSession) continue;
+				iManagerIds.add(m.getUniqueId());
+				iManagerNames.add(m.getName(nameFormat) + (deptStr.isEmpty() ? "" : " ("+deptStr+")"));
 				if (group.getTimetableManagers().contains(m)) {
 					iAssignedManagers.add(Boolean.TRUE);
 				} else {
@@ -193,8 +223,8 @@ public class SolverGroupEditForm extends ActionForm {
 	
 	public SolverGroup saveOrUpdate(org.hibernate.Session hibSession, SessionContext context) throws Exception {
 		SolverGroup group = null;
-		if (iUniqueId.longValue()>=0)
-			group = (new SolverGroupDAO()).get(iUniqueId);
+		if (iUniqueId >= 0)
+			group = SolverGroupDAO.getInstance().get(iUniqueId);
 		if (group==null) {
 			group = create(hibSession, context.getUser().getCurrentAcademicSessionId());
             ChangeLog.addChange(
@@ -223,35 +253,31 @@ public class SolverGroupEditForm extends ActionForm {
 		SolverGroup group = new SolverGroup();
 		group.setName(iName);
 		group.setAbbv(iAbbv);
-		Session session = (new SessionDAO()).get(sessionId, hibSession);
+		Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 		group.setSession(session);
-		Set newDepartments = new HashSet();
-		for (int i=0;i<iAssignedDepartments.size();i++) {
-			String deptId = (String)iDepartmentIds.get(i);
-			Department dept = (new DepartmentDAO()).get(Long.valueOf(deptId), hibSession);
-			if (dept==null) continue;
-			String add = (String)iAssignedDepartments.get(i);
-			if ("on".equals(add) || "true".equals(add) || "1".equals(add)) newDepartments.add(dept);
+		Set<Department> newDepartments = new HashSet<Department>();
+		for (int i = 0; i < iAssignedDepartments.size(); i++) {
+			if (!iAssignedDepartments.get(i)) continue;
+			Long deptId = iDepartmentIds.get(i);
+			Department dept = DepartmentDAO.getInstance().get(deptId, hibSession);
+			if (dept != null) newDepartments.add(dept);
 		}
 		group.setDepartments(newDepartments);
-		Set newManagers = new HashSet();
-		for (int i=0;i<iAssignedManagers.size();i++) {
-			String mgrId = (String)iManagerIds.get(i);
-			TimetableManager mgr = (new TimetableManagerDAO()).get(Long.valueOf(mgrId), hibSession);
-			if (mgr==null) continue;
-			String add = (String)iAssignedManagers.get(i);
-			if ("on".equals(add) || "true".equals(add) || "1".equals(add)) newManagers.add(mgr);
+		Set<TimetableManager> newManagers = new HashSet<TimetableManager>();
+		for (int i = 0; i < iAssignedManagers.size(); i++) {
+			if (!iAssignedManagers.get(i)) continue;
+			Long mgrId = iManagerIds.get(i);
+			TimetableManager mgr = TimetableManagerDAO.getInstance().get(mgrId, hibSession);
+			if (mgr != null) newManagers.add(mgr);
 		}
 		group.setTimetableManagers(newManagers);
 		group.setSolutions(new HashSet<Solution>());
 		hibSession.save(group);
-		for (Iterator i=newDepartments.iterator();i.hasNext();) {
-			Department d = (Department)i.next();
+		for (Department d: newDepartments) {
 			d.setSolverGroup(group);
 			hibSession.saveOrUpdate(d);
 		}
-		for (Iterator i=newManagers.iterator();i.hasNext();) {
-			TimetableManager mgr = (TimetableManager)i.next();
+		for (TimetableManager mgr: newManagers) {
 			mgr.getSolverGroups().add(group);
 			hibSession.saveOrUpdate(mgr);
 		}
@@ -263,45 +289,39 @@ public class SolverGroupEditForm extends ActionForm {
 		group.setName(iName);
 		group.setAbbv(iAbbv);
 		if (iDepartmentsEditable) {
-			HashSet oldDepartments = new HashSet(group.getDepartments());
-			for (int i=0;i<iAssignedDepartments.size();i++) {
-				String deptId = (String)iDepartmentIds.get(i);
-				Department dept = (new DepartmentDAO()).get(Long.valueOf(deptId), hibSession);
+			HashSet<Department> oldDepartments = new HashSet<Department>(group.getDepartments());
+			for (int i = 0; i < iAssignedDepartments.size(); i++) {
+				if (!iAssignedDepartments.get(i)) continue;
+				Long deptId = iDepartmentIds.get(i);
+				Department dept = DepartmentDAO.getInstance().get(deptId, hibSession);
 				if (dept==null) continue;
-				String add = (String)iAssignedDepartments.get(i);
-				if ("on".equals(add) || "true".equals(add) || "1".equals(add)) {
-					if (oldDepartments.remove(dept)) {
-						//not changed -> do nothing
-					} else {
-						group.getDepartments().add(dept);
-						dept.setSolverGroup(group);
-						hibSession.saveOrUpdate(dept);
-					}
+				if (oldDepartments.remove(dept)) {
+					//not changed -> do nothing
+				} else {
+					group.getDepartments().add(dept);
+					dept.setSolverGroup(group);
+					hibSession.saveOrUpdate(dept);
 				}
 			}
-			for (Iterator i=oldDepartments.iterator();i.hasNext();) {
-				Department dept = (Department)i.next();
+			for (Department dept: oldDepartments) {
 				group.getDepartments().remove(dept);
 				dept.setSolverGroup(null);
 				hibSession.saveOrUpdate(dept);
 			}
 		}
-		HashSet oldManagers = new HashSet(group.getTimetableManagers());
-		for (int i=0;i<iAssignedManagers.size();i++) {
-			String mgrId = (String)iManagerIds.get(i);
-			TimetableManager mgr = (new TimetableManagerDAO()).get(Long.valueOf(mgrId), hibSession);
+		HashSet<TimetableManager> oldManagers = new HashSet<TimetableManager>(group.getTimetableManagers());
+		for (int i = 0; i < iAssignedManagers.size(); i++) {
+			if (!iAssignedManagers.get(i)) continue;
+			Long mgrId = iManagerIds.get(i);
+			TimetableManager mgr = TimetableManagerDAO.getInstance().get(mgrId, hibSession);
 			if (mgr==null) continue;
-			String add = (String)iAssignedManagers.get(i);
-			if ("on".equals(add) || "true".equals(add) || "1".equals(add)) {
-				if (oldManagers.remove(mgr)) {
-					//not changed -> do nothing
-				} else {
-					group.getTimetableManagers().add(mgr);
-				}
+			if (oldManagers.remove(mgr)) {
+				//not changed -> do nothing
+			} else {
+				group.getTimetableManagers().add(mgr);
 			}
 		}
-		for (Iterator i=oldManagers.iterator();i.hasNext();) {
-			TimetableManager mgr = (TimetableManager)i.next();
+		for (TimetableManager mgr: oldManagers) {
 			group.getTimetableManagers().remove(mgr);
 			mgr.getSolverGroups().remove(group);
 			hibSession.saveOrUpdate(mgr);
@@ -316,17 +336,15 @@ public class SolverGroupEditForm extends ActionForm {
 	}
 	
 	public void delete(org.hibernate.Session hibSession, SessionContext context) throws Exception {
-		if (iUniqueId.longValue()<0) return;
+		if (iUniqueId < 0) return;
 		if (!iDepartmentsEditable) return;
 		SolverGroup group = (new SolverGroupDAO()).get(iUniqueId);
-		if (group==null) return;
-		for (Iterator i=group.getDepartments().iterator();i.hasNext();) {
-			Department dept = (Department)i.next();
+		if (group == null) return;
+		for (Department dept: group.getDepartments()) {
 			dept.setSolverGroup(null);
 			hibSession.saveOrUpdate(dept);
 		}
-		for (Iterator i=group.getTimetableManagers().iterator();i.hasNext();) {
-			TimetableManager mgr = (TimetableManager)i.next();
+		for (TimetableManager mgr: group.getTimetableManagers()) {
 			mgr.getSolverGroups().remove(group);
 			hibSession.saveOrUpdate(mgr);
 		}
@@ -343,30 +361,46 @@ public class SolverGroupEditForm extends ActionForm {
 	
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
+
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
+
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
+
 	public boolean getDepartmentsEditable() { return iDepartmentsEditable; }
 	public void setDepartmentsEditable(boolean departmentsEditable) { iDepartmentsEditable = departmentsEditable; }
-	public List getDepartmentIds() { return iDepartmentIds; }
-	public void setDepartmentIds(List departmentIds) { iDepartmentIds = departmentIds; }
-	public List getDepartmentNames() { return iDepartmentNames; }
-	public void setDepartmentNames(List departmentNames) { iDepartmentNames = departmentNames; }
-	public List getAssignedDepartments() { return iAssignedDepartments; }
-	public void setAssignedDepartments(List assignedDepartments) { iAssignedDepartments = assignedDepartments; }
-	public List getManagerIds() { return iManagerIds; }
-	public void setManagerIds(List managerIds) { iManagerIds = managerIds; }
-	public List getManagerNames() { return iManagerNames; }
-	public void setManagerNames(List managerNames) { iManagerNames = managerNames; }
-	public List getAssignedManagers() { return iAssignedManagers; }
-	public void setAssignedManagers(List assignedManagers) { iAssignedManagers = assignedManagers; }
+
+	public List<Long> getDepartmentIds() { return iDepartmentIds; }
+	public void setDepartmentIds(List<Long> departmentIds) { iDepartmentIds = departmentIds; }
+	public Long getDepartmentIds(int idx) { return iDepartmentIds.get(idx); }
+	public void setDepartmentIds(int idx, Long departmentId) { iDepartmentIds.set(idx, departmentId); }
+
+	public List<String> getDepartmentNames() { return iDepartmentNames; }
+	public void setDepartmentNames(List<String> departmentNames) { iDepartmentNames = departmentNames; }
+	public String getDepartmentNames(int idx) { return iDepartmentNames.get(idx); }
+	public void setDepartmentNames(int idx, String departmentName) { iDepartmentNames.set(idx, departmentName); }
 	
-    protected DynamicListObjectFactory iDynamicListFactory = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
+	public List<Boolean> getAssignedDepartments() { return iAssignedDepartments; }
+	public void setAssignedDepartments(List<Boolean> assignedDepartments) { iAssignedDepartments = assignedDepartments; }
+	public Boolean getAssignedDepartments(int idx) { return iAssignedDepartments.get(idx); }
+	public void setAssignedDepartments(int idx, Boolean assignedDepartment) { iAssignedDepartments.set(idx, assignedDepartment); }
+	
+	public List<Long> getManagerIds() { return iManagerIds; }
+	public void setManagerIds(List<Long> managerIds) { iManagerIds = managerIds; }
+	public Long getManagerIds(int idx) { return iManagerIds.get(idx); }
+	public void setManagerIds(int idx, Long managerId) { iManagerIds.set(idx, managerId); }
+	
+	public List<String> getManagerNames() { return iManagerNames; }
+	public void setManagerNames(List<String> managerNames) { iManagerNames = managerNames; }
+	public String getManagerNames(int idx) { return iManagerNames.get(idx); }
+	public void setManagerNames(int idx, String managerName) { iManagerNames.set(idx, managerName); }
+	
+	public List<Boolean> getAssignedManagers() { return iAssignedManagers; }
+	public void setAssignedManagers(List<Boolean> assignedManagers) { iAssignedManagers = assignedManagers; }
+	public Boolean getAssignedManagers(int idx) { return iAssignedManagers.get(idx); }
+	public void setAssignedManagers(int idx, Boolean assignedManagers) { iAssignedManagers.set(idx, assignedManagers); }
 }

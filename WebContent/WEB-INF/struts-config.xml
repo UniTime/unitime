@@ -28,7 +28,6 @@
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
 	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-      <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
@@ -132,19 +131,6 @@
     		redirect="true" />
     </action>
     
-	    <action
-	      path="/solverGroupEdit"
-	      attribute="solverGroupEditForm"
-	      input="solverGroupTile"
-	      name="solverGroupEditForm"
-	      scope="request"
-	      type="org.springframework.web.struts.DelegatingActionProxy" 
-	      validate="false">
-	      <forward name="list" path="solverGroupTile" />
-	      <forward name="add" path="solverGroupAddTile" />
-	      <forward name="edit" path="solverGroupEditTile" />
-	    </action>
-
     <action
        path="/departmentEdit"
        type="org.springframework.web.struts.DelegatingActionProxy"

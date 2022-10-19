@@ -4851,4 +4851,73 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Restrict Access")
 	String sectRestrictAccess();
+	
+	@DefaultMessage("Back")
+	String actionBackToSolverGroups();
+	
+	@DefaultMessage("Save")
+	String actionSaveSolverGroup();
+	
+	@DefaultMessage("Update")
+	String actionUpdateSolverGroup();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteSolverGroup();
+	
+	@DefaultMessage("Add Solver Group")
+	String actionAddSolverGroup();
+	
+	@DefaultMessage("Delete All")
+	String actionDeleteAllSolverGroups();
+	
+	@DefaultMessage("Delete all solver groups that have no solutions saved.")
+	String titleDeleteAllSolverGroups();
+	
+	@DefaultMessage("Auto Setup")
+	String actionAutoSetupSolverGroups();
+	
+	@DefaultMessage("Automatically setup solver groups.")
+	String titleAutoSetupSolverGroups();
+	
+	@DefaultMessage("Solver Groups - {0}")
+	String sectSolverGroups(String session);
+	
+	@DefaultMessage("Abbv")
+	String fieldAbbv();
+	
+	@DefaultMessage("Managers")
+	String fieldManagers();
+	
+	@DefaultMessage("Committed")
+	String fieldCommitted();
+	
+	@DefaultMessage("No solver groups defined for this academic session.")
+	String infoNoSolverGroupInThisSession();
+	
+	@DefaultMessage("The solver group will be deleted. Continue?")
+	String confirmDeleteSolverGroup();
+	
+	@DefaultMessage("All solver groups that have no solutions saved will be deleted. Continue?")
+	String confirmDeleteAllSolverGroups();
+	
+	@DefaultMessage("New solver groups may be created. Continue?")
+	String confirmCreateNewSolverGroups();
+	
+	@DefaultMessage("Add Solver Group")
+	String sectAddSolverGroup();
+	
+	@DefaultMessage("Edit Solver Group")
+	String sectEditSolverGroup();
+	
+	@DefaultMessage("Assigned Departments")
+	String sectAssignedDepartments();
+	
+	@DefaultMessage("Assigned Managers")
+	String sectAssignedManagers();
+	
+	@DefaultMessage("Not Assigned Departments")
+	String sectNotAssignedDepartments();
+	
+	@DefaultMessage("Not Assigned Managers")
+	String sectNotAssignedManagers();
 }
