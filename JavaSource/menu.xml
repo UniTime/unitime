@@ -650,7 +650,7 @@
 					<hasPermission name="TimetableManagers"/>
 				</condition>
 			</item>
-			<item name="Departments" page="departmentList.do">
+			<item name="Departments" page="departmentList.action">
 				<condition>
 					<hasPermission name="Departments"/>
 					<propertyEquals name="unitime.legacy.admin.departments" value="true" defaultValue="false"/>

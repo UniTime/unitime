@@ -71,7 +71,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
         int allowReqOrd = 0;
        if (isAllowReqRoom() != null && isAllowReqRoom().booleanValue()) {
        	if (!allowReq.isEmpty()) allowReq += ", ";
-       	allowReq +=  msg.colRooms();
+       	allowReq +=  msg.colRoom();
        	allowReqOrd += 1;
        }
        if (isAllowReqTime() != null && isAllowReqTime().booleanValue()) {

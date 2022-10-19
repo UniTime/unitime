@@ -17,86 +17,46 @@
  * limitations under the License.
  * 
  --%>
-<%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean"	prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html"	prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tt:session-context/>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="departmentList">
+	<table class="unitime-MainTable">
 	<TR>
-		<TD align="right">
+		<TD align="right" colspan="14">
 			<tt:section-header>
 				<tt:section-title>
-				 Department List - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
+					<s:property value="title"/>
 				</tt:section-title>
-
-				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-					<TR>
-					<sec:authorize access="hasPermission(null, 'Session', 'DepartmentAdd')">
-						<TD nowrap>
-								<html:form action="departmentEdit" styleClass="FormWithNoPadding">
-									<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
-									<bean:message key="button.addDepartment" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</sec:authorize>
-					<TD nowrap>
-						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
-					</TD></TR>
-				</TABLE>
-
+				
+				<sec:authorize access="hasPermission(null, 'Session', 'DepartmentAdd')">
+					<tt:button value="%{#msg.buttonAddDepartment()}"/>
+				</sec:authorize>
+				<tt:button value="%{#msg.buttonExportPDF()}"/>
 			</tt:section-header>
 		</TD>
 	</TR>
-</TABLE>
-
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<bean:write name="table" scope="request" filter="false"/>
-</TABLE>
-
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<s:property value="#request.table" escapeHtml="false"/>
 	<TR>
-		<TD align="right" colspan="2">
+		<TD align="right" colspan="14">
 			<tt:section-header/>
 		</TD>
 	</TR>
 	<TR>
-		<TD align="left">
-			<html:form action="/departmentList">
-				Show all departments (including departments with no manager and no subject area):
-				<html:hidden property="op" value="Apply"/>
-				<html:checkbox property="showUnusedDepts" onchange="submit()"/>
-			</html:form>
+		<TD align="left" colspan="7">
+			<s:hidden name="op2" value="" id="op2"/>
+			<s:checkbox name="showUnusedDepts" onclick="document.getElementById('op2').value = 'Apply'; submit();"/>
+			<loc:message name="checkShowAllDepartments"/>
 		</TD>
-		<TD align="right">
-				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-					<TR>
-					<sec:authorize access="hasPermission(null, 'Session', 'DepartmentAdd')">
-						<TD nowrap>
-							<html:form action="departmentEdit" styleClass="FormWithNoPadding">
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.addDepartment">
-								<bean:message key="button.addDepartment" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</sec:authorize>
-					<TD nowrap>
-						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
-					</TD></TR>
-				</TABLE>
+		<TD align="right" colspan="7">
+			<sec:authorize access="hasPermission(null, 'Session', 'DepartmentAdd')">
+				<tt:button value="%{#msg.buttonAddDepartment()}"/>
+			</sec:authorize>
+			<tt:button value="%{#msg.buttonExportPDF()}"/>
 		</TD>
 	</TR>
-</TABLE>				
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(Constants.JUMP_TO_ATTR_NAME) != null) { %>
-  		location.hash = "<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>
+</table>
+</s:form>
+</loc:bundle>

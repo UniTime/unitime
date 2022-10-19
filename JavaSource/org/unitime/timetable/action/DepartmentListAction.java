@@ -21,94 +21,90 @@ package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
-import org.unitime.timetable.form.DepartmentListForm;
+import org.unitime.timetable.form.BlankForm;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
-
-/** 
-* MyEclipse Struts
-* Creation date: 02-18-2005
-* 
-* XDoclet definition:
-* @struts:action path="/DepartmentList" name="departmentListForm" input="/admin/departmentList.jsp" scope="request" validate="true"
-*/
 /**
  * @author Tomas Muller
  */
-@Service("/departmentList")
-public class DepartmentListAction extends Action {
+@Action(value = "departmentList", results = {
+		@Result(name = "showDepartmentList", type = "tiles", location = "departmentList.tiles"),
+		@Result(name = "add", type = "redirect", location="/departmentEdit.do", params = {
+				"op", "${op}"})
+	})
+@TilesDefinition(name = "departmentList.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Departments"),
+		@TilesPutAttribute(name = "body", value = "/admin/departmentList.jsp")
+	})
+public class DepartmentListAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = 1316912229218015591L;
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private boolean showUnusedDepts = false;
+	private String op2 = null;
+	public boolean getShowUnusedDepts() { return showUnusedDepts; }
+	public void setShowUnusedDepts(boolean showUnusedDepts) { this.showUnusedDepts = showUnusedDepts; }
+	public String getOp2() { return op2; }
+	public void setOp2(String op2) { this.op2 = op2; }
 
-	// --------------------------------------------------------- Instance Variables
 
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
+	@Override
+	public String execute() throws Exception {
 
 		sessionContext.checkPermission(Right.Departments);
-
-		DepartmentListForm departmentListForm = (DepartmentListForm) form;
-		departmentListForm.setDepartments(Department.findAll(sessionContext.getUser().getCurrentAcademicSessionId()));
-        
-        if ("Apply".equals(departmentListForm.getOp())) {
-        	sessionContext.getUser().setProperty("Departments.showUnusedDepts", departmentListForm.getShowUnusedDepts() ? "1" : "0");
+		
+        if ("Apply".equals(op2)) {
+        	sessionContext.getUser().setProperty("Departments.showUnusedDepts", showUnusedDepts ? "1" : "0");
         } else {
-            departmentListForm.setShowUnusedDepts("1".equals(sessionContext.getUser().getProperty("Departments.showUnusedDepts", "0")));
+        	showUnusedDepts = "1".equals(sessionContext.getUser().getProperty("Departments.showUnusedDepts", "0"));
         }
 
-        boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(sessionContext.getUser()));
+        boolean dispLastChanges = isDisplayLastChanges();
+        
+        if (stripAccessKey(MSG.buttonAddDepartment()).equals(request.getParameter("op"))) {
+        	setOp(stripAccessKey(MSG.buttonAddDepartment()));
+        	return "add";
+        }
 
-        if ("Export PDF".equals(request.getParameter("op"))) {
-            
-            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 13 : 12), "Department List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
-                    "departmentList.do?ord=%%",
-                    (dispLastChanges ? new String[] { "Number", "Abbv", "Name", "External\nManager", "Subjects", "Rooms",
-                            "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling", "Last\nChange" } 
-                    : new String[] { "Number", "Abbreviation", "Name", "External\nManager", "Subjects", "Rooms", "Status",
-                            "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling" }),
+        if (stripAccessKey(MSG.buttonExportPDF()).equals(request.getParameter("op"))) {
+            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 13 : 12),
+            		MSG.propDepartmentlist(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()),
+                    "departmentList.action?ord=%%",
+                    (dispLastChanges ? new String[] {
+                    		MSG.colCode(), MSG.colAbbv(), MSG.colName(), MSG.colExternalManager().replace("<br>", "\n"),
+                    		MSG.colSubjects(), MSG.colRooms(), MSG.colStatus(), MSG.colDistPrefPriority().replace("<br>", "\n"),
+                    		MSG.colAllowRequired().replace("<br>", "\n"), MSG.colInstructorPref().replace("<br>", "\n"),
+                    		MSG.colEvents(), MSG.colStudentScheduling().replace("<br>", "\n"), MSG.colLastChange()
+                    }
+                    : new String[] {
+                    		MSG.colCode(), MSG.colAbbv(), MSG.colName(), MSG.colExternalManager().replace("<br>", "\n"),
+                    		MSG.colSubjects(), MSG.colRooms(), MSG.colStatus(), MSG.colDistPrefPriority().replace("<br>", "\n"),
+                    		MSG.colAllowRequired().replace("<br>", "\n"), MSG.colInstructorPref().replace("<br>", "\n"),
+                    		MSG.colEvents(), MSG.colStudentScheduling().replace("<br>", "\n")
+                    		}),
                     new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left", "left" },
                     new boolean[] { true, true, true, true, true, true, true, true, true, true, true, (dispLastChanges ? true: false), false });
-            for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
-                Department d = (Department) i.next();
-                if (departmentListForm.getShowUnusedDepts() || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
+            for (Department d: getDepartments()) {
+                if (getShowUnusedDepts() || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
                     DecimalFormat df5 = new DecimalFormat("####0");
 
                     String lastChangeStr = null;
@@ -123,20 +119,20 @@ public class DepartmentListAction extends Action {
                     int allowReqOrd = 0;
                     if (d.isAllowReqRoom() != null && d.isAllowReqRoom().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "room";
+                    	allowReq += MSG.colRoom();
                     	allowReqOrd += 1;
                     }
                     if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "time";
+                    	allowReq += MSG.colTime();
                     	allowReqOrd += 2;
                     }
                     if (d.isAllowReqDistribution() != null && d.isAllowReqDistribution().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += "distribution";
+                    	allowReq += MSG.colDistribution();
                     	allowReqOrd += 4;
                     }
-                    if (allowReqOrd == 7) allowReq = "all";
+                    if (allowReqOrd == 7) allowReq = MSG.colAll();
                     
                     String dependentStatuses = null;
                     if (d.isExternalManager() && d.getExternalStatusTypes() != null && !d.getExternalStatusTypes().isEmpty()) {
@@ -166,9 +162,9 @@ public class DepartmentListAction extends Action {
                                 (d.getStatusType() == null ? "@@ITALIC " : "")+d.effectiveStatusType().getLabel()+(d.getStatusType() == null?"@@END_ITALIC " : "") + (dependentStatuses == null ? "" : "\n" + dependentStatuses),
                                 (d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()),
                                 allowReq,
-                                d.isInheritInstructorPreferences() ? "Yes" : "No",
-                                d.isAllowEvents() ? "Yes" : "No",
-                                d.isAllowStudentScheduling() ? "Yes" : "No",
+                                d.isInheritInstructorPreferences() ? MSG.exportTrue() : MSG.exportFalse(),
+                                d.isAllowEvents() ? MSG.exportTrue() : MSG.exportFalse(),
+                                d.isAllowStudentScheduling() ? MSG.exportTrue() : MSG.exportFalse(),
                                 lastChangeStr },
                            new Comparable[] {
                             d.getDeptCode(),
@@ -195,25 +191,26 @@ public class DepartmentListAction extends Action {
         }
         
 		WebTable webTable = new WebTable((dispLastChanges ? 13 : 12), "",
-				"departmentList.do?ord=%%",
+				"departmentList.action?ord=%%",
 				(dispLastChanges 
-					? new String[] { "Code", "Abbv", "Name", "External<br>Manager", 
-									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
-									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Student<br>Scheduling", "Last<br>Change" } 
-					: new String[] { "Code", "Abbreviation", "Name", "External Manager",
-									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
-									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Student<br>Scheduling" }),
+					? new String[] {
+							MSG.colCode(), MSG.colAbbreviation(), MSG.colName(), MSG.colExternalManager(),
+                    		MSG.colSubjects(), MSG.colRooms(), MSG.colStatus(), MSG.colDistPrefPriority(),
+                    		MSG.colAllowRequired(), MSG.colInstructorPref(),
+                    		MSG.colEvents(), MSG.colStudentScheduling(), MSG.colLastChange()} 
+					: new String[] {
+							MSG.colCode(), MSG.colAbbreviation(), MSG.colName(), MSG.colExternalManager(),
+                    		MSG.colSubjects(), MSG.colRooms(), MSG.colStatus(), MSG.colDistPrefPriority(),
+                    		MSG.colAllowRequired(), MSG.colInstructorPref(),
+                    		MSG.colEvents(), MSG.colStudentScheduling() }),
 				new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left", "left" },
                 new boolean[] { true, true, true, true, true, true, true, true, true, true, true, (dispLastChanges ? true: false), false });
 		WebTable.setOrder(sessionContext, "DepartmentList.ord", request.getParameter("ord"), 1);
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
         
-        for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
-            Department d = (Department) i.next();
-    		if (departmentListForm.getShowUnusedDepts() || !d.getSubjectAreas().isEmpty()
-    			|| !d.getTimetableManagers().isEmpty()
-    			|| d.isExternalManager().booleanValue()) {
+        for (Department d: getDepartments()) {
+    		if (getShowUnusedDepts() || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
     				
     			DecimalFormat df5 = new DecimalFormat("####0");
 
@@ -243,20 +240,20 @@ public class DepartmentListAction extends Action {
                         int allowReqOrd = 0;
                         if (d.isAllowReqRoom() != null && d.isAllowReqRoom().booleanValue()) {
                         	if (!allowReq.isEmpty()) allowReq += ", ";
-                        	allowReq += "room";
+                        	allowReq += MSG.colRoom();
                         	allowReqOrd += 1;
                         }
                         if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {
                         	if (!allowReq.isEmpty()) allowReq += ", ";
-                        	allowReq += "time";
+                        	allowReq += MSG.colTime();
                         	allowReqOrd += 2;
                         }
                         if (d.isAllowReqDistribution() != null && d.isAllowReqDistribution().booleanValue()) {
                         	if (!allowReq.isEmpty()) allowReq += ", ";
-                        	allowReq += "distribution";
+                        	allowReq += MSG.colDistribution();
                         	allowReqOrd += 4;
                         }
-                        if (allowReqOrd == 7) allowReq = "all";
+                        if (allowReqOrd == 7) allowReq = MSG.colAll();
                         if (allowReqOrd == 0) allowReq = "&nbsp;";
                         
                 String dependentStatuses = null;
@@ -278,12 +275,12 @@ public class DepartmentListAction extends Action {
                 
                 boolean editable = sessionContext.hasPermission(d, Right.DepartmentEdit) || sessionContext.hasPermission(d, Right.DepartmentLimitedEdit);
 
-    			webTable.addLine(
+                WebTableLine line = webTable.addLine(
     				(editable ? "onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"" : null),
     				new String[] {
     						d.getDeptCode(),
     						d.getAbbreviation()==null ? "&nbsp;" : d.getAbbreviation(),
-    						"<A name='" + d.getUniqueId() + "'>" + d.getName() + "</A>",
+    						d.getName(),
     						(d.isExternalManager().booleanValue() 
     							? "<span title='" + d.getExternalMgrLabel()	+ "'>" + d.getExternalMgrAbbv()	+ "</span>"
     							: "&nbsp;"),
@@ -295,9 +292,9 @@ public class DepartmentListAction extends Action {
     						(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
     							? "&nbsp;" : d.getDistributionPrefPriority().toString()),
     						allowReq,
-    						(d.isInheritInstructorPreferences() ? "<IMG border='0' title='Instructor preferences are to be inherited.' alt='Inherit Instructor Preferences' align='absmiddle' src='images/accept.png'>" : ""),
-    						(d.isAllowEvents() ? "<IMG border='0' title='This department has event management enabled.' alt='Event Management' align='absmiddle' src='images/accept.png'>" : ""),
-    						(d.isAllowStudentScheduling() ? "<IMG border='0' title='This department has student scheduling enabled.' alt='Student Scheduling' align='absmiddle' src='images/accept.png'>" : ""),
+    						(d.isInheritInstructorPreferences() ? "<IMG border='0' align='absmiddle' src='images/accept.png'>" : ""),
+    						(d.isAllowEvents() ? "<IMG border='0' align='absmiddle' src='images/accept.png'>" : ""),
+    						(d.isAllowStudentScheduling() ? "<IMG border='0' align='absmiddle' src='images/accept.png'>" : ""),
     						lastChangeStr },
     				new Comparable[] {
     						d.getDeptCode(),
@@ -316,13 +313,25 @@ public class DepartmentListAction extends Action {
     						d.isAllowEvents(),
     						d.isAllowStudentScheduling(),
     						lastChangeCmp });
+                line.setUniqueId(d.getUniqueId().toString());
     		}
         }
         
         request.setAttribute("table", webTable.printTable(WebTable.getOrder(sessionContext, "DepartmentList.ord")));
         
-		return mapping.findForward("showDepartmentList");
+		return "showDepartmentList";
 		
 	}
-
+	
+	public TreeSet<Department> getDepartments() {
+		return Department.findAll(sessionContext.getUser().getCurrentAcademicSessionId());
+	}
+	
+	public boolean isDisplayLastChanges() {
+		return CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(sessionContext.getUser()));
+	}
+	
+	public String getTitle() {
+		return MSG.propDepartmentlist(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
+	}
 }

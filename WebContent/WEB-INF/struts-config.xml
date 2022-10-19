@@ -26,7 +26,6 @@
    
    <form-beans >
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
-	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
 	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
@@ -67,16 +66,6 @@
 	      	path="/subjectList.do" />
       </action>
       
-	 <action
-         path="/departmentList"
-         attribute="departmentListForm"
-         input="departmentListTile"
-         name="departmentListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showDepartmentList" path="departmentListTile" />
-      </action>
-
       <action
          path="/timetableManagerEdit"
          type="org.springframework.web.struts.DelegatingActionProxy"
@@ -140,7 +129,8 @@
        validate="false">
        <forward 
        		name="back" 
-       		path="/departmentList.do" />
+       		path="/departmentList.action"
+       		redirect="true"/>
        <forward 
        		name="add" 
        		path="departmentAddTile" />

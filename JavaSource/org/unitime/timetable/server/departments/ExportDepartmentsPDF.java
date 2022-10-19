@@ -92,7 +92,7 @@ public class ExportDepartmentsPDF implements Exporter {
             	 */
             	if (!printHeaderText) {
                 	ArrayList<String> headerText = new ArrayList<String>(); 
-                	headerText.add(MESSAGES.colNumber());
+                	headerText.add(MESSAGES.colCode());
                 	headerText.add(MESSAGES.colAbbv());
                 	headerText.add(MESSAGES.colName());
                 	headerText.add(MESSAGES.colExternalManager().replace("<br>","\n"));
@@ -135,7 +135,7 @@ public class ExportDepartmentsPDF implements Exporter {
                     int allowReqOrd = 0;
                     if (d.isAllowReqRoom() != null && d.isAllowReqRoom().booleanValue()) {
                     	if (!allowReq.isEmpty()) allowReq += ", ";
-                    	allowReq += MESSAGES.colRooms();
+                    	allowReq += MESSAGES.colRoom();
                     	allowReqOrd += 1;
                     }
                     if (d.isAllowReqTime() != null && d.isAllowReqTime().booleanValue()) {

@@ -86,12 +86,6 @@
 		<put name="body" value="/admin/subjectAreaEdit.jsp" />
   	</definition>
 
-	<definition	name="departmentListTile" extends="pageLayoutDef">
-		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
-		<put name="title" type="string" value="Departments"/>
-		<put name="body" value="/admin/departmentList.jsp" />
-  	</definition>
-  	
    	<definition	name="instructionalOfferingModifyTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Multiple Class Setup"/>
 		<put name="body" value="/user/instructionalOfferingModify.jsp" />
