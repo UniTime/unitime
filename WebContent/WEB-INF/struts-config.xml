@@ -31,7 +31,6 @@
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
-      <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
    </form-beans>
 
@@ -150,19 +149,6 @@
        		path="departmentEditTile" />
     </action>
     
-    <action
-       path="/deptStatusTypeEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="deptStatusTypeEditForm"
-       input="deptStatusTypeEditTile"
-       name="deptStatusTypeEditForm"
-       scope="request"
-       validate="false" >
-       <forward name="list" path="deptStatusTypeListTile" />
-       <forward name="add" path="deptStatusTypeAddTile" />
-       <forward name="edit" path="deptStatusTypeEditTile" />
-    </action>
-
     <action
       attribute="rollForwardSessionForm"
       input="rollForwardSessionTile"

@@ -22,12 +22,9 @@ package org.unitime.timetable.form;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
@@ -38,8 +35,10 @@ import org.unitime.timetable.util.IdValue;
 /** 
  * @author Tomas Muller
  */
-public class DeptStatusTypeEditForm extends ActionForm {
+public class DeptStatusTypeEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -684686223274367430L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private String iOp;
     private Long iUniqueId;
     private String iReference;
@@ -68,32 +67,33 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iAllowNoRole = false;
     private boolean iAllowRollForward = false;
     private boolean iEventManagement = false;
+    
+    public DeptStatusTypeEditForm() {
+    	reset();
+    }
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
+	public void validate(UniTimeAction action) {
         
-        if(iReference==null || iReference.trim().length()==0)
-            errors.add("reference", new ActionMessage("errors.required", ""));
-		else {
+        if(iReference==null || iReference.trim().length()==0) {
+        	action.addFieldError("form.reference", MSG.errorRequiredField(MSG.fieldReference()));
+        } else {
 			try {
 				DepartmentStatusType ds = DepartmentStatusType.findByRef(iReference);
 				if (ds!=null && !ds.getUniqueId().equals(iUniqueId))
-					errors.add("reference", new ActionMessage("errors.exists", iReference));
+					action.addFieldError("form.reference", MSG.errorAlreadyExists(iReference));
 			} catch (Exception e) {
-				errors.add("reference", new ActionMessage("errors.generic", e.getMessage()));
+				action.addFieldError("form.reference", e.getMessage());
 			}
         }
         
         if(iLabel==null || iLabel.trim().length()==0)
-            errors.add("label", new ActionMessage("errors.required", ""));
+        	action.addFieldError("form.label", MSG.errorRequiredField(MSG.fieldLabel()));
         
         if (iApply<0)
-            errors.add("apply", new ActionMessage("errors.required", ""));
-
-		return errors;
+        	action.addFieldError("form.label", MSG.errorRequiredField(MSG.fieldApply()));
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	public void reset() {
 		iOp = "List"; iUniqueId = Long.valueOf(-1);
         iReference = null; iLabel = null;
         iApply = 0; iOrder = DepartmentStatusType.findAll().size();
@@ -136,11 +136,11 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public void setApply(Long apply) { iApply = (apply==null?-1:(int)apply.longValue()); }
     public Vector getApplyOptions() {
         Vector options = new Vector();
-        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt()), "Session"));
-        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Department.toInt()), "Department"));
-        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.ExamStatus.toInt()), "Examinations"));
-        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Session & Department"));
-        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt() | DepartmentStatusType.Apply.ExamStatus.toInt()), "All"));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt()), MSG.applyToSession()));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Department.toInt()), MSG.applyToDepartment()));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.ExamStatus.toInt()), MSG.applyToExaminations()));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), MSG.applyToSessionAndDepartment()));
+        options.add(new IdValue(Long.valueOf(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt() | DepartmentStatusType.Apply.ExamStatus.toInt()), MSG.applyToAll()));
         return options;
     }
     public void setCanManagerView(boolean canManagerView) { iCanManagerView = canManagerView; }
@@ -242,8 +242,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	
 	public void load(DepartmentStatusType s) {
 		if (s==null) {
-			reset(null, null);
-			setOp("Save");
+			reset();
+			setOp(MSG.actionSaveStatusType());
 		} else {
             setUniqueId(s.getUniqueId());
             setReference(s.getReference());
@@ -251,7 +251,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
             setApply(s.getApply());
             setRights(s.getStatus().intValue());
             setOrder(s.getOrd());
-            setOp("Update");
+            setOp(MSG.actionUpdateStatusType());
 		}
 	}
 	

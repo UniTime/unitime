@@ -4920,4 +4920,256 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Not Assigned Managers")
 	String sectNotAssignedManagers();
+	
+	@DefaultMessage("Label")
+	String fieldLabel();
+	
+	@DefaultMessage("Apply")
+	String fieldApply();
+	
+	@DefaultMessage("Rights")
+	String fieldRights();
+	
+	@DefaultMessage("Add Status Type")
+	String actionAddStatusType();
+	
+	@DefaultMessage("Save")
+	String actionSaveStatusType();
+	
+	@DefaultMessage("Update")
+	String actionUpdateStatusType();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteStatusType();
+	
+	@DefaultMessage("Back")
+	String actionBackToStatusTypes();
+	
+	@DefaultMessage("Session")
+	String applyToSession();
+	
+	@DefaultMessage("Department")
+	String applyToDepartment();
+	
+	@DefaultMessage("Examinations")
+	String applyToExaminations();
+	
+	@DefaultMessage("Session & Department")
+	String applyToSessionAndDepartment();
+	
+	@DefaultMessage("All")
+	String applyToAll();
+	
+	@DefaultMessage("No status defined.")
+	String infoNoStatusTypes();
+	
+	@DefaultMessage("roll-forward")
+	String rightRollFoward();
+	
+	@DefaultMessage("owner can {0}")
+	String rightOwnerCan(String what);
+	
+	@DefaultMessage("manager can {0}")
+	String rightManagerCan(String what);
+	
+	@DefaultMessage("do all")
+	String rightViewAndEdit();
+	
+	@DefaultMessage("do all")
+	String rightEditAndTimetable();
+	
+	@DefaultMessage("view")
+	String rightView();
+	
+	@DefaultMessage("edit")
+	String rightEdit();
+	
+	@DefaultMessage("limited edit")
+	String rightLimitedEdit();
+	
+	@DefaultMessage("{0} and {1}")
+	String rightAnd(String r1, String r2);
+	
+	@DefaultMessage("audit")
+	String rightAudit();
+	
+	@DefaultMessage("timetable")
+	String rightTimetable();
+	
+	@DefaultMessage("commit")
+	String rightCommit();
+	
+	@DefaultMessage("exam {0}")
+	String rightExam(String what);
+	
+	@DefaultMessage("sectioning")
+	String rightSectioning();
+	
+	@DefaultMessage("assistant")
+	String rightAssitant();
+	
+	@DefaultMessage("registration")
+	String rightRegistration();
+	
+	@DefaultMessage("events")
+	String rightEvents();
+	
+	@DefaultMessage("no-role {0}")
+	String rightNoRoleCan(String what);
+	
+	@DefaultMessage("all")
+	String rightSeeAllEvents();
+	
+	@DefaultMessage("classes")
+	String rightSeeClasses();
+	
+	@DefaultMessage("exams")
+	String rightSeeExams();
+	
+	@DefaultMessage("final exams")
+	String rightSeeFinalExams();
+	
+	@DefaultMessage("midterm exams")
+	String rightSeeMidtermExams();
+	
+	@DefaultMessage("test session")
+	String rightTestSession();
+	
+	@DefaultMessage("The status will be deleted. Continue?")
+	String confirmStatusTypeDelete();
+	
+	@DefaultMessage("Add Status Type")
+	String sectAddStatusType();
+	
+	@DefaultMessage("Edit Status Type")
+	String sectEditStatusType();
+	
+	@DefaultMessage("Status Types")
+	String sectStatusTypes();
+	
+	@DefaultMessage("Course Timetabling")
+	String sectCourseTimetabling();
+	
+	@DefaultMessage("Examination Timetabling")
+	String sectExaminationTimetabling();
+	
+	@DefaultMessage("Student Scheduling")
+	String sectStudentSectioning();
+	
+	@DefaultMessage("Event Management")
+	String sectEventManagement();
+	
+	@DefaultMessage("Other")
+	String sectOther();
+	
+	@DefaultMessage("Owner View:")
+	String propOwnerView();
+	@DefaultMessage("The manager of the department of the subject area of a class can view class data but cannot change it.")
+	String descOwnerView();
+	
+	@DefaultMessage("Owner Limited Edit:")
+	String propOwnerLimitedEdit();
+	@DefaultMessage("The manager of the department of the subject area of a class can assign instructors.")
+	String descOwnerLimitedEdit();
+	
+	@DefaultMessage("Owner Edit:")
+	String propOwnerEdit();
+	@DefaultMessage("The manager of the department of the subject area of a class can edit the class data.")
+	String descOwnerEdit();
+	
+	@DefaultMessage("Manager View:")
+	String propManagerView();
+	@DefaultMessage("The schedule manager of the class (manager of the department that is managing the class, if externally managed) can view class data but cannot change it.")
+	String descManagerView();
+
+	@DefaultMessage("Manager Limited Edit:")
+	String propManagerLimitedEdit();
+	@DefaultMessage("The schedule manager of the class can assign instructors.")
+	String descManagerLimitedEdit();
+
+	@DefaultMessage("Manager Edit:")
+	String propManagerEdit();
+	@DefaultMessage("The schedule manager of the class can edit class data.")
+	String descManagerEdit();
+
+	@DefaultMessage("Audit:")
+	String propAudit();
+	@DefaultMessage("The schedule manager can run the solver, but cannot save timetables.")
+	String descAudit();
+
+	@DefaultMessage("Timetable:")
+	String propTimetable();
+	@DefaultMessage("The schedule manager can create timetables and save them, but cannot commit.")
+	String descTimetable();
+
+	@DefaultMessage("Commit:")
+	String propCommit();
+	@DefaultMessage("The schedule manager can commit a timetable.")
+	String descCommit();
+
+	@DefaultMessage("Exam View:")
+	String propExamView();
+	@DefaultMessage("The schedule manager of the department can view examination data of the appropriate subject areas.")
+	String descExamView();
+
+	@DefaultMessage("Exam Edit:")
+	String propExamEdit();
+	@DefaultMessage("The schedule manager of the department can edit examination data of the appropriate subject areas.")
+	String descExamEdit();
+
+	@DefaultMessage("Exam Timetable:")
+	String propExamTimetable();
+	@DefaultMessage("The examination timetabling manager can edit all examination data and create examination schedule.")
+	String descExamTimetable();
+
+	@DefaultMessage("Registration:")
+	String propRegistration();
+	@DefaultMessage("Students are able to use the Student Course Requests page to fill in their course and free time requests.")
+	String descRegistration();
+
+	@DefaultMessage("Assistant:")
+	String propAssistant();
+	@DefaultMessage("Unauthenticated users and students are able to use the Student Scheduling Assistant.")
+	String descAssistant();
+
+	@DefaultMessage("Online Sectioning:")
+	String propOnlineSectioning();
+	@DefaultMessage("Online student sectioning is fully enabled (e.g., courses must be locked before a change, conflicting students are automatically re-sectioned).")
+	String descOnlineSectioning();
+
+	@DefaultMessage("Events:")
+	String propEvents();
+	@DefaultMessage("Event management is available to non-administrative users (when not set, all rooms are treated as with No Event Management status).")
+	String descEvents();
+
+	@DefaultMessage("Class Schedule:")
+	String propClassSchedule();
+	@DefaultMessage("Class schedule can be presented to unauthenticated users or authenticated users without a role.")
+	String descClassSchedule();
+
+	@DefaultMessage("Final Examination Schedule:")
+	String propFinalExaminationSchedule();
+	@DefaultMessage("Final examination schedule can be presented to unauthenticated users or authenticated users without a role.")
+	String descFinalExaminationSchedule();
+
+	@DefaultMessage("Midterm Examination Schedule:")
+	String propMidtermExaminationSchedule();
+	@DefaultMessage("Midterm examination schedule can be presented to unauthenticated users or authenticated users without a role.")
+	String descMidtermExaminationSchedule();
+
+	@DefaultMessage("Allow Roll Forward:")
+	String propAllowRollForward();
+	@DefaultMessage("An academic session can only be rolled forwarded into an academic session of a status that allows for roll forward.")
+	String descAllowRollForward();
+
+	@DefaultMessage("Allow No Role:")
+	String propAllowNoRole();
+	@DefaultMessage("If the No Role role and this toggle are enabled: Users without any role are allowed to select an academic session of this status using the No Role role (e.g., on the Events page).")
+	String descAllowNoRole();
+
+	@DefaultMessage("Test Session:")
+	String propTestSession();
+	@DefaultMessage("Academic session is marked as a test session. Such a session is not available to no-role users. Also, classes and examinations do not generate any events.")
+	String descTestSession();
+	
 }

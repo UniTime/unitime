@@ -22,68 +22,80 @@ package org.unitime.timetable.action;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.DeptStatusTypeEditForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-
 
 /** 
  * @author Tomas Muller
  */
-@Service("/deptStatusTypeEdit")
-public class DeptStatusTypeEditAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value="deptStatusTypeEdit", results = {
+		@Result(name = "list", type = "tiles", location = "deptStatusTypes.tiles"),
+		@Result(name = "add", type = "tiles", location = "deptStatusTypeAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "deptStatusTypeEdit.tiles")
+	})
+@TilesDefinitions(value = {
+		@TilesDefinition(name = "deptStatusTypes.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Status Types"),
+				@TilesPutAttribute(name = "body", value = "/admin/deptStatusTypeEdit.jsp")
+		}),
+		@TilesDefinition(name = "deptStatusTypeAdd.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Add Status Type"),
+				@TilesPutAttribute(name = "body", value = "/admin/deptStatusTypeEdit.jsp")
+		}),
+		@TilesDefinition(name = "deptStatusTypeEdit.tiles", extend = "baseLayout", putAttributes =  {
+				@TilesPutAttribute(name = "title", value = "Edit Status Type"),
+				@TilesPutAttribute(name = "body", value = "/admin/deptStatusTypeEdit.jsp")
+		})
+	})
+public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditForm> {
+	private static final long serialVersionUID = -8502240944652360463L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		try {
-		DeptStatusTypeEditForm myForm = (DeptStatusTypeEditForm) form;
+	private Long id;
+	
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+
+	@Override
+	public String execute() throws Exception {
+		if (form == null) form = new DeptStatusTypeEditForm();
 		
         // Check Access
 		sessionContext.checkPermission(Right.StatusTypes);
         
         // Read operation to be performed
-        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        
-        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
-            op = request.getParameter("op2");
+		if (op == null) op = form.getOp();
 
         if (op==null) {
-            myForm.reset(mapping, request);
+            form.reset();
         }
         
         // Reset Form
-        if ("Back".equals(op)) {
-            myForm.reset(mapping, request);
+        if (MSG.actionBackToStatusTypes().equals(op)) {
+            form.reset();
         }
         
-        if ("Add Status Type".equals(op)) {
-            myForm.load(null);
+        if (MSG.actionAddStatusType().equals(op)) {
+            form.load(null);
         }
 
         // Add / Update
-        if ("Update".equals(op) || "Save".equals(op)) {
+        if (MSG.actionUpdateStatusType().equals(op) || MSG.actionSaveStatusType().equals(op)) {
             // Validate input
-            ActionMessages errors = myForm.validate(mapping, request);
-            if(errors.size()>0) {
-                saveErrors(request, errors);
-            } else {
+            form.validate(this);
+            if (!hasFieldErrors()) {
         		Transaction tx = null;
         		
                 try {
@@ -91,7 +103,7 @@ public class DeptStatusTypeEditAction extends Action {
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(hibSession);
+                	form.saveOrUpdate(hibSession);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -99,31 +111,26 @@ public class DeptStatusTypeEditAction extends Action {
         	    	throw e;
         	    }
 
-                myForm.reset(mapping, request);
+                form.reset();
             }
         }
 
         // Edit
-        if("Edit".equals(op)) {
-            String id = request.getParameter("id");
-            ActionMessages errors = new ActionMessages();
-            if(id==null || id.trim().length()==0) {
-                errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                saveErrors(request, errors);
+        if ("Edit".equals(op)) {
+        	if (id==null ) {
+            	addFieldError("form.uniqueId", MSG.errorRequiredField(MSG.fieldId()));
             } else {
-                DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(Long.valueOf(id));
-            	
-                if(s==null) {
-                    errors.add("reference", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                    saveErrors(request, errors);
+                DepartmentStatusType s = DepartmentStatusTypeDAO.getInstance().get(id);
+                if(s == null) {
+                	addFieldError("form.uniqueId", MSG.errorDoesNotExists(id.toString()));
                 } else {
-                	myForm.load(s);
+                	form.load(s);
                 }
             }
         }
 
         // Delete 
-        if("Delete".equals(op)) {
+        if(MSG.actionDeleteStatusType().equals(op)) {
     		Transaction tx = null;
     		
             try {
@@ -131,7 +138,7 @@ public class DeptStatusTypeEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	myForm.delete(hibSession);
+            	form.delete(hibSession);
             	
     			tx.commit();
     	    } catch (Exception e) {
@@ -139,11 +146,11 @@ public class DeptStatusTypeEditAction extends Action {
     	    	throw e;
     	    }
 
-    	    myForm.reset(mapping, request);
+    	    form.reset();
         }
         
         // Move Up or Down
-        if("Move Up".equals(op) || "Move Down".equals(op)) {
+        if ("Move Up".equals(op) || "Move Down".equals(op)) {
             Transaction tx = null;
             
             try {
@@ -151,7 +158,7 @@ public class DeptStatusTypeEditAction extends Action {
                 if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     tx = hibSession.beginTransaction();
                 
-                DepartmentStatusType curStatus = (new DepartmentStatusTypeDAO()).get(myForm.getUniqueId());
+                DepartmentStatusType curStatus = (new DepartmentStatusTypeDAO()).get(id);
                 
                 if ("Move Up".equals(op)) {
                     boolean found = false;
@@ -165,7 +172,7 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                     if (found) {
                         curStatus.setOrd(curStatus.getOrd()-1);
-                        myForm.setOrder(curStatus.getOrd());
+                        form.setOrder(curStatus.getOrd());
                         hibSession.saveOrUpdate(curStatus);
                     }
                 } else {
@@ -180,7 +187,7 @@ public class DeptStatusTypeEditAction extends Action {
                     }
                     if (found) {
                         curStatus.setOrd(curStatus.getOrd()+1);
-                        myForm.setOrder(curStatus.getOrd());
+                        form.setOrder(curStatus.getOrd());
                         hibSession.saveOrUpdate(curStatus);
                     }
                 }
@@ -190,35 +197,34 @@ public class DeptStatusTypeEditAction extends Action {
                 if (tx!=null) tx.rollback();
                 Debug.error(e);
             }
-            myForm.reset(mapping, request);
+            form.reset();
         }
 
-        if ("List".equals(myForm.getOp())) {
+        if ("List".equals(form.getOp())) {
             // Read all existing settings and store in request
-            getDeptStatusList(request, sessionContext.getUser().getCurrentAcademicSessionId());
-            return mapping.findForward("list");
+            return "list";
         }
         
-        return mapping.findForward("Save".equals(myForm.getOp())?"add":"edit");
-		} catch (Exception e) {
-			Debug.error(e);
-			throw e;
-		}
+        return (form.getUniqueId() == null || form.getUniqueId() < 0 ? "add" : "edit");
 	}
 	
-    private void getDeptStatusList(HttpServletRequest request, Long sessionId) throws Exception {
+    public String getTable() {
 		WebTable.setOrder(sessionContext,"deptStatusTypes.ord",request.getParameter("ord"),2);
 		// Create web table instance 
         WebTable webTable = new WebTable( 5,
-			    null, "deptStatusTypeEdit.do?ord=%%",
+			    null, "deptStatusTypeEdit.action?ord=%%",
 			    new String[] {
-                "","Reference", "Label", "Apply", "Rights"},
+                "",
+                MSG.fieldReference(),
+                MSG.fieldLabel(),
+                MSG.fieldApply(),
+                MSG.fieldRights()},
 			    new String[] {"left","left", "left","left", "left"},
 			    null );
         
         TreeSet statuses = DepartmentStatusType.findAll();
 		if(statuses.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No status defined."}, null, null );			    
+		    webTable.addLine(null, new String[] {MSG.infoNoStatusTypes()}, null, null );			    
 		}
 		
 		int ord = 0;
@@ -229,129 +235,142 @@ public class DeptStatusTypeEditAction extends Action {
         		DepartmentStatusTypeDAO.getInstance().saveOrUpdate(s);
         	}
         	ord ++;
-        	String onClick = "onClick=\"document.location='deptStatusTypeEdit.do?op=Edit&id=" + s.getUniqueId() + "';\"";
+        	String onClick = "onClick=\"document.location='deptStatusTypeEdit.action?op=Edit&id=" + s.getUniqueId() + "';\"";
         	String rights = "";
             String apply = "";
             if (s.applyDepartment()) {
                 if (s.applySession()) {
                 	if (s.applyExamStatus())
-                		apply = "All";
+                		apply = MSG.applyToAll();
                 	else
-                		apply = "Session &amp; Department";
+                		apply = MSG.applyToSessionAndDepartment().replace("&", "&amp;");
                 } else
-                    apply = "Department";
+                    apply = MSG.applyToDepartment();
             } else if (s.applySession())
-                apply = "Session";
+                apply = MSG.applyToSession();
             else if (s.applyExamStatus())
-            	apply = "Examinations";
+            	apply = MSG.applyToExaminations();
             if (s.isAllowRollForward()) {
             	if (rights.length()>0) rights+="; ";
-                rights += "roll-forward";
+                rights += MSG.rightRollFoward();
             }
             if (s.canOwnerView() || s.canOwnerLimitedEdit() || s.canOwnerEdit()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "owner can ";
                 if (s.canOwnerView() && s.canOwnerEdit())
-                    rights += "do all";
+                    rights += MSG.rightOwnerCan(MSG.rightViewAndEdit()); 
                 else {
+                	String r = null;
                     if (s.canOwnerView())
-                        rights += "view";
+                    	r = MSG.rightView();
                     if (s.canOwnerEdit()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "edit";
+                        if (r != null) r = MSG.rightAnd(r, MSG.rightEdit());
+                        else r = MSG.rightEdit();
                     } else if (s.canOwnerLimitedEdit()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "limited edit";
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightLimitedEdit());
+                    	else r = MSG.rightLimitedEdit();
                     }
+                    rights += MSG.rightOwnerCan(r);
                 }
             }
             if (s.canManagerView() || s.canManagerLimitedEdit() || s.canManagerEdit()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "manager can ";
                 if (s.canManagerView() && s.canManagerEdit())
-                    rights += "do all";
+                    rights +=  MSG.rightManagerCan(MSG.rightViewAndEdit());
                 else {
+                	String r = null;
                     if (s.canManagerView())
-                        rights += "view";
+                    	r = MSG.rightView();
                     if (s.canManagerEdit()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "edit";
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightEdit());
+                        else r = MSG.rightEdit();
                     } else if (s.canManagerLimitedEdit()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "limited edit";
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightLimitedEdit());
+                    	else r = MSG.rightLimitedEdit();
                     }
+                    rights += MSG.rightManagerCan(r);
                 }
             }
             if (s.canAudit()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "audit";
+                rights += MSG.rightAudit();
             }
             if (s.canTimetable()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "timetable";
+                rights += MSG.rightTimetable();
             } 
             if (s.canCommit()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "commit";
+                rights += MSG.rightCommit();
             }
             if (s.canExamView() || s.canExamEdit() || s.canExamTimetable()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "exam ";
                 if (s.canExamEdit() && s.canExamTimetable())
-                    rights += "do all";
+                    rights += MSG.rightExam(MSG.rightEditAndTimetable());
                 else {
+                	String r = null;
                     if (s.canExamView())
-                        rights += "view";
+                        r = MSG.rightView();
                     if (s.canExamEdit()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "edit";
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightEdit());
+                        else r = MSG.rightEdit();
                     } else if (s.canExamTimetable()) {
-                        if (!rights.endsWith(" ")) rights+=" and ";
-                        rights += "timetable";
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightTimetable());
+                        else r = MSG.rightTimetable();
                     }
+                    rights += MSG.rightExam(r);
                 }
             }
             if (s.canOnlineSectionStudents()) {
             	if (rights.length()>0) rights+="; ";
-            	rights += "sectioning";
+            	rights += MSG.rightSectioning();
             } else if (s.canSectionAssistStudents()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "assistant";
+                rights += MSG.rightAssitant();
             } else if (s.canPreRegisterStudents()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "registration";
+                rights += MSG.rightRegistration();
             }
             if (s.isEventManagement()) {
             	if (rights.length()>0) rights+="; ";
-                rights += "events";
+                rights += MSG.rightEvents();
             }
             if (s.isAllowNoRole() || s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
                 if (rights.length()>0) rights+="; ";
-                rights += "no-role";
                 if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm() && s.canNoRoleReportClass())
-                    rights += " all";
+                    rights += MSG.rightNoRoleCan(MSG.rightSeeAllEvents()) ;
                 else {
-                    if (s.canNoRoleReportClass()) rights += " classes";
-                    if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm()) rights += " exams";
-                    else {
-                        if (s.canNoRoleReportExamFinal()) rights += " final exams";
-                        if (s.canNoRoleReportExamMidterm()) rights += " midterm exams";
+                	String r = null;
+                    if (s.canNoRoleReportClass()) r = MSG.rightSeeClasses();
+                    if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm()) {
+                    	if (r != null) r = MSG.rightAnd(r, MSG.rightSeeExams());
+                        else r = MSG.rightSeeExams();
+                    } else {
+                        if (s.canNoRoleReportExamFinal()) {
+                        	if (r != null) r = MSG.rightAnd(r, MSG.rightSeeFinalExams());
+                            else r = MSG.rightSeeFinalExams();
+                        }
+                        if (s.canNoRoleReportExamMidterm()) {
+                        	if (r != null) r = MSG.rightAnd(r, MSG.rightSeeMidtermExams());
+                            else r = MSG.rightSeeMidtermExams();
+                        }
                     }
+                    if (r == null) r = "";
+                    rights += MSG.rightNoRoleCan(r);
                 }
             }
             if (s.isTestSession()) {
             	if (rights.length()>0) rights+="; ";
-                rights += "test session";
+                rights += MSG.rightTestSession();
             }
             String ops = "";
             if (s.getOrd().intValue()>0) {
                 ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
-                		"onclick=\"deptStatusTypeEditForm.op2.value='Move Up';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
+                		"onclick=\"document.getElementById('op').value='Move Up';document.getElementById('id').value='"+s.getUniqueId()+"'; submit(); event.cancelBubble=true;\">";
             } else
                 ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             if (i.hasNext()) {
                 ops += "<img src='images/arrow_down.png' border='0' align='absmiddle' title='Move Down' " +
-                		"onclick=\"deptStatusTypeEditForm.op2.value='Move Down';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
+                		"onclick=\"document.getElementById('op').value='Move Down';document.getElementById('id').value='"+s.getUniqueId()+"'; submit(); event.cancelBubble=true;\">";
             } else
                 ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             webTable.addLine(onClick, new String[] {
@@ -370,8 +389,12 @@ public class DeptStatusTypeEditAction extends Action {
         		});
         }
         
-        request.setAttribute("DeptStatusType.last", Integer.valueOf(statuses.size()-1));
-	    request.setAttribute("DeptStatusType.table", webTable.printTable(WebTable.getOrder(sessionContext,"deptStatusTypes.ord")));
-    }	
+        // request.setAttribute("DeptStatusType.last", Integer.valueOf(statuses.size()-1));
+	    return webTable.printTable(WebTable.getOrder(sessionContext,"deptStatusTypes.ord"));
+    }
+    
+    public int getLast() {
+    	return DepartmentStatusType.findAll().size() - 1;    	
+    }
 }
 

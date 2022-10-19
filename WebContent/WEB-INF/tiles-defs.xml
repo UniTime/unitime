@@ -112,17 +112,4 @@
 		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />
   	</definition>
-
-   	<definition	name="deptStatusTypeListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Status Types"/>
-		<put name="body" value="/admin/deptStatusTypeEdit.jsp" />
-  	</definition>
-  	
-   	<definition	name="deptStatusTypeAddTile" extends="deptStatusTypeListTile">
-		<put name="title" type="string" value="Add Status Type"/>
-  	</definition>
-
-   	<definition	name="deptStatusTypeEditTile" extends="deptStatusTypeListTile">
-		<put name="title" type="string" value="Edit Status Type"/>
-  	</definition>
 </tiles-definitions>

@@ -888,7 +888,7 @@
 					<hasPermission name="DurationTypes"/>
 				</condition>
 			</item>
-			<item name="Status Types" page="deptStatusTypeEdit.do">
+			<item name="Status Types" page="deptStatusTypeEdit.action">
 				<condition>
 					<hasPermission name="StatusTypes"/>
 				</condition>
