@@ -130,8 +130,6 @@ public class SavedHQL extends BaseSavedHQL {
 				Long sessionId = user.getCurrentAcademicSessionId();
 				Session session = (sessionId == null ? null : SessionDAO.getInstance().get(sessionId));
 				if (session == null) return null;
-				TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-				if (manager == null) return null;
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (Department d: Department.getUserDepartments(user))
 					ret.put(d.getUniqueId(), d.htmlLabel());
@@ -183,8 +181,6 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Long sessionId = user.getCurrentAcademicSessionId();
 				Session session = (sessionId == null ? null : SessionDAO.getInstance().get(sessionId));
-				TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-				if (manager == null) return null;
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (Building b: (List<Building>)Building.findAll(session.getUniqueId()))
 					ret.put(b.getUniqueId(), b.getAbbrName());
@@ -212,8 +208,6 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Long sessionId = user.getCurrentAcademicSessionId();
 				Session session = (sessionId == null ? null : SessionDAO.getInstance().get(sessionId));
-				TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-				if (manager == null) return null;
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (Room r: (List<Room>)Room.findAllRooms(session.getUniqueId())){
 					ret.put(r.getUniqueId(), r.getLabel());
@@ -242,8 +236,6 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Long sessionId = user.getCurrentAcademicSessionId();
 				Session session = (sessionId == null ? null : SessionDAO.getInstance().get(sessionId));
-				TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-				if (manager == null) return null;
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (Location r: (List<Location>)Location.findAllLocations(session.getUniqueId())){
 					ret.put(r.getUniqueId(), r.getLabel());
