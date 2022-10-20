@@ -667,7 +667,7 @@
 					<hasPermission name="SolverGroups"/>
 				</condition>
 			</item>
-			<item name="Subject Areas" page="subjectList.do">
+			<item name="Subject Areas" page="subjectList.action">
 				<condition>
 					<hasPermission name="SubjectAreas"/>
 					<propertyEquals name="unitime.legacy.admin.subjectAreas" value="true" defaultValue="false"/>

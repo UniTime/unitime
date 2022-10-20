@@ -54,12 +54,6 @@
 
 	<!-- Page Layouts -->
 
-	<definition	name="subjectListTile" extends="pageLayoutDef">
-		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
-		<put name="title" type="string" value="Subject Areas"/>
-		<put name="body" value="/admin/subjectList.jsp" />
-  	</definition>
-
 	<definition	name="subjectAreaAddTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Add Subject Area"/>
 		<put name="body" value="/admin/subjectAreaEdit.jsp" />

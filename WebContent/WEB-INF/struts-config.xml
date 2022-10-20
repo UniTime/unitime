@@ -25,7 +25,6 @@
    <description>University Timetabling Application</description>
    
    <form-beans >
-	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
    </form-beans>
@@ -34,16 +33,6 @@
    		<exception key="errors.exception" type="Exception" path="/error.jsp" />
    </global-exceptions>
    <action-mappings>
-      <action
-         path="/subjectList"
-         attribute="subjectListForm"
-         input="subjectListTile"
-         name="subjectListForm"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy">
-         <forward name="showSubjectList" path="subjectListTile" />
-      </action>
-
       <action
       	path="/subjectAreaEdit"
 	    type="org.springframework.web.struts.DelegatingActionProxy"
@@ -60,7 +49,7 @@
 	      	path="subjectAreaAddTile" />
 	    <forward 
 	      	name="back" 
-	      	path="/subjectList.do" />
+	      	path="/subjectList.action" redirect="true" />
       </action>
       
     <action

@@ -17,71 +17,40 @@
  * limitations under the License.
  * 
  --%>
-<%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean"	prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html"	prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic"	prefix="logic"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt"%>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<tt:session-context/>
-<html:form action="subjectAreaEdit.do">
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
-		<TR>
-			<TD>
-
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="subjectList">
+	<table class="unitime-MainTable">
+ 		<TR>
+			<TD colspan="5">
 				<tt:section-header>
 					<tt:section-title>
-					Subject Area List - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
+						<s:property value="title"/>
 					</tt:section-title>
-
 					<sec:authorize access="hasPermission(null, 'Session', 'SubjectAreaAdd')">
-						<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.addSubjectArea">
-							<bean:message key="button.addSubjectArea" />
-						</html:submit>
+						<tt:button value="%{#msg.buttonAddSubjectArea()}"/>
 					</sec:authorize>
-
-					<input type='button' onclick="document.location='subjectList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+					<tt:button value="%{#msg.buttonExportPDF()}"/>
 				</tt:section-header>
 			</TD>
 		</TR>
-
-	</TABLE>
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<bean:write name="table" scope="request" filter="false"/>
-	</TABLE>
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
+		<s:property value="table" escapeHtml="false"/>
 		<TR>
-			<TD class="WelcomeRowHead">
+			<TD class="WelcomeRowHead" colspan="5">
 				&nbsp;
 			</TD>
 		</TR>
 		<TR>
-			<TD align="right">
+			<TD align="right" colspan="5">
 				<sec:authorize access="hasPermission(null, 'Session', 'SubjectAreaAdd')">
-					<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.addSubjectArea">
-						<bean:message key="button.addSubjectArea" />
-					</html:submit>
+					<tt:button value="%{#msg.buttonAddSubjectArea()}"/>
 				</sec:authorize>
-
-				<input type='button' onclick="document.location='subjectList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+				<tt:button value="%{#msg.buttonExportPDF()}"/>
 			</TD>
 		</TR>
-
-	</TABLE>
-
-	
-</html:form>
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(Constants.JUMP_TO_ATTR_NAME) != null) { %>
-  		location.hash = "<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>	
+	</table>
+</s:form>
+</loc:bundle>

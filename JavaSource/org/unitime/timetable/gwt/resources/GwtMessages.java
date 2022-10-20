@@ -7124,7 +7124,7 @@ public interface GwtMessages extends Messages {
 	String propStudentScheduling();
 	
 	@DefaultMessage("Department List - {0}")
-	String propDepartmentlist(String name);	
+	String propDepartmentlist(String name);
 	
 	@DefaultMessage("Assign Instructors")
 	@DoNotTranslate
@@ -7582,4 +7582,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("this department")
 	String thisDepartment();
+	
+	@DefaultMessage("Subject Area List - {0}")
+	String sectSujectAreas(String session);
+	
+	@DefaultMessage("<u>A</u>dd Subject Area")
+	String buttonAddSubjectArea();
 }

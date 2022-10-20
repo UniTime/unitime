@@ -22,77 +22,65 @@ package org.unitime.timetable.action;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.hibernate.HibernateException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.form.BlankForm;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
-
-/** 
-* MyEclipse Struts
-* Creation date: 02-18-2005
-* 
-* XDoclet definition:
-* @struts:action path="/subjectList" name="subjectListForm" input="/admin/subjectList.jsp" scope="request" validate="true"
-*/
 /**
  * @author Tomas Muller
  */
 @Service("/subjectList")
-public class SubjectListAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "subjectList", results = {
+		@Result(name = "showSubjectList", type = "tiles", location = "subjectList.tiles"),
+		@Result(name = "add", type = "redirect", location="/subjectAreaEdit.do", params = {
+				"op", "Add Subject Area"})
+	})
+@TilesDefinition(name = "subjectList.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Subject Areas"),
+		@TilesPutAttribute(name = "body", value = "/admin/subjectList.jsp")
+	})
+public class SubjectListAction extends UniTimeAction<BlankForm> {
+	private static final long serialVersionUID = -7091704122522332475L;
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
+	protected static final CourseMessages CMSG = Localization.create(CourseMessages.class);
 
-	// --------------------------------------------------------- Instance Variables
-
-	// --------------------------------------------------------- Methods
-
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 * @throws HibernateException
-	 */
-	public ActionForward execute(
-		ActionMapping mapping,
-		ActionForm form,
-		HttpServletRequest request,
-		HttpServletResponse response) throws Exception {
+	@Override
+	public String execute() throws Exception {
 
 		sessionContext.checkPermission(Right.SubjectAreas);
-
-		List<SubjectArea> subjects = SubjectArea.getSubjectAreaList(sessionContext.getUser().getCurrentAcademicSessionId());
 		
-		boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(sessionContext.getUser()));
-        
-        if ("Export PDF".equals(request.getParameter("op"))) {
+		if (stripAccessKey(MSG.buttonAddSubjectArea()).equals(op)) {
+			return "add";
+		}
+
+        if (stripAccessKey(MSG.buttonExportPDF()).equals(op)) {
+        	boolean dispLastChanges = isDisplayLastChanges();
+        	List<SubjectArea> subjects = SubjectArea.getSubjectAreaList(sessionContext.getUser().getCurrentAcademicSessionId());
         	PdfWebTable webTable = new PdfWebTable((dispLastChanges?5:4),
-                    "Subject Area List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
-                    "subjectList.do?ord=%%",
+        			MSG.sectSujectAreas(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()),
+                    "subjectList.action?ord=%%",
                     (dispLastChanges?
-                        new String[] {"Abbv", "Title", "Department", "Managers", "Last Change"}:
-                        new String[] {"Abbv", "Title", "Departmnet", "Managers"}),
+                        new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers(), MSG.fieldLastChange()}:
+                        new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers()}),
                     new String[] {"left", "left","left","left", "right"},
                     new boolean[] {true, true, true, true, false} );
             for (SubjectArea s: subjects) {
@@ -110,7 +98,7 @@ public class SubjectListAction extends Action {
                 if (dispLastChanges) {
                     List changes = ChangeLog.findLastNChanges(d.getSession().getUniqueId(), null, null, d.getUniqueId(), 1);
                     ChangeLog lastChange =  (changes == null || changes.isEmpty() ? null : (ChangeLog) changes.get(0));
-                    lastChangeStr =  (lastChange == null ? "" : ChangeLog.sDFdate.format(lastChange.getTimeStamp()) + " by " + lastChange.getManager().getShortName());
+                    lastChangeStr =  (lastChange == null ? "" : MSG.lastChange(ChangeLog.sDFdate.format(lastChange.getTimeStamp()), lastChange.getManager().getShortName()));
                     lastChangeCmp = Long.valueOf( lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
                 }
 
@@ -134,15 +122,22 @@ public class SubjectListAction extends Action {
             return null;
         }
         
+        return "showSubjectList";
+		
+	}
+	
+	public String getTable() {
+		boolean dispLastChanges = isDisplayLastChanges();
+		List<SubjectArea> subjects = SubjectArea.getSubjectAreaList(sessionContext.getUser().getCurrentAcademicSessionId());
         WebTable webTable = new WebTable( 
-    	    (dispLastChanges?5:4),
-    	    "",
-    	    "subjectList.do?ord=%%",
-    	    (dispLastChanges?
-    		    new String[] {"Abbv", "Title", "Department", "Managers", "Last Change"}:
-    		    new String[] {"Abbv", "Title", "Department", "Managers"}),
-    	    new String[] {"left", "left","left","left","right"},
-    	    new boolean[] {true, true, true, true, false} );
+        	    (dispLastChanges?5:4),
+        	    "",
+        	    "subjectList.area?ord=%%",
+        	    (dispLastChanges?
+        		    new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers(), MSG.fieldLastChange()}:
+        		    new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers()}),
+        	    new String[] {"left", "left","left","left","right"},
+        	    new boolean[] {true, true, true, true, false} );
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
         WebTable.setOrder(sessionContext,"SubjectList.ord",request.getParameter("ord"),1);
@@ -167,21 +162,17 @@ public class SubjectListAction extends Action {
         		lastChangeStr = 
         		(lastChange == null 
         			? "&nbsp;"
-        			: "<span title='"
-        				+ lastChange.getLabel()
-        				+ "'>"
-        				+ ChangeLog.sDFdate.format(lastChange
-        						.getTimeStamp()) + " by "
-        				+ lastChange.getManager().getShortName()
+        			: "<span title='" + HtmlUtils.htmlEscape(lastChange.getLabel()) + "'>"
+        				+ MSG.lastChange(ChangeLog.sDFdate.format(lastChange.getTimeStamp()), lastChange.getManager().getShortName())
         				+ "</span>");
         		lastChangeCmp = Long.valueOf(
         			lastChange == null ? 0 : lastChange.getTimeStamp().getTime());
         	}
 
-        	webTable.addLine(
+        	WebTableLine line = webTable.addLine(
         		"onClick=\"document.location.href='subjectAreaEdit.do?op=edit&id=" + s.getUniqueId() + "'\"",
         		new String[] { 
-        			"<A name='" + s.getUniqueId() + "'>" + s.getSubjectAreaAbbreviation() + "</A>",
+        			s.getSubjectAreaAbbreviation(),
         			s.getTitle(),
         			(d == null) ? "&nbsp;" : "<span title='"+d.getHtmlTitle()+"'>"+
                                     d.getDeptCode()+(d.getAbbreviation()==null?"":": "+d.getAbbreviation().trim())+
@@ -194,12 +185,18 @@ public class SubjectListAction extends Action {
         			(d == null) ? "" : d.getDeptCode(),
         			sdName,
         			lastChangeCmp });
+        	line.setUniqueId(s.getUniqueId().toString());
         }
     	
-    	request.setAttribute("table", webTable.printTable(WebTable.getOrder(sessionContext, "SubjectList.ord")));
-        
-        return mapping.findForward("showSubjectList");
-		
+    	return webTable.printTable(WebTable.getOrder(sessionContext, "SubjectList.ord"));		
+	}
+	
+	public boolean isDisplayLastChanges() {
+		return CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(sessionContext.getUser()));
+	}
+	
+	public String getTitle() {
+		return MSG.sectSujectAreas(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
 	}
 
 }
