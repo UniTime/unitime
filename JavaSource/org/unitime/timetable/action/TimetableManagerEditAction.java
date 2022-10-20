@@ -26,20 +26,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.TimetableManagerForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
@@ -55,305 +51,224 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
-
 /**
- * MyEclipse Struts
- * Creation date: 04-06-2005
- *
- * XDoclet definition:
- * @struts:action path="/timetableManagerEdit" name="timetableManagerForm" input="/admin/timetableManagerList.jsp" scope="request" validate="true"
- * @struts:action-forward name="success" path="timetableManagerList.action" redirect="true"
- * @struts:action-forward name="fail" path="timetableManagerList.action" redirect="true"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Heston Fernandes
  */
-@Service("/timetableManagerEdit")
-public class TimetableManagerEditAction extends Action {
+@Action(value = "timetableManagerEdit", results = {
+		@Result(name = "addManagerInfo", type = "tiles", location = "timetableManagerAdd.tiles"),
+		@Result(name = "editManagerInfo", type = "tiles", location = "timetableManagerEdit.tiles"),
+		@Result(name = "displayManagerList", type = "redirect", location="/timetableManagerList.action", params = {
+				"anchor", "${form.uniqueId}"})
+	})
+@TilesDefinitions({
+@TilesDefinition(name = "timetableManagerAdd.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Add Timetable Manager"),
+		@TilesPutAttribute(name = "body", value = "/admin/timetableManagerEdit.jsp")
+	}),
+@TilesDefinition(name = "timetableManagerEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Edit Timetable Manager"),
+		@TilesPutAttribute(name = "body", value = "/admin/timetableManagerEdit.jsp")
+	})
+})
+public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerForm> {
+	private static final long serialVersionUID = 3071423315785922315L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private Long id;
+	private String deleteType;
+	private Integer deleteId;
+	
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+	public String getDeleteType() { return deleteType; }
+	public void setDeleteType(String deleteType) { this.deleteType = deleteType; }
+	public Integer getDeleteId() { return deleteId; }
+	public void setDeleteId(Integer deleteId) { this.deleteId = deleteId; }
 
-    // --------------------------------------------------------- Instance Variables
-
-    // --------------------------------------------------------- Methods
-
-    /**
-     * Method execute
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
+	@Override
+    public String execute() throws Exception {
+		if (form == null) form = new TimetableManagerForm();
 
         // Check access
     	sessionContext.checkPermission(Right.TimetableManagers);
 
-        MessageResources rsc = getResources(request);
-        TimetableManagerForm frm = (TimetableManagerForm) form;
-
         // Read Operation
-        String op = (request.getParameter("op")==null) 
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");		        
+    	if (op == null) op = form.getOp();
 	        
-		if(op==null || op.trim().length()==0)
+		if (op==null || op.trim().isEmpty())
 		    throw new Exception ("Operation could not be interpreted: " + op);
 
 		// Set up Departments
 		LookupTables.setupDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
 		request.setAttribute("solverGroupList", SolverGroup.findBySessionId(sessionContext.getUser().getCurrentAcademicSessionId()));
-        frm.setOp(op);
+        form.setOp(op);
 
         // Back
-        if (op.equalsIgnoreCase(rsc.getMessage("button.backToManagerList"))) {
-        	if (frm.getUniqueId()!=null && frm.getUniqueId().trim().length()>0)
-           		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, frm.getUniqueId());
-               	
-            return mapping.findForward("displayManagerList");
+        if (MSG.actionBackToManagers().equals(op)) {
+            return "displayManagerList";
         }
         
         // Redirect from Manager List - Edit Manager
-        if (op.equalsIgnoreCase(rsc.getMessage("op.edit"))) {
-            frm.setOp1("2");
-            loadForm(request, frm);
+        if ("Edit".equals(op)) {
+        	loadForm();
         }
         
         // Redirect from Manager List - Add Manager
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addTimetableManager"))) {
+        if (MSG.actionAddTimetableManager().equals(op)) {
         	sessionContext.checkPermission(Right.TimetableManagerAdd);
-            frm.setOp1("1");
-            frm.setLookupEnabled(ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null);
+            form.setLookupEnabled(ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null);
         }
         
         // Lookup puid / career account
-        if (op.equalsIgnoreCase(rsc.getMessage("button.lookupManager"))) {
+        if (MSG.actionLookupManager().equals(op)) {
             // Do nothing - taken care below
         }
 
-        String mapPath = frm.getOp1().equals("1") ? "addManagerInfo" : "editManagerInfo";
-        
         // Add Role
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addRole"))) {
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                saveErrors(request, errors);
-                setupRoles(request, frm);
-                lookupManager(frm);
-                return mapping.findForward(mapPath);
+        if (MSG.actionAddRole().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors() && !form.getRoles().contains(form.getRole())) {
+                Roles role = new RolesDAO().get(form.getRole());
+                form.addToRoles(role); 
+                if (form.getRoles().size()==1)
+                    form.setPrimaryRole(role.getRoleId());
+                form.getRoleReceiveEmailFlags().add(true);
             }
-
-            Roles role = new RolesDAO().get(Long.valueOf(frm.getRole()));
-            frm.addToRoles(role); 
-            if (frm.getRoles().size()==1)
-                frm.setPrimaryRole(role.getRoleId().toString());
-            frm.getRoleReceiveEmailFlags().add(Boolean.valueOf(true));
-      }
+        }
         
         // Add Department
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addDepartment"))) {
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                saveErrors(request, errors);
-                setupRoles(request, frm);
-                lookupManager(frm);
-                return mapping.findForward(mapPath);
+        if (MSG.actionAddDepartment().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors() && !form.getDepts().contains(form.getDept())) {
+                Department dept = new DepartmentDAO().get(form.getDept());            
+                form.addToDepts(dept);    
             }
-
-            Department dept = new DepartmentDAO().get(Long.valueOf(frm.getDept()));            
-            frm.addToDepts(dept);    
         }
         
         // Add Solver Group
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addSolverGroup"))) {
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                saveErrors(request, errors);
-                setupRoles(request, frm);
-                lookupManager(frm);
-                return mapping.findForward(mapPath);
+        if (MSG.actionAddSolverGroup().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors() && !form.getSolverGrs().contains(form.getSolverGr())) {
+                SolverGroup sg = new SolverGroupDAO().get(form.getSolverGr());            
+                form.addToSolverGrs(sg);    
             }
-
-            SolverGroup sg = new SolverGroupDAO().get(Long.valueOf(frm.getSolverGr()));            
-            frm.addToSolverGrs(sg);    
         }
 
         // Add new manager
-        if (op.equalsIgnoreCase(rsc.getMessage("button.insertTimetableManager"))) {
-            frm.setOp1("1");
-
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                saveErrors(request, errors);
-                setupRoles(request, frm);
-                try {
-                    lookupManager(frm);
-                }
-                catch (Exception e) {}
-                return mapping.findForward(mapPath);
+        if (MSG.actionSaveManager().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+                addManager();
+                return "displayManagerList";
             }
-
-            addManager(request, frm);
-            return mapping.findForward("displayManagerList");
         }
         
         // Update Manager
-        if (op.equalsIgnoreCase(rsc.getMessage("button.updateTimetableManager"))) {
-            frm.setOp1("2");
-
-            ActionMessages errors = frm.validate(mapping, request);
-            if(!errors.isEmpty()) {
-                saveErrors(request, errors);
-                setupRoles(request, frm);
-                try {
-                    lookupManager(frm);
-                }
-                catch (Exception e) {}
-                return mapping.findForward(mapPath);
+        if (MSG.actionUpdateManager().equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+                updateManager();
+                return "displayManagerList";
             }
-
-            updateManager(request, frm);
-            return mapping.findForward("displayManagerList");
+        }
+        
+        if (MSG.actionDelete().equals(op) && deleteId != null && deleteType != null && !deleteType.isEmpty()) {
+            if (deleteType.equalsIgnoreCase("dept")) {
+                form.removeFromDepts(deleteId);
+            }
+            if (deleteType.equalsIgnoreCase("solverGr")) {
+                form.removeFromSolverGrs(deleteId);
+            }
+            if (deleteType.equalsIgnoreCase("role")) {
+                form.removeFromRoles(deleteId);
+                if (form.getRoles().size()==1)
+                    form.setPrimaryRole(form.getRoles(0));
+                if (form.getRoles().size() > 1 && (form.getPrimaryRole() == null || !form.getRoles().contains(form.getPrimaryRole())))
+                	form.setPrimaryRole(form.getRoles(0));
+            }
         }
         
         // Delete Manager
-        if (op.equalsIgnoreCase(rsc.getMessage("button.delete"))
-                || op.equalsIgnoreCase(rsc.getMessage("button.deleteTimetableManager")) ) {
-            
-            String deleteType = request.getParameter("deleteType");
-            String deleteId = request.getParameter("deleteId");
-            
-            if (deleteType.equalsIgnoreCase("dept")) {
-                frm.removeFromDepts(Integer.parseInt(deleteId));
-            }
-            
-            if (deleteType.equalsIgnoreCase("solverGr")) {
-                frm.removeFromSolverGrs(Integer.parseInt(deleteId));
-            }
-
-            if (deleteType.equalsIgnoreCase("role")) {
-                frm.removeFromRoles(Integer.parseInt(deleteId));
-                if (frm.getRoles().size()==1)
-                    frm.setPrimaryRole(frm.getRoles(0));
-            }
-
-            if (deleteType.equalsIgnoreCase("manager")) {
-                frm.setOp1("2");
-                deleteManager(request, frm);
-                return mapping.findForward("displayManagerList");
-            }
+        if (MSG.actionDeleteManager().equals(op) && deleteId == null && (deleteType == null || deleteType.isEmpty())) {
+            deleteManager();
+            return "displayManagerList";
         }
 
         // Get manager details
-        try {
-            lookupManager(frm);
-        }
-        catch (Exception e) {
-            ActionMessages errors = new ActionMessages();
-            errors.add("puid", new ActionMessage("errors.generic", e.getMessage()));
-            saveErrors(request, errors);
-            setupRoles(request, frm);
-            return mapping.findForward(mapPath);
-        }
-        
+        lookupManager();
         // Get roles not already assigned
-        setupRoles(request, frm);
+        setupRoles();
         
-        return mapping.findForward(mapPath);
+        return (form.getUniqueId() == null || form.getUniqueId() < 0 ? "addManagerInfo" : "editManagerInfo");
     }
 
     /**
      * Lookup manager details from I2A2
-     * @param frm
      */
-    private void lookupManager(TimetableManagerForm frm) throws Exception{
-        String id = frm.getExternalId();
-        if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
-            
-        	String className = ApplicationProperty.ManagerExternalIdLookupClass.value();        	
-        	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).getDeclaredConstructor().newInstance());
-       		UserInfo results = lookup.doLookup(id);
-       		if (results == null) return;
-			frm.setExternalId(results.getExternalId());
-			frm.setLookupResult(results.getUserName());
-			if (frm.getFirstName() == null || frm.getFirstName().trim().length() == 0){
-				frm.setFirstName(results.getFirstName());
-			}
-			if (frm.getMiddleName() == null || frm.getMiddleName().trim().length() == 0){
-				frm.setMiddleName(results.getMiddleName());
-			}
-			if (frm.getLastName() == null || frm.getLastName().trim().length() == 0){
-				frm.setLastName(results.getLastName());
-			}
-			if (frm.getTitle() == null || frm.getTitle().trim().length() == 0){
-				frm.setTitle(results.getAcademicTitle());
-			}
-			frm.setEmail(results.getEmail());
-        }
+    private void lookupManager() throws Exception{
+    	try {
+    		String id = form.getExternalId();
+            if (id!=null && id.trim().length()>0 && form.getLookupEnabled().booleanValue()) {
+                
+            	String className = ApplicationProperty.ManagerExternalIdLookupClass.value();        	
+            	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).getDeclaredConstructor().newInstance());
+           		UserInfo results = lookup.doLookup(id);
+           		if (results == null) return;
+    			form.setExternalId(results.getExternalId());
+    			form.setLookupResult(results.getUserName());
+    			if (form.getFirstName() == null || form.getFirstName().trim().length() == 0){
+    				form.setFirstName(results.getFirstName());
+    			}
+    			if (form.getMiddleName() == null || form.getMiddleName().trim().length() == 0){
+    				form.setMiddleName(results.getMiddleName());
+    			}
+    			if (form.getLastName() == null || form.getLastName().trim().length() == 0){
+    				form.setLastName(results.getLastName());
+    			}
+    			if (form.getTitle() == null || form.getTitle().trim().length() == 0){
+    				form.setTitle(results.getAcademicTitle());
+    			}
+    			form.setEmail(results.getEmail());
+            }
+    	} catch (Exception e) {
+    		Debug.error(MSG.errorLookupManager(e.getMessage()), e);
+    		addFieldError("form.externalId", MSG.errorLookupManager(e.getMessage()));
+    	}
     }
 
     /**
      * Display only those roles not already assigned to the manager
      * @param request
      */
-    private void setupRoles(HttpServletRequest request, TimetableManagerForm frm ) {
+    private void setupRoles() {
         Set<Roles> roles = Roles.findAll(true);
         
         if (!sessionContext.hasPermission(Right.SessionIndependent))
         	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )
         		if (i.next().hasRight(Right.SessionIndependent)) i.remove();
         
-        if (frm.getRoleRefs() != null && !frm.getRoleRefs().isEmpty())
+        if (form.getRoleRefs() != null && !form.getRoleRefs().isEmpty())
         	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )
-        		if (frm.getRoleRefs().contains(i.next().getReference()))
+        		if (form.getRoleRefs().contains(i.next().getReference()))
         			i.remove();
         
         request.setAttribute(Roles.ROLES_ATTR_NAME, roles);
     }
 
     /**
-     * Load details of manager from database
-     * @param request
-     * @param frm
-     * @throws Exception
+     * Load the form
      */
-    private void loadForm (
-            HttpServletRequest request, 
-            TimetableManagerForm frm ) throws Exception {
+    private void loadForm() throws Exception {
+    	sessionContext.checkPermission(id, "TimetableManager", Right.TimetableManagerEdit);
+    	
+    	form.setUniqueId(id);
+    	TimetableManager mgr = TimetableManagerDAO.getInstance().get(id);
         
-        Long mgrId = null;
-        String uniqueId = request.getParameter("id");
-        if(uniqueId==null || uniqueId.trim().length()==0)
-            throw new Exception ("Manager Id could not be read.");
-        
-        try {
-            mgrId = Long.valueOf(uniqueId);
-        }
-        catch (Exception e) {
-            throw new Exception ("Invalid Manager Id : " + uniqueId);
-        }
-        
-        sessionContext.checkPermission(mgrId, "TimetableManager", Right.TimetableManagerEdit);
-
-        frm.setUniqueId(uniqueId);
-        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-        TimetableManager mgr = mgrDao.get(mgrId);
-        
-        frm.setEmail(mgr.getEmailAddress());
-        frm.setExternalId(mgr.getExternalUniqueId());
+        form.setEmail(mgr.getEmailAddress());
+        form.setExternalId(mgr.getExternalUniqueId());
         
         Set rolesSet = mgr.getManagerRoles();
         ArrayList roles = new ArrayList(rolesSet);
@@ -362,10 +277,10 @@ public class TimetableManagerEditAction extends Action {
         for (Iterator i=roles.iterator(); i.hasNext(); ) {
             ManagerRole mgrRole = (ManagerRole) i.next();
             Roles role = mgrRole.getRole();
-            frm.addToRoles(role);
+            form.addToRoles(role);
             if (mgrRole.isPrimary().booleanValue())
-                frm.setPrimaryRole(role.getRoleId().toString());
-            frm.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? Boolean.valueOf(false): mgrRole.isReceiveEmails());
+                form.setPrimaryRole(role.getRoleId());
+            form.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? Boolean.valueOf(false): mgrRole.isReceiveEmails());
         }
 
         Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
@@ -373,41 +288,36 @@ public class TimetableManagerEditAction extends Action {
         for (Iterator i=depts.iterator(); i.hasNext(); ) {
             Department dept = (Department) i.next();
             if(dept.getSessionId().equals(sessionId))
-                frm.addToDepts(dept);
+                form.addToDepts(dept);
         }        
         for (Iterator i=mgr.getSolverGroups().iterator(); i.hasNext(); ) {
         	SolverGroup sg = (SolverGroup) i.next();
             if(sg.getSession().getUniqueId().equals(sessionId))
-                frm.addToSolverGrs(sg);
+                form.addToSolverGrs(sg);
         }        
         
         if (ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null) {
-        	frm.setLookupEnabled(Boolean.TRUE);
-            frm.setFirstName(mgr.getFirstName());
-            frm.setMiddleName(mgr.getMiddleName());
-            frm.setLastName(mgr.getLastName());
-            frm.setTitle(mgr.getAcademicTitle());
+        	form.setLookupEnabled(Boolean.TRUE);
+            form.setFirstName(mgr.getFirstName());
+            form.setMiddleName(mgr.getMiddleName());
+            form.setLastName(mgr.getLastName());
+            form.setTitle(mgr.getAcademicTitle());
         } else {
-        	frm.setLookupEnabled(Boolean.FALSE);
-            frm.setFirstName(mgr.getFirstName());
-            frm.setMiddleName(mgr.getMiddleName());
-            frm.setLastName(mgr.getLastName());
-            frm.setTitle(mgr.getAcademicTitle());
+        	form.setLookupEnabled(Boolean.FALSE);
+            form.setFirstName(mgr.getFirstName());
+            form.setMiddleName(mgr.getMiddleName());
+            form.setLastName(mgr.getLastName());
+            form.setTitle(mgr.getAcademicTitle());
         }
     }
 
     /**
      * Add New Manager
-     * @param request
-     * @param frm
-     * @throws Exception
      */
-    private void addManager(
-            HttpServletRequest request, TimetableManagerForm frm ) throws Exception {
-
+    private void addManager() throws Exception {
     	sessionContext.checkPermission(Right.TimetableManagerAdd);
     	
-        lookupManager(frm);
+        lookupManager();
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
         RolesDAO rDao = new RolesDAO();
@@ -419,50 +329,44 @@ public class TimetableManagerEditAction extends Action {
         Transaction tx = hibSession.beginTransaction();
 
         TimetableManager mgr = new TimetableManager();
-        mgr.setFirstName(frm.getFirstName());
-        mgr.setMiddleName(frm.getMiddleName());
-        mgr.setLastName(frm.getLastName());
-        mgr.setAcademicTitle(frm.getTitle());
-        mgr.setExternalUniqueId(frm.getExternalId());
-        mgr.setEmailAddress(frm.getEmail());
+        mgr.setFirstName(form.getFirstName());
+        mgr.setMiddleName(form.getMiddleName());
+        mgr.setLastName(form.getLastName());
+        mgr.setAcademicTitle(form.getTitle());
+        mgr.setExternalUniqueId(form.getExternalId());
+        mgr.setEmailAddress(form.getEmail());
         
         // Add Roles
-        List roles = frm.getRoles();
-        List roleReceiveEmails = frm.getRoleReceiveEmailFlags();
-        Iterator receiveEmailIt = roleReceiveEmails.iterator();
-       	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-       	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
+        List<Long> roles = form.getRoles();
+        List<Boolean> roleReceiveEmails = form.getRoleReceiveEmailFlags();
+        Iterator<Boolean> receiveEmailIt = roleReceiveEmails.iterator();
+       	for (Iterator<Long> i=roles.iterator(); i.hasNext(); ) {
+       	    Roles role = rDao.get(i.next());
        	    ManagerRole mgrRole = new ManagerRole();
        	    mgrRole.setRole(role);
        	    mgrRole.setTimetableManager(mgr);
-       	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-       	        mgrRole.setPrimary(Boolean.valueOf(true));
-       	    else
-       	        mgrRole.setPrimary(Boolean.valueOf(false));
+       	    mgrRole.setPrimary(role.getRoleId().equals(form.getPrimaryRole()));
        	    if (receiveEmailIt.hasNext()){
-       	    	String receiveEmailsStr = (String) receiveEmailIt.next();
-       	    	Boolean receiveEmails = Boolean.valueOf("on".equalsIgnoreCase(receiveEmailsStr)); 
-       	    	mgrRole.setReceiveEmails(receiveEmails);
+       	    	mgrRole.setReceiveEmails(receiveEmailIt.next());
        	    } else {
-       	    	mgrRole.setReceiveEmails(Boolean.valueOf(false));
+       	    	mgrRole.setReceiveEmails(false);
        	    }
-       	    
        	    mgr.addTomanagerRoles(mgrRole);
        	}        
 		hibSession.saveOrUpdate(mgr);
 
        	// Add departments
 		mgr.setDepartments(new HashSet<Department>());
-       	for (Iterator i=frm.getDepts().iterator(); i.hasNext(); ) {
-       	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
+       	for (Iterator<Long> i=form.getDepts().iterator(); i.hasNext(); ) {
+       	    Department dept = dDao.get(i.next());
        	    mgr.getDepartments().add(dept);
        	    dept.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(dept);
        	}
        	
        	mgr.setSolverGroups(new HashSet<SolverGroup>());
-       	for (Iterator i=frm.getSolverGrs().iterator(); i.hasNext(); ) {
-       	    SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
+       	for (Iterator<Long> i=form.getSolverGrs().iterator(); i.hasNext(); ) {
+       	    SolverGroup sg = sgDao.get(i.next());
        	    mgr.getSolverGroups().add(sg);
        	    sg.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(sg);
@@ -479,22 +383,16 @@ public class TimetableManagerEditAction extends Action {
         
        	tx.commit();
 
-       	if (mgr.getUniqueId()!=null)
-       		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, mgr.getUniqueId().toString());
-       	
+       	form.setUniqueId(mgr.getUniqueId());
     }
 
     /**
      * Update Manager Details
-     * @param request
-     * @param frm
      */
-    private void updateManager(
-            HttpServletRequest request, TimetableManagerForm frm ) throws Exception {
-        
-    	sessionContext.checkPermission(frm.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
+    private void updateManager() throws Exception {
+    	sessionContext.checkPermission(form.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
     	
-        lookupManager(frm);
+        lookupManager();
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
         RolesDAO rDao = new RolesDAO();
@@ -507,47 +405,41 @@ public class TimetableManagerEditAction extends Action {
         
         Transaction tx = hibSession.beginTransaction();
 
-        TimetableManager mgr = mgrDao.get(Long.valueOf(frm.getUniqueId()));
-        mgr.setFirstName(frm.getFirstName());
-        mgr.setMiddleName(frm.getMiddleName());
-        mgr.setLastName(frm.getLastName());
-        mgr.setAcademicTitle(frm.getTitle());
-        mgr.setExternalUniqueId(frm.getExternalId());
-        mgr.setEmailAddress(frm.getEmail());
+        TimetableManager mgr = mgrDao.get(Long.valueOf(form.getUniqueId()));
+        mgr.setFirstName(form.getFirstName());
+        mgr.setMiddleName(form.getMiddleName());
+        mgr.setLastName(form.getLastName());
+        mgr.setAcademicTitle(form.getTitle());
+        mgr.setExternalUniqueId(form.getExternalId());
+        mgr.setEmailAddress(form.getEmail());
 
         // Update Roles
-        List roles = frm.getRoles();
-        List roleReceiveEmails = frm.getRoleReceiveEmailFlags();
-        Set mgrRoles = mgr.getManagerRoles();
+        List<Long> roles = form.getRoles();
+        List<Boolean> roleReceiveEmails = form.getRoleReceiveEmailFlags();
+        Set<ManagerRole> mgrRoles = mgr.getManagerRoles();
         if (mgrRoles==null)
-            mgrRoles = new HashSet();
+            mgrRoles = new HashSet<ManagerRole>();
         
         // Check if roles added or updated
-        Iterator receiveEmailIt = roleReceiveEmails.iterator();
-       	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-       	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
-       	    Boolean receiveEmail = Boolean.valueOf(false);
+        Iterator<Boolean> receiveEmailIt = roleReceiveEmails.iterator();
+       	for (Iterator<Long> i=roles.iterator(); i.hasNext(); ) {
+       	    Roles role = rDao.get(i.next());
+       	    Boolean receiveEmail = false;
        	    if (receiveEmailIt.hasNext()){
-       	    	String str = (String)receiveEmailIt.next();
-       	    	str = (str == null?"false":(str.equalsIgnoreCase("on")?"true":str));
-       	    	receiveEmail = Boolean.valueOf(str);
+       	    	receiveEmail = receiveEmailIt.next();
        	    }
        	    boolean found = false;
        	    
        	    // Check if role already exists
-           	for (Iterator j=mgrRoles.iterator(); j.hasNext(); ) {
-           	    ManagerRole eMgrRole = (ManagerRole) j.next();
+           	for (Iterator<ManagerRole> j=mgrRoles.iterator(); j.hasNext(); ) {
+           	    ManagerRole eMgrRole = j.next();
            	    Roles eRole = eMgrRole.getRole();
            	    
            	    // Exists - check if primary
            	    if (eRole.equals(role)) {
-               	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-               	        eMgrRole.setPrimary(Boolean.valueOf(true));
-               	    else
-               	        eMgrRole.setPrimary(Boolean.valueOf(false));
-               	    
-               	    found = true;
+           	    	eMgrRole.setPrimary(role.getRoleId().equals(form.getPrimaryRole()));
                	    eMgrRole.setReceiveEmails(receiveEmail);
+               	    found = true;
               	    break;
                	    
            	    }
@@ -559,23 +451,20 @@ public class TimetableManagerEditAction extends Action {
 	       	    ManagerRole mgrRole = new ManagerRole();
 	       	    mgrRole.setRole(role);
 	       	    mgrRole.setTimetableManager(mgr);
-	       	    if (frm.getPrimaryRole().equals(role.getRoleId().toString()))
-	       	        mgrRole.setPrimary(Boolean.valueOf(true));
-	       	    else
-	       	        mgrRole.setPrimary(Boolean.valueOf(false));
+	       	    mgrRole.setPrimary(role.getRoleId().equals(form.getPrimaryRole()));
 	       	    mgrRole.setReceiveEmails(receiveEmail);
 	       	    mgr.addTomanagerRoles(mgrRole);
            	}           	
        	}        
 
        	// Check if roles deleted
-       	for (Iterator j=mgrRoles.iterator(); j.hasNext(); ) {
-       	    ManagerRole eMgrRole = (ManagerRole) j.next();
+       	for (Iterator<ManagerRole> j=mgrRoles.iterator(); j.hasNext(); ) {
+       	    ManagerRole eMgrRole = j.next();
        	    Roles eRole = eMgrRole.getRole();
        	    boolean found = false;
 
-           	for (Iterator i=roles.iterator(); i.hasNext(); ) {
-           	    Roles role = rDao.get(Long.valueOf(i.next().toString()));
+           	for (Iterator<Long> i=roles.iterator(); i.hasNext(); ) {
+           	    Roles role = rDao.get(i.next());
            	    if (eRole.equals(role)) {
            	        found = true;
            	        break;
@@ -585,22 +474,22 @@ public class TimetableManagerEditAction extends Action {
            	if (!found) {
            	    j.remove();
            	}
-       	}       	
+       	}
        	
        	// Update departments
-       	List depts = frm.getDepts();
-       	Set mgrDepts = mgr.getDepartments();
+       	List<Long> depts = form.getDepts();
+       	Set<Department> mgrDepts = mgr.getDepartments();
        	if (mgrDepts==null) {
-       	    mgrDepts = new HashSet();
+       	    mgrDepts = new HashSet<Department>();
        	    mgr.setDepartments(mgrDepts);
        	}
        	
         // Check if depts added or updated
-       	for (Iterator i=depts.iterator(); i.hasNext(); ) {
-       	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
+       	for (Iterator<Long> i=depts.iterator(); i.hasNext(); ) {
+       	    Department dept = dDao.get(i.next());
        	    boolean found = false;
-           	for (Iterator j=mgrDepts.iterator(); j.hasNext(); ) {
-           	    Department eDept = (Department) j.next();
+           	for (Iterator<Department> j=mgrDepts.iterator(); j.hasNext(); ) {
+           	    Department eDept = j.next();
            	    if (eDept.equals(dept)) {
            	        found = true;
            	        break;
@@ -615,12 +504,12 @@ public class TimetableManagerEditAction extends Action {
        	}
 
        	// Check if depts deleted
-       	for (Iterator j=mgrDepts.iterator(); j.hasNext(); ) {
-       	    Department eDept = (Department) j.next();
+       	for (Iterator<Department> j=mgrDepts.iterator(); j.hasNext(); ) {
+       	    Department eDept = j.next();
        	    if (!eDept.getSessionId().equals(sessionId)) continue; //SKIP DEPARTMENTS OF DIFFERENT SESSIONS!!!
        	    boolean found = false;
-           	for (Iterator i=depts.iterator(); i.hasNext(); ) {
-           	    Department dept = dDao.get(Long.valueOf(i.next().toString()));
+           	for (Iterator<Long> i=depts.iterator(); i.hasNext(); ) {
+           	    Department dept = dDao.get(i.next());
            	    if (eDept.equals(dept)) {
            	        found = true;
            	        break;
@@ -635,19 +524,19 @@ public class TimetableManagerEditAction extends Action {
        	}
        	
        	// Update solver groups
-       	List solverGrs = frm.getSolverGrs();
-       	Set mgrSolverGrs = mgr.getSolverGroups();
+       	List<Long> solverGrs = form.getSolverGrs();
+       	Set<SolverGroup> mgrSolverGrs = mgr.getSolverGroups();
        	if (mgrSolverGrs==null) {
-       		mgrSolverGrs = new HashSet();
+       		mgrSolverGrs = new HashSet<SolverGroup>();
        		mgr.setSolverGroups(mgrSolverGrs);
        	}
        	
         // Check if solver group added or updated
-       	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
-       	    SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
+       	for (Iterator<Long> i=solverGrs.iterator(); i.hasNext(); ) {
+       	    SolverGroup sg = sgDao.get(i.next());
        	    boolean found = false;
-           	for (Iterator j=mgrSolverGrs.iterator(); j.hasNext(); ) {
-           		SolverGroup eSg = (SolverGroup) j.next();
+           	for (Iterator<SolverGroup> j=mgrSolverGrs.iterator(); j.hasNext(); ) {
+           		SolverGroup eSg = j.next();
            	    if (eSg.equals(sg)) {
            	        found = true;
            	        break;
@@ -662,12 +551,12 @@ public class TimetableManagerEditAction extends Action {
        	}
 
        	// Check if depts deleted
-       	for (Iterator j=mgrSolverGrs.iterator(); j.hasNext(); ) {
-       		SolverGroup eSg = (SolverGroup) j.next();
+       	for (Iterator<SolverGroup> j=mgrSolverGrs.iterator(); j.hasNext(); ) {
+       		SolverGroup eSg = j.next();
        	    if (!eSg.getSession().getUniqueId().equals(sessionId)) continue; //SKIP DEPARTMENTS OF DIFFERENT SESSIONS!!!
        	    boolean found = false;
-           	for (Iterator i=solverGrs.iterator(); i.hasNext(); ) {
-           		SolverGroup sg = sgDao.get(Long.valueOf(i.next().toString()));
+           	for (Iterator<Long> i=solverGrs.iterator(); i.hasNext(); ) {
+           		SolverGroup sg = sgDao.get(i.next());
            	    if (eSg.equals(sg)) {
            	        found = true;
            	        break;
@@ -693,24 +582,19 @@ public class TimetableManagerEditAction extends Action {
                 null);
 
         tx.commit();
-       	
-       	if (mgr.getUniqueId()!=null)
-       		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, mgr.getUniqueId().toString());
     }
 
     /**
      * Delete Manager
      * @param request
-     * @param frm
+     * @param form
      */
-    private void deleteManager(
-            HttpServletRequest request, TimetableManagerForm frm ) {
-    	
-    	sessionContext.checkPermission(frm.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
+    private void deleteManager() {
+    	sessionContext.checkPermission(form.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
         Session hibSession = mgrDao.getSession();
-        TimetableManager mgr = mgrDao.get(Long.valueOf(frm.getUniqueId()));
+        TimetableManager mgr = mgrDao.get(form.getUniqueId());
 
         Transaction tx = hibSession.beginTransaction();
        	
@@ -723,9 +607,7 @@ public class TimetableManagerEditAction extends Action {
                 null, 
                 null);
 
-        Set mgrRoles = mgr.getManagerRoles();
-       	for (Iterator i=mgrRoles.iterator(); i.hasNext(); ) {
-       	    ManagerRole mgrRole = (ManagerRole) i.next();
+       	for (ManagerRole mgrRole: mgr.getManagerRoles()) {
        	    hibSession.delete(mgrRole);
        	}
        	for (Department d: mgr.getDepartments()) {
@@ -740,5 +622,9 @@ public class TimetableManagerEditAction extends Action {
         hibSession.delete(mgr);
 
        	tx.commit();
+    }
+    
+    public String getSession() {
+    	return sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel();
     }
 }

@@ -17,335 +17,232 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteManager"/></tt:confirm>
+<s:form action="timetableManagerEdit">
+	<s:hidden name="form.uniqueId"/>
+	<s:hidden name="form.op"/>
+	<s:hidden name="deleteId" value="" id="deleteId"/>
+	<s:hidden name="deleteType" value="" id="deleteType"/>
 
-<tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm) {
-				doDel('manager', '');
-				return true;
-			}
-
-			if(confirm('The manager and all associated settings will be deleted. Continue?')) {
-				doDel('manager', '');
-				return true;
-			}
-			return false;
-		}
-
-		function doDel(type, id) {
-			var delType = document.mgrForm.deleteType;
-			delType.value = type;
 	
-			var delId = document.mgrForm.deleteId;
-			delId.value = id;
-		}
-		
-	// -->
-</SCRIPT>
-<tiles:importAttribute />
-
-<html:form method="post" action="timetableManagerEdit.do">
-	<html:hidden name="mgrForm" property="uniqueId" />
-	<html:hidden name="mgrForm" property="op1" />
-	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
-	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<table class="unitime-MainTable">
 		<TR>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name="mgrForm" property="firstName"/>
-						<bean:write name="mgrForm" property="middleName"/>
-						<bean:write name="mgrForm" property="lastName"/>
+						<s:property value="form.firstName"/>
+						<s:property value="form.middleName"/>
+						<s:property value="form.lastName"/>
 					</tt:section-title>
-					
-					<logic:equal name="mgrForm" property="op1" value="1">
-						<html:submit property="op" 
-							styleClass="btn" accesskey="S" titleKey="title.insertTimetableManager">
-							<bean:message key="button.insertTimetableManager" />
-						</html:submit>
-					</logic:equal>
-					
-					<logic:equal name="mgrForm" property="op1" value="2">
-						<html:submit property="op" 
-							styleClass="btn" accesskey="U" titleKey="title.updateTimetableManager">
-							<bean:message key="button.updateTimetableManager" />
-						</html:submit>
-						<sec:authorize access="hasPermission(#mgrForm.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
-							<html:submit property="op" 
-								styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
-								onclick="return (confirmDelete());" >
-								<bean:message key="button.deleteTimetableManager" />
-							</html:submit>
+					<s:if test="form.uniqueId == null || form.uniqueId.isEmpty()">
+						<s:submit name="op" value="%{#msg.actionSaveManager()}"
+							accesskey="%{#msg.acessSaveManager()}" title="%{#msg.titleSaveManager(#msg.acessSaveManager())}"/>
+					</s:if><s:else>
+						<s:submit name="op" value="%{#msg.actionUpdateManager()}"
+							accesskey="%{#msg.acessUpdateManager()}" title="%{#msg.titleUpdateManager(#msg.acessUpdateManager())}"/>
+						<sec:authorize access="hasPermission(#form.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
+							<s:submit name="op" value="%{#msg.actionDeleteManager()}"
+							accesskey="%{#msg.acessDeleteManager()}" title="%{#msg.titleDeleteManager(#msg.acessDeleteManager())}"
+							onclick="return confirmDelete();"/>
 						</sec:authorize>
-					</logic:equal>
-					
-					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.backToManagerList">
-						<bean:message key="button.backToManagerList" />
-					</html:submit>
+					</s:else>
+					<s:submit name="op" value="%{#msg.actionBackToManagers()}"
+							accesskey="%{#msg.acessBackToManagers()}" title="%{#msg.titleBackToManagers(#msg.acessBackToManagers())}"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 
-
-		<logic:messagesPresent>
-		<TR>
-			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror escape="false"/>
+			</TD></TR>
+		</s:if>
 
 		<TR>
-			<TD>Academic Session: </TD>
-			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
+			<TD><loc:message name="propAcademicSession"/></TD>
+			<TD style="color: gray;"><s:property value="session"/></TD>
 		</TR>
 		
-		<%-- <logic:equal name="mgrForm" property="lookupEnabled" value="false"> --%>
 			<TR>
-				<TD>First Name:</TD>
+				<TD><loc:message name="fieldFirstName"/>:</TD>
 				<TD>
-					<html:text name="mgrForm" property="firstName" size="50" maxlength="100" styleId="fname"></html:text>
+					<s:textfield name="form.firstName" size="50" maxlength="100" id="fname"/>
 					<input type='button' value='Lookup' onclick="lookup();" style="btn">
 				</TD>
 			</TR>
 			<TR>
-				<TD>Middle Name:</TD>
+				<TD><loc:message name="fieldMiddleName"/>:</TD>
 				<TD>
-					<html:text name="mgrForm" property="middleName" size="50" maxlength="100" styleId="mname"></html:text>
+					<s:textfield name="form.middleName" size="50" maxlength="100" id="mname"/>
 				</TD>
 			</TR>
 			<TR>
-				<TD>Last Name:</TD>
+				<TD><loc:message name="fieldLastName"/>:</TD>
 				<TD>
-					<html:text name="mgrForm" property="lastName" size="50" maxlength="100" styleId="lname"></html:text>
+					<s:textfield name="form.lastName" size="50" maxlength="100" id="lname"/>
 				</TD>
 			</TR>
 			<TR>
-				<TD>Academic Title:</TD>
+				<TD><loc:message name="fieldAcademicTitle"/>:</TD>
 				<TD>
-					<html:text name="mgrForm" property="title" size="25" maxlength="50" styleId="title"></html:text>
+					<s:textfield name="form.title" size="25" maxlength="50" id="title"/>
 				</TD>
 			</TR>
-		<%-- </logic:equal> --%>
 
 		<TR>
-			<TD>External ID: </TD>
+			<TD><loc:message name="propertyExternalId"/></TD>
 			<TD>
-				<html:text name="mgrForm" property="externalId" size="40" maxlength="40" styleId="uid"/>
-				<html:hidden name="mgrForm" property="lookupEnabled"/>
-				<%--
-				&nbsp; <bean:write name="mgrForm" property="lookupResult"/>
-				&nbsp;
-				<logic:equal name="mgrForm" property="lookupEnabled" value="true">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="L" titleKey="title.lookupManager">
-						<bean:message key="button.lookupManager" />
-					</html:submit>
-				</logic:equal>
-				--%>
+				<s:textfield name="form.externalId" size="40" maxlength="40" id="uid"/>
+				<s:hidden name="form.lookupEnabled"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD>Email Address: </TD>
+			<TD><loc:message name="columnEmailAddress"/>:</TD>
 			<TD>
-				<html:text name="mgrForm" property="email" size="30" maxlength="100" styleId="email"/>
+				<s:textfield name="form.email" size="30" maxlength="100" id="email"/>
 			</TD>
 		</TR>
 
 <!-- Departments -->
 		<TR>
 			<TD colspan="2">
-				<tt:section-title>&nbsp;<br>Departments</tt:section-title>
+				<tt:section-title>&nbsp;<br><loc:message name="fieldDepartments"/></tt:section-title>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<html:select property="dept">														
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
-				</html:select>
+				<s:select name="form.dept" style="min-width: 300px;"
+					list="#request.deptsList" listKey="uniqueId" listValue="label"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" accesskey="D" titleKey="title.addDepartment" >
-					<bean:message key="button.addDepartment" />
-				</html:submit>
+				<s:submit name="op" value="%{#msg.actionAddDepartment()}"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<TABLE width="100%">
-				<logic:iterate name="mgrForm" property="depts" id="dept" indexId="ctr">
+				<table class="unitime-Table" style="width:100%">
+				<s:iterator value="form.depts" var="dept" status="stat"><s:set var="ctr" value="#stat.index"/>
 					<TR>
 						<TD>
-							<html:hidden property='<%= "depts[" + ctr + "]" %>' />
-							<html:hidden property='<%= "deptLabels[" + ctr + "]" %>' />
-							<bean:write name="mgrForm" property='<%= "deptLabels[" + ctr + "]" %>' />
+							<s:hidden name="form.depts[%{#ctr}]"/>
+							<s:hidden name="form.deptLabels[%{#ctr}]"/>
+							<s:property value="form.deptLabels[#ctr]"/>
 						</TD>
 						<TD align="right">							
-							&nbsp; 
-							<html:submit property="op" 
-								styleClass="btn"
-								onclick="<%= \"javascript: doDel('dept', '\" + ctr + \"');\"%>">
-								<bean:message key="button.delete" />
-							</html:submit> 			
+							&nbsp;
+							<s:submit name="op" value="%{#msg.actionDelete()}" onclick="doDel('dept', '%{#ctr}');"/> 
 						</TD>
 					</TR>
-				</logic:iterate>
-				</TABLE>
+				</s:iterator>
+				</table>
 			</TD>
 		</TR>
 
 <!-- Solver Groups -->
 		<TR>
 			<TD colspan="2">
-				<tt:section-title>&nbsp;<br>Solver Groups</tt:section-title>
+				<tt:section-title>&nbsp;<br><loc:message name="sectSolverGroups"/></tt:section-title>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<html:select property="solverGr">														
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="solverGroupList" property="uniqueId" labelProperty="name" />
-				</html:select>
+				<s:select name="form.solverGr" style="min-width: 300px;"
+					list="#request.solverGroupList" listKey="uniqueId" listValue="name"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" accesskey="S" titleKey="title.addSolverGroup" >
-					<bean:message key="button.addSolverGroup" />
-				</html:submit>
+				<s:submit name="op" value="%{#msg.actionAddSolverGroup()}"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<TABLE width="100%">
-				<logic:iterate name="mgrForm" property="solverGrs" id="solverGr" indexId="ctr">
+				<table class="unitime-Table" style="width:100%">
+				<s:iterator value="form.solverGrs" var="solverGr" status="stat"><s:set var="ctr" value="#stat.index"/>
 					<TR>
 						<TD>
-							<html:hidden property='<%= "solverGrs[" + ctr + "]" %>' />
-							<html:hidden property='<%= "solverGrLabels[" + ctr + "]" %>' />
-							<bean:write name="mgrForm" property='<%= "solverGrLabels[" + ctr + "]" %>' />
+							<s:hidden name="form.solverGrs[%{#ctr}]"/>
+							<s:hidden name="form.solverGrLabels[%{#ctr}]"/>
+							<s:property value="form.solverGrLabels[#ctr]"/>
 						</TD>
 						<TD align="right">							
-							&nbsp; 
-							<html:submit property="op" 
-								styleClass="btn"
-								onclick="<%= \"javascript: doDel('solverGr', '\" + ctr + \"');\"%>">
-								<bean:message key="button.delete" />
-							</html:submit> 			
+							&nbsp;
+							<s:submit name="op" value="%{#msg.actionDelete()}" onclick="doDel('solverGr', '%{#ctr}');"/> 
 						</TD>
 					</TR>
-				</logic:iterate>
-				</TABLE>
+				</s:iterator>
+				</table>
 			</TD>
 		</TR>
 
 <!-- Roles -->
 		<TR>
 			<TD colspan="2">
-				<tt:section-title>&nbsp;<br>Roles</tt:section-title>
+				<tt:section-title>&nbsp;<br><loc:message name="columnRoles"/></tt:section-title>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<html:select property="role">					
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=Roles.ROLES_ATTR_NAME%>" property="roleId" labelProperty="abbv" />
-				</html:select>
+				<s:select name="form.role" style="min-width: 300px;"
+					list="#request.rolesList" listKey="roleId" listValue="abbv"
+					headerKey="-1" headerValue="%{#msg.itemSelect()}"/>
 				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" accesskey="R" titleKey="title.addRole" >
-					<bean:message key="button.addRole" />
-				</html:submit>
+				<s:submit name="op" value="%{#msg.actionAddRole()}"/>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<TABLE width="100%">
+				<table class="unitime-Table" style="width:100%">
 					<TR>
-						<TD align="left" width="100">
-							<I>Primary</I>
+						<TD align="left" style="width: 100px;">
+							<I><loc:message name="columnPrimaryRole"/></I>
+						</TD>
+						<TD>
+							<I><loc:message name="fieldRole"/></I>
+						</TD>
+						<TD align="center" nowrap="nowrap" style="width: 100px;">
+							<i><loc:message name="columnReceiveEmails"/></i>
 						</TD>
 						<TD>
 							&nbsp;
 						</TD>
-						<TD>
-							Receive Emails
-						</TD>
-						<TD>
-							&nbsp;
-						</TD>
-					</TR>
-				
-							
-				<logic:iterate name="mgrForm" property="roles" id="role" indexId="ctr">
-					<bean:define id="roleRef" name="mgrForm" property='<%= "roleRefs[" + ctr + "]" %>' />
+					</TR>				
+				<s:iterator value="form.roles" var="role" status="stat"><s:set var="ctr" value="#stat.index"/>
 					<TR>
-						<TD align="left" width="100">
-							<html:radio name="mgrForm" property="primaryRole" value="<%=role.toString()%>"
-								styleId='<%= "primaryRole" + ctr %>'
-								onclick="<%= \"if(document.getElementById('primaryRole\" + ctr + \"').checked) { document.getElementById('primaryRole\" + ctr + \"').value=document.getElementById('role\" + ctr + \"').value; }; \"%>" />
+						<TD align="left" style="width: 100px;">
+							<s:radio name="form.primaryRole" list="#{#role:''}"/>
 						</TD>
-						<TD align="left">
-							<%--
-								<IMG src="images/<%= Roles.getRoleIcon(roleRef.toString()) %>" border="0" align="middle">&nbsp;
-							--%>
-							<html:hidden styleId='<%= "role" + ctr %>' property='<%= "roles[" + ctr + "]" %>' />
-							<html:hidden property='<%= "roleRefs[" + ctr + "]" %>' />
-							<bean:write name="mgrForm" property='<%= "roleRefs[" + ctr + "]" %>' />
+						<TD>
+							<s:hidden name="form.roles[%{#ctr}]"/>
+							<s:hidden name="form.roleRefs[%{#ctr}]"/>
+							<s:property value="form.roleRefs[#ctr]"/>
 						</TD>
 						<TD align="center">
-						    <html:checkbox property='<%= "roleReceiveEmailFlags[" + ctr + "]" %>'></html:checkbox>
+							<s:checkbox name="form.roleReceiveEmailFlags[%{#ctr}]"/>
 						</TD>
-						<TD align="right">
-							&nbsp; 
-							<html:submit property="op" 
-								styleClass="btn"
-								onclick="<%= \"javascript: doDel('role', '\" + ctr + \"');\"%>">
-								<bean:message key="button.delete" />
-							</html:submit> 			
+						<TD align="right">							
+							&nbsp;
+							<s:submit name="op" value="%{#msg.actionDelete()}" onclick="doDel('role', '%{#ctr}');"/> 
 						</TD>
 					</TR>
-				</logic:iterate>
-				</TABLE>
+				</s:iterator>
+				</table>
 			</TD>
 		</TR>
 
@@ -357,35 +254,30 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<logic:equal name="mgrForm" property="op1" value="1">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="S" titleKey="title.insertTimetableManager">
-						<bean:message key="button.insertTimetableManager" />
-					</html:submit>
-				</logic:equal>
-				
-				<logic:equal name="mgrForm" property="op1" value="2">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="U" titleKey="title.updateTimetableManager">
-						<bean:message key="button.updateTimetableManager" />
-					</html:submit>
-					<sec:authorize access="hasPermission(#mgrForm.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
-						<html:submit property="op" 
-							styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
-							onclick="return (confirmDelete());" >
-							<bean:message key="button.deleteTimetableManager" />
-						</html:submit>
-					</sec:authorize>
-				</logic:equal>
-				
-				<html:submit property="op" 
-					styleClass="btn" accesskey="B" titleKey="title.backToManagerList">
-					<bean:message key="button.backToManagerList" />
-				</html:submit>
+					<s:if test="form.uniqueId == null || form.uniqueId.isEmpty()">
+						<s:submit name="op" value="%{#msg.actionSaveManager()}"
+							accesskey="%{#msg.acessSaveManager()}" title="%{#msg.titleSaveManager(#msg.acessSaveManager())}"/>
+					</s:if><s:else>
+						<s:submit name="op" value="%{#msg.actionUpdateManager()}"
+							accesskey="%{#msg.acessUpdateManager()}" title="%{#msg.titleUpdateManager(#msg.acessUpdateManager())}"/>
+						<sec:authorize access="hasPermission(#form.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
+							<s:submit name="op" value="%{#msg.actionDeleteManager()}"
+							accesskey="%{#msg.acessDeleteManager()}" title="%{#msg.titleDeleteManager(#msg.acessDeleteManager())}"
+							onclick="return confirmDelete();"/>
+						</sec:authorize>
+					</s:else>
+					<s:submit name="op" value="%{#msg.actionBackToManagers()}"
+							accesskey="%{#msg.acessBackToManagers()}" title="%{#msg.titleBackToManagers(#msg.acessBackToManagers())}"/>			
 			</TD>
 		</TR>
 	</TABLE>
-<script language="javascript">
+<script type="text/javascript">
+	function doDel(type, id) {
+		var delType = document.getElementById('deleteType');
+		delType.value = type;
+		var delId = document.getElementById('deleteId');
+		delId.value = id;
+	}
 	function lookup() {
 		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
 			if (person) {
@@ -399,4 +291,5 @@
 		}, "mustHaveExternalId");
 	}
 </script>
-</html:form>
+</s:form>
+</loc:bundle>

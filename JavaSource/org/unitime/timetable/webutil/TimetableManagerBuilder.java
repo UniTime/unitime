@@ -115,7 +115,7 @@ public class TimetableManagerBuilder {
 		    Set depts = manager.getDepartments();
 		    Set mgrRolesSet = manager.getManagerRoles();
 		    
-		    String onClick = (context.hasPermission(manager, Right.TimetableManagerEdit) ? "onClick=\"document.location='timetableManagerEdit.do?op=Edit&id=" + manager.getUniqueId() + "';\"" : null);
+		    String onClick = (context.hasPermission(manager, Right.TimetableManagerEdit) ? "onClick=\"document.location='timetableManagerEdit.action?op=Edit&id=" + manager.getUniqueId() + "';\"" : null);
 
 		    // Determine role type
 		    String roleOrd = "";

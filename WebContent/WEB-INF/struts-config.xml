@@ -26,8 +26,6 @@
    
    <form-beans >
 	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
-	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
-      <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
       <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
    </form-beans>
@@ -65,45 +63,6 @@
 	      	path="/subjectList.do" />
       </action>
       
-      <action
-         path="/timetableManagerEdit"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         attribute="mgrForm"
-         input="mgrAddTile"
-         name="mgrForm"
-         scope="request"
-         validate="false">
-         <forward
-            name="success"
-            path="/timetableManagerList.action" redirect="true"/>
-         <forward
-            name="fail"
-            path="timetableManagerEditTile" />
-         <forward
-            name="editManagerInfo"
-            path="timetableManagerEditTile" />
-         <forward
-            name="addManagerInfo"
-            path="timetableManagerAddTile" />
-         <forward
-            name="displayManagerList"
-            path="/timetableManagerList.action" redirect="true"/>
-      </action>
-
-    <action
-    	path="/solverLog"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="solverLogForm"
-    	input="solverLogTile"
-    	name="solverLogForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="showLog"
-    		path="solverLogTile"
-    		redirect="true" />
-    </action>
-    
     <action
       attribute="rollForwardSessionForm"
       input="rollForwardSessionTile"

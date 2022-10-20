@@ -38,14 +38,13 @@ import org.unitime.timetable.webutil.TimetableManagerBuilder;
  */
 @Action(value = "timetableManagerList", results = {
 		@Result(name = "success", type = "tiles", location = "timetableManagerList.tiles"),
-		@Result(name = "add", type = "redirect", location="/timetableManagerEdit.do", params = {
+		@Result(name = "add", type = "redirect", location="/timetableManagerEdit.action", params = {
 				"op", "${op}"})
 	})
 @TilesDefinition(name = "timetableManagerList.tiles", extend = "baseLayout", putAttributes =  {
 		@TilesPutAttribute(name = "title", value = "Timetable Managers"),
 		@TilesPutAttribute(name = "body", value = "/admin/timetableManagerList.jsp")
 	})
-
 public class TimetableManagerListAction extends UniTimeAction<BlankForm> {
     private static final long serialVersionUID = -3335607995044212251L;
     protected static final CourseMessages MSG = Localization.create(CourseMessages.class);

@@ -54,16 +54,6 @@
 
 	<!-- Page Layouts -->
 
-	<definition	name="timetableManagerEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Timetable Manager"/>
-		<put name="body" value="/admin/timetableManagerEdit.jsp" />
-  	</definition>
-
-	<definition	name="timetableManagerAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Timetable Manager"/>
-		<put name="body" value="/admin/timetableManagerEdit.jsp" />
-  	</definition>
-
 	<definition	name="subjectListTile" extends="pageLayoutDef">
 		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Subject Areas"/>

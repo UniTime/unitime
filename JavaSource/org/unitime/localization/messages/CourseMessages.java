@@ -5219,4 +5219,85 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Show all managers")
 	String checkShowAllManagers();
+
+	@DefaultMessage("Add Role")
+	String actionAddRole();
+	
+	@DefaultMessage("Role")
+	String fieldRole();
+	
+	@DefaultMessage("Primary Role")
+	String fieldPrimaryRole();
+	
+	@DefaultMessage("First Name")
+	String fieldFirstName();
+
+	@DefaultMessage("Middle Name")
+	String fieldMiddleName();
+
+	@DefaultMessage("Last Name")
+	String fieldLastName();
+
+	@DefaultMessage("Academic Title")
+	String fieldAcademicTitle();
+
+	@DefaultMessage("Save")
+	String actionSaveManager();
+	
+	@DefaultMessage("Update")
+	String actionUpdateManager();
+	
+	@DefaultMessage("Delete")
+	String actionDeleteManager();
+	
+	@DefaultMessage("Back")
+	String actionBackToManagers();
+	
+	@DefaultMessage("S")
+	String accessSaveManager();
+	
+	@DefaultMessage("U")
+	String accessUpdateManager();
+	
+	@DefaultMessage("D")
+	String accessDeleteManager();
+	
+	@DefaultMessage("B")
+	String accessBackToManagers();
+	
+	@DefaultMessage("Save Manager (Alt + {0})")
+	String titleSaveManager(String access);
+	
+	@DefaultMessage("Update Manager (Alt + {0})")
+	String titleUpdateManager(String access);
+	
+	@DefaultMessage("Delete Manager (Alt + {0})")
+	String titleDeleteManager(String access);
+	
+	@DefaultMessage("Back to Managers (Alt + {0})")
+	String titleBackToManagers(String access);
+	
+	@DefaultMessage("At least one role must be assigned")
+	String errorManagerHasNoRoles();
+	
+	@DefaultMessage("Duplicate Record - This manager already exists")
+	String errorManagerDuplicate();
+	
+	@DefaultMessage("Lookup")
+	String actionLookupManager();
+	
+	@DefaultMessage("Failed to lookup manager: {0}")
+	String errorLookupManager(String error);
+	
+	@DefaultMessage("The manager and all associated settings will be deleted. Continue?")
+	String confirmDeleteManager();
+	
+	@DefaultMessage("Solver Groups")
+	String sectSolverGroups();
+	
+	@DefaultMessage("Primary")
+	String columnPrimaryRole();
+	
+	@DefaultMessage("Receive Emails")
+	String columnReceiveEmails();
 }

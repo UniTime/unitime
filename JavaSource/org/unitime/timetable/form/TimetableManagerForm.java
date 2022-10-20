@@ -22,20 +22,13 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -45,199 +38,112 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  * 
  * @author Heston Fernandes, Stephanie Schluttenhofer, Tomas Muller
  */
-public class TimetableManagerForm extends ActionForm {
-
+public class TimetableManagerForm implements UniTimeForm {
 	private static final long serialVersionUID = 3763101881496582452L;
-
-    // --------------------------------------------------------- Instance Variables
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
     
 	private String op;
-	private String op1;
-	private String uniqueId;
+	private Long uniqueId;
     private String externalId;
     private String lookupResult;
     private String firstName;
     private String middleName;
     private String lastName;
     private String title;
-    private String primaryRole;
+    private Long primaryRole;
     private String email;
-    private String role;
-    private String dept;
-    private String solverGr;
-    private List depts;
-    private List deptLabels;
-    private List roles;
-    private List roleRefs;
-    private List roleReceiveEmailFlags;
-    private List solverGrs;
-    private List solverGrLabels;
+    private Long role;
+    private Long dept;
+    private Long solverGr;
+    private List<Long> depts;
+    private List<String> deptLabels;
+    private List<Long> roles;
+    private List<String> roleRefs;
+    private List<Boolean> roleReceiveEmailFlags;
+    private List<Long> solverGrs;
+    private List<String> solverGrLabels;
     private Boolean lookupEnabled;
     
-    // --------------------------------------------------------- Classes
+    public TimetableManagerForm() {
+    	reset();
+    }
 
-    /** Factory to create dynamic list element for departments */
-    protected DynamicListObjectFactory factoryDepts = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for department labels */
-    protected DynamicListObjectFactory factoryDeptLabels = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for roles */
-    protected DynamicListObjectFactory factoryRoles = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for role refs */
-    protected DynamicListObjectFactory factoryRoleRefs = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for role receive email flags */
-    protected DynamicListObjectFactory factoryRoleReceiveEmailFlags = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for solver groups */
-    protected DynamicListObjectFactory factorySolverGrs = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for solver group labels */
-    protected DynamicListObjectFactory factorySolverGrLabels = new DynamicListObjectFactory() {
-        public Object create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    // --------------------------------------------------------- Methods
-
-    public void reset(ActionMapping mapping, HttpServletRequest request) {
-        op1 = "1";
+    @Override
+    public void reset() {
         op="";
-    	uniqueId = "";
+    	uniqueId = null;
         externalId = "";
         firstName = "";
         middleName = "";
         lastName = "";
         title = "";
-        primaryRole = "";
-        role="";
-        dept="";
-        solverGr = "";
+        primaryRole = null;
+        role=null;
+        dept=null;
+        solverGr = null;
         lookupEnabled = null;
-        
-        depts = DynamicList.getInstance(new ArrayList(), factoryDepts);
-        deptLabels = DynamicList.getInstance(new ArrayList(), factoryDeptLabels);
-        roles= DynamicList.getInstance(new ArrayList(), factoryRoles);
-        roleRefs= DynamicList.getInstance(new ArrayList(), factoryRoleRefs);
-        roleReceiveEmailFlags = DynamicList.getInstance(new ArrayList(), factoryRoleReceiveEmailFlags);
-        solverGrs = DynamicList.getInstance(new ArrayList(), factorySolverGrs);
-        solverGrLabels = DynamicList.getInstance(new ArrayList(), factorySolverGrLabels);
-        
-        super.reset(mapping, request);
+        depts = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() { return -1l; }
+        });
+        deptLabels = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() { return ""; }
+        });
+        roles= DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() { return -1l; }
+        });
+        roleRefs= DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() { return ""; }
+        });
+        roleReceiveEmailFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
+            public Boolean create() { return false; }
+        });
+        solverGrs = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() { return -1l; }
+        });
+        solverGrLabels = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() { return ""; }
+        });
     }
 
-    public ActionErrors validate(
-            ActionMapping mapping,
-            HttpServletRequest request) {
+    public void validate(UniTimeAction action) {
+        if (MSG.actionAddRole().equals(op) && (role == null || role < 0))
+        	action.addFieldError("form.role", MSG.errorRequiredField(MSG.fieldRole()));
 
-        ActionErrors errors = new ActionErrors();
+        if (MSG.actionAddDepartment().equals(op) && (dept == null || dept < 0))
+        	action.addFieldError("form.dept", MSG.errorRequiredField(MSG.columnDepartment()));
 
-        // Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-        
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addRole"))) {
-            if (role.equals(Constants.BLANK_OPTION_VALUE))
-                errors.add("role", 
-                        new ActionMessage("errors.invalid", "Role"));
-        }        
-        
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addDepartment"))) {
-            if (dept.equals(Constants.BLANK_OPTION_VALUE))
-                errors.add("dept", 
-                        new ActionMessage("errors.invalid", "Department"));
-        }        
-        
-        if (op.equalsIgnoreCase(rsc.getMessage("button.addSolverGroup"))) {
-            if (solverGr.equals(Constants.BLANK_OPTION_VALUE))
-                errors.add("solverGr", 
-                        new ActionMessage("errors.invalid", "Solver Group"));
-        }        
+        if (MSG.actionAddSolverGroup().equals(op) && (solverGr == null || solverGr < 0))
+        	action.addFieldError("form.solverGr", MSG.errorRequiredField(MSG.columnSolverGroup()));
 
-        if (op.equalsIgnoreCase(rsc.getMessage("button.insertTimetableManager"))
-                || op.equalsIgnoreCase(rsc.getMessage("button.updateTimetableManager")) ) {
+        if (MSG.actionSaveManager().equals(op) || MSG.actionUpdateManager().equals(op)) {
+        	if (externalId==null || externalId.trim().isEmpty())
+        		action.addFieldError("form.externalId", MSG.errorRequiredField(MSG.columnExternalId()));
             
-            if (externalId==null || externalId.trim().length()==0)
-                errors.add("externalId", 
-                        new ActionMessage("errors.required", "External ID"));
-                
-            /*
-            if (User.canIdentify()) {
-                User user = User.identify(externalId);
-                if (user==null)
-                    errors.add("externalId", 
-                        new ActionMessage("errors.generic", "Manager '" + externalId + "' cannot be identified"));
-            }
-            */
+            if (email==null || email.trim().isEmpty())
+            	action.addFieldError("form.email", MSG.errorRequiredField(MSG.columnEmailAddress()));
             
-            if (email==null || email.trim().length()==0)
-                errors.add("email", 
-                        new ActionMessage("errors.required", "Email Address"));
-            
-            if (primaryRole==null || primaryRole.trim().length()==0)
-                errors.add("primaryRole", 
-                        new ActionMessage("errors.required", "Primary Role"));
-            
-            /*
-            if(depts.size()==0) {
-                Roles deptRole = Roles.getRole(Roles.DEPT_SCHED_MGR_ROLE);
-                if (deptRole!=null && roles.contains(deptRole.getRoleId().toString()))
-                    errors.add("depts",
-                            new ActionMessage("errors.generic", "At least one department must be assigned for role "+deptRole.getAbbv()));
-            }
-            */
+            if (primaryRole==null || primaryRole < 0)
+            	action.addFieldError("form.primaryRole", MSG.errorRequiredField(MSG.fieldPrimaryRole()));
 
-            if(roles.size()==0)
-                errors.add("roles", 
-                        new ActionMessage("errors.generic", "At least one role must be assigned"));
+            if (roles.size()==0)
+            	action.addFieldError("form.roles", MSG.errorManagerHasNoRoles());
 
             if (externalId!=null && externalId.trim().length()>0) {
             	TimetableManager mgr = TimetableManager.findByExternalId(externalId);
-            	if (mgr!=null && !mgr.getUniqueId().toString().equals(getUniqueId()))
-                    errors.add("roles", 
-                            new ActionMessage("errors.generic", "Duplicate Record - This manager already exists"));
+            	if (mgr!=null && !mgr.getUniqueId().equals(getUniqueId()))
+            		action.addFieldError("form.externalId", MSG.errorManagerDuplicate());
             }
             
             if (!lookupEnabled) {
             	if (firstName == null || firstName.isEmpty()) {
-            		errors.add("firstName", new ActionMessage("errors.required", "First Name"));
+            		action.addFieldError("form.firstName", MSG.errorRequiredField(MSG.fieldFirstName()));
             	}
 
             	if (lastName == null || lastName.isEmpty()) {
-            		errors.add("lastName", new ActionMessage("errors.required", "Last Name"));
+            		action.addFieldError("form.lastName", MSG.errorRequiredField(MSG.fieldLastName()));
             	}
             }
         }
-        
-		return errors;
     }
 
     public void addToRoles (Roles role) {
@@ -280,69 +186,69 @@ public class TimetableManagerForm extends ActionForm {
         this.lookupResult = lookupResult;
     }
     
-    public String getDept() {
+    public Long getDept() {
         return dept;
     }
-    public void setDept(String dept) {
+    public void setDept(Long dept) {
         this.dept = dept;
     }
     
-    public String getSolverGr() {
+    public Long getSolverGr() {
         return solverGr;
     }
-    public void setSolverGr(String solverGr) {
+    public void setSolverGr(Long solverGr) {
         this.solverGr = solverGr;
     }
 
     public List getDepts() {
         return depts;
     }
-    public String getDepts(int key) {
-        return depts.get(key).toString();
+    public Long getDepts(int key) {
+        return depts.get(key);
     }
-    public void setDepts(int key, Object value) {
+    public void setDepts(int key, Long value) {
         this.depts.set(key, value);
     }
-    public void setDepts(List depts) {
+    public void setDepts(List<Long> depts) {
         this.depts = depts;
     }
     
-    public List getDeptLabels() {
+    public List<String> getDeptLabels() {
         return deptLabels;
     }
     public String getDeptLabels(int key) {
-        return deptLabels.get(key).toString();
+        return deptLabels.get(key);
     }
-    public void setDeptLabels(int key, Object value) {
+    public void setDeptLabels(int key, String value) {
         this.deptLabels.set(key, value);
     }
-    public void setDeptLabels(List deptLabels) {
+    public void setDeptLabels(List<String> deptLabels) {
         this.deptLabels = deptLabels;
     }
     
-    public List getSolverGrs() {
+    public List<Long> getSolverGrs() {
         return solverGrs;
     }
-    public String getSolverGrs(int key) {
-        return solverGrs.get(key).toString();
+    public Long getSolverGrs(int key) {
+        return solverGrs.get(key);
     }
-    public void setSolverGrs(int key, Object value) {
+    public void setSolverGrs(int key, Long value) {
         this.solverGrs.set(key, value);
     }
-    public void setSolverGrs(List solverGrs) {
+    public void setSolverGrs(List<Long> solverGrs) {
         this.solverGrs = solverGrs;
     }
 
-    public List getSolverGrLabels() {
+    public List<String> getSolverGrLabels() {
         return solverGrLabels;
     }
     public String getSolverGrLabels(int key) {
-        return solverGrLabels.get(key).toString();
+        return solverGrLabels.get(key);
     }
-    public void setSolverGrLabels(int key, Object value) {
+    public void setSolverGrLabels(int key, String value) {
         this.solverGrLabels.set(key, value);
     }
-    public void setSolverGrLabels(List solverGrLabels) {
+    public void setSolverGrLabels(List<String> solverGrLabels) {
         this.solverGrLabels = solverGrLabels;
     }
 
@@ -384,17 +290,10 @@ public class TimetableManagerForm extends ActionForm {
         this.op = op;
     }
     
-    public String getOp1() {
-        return op1;
-    }
-    public void setOp1(String op1) {
-        this.op1 = op1;
-    }
-    
-    public String getPrimaryRole() {
+    public Long getPrimaryRole() {
         return primaryRole;
     }
-    public void setPrimaryRole(String primaryRole) {
+    public void setPrimaryRole(Long primaryRole) {
         this.primaryRole = primaryRole;
     }
     
@@ -405,43 +304,43 @@ public class TimetableManagerForm extends ActionForm {
         this.externalId = externalId;
     }
     
-    public List getRoles() {
+    public List<Long> getRoles() {
         return roles;
     }
-    public String getRoles(int key) {
-        return roles.get(key).toString();
+    public Long getRoles(int key) {
+        return roles.get(key);
     }
-    public void setRoles(int key, Object value) {
+    public void setRoles(int key, Long value) {
         this.roles.set(key, value);
     }
-    public void setRoles(List roles) {
+    public void setRoles(List<Long> roles) {
         this.roles = roles;
     }
     
-    public List getRoleRefs() {
+    public List<String> getRoleRefs() {
         return roleRefs;
     }
     public String getRoleRefs(int key) {
-        return roleRefs.get(key).toString();
+        return roleRefs.get(key);
     }
-    public void setRoleRefs(int key, Object value) {
+    public void setRoleRefs(int key, String value) {
         this.roleRefs.set(key, value);
     }
-    public void setRoleRefs(List roleRefs) {
+    public void setRoleRefs(List<String> roleRefs) {
         this.roleRefs = roleRefs;
     }
 
-    public String getRole() {
+    public Long getRole() {
         return role;
     }
-    public void setRole(String role) {
+    public void setRole(Long role) {
         this.role = role;
     }
     
-    public String getUniqueId() {
+    public Long getUniqueId() {
         return uniqueId;
     }
-    public void setUniqueId(String uniqueId) {
+    public void setUniqueId(Long uniqueId) {
         this.uniqueId = uniqueId;
     }
 
@@ -453,15 +352,19 @@ public class TimetableManagerForm extends ActionForm {
 		this.lookupEnabled = lookupEnabled;
 	}
 
-	public List getRoleReceiveEmailFlags() {
-		return roleReceiveEmailFlags;
+	public List<Boolean> getRoleReceiveEmailFlags() {
+		return this.roleReceiveEmailFlags;
 	}
 	
-    public void setRoleReceiveEmailFlags(int key, Object value) {
+	public Boolean getRoleReceiveEmailFlags(int key) {
+		return this.roleReceiveEmailFlags.get(key);
+	}
+	
+    public void setRoleReceiveEmailFlags(int key, Boolean value) {
         this.roleReceiveEmailFlags.set(key, value);
     }
 
-	public void setRoleReceiveEmailFlags(List roleReceiveEmailFlags) {
+	public void setRoleReceiveEmailFlags(List<Boolean> roleReceiveEmailFlags) {
 		this.roleReceiveEmailFlags = roleReceiveEmailFlags;
 	}
     
