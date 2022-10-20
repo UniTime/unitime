@@ -26,13 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -49,8 +46,10 @@ import org.unitime.timetable.util.ReferenceList;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class DepartmentEditForm extends ActionForm {
+public class DepartmentEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -6614766002463228171L;
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
+	
 	public Long iId = null;
 	public Long iSessionId = null;
 	public String iName = null;
@@ -69,87 +68,89 @@ public class DepartmentEditForm extends ActionForm {
     public boolean iAllowEvents = false;
     public boolean iInheritInstructorPreferences = false;
     public boolean iAllowStudentScheduling = false;
-    private List iDependentDepartments;
-    private List iDependentStatuses;
+    private List<Long> iDependentDepartments;
+    private List<String> iDependentStatuses;
     private boolean iFullyEditable = false;
     
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-		ActionErrors errors = new ActionErrors();
+    public DepartmentEditForm() {
+    	reset();
+    }
+    
+	public void validate(UniTimeAction action) {
 		
-        if(iName==null || iName.trim().equalsIgnoreCase("")) {
-        	errors.add("name", new ActionMessage("errors.required", "Name") );
+        if (iName==null || iName.trim().equalsIgnoreCase("")) {
+        	action.addFieldError("form.name", MSG.errorNameIsRequired());
         }
-        if(iName!=null && iName.trim().length() > 100) {
-        	errors.add("name", new ActionMessage("errors.maxlength", "Name", "100") );
+        if (iName!=null && iName.trim().length() > 100) {
+        	action.addFieldError("form.name", MSG.errorTooLong(MSG.colName()));
         }
         
         if (iAbbv==null || iAbbv.trim().equalsIgnoreCase("")) {
-        	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
+        	action.addFieldError("form.abbv", MSG.errorAbbreviationIsEmpty());
         }
         
         if (iAbbv!=null && iAbbv.trim().length() > 20) {
-        	errors.add("abbv", new ActionMessage("errors.maxlength", "Abbreviation", "20") );
+        	action.addFieldError("form.abbv", MSG.errorTooLong(MSG.colAbbreviation()));
         }
 
         if (iDeptCode==null || iDeptCode.trim().equalsIgnoreCase("")) {
-        	errors.add("deptCode", new ActionMessage("errors.required", "Code") );
+        	action.addFieldError("form.deptCode", MSG.errorDeptCodeIsEmpty());
         }
         
         if (iDeptCode!=null && iDeptCode.trim().length() > 50) {
-        	errors.add("deptCode", new ActionMessage("errors.maxlength", "Code", "50") );
+        	action.addFieldError("form.deptCode", MSG.errorTooLong(MSG.colCode()));
         }
 
         if (iIsExternal && (iExtName==null || iExtName.trim().length()==0)) {
-        	errors.add("extName", new ActionMessage("errors.required", "External Manager Name") );
+        	action.addFieldError("form.extName", MSG.errorRequired(MSG.fieldExternalManagerName()));
         }
         
-        if (!iIsExternal && iExtName!=null && iExtName.trim().length() > 0){ 	
-        	errors.add("extName", new ActionMessage("errors.generic", "External Manager Name should only be used when the department is marked as 'External Manager'") );
+        if (!iIsExternal && iExtName!=null && iExtName.trim().length() > 0){
+        	action.addFieldError("form.extName", MSG.errorExternalManagerNameUse());
         }
         
         if (iIsExternal && (iExtName!=null && iExtName.trim().length() > 30)) {
-        	errors.add("extName", new ActionMessage("errors.maxlength", "External Manager Name", "30") );
+        	action.addFieldError("form.extName", MSG.errorTooLong(MSG.fieldExternalManagerName()));
         }
 
         if (iIsExternal && (iExtAbbv==null || iExtAbbv.trim().length()==0)) {
-        	errors.add("extAbbv", new ActionMessage("errors.required", "External Manager Abbreviation") );
+        	action.addFieldError("form.extAbbv", MSG.errorRequired(MSG.fieldExternalManagerAbbreviation()));
         }
         
         if (!iIsExternal && iExtAbbv!=null && iExtAbbv.trim().length() > 0){
-        	errors.add("extName", new ActionMessage("errors.generic", "External Manager Abbreviation should only be used when the department is marked as 'External Manager'") );      	
+        	action.addFieldError("form.extAbbv", MSG.errorExternalManagerAbbreviationUse());
         }
         
         if (iIsExternal && (iExtAbbv!=null && iExtAbbv.trim().length() > 10)) {
-        	errors.add("extAbbv", new ActionMessage("errors.maxlength", "External Manager Abbreviation", "10") );
+        	action.addFieldError("form.extAbbv", MSG.errorTooLong(MSG.fieldExternalManagerAbbreviation()));
         }
 
         try {
 			Department dept = Department.findByDeptCode(iDeptCode, iSessionId);
 			if (dept!=null && !dept.getUniqueId().equals(iId)) {
-				errors.add("deptCode", new ActionMessage("errors.exists", iDeptCode));
+				action.addFieldError("form.deptCode", MSG.errorDeptCodeMustBeUnique());
 			}
 			
 		} catch (Exception e) {
 			Debug.error(e);
-			errors.add("deptCode", new ActionMessage("errors.generic", e.getMessage()));
+			action.addFieldError("form.deptCode", e.getMessage());
 		}
-		
-		return errors;
 	}
 
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	@Override
+	public void reset() {
 		iId = null; iSessionId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false; iAllowEvents = false;
         iInheritInstructorPreferences = false; iAllowStudentScheduling = false;
-        iDependentDepartments = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
-            public Object create() {
-                return new String("-1");
+        iDependentDepartments = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
+            public Long create() {
+                return -1l;
             }
         });
-        iDependentStatuses = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
-            public Object create() {
-                return new String("");
+        iDependentStatuses = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
+            public String create() {
+                return "";
             }
         });
         iFullyEditable = false;
@@ -207,14 +208,14 @@ public class DepartmentEditForm extends ActionForm {
 		return ref;
 	}
 	
-    public List getDependentDepartments() { return iDependentDepartments; }
-    public String getDependentDepartments(int key) { return iDependentDepartments.get(key).toString(); }
-    public void setDependentDepartments(int key, Object value) { iDependentDepartments.set(key, value); }
-    public void setDependentDepartments(List departments) { iDependentDepartments = departments; }
-    public List getDependentStatuses() { return iDependentStatuses; }
-    public String getDependentStatuses(int key) { return iDependentStatuses.get(key).toString(); }
-    public void setDependentStatuses(int key, Object value) { iDependentStatuses.set(key, value); }
-    public void setDependentStatuses(List statuses) { iDependentStatuses = statuses; }
+    public List<Long> getDependentDepartments() { return iDependentDepartments; }
+    public Long getDependentDepartments(int key) { return iDependentDepartments.get(key); }
+    public void setDependentDepartments(int key, Long value) { iDependentDepartments.set(key, value); }
+    public void setDependentDepartments(List<Long> departments) { iDependentDepartments = departments; }
+    public List<String> getDependentStatuses() { return iDependentStatuses; }
+    public String getDependentStatuses(int key) { return iDependentStatuses.get(key); }
+    public void setDependentStatuses(int key, String value) { iDependentStatuses.set(key, value); }
+    public void setDependentStatuses(List<String> statuses) { iDependentStatuses = statuses; }
 	
 	public void load(Department department) {
 		setId(department.getUniqueId());
@@ -245,7 +246,7 @@ public class DepartmentEditForm extends ActionForm {
     			});
             	set.addAll(department.getExternalStatusTypes());
             	for (ExternalDepartmentStatusType e: set) {
-            		iDependentDepartments.add(e.getDepartment().getUniqueId().toString());
+            		iDependentDepartments.add(e.getDepartment().getUniqueId());
             		iDependentStatuses.add(e.getStatusType().getReference());
             	}
         	}
@@ -255,7 +256,7 @@ public class DepartmentEditForm extends ActionForm {
 	}
 	
 	public void addBlankDependentDepartment() {
-        iDependentDepartments.add("-1");
+        iDependentDepartments.add(-1l);
         iDependentStatuses.add("");
 	}
 	
@@ -310,7 +311,7 @@ public class DepartmentEditForm extends ActionForm {
             List<ExternalDepartmentStatusType> statuses = new ArrayList<ExternalDepartmentStatusType>(department.getExternalStatusTypes());
             if (department.isExternalManager()) {
             	for (int i = 0; i < Math.min(iDependentDepartments.size(), iDependentStatuses.size()); i++) {
-            		Long deptId = Long.valueOf((String)iDependentDepartments.get(i));
+            		Long deptId = iDependentDepartments.get(i);
             		String status = (String)iDependentStatuses.get(i);
             		if (deptId >= 0 && !status.isEmpty()) {
             			ExternalDepartmentStatusType t = null;

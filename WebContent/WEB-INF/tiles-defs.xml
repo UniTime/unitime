@@ -92,16 +92,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
 
-  	<definition name="departmentAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Department"/>
-		<put name="body" value="/admin/departmentEdit.jsp" />
-  	</definition>
-
-  	<definition name="departmentEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Department"/>
-		<put name="body" value="/admin/departmentEdit.jsp" />
-  	</definition>
-
    	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />

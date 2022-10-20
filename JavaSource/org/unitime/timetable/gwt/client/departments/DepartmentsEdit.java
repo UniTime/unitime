@@ -313,48 +313,42 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		//AllowReqTime
 		iAllowReqTime = new UniTimeWidget<CheckBox>(new CheckBox());
 		iAllowReqTime.getWidget().setValue(false);		
-		iForm.addRow(MESSAGES.propAllowReqTime().replace("<br>", ""), iAllowReqTime);
+		iForm.addRow(MESSAGES.propAllowReqTime(), iAllowReqTime);
 
 		//AllowReqRoom
 		iAllowReqRoom = new UniTimeWidget<CheckBox>(new CheckBox());
 		iAllowReqRoom.getWidget().setValue(false);	
-		iForm.addRow(MESSAGES.propAllowReqRoom().replace("<br>", ""), iAllowReqRoom);
+		iForm.addRow(MESSAGES.propAllowReqRoom(), iAllowReqRoom);
 
 		//AllowReqDestribution
 		iAllowReqDist = new UniTimeWidget<CheckBox>(new CheckBox());
 		iAllowReqDist.getWidget().setValue(false);
-		iForm.addRow(MESSAGES.propAllowReqDist().replace("<br>", ""), iAllowReqDist);
+		iForm.addRow(MESSAGES.propAllowReqDist(), iAllowReqDist);
 		
 		//Instruc Pref
 		iInheritInstructorPreferences = new UniTimeWidget<CheckBox>(new CheckBox());
 		iInheritInstructorPreferences.getWidget().setValue(false);
-		iForm.addRow(MESSAGES.propInheritInstructorPref().replace("<br>", ""), iInheritInstructorPreferences);
+		iForm.addRow(MESSAGES.propInheritInstructorPref(), iInheritInstructorPreferences);
 		
 		//Allow Events
 		iAllowEvents = new UniTimeWidget<CheckBox>(new CheckBox());
 		iAllowEvents.getWidget().setValue(false);
-		iForm.addRow(MESSAGES.propAllowEvents().replace("<br>", ""), iAllowEvents);	
+		iForm.addRow(MESSAGES.propAllowEvents(), iAllowEvents);	
 
 		//Allow Scheduling
 		iAllowStudentScheduling = new UniTimeWidget<CheckBox>(new CheckBox());
 		iAllowStudentScheduling.getWidget().setValue(false);
-		iForm.addRow(MESSAGES.propAllowStudentScheduling().replace("<br>", ""), iAllowStudentScheduling);	
+		iForm.addRow(MESSAGES.propAllowStudentScheduling(), iAllowStudentScheduling);	
 
 		//External Funding Department
 		iExternalFundingDept = new UniTimeWidget<CheckBox>(new CheckBox());
 		iExternalFundingDept.getWidget().setValue(false);
-		iForm.addRow(MESSAGES.propExternalFundingDept().replace("<br>", ""), iExternalFundingDept);	
+		iForm.addRow(MESSAGES.propExternalFundingDept(), iExternalFundingDept);	
 		
 		
 		//Controlling Department Statuses 
-		controlDeptHeaderPanel = new UniTimeHeaderPanel("Controlling Department Statuses");	
+		controlDeptHeaderPanel = new UniTimeHeaderPanel(MESSAGES.sectControllingDepartmentStatuses());	
 		
-		controlDeptHeaderPanel.addButton("Delete All", MESSAGES.buttonDependentDeleteAll(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				deleteAllDependentDepartments();
-			}
-		});
 		controlDeptHeaderPanel.addButton("Add Status", MESSAGES.buttonDependentAddStatus(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -362,6 +356,12 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			}
 
 		}); 
+		controlDeptHeaderPanel.addButton("Delete All", MESSAGES.buttonDependentDeleteAll(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				deleteAllDependentDepartments();
+			}
+		});
 		
 
 		iForm.addHeaderRow(controlDeptHeaderPanel);		
@@ -433,7 +433,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iControlDeptFlexTable.clear();	
 		iCurrentDependentDepartments.clear();
 		iCurrentDependentStatuses.clear();
-		iControlDeptFlexTable.setText(0, 0, MESSAGES.propControllingDepartment());
+		iControlDeptFlexTable.setText(0, 0, MESSAGES.colControllingDepartment());
 		FlexCellFormatter cellFormatter = iControlDeptFlexTable.getFlexCellFormatter();
 		cellFormatter.setStyleName(0, 0, "department-StatusItalics");
 		cellFormatter.setStyleName(0, 1, "department-StatusItalics");
@@ -550,7 +550,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 						iControlDeptFlexTable.setWidget(numRows, 0, iCurrentDependentOptions[i]);
 						iControlDeptFlexTable.setWidget(numRows, 1, iCurrentStatusTypeOptions[i]);
 
-						Button deleteStatusButton = new Button("Delete");
+						Button deleteStatusButton = new Button(MESSAGES.buttonDeleteLine());
 						deleteStatusButton.addClickHandler(new ClickHandler() {
 							public void onClick(ClickEvent event) {
 								int receiverRowIndex = iControlDeptFlexTable.getCellForEvent(event).getRowIndex();
@@ -651,8 +651,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		}
 
         if (iExternalManager.getWidget().getValue() && (iExternalManagerName.getWidget().getText().isEmpty()|| iExternalManagerName.getWidget().getText().length() ==0)) {
-        	iExternalManagerName.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerName()));
+        	iExternalManagerName.setErrorHint(MESSAGES.errorRequired(MESSAGES.fieldExternalManagerName()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.fieldExternalManagerName()));
 			ok = false;
         }
  
@@ -663,8 +663,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
         }
  
         if (iExternalManager.getWidget().getValue() && (iExternalManagerAbbreviation.getWidget().getText().isEmpty()|| iExternalManagerAbbreviation.getWidget().getText().length() ==0)) {
-        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
-			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.propExternalManagerAbbreviation()));
+        	iExternalManagerAbbreviation.setErrorHint(MESSAGES.errorRequired(MESSAGES.fieldExternalManagerAbbreviation()));
+			if (ok) iHeader.setErrorMessage(MESSAGES.errorRequired(MESSAGES.fieldExternalManagerAbbreviation()));
 			ok = false;
         }
         if (!iExternalManager.getWidget().getValue() && (!iExternalManagerAbbreviation.getWidget().getText().isEmpty() || iExternalManagerAbbreviation.getWidget().getText().trim().length() >0)) {

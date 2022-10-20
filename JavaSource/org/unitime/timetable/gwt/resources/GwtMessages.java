@@ -2838,10 +2838,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation must be unique.")
 	String errorAbbreviationMustBeUnique();
 
-	@DefaultMessage("Dept Code is required.")
+	@DefaultMessage("Department Code is required.")
 	String errorDeptCodeIsEmpty();
 	
-	@DefaultMessage("Dept Code must be unique.")
+	@DefaultMessage("Department Code must be unique.")
 	String errorDeptCodeMustBeUnique();
 	
 	@DefaultMessage("Attribute type must be selected.")
@@ -4530,8 +4530,11 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Controlling Department:")
 	String propControllingDepartment();
+	
+	@DefaultMessage("Controlling Department")
+	String colControllingDepartment();
 
-	@DefaultMessage("Status for classes managed by: {0}")
+	@DefaultMessage("Status for classes managed by {0}")
 	String propStatusManagedBy(String managedBy);
 	
 	@DefaultMessage("Coordinates:")
@@ -6844,7 +6847,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Department")
 	String sectEditDepartment();
 	
-	@DefaultMessage("The department will be deleted. Continue?")
+	@DefaultMessage("The department and all associated data will be deleted. Continue?")
 	String confirmDepartmentDelete();
 
 	@DefaultMessage("Update data has failed: {0}")
@@ -7039,11 +7042,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("External Manager Abbreviation:")
 	String propExternalManagerAbbreviation();
 	
+	@DefaultMessage("External Manager Abbreviation")
+	String fieldExternalManagerAbbreviation();
+	
 	@DefaultMessage("External Manager Abbreviation should only be used when the department is marked as External Manager")
 	String errorExternalManagerAbbreviationUse();
 	
 	@DefaultMessage("External Manager Name:")
 	String propExternalManagerName();
+	
+	@DefaultMessage("External Manager Name")
+	String fieldExternalManagerName();
 
 	@DefaultMessage("External Manager Name should only be used when the department is marked as External Manager")
 	String errorExternalManagerNameUse();
@@ -7060,7 +7069,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Allow <br> Required")
 	String colAllowRequired();
 
-	@DefaultMessage("Allow <br> Required Time:")
+	@DefaultMessage("Allow Required Time:")
 	String propAllowReqTime();
 	
 	@DefaultMessage("Instructor <br> Preferences")
@@ -7069,16 +7078,16 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructor <br> Preferences")
 	String propInstructorPref();
 
-	@DefaultMessage("Inherit Instructor <br> Preferences:")
+	@DefaultMessage("Inherit Instructor Preferences:")
 	String propInheritInstructorPref();
 	
-	@DefaultMessage("Allow  Required Room:")
+	@DefaultMessage("Allow Required Room:")
 	String propAllowReqRoom();
 
-	@DefaultMessage("Allow  Required Distribution:")
+	@DefaultMessage("Allow Required Distribution:")
 	String propAllowReqDist();
 	
-	@DefaultMessage("Allow Student Scheduling:")
+	@DefaultMessage("Student Scheduling:")
 	String propAllowStudentScheduling();
 
 	@DefaultMessage("External Funding Department:")
@@ -7564,4 +7573,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Group")
 	String fieldSolverParameterGroup();
+	
+	@DefaultMessage("Controlling Department Statuses")
+	String sectControllingDepartmentStatuses();
+	
+	@DefaultMessage("Delete")
+	String buttonDeleteLine();
+	
+	@DefaultMessage("this department")
+	String thisDepartment();
 }

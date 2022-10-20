@@ -21,146 +21,147 @@ package org.unitime.timetable.action;
 
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.form.DepartmentEditForm;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 
 /**
  * @author Tomas Muller
  */
-@Service("/departmentEdit")
-public class DepartmentEditAction extends Action {
+@Action(value = "departmentEdit", results = {
+		@Result(name = "add", type = "tiles", location = "departmentAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "departmentEdit.tiles"),
+		@Result(name = "back", type = "redirect", location="/departmentList.action", params = {
+				"anchor", "${form.id}"})
+	})
+@TilesDefinitions({
+@TilesDefinition(name = "departmentAdd.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Add Department"),
+		@TilesPutAttribute(name = "body", value = "/admin/departmentEdit.jsp")
+	}),
+@TilesDefinition(name = "departmentEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Edit Department"),
+		@TilesPutAttribute(name = "body", value = "/admin/departmentEdit.jsp")
+	})
+})
+public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
+	private static final long serialVersionUID = 338267053887154529L;
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private Long id;
+	private Integer deleteId;
+	
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+	public Integer getDeleteId() { return deleteId; }
+	public void setDeleteId(Integer deleteId) { this.deleteId = deleteId; }
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		try {
-		    
-			DepartmentEditForm myForm = (DepartmentEditForm) form;
-			MessageResources rsc = getResources(request);
+	@Override
+	public String execute() throws Exception {
+		if (form == null) form = new DepartmentEditForm();
+	
+		// Check Access
+		sessionContext.checkPermission(Right.Departments);
 		
-			// Check Access
-			sessionContext.checkPermission(Right.Departments);
-			
-			// Read operation to be performed
-			String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-			
-			request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAllNonExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
-			
-	        // Edit
-	        if(rsc.getMessage("op.edit").equalsIgnoreCase(op)) {
-	            String id = request.getParameter("id");
-	            Department department = (new DepartmentDAO()).get(Long.valueOf(id));
-	            if (department!=null) {
-	            	if (sessionContext.hasPermission(department, Right.DepartmentLimitedEdit)) {
-	            		myForm.setFullyEditable(false);
-	            	} else {
-	            		myForm.setFullyEditable(true);
-	            		sessionContext.checkPermission(department, Right.DepartmentEdit);
-	            	}
-	            	myForm.load(department);
-	            	return mapping.findForward("edit");
-	            }
-	        }
-	        
-	        // Add
-	        if(rsc.getMessage("button.addDepartment").equalsIgnoreCase(op)) {
-            	myForm.reset(mapping, request);
-            	myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
-            	myForm.setInheritInstructorPreferences(true);
-            	myForm.setAllowStudentScheduling(true);
-            	myForm.setFullyEditable(true);
-        		sessionContext.checkPermission(Right.DepartmentAdd);
-            	return mapping.findForward("add");
-	        }
-	        
-	        // Update/Save
-	        if (rsc.getMessage("button.updateDepartment").equalsIgnoreCase(op)
-	        		|| rsc.getMessage("button.saveDepartment").equalsIgnoreCase(op)) {
-	            // Validate input
-	            ActionMessages errors = myForm.validate(mapping, request);
-	            if(errors.size()>0) {
-	                saveErrors(request, errors);
-	                if (myForm.getId()!=null)
-	                	return mapping.findForward("edit");
-	                else
-	                	return mapping.findForward("add");
-	            } else {
-	            	if (myForm.getId() == null || myForm.getId().equals(0l))
-	            		sessionContext.checkPermission(Right.DepartmentAdd);
-	            	else if (!myForm.isFullyEditable())
-	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentLimitedEdit);
-	            	else
-	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentEdit);
-	            	myForm.save(sessionContext);
-	            }
-	        }
-	        
-	        if ("Add Status".equals(op)) {
-	        	myForm.addBlankDependentDepartment();
-	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
-	        }
-	        
-	        if ("Delete All".equals(op)) {
-	        	myForm.deleteAllDependentDepartments();
-	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
-	        }
+		// Read operation to be performed
+		if (op == null) op = form.getOp();
+		
+		request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAllNonExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+		
+        // Edit
+        if ("Edit".equalsIgnoreCase(op)) {
+            Department department = DepartmentDAO.getInstance().get(id);
+            if (department!=null) {
+            	if (sessionContext.hasPermission(department, Right.DepartmentLimitedEdit)) {
+            		form.setFullyEditable(false);
+            	} else {
+            		form.setFullyEditable(true);
+            		sessionContext.checkPermission(department, Right.DepartmentEdit);
+            	}
+            	form.load(department);
+            	return "edit";
+            }
+        }
+        
+        // Add
+        if(stripAccessKey(MSG.buttonAddDepartment()).equalsIgnoreCase(op)) {
+        	form.reset();
+        	form.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+        	form.setInheritInstructorPreferences(true);
+        	form.setAllowStudentScheduling(true);
+        	form.setFullyEditable(true);
+    		sessionContext.checkPermission(Right.DepartmentAdd);
+        	return "add";
+        }
+        
+        // Update/Save
+        if (stripAccessKey(MSG.buttonUpdate()).equalsIgnoreCase(op) || stripAccessKey(MSG.buttonSave()).equalsIgnoreCase(op)) {
+            // Validate input
+            form.validate(this);
+            if (hasFieldErrors()) {
+                return (form.getId() != null ? "edit" : "add");
+            } else {
+            	if (form.getId() == null || form.getId().equals(0l))
+            		sessionContext.checkPermission(Right.DepartmentAdd);
+            	else if (!form.isFullyEditable())
+            		sessionContext.checkPermission(form.getId(), "Department", Right.DepartmentLimitedEdit);
+            	else
+            		sessionContext.checkPermission(form.getId(), "Department", Right.DepartmentEdit);
+            	form.save(sessionContext);
+            }
+        }
+        
+        if (stripAccessKey(MSG.buttonDependentAddStatus()).equals(op)) {
+        	form.addBlankDependentDepartment();
+        	return (form.getId() != null ? "edit" : "add");
+        }
+        
+        if (stripAccessKey(MSG.buttonDependentDeleteAll()).equals(op)) {
+        	form.deleteAllDependentDepartments();
+        	return (form.getId() != null ? "edit" : "add");
+        }
 
-	        if ("Delete".equals(op) && request.getParameter("deleteId") != null && !request.getParameter("deleteId").isEmpty()) {
-	        	myForm.deleteDependentDepartment(Integer.parseInt(request.getParameter("deleteId")));
-	        	return mapping.findForward(myForm.getId() == null ? "add" : "edit");
-	        }
-	        
-	        // Delete
-	        if(rsc.getMessage("button.deleteDepartment").equalsIgnoreCase(op)) {
-	        	doDelete(myForm);
-	        }
-	        
-        	if (myForm.getId()!=null)
-           		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, myForm.getId().toString());
-        	
-	        return mapping.findForward("back");
-		} catch (Exception e) {
-			Debug.error(e);
-			throw e;
-		}
+        if (stripAccessKey(MSG.buttonDeleteLine()).equals(op) && deleteId != null) {
+        	form.deleteDependentDepartment(deleteId);
+        	return (form.getId() != null ? "edit" : "add");
+        }
+        
+        // Delete
+        if (stripAccessKey(MSG.buttonDelete()).equals(op)) {
+        	doDelete();
+        }
+        
+        return "back";
 	}
 
 	/**
 	 * Delete a department
 	 * @param request
-	 * @param myForm
+	 * @param form
 	 */
-	private void doDelete(DepartmentEditForm frm) throws Exception{
+	private void doDelete() throws Exception{
 		
-		sessionContext.checkPermission(frm.getId(), "Department", Right.DepartmentDelete);
+		sessionContext.checkPermission(form.getId(), "Department", Right.DepartmentDelete);
 		
         org.hibernate.Session hibSession = new DepartmentDAO().getSession();
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
-            Department department = new DepartmentDAO().get(frm.getId(), hibSession);
+            Department department = new DepartmentDAO().get(form.getId(), hibSession);
             if (department.isExternalManager().booleanValue()) {
                 for (Iterator i=hibSession.
                         createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").
@@ -212,5 +213,9 @@ public class DepartmentEditAction extends Action {
             throw e;
         }
 		
+	}
+	
+	public String getSession() {
+		return sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel();
 	}
 }

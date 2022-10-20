@@ -48,7 +48,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Action(value = "departmentList", results = {
 		@Result(name = "showDepartmentList", type = "tiles", location = "departmentList.tiles"),
-		@Result(name = "add", type = "redirect", location="/departmentEdit.do", params = {
+		@Result(name = "add", type = "redirect", location="/departmentEdit.action", params = {
 				"op", "${op}"})
 	})
 @TilesDefinition(name = "departmentList.tiles", extend = "baseLayout", putAttributes =  {
@@ -276,7 +276,7 @@ public class DepartmentListAction extends UniTimeAction<BlankForm> {
                 boolean editable = sessionContext.hasPermission(d, Right.DepartmentEdit) || sessionContext.hasPermission(d, Right.DepartmentLimitedEdit);
 
                 WebTableLine line = webTable.addLine(
-    				(editable ? "onClick=\"document.location='departmentEdit.do?op=Edit&id=" + d.getUniqueId() + "';\"" : null),
+    				(editable ? "onClick=\"document.location='departmentEdit.action?op=Edit&id=" + d.getUniqueId() + "';\"" : null),
     				new String[] {
     						d.getDeptCode(),
     						d.getAbbreviation()==null ? "&nbsp;" : d.getAbbreviation(),
