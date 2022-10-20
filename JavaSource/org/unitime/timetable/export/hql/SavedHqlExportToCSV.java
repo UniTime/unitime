@@ -274,7 +274,9 @@ public class SavedHqlExportToCSV implements Exporter {
 											}
 										}
 									} else {
-										ids.addAll(option.values(user).keySet());
+										Map<Long, String> vals = option.values(user);
+										if (vals != null)
+											ids.addAll(vals.keySet());
 									}
 									q.setParameterList(parameter.getName(), ids);
 								} else {

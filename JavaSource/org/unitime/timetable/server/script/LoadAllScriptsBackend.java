@@ -150,9 +150,11 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 				for (SavedHQL.Option option: SavedHQL.Option.values()) {
 					if (p.getType().equalsIgnoreCase(option.name())) {
 						parameter.setMultiSelect(option.allowMultiSelection());
-						for (Map.Entry<Long, String> entry: option.values(context.getUser()).entrySet()) {
-							parameter.addOption(entry.getKey().toString(), entry.getValue());
-						}
+						Map<Long, String> vals = option.values(context.getUser());
+						if (vals != null)
+							for (Map.Entry<Long, String> entry: vals.entrySet()) {
+								parameter.addOption(entry.getKey().toString(), entry.getValue());
+							}
 						if (p.getDefaultValue() != null) {
 							Long id = option.lookupValue(context.getUser(), p.getDefaultValue());
 							if (id != null)

@@ -54,7 +54,7 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 		if (ap.getPermission() != null)
 			sessionContext.checkPermission(ap.getPermission());
 		GwtRpcResponseList<SavedHQLInterface.Query> ret = new GwtRpcResponseList<SavedHQLInterface.Query>(); 
-		for (SavedHQL hql: SavedHQL.listAll(null, ap, sessionContext.hasPermission(Right.HQLReportsAdminOnly))) {
+		hql: for (SavedHQL hql: SavedHQL.listAll(null, ap, sessionContext.hasPermission(Right.HQLReportsAdminOnly))) {
 			SavedHQLInterface.Query query = new SavedHQLInterface.Query();
 			query.setName(hql.getName());
 			query.setDescription(hql.getDescription());
@@ -91,9 +91,10 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 					for (SavedHQL.Option option: SavedHQL.Option.values()) {
 						if (p.getType().equalsIgnoreCase(option.name())) {
 							parameter.setMultiSelect(option.allowMultiSelection());
-							for (Map.Entry<Long, String> entry: option.values(context.getUser()).entrySet()) {
+							Map<Long, String> values = option.values(context.getUser());
+							if (values == null || values.isEmpty()) continue hql;
+							for (Map.Entry<Long, String> entry: values.entrySet())
 								parameter.addOption(entry.getKey().toString(), entry.getValue());
-							}
 							if (p.getDefaultValue() != null) {
 								Long id = option.lookupValue(context.getUser(), p.getDefaultValue());
 								if (id != null)
