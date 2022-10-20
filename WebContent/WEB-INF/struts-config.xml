@@ -26,32 +26,13 @@
    
    <form-beans >
       <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
-      <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
    </form-beans>
 
    <global-exceptions>
    		<exception key="errors.exception" type="Exception" path="/error.jsp" />
    </global-exceptions>
    <action-mappings>
-      <action
-      	path="/subjectAreaEdit"
-	    type="org.springframework.web.struts.DelegatingActionProxy"
-	    attribute="subjectAreaEditForm"
-	    input="subjectAreaEditTile"
-	    name="subjectAreaEditForm"
-	    scope="request"
-	    validate="false">
-	    <forward 
-	      	name="editSubjectArea" 
-	      	path="subjectAreaEditTile" />
-	    <forward 
-	      	name="addSubjectArea" 
-	      	path="subjectAreaAddTile" />
-	    <forward 
-	      	name="back" 
-	      	path="/subjectList.action" redirect="true" />
-      </action>
-      
+
     <action
       attribute="rollForwardSessionForm"
       input="rollForwardSessionTile"

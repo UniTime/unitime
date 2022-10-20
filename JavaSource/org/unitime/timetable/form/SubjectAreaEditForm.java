@@ -19,118 +19,68 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.security.context.HttpSessionContext;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 05-15-2007
- * 
- * XDoclet definition:
- * @struts.form name="subjectAreaEditForm"
- *
  * @author Heston Fernandes, Tomas Muller
  */
-public class SubjectAreaEditForm extends ActionForm {
+public class SubjectAreaEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -8093172074512485680L;
-
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
+	
 	private Long uniqueId;
-	private String op;
 	private String abbv;
 	private String title;
 	private String externalId;
 	private Long department ;
 	
-	/*
-	 * Generated Methods
-	 */
+	public SubjectAreaEditForm() {
+		reset();
+	}
 
-	/** 
-	 * Method validate
-	 * @param mapping
-	 * @param request
-	 * @return ActionErrors
-	 */
-	public ActionErrors validate(ActionMapping mapping,
-			HttpServletRequest request) {
-		
-		ActionErrors errors = new ActionErrors();
-
-		// Get Message Resources
-        MessageResources rsc = 
-            (MessageResources) super.getServlet()
-            	.getServletContext().getAttribute(Globals.MESSAGES_KEY);
-        
-        if (op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
+	@Override
+	public void validate(UniTimeAction action) {
+        if (UniTimeAction.stripAccessKey(MSG.buttonDelete()).equals(action.getOp())) {
             SubjectArea sa = new SubjectAreaDAO().get(getUniqueId());
 			if (sa.hasOfferedCourses()) {
-				errors.add("uniqueid", new ActionMessage("errors.generic", "A subject area with offered classes cannot be deleted") );
+				action.addFieldError("form.uniqueId", MSG.errorCannotDeleteSubjectAreaWithClasses());
 			}
-		}
-		else {
-			if(abbv==null || abbv.trim().length()==0) {
-	        	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
+        } else {
+			if(abbv==null || abbv.trim().isEmpty()) {
+				action.addFieldError("form.abbv", MSG.errorRequired(MSG.fieldAbbreviation()));
 	        }
 
-			if(title==null || title.trim().length()==0) {
-	        	errors.add("title", new ActionMessage("errors.required", "Title") );
+			if(title==null || title.trim().isEmpty()) {
+				action.addFieldError("form.title", MSG.errorRequired(MSG.fieldTitle()));
 	        }
 
 			if(department==null || department.longValue()<=0) {
-	        	errors.add("department", new ActionMessage("errors.required", "Department") );
+				action.addFieldError("form.department", MSG.errorRequired(MSG.fieldDepartment()));
 	        }
 			
-			if (errors.size()==0) {
-				Long sessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
+			if (!action.hasFieldErrors()) {
+				Long sessionId = action.getSessionContext().getUser().getCurrentAcademicSessionId();
 				SubjectArea sa = SubjectArea.findByAbbv(sessionId, abbv);
 				if (uniqueId==null && sa!=null) 
-		        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
-				if (uniqueId!=null && sa!=null && !sa.getUniqueId().equals(uniqueId)) 
-		        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
+					action.addFieldError("form.abbv", MSG.errorMustBeUnique(MSG.fieldAbbreviation()));
+				if (uniqueId!=null && sa!=null && !sa.getUniqueId().equals(uniqueId))
+					action.addFieldError("form.abbv", MSG.errorMustBeUnique(MSG.fieldAbbreviation()));
 			}
 		}
-		
-		return errors;
 	}
 
-	/** 
-	 * Method reset
-	 * @param mapping
-	 * @param request
-	 */
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
+	@Override
+	public void reset() {
 		uniqueId=null;
-		op=null;
 		abbv=null;
 		title=null;
 		externalId=null;
 		department=null;
-	}
-
-	/** 
-	 * Returns the op.
-	 * @return String
-	 */
-	public String getOp() {
-		return op;
-	}
-
-	/** 
-	 * Set the op.
-	 * @param op The op to set
-	 */
-	public void setOp(String op) {
-		this.op = op;
 	}
 
 	public String getAbbv() {

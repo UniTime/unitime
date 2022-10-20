@@ -7588,4 +7588,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>A</u>dd Subject Area")
 	String buttonAddSubjectArea();
+	
+	@DefaultMessage("A subject area with offered classes cannot be deleted")
+	String errorCannotDeleteSubjectAreaWithClasses();
+	
+	@DefaultMessage("The subject area and all associated data will be deleted. Continue?")
+	String confirmDeleteSubjectArea();
 }

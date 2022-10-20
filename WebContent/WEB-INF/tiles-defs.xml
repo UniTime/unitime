@@ -53,23 +53,6 @@
   	</definition>
 
 	<!-- Page Layouts -->
-
-	<definition	name="subjectAreaAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Subject Area"/>
-		<put name="body" value="/admin/subjectAreaEdit.jsp" />
-  	</definition>
-
-	<definition	name="subjectAreaEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Subject Area"/>
-		<put name="body" value="/admin/subjectAreaEdit.jsp" />
-  	</definition>
-
-   	<definition	name="instructionalOfferingModifyTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Multiple Class Setup"/>
-		<put name="body" value="/user/instructionalOfferingModify.jsp" />
-		<put name="showNavigation" value="true" />
-  	</definition>
-
    	<definition	name="rollForwardSessionTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Roll Forward Session"/>
 		<put name="body" value="/admin/rollForwardSession.jsp" />

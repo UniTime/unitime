@@ -17,145 +17,94 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tt:session-context/>
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if(confirm('The subject area and all associated data will be deleted. Continue?')) {
-				return true;
-			}
-			return false;
-		}
-
-	// -->
-</SCRIPT>
-<tiles:importAttribute />
-
-<html:form method="post" action="subjectAreaEdit.do">
-<html:hidden name="subjectAreaEditForm" property="uniqueId" />
-	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages"><s:set var="msg" value="#attr.MSG"/>
+<tt:confirm name="confirmDelete"><loc:message name="confirmDeleteSubjectArea"/></tt:confirm>
+<s:form action="subjectAreaEdit">
+<s:hidden name="form.uniqueId" />
+	<table class="unitime-MainTable">
 		<TR>
 			<TD colspan="2">
-			
 				<tt:section-header>
 					<tt:section-title>
-						<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
-							<bean:write name="subjectAreaEditForm" property="abbv"/> 
-							- 
-							<bean:write name="subjectAreaEditForm" property="title"/>
-						</logic:notEmpty>
+						<s:if test="form.uniqueId != null">
+							<s:property value="form.abbv"/> - <s:property value="form.title"/>
+						</s:if>
 					</tt:section-title>
-						
-					<logic:empty name="subjectAreaEditForm" property="uniqueId">
-						<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.saveSubjectArea">
-							<bean:message key="button.saveSubjectArea"/>
-						</html:submit>
-					</logic:empty>
-						
-					<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
-						<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateSubjectArea">
-							<bean:message key="button.updateSubjectArea"/>
-						</html:submit>
-						
-						<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
-							<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
-								<bean:message key="button.deleteSubjectArea"/>
-							</html:submit>
+					<s:if test="form.uniqueId == null">
+						<tt:button value="%{#msg.buttonSave()}"/>
+					</s:if><s:else>
+						<tt:button value="%{#msg.buttonUpdate()}"/>
+						<sec:authorize access="hasPermission(#form.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
+							<tt:button value="%{#msg.buttonDelete()}" onclick="return confirmDelete();"/>
 						</sec:authorize>
-					</logic:notEmpty>
-
-					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
-						<bean:message key="button.backToPrevious"/>
-					</html:submit>
+					</s:else>
+					<tt:button value="%{#msg.buttonBack()}"/>
 				</tt:section-header>				
 			</TD>
 		</TR>
 		
-		<logic:messagesPresent>
-			<TR>
-				<TD colspan="2" align="left" class="errorCell">
-						<B><U>ERRORS</U></B><BR>
-					<BLOCKQUOTE>
-					<UL>
-					    <html:messages id="error">
-					      <LI>
-							${error}
-					      </LI>
-					    </html:messages>
-				    </UL>
-				    </BLOCKQUOTE>
-				</TD>
-			</TR>
-		</logic:messagesPresent>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="2" align="left" class="errorTable">
+				<loc:bundle name="CourseMessages" id="X">
+				<div class='errorHeader'><loc:message name="formValidationErrors" id="X"/></div><s:fielderror escape="false"/>
+				</loc:bundle>
+			</TD></TR>
+		</s:if>
 
 		<TR>
-			<TD>Academic Session: </TD>
-			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
+			<TD><loc:message name="propAcademicSession"/></TD>
+			<TD style="color:gray;"><s:property value="session"/></TD>
 		</TR>
 
 		<TR>
-			<TD>Abbreviation:</TD>
+			<TD><loc:message name="fieldAbbreviation"/>:</TD>
 			<TD>
-				<html:text property="abbv" size="20" maxlength="20"/>
+				<s:textfield name="form.abbv" size="20" maxlength="20"/>
+				<s:fielderror fieldName="form.abbv" escape="false"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Title:</TD>
+			<TD><loc:message name="fieldTitle"/>:</TD>
 			<TD>
-				<html:text property="title" size="40" maxlength="100"/>
+				<s:textfield name="form.title" size="40" maxlength="100"/>
+				<s:fielderror fieldName="form.title" escape="false"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>External ID:</TD>
+			<TD><loc:message name="fieldExternalId"/>:</TD>
 			<TD>
-				<html:text property="externalId" size="40" maxlength="40"/>
+				<s:textfield name="form.externalId" size="40" maxlength="40"/>
+				<s:fielderror fieldName="form.externalId" escape="false"/>
 			</TD>
 		</TR>
 		
 		<TR>
-			<TD>Department:</TD>
+			<TD><loc:message name="fieldDepartment"/>:</TD>
 			<TD>
-				<logic:empty name="subjectAreaEditForm" property="uniqueId">
-					<html:select property="department">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-					</html:select>					
-				</logic:empty>
-				<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
-					<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
-						<html:select property="department" >
-							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-							<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-						</html:select>
+				<s:if test="form.uniqueId == null">
+					<s:select name="form.department"
+						list="#request.deptsList" listKey="uniqueId" listValue="label"
+						headerKey="" headerValue="%{#msg.itemSelect()}"/>
+				</s:if><s:else>
+					<sec:authorize access="hasPermission(#form.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
+						<s:select name="form.department"
+							list="#request.deptsList" listKey="uniqueId" listValue="label"
+							headerKey="" headerValue="%{#msg.itemSelect()}"/>
 					</sec:authorize>
-					<sec:authorize access="!hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
-						<html:hidden property="department"/>
-						<html:select property="department" disabled="true">
-							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-							<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-						</html:select>
+					<sec:authorize access="!hasPermission(#form.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
+						<s:hidden name="form.department"/>
+						<s:select name="form.department" disabled="true"
+							list="#request.deptsList" listKey="uniqueId" listValue="label"
+							headerKey="" headerValue="%{#msg.itemSelect()}"/>
 					</sec:authorize>
-				</logic:notEmpty>
+				</s:else>
+				<s:fielderror fieldName="form.department" escape="false"/>
 			</TD>
 		</TR>
 
@@ -167,31 +116,17 @@
 		
 		<TR>
 			<TD align="right" colspan='2'>
-				<logic:empty name="subjectAreaEditForm" property="uniqueId">
-					<html:submit property="op" styleClass="btn" accesskey="S" titleKey="title.saveSubjectArea">
-						<bean:message key="button.saveSubjectArea"/>
-					</html:submit>
-				</logic:empty>
-					
-				<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
-					<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateSubjectArea">
-						<bean:message key="button.updateSubjectArea"/>
-					</html:submit>
-					
-					<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
-						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
-							<bean:message key="button.deleteSubjectArea"/>
-						</html:submit>
+				<s:if test="form.uniqueId == null">
+					<tt:button value="%{#msg.buttonSave()}"/>
+				</s:if><s:else>
+					<tt:button value="%{#msg.buttonUpdate()}"/>
+					<sec:authorize access="hasPermission(#form.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
+						<tt:button value="%{#msg.buttonDelete()}" onclick="return confirmDelete();"/>
 					</sec:authorize>
-				</logic:notEmpty>
-
-				<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
-					<bean:message key="button.backToPrevious"/>
-				</html:submit>
+				</s:else>
+				<tt:button value="%{#msg.buttonBack()}"/>
 			</TD>
 		</TR>
-		
-	</TABLE>
-</html:form>
-
-	
+	</table>
+</s:form>
+</loc:bundle>

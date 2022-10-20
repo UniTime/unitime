@@ -23,22 +23,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesDefinitions;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SubjectAreaEditForm;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
 import org.unitime.timetable.model.BuildingPref;
@@ -65,147 +61,113 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
 
 /** 
- * MyEclipse Struts
- * Creation date: 05-15-2007
- * 
- * XDoclet definition:
- * @struts.action path="/subjectAreaEdit" name="subjectAreaEditForm" input="/admin/subjectAreaEdit.jsp" scope="request"
- * @struts.action-forward name="editSubjectArea" path="SubjectAreaEditTile"
- * @struts.action-forward name="addSubjectArea" path="SubjectAreaAddTile"
- *
  * @author Tomas Muller, Stephanie Schluttenhofer, Heston Fernandes
  */
-@Service("/subjectAreaEdit")
-public class SubjectAreaEditAction extends Action {
+@Action(value = "subjectAreaEdit", results = {
+		@Result(name = "add", type = "tiles", location = "subjectAreaAdd.tiles"),
+		@Result(name = "edit", type = "tiles", location = "subjectAreaEdit.tiles"),
+		@Result(name = "back", type = "redirect", location="/subjectList.action", params = {
+				"anchor", "${form.uniqueId}"})
+	})
+@TilesDefinitions({
+@TilesDefinition(name = "subjectAreaAdd.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Add Subject Area"),
+		@TilesPutAttribute(name = "body", value = "/admin/subjectAreaEdit.jsp")
+	}),
+@TilesDefinition(name = "subjectAreaEdit.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Edit Subject Area"),
+		@TilesPutAttribute(name = "body", value = "/admin/subjectAreaEdit.jsp")
+	})
+})
+public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
+	private static final long serialVersionUID = 5726515478142736794L;
+	protected static final GwtMessages MSG = Localization.create(GwtMessages.class);
 	
-	@Autowired SessionContext sessionContext;
+	private Long id;
 	
-	/*
-	 * Generated Methods
-	 */
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
 
-	/** 
-	 * Method execute
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return ActionForward
-	 */
-	public ActionForward execute(
-			ActionMapping mapping, 
-			ActionForm form,
-			HttpServletRequest request, 
-			HttpServletResponse response) throws Exception {
+	@Override
+	public String execute() throws Exception {
+		if (form == null) form = new SubjectAreaEditForm();
 		
 		// Check Access
 		sessionContext.checkPermission(Right.SubjectAreas);
 		
-		SubjectAreaEditForm frm = (SubjectAreaEditForm) form;
-		MessageResources rsc = getResources(request);
-		ActionMessages errors=null;
-		
-		// Read operation to be performed
-		String op = (frm.getOp()!=null
-						? frm.getOp()
-						: request.getParameter("op"));
-		
         // Add
-        if(op.equals(rsc.getMessage("button.addSubjectArea"))) {
+        if (stripAccessKey(MSG.buttonAddSubjectArea()).equals(op)) {
         	sessionContext.checkPermission(Right.SubjectAreaAdd);
+        	form.reset();
     		LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
-        	return mapping.findForward("addSubjectArea");
+        	return "add";
         }
         
         // Edit
-        if(op.equals(rsc.getMessage("op.edit"))) {
-            doLoad(request, frm);
+        if ("edit".equals(op)) {
+            doLoad();
     		LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
-        	return mapping.findForward("editSubjectArea");
+        	return "edit";
         }
         
         // Update
-        if (op.equals(rsc.getMessage("button.updateSubjectArea"))
-        		|| op.equals(rsc.getMessage("button.saveSubjectArea")) ) {
+        if (stripAccessKey(MSG.buttonSave()).equals(op) || stripAccessKey(MSG.buttonUpdate()).equals(op)) {
             // Validate input
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0) {
-            	doUpdate(request, frm);
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+            	doUpdate();
             }
         }
         
         // Delete
-        if(op.equals(rsc.getMessage("button.deleteSubjectArea"))) {
-            errors = frm.validate(mapping, request);
-            if(errors.size()==0) {
-            	doDelete(request, frm);
+        if (stripAccessKey(MSG.buttonDelete()).equals(op)) {
+        	form.validate(this);
+        	if (!hasFieldErrors()) {
+            	doDelete();
             }
         }
         
-    	if (frm.getUniqueId()!=null)
-       		request.setAttribute(Constants.JUMP_TO_ATTR_NAME, frm.getUniqueId().toString());
-    	
-    	if (errors!=null && errors.size()>0) {
-	        saveErrors(request, errors);
+    	if (hasFieldErrors()) {
 			LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
-	        if (frm.getUniqueId()!=null)
-	        	return mapping.findForward("editSubjectArea");
-	        else
-	        	return mapping.findForward("addSubjectArea");
+	        return (form.getUniqueId() != null ? "edit" : "add");
     	}
     	
-        return mapping.findForward("back");
+        return "back";
 	}
 
 	/**
 	 * Load the subject area into the form
-	 * @param request
-	 * @param frm
 	 */
-	private void doLoad(HttpServletRequest request, SubjectAreaEditForm frm) throws Exception {
-		Long id = null;
-        
-        try { 
-            id = Long.parseLong(request.getParameter("id"));
-        }
-        catch (Exception e) {
-        	throw new Exception ("Invalid Subject Area IDencountered");
-        }
-        
+	private void doLoad() throws Exception {
     	sessionContext.checkPermission(id, "SubjectArea", Right.SubjectAreaEdit);
-        
         SubjectArea sa = new SubjectAreaDAO().get(id);
-        frm.setUniqueId(id);
-        frm.setAbbv(sa.getSubjectAreaAbbreviation()!=null ? sa.getSubjectAreaAbbreviation() : "");        
-        frm.setDepartment(sa.getDepartment()!=null ? sa.getDepartment().getUniqueId() : null);
-        frm.setExternalId(sa.getExternalUniqueId() !=null ? sa.getExternalUniqueId() : "");
-        frm.setTitle(sa.getTitle() !=null ? sa.getTitle() : "");
+        form.setUniqueId(id);
+        form.setAbbv(sa.getSubjectAreaAbbreviation()!=null ? sa.getSubjectAreaAbbreviation() : "");        
+        form.setDepartment(sa.getDepartment()!=null ? sa.getDepartment().getUniqueId() : null);
+        form.setExternalId(sa.getExternalUniqueId() !=null ? sa.getExternalUniqueId() : "");
+        form.setTitle(sa.getTitle() !=null ? sa.getTitle() : "");
 	}
 	
 	/**
 	 * Delete Subject Area
-	 * @param request
-	 * @param frm
 	 */
-	private void doDelete(HttpServletRequest request, SubjectAreaEditForm frm) throws Exception {
+	private void doDelete() throws Exception {
 		Session hibSession = null;
 		Transaction tx = null;
 		
-		sessionContext.checkPermission(frm.getUniqueId(), "SubjectArea", Right.SubjectAreaDelete);
+		sessionContext.checkPermission(form.getUniqueId(), "SubjectArea", Right.SubjectAreaDelete);
 		
 		try {
 			SubjectAreaDAO sdao = new SubjectAreaDAO();
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
 
-			SubjectArea sa = sdao.get(frm.getUniqueId());
+			SubjectArea sa = sdao.get(form.getUniqueId());
 
         	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
 			if (className != null && className.trim().length() > 0){
@@ -256,17 +218,15 @@ public class SubjectAreaEditAction extends Action {
 
 	/**
 	 * Update Subject Area
-	 * @param request
-	 * @param frm
 	 */
-	private void doUpdate(HttpServletRequest request, SubjectAreaEditForm frm) throws Exception {
+	private void doUpdate() throws Exception {
 		Session hibSession = null;
 		Transaction tx = null;
 		
-		if (frm.getUniqueId() == null)
+		if (form.getUniqueId() == null)
 			sessionContext.checkPermission(Right.SubjectAreaAdd);
 		else
-			sessionContext.checkPermission(frm.getUniqueId(), "SubjectArea", Right.SubjectAreaEdit);
+			sessionContext.checkPermission(form.getUniqueId(), "SubjectArea", Right.SubjectAreaEdit);
 		
 		try {
 			SubjectAreaDAO sdao = new SubjectAreaDAO();
@@ -278,16 +238,16 @@ public class SubjectAreaEditAction extends Action {
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
 			
-			if (frm.getUniqueId()!=null) 
-				sa = sdao.get(frm.getUniqueId());
+			if (form.getUniqueId()!=null) 
+				sa = sdao.get(form.getUniqueId());
 			else 
 				sa = new SubjectArea();
 			
-			Department dept = ddao.get(frm.getDepartment());
+			Department dept = ddao.get(form.getDepartment());
             HashSet<Class_> updatedClasses = new HashSet<Class_>();
 			
 			sa.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession));
-	        sa.setSubjectAreaAbbreviation(frm.getAbbv());
+	        sa.setSubjectAreaAbbreviation(form.getAbbv());
 	        if (sa.getDepartment()!=null && !dept.equals(sa.getDepartment())) {
 	            HashSet availableRooms = new HashSet();
 	            HashSet availableBuildings = new HashSet();
@@ -399,20 +359,22 @@ public class SubjectAreaEditAction extends Action {
 	        } else if (sa.getDepartment()==null) {
 	            sa.setDepartment(dept);
 	        }
-	        sa.setExternalUniqueId(frm.getExternalId());
-	        sa.setTitle(frm.getTitle());
+	        sa.setExternalUniqueId(form.getExternalId());
+	        sa.setTitle(form.getTitle());
 	        
-	        hibSession.saveOrUpdate(sa);			
+	        hibSession.saveOrUpdate(sa);
 			
             ChangeLog.addChange(
                     hibSession, 
                     sessionContext, 
                     sa, 
                     ChangeLog.Source.SUBJECT_AREA_EDIT, 
-                    (frm.getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
+                    (form.getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                     sa, 
                     dept);
 
+	        form.setUniqueId(sa.getUniqueId());
+	        
             tx.commit();			
 			hibSession.refresh(sa);
 			hibSession.flush();
@@ -434,5 +396,9 @@ public class SubjectAreaEditAction extends Action {
 			
 			throw (e);
 		}
+	}
+	
+	public String getSession() {
+		return sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel();
 	}
 }

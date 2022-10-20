@@ -278,11 +278,11 @@ public class DepartmentEditForm implements UniTimeForm {
 		Department department;
 		Session acadSession = null;
 		
-		if( getId().equals(Long.valueOf(0))) {
+		if (getId() == null || getId() < 0) {
 			department = new Department();
 			acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
 			department.setSession(acadSession);
-			department.setDistributionPrefPriority(Integer.valueOf(0));
+			department.setDistributionPrefPriority(0);
 			acadSession.addTodepartments(department);
 			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
 		}
@@ -296,7 +296,7 @@ public class DepartmentEditForm implements UniTimeForm {
 				department.setDeptCode(getDeptCode());
 				department.setAbbreviation(getAbbv());
 				department.setExternalUniqueId(getExternalId());
-				department.setDistributionPrefPriority(Integer.valueOf(getDistPrefPriority()));
+				department.setDistributionPrefPriority(getDistPrefPriority());
 				department.setExternalManager(Boolean.valueOf(getIsExternal()));
 				department.setExternalMgrLabel(getExtName());
 				department.setExternalMgrAbbv(getExtAbbv());
@@ -337,17 +337,15 @@ public class DepartmentEditForm implements UniTimeForm {
             }
             
             session.saveOrUpdate(department);
-//			if( acadSession != null) {
-//				session.saveOrUpdate(acadSession);
-//			}
             ChangeLog.addChange(
                     session, 
                     context, 
                     department, 
                     ChangeLog.Source.DEPARTMENT_EDIT, 
-                    (getId().equals(Long.valueOf(0))?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
+                    (getId() == null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
                     null, 
                     department);
+            setId(department.getUniqueId());
 
 			session.flush();
 			if( acadSession != null){

@@ -51,8 +51,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
 @Service("/subjectList")
 @Action(value = "subjectList", results = {
 		@Result(name = "showSubjectList", type = "tiles", location = "subjectList.tiles"),
-		@Result(name = "add", type = "redirect", location="/subjectAreaEdit.do", params = {
-				"op", "Add Subject Area"})
+		@Result(name = "add", type = "redirect", location="/subjectAreaEdit.action", params = {
+				"op", "${op}"})
 	})
 @TilesDefinition(name = "subjectList.tiles", extend = "baseLayout", putAttributes =  {
 		@TilesPutAttribute(name = "title", value = "Subject Areas"),
@@ -132,7 +132,7 @@ public class SubjectListAction extends UniTimeAction<BlankForm> {
         WebTable webTable = new WebTable( 
         	    (dispLastChanges?5:4),
         	    "",
-        	    "subjectList.area?ord=%%",
+        	    "subjectList.action?ord=%%",
         	    (dispLastChanges?
         		    new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers(), MSG.fieldLastChange()}:
         		    new String[] {MSG.fieldAbbv(), MSG.fieldTitle(), MSG.fieldDepartment(), MSG.fieldManagers()}),
@@ -170,7 +170,7 @@ public class SubjectListAction extends UniTimeAction<BlankForm> {
         	}
 
         	WebTableLine line = webTable.addLine(
-        		"onClick=\"document.location.href='subjectAreaEdit.do?op=edit&id=" + s.getUniqueId() + "'\"",
+        		"onClick=\"document.location.href='subjectAreaEdit.action?op=edit&id=" + s.getUniqueId() + "'\"",
         		new String[] { 
         			s.getSubjectAreaAbbreviation(),
         			s.getTitle(),
