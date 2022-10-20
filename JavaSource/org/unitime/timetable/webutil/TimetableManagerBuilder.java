@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.criterion.Order;
+import org.unitime.commons.web.WebTable.WebTableLine;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ChangeLog;
@@ -47,11 +50,13 @@ import org.unitime.timetable.util.NameFormat;
  * @author Heston Fernandes, Tomas Muller, Stephanie Schluttenhofer
  */
 public class TimetableManagerBuilder {
-    
-    public PdfWebTable getManagersTable(SessionContext context, boolean html, boolean showAll) {
-
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+    public PdfWebTable getManagersTable(SessionContext context, String format, boolean showAll) {
         int cols = 7;
 		org.hibernate.Session hibSession = null;
+		boolean html = "html".equalsIgnoreCase(format);
+		boolean pdf = "pdf".equalsIgnoreCase(format);
         
         boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(context.getUser()));
         if (dispLastChanges) cols++;
@@ -60,11 +65,26 @@ public class TimetableManagerBuilder {
 	    
 		// Create new table
         PdfWebTable webTable = new PdfWebTable( cols,
-			    (html?"":"Manager List - " + (currentAcadSession == null ? "" : " - " + context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel())),
-			    "timetableManagerList.do?order=%%",
+			    (html? "" : MSG.sectManagerList(currentAcadSession == null ? "" : context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel())),
+			    "timetableManagerList.action?order=%%",
                 (dispLastChanges?
-                        new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group", "Last Change"}:
-                        new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group"}),
+                        new String[] {
+                        		MSG.columnRoles(),
+                        		MSG.columnExternalId(),
+                        		MSG.columnManagerName(),
+                        		MSG.columnEmailAddress(),
+                        		MSG.columnDepartment(),
+                        		MSG.columnSubjectArea(),
+                        		MSG.columnSolverGroup(),
+                        		MSG.columnLastChange()}:
+                        new String[] {
+                        		MSG.columnRoles(),
+                        		MSG.columnExternalId(),
+                        		MSG.columnManagerName(),
+                        		MSG.columnEmailAddress(),
+                        		MSG.columnDepartment(),
+                        		MSG.columnSubjectArea(),
+                        		MSG.columnSolverGroup()}),
 			    new String[] {"left", "left", "left", "left", "left", "left", "left", "left"},
 			    new boolean[] {true, true, true, true, true, true, true, false} );
         webTable.enableHR("#9CB0CE");
@@ -110,9 +130,9 @@ public class TimetableManagerBuilder {
 		        boolean receivesEmail = (mgrRole.isReceiveEmails() == null?false:mgrRole.isReceiveEmails().booleanValue());
                 if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
                 if (mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
-                    roleStr += (html?"<span title='"+roleRef+" - Primary Role" + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:bold;'>"+roleRef + (receivesEmail?"":"*") +"</span>":"@@BOLD "+roleRef + (receivesEmail?"":"*")+"@@END_BOLD ");
+                    roleStr += (html?"<span title='"+roleRef+" - " + MSG.flagPrimaryRole() + (receivesEmail?"":", " + MSG.explNoEmailForThisRole())+"' style='font-weight:bold;'>"+roleRef + (receivesEmail?"":"*") +"</span>": pdf ? "@@BOLD "+roleRef + (receivesEmail?"":"*")+"@@END_BOLD " : roleRef + (receivesEmail?"":"*"));
                 } else {
-                    roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
+                    roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", " + MSG.explNoEmailForThisRole())+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
                 }
 		        roleOrd += title;
 		        if (mgrRole.getRole().hasRight(Right.SessionIndependent) || (mgrRole.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven) && manager.getDepartments().isEmpty()))
@@ -134,9 +154,9 @@ public class TimetableManagerBuilder {
                             dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())+
                             (dept.isExternalManager()?"</b>":"")+"</span>"
                          :
-                             (dept.isExternalManager()?"@@BOLD ":"")+
+                             (dept.isExternalManager() && pdf?"@@BOLD ":"")+
                              dept.getDeptCode()+(dept.getAbbreviation()==null?"":": "+dept.getAbbreviation().trim())+
-                             (dept.isExternalManager()?"@@END_BOLD ":"")
+                             (dept.isExternalManager() && pdf?"@@END_BOLD ":"")
                      );
 		        
 		        // Construct SubjectArea List
@@ -173,17 +193,18 @@ public class TimetableManagerBuilder {
                 if (currentAcadSession!=null) changes = ChangeLog.findLastNChanges(currentAcadSession, manager.getUniqueId(), null, null, 1);
                 ChangeLog lastChange = (changes==null || changes.isEmpty()?null:(ChangeLog)changes.get(0));
                 if (html)
-                    lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel()+"'>"+lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+"</span>");
+                    lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel()+"'>"+MSG.formatLastChange(lastChange.getSourceTitle(), lastChange.getOperationTitle(), ChangeLog.sDFdate.format(lastChange.getTimeStamp()))+"</span>");
                 else
-                    lastChangeStr = (lastChange==null?"":lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp()));
+                    lastChangeStr = (lastChange==null?"":MSG.formatLastChange(lastChange.getSourceTitle(), lastChange.getOperationTitle(), ChangeLog.sDFdate.format(lastChange.getTimeStamp())));
                 lastChangeCmp = Long.valueOf(lastChange==null?0:lastChange.getTimeStamp().getTime());
             }
 		    
 		    // Add to web table
-		    webTable.addLine(
+		    WebTableLine line = webTable.addLine(
 	        	onClick,
-	        	new String[] { roleStr, (html?"<A name='" + manager.getUniqueId() + "'>" + puid + "&nbsp;</A>":puid), fullName, email, deptStr, subjectList, solverGroupStr, lastChangeStr},
+	        	new String[] { roleStr, puid, fullName, email, deptStr, subjectList, solverGroupStr, lastChangeStr},
 	        	new Comparable[] {roleOrd, puid, fullName, email, deptStr, subjectList, solverGroupStr, lastChangeCmp} );
+		    line.setUniqueId(manager.getUniqueId().toString());
 		}
         
         return webTable;

@@ -645,7 +645,7 @@
 					<hasPermission name="AcademicSessions"/>
 				</condition>
 			</item>
-			<item name="Managers" page="timetableManagerList.do">
+			<item name="Managers" page="timetableManagerList.action">
 				<condition>
 					<hasPermission name="TimetableManagers"/>
 				</condition>

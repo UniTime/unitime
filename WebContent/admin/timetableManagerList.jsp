@@ -17,87 +17,50 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-
-<tt:session-context/>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="timetableManagerList">
+<table class="unitime-MainTable">
 	<TR>
-		<TD align="right">
+		<TD align="right" colspan="8">
 			<tt:section-header>
-			
 				<tt:section-title>
-					Manager List - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
+					<s:property value="title"/>
 				</tt:section-title>
-				
-				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-					<TR><TD nowrap>
-						<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
-						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
-								<bean:message key="button.addTimetableManager" />
-							</html:submit>
-						</html:form>
-						</sec:authorize>
-					</TD><TD nowrap>
-						<input type='button' onclick="document.location='timetableManagerList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
-					</TD></TR>
-				</TABLE>
-				
+				<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
+					<s:submit name="op" value="%{#msg.actionAddTimetableManager()}"
+						accesskey="%{#msg.accessAddTimetableManager()}" title="%{#msg.titleAddTimetableManager(#msg.accessAddTimetableManager())}"/>
+				</sec:authorize>
+				<s:submit name="op" value="%{#msg.actionExportPdf()}"
+						accesskey="%{#msg.accessExportPdf()}" title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"/>
+				<s:submit name="op" value="%{#msg.actionExportCsv()}"
+						accesskey="%{#msg.accessExportCsv()}" title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"/>
 			</tt:section-header>
 		</TD>
 	</TR>
-</TABLE>				
-
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
-		<bean:write name="schedDeputyList" scope="request" filter="false"/>
-	</TABLE>
-
-	<table width="100%" border="0" cellspacing="0" cellpadding="3">
-		<tr>
-			<td align="center" class="WelcomeRowHead">
-			&nbsp;
-			</td>
-		</tr>
-		<tr>
-			<td align="right">
-				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-					<TR>
-					<TD nowrap style="padding-right: 10px;">
-						<logic:equal value="true" scope="request" name="showAllManagers">
-							<input type="checkbox" checked onclick="document.location='timetableManagerList.do?all=false';">Show all managers
-						</logic:equal>
-						<logic:notEqual value="true" scope="request" name="showAllManagers">
-							<input type="checkbox" onclick="document.location='timetableManagerList.do?all=true';">Show all managers
-						</logic:notEqual>
-					</TD>
-					<TD nowrap>
-						<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
-						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
-								<bean:message key="button.addTimetableManager" />
-							</html:submit>
-						</html:form>
-						</sec:authorize>
-					</TD><TD nowrap>
-						<input type='button' onclick="document.location='timetableManagerList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
-					</TD></TR>
-				</TABLE>
-			</td>
-		</tr>
-	</table>
-
-
-<SCRIPT type="text/javascript" language="javascript">
-	function jumpToAnchor() {
-    <% if (request.getAttribute(Constants.JUMP_TO_ATTR_NAME) != null) { %>
-  		location.hash = "<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>";
-	<% } %>
-	    self.focus();
-  	}
-</SCRIPT>
+	<s:property value="table" escapeHtml="false"/>
+	<tr>
+		<td align="center" class="WelcomeRowHead" colspan="8">&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="left" colspan="4">
+			<s:checkbox name="all" onclick="submit();"/>
+			<loc:message name="checkShowAllManagers"/>
+		</td>
+		<td align="right" colspan="4">
+			<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
+				<s:submit name="op" value="%{#msg.actionAddTimetableManager()}"
+					accesskey="%{#msg.accessAddTimetableManager()}" title="%{#msg.titleAddTimetableManager(#msg.accessAddTimetableManager())}"/>
+			</sec:authorize>
+			<s:submit name="op" value="%{#msg.actionExportPdf()}"
+					accesskey="%{#msg.accessExportPdf()}" title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"/>
+			<s:submit name="op" value="%{#msg.actionExportCsv()}"
+					accesskey="%{#msg.accessExportCsv()}" title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"/>
+		</td>
+	</tr>
+</table>
+</s:form>
+</loc:bundle>

@@ -5172,4 +5172,51 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Academic session is marked as a test session. Such a session is not available to no-role users. Also, classes and examinations do not generate any events.")
 	String descTestSession();
 	
+	@DefaultMessage("Add Timetable Manager")
+	String actionAddTimetableManager();
+	
+	@DefaultMessage("T")
+	String accessAddTimetableManager();
+	
+	@DefaultMessage("Add Timetable Manager (Alt + {0})")
+	String titleAddTimetableManager(String access);
+	
+	@DefaultMessage("Manager List - {0}")
+	String sectManagerList(String name);
+	
+	@DefaultMessage("Roles")
+	String columnRoles();
+	
+	@DefaultMessage("Name")
+	String columnManagerName();
+	
+	@DefaultMessage("Email Address")
+	String columnEmailAddress();
+	
+	@DefaultMessage("Subject Area")
+	String columnSubjectArea();
+	
+	@DefaultMessage("Solver Group")
+	String columnSolverGroup();
+	
+	@DefaultMessage("Last Change")
+	String columnLastChange();
+	
+	@DefaultMessage("{0} ({1}) on {2}")
+	String formatLastChange(String page, String action, String date);
+	
+	@DefaultMessage("Last {0} of {1} was made by {2} at {3}.")
+	String formatLongLastChange(String operation, String object, String manager, String date);
+	
+	@DefaultMessage("Last {0} was made by {1} at {2}.")
+	String formatShortLastChange(String operation, String manager, String date);
+	
+	@DefaultMessage("Primary Role")
+	String flagPrimaryRole();
+	
+	@DefaultMessage("* No Email for this Role")
+	String explNoEmailForThisRole();
+	
+	@DefaultMessage("Show all managers")
+	String checkShowAllManagers();
 }

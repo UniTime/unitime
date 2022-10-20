@@ -27,6 +27,8 @@ import java.util.List;
 import org.hibernate.Query;
 import org.hibernate.proxy.HibernateProxy;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -39,6 +41,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -297,18 +300,18 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     }
     
     public String getLabel() {
-        return 
-        "Last " + getOperationTitle() +
-        " of " + getObjectTitle() +
-        " was made by " + getManager().getShortName() +
-        " at " + sDF.format(getTimeStamp()); 
+        return MSG.formatLongLastChange(
+        		getOperationTitle(),
+        		getObjectTitle(),
+        		getManager().getShortName(),
+        		sDF.format(getTimeStamp())); 
     }
 
     public String getShortLabel() {
-        return 
-            "Last " + getOperationTitle() +
-            " was made by " + getManager().getShortName() +
-            " at " + sDF.format(getTimeStamp()); 
+        return MSG.formatShortLastChange(
+        		getOperationTitle(),
+        		getManager().getShortName(),
+        		sDF.format(getTimeStamp()));
     }
     
     public String toString() { return getLabel(); }

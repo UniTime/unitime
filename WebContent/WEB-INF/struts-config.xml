@@ -75,7 +75,7 @@
          validate="false">
          <forward
             name="success"
-            path="/timetableManagerList.do" />
+            path="/timetableManagerList.action" redirect="true"/>
          <forward
             name="fail"
             path="timetableManagerEditTile" />
@@ -87,21 +87,7 @@
             path="timetableManagerAddTile" />
          <forward
             name="displayManagerList"
-            path="/timetableManagerList.do" />
-      </action>
-
-      <action
-         path="/timetableManagerList"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-         <forward
-            name="success"
-            path="timetableManagerListTile"
-            redirect="true" />
-         <forward
-            name="fail"
-            path="/error.jsp"
-            redirect="true" />
+            path="/timetableManagerList.action" redirect="true"/>
       </action>
 
     <action

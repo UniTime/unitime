@@ -64,12 +64,6 @@
 		<put name="body" value="/admin/timetableManagerEdit.jsp" />
   	</definition>
 
-	<definition	name="timetableManagerListTile" extends="pageLayoutDef">
-		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
-		<put name="title" type="string" value="Timetable Managers"/>
-		<put name="body" value="/admin/timetableManagerList.jsp" />
-  	</definition>
-
 	<definition	name="subjectListTile" extends="pageLayoutDef">
 		<put name="onLoadFunction" type="string" value="onLoad='jumpToAnchor()'" />
 		<put name="title" type="string" value="Subject Areas"/>

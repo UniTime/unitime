@@ -67,8 +67,8 @@ import org.unitime.timetable.util.LookupTables;
  *
  * XDoclet definition:
  * @struts:action path="/timetableManagerEdit" name="timetableManagerForm" input="/admin/timetableManagerList.jsp" scope="request" validate="true"
- * @struts:action-forward name="success" path="timetableManagerList.do" redirect="true"
- * @struts:action-forward name="fail" path="timetableManagerList.do" redirect="true"
+ * @struts:action-forward name="success" path="timetableManagerList.action" redirect="true"
+ * @struts:action-forward name="fail" path="timetableManagerList.action" redirect="true"
  *
  * @author Tomas Muller, Stephanie Schluttenhofer, Heston Fernandes
  */

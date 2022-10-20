@@ -19,17 +19,14 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.tiles.annotation.TilesDefinition;
+import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -37,67 +34,70 @@ import org.unitime.timetable.webutil.TimetableManagerBuilder;
 
 
 /**
- * MyEclipse Struts
- * Creation date: 04-11-2005
- *
- * XDoclet definition:
- * @struts:action
- * @struts:action-forward name="success" path="schedDeputyListTile" redirect="true"
- * @struts:action-forward name="fail" path="/error.jsp" redirect="true"
- *
  * @author Tomas Muller
  */
-@Service("/timetableManagerList")
-public class TimetableManagerListAction extends Action {
-	
-	@Autowired SessionContext sessionContext;
+@Action(value = "timetableManagerList", results = {
+		@Result(name = "success", type = "tiles", location = "timetableManagerList.tiles"),
+		@Result(name = "add", type = "redirect", location="/timetableManagerEdit.do", params = {
+				"op", "${op}"})
+	})
+@TilesDefinition(name = "timetableManagerList.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Timetable Managers"),
+		@TilesPutAttribute(name = "body", value = "/admin/timetableManagerList.jsp")
+	})
 
-    // --------------------------------------------------------- Instance Variables
+public class TimetableManagerListAction extends UniTimeAction<BlankForm> {
+    private static final long serialVersionUID = -3335607995044212251L;
+    protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+    
+    private Boolean all;
+    
+    public Boolean getAll() { return all; }
+    public void setAll(Boolean all) { this.all = all; }
 
-    // --------------------------------------------------------- Methods
-
-    /**
-     * Reads list of schedule deputies and assistants and displays them in the form of a HTML table
-     * @param mapping
-     * @param form
-     * @param request
-     * @param response
-     * @return ActionForward
-     * @throws Exception
-     */
-    public ActionForward execute(
-        ActionMapping mapping,
-        ActionForm form,
-        HttpServletRequest request,
-        HttpServletResponse response) throws Exception {
-
-        String errM = "";
-        
+	@Override
+    public String execute() throws Exception {
         // Check permissions
         sessionContext.checkPermission(Right.TimetableManagers);
 
 		WebTable.setOrder(sessionContext,"timetableManagerList.ord",request.getParameter("order"),1);
 		
-		boolean showAll = "1".equals(sessionContext.getUser().getProperty("TimetableManagers.showAll", "0"));
-		if (request.getParameter("all") != null) {
-			showAll = ("true".equalsIgnoreCase(request.getParameter("all")));
-			sessionContext.getUser().setProperty("TimetableManagers.showAll", showAll ? "1" : "0");
+		if (all == null) {
+			all = "1".equals(sessionContext.getUser().getProperty("TimetableManagers.showAll", "0"));
+		} else {
+			sessionContext.getUser().setProperty("TimetableManagers.showAll", all ? "1" : "0");
+		}
+		
+		if (MSG.actionAddTimetableManager().equals(op)) {
+			return "add";
 		}
         
-        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext, true, showAll);
-        int order = WebTable.getOrder(sessionContext,"timetableManagerList.ord");
-        String tblData = table.printTable(order);
-        
-        if ("Export PDF".equals(request.getParameter("op"))) {
+        if (MSG.actionExportPdf().equals(op)) {
         	ExportUtils.exportPDF(
-        			new TimetableManagerBuilder().getManagersTable(sessionContext, false, showAll),
-        			order, response, "managers");
+        			new TimetableManagerBuilder().getManagersTable(sessionContext, "pdf", all),
+        			getOrder(), response, "managers");
+        	return null;
+        }
+        if (MSG.actionExportCsv().equals(op)) {
+        	ExportUtils.exportCSV(
+        			new TimetableManagerBuilder().getManagersTable(sessionContext, "csv", all),
+        			getOrder(), response, "managers");
         	return null;
         }
             
-
-        request.setAttribute("schedDeputyList", errM + tblData);
-        request.setAttribute("showAllManagers", showAll); 
-        return mapping.findForward("success");
+        return "success";
     }
+	
+	public int getOrder() {
+		return WebTable.getOrder(sessionContext,"timetableManagerList.ord");
+	}
+	
+	public String getTable() {
+		PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext, "html", all);
+        return table.printTable(getOrder());
+	}
+	
+	public String getTitle() {
+		return MSG.sectManagerList(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
+	}
 }
