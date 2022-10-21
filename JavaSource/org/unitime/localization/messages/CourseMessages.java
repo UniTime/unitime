@@ -5300,4 +5300,377 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Receive Emails")
 	String columnReceiveEmails();
+	
+	@DefaultMessage("Roll {0} Forward Error: To session {1} already contains {0} data.")
+	String errorRollForwardNoData(String type, String session);
+	
+	@DefaultMessage("Roll {0} Forward Error: Must select a session from which to roll forward.")
+	String errorRollForwardMissingFromSession(String type);
+	
+	@DefaultMessage("Roll {0} Forward Error: From session and to session cannot be the same: {1}.")
+	String errorRollForwardSessionsMustBeDifferent(String type, String session);
+	
+	@DefaultMessage("Roll Forward Error: Must select a session to which to roll forward.")
+	String errorRollForwardMissingToSession();
+	
+	@DefaultMessage("Roll {0} Forward Error: {1}")
+	String errorRollForwardGeneric(String type, String error);
+	
+	@DefaultMessage("Invalid subpart location preference roll forward action: {0}")
+	String errorRollForwardInvalidSubpartLocationAction(String action);
+	
+	@DefaultMessage("Invalid subpart time preference roll forward action: {0}")
+	String errorRollForwardInvalidSubpartTimeAction(String action);
+	
+	@DefaultMessage("Invalid class preference roll forward action: {0}")
+	String errorRollForwardInvalidClassAction(String action);
+	
+	@DefaultMessage("Invalid roll forward distribution preferences action: {0}")
+	String errorRollForwardInvalidDistributionAction(String action);
+	
+	@DefaultMessage("Invalid cancelled class roll forward action: {0}")
+	String errorRollForwardInvalidCancelAction(String action);
+	
+	@DefaultMessage("Invalid last like course demand roll forward action: {0}")
+	String errorRollForwardInvalidCourseDemandAction(String action);
+	
+	@DefaultMessage("Error Rolling {0} Forward From Term {1} To Term {2}: {3}")
+	String errorRollingForward(String type, String fromSession, String toSession, String message);
+	
+	@DefaultMessage("Error Rolling {0} Forward To Term {1}: {2}")
+	String errorRollingForwardTo(String type, String toSession, String message);
+	
+	@DefaultMessage("Failed to roll {0} forward.")
+	String errorRollForwardFailedAll(String type);
+	
+	@DefaultMessage("Learning Management System Info")
+	String rollForwardLMSInfo();
+	
+	@DefaultMessage("LMS")
+	String rollForwardLMS();
+	
+	@DefaultMessage("Date Patterns")
+	String rollForwardDatePatterns();
+	
+	@DefaultMessage("Time Patterns")
+	String rollForwardTimePatterns();
+	
+	@DefaultMessage("Departments")
+	String rollForwardDepartments();
+	
+	@DefaultMessage("Configuration")
+	String rollForwardConfiguration();
+	
+	@DefaultMessage("Session Configuration")
+	String rollForwardSessionConfiguration();
+	
+	@DefaultMessage("Managers")
+	String rollForwardManagers();
+	
+	@DefaultMessage("Timetable Managers")
+	String rollForwardTimetableManagers();
+	
+	@DefaultMessage("Buildings")
+	String rollForwardBuildings();
+	
+	@DefaultMessage("Rooms")
+	String rollForwardRooms();
+	
+	@DefaultMessage("Non University Locations")
+	String rollForwardNonUniversityLocations();
+	
+	@DefaultMessage("Room Features")
+	String rollForwardRoomsFeatures();
+	
+	@DefaultMessage("Room Groups")
+	String rollForwardRoomsGroups();
+	
+	@DefaultMessage("Subject Areas")
+	String rollForwardSubjectAreas();
+	
+	@DefaultMessage("Instructors")
+	String rollForwardInstructors();
+	
+	@DefaultMessage("Course Offerings")
+	String rollForwardCourseOfferings();
+	
+	@DefaultMessage("Class Instructors")
+	String rollForwardClassInstructors();
+	
+	@DefaultMessage("Offering Coordinators")
+	String rollForwardOfferingCoordinators();
+	
+	@DefaultMessage("Exam Configuration")
+	String rollForwardExamConfiguration();
+	
+	@DefaultMessage("Midterm Exams")
+	String rollForwardMidtermExams();
+	
+	@DefaultMessage("Final Exams")
+	String rollForwardFinalExams();
+	
+	@DefaultMessage("Last-like Student Course Requests")
+	String rollForwardLastLikeStudentCourseRequests();
+	
+	@DefaultMessage("Student Class Enrollments")
+	String rollForwardStudentClassEnrollments();
+	
+	@DefaultMessage("Course Requests")
+	String rollForwardCourseRequests();
+	
+	@DefaultMessage("Point In Time Data Student Class Enrollments")
+	String rollForwardPITStudentClassEnrollments();
+	
+	@DefaultMessage("Curricula")
+	String rollForwardCurricula();
+	
+	@DefaultMessage("Scheduled Tasks")
+	String rollForwardScheduledTasks();
+	
+	@DefaultMessage("Teaching Requests")
+	String rollForwardTeachingRequests();
+	
+	@DefaultMessage("New Courses")
+	String rollForwardNewCourses();
+	
+	@DefaultMessage("Students")
+	String rollForwardStudents();
+	
+	@DefaultMessage("Reservations")
+	String rollForwardReservations();
+	
+	@DefaultMessage("Roll Forward")
+	String actionRollForward();
+	
+	@DefaultMessage("R")
+	String accessRollForward();
+	
+	@DefaultMessage("Roll Forward (Alt + {0})")
+	String titleRollForward(String access);
+	
+	@DefaultMessage("Roll Forward(s) In Progress")
+	String sectRollForwardsInProgress();
+	
+	@DefaultMessage("Log of {0}")
+	String sectionRollForwardLog(String name);
+	
+	@DefaultMessage("Roll Forward Actions")
+	String sectRollForwardActions();
+	
+	@DefaultMessage("All done.")
+	String logAllDone();
+	
+	@DefaultMessage("Session To Roll Forward To:")
+	String propSessionToRollForwardTo();
+	
+	@DefaultMessage("Roll Departments Forward From Session:")
+	String propRollDepartmentsForwardFromSession();
+	
+	@DefaultMessage("Roll Session Configuration Forward From Session:")
+	String propRollSessionConfigFromSession();
+	
+	@DefaultMessage("Session configuration contains application configuration, standard notes, event room notes, and break times that are applied directly to the session and/or its department(s).\n"
+			+ "Individual room notes and break times are rolled forward with the rooms.")
+	String infoRollSessionConfigFromSession();
+	
+	@DefaultMessage("Roll Manager Data Forward From Session:")
+	String propRollManagersFromSession();
+	
+	@DefaultMessage("Roll Building and Room Data Forward From Session:")
+	String propRollRoomsFromSession();
+	
+	@DefaultMessage("Roll Date Pattern Data Forward From Session:")
+	String propRollDatePatternsFromSession();
+	
+	@DefaultMessage("Roll Time Pattern Data Forward From Session:")
+	String propRollTimePatternsFromSession();
+	
+	@DefaultMessage("Roll Learning Management System Data Forward From Session:")
+	String propRollLMSFromSession();
+	
+	@DefaultMessage("Roll Subject Areas Forward From Session:")
+	String propRollSubjectsFromSession();
+	
+	@DefaultMessage("Roll Instructor Data Forward From Session:")
+	String propRollInstructorsFromSession();
+	
+	@DefaultMessage("Roll Course Offerings Forward From Session:")
+	String propRollCoursesFormSession();
+	
+	@DefaultMessage("For Departments:")
+	String propForDepartments();
+	
+	@DefaultMessage("For Subject Areas:")
+	String propForSubjectAreas();
+	
+	@DefaultMessage("Include Wait-Listing and Prohibited Overrides")
+	String checkIncludeWaitListAndOverrides();
+	
+	@DefaultMessage("Scheduling Subpart Level Time Preference Options:")
+	String propSubpartLevelTimePrefs();
+	
+	@DefaultMessage("Roll forward scheduling subpart time preferences")
+	String optRollSubpartTimePrefs();
+	
+	@DefaultMessage("Do not roll forward scheduling subpart time preferences")
+	String optNotRollSubpartTimePrefs();
+	
+	@DefaultMessage("Scheduling Subpart Level Location Preference Options:")
+	String propSubpartLevelRoomPrefs();
+	
+	@DefaultMessage("Roll forward scheduling subpart location preferences")
+	String optRollSubpartRoomPrefs();
+	
+	@DefaultMessage("Do not roll forward scheduling subpart location preferences")
+	String optNotRollSubpartRoomPrefs();
+	
+	@DefaultMessage("Class Level Preference Options:")
+	String propClassLevelPrefs();
+	
+	@DefaultMessage("Ignore all class level preferences")
+	String optNoRollClassPrefs();
+	
+	@DefaultMessage("Promote appropriate class level preferences to subparts")
+	String optPushClassPrefsUp();
+	
+	@DefaultMessage("Roll forward class level preferences")
+	String optRollClassPrefs();
+	
+	@DefaultMessage("Distribution Preferences:")
+	String propDistributionPrefs();
+	
+	@DefaultMessage("Roll forward all distribution preferences")
+	String optRollDistPrefsAll();
+	
+	@DefaultMessage("Roll forward all distribution preferences, except those that are put solely on classes")
+	String optRollDistPrefsMixed();
+	
+	@DefaultMessage("Roll forward only distribution preferences that are put solely on subparts")
+	String optRollDistPrefsSubparts();
+	
+	@DefaultMessage("Do not roll forward distribution preferences")
+	String optRollDistPrefsNone();
+	
+	@DefaultMessage("Cancelled Classes:")
+	String propCancelledClasses();
+	
+	@DefaultMessage("Roll forward cancelled classes as they are (keep)")
+	String optCancelledClassesKeep();
+	
+	@DefaultMessage("Roll forward cancelled classes as offered (reopen)")
+	String optCancelledClassesReopen();
+	
+	@DefaultMessage("Do not roll forward cancelled classes (skip)")
+	String optCancelledClassesSkip();
+	
+	@DefaultMessage("Roll Forward Class Instructors For Subject Areas:")
+	String propRollClassInstructorsForSubjects();
+	
+	@DefaultMessage("Roll Forward Offering Coordinators For Subject Areas:")
+	String propRollOfferingCoordinatorsForSubjects();
+	
+	@DefaultMessage("Roll Forward Teaching Request For Subject Areas:")
+	String propRollTeachingRequestsForSubjects();
+	
+	@DefaultMessage("Add New Course Offerings For Subject Areas:")
+	String propAddNewCoursesForSubjects();
+	
+	@DefaultMessage("Note: Only use this after all existing course\nofferings have been rolled forward to avoid\nerrors with cross lists.")
+	String infoAddNewCoursesForSubjects();
+	
+	@DefaultMessage("Roll Exam Configuration Data Forward From Session:")
+	String propRollExamConfigFromSession();
+	
+	@DefaultMessage("Roll Midterm Exams Forward")
+	String propRollMidtermExams();
+	
+	@DefaultMessage("Roll Final Exams Forward")
+	String propRollFinalExams();
+	
+	@DefaultMessage("Preferences:")
+	String propPreferences();
+	
+	@DefaultMessage("Roll forward all midterm examination preferences")
+	String prefMidtermExamsAll();
+	
+	@DefaultMessage("Roll forward building, room feature and room group preferences (exclude period and individual room preferences)")
+	String prefMidtermExamsRoom();
+	
+	@DefaultMessage("Do not roll forward any midterm examination preferences")
+	String prefMidtermExamsNone();
+	
+	@DefaultMessage("Roll forward all final examination preferences")
+	String prefFinalExamsAll();
+	
+	@DefaultMessage("Roll forward building, room feature and room group preferences (exclude period and individual room preferences)")
+	String prefFinalExamsRoom();
+	
+	@DefaultMessage("Do not roll forward any final examination preferences")
+	String prefFinalExamsNone();
+	
+	@DefaultMessage("Import Last-Like Course Demands")
+	String propImportLastLikes();
+	
+	@DefaultMessage("Copy Last-like Course Demands From Previous Session")
+	String optLastLikeCopy();
+	
+	@DefaultMessage("Import Last-like Course Demands From Student Class Enrollments Of Previous Session")
+	String optLastLikeEnrls();
+	
+	@DefaultMessage("Import Last-like Course Demands From Course Requests Of Previous Session")
+	String optLastLikeCourseReqs();
+	
+	@DefaultMessage("Import Last-like Course Demands From a Point In Time Snapshot of Student Class Enrollments Of Previous Session")
+	String optLastLikePIT();
+	
+	@DefaultMessage("Point In Time Data Snapshot To Use:")
+	String propPointInTimeSnapshot();
+	
+	@DefaultMessage("Roll Curricula Forward From Session:")
+	String propRollCurriculaFromSession();
+	
+	@DefaultMessage("This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).")
+	String infoRollCurriculaFromSession();
+	
+	@DefaultMessage("Roll Reservations Forward From Session:")
+	String propRollReservationsFromSession();
+	
+	@DefaultMessage("Include Course Reservations")
+	String optIncludeCourseReservations();
+	
+	@DefaultMessage("Include Curriculum Reservations")
+	String optIncludeCurriculumReservations();
+	
+	@DefaultMessage("Include Student Group Reservations")
+	String optIncludeStudentGroupReservations();
+	
+	@DefaultMessage("New Start Date:")
+	String propNewStartDate();
+	
+	@DefaultMessage("New Expiration Date:")
+	String propNewExpirationDate();
+	
+	@DefaultMessage("Applies to course reservations with a start date filled in.")
+	String infoNewStartDateCourse();
+	
+	@DefaultMessage("Applies to course reservations with an expiration date filled in.")
+	String infoNewExpirationDateCourse();
+	
+	@DefaultMessage("Applies to curriculum reservations with a start date filled in.")
+	String infoNewStartDateCurriculum();
+	
+	@DefaultMessage("Applies to curriculum reservations with an expiration date filled in.")
+	String infoNewExpirationDateCurriculum();
+	
+	@DefaultMessage("Applies to student group reservations with a start date filled in.")
+	String infoNewStartDateGroup();
+	
+	@DefaultMessage("Applies to student group reservations with an expiration date filled in.")
+	String infoNewExpirationDateGroup();
+	
+	@DefaultMessage("Create student groups that do not exist (with no students). Ignore group reservations that do not match otherwise.")
+	String optCreateStudentGroupsForReservations();
+	
+	@DefaultMessage("Roll Scheduled Tasks Forward From Session:")
+	String propRollScheduledTasksFromSession();
 }

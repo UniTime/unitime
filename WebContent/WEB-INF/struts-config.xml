@@ -25,30 +25,13 @@
    <description>University Timetabling Application</description>
    
    <form-beans >
-      <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
    </form-beans>
 
    <global-exceptions>
    		<exception key="errors.exception" type="Exception" path="/error.jsp" />
    </global-exceptions>
+
    <action-mappings>
-
-    <action
-      attribute="rollForwardSessionForm"
-      input="rollForwardSessionTile"
-      name="rollForwardSessionForm"
-      path="/rollForwardSession"
-      scope="request"
-      validate="false"
-      type="org.springframework.web.struts.DelegatingActionProxy" >
-       <forward 
-       		name="displayRollForwardSessionForm" 
-       		path="rollForwardSessionTile" />
-       <forward 
-       		name="submit" 
-       		path="/rollForwardSession.do" />
-      </action>
-
     </action-mappings>
 
 	<!-- Tiles Request Processor -->	

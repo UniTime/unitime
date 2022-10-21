@@ -102,7 +102,7 @@
 		<TR>
 			<TD colspan="2" valign="middle">
 				<DIV class="WelcomeRowHead">
-					<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
+					<A  title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}"
 						accesskey="I"
 						class="l8"
 						href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"
@@ -221,7 +221,7 @@
 						</TD>
 						<TD align="center" nowrap class="${style}">
 							<s:if test="(form.readOnlyCrsOfferingId == null || form.readOnlyCrsOfferingId != #co) && form.canDelete[#ctr]">
-								<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
+								<IMG border="0" src="images/action_delete.png" title="${MSG.titleRemoveCourseFromCrossList()}"
 									onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 									onClick="document.getElementById('hdnOp').value='delete';document.getElementById('deletedCourseOfferingId').value='${co}';document.forms[0].submit();">
 							</s:if>

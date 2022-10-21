@@ -495,6 +495,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().setStartTime(System.currentTimeMillis());
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
+				if (r.isRescheduling())
+					r.getAction().addOptionBuilder().setKey("Issue").setValue(r.getReschedulingReason().name());
 				XEnrollment dropEnrollment = r.getDropEnrollment();
 				XEnrollment e = r.resection(server, w, sq);
 				

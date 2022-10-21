@@ -45,4 +45,8 @@ public class SpringApplicationContextHolder implements ApplicationContextAware {
 	public static boolean isInitialized() {
 		return sApplicationContext != null;
 	}
+	
+	public static ApplicationContext getContext() {
+		return sApplicationContext;
+	}
 }

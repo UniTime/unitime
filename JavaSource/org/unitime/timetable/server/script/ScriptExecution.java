@@ -169,7 +169,7 @@ public class ScriptExecution extends QueueItem {
 		
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			setStatus(MSG.scriptStatusStartingUp(), 3);
+			setStatus(GWT_MSG.scriptStatusStartingUp(), 3);
 
 			Script script = ScriptDAO.getInstance().get(iRequest.getScriptId(), hibSession);
 			
@@ -309,24 +309,24 @@ public class ScriptExecution extends QueueItem {
 			incProgress();
 			
 			if (engine instanceof Compilable) {
-				setStatus(MSG.scriptStatusCompiling(), 1);
+				setStatus(GWT_MSG.scriptStatusCompiling(), 1);
 				CompiledScript compiled = ((Compilable)engine).compile(script.getScript());
 				incProgress();
-				setStatus(MSG.scriptStatusRunning(), 100);
+				setStatus(GWT_MSG.scriptStatusRunning(), 100);
 				compiled.eval();
 			} else {
-				setStatus(MSG.scriptStatusRunning(), 100);
+				setStatus(GWT_MSG.scriptStatusRunning(), 100);
 				engine.eval(script.getScript());
 			}
 			
 			hibSession.flush();
 			tx.commit();
 			
-			setStatus(MSG.scriptStatusAllDone(), 1);
+			setStatus(GWT_MSG.scriptStatusAllDone(), 1);
 			incProgress();
 		} catch (Exception e) {
 			tx.rollback();
-			error(MSG.failedExecution(e.getMessage()), e);
+			error(GWT_MSG.failedExecution(e.getMessage()), e);
 		} finally {
 			hibSession.close();
 		}
@@ -360,7 +360,7 @@ public class ScriptExecution extends QueueItem {
 			email.send();
 		} catch (Exception e) {
 			Throwable t = error();
-			error(MSG.failedEmail(e.getMessage()), e);
+			error(GWT_MSG.failedEmail(e.getMessage()), e);
 			if (t != null) setError(t);
 		}
 		return true;

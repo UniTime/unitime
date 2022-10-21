@@ -298,6 +298,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				r.getAction().setStartTime(System.currentTimeMillis());
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				r.getAction().addOptionBuilder().setKey("Index").setValue(index + " of " + queue.size()); index++;
+				if (r.isRescheduling())
+					r.getAction().addOptionBuilder().setKey("Issue").setValue(r.getReschedulingReason().name());
 				XEnrollment dropEnrollment = r.getDropEnrollment();
 				XEnrollment enrollment = r.resection(server, w, sq);
 				

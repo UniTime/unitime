@@ -165,7 +165,7 @@ function doAddInstructor(idx) {
 							</TD>
 							<TD align="center" valign="top" nowrap> &nbsp;
 								<s:if test="form.readOnlyClasses[#ctr] == 'false'">
-									<IMG border="0" src="images/action_add.png" title="<%=MSG.titleAddInstructorToClass() %>"
+									<IMG border="0" src="images/action_add.png" title="${MSG.titleAddInstructorToClass()}"
 										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 										onclick="doAddInstructor('${ctr}');">
 								</s:if>

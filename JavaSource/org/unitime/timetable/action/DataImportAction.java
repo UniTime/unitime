@@ -216,7 +216,7 @@ public class DataImportAction extends UniTimeAction<DataImportForm> {
 		
 		@Override
 		public String name() {
-			return (iImport ? MSG.itemImportActionName(iFileName) : MSG.itemExportActionName(iForm.getExportType().getLabel()));
+			return (iImport ? GWT_MSG.itemImportActionName(iFileName) : GWT_MSG.itemExportActionName(iForm.getExportType().getLabel()));
 		}
 		
 		public void println(String message) {

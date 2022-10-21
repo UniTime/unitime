@@ -17,234 +17,214 @@
  * limitations under the License.
  * 
  --%>
-<%@ page language="java" pageEncoding="ISO-8859-1"%>
-<%@ page import="org.unitime.timetable.form.RollForwardSessionForm"%>
-<%@ page import="org.unitime.timetable.util.SessionRollForward"%>
-<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
-<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
-<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
-<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
- 
-<html> 
-	<head>
-		<title>Roll Forward Session</title>
-	</head>
-	<body>
-<script language="javascript">displayLoading();</script>
-	<%// Get Form 
-			String frmName = "rollForwardSessionForm";
-			RollForwardSessionForm frm = (RollForwardSessionForm) request.getAttribute(frmName);
-	%>
-		<html:form action="/rollForwardSession">
-		<table width="100%" cellspacing="0" cellpadding="3">
-		<logic:messagesPresent>
-		<TR>
-			<TD align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
-				<BLOCKQUOTE>
-				<UL>
-				    <html:messages id="error">
-				      <LI>
-						${error}
-				      </LI>
-				    </html:messages>
-			    </UL>
-			    </BLOCKQUOTE>
-			</TD>
-		</TR>
-		</logic:messagesPresent>
-	<logic:notEmpty name="table" scope="request">
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:form action="rollForwardSession">
+<table class="unitime-MainTable">
+	<s:if test="!fieldErrors.isEmpty()">
+		<TR><TD align="left" class="errorTable">
+			<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror escape="false"/>
+		</TD></TR>
+	</s:if>
+		
+		
+	<s:if test="#request.table != null">
 		<TR><TD>
 			<tt:section-header>
-				<tt:section-title>Roll Forward(s) In Progress</tt:section-title>
-				<%--
-				<html:submit property="op" accesskey="R" styleClass="btn" onclick="displayLoading();">Refresh</html:submit>
-				--%>
+				<tt:section-title><loc:message name="sectRollForwardsInProgress"/></tt:section-title>
 			</tt:section-header>
 		</TD></TR>
 		<TR><TD>
-			<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-				<bean:write name="table" scope="request" filter="false"/>
-			</TABLE>
+			<table class='unitime-Table' style="width:100%;">
+				<s:property value="#request.table" escapeHtml="false"/>
+			</table>
 		</TD></TR>
 		<TR><TD>&nbsp;</TD></TR>
-	</logic:notEmpty>
-	<logic:notEmpty name="log" scope="request">
+	</s:if>
+	
+	<s:hidden name="log" value="%{#request.logid}" id="log"/>
+	<s:if test="#request.log != null">
 		<TR>
-			<TD colspan='2'>
+			<TD>
 				<tt:section-header>
 					<tt:section-title>
-						Log of <bean:write name="logname" scope="request" filter="false"/>
+						<loc:message name="sectionRollForwardLog"><s:property value="#request.logname"/></loc:message>
 					</tt:section-title>
-					<bean:define id="logid" name="logid" scope="request"/>
-					<input type="hidden" name="log" value="<%=logid%>">
-					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" title="Refresh Log (Alt+R)"/>
+					<s:submit name="op" value="%{#msg.actionRefreshLog()}"
+						accesskey="%{#msg.accessRefreshLog()}" title="%{#msg.titleRefreshLog(#msg.accessRefreshLog())}"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
-  			<TD colspan='2'>
+  			<TD>
   				<blockquote>
-	  				<bean:write name="log" scope="request" filter="false"/>
+  					<s:property value="#request.log" escapeHtml="false"/>
   				</blockquote>
   			</TD>
 		</TR>
-	</logic:notEmpty>			
+	</s:if>
+	
 	<TR><TD>
 		<tt:section-header>
-			<tt:section-title>Roll Forward Actions</tt:section-title>
-					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayLoading();">
-					<bean:message key="button.rollForward" />
-				</html:submit>
+			<tt:section-title><loc:message name="sectRollForwardActions"/></tt:section-title>
+				<s:submit name="op" value="%{#msg.actionRollForward()}"
+						accesskey="%{#msg.accessRollForward()}" title="%{#msg.titleRollForward(#msg.accessRollForward())}"/>
 		</tt:section-header>
 	</TD></TR>
 		<tr>
-			<td valign="middle" nowrap ><b>Session To Roll Forward To: </b>
-			<html:select style="width:200px;" property="sessionToRollForwardTo" onchange="displayLoading();submit();">
-			<html:optionsCollection property="toSessions" value="uniqueId" label="label"  /></html:select>
+			<td valign="middle" nowrap ><b><loc:message name="propSessionToRollForwardTo"/></b>
+			<s:select name="form.sessionToRollForwardTo" style="min-width:200px;" onchange="document.getElementById('log').value = '';submit();"
+				list="form.toSessions" listKey="uniqueId" listValue="label"/>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardDepartments"/>
+			<loc:message name="propRollDepartmentsForwardFromSession"/>
+			<s:select name="form.sessionToRollDeptsFowardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-		<td>&nbsp;
-		</td>
-		</tr>
-		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollDeptsFowardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
-			</td>			
-		</tr>
-		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSessionConfig" onclick="document.getElementById('configNote').style.display = (this.checked ? 'table-row' : 'none');"/> Roll Session Configuration Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollSessionConfigForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardSessionConfig" onclick="document.getElementById('configNote').style.display = (this.checked ? 'table-row' : 'none');"/>
+			<loc:message name="propRollSessionConfigFromSession"/>
+			<s:select name="form.sessionToRollSessionConfigForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 		</tr>
 		<tr style="display:none;" id="configNote">
 			<td valign="middle" style="white-space: wrap; max-width: 600px; padding-left: 20px;">
-				<i>Session configuration contains application configuration, standard notes, event room notes, and break times that are applied directly to the session and/or its department(s).
-				Individual room notes and break times are rolled forward with the rooms.</i>
+				<i><loc:message name="infoRollSessionConfigFromSession"/></i>
 			</td>
 		</tr>
-		<logic:equal name="<%=frmName%>" property="rollForwardSessionConfig" value="true">
+		<s:if test="form.rollForwardSessionConfig == true">
 			<script>document.getElementById('configNote').style.display = 'table-row';</script>
-		</logic:equal>
+		</s:if>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollManagersForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardManagers"/>
+			<loc:message name="propRollManagersFromSession"/>
+			<s:select name="form.sessionToRollManagersForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollRoomDataForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardRoomData"/>
+			<loc:message name="propRollRoomsFromSession"/>
+			<s:select name="form.sessionToRollRoomDataForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollDatePatternsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardDatePatterns"/>
+			<loc:message name="propRollDatePatternsFromSession"/>
+			<s:select name="form.sessionToRollDatePatternsForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollTimePatternsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardTimePatterns"/>
+			<loc:message name="propRollTimePatternsFromSession"/>
+			<s:select name="form.sessionToRollTimePatternsForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardLearningManagementSystems"/> Roll Learning Management System Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollLearningManagementSystemsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardLearningManagementSystems"/>
+			<loc:message name="propRollLMSFromSession"/>
+			<s:select name="form.sessionToRollLearningManagementSystemsForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollSubjectAreasForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardSubjectAreas"/>
+			<loc:message name="propRollSubjectsFromSession"/>
+			<s:select name="form.sessionToRollSubjectAreasForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardInstructorData"/> Roll Instructor Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollInstructorDataForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
-			</td>			
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardInstructorData"/>
+			<loc:message name="propRollInstructorsFromSession"/>
+			<s:select name="form.sessionToRollInstructorDataForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
+			</td>
 		</tr>
 		<tr>
 			<td valign="middle">
 			<table style="margin-left: 50px;"><tr>
-			    <td valign="top">For Departments:</td>
-			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getDepartments().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardDepartmentIds" multiple="true">
-					<html:optionsCollection property="departments" label="label" value="uniqueId" />
-				</html:select>
-			    </td></tr>
+			    <td valign="top"><loc:message name="propForDepartments"/></td>
+			    <td>
+				<s:select name="form.rollForwardDepartmentIds" style="min-width:200px;" multiple="true" size="%{form.departmentsListSize}"
+					list="form.departments" listKey="uniqueId" listValue="label"/>
 			</table></td>
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollCourseOfferingsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardCourseOfferings"/>
+			<loc:message name="propRollCoursesFormSession"/> 
+			<s:select name="form.sessionToRollCourseOfferingsForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle">
 			<table style="margin-left: 50px;"><tr>
-			    <td valign="top">For Subject Areas:</td>
-			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+			    <td valign="top"><loc:message name="propForSubjectAreas"/></td>
+			    <td>
+			    <s:select name="form.rollForwardSubjectAreaIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			    </td></tr>
 			<tr><td valign="top" colspan="2">
-				<html:checkbox name="<%=frmName%>" property="rollForwardWaitListsProhibitedOverrides"/> Include Wait-Listing and Prohibited Overrides
+				<s:checkbox name="form.rollForwardWaitListsProhibitedOverrides"/>
+				<loc:message name="checkIncludeWaitListAndOverrides"/>
 			</td></tr>
-			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Time Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart time preferences</html:radio></td></tr>
-			<tr><td><html:radio property="subpartTimePrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart time preferences</html:radio></td></tr>
-			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Scheduling Subpart Level Location Preference Options:</td><td style="padding-top: 20px;"><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward scheduling subpart location preferences</html:radio></td></tr>
-			<tr><td><html:radio property="subpartLocationPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Do not roll forward scheduling subpart location preferences</html:radio></td></tr>
-			<tr><td style="padding-top: 20px;" rowspan="2" valign="top">Class Level Preference Options:</td><td style="padding-top: 20px;"><html:radio property="classPrefsAction" value="<%= SessionRollForward.DO_NOT_ROLL_ACTION %>"> Ignore all class level preferences</html:radio></td></tr>
-			<tr><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.PUSH_UP_ACTION %>"> Promote appropriate class level preferences to subparts</html:radio></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top"><loc:message name="propSubpartLevelTimePrefs"/></td><td style="padding-top: 20px;">
+				<s:radio name="form.subpartTimePrefsAction" list="#{'rollUnchanged':''}"/> <loc:message name="optRollSubpartTimePrefs"/></td></tr>
+			<tr><td>
+			<s:radio name="form.subpartTimePrefsAction" list="#{'doNotRoll':''}"/> <loc:message name="optNotRollSubpartTimePrefs"/></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top"><loc:message name="propSubpartLevelRoomPrefs"/></td>
+				<td style="padding-top: 20px;"><s:radio name="form.subpartLocationPrefsAction" list="#{'rollUnchanged':''}"/> <loc:message name="optRollSubpartRoomPrefs"/></td></tr>
+			<tr><td><s:radio name="form.subpartLocationPrefsAction" list="#{'doNotRoll':''}"/> <loc:message name="optNotRollSubpartRoomPrefs"/></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="2" valign="top"><loc:message name="propClassLevelPrefs"/></td><td style="padding-top: 20px;"><s:radio name="form.classPrefsAction" list="#{'doNotRoll':''}"/> <loc:message name="optNoRollClassPrefs"/></td></tr>
+			<tr><td><s:radio name="form.classPrefsAction" list="#{'pushUp':''}"/> <loc:message name="optPushClassPrefsUp"/></td></tr>
 			<tt:propertyEquals name="unitime.rollforward.allowClassPrefs" value="true">
-				<tr><td></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward class level preferences</html:radio></td></tr>
+				<tr><td></td><td><s:radio name="form.classPrefsAction" list="#{'rollUnchanged':''}"/> <loc:message name="optRollClassPrefs"/></td></tr>
 			</tt:propertyEquals>
-			<tr><td style="padding-top: 20px;" rowspan="4" valign="top">Distribution Preferences:</td>
-				<td style="padding-top: 20px;"><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.ALL.name() %>"> Roll forward all distribution preferences</html:radio></td></tr>
-			</td></tr>
-			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.MIXED.name() %>"> Roll forward all distribution preferences, except those that are put solely on classes</html:radio></td></tr>
-			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.SUBPART.name() %>"> Roll forward only distribution preferences that are put solely on subparts</html:radio></td></tr>
-			<tr><td><html:radio property="rollForwardDistributions" value="<%= SessionRollForward.DistributionMode.NONE.name() %>"> Do not roll forward distribution preferences</html:radio></td></tr>
-			<tr><td style="padding-top: 20px;" rowspan="3" valign="top">Cancelled Classes:</td>
-				<td style="padding-top: 20px;"><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.KEEP.name() %>"> Roll forward cancelled classes as they are (keep)</html:radio></td></tr>
-			<tr><td><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.REOPEN.name() %>"> Roll forward cancelled classes as offered (reopen)</html:radio></td></tr>
-			<tr><td><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.SKIP.name() %>"> Do not roll forward cancelled classes (skip)</html:radio></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="4" valign="top"><loc:message name="propDistributionPrefs"/></td>
+				<td style="padding-top: 20px;"><s:radio name="form.rollForwardDistributions" list="#{'ALL':''}"/> <loc:message name="optRollDistPrefsAll"/></td></tr>
+			<tr><td><s:radio name="form.rollForwardDistributions" list="#{'MIXED':''}"/> <loc:message name="optRollDistPrefsMixed"/></td></tr>
+			<tr><td><s:radio name="form.rollForwardDistributions" list="#{'SUBPART':''}"/> <loc:message name="optRollDistPrefsSubparts"/></td></tr>
+			<tr><td><s:radio name="form.rollForwardDistributions" list="#{'NONE':''}"/> <loc:message name="optRollDistPrefsNone"/></td></tr>
+			<tr><td style="padding-top: 20px;" rowspan="3" valign="top"><loc:message name="propCancelledClasses"/></td>
+				<td style="padding-top: 20px;"><s:radio name="form.cancelledClassAction" list="#{'KEEP':''}"/> <loc:message name="optCancelledClassesKeep"/></td></tr>
+			<tr><td><s:radio name="form.cancelledClassAction" list="#{'REOPEN':''}"/> <loc:message name="optCancelledClassesReopen"/></td></tr>
+			<tr><td><s:radio name="form.cancelledClassAction" list="#{'SKIP':''}"/> <loc:message name="optCancelledClassesSkip"/></td></tr>
 			</table></td>
 		</tr>
 		<tr>
 			<td valign="middle">
-			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassInstructors"/> Roll Forward Class Instructors For Subject Areas: 
+			<table><tr>	<td valign="middle" nowrap><s:checkbox name="form.rollForwardClassInstructors"/> <loc:message name="propRollClassInstructorsForSubjects"/> 
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassInstrSubjectIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+				<s:select name="form.rollForwardClassInstrSubjectIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			</td></tr></table>
 			</td>
 		</tr>
 		<tr>
 			<td valign="middle">
-			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardOfferingCoordinators"/> Roll Forward Offering Coordinators For Subject Areas: 
+			<table><tr>	<td valign="middle" nowrap><s:checkbox name="form.rollForwardOfferingCoordinators"/> <loc:message name="propRollOfferingCoordinatorsForSubjects"/> 
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardOfferingCoordinatorsSubjectIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+				<s:select name="form.rollForwardOfferingCoordinatorsSubjectIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			</td></tr></table>
 			</td>
 		</tr>
 		<tr>
 			<td valign="middle">
-			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardTeachingRequests"/> Roll Forward Teaching Request For Subject Areas: 
+			<table><tr>	<td valign="middle" nowrap><s:checkbox name="form.rollForwardTeachingRequests"/> <loc:message name="propRollTeachingRequestsForSubjects"/> 
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardTeachingRequestsSubjectIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+				<s:select name="form.rollForwardTeachingRequestsSubjectIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			</td></tr></table>
 			</td>
 		</tr>
@@ -253,155 +233,151 @@
 			<td valign="middle">
 			<table>
 				<tr>
-					<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="addNewCourseOfferings"/>Add New Course Offerings For Subject Areas:
-					<div style="margin-left: 20px;"><i>Note: Only use this after all existing course<br> offerings have been rolled forward to avoid<br> errors with cross lists.</i></div>
+					<td valign="middle" nowrap><s:checkbox name="form.addNewCourseOfferings"/> <loc:message name="propAddNewCoursesForSubjects"/>
+					<div style="margin-left: 20px; white-space: pre;"><i><loc:message name="infoAddNewCoursesForSubjects"/></i></div>
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="addNewCourseOfferingsSubjectIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+				<s:select name="form.addNewCourseOfferingsSubjectIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			</td></tr></table>
 			</td>
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardExamConfiguration"/> Roll Exam Configuration Data Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollExamConfigurationForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardExamConfiguration"/> <loc:message name="propRollExamConfigFromSession"/>
+			<s:select name="form.sessionToRollExamConfigurationForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>			
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardMidtermExams"/> Roll Midterm Exams Forward
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardMidtermExams"/> <loc:message name="propRollMidtermExams"/>
 			<table style="margin-left: 50px;"><tr>
-			    <tr><td rowspan="3" valign="top">Preferences:</td>
-			    <td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ALL_PREF %>">Roll forward all midterm examination preferences</html:radio></td></tr>
-			    <tr><td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual room preferences)</html:radio></td></tr>
-			    <tr><td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_NO_PREF %>">Do not roll forward any midterm examination preferences</html:radio></td></tr>
+			    <tr><td rowspan="3" valign="top"><loc:message name="propPreferences"/></td>
+			    <td><s:radio name="form.midtermExamsPrefsAction" list="#{'rollAllPrefs':''}"/><loc:message name="prefMidtermExamsAll"/></td></tr>
+			    <tr><td><s:radio name="form.midtermExamsPrefsAction" list="#{'rollRoomPrefs':''}"/><loc:message name="prefMidtermExamsRoom"/></td></tr>
+			    <tr><td><s:radio name="form.midtermExamsPrefsAction" list="#{'doNotRoll':''}"/><loc:message name="prefMidtermExamsNone"/></td></tr>
 			</table>
 			</td>	
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardFinalExams"/> Roll Final Exams Forward
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardFinalExams"/> <loc:message name="propRollFinalExams"/>
 			<table style="margin-left: 50px;"><tr>
-			    <tr><td rowspan="3" valign="top">Preferences:</td>
-			    <td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ALL_PREF %>">Roll forward all final examination preferences</html:radio></td></tr>
-			    <tr><td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual room preferences)</html:radio></td></tr>
-			    <tr><td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_NO_PREF %>">Do not roll forward any final examination preferences</html:radio></td></tr>
+			    <tr><td rowspan="3" valign="top"><loc:message name="propPreferences"/></td>
+			    <td><s:radio name="form.finalExamsPrefsAction" list="#{'rollAllPrefs':''}"/><loc:message name="prefFinalExamsAll"/></td></tr>
+			    <tr><td><s:radio name="form.finalExamsPrefsAction" list="#{'rollRoomPrefs':''}"/><loc:message name="prefFinalExamsRoom"/></td></tr>
+			    <tr><td><s:radio name="form.finalExamsPrefsAction" list="#{'doNotRoll':''}"/><loc:message name="prefFinalExamsNone"/></td></tr>
 			</table>
 			</td>		
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardStudents"/> Import Last-Like Course Demands
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardStudents"/> <loc:message name="propImportLastLikes"/>
 			<table style="margin-left: 50px;">
-				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.LAST_LIKE.name() %>"> Copy Last-like Course Demands From Previous Session</html:radio></td></tr>
-				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.STUDENT_CLASS_ENROLLMENTS.name() %>"> Import Last-like Course Demands From Student Class Enrollments Of Previous Session</html:radio></td></tr>
-				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.STUDENT_COURSE_REQUESTS.name() %>"> Import Last-like Course Demands From Course Requests Of Previous Session</html:radio></td></tr>
-				<tr><td><html:radio property="rollForwardStudentsMode" value="<%= SessionRollForward.StudentEnrollmentMode.POINT_IN_TIME_CLASS_ENROLLMENTS.name() %>"> Import Last-like Course Demands From a Point In Time Snapshot of Student Class Enrollments Of Previous Session</html:radio>
+				<tr><td><s:radio name="form.rollForwardStudentsMode" list="#{'LAST_LIKE':''}"/> <loc:message name="optLastLikeCopy"/></td></tr>
+				<tr><td><s:radio name="form.rollForwardStudentsMode" list="#{'STUDENT_CLASS_ENROLLMENTS':''}"/> <loc:message name="optLastLikeEnrls"/></td></tr>
+				<tr><td><s:radio name="form.rollForwardStudentsMode" list="#{'STUDENT_COURSE_REQUESTS':''}"/> <loc:message name="optLastLikeCourseReqs"/></td></tr>
+				<tr><td><s:radio name="form.rollForwardStudentsMode" list="#{'POINT_IN_TIME_CLASS_ENROLLMENTS':''}"/> <loc:message name="optLastLikePIT"/>
 				<table style="margin-left: 50px;"><tr>
 				    <tr>
-				    	<td valign="top">Point In Time Data Snapshot To Use:
-							<html:select property="pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom">
-								<html:optionsCollection property="fromPointInTimeDataSnapshots" value="uniqueId" label="name" />
-							</html:select>
+				    	<td valign="top"><loc:message name="propPointInTimeSnapshot"/>
+							<s:select name="form.pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom" style="min-width:200px;"
+								list="form.fromPointInTimeDataSnapshots" listKey="uniqueId" listValue="name"/>
 						</td>
 					</tr>
 				</table>
 				</td></tr>
 			</table>
 			</td>		
-
-			</td>		
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollCurriculaForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
-			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).</i>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardCurricula"/> <loc:message name="propRollCurriculaFromSession"/> 
+			<s:select name="form.sessionToRollCurriculaForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
+			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<loc:message name="infoRollCurriculaFromSession"/></i>
 			</td>
 		</tr>
 		<tr>
-			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardReservations" onclick="document.getElementById('reservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Roll Reservations Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollReservationsForwardFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap><s:checkbox name="form.rollForwardReservations" onclick="document.getElementById('reservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> <loc:message name="propRollReservationsFromSession"/> 
+			<s:select name="form.sessionToRollReservationsForwardFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/>
 			</td>
 		</tr>
 		<tr style="display:none;" id="reservationDetail">
 			<td valign="middle">
 			<table style="margin-left: 50px;"><tr>
-			    <td valign="top" nowrap width="20%">For Subject Areas:</td>
-			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardReservationsSubjectIds" multiple="true">
-					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+			    <td valign="top" nowrap width="20%"><loc:message name="propForSubjectAreas"/></td>
+			    <td>
+				<s:select name="form.rollForwardReservationsSubjectIds" style="min-width:200px;" multiple="true" size="%{form.subjectAreasListSize}"
+			    	list="form.subjectAreas" listKey="uniqueId" listValue="label"/>
 			    </td></tr>
 			<tr><td valign="top" colspan="2">
-				<html:checkbox name="<%=frmName%>" property="rollForwardCourseReservations" onclick="document.getElementById('courseReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Course Reservations
+				<s:checkbox name="form.rollForwardCourseReservations" onclick="document.getElementById('courseReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> <loc:message name="optIncludeCourseReservations"/>
 			</td></tr>
 			<tr style="display:none;" id="courseReservationDetail"><td style="padding-left: 50px; vertical-align: middle;" valign="top" colspan="2">
 				<span style="display: table;">
 					<span style="display: table-row;">
-						<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
-						<tt:calendar property="startDateCourseReservations" outerStyle="display: table-cell;"/>
-						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to course reservations with a start date filled in.</span>
+						<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewStartDate"/> </span>
+						<tt:calendar name="form.startDateCourseReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewStartDateCourse"/></span>
 					</span>
 					<span style="display: table-row;">
-						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-						<tt:calendar property="expirationCourseReservations" outerStyle="display: table-cell;"/>
-						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to course reservations with an expiration date filled in.</span>
+						<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewExpirationDate"/> </span>
+						<tt:calendar name="form.expirationCourseReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewExpirationDateCourse"/></span>
 					</span>
 				</span>
 			</td></tr>
 			<tr><td valign="top" colspan="2">
-				<html:checkbox name="<%=frmName%>" property="rollForwardCurriculumReservations" onclick="document.getElementById('curriculumReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Curriculum Reservations
+				<s:checkbox name="form.rollForwardCurriculumReservations" onclick="document.getElementById('curriculumReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> <loc:message name="optIncludeCurriculumReservations"/>
 			<tr style="display:none;" id="curriculumReservationDetail"><td style="padding-left: 50px;" colspan="2">
 				<span style="display: table;">
 					<span style="display: table-row;">
-						<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
-						<tt:calendar property="startDateCurriculumReservations" outerStyle="display: table-cell;"/>
-						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to curriculum reservations with a start date filled in.</span>
+						<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewStartDate"/> </span>
+						<tt:calendar name="form.startDateCurriculumReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewStartDateCurriculum"/></span>
 					</span>
 					<span style="display: table-row;">
-						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-						<tt:calendar property="expirationCurriculumReservations" outerStyle="display: table-cell;"/>
-						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to curriculum reservations with an expiration date filled in.</span>
+						<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewExpirationDate"/> </span>
+						<tt:calendar name="form.expirationCurriculumReservations" outerStyle="display: table-cell;"/>
+						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewExpirationDateCurriculum"/></span>
 					</span>
 				</span>
 			</td></tr>
 			<tr><td valign="top" colspan="2">
-				<html:checkbox name="<%=frmName%>" property="rollForwardGroupReservations" onclick="document.getElementById('groupReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Student Group Reservations
+				<s:checkbox name="form.rollForwardGroupReservations" onclick="document.getElementById('groupReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> <loc:message name="optIncludeStudentGroupReservations"/>
 			<tr style="display:none;" id="groupReservationDetail"><td style="padding-left: 50px;" colspan="2">
 				<div>
 					<span style="display: table;">
 						<span style="display: table-row;">
-							<span style="display: table-cell; vertical-align: middle;">New Start Date: </span>
-							<tt:calendar property="startDateGroupReservations" outerStyle="display: table-cell;"/>
-							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with a start date filled in.</span>
+							<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewStartDate"/> </span>
+							<tt:calendar name="form.startDateGroupReservations" outerStyle="display: table-cell;"/>
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewStartDateGroup"/></span>
 						</span>
 						<span style="display: table-row;">
-							<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-							<tt:calendar property="expirationGroupReservations" outerStyle="display: table-cell;"/>
-							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with an expiration date filled in.</span>
+							<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewExpirationDate"/> </span>
+							<tt:calendar name="form.expirationGroupReservations" outerStyle="display: table-cell;"/>
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewExpirationDateGroup"/></span>
 						</span>
 					</span>
 				</div>
-				<html:checkbox name="<%=frmName%>" property="createStudentGroupsIfNeeded"/> Create student groups that do not exist (with no students). Ignore group reservations that do not match otherwise.
+				<s:checkbox name="form.createStudentGroupsIfNeeded"/> <loc:message name="optCreateStudentGroupsForReservations"/>
 			</td></tr>
 			</table>
 			</td>
 		</tr>
-		<logic:equal name="<%=frmName%>" property="rollForwardReservations" value="true">
+		<s:if test="form.rollForwardReservations == true">
 			<script>document.getElementById('reservationDetail').style.display = 'table-row';</script>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="rollForwardCourseReservations" value="true">
+		</s:if>
+		<s:if test="form.rollForwardCourseReservations == true">
 			<script>document.getElementById('courseReservationDetail').style.display = 'table-row';</script>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="rollForwardCurriculumReservations" value="true">
+		</s:if>
+		<s:if test="form.rollForwardCurriculumReservations == true">
 			<script>document.getElementById('curriculumReservationDetail').style.display = 'table-row';</script>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="rollForwardGroupReservations" value="true">
+		</s:if>
+		<s:if test="form.rollForwardGroupReservations == true">
 			<script>document.getElementById('groupReservationDetail').style.display = 'table-row';</script>
-		</logic:equal>
+		</s:if>
 		<tr>
-			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardPeriodicTasks"/> Roll Scheduled Tasks Forward From Session: 
-			<html:select style="width:200px;" property="sessionToRollPeriodicTasksFrom">
-			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardPeriodicTasks"/> <loc:message name="propRollScheduledTasksFromSession"/>
+			<s:select name="form.sessionToRollPeriodicTasksFrom" style="min-width:200px;"
+				list="form.fromSessions" listKey="uniqueId" listValue="label"/> 
 			</td>
 		</tr>
 		<tr>
@@ -410,14 +386,11 @@
 			</td>
 		</tr>
 		<tr>
-			<td align="right">
-					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayLoading();">
-						<bean:message key="button.rollForward" />
-					</html:submit>
+			<td align="right" colspan="2">
+				<s:submit name="op" value="%{#msg.actionRollForward()}"
+					accesskey="%{#msg.accessRollForward()}" title="%{#msg.titleRollForward(#msg.accessRollForward())}"/>
 			</TD>
 		</TR>
-		</TABLE>
-		</html:form>
-	<script language="javascript">hideLoading();</script>
-	</body>
-</html>
+	</table>
+</s:form>
+</loc:bundle>

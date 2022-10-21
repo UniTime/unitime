@@ -44,7 +44,7 @@ import org.unitime.timetable.security.UserContext;
  */
 public abstract class QueueItem implements Log, Serializable, Comparable<QueueItem> {
 	private static final long serialVersionUID = 1L;
-	protected static GwtMessages MSG = Localization.create(GwtMessages.class);
+	protected static final GwtMessages GWT_MSG = Localization.create(GwtMessages.class);
 
 	private Long iSessionId;
 	private String iOwnerId;
@@ -71,7 +71,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		iOwnerName = owner.getName();
 		iOwnerEmail = owner.getEmail();
 		iLocale = Localization.getLocale();
-		iStatus = MSG.scriptStatusWaiting();
+		iStatus = GWT_MSG.scriptStatusWaiting();
 	}
 	
 	public QueueItem(Session session, UserContext owner) {
@@ -103,21 +103,21 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		try {
 			execute();
 		} catch (ThreadDeath e) {
-			fatal(MSG.scriptLogExecutionStopped(), e);
+			fatal(GWT_MSG.scriptLogExecutionStopped(), e);
 		} catch (Exception e) {
-			fatal(MSG.scriptLogExecutionFailed(), e);
+			fatal(GWT_MSG.scriptLogExecutionFailed(), e);
 		} finally {
 			ApplicationProperties.setSessionId(null);
 			_RootDAO.closeCurrentThreadSessions();
 			Localization.removeLocale();
 		}
 		iFinished = new Date();
-		iStatus = MSG.scriptStatusAllDone();
+		iStatus = GWT_MSG.scriptStatusAllDone();
 		if (iException != null) {
 			if (iException instanceof ThreadDeath)
-				iStatus = MSG.scriptStatusKilled();
+				iStatus = GWT_MSG.scriptStatusKilled();
 			else
-				iStatus = MSG.scriptStatusFailed(iException.getMessage());
+				iStatus = GWT_MSG.scriptStatusFailed(iException.getMessage());
 		}
 	}
 	
@@ -129,7 +129,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		iOutputLink = (output == null ? null : "qpfile?q=" + QueryEncoderBackend.encode(getId().toString()));
 	}
 	protected File createOutput(String prefix, String ext) {
-		if (iOutput != null) throw new RuntimeException(MSG.scriptErrorOutputAlreadyCreated());
+		if (iOutput != null) throw new RuntimeException(GWT_MSG.scriptErrorOutputAlreadyCreated());
 		iOutput = ApplicationProperties.getTempFile(prefix, ext);
 		iOutputName = prefix + "." + ext;
 		iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());

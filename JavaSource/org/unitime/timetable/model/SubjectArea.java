@@ -141,6 +141,10 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	    return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
 	}
 	
+	public String getLabel() {
+		return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
+	}
+	
 	public Long getSessionId(){
 		if (this.getSession() != null) {
 			return(this.getSession().getUniqueId());

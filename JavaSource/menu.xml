@@ -811,7 +811,7 @@
 					<hasPermission name="DataExchange"/>
 				</condition>
 			</item>
-			<item name="Roll Forward Session" page="rollForwardSession.do">
+			<item name="Roll Forward Session" page="rollForwardSession.action">
 				<condition>
 					<hasPermission name="SessionRollForward"/>
 				</condition>

@@ -35,10 +35,11 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.shared.TaskInterface.ExecutionStatus;
@@ -185,6 +186,7 @@ import org.unitime.timetable.server.script.SaveTaskBackend;
  *
  */
 public class SessionRollForward {
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected Log iLog;
 	
 	private HashMap roomList;
@@ -290,7 +292,7 @@ public class SessionRollForward {
 	
 	public boolean isWaitListsAndProhibitedOverrides() { return waitListsAndProhibitedOverrides; }
 	
-	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollBuildingAndRoomDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollRoomDataForwardFrom());
 
@@ -302,7 +304,7 @@ public class SessionRollForward {
 		(new SessionDAO()).getSession().clear();
 	}
 
-	private void rollRoomGroupsForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollRoomGroupsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		RoomGroup fromRoomGroup = null;
 		RoomGroup toRoomGroup = null;
 		RoomGroupDAO rgDao = new RoomGroupDAO();
@@ -321,12 +323,14 @@ public class SessionRollForward {
 				}
 			}
 		} catch (Exception e) {
-			iLog.error("Failed to roll all room groups forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Groups", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room groups forward."));
+			String type = MSG.rollForwardRoomsGroups();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 	}
 
-	private void rollRoomFeaturesForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollRoomFeaturesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		DepartmentRoomFeature fromRoomFeature = null;
 		DepartmentRoomFeature toRoomFeature = null;
 		RoomFeatureDAO rfDao = new RoomFeatureDAO();
@@ -374,8 +378,10 @@ public class SessionRollForward {
 				}
 			}
 		} catch (Exception e) {
-			iLog.error("Failed to roll all room features forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Features", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room features forward."));
+			String type = MSG.rollForwardRoomsFeatures();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}	
 	}
 
@@ -421,7 +427,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void rollRoomForward(ActionMessages errors, Session fromSession, Session toSession, Location location) {
+	private void rollRoomForward(RollForwardErrors errors, Session fromSession, Session toSession, Location location) {
 		Room fromRoom = null;
 		Room toRoom = null;
 		RoomDAO rDao = new RoomDAO();
@@ -567,8 +573,10 @@ public class SessionRollForward {
 				// rDao.getSession().evict(fromRoom);
 			}								
 		} catch (Exception e) {
-			iLog.error("Failed to roll all rooms forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Rooms", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all rooms forward."));
+			String type = MSG.rollForwardRooms();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 	}
 
@@ -620,7 +628,7 @@ public class SessionRollForward {
 		
 	}
 
-	private void rollNonUniversityLocationsForward(ActionMessages errors, Session fromSession, Session toSession, Location location) {
+	private void rollNonUniversityLocationsForward(RollForwardErrors errors, Session fromSession, Session toSession, Location location) {
 		NonUniversityLocation fromNonUniversityLocation = null;
 		NonUniversityLocation toNonUniversityLocation = null;
 		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
@@ -687,13 +695,15 @@ public class SessionRollForward {
 				nulDao.getSession().evict(fromNonUniversityLocation);
 			}	
 		} catch (Exception e) {
-			iLog.error("Failed to roll all non university locations forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
+			String type = MSG.rollForwardNonUniversityLocations();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}		
 	}
 	
 
-	private void rollLocationsForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollLocationsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		if (fromSession.getRooms() != null && !fromSession.getRooms().isEmpty()){
 			Location location = null;
 			for (Iterator it = fromSession.getRooms().iterator(); it.hasNext();){
@@ -710,7 +720,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void rollTravelTimesForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollTravelTimesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		TravelTimeDAO dao = new TravelTimeDAO();
 		dao.getSession().createQuery(
 				"delete from TravelTime where session.uniqueId = :sessionId")
@@ -761,7 +771,7 @@ public class SessionRollForward {
 	}
 
 
-	private void rollBuildingsForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollBuildingsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		if (fromSession.getBuildings() != null && !fromSession.getBuildings().isEmpty()){
 			try{
 				Building fromBldg = null;
@@ -796,14 +806,16 @@ public class SessionRollForward {
 					//bDao.getSession().evict(fromBldg);	
 				}
 			} catch (Exception e) {
-				iLog.error("Failed to roll all buildings forward.", e);
-				errors.add("rollForward", new ActionMessage("errors.rollForward", "Buildings", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all buildings forward."));
+				String type = MSG.rollForwardBuildings();
+				String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+				iLog.error(msg, e);
+				errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 			}
 		}
 		
 	}
 
-	public void rollManagersForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollManagersForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollManagersForwardFrom());
 		Department fromDepartment = null;
@@ -844,12 +856,14 @@ public class SessionRollForward {
 			tmDao.getSession().flush();
 			tmDao.getSession().clear();			
 		} catch (Exception e) {
-			iLog.error("Failed to roll all timetable managers forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Timetable Managers", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all timetable managers forward."));
+			String type = MSG.rollForwardTimetableManagers();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 	}
 
-	public void rollDepartmentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollDepartmentsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDeptsFowardFrom());
 		Department fromDepartment = null;
@@ -902,8 +916,10 @@ public class SessionRollForward {
 			dDao.getSession().flush();
 			dDao.getSession().clear();
 		} catch (Exception e) {
-			iLog.error("Failed to roll all departments forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Departments", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all departments forward."));
+			String type = MSG.rollForwardDepartments();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 
 	}
@@ -926,7 +942,7 @@ public class SessionRollForward {
 		}		
 	}
 
-	public void rollDatePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollDatePatternsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
 		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
@@ -968,12 +984,14 @@ public class SessionRollForward {
 			dpDao.getSession().flush();
 			dpDao.getSession().clear();
 		} catch (Exception e) {
-			iLog.error("Failed to roll all date patterns forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Date Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all date patterns forward."));
+			String type = MSG.rollForwardDatePatterns();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}		
 	}
 
-	public void rollSubjectAreasForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollSubjectAreasForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSubjectAreasForwardFrom());
 		SubjectArea toSubjectArea = null;
@@ -1121,8 +1139,10 @@ public class SessionRollForward {
 			sDao.getSession().flush();
 			sDao.getSession().clear();
 		} catch (Exception e) {
-			iLog.error("Failed to roll all subject areas forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Subject Areas", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all subject areas forward."));
+			String type = MSG.rollForwardSubjectAreas();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 	}
 	private Department findManagingDepartmentForPrefGroup(PreferenceGroup prefGroup){
@@ -1795,7 +1815,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void rollGlobalInstructorAttributesForward(ActionMessages errors, Session fromSession, Session toSession) {
+	private void rollGlobalInstructorAttributesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
 		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllGlobalAttributes(toSession.getUniqueId())) {
 			InstructorAttributeDAO.getInstance().delete(oldAttribute);
@@ -1825,7 +1845,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void rollDepartmentalInstructorAttributesForward(ActionMessages errors, Department fromDepartment, Department toDepartment) {
+	private void rollDepartmentalInstructorAttributesForward(RollForwardErrors errors, Department fromDepartment, Department toDepartment) {
 		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
 		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllDepartmentalAttributes(toDepartment.getUniqueId())) {
 			InstructorAttributeDAO.getInstance().delete(oldAttribute);
@@ -2053,7 +2073,7 @@ public class SessionRollForward {
 				.list());
 	}
 	
-	public void rollMidtermExamsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+	public void rollMidtermExamsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		
 		try {
@@ -2062,12 +2082,14 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getMidtermExamsPrefsAction());
 			}
 		} catch (Exception e) {
-			iLog.error("Failed to roll all midterm exams forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Midterm Exam", "previous session", toSession.getLabel(), "Failed to roll all midterm exams forward."));
+			String type = MSG.rollForwardMidtermExams();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForwardTo(type, toSession.getLabel(), msg));
 		}		
 	}
 
-	public void rollFinalExamsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+	public void rollFinalExamsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		
 		try {
@@ -2076,12 +2098,14 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getFinalExamsPrefsAction());
 			}
 		} catch (Exception e) {
-			iLog.error("Failed to roll all final exams forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Final Exam", "previous session", toSession.getLabel(), "Failed to roll all final exams forward."));
+			String type = MSG.rollForwardFinalExams();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForwardTo(type, toSession.getLabel(), msg));
 		}		
 	}
 	
-	public void rollExamConfigurationDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+	public void rollExamConfigurationDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollExamConfigurationForwardFrom());
 		
@@ -2090,8 +2114,10 @@ public class SessionRollForward {
 			rollForwardExamLocationPrefs(toSession, fromSession);
 			rollForwardExaminationManagers(toSession, fromSession);
 		} catch (Exception e) {
-			iLog.error("Failed to roll exam configuration forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Exam Configuration", fromSession.getLabel(), toSession.getLabel(), "Failed to roll exam configuration forward."));
+			String type = MSG.rollForwardExamConfiguration();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 		
 	}
@@ -2117,7 +2143,7 @@ public class SessionRollForward {
 	}
 	
 	
-	public void rollInstructorDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
 		DepartmentalInstructor toInstructor = null;
@@ -2187,12 +2213,14 @@ public class SessionRollForward {
 			}
 			
 		} catch (Exception e) {
-			iLog.error("Failed to roll all instructors forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Instructors", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all instructors forward."));
+			String type = MSG.rollForwardInstructors();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}
 	}
 
-	public void rollCourseOfferingsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollCourseOfferingsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
 		ArrayList subjects = new ArrayList();
@@ -2216,7 +2244,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	public void addNewCourseOfferings(ActionMessages errors,
+	public void addNewCourseOfferings(RollForwardErrors errors,
 			RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		ArrayList subjects = new ArrayList();
@@ -2234,7 +2262,7 @@ public class SessionRollForward {
 		}
 	}
 
-//	public void loadCoursesNoLongerInCourseCatalogForTerm(ActionMessages errors,
+//	public void loadCoursesNoLongerInCourseCatalogForTerm(RollForwardErrors errors,
 //			RollForwardSessionForm rollForwardSessionForm){
 //		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 //		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
@@ -2418,7 +2446,7 @@ public class SessionRollForward {
 	}
 
 
-	public void rollTimePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollTimePatternsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollTimePatternsForwardFrom());
 		List<TimePattern> fromDatePatterns = TimePattern.findAll(fromSession, null);
@@ -2439,12 +2467,14 @@ public class SessionRollForward {
 			tpDao.getSession().flush();
 			tpDao.getSession().clear();
 		} catch (Exception e) {
-			iLog.error("Failed to roll all time patterns forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Time Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all time patterns forward."));
+			String type = MSG.rollForwardTimePatterns();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}		
 	}
 		
-	public void rollClassInstructorsForward(ActionMessages errors,
+	public void rollClassInstructorsForward(RollForwardErrors errors,
 			RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		ArrayList subjects = new ArrayList();
@@ -2513,7 +2543,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	public void rollOfferingCoordinatorsForward(ActionMessages errors,RollForwardSessionForm rollForwardSessionForm) {
+	public void rollOfferingCoordinatorsForward(RollForwardErrors errors,RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		ArrayList subjects = new ArrayList();
 		SubjectAreaDAO saDao = new SubjectAreaDAO();
@@ -2600,7 +2630,7 @@ public class SessionRollForward {
 	}
 	*/
 
-	public void rollStudentsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm){
+	public void rollStudentsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm){
         Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
         
         String[] query = null;
@@ -2674,7 +2704,7 @@ public class SessionRollForward {
 
     }
 	
-	public void rollCurriculaForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollCurriculaForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
         Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
         Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCurriculaForwardFrom());
         
@@ -2959,7 +2989,7 @@ public class SessionRollForward {
         hibSession.flush(); hibSession.clear();
 	}
 	
-	public void rollSessionConfigurationForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollSessionConfigurationForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
         Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
         Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSessionConfigForwardFrom());
         
@@ -3082,7 +3112,7 @@ public class SessionRollForward {
         ApplicationProperties.clearSessionProperties(toSession.getUniqueId());
 	}
 
-	public void rollReservationsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollReservationsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		List<SubjectArea> subjects = new ArrayList<SubjectArea>();
 		for (String subjectId: rollForwardSessionForm.getRollForwardReservationsSubjectIds()) {
@@ -3453,7 +3483,7 @@ public class SessionRollForward {
 		return toReservation;
 	}
 	
-	public void rollTeachingRequestsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollTeachingRequestsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		TeachingRequestDAO trDao = TeachingRequestDAO.getInstance();
 		for (int i = 0; i <	rollForwardSessionForm.getRollForwardTeachingRequestsSubjectIds().length; i++) {
 			SubjectArea toSubjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(rollForwardSessionForm.getRollForwardTeachingRequestsSubjectIds()[i]));
@@ -3515,7 +3545,7 @@ public class SessionRollForward {
 		return value;
 	}
 	
-	public void rollPeriodicTasksForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollPeriodicTasksForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		org.hibernate.Session hibSession = PeriodicTaskDAO.getInstance().getSession();
 		Set<String> existing = new HashSet<String>();
@@ -3572,7 +3602,7 @@ public class SessionRollForward {
 		hibSession.flush(); hibSession.clear();
 	}
 	
-	public void rollLearningManagementSystemInfoForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollLearningManagementSystemInfoForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
 		List<LearningManagementSystemInfo> fromLearningManagementSystems = LearningManagementSystemInfo.findAll(fromSession.getUniqueId());
@@ -3593,8 +3623,10 @@ public class SessionRollForward {
 			lmsDao.getSession().flush();
 			lmsDao.getSession().clear();
 		} catch (Exception e) {
-			iLog.error("Failed to roll all learning management system infos forward.", e);
-			errors.add("rollForward", new ActionMessage("errors.rollForward", "Learning Management System Info", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all learning management system infos forward."));
+			String type = MSG.rollForwardLMSInfo();
+			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
+			iLog.error(msg, e);
+			errors.addFieldError("rollForward", MSG.errorRollingForward(type, fromSession.getLabel(), toSession.getLabel(), msg));
 		}		
 	}
 
