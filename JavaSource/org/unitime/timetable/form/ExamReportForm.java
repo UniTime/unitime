@@ -24,11 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts.action.ActionErrors;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionMapping;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.action.UniTimeAction;
@@ -36,15 +31,13 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.IdValue;
 
 
 /** 
  * @author Tomas Muller
  */
-public class ExamReportForm extends ActionForm implements UniTimeForm {
+public class ExamReportForm implements UniTimeForm {
 	private static final long serialVersionUID = -8009733200124355056L;
 	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
 
@@ -57,21 +50,6 @@ public class ExamReportForm extends ActionForm implements UniTimeForm {
 	private int iNrRows;
 	private Long iExamType;
 
-	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        
-        return errors;
-	}
-	
-	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		reset();
-		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-		try {
-			if (solver!=null)
-				iExamType = solver.getProperties().getPropertyLong("Exam.Type", iExamType);
-		} catch (Exception e) {}
-	}
-	
 	@Override
 	public void validate(UniTimeAction action) {}
 

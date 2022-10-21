@@ -22,13 +22,10 @@ package org.unitime.timetable.filter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -38,11 +35,6 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.struts.tiles.ComponentDefinition;
-import org.apache.struts.tiles.TilesUtil;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.localization.impl.Localization;
@@ -50,7 +42,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -60,27 +51,11 @@ public class PageAccessFilter implements Filter {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Log sLog = LogFactory.getLog(PageAccessFilter.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.00");
-	private ServletContext iContext;
-	private Hashtable<String, String> iPath2Tile = new Hashtable<String, String>();
 	private long debugTime = 30000; // Print info about the page if the page load took at least this time.
 	private long dumpTime = 300000; // Print debug info about the page if the page load took at least this time.
 	private boolean dumpSessionAttribues = false; // Include session attributes in the dump.
 	
 	public void init(FilterConfig cfg) throws ServletException {
-		iContext = cfg.getServletContext();
-		try {
-			Document config = (new SAXReader()).read(cfg.getServletContext().getResource(cfg.getInitParameter("config")));
-			for (Iterator i=config.getRootElement().element("action-mappings").elementIterator("action"); i.hasNext();) {
-				Element action = (Element)i.next();
-				String path = action.attributeValue("path");
-				String input = action.attributeValue("input");
-				if (path!=null && input!=null) {
-					iPath2Tile.put(path+".do", input);
-				}
-			}
-		} catch (Exception e) {
-			sLog.error("Unable to read config "+cfg.getInitParameter("config")+", reason: "+e.getMessage());
-		}
 		if (cfg.getInitParameter("debug-time")!=null) {
 			debugTime = Long.parseLong(cfg.getInitParameter("debug-time"));
 		}
@@ -106,57 +81,6 @@ public class PageAccessFilter implements Filter {
 			UserContext user = getUser();
 			if (user != null)
 				ApplicationProperties.setSessionId(user.getCurrentAcademicSessionId());
-			
-			if (request instanceof HttpServletRequest) {
-				HttpServletRequest r = (HttpServletRequest)request;
-				if (r.getRequestURI().endsWith(".do")) {
-					HttpServletResponse x = (HttpServletResponse)response;
-					String def = r.getRequestURI().substring(r.getContextPath().length());
-					try {
-						if (iPath2Tile.containsKey(def)) {
-							String tile = iPath2Tile.get(def);
-							ComponentDefinition c = TilesUtil.getDefinition(tile, request, iContext);
-							HttpSession s = r.getSession();
-							if (c!=null && "true".equals(c.getAttribute("checkLogin"))) {
-								if (user == null) {
-									sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
-									if (s.isNew()) 
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationExpired()));
-									else
-										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationRequired()));
-									return;
-								}
-							}
-							if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
-								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
-									sLog.warn("Page "+r.getRequestURI()+" denined: no role");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationInsufficient()));
-									return;
-								}
-							}
-							if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
-								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
-									sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=" + MESSAGES.authenticationInsufficient()));
-									return;
-								}
-							}
-							/*
-							if (c!=null && "true".equals(c.getAttribute("checkAccessLevel"))) {
-								String appAccess = (String) s.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
-								if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
-									sLog.warn("Page "+r.getRequestURI()+" denied: application access disabled");
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.action?message=The+application+is+temporarily+unavailable.+Please+try+again+after+some+time."));
-									return;
-								}
-							}
-							*/
-						}
-					} catch (Exception e) {
-						sLog.warn("Unable to check page access for "+r.getRequestURI()+", reason: "+e.getMessage(), e);
-					}
-				}
-			}
 			
 			// Process request
 			Throwable exception = null;
