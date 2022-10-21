@@ -3512,7 +3512,7 @@ public interface CourseMessages extends Messages {
 	String pageLogInH2();
 	
 	@DefaultMessage("Authentication failed: {0}.")
-	String errorAuthenticationFailed(String reason);
+	String errorAuthenticationFailedWithReason(String reason);
 	
 	@DefaultMessage("Username:")
 	String propertyUsername();
