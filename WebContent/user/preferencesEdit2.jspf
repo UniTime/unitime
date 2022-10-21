@@ -94,14 +94,14 @@
 	</TR>
 	<s:iterator value="form.datePatternPrefs" var="datePatternPref" status="stat">
 		<TR>
-			<TD colspan="2">
+			<TD>
 				<s:hidden name="form.datePatternPrefs[%{#stat.index}]"/>
 				<s:iterator value="#request.datePatternChildrenList" var="dp">
 					<s:if test="#dp.uniqueId == form.datePatternPrefs[#stat.index]">
 						<s:property value="#dp.name"/>
 					</s:if>
 				</s:iterator>
-				&nbsp;&nbsp;
+			</TD><TD>
 				<s:select style="width:350px;"
 					name="form.datePatternPrefLevels[%{#stat.index}]"
 					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
@@ -134,7 +134,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='RoomGroupPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleRoomGroupPreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleRoomGroupPreferences()}">
 				<s:submit accesskey='%{#msg.accessAddRoomGroupPreference()}' name='op'
 					value='%{#msg.actionAddRoomGroupPreference()}' title='%{#msg.titleAddRoomGroupPreference(#msg.accessAddRoomGroupPreference())}'/>
 			</tt:section-header>
@@ -172,7 +172,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='RoomPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleRoomPreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleRoomPreferences()}">
 				<s:submit accesskey='%{#msg.accessAddRoomPreference()}' name='op'
 					value='%{#msg.actionAddRoomPreference()}' title='%{#msg.titleAddRoomPreference(#msg.accessAddRoomPreference())}'/>
 			</tt:section-header>
@@ -219,7 +219,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='BldgPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleBuildingPreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleBuildingPreferences()}">
 				<s:submit accesskey='%{#msg.accessAddBuildingPreference()}' name='op'
 					value='%{#msg.actionAddBuildingPreference()}' title='%{#msg.titleAddBuildingPreference(#msg.accessAddBuildingPreference())}'/>
 			</tt:section-header>
@@ -256,7 +256,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='RoomFeatPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleRoomFeaturePreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleRoomFeaturePreferences()}">
 				<s:submit accesskey='%{#msg.accessAddRoomFeaturePreference()}' name='op'
 					value='%{#msg.actionAddRoomFeaturePreference()}' title='%{#msg.titleAddRoomFeaturePreference(#msg.accessAddRoomFeaturePreference())}'/>
 			</tt:section-header>
@@ -293,7 +293,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='DistPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleDistributionPreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleDistributionPreferences()}">
 				<s:submit accesskey='%{#msg.accessAddDistributionPreference()}' name='op'
 					value='%{#msg.actionAddDistributionPreference()}' title='%{#msg.titleAddDistributionPreference(#msg.accessAddDistributionPreference())}'/>
 			</tt:section-header>
@@ -330,7 +330,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='AttributePref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleAttributePreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleAttributePreferences()}">
 				<s:submit accesskey='%{#msg.accessAddAttributePreference()}' name='op'
 					value='%{#msg.actionAddAttributePreference()}' title='%{#msg.titleAddAttributePreference(#msg.accessAddAttributePreference())}'/>
 			</tt:section-header>
@@ -367,7 +367,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='CoursePref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleCoursePreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleCoursePreferences()}">
 				<s:submit accesskey='%{#msg.accessAddCoursePreference()}' name='op'
 					value='%{#msg.actionAddCoursePreference()}' title='%{#msg.titleAddCoursePreference(#msg.accessAddCoursePreference())}'/>
 			</tt:section-header>
@@ -404,7 +404,7 @@
 	<TR>
 		<TD valign="middle" colspan='2'>
 			<A id='InstructorPref'></A>
-			<tt:section-header title="<%=MSG.sectionTitleInstructorPreferences()%>">
+			<tt:section-header title="${MSG.sectionTitleInstructorPreferences()}">
 				<s:submit accesskey='%{#msg.accessAddInstructorPreference()}' name='op'
 					value='%{#msg.actionAddInstructorPreference()}' title='%{#msg.titleAddInstructorPreference(#msg.accessAddInstructorPreference())}'/>
 			</tt:section-header>
@@ -439,7 +439,7 @@
 <s:if test="#attr.dateAvail != 'false' && #request.unavailableDaysPattern != null">
 	<tr><td colspan='2'>&nbsp;</td></tr>
 	<tr><td colspan='2'>
-		<tt:section-header title="<%=MSG.sectionTitleUnavailableDates()%>"/>
+		<tt:section-header title="${MSG.sectionTitleUnavailableDates()}"/>
 	</td></tr>
 	<tr><td colspan='2'>
 		<s:property value="#request.unavailableDaysPattern" escapeHtml="false"/>

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <%--
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
@@ -17,45 +18,31 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
-<%@ page language="java" pageEncoding="UTF-8"%>
-<%@ page import="org.unitime.timetable.model.dao.Class_DAO" %>
-<%@ page import="org.unitime.timetable.model.Class_" %>
-<%@ page import="org.unitime.timetable.model.DatePattern" %>
-<%@ page import="org.unitime.timetable.model.dao.DatePatternDAO" %>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<tt:session-context/>
-<%
-	Long datePatternId = Long.valueOf(request.getParameter("id"));
-	DatePattern datePattern = null;
-	if (datePatternId < 0 && request.getParameter("class")!=null) {
-		Class_ clazz = (new Class_DAO()).get(Long.valueOf(request.getParameter("class")));
-		if (clazz!=null) 
-			datePattern = clazz.getSchedulingSubpart().effectiveDatePattern();
-	} else if (datePatternId < 0) {
-    	datePattern = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()).getDefaultDatePatternNotNull();
-	} else {
-		datePattern = (new DatePatternDAO()).get(datePatternId);
-	}
-%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
+<s:set var="dp" value="datePattern"/>
 <html>
   <head>
-    <title>Preview of <%=datePattern==null?"":datePattern.getName()%></title>
-    <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/styles/timetabling.css">
-    <script language='JavaScript' type='text/javascript' src='<%=request.getContextPath()%>/scripts/datepatt.js'></script>
+    <title>
+    	<loc:message name="sectPreviewOfDatePattern"><s:property value="#dp.name"/></loc:message>
+    </title>
+    <link rel="stylesheet" type="text/css" href="styles/timetabling.css">
+    <script type='text/javascript' src='scripts/datepatt.js'></script>
   </head>
   <body class="bodyStyle">
-  	<table border='0' width='100%' height='100%'><tr>
-  		<% if (datePattern!=null) { %>
+  	<table class="unitime-MainTable"><tr>
+  		<s:if test="#dp != null">
   			<td align='center'>
-			    <%=datePattern.getPatternHtml(false,null,false)%>
-			</td>
-		<% } else { %>
-  			<td align='left'>
-				<br><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No default date pattern selected.</i>
-			</td>
-		<% } %>
+  				<s:property value="#dp.getPatternHtml(false,null,false)" escapeHtml="false"/>
+  			</td>
+  		</s:if><s:else>
+  			<td align='center' style="padding: 20px;">
+  				<i><loc:message name="infoNoDefaultDatePattern"/></i>
+  			</td>
+  		</s:else>
 	</tr><tr>
 		<td align='center'>
 			<tt:displayPrefLevelLegend prefs="false" dpOffered="true" dpBackgrounds="true" separator="top"/>
@@ -63,3 +50,4 @@
 	</tr></table>
   </body>
 </html>
+</loc:bundle>

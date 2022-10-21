@@ -135,14 +135,14 @@
 				<s:if test="form.datePatternEditable == true">
 					<s:select name="form.datePattern" list="#request.datePatternList" listKey="id" listValue="value"
 						style="min-width:200px;" onchange="datePatternChanged();"/>
-					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+schedulingSubpartEdit_form_datePattern.options[schedulingSubpartEdit_form_datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+schedulingSubpartEdit_form_datePattern.value+'&subpart='+schedulingSubpartEdit_form_schedulingSubpartId.value,'840','520');">
+					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+schedulingSubpartEdit_form_datePattern.options[schedulingSubpartEdit_form_datePattern.selectedIndex].text, 'dispDatePattern.action?id='+schedulingSubpartEdit_form_datePattern.value+'&subpartId='+schedulingSubpartEdit_form_schedulingSubpartId.value,'840','520');">
 				</s:if>
 				<s:else>
 					<s:hidden name="form.datePattern"/>
 					<s:iterator value="#request.datePatternList" var="dp">
 						<s:if test="#dp.id == form.datePattern">
 							<s:property value="#dp.value"/>
-							<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}&subpart=${form.schedulingSubpartId}','840','520');">
+							<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('${MSG.sectPreviewOfDatePattern(dp.value)}', 'dispDatePattern.action?id=${dp.id}&subpartId=${form.schedulingSubpartId}','840','520');">
 						</s:if>
 					</s:iterator>
 				</s:else>

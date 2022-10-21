@@ -5673,4 +5673,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Roll Scheduled Tasks Forward From Session:")
 	String propRollScheduledTasksFromSession();
+	
+	@DefaultMessage("Preview of {0}")
+	String sectPreviewOfDatePattern(String name);
 }

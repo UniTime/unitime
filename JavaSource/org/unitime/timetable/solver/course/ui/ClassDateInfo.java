@@ -22,7 +22,10 @@ package org.unitime.timetable.solver.course.ui;
 import java.io.Serializable;
 import java.util.BitSet;
 
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -33,6 +36,7 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
  */
 public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 	private static final long serialVersionUID = 1113308106992466641L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static NaturalOrderComparator sCmp = new NaturalOrderComparator();
 	private Long iId, iClassId;
 	private String iName;
@@ -73,7 +77,7 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 	public String toLongHtml() {
 		return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>" +
 				" <img style=\"cursor: pointer;\" src=\"images/calendar.png\" border=\"0\" " +
-					"onclick=\"showGwtDialog('Preview of " + getName() + "', 'user/dispDatePattern.jsp?id=" + getId() + "&class=" + getClassId() + "','840','520');\">";
+					"onclick=\"showGwtDialog('" + HtmlUtils.htmlEscape(MSG.sectPreviewOfDatePattern(getName())) + "', 'dispDatePattern.action?id=" + getId() + "&classId=" + getClassId() + "','840','520');\">";
 	}
 
 	public int compareTo(ClassDateInfo other) {

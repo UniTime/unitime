@@ -74,7 +74,7 @@
 						<s:iterator value="#request.datePatternList" var="dp">
 							<s:if test="#datePatternPref == #dp.id">
 								<div style='color:${prLevel.prefcolorNeutralBlack()}; font-weight: bold; cursor:pointer;' title='${prLevel.getPrefName()}: ${dp.value}'
-									onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}','840','520');"><s:property value="#dp.value"/></div>
+									onclick="showGwtDialog('${MSG.sectPreviewOfDatePattern(dp.value)}', 'dispDatePattern.action?id=${dp.id}','840','520');"><s:property value="#dp.value"/></div>
 							</s:if>
 						</s:iterator>
 					</s:if>

@@ -201,7 +201,7 @@
 				<s:iterator value="#request.datePatternList" var="dp">
 					<s:if test="#dp.id == form.datePattern">
 						<s:property value="#dp.value"/>
-						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of ${dp.value}', 'user/dispDatePattern.jsp?id=${dp.id}&class=${form.classId}','840','520');">
+						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('${MSG.sectPreviewOfDatePattern(dp.value)}', 'dispDatePattern.action?id=${dp.id}&classId=${form.classId}','840','520');">
 					</s:if>
 				</s:iterator>
 			</TD>
