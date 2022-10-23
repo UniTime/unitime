@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Daybreak Constraint" engine="ECMAScript" created="Sat Oct 22 20:07:58 CEST 2022">
+  <description><![CDATA[The Daybreak constraint checks for cases when there is an evening class and a morning class the following day.<br>
+There should be at least the given number of hours between an evening class followed by a morning class the next day.<br>
+The constraint can be also parametrised by a distance between the two classes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The constraint only triggers when the distance between the two classes is over the provided distance.]]></description>
+  <parameter name="distance" label="Minimal distance in minutes (-1 for no distance check)" type="integer" default="-1"/>
+  <parameter name="hours" label="Minimal number of hours between the two classes" type="double" default="10.0"/>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var reference = 'DAYBREAK(' + hours + ',' + distance + ')';
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var abbv = 'Daybreak ' + hours + 'h' + (distance < 0 ? '' : ' >' + distance + 'min');
+var label = 'Daybreak of ' + hours + ' hours' + (distance < 0 ? '' : ' when over ' + distance + ' mins');
+var desc = 'There should be at least of ' + hours + ' hours between an evening class followed by a morning class the next day';
+if (distance < 0) {
+  desc += '.';
+} else {
+  desc += ', but only when the distance is over ' + distance + ' minutes.';
+}
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference(reference);
+  log.info('Creating ' + label + ' constraint...');
+} else {
+  log.warn('Constraint ' + label + ' already exists.');
+}
+type.setLabel(label);
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr(desc);
+type.setAbbreviation(abbv);
+type.setInstructorPref(true);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>

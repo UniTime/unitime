@@ -126,6 +126,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Daybreak Distribution Constraint</name>
+			<description>
+				<line>Added Daybreak constraint that checks for cases when there is an evening class and a morning class the following day.</line>
+				<line>There should be at least the given number of hours between an evening class followed by a morning class the next day.</line>
+				<line>The constraint can be also parameterized by a distance between the two classes:
+					<line>The constraint only triggers when the distance between the two classes is over the provided distance.</line>
+					<line>Distance checking is disabled when distance is set to -1.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
