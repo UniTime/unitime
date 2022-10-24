@@ -33,11 +33,9 @@ public interface GwtConstants extends Constants {
 	String copyright();
 	
 	@DefaultBooleanValue(true)
-	@DoNotTranslate
 	boolean useAmPm();
 
 	@DefaultBooleanValue(false)
-	@DoNotTranslate
 	boolean firstDayThenMonth();
 
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
@@ -310,7 +308,6 @@ public interface GwtConstants extends Constants {
 	@DoNotTranslate
 	boolean searchWhenPageIsLoaded();
 	
-	@DoNotTranslate
 	@DefaultStringValue("MM/dd/yyyy")
 	String filterDateFormat();
 	

@@ -56,13 +56,9 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultStringValue("Free ")
 	String freePrefix();
 
-	@DefaultStringArrayValue({
-		"7:30a", "8:00a", "8:30a", "9:00a", "9:30a", "10:00a", "10:30a", "11:00a", "11:30a", "12:00p",
-		"12:30p", "1:00p", "1:30p", "2:00p", "2:30p", "3:00p", "3:30p", "4:00p", "4:30p", "5:00p", "5:30p",
-		"6:00p", "6:30p", "7:00p", "7:30p"
-	})
+	@DefaultIntValue(25)
 	@DoNotTranslate
-	String[] freeTimePeriods();
+	int freeTimePeriods();
 	
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
 	String[] freeTimeDays();
@@ -124,7 +120,6 @@ public interface StudentSectioningConstants extends Constants {
 	String requestWaitListedDateFormat();
 
 	@DefaultBooleanValue(true)
-	@DoNotTranslate
 	boolean useAmPm();
 	
 	@DefaultStringValue("MM/dd")

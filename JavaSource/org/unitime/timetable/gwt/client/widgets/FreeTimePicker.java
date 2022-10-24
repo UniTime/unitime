@@ -52,7 +52,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	private boolean iEnabled = true;
 	
 	public FreeTimePicker() {
-		super(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods().length);
+		super(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods());
 		setStyleName("unitime-FreeTimePicker");
 		sinkEvents(Event.ONMOUSEDOWN);
 		sinkEvents(Event.ONMOUSEUP);
@@ -61,8 +61,8 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 		sinkEvents(Event.ONMOUSEOUT);
 		setCellPadding(2);
 		setCellSpacing(0);
-		iSelected = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
-		iLastSelectedTime = new long[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
+		iSelected = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods() - 1];
+		iLastSelectedTime = new long[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods() - 1];
 		
 		setHTML(0, 0, "&nbsp;");
 		getCellFormatter().setStyleName(0, 0, "corner");
@@ -73,13 +73,13 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 			getCellFormatter().setStyleName(1 + i, 0, "vertical-header");
 			ToolBox.disableTextSelectInternal(getCellFormatter().getElement(1 + i, 0));
 		}
-		for (int i=0; i<CONSTANTS.freeTimePeriods().length - 1; i++) {
-			setText(0, 1 + i, CONSTANTS.freeTimePeriods()[i]);
+		for (int i=0; i<CONSTANTS.freeTimePeriods() - 1; i++) {
+			setText(0, 1 + i, toString(i));
 			getCellFormatter().setStyleName(0, 1 + i, "horizontal-header");
 			ToolBox.disableTextSelectInternal(getCellFormatter().getElement(0, 1 + i));
 		}
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
+			for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++) {
 				iSelected[d][p] = false;
 				iLastSelectedTime[d][p] = 0;
 				setHTML(1 + d, 1 + p, "&nbsp;");
@@ -150,16 +150,26 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	public int toPeriod(int slot) {
 		int p = slot / 6 - 15;
 		if (p < 0) return 0;
-		if (p >= CONSTANTS.freeTimePeriods().length) return CONSTANTS.freeTimePeriods().length - 1;
+		if (p >= CONSTANTS.freeTimePeriods()) return CONSTANTS.freeTimePeriods() - 1;
 		return p;
 	}
 	
+	public String toString(int period) {
+		int slot = toSlot(period);
+		int h = slot / 12;
+		int m = 5 * (slot % 12);
+		if (CONSTANTS.useAmPm())
+			return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+		else
+			return h + ":" + (m < 10 ? "0" : "") + m;
+	}
+	
 	private CourseRequestInterface.FreeTime generateOneFreeTime(boolean[][] s) {
-		for (int p0=0; p0<CONSTANTS.freeTimePeriods().length - 1; p0++) {
+		for (int p0=0; p0<CONSTANTS.freeTimePeriods() - 1; p0++) {
 			for (int d0=0; d0<CONSTANTS.freeTimeDays().length; d0++) {
 				if (s[d0][p0]) {
 					int lastP1 = p0;
-					p1: for (int p1=p0+1; p1<CONSTANTS.freeTimePeriods().length - 1; p1++) {
+					p1: for (int p1=p0+1; p1<CONSTANTS.freeTimePeriods() - 1; p1++) {
 						for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
 							if (s[d][p0] && !s[d][p1]) break p1;
 						}
@@ -180,7 +190,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	}
 	
 	private boolean generateOnePriority(boolean[][] s, int priority) {
-		for (int p0=0; p0<CONSTANTS.freeTimePeriods().length - 1; p0++)
+		for (int p0=0; p0<CONSTANTS.freeTimePeriods() - 1; p0++)
 			for (int d0=0; d0<CONSTANTS.freeTimeDays().length; d0++) {
 				if (s[d0][p0]) {
 					boolean mwf0 = (d0 % 2 == 0);
@@ -192,7 +202,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 						boolean hasM = false, hasF = false;
 						boolean hasS = false, hasT = false;
 						boolean allTheSame = true;
-						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods() - 1); p1++) {
 							if (s[0][p1]) hasM = true;
 							if (s[4][p1]) hasF = true;
 							if (p1 - first >= 2 && p1 - first < 4 && (s[0][p1] || s[2][p1] || s[4][p1])) hasS = true;
@@ -203,7 +213,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 						}
 						if (((!hasM || !hasT || !hasF) && hasS && hasT) ||
 							(allTheSame && (hasS || hasT))) {
-							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods() - 1); p1++) {
 								if (s[d0][p1]) {
 									setText(1 + d0, 1 + p1, String.valueOf(priority));
 									s[d0][p1] = false;
@@ -214,13 +224,13 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 					} else {
 						boolean allTheSame = true;
 						boolean hasT = false;
-						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+						for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods() - 1); p1++) {
 							if (p1 - first >= 4 && (s[1][p1] || s[3][p1])) hasT = true;
 							if (d0!=1 && s[1][p1]) allTheSame = false;
 							if (d0!=3 && s[3][p1]) allTheSame = false;
 						}
 						if (allTheSame || (hasT && 3 * (first / 3) != first)) {
-							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods().length - 1); p1++) {
+							for (int p1=first; p1<Math.min(first + 6, CONSTANTS.freeTimePeriods() - 1); p1++) {
 								if (s[d0][p1]) {
 									setText(1 + d0, 1 + p1, String.valueOf(priority));
 									s[d0][p1] = false;
@@ -229,7 +239,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 							return true;
 						}
 					}
-					p1: for (int p1=p0; p1<CONSTANTS.freeTimePeriods().length - 1; p1++)
+					p1: for (int p1=p0; p1<CONSTANTS.freeTimePeriods() - 1; p1++)
 						for (int d1=0; d1<CONSTANTS.freeTimeDays().length; d1++) {
 							boolean mwf1 = (d1 % 2 == 0);
 							boolean odd1 = (mwf1 ? p1 % 4 <= 1 : p1 % 6 > 2);
@@ -248,9 +258,9 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	}
 
 	public void generatePriorities() {
-		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
+		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods() - 1];
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
+			for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++) {
 				s[d][p] = iSelected[d][p];
 				if (!iSelected[d][p]) setHTML(1 + d, 1 + p, "&nbsp;");
 			}
@@ -260,7 +270,7 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 
 	public void update() {
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
+			for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++) {
 				td(d, p).getStyle().setBackgroundColor(bg(d, p));
 			}
 		}
@@ -322,9 +332,9 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 
 	@Override
 	public List<FreeTime> getValue() {
-		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
+		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods() - 1];
 		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++)
+			for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++)
 				s[d][p] = iSelected[d][p];
 		}
 		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
@@ -343,14 +353,14 @@ public class FreeTimePicker extends Grid implements HasValue<List<CourseRequestI
 	public void setValue(List<FreeTime> value, boolean fireEvents) {
 		if (value == null || value.isEmpty()) {
 			for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-				for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
+				for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++) {
 					iSelected[d][p] = false;
 					td(d, p).getStyle().setBackgroundColor(bg(d, p));
 					setHTML(1 + d, 1 + p, "&nbsp;");
 				}
 		} else {
 			for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-				for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++)
+				for (int p=0; p<CONSTANTS.freeTimePeriods() - 1; p++)
 					iSelected[d][p] = false;
 			for (CourseRequestInterface.FreeTime f: value) {
 				for (int day: f.getDays()) {
