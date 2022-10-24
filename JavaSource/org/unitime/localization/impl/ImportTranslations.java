@@ -19,39 +19,59 @@
 */
 package org.unitime.localization.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
+import java.util.Set;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.unitime.localization.impl.ExportTranslations.Bundle;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.unitime.localization.impl.ExportTranslations.Locale;
+import org.unitime.localization.impl.POHelper.Bundle;
 import org.unitime.localization.messages.PageNames;
-import org.unitime.timetable.gwt.resources.Constants;
-import org.unitime.timetable.gwt.resources.Messages;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * @author Tomas Muller
  */
 public class ImportTranslations {
-	private List<Bundle> iBundles = new ArrayList<Bundle>();
 	private List<Locale> iLocales = new ArrayList<Locale>();
 	private Project iProject;
 	private File iBaseDir;
 	private File iSource;
 	private String iTranslations = "Documentation/Translations";
+	private String iToken = null;
 	private boolean iGeneratePageNames = false;
-	private boolean iFixMe = false;
-	private String iEncoding = "UTF-8";
+	private boolean iFixGwtConfig = true;
+	private boolean iDownload = true;
 
 	public ImportTranslations() {}
 	
@@ -66,26 +86,6 @@ public class ImportTranslations {
 	
 	public void setSource(String source) {
 		iSource = new File(source);
-	}
-	
-	public void setEncoding(String encoding) {
-		iEncoding = encoding;
-	}
-	
-	public Bundle createBundle() {
-		Bundle bundle = new Bundle();
-		iBundles.add(bundle);
-		return bundle;
-	}
-	
-	public void addBundle(Bundle bundle) {
-		iBundles.add(bundle);
-	}
-	
-	public void setBundles(String bundles) {
-		for (String name: bundles.split(",")) {
-			addBundle(new Bundle(name));
-		}
 	}
 	
 	public Locale createLocale() {
@@ -112,8 +112,16 @@ public class ImportTranslations {
 		iGeneratePageNames = generatePageNames;
 	}
 	
-	public void setIncludeFixMe(boolean fixMe) {
-		iFixMe = fixMe;
+	public void setFixGwtConfig(boolean fixGwtConfig) {
+		iFixGwtConfig = fixGwtConfig;
+	}
+	
+	public void setDownload(boolean download) {
+		iDownload = download;
+	}
+	
+	public void setToken(String token) {
+		iToken = token;
 	}
 	
     public void info(String message) {
@@ -144,199 +152,128 @@ public class ImportTranslations {
     		System.out.println("    [error] " +message);
     }
 	
-	private static String array2string(String[] value) {
-		String ret = "";
-		for (String s: value) {
-			if (!ret.isEmpty()) ret += ",";
-			ret += s.replace(",", "\\,");
-		}
-		return ret;
-	}
-	
-    private static final char[] hexChar = {
-        '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
-    };
-
-    private static String unicodeEscape(String s, boolean includeColon) {
-    	StringBuilder sb = new StringBuilder();
-    	for (int i = 0; i < s.length(); i++) {
-    		char c = s.charAt(i);
-    	    if ((c >> 7) > 0) {
-        		sb.append("\\u");
-        		sb.append(hexChar[(c >> 12) & 0xF]); // append the hex character for the left-most 4-bits
-        		sb.append(hexChar[(c >> 8) & 0xF]);  // hex for the second group of 4-bits from the left
-        		sb.append(hexChar[(c >> 4) & 0xF]);  // hex for the third group
-        		sb.append(hexChar[c & 0xF]);         // hex for the last group, e.g., the right most 4-bits
-    	    } else if (c == ':' && includeColon) {
-    	    	sb.append("\\:");
-    	    } else if (c == '\n') {
-    	    	sb.append("\\n");
-    	    } else {
-    	    	sb.append(c);
-    	    }
-    	}
-    	return sb.toString();
-    }	
-
     public void execute() throws BuildException {
 		try {
 			File translations = new File(iBaseDir, iTranslations);
-			info("Importing translations from: " + translations);
-			
-			for (Bundle bundle: iBundles) {
-    			info("Loading " + bundle);
-				Class clazz = null;
-				File folder = null;
-    			if (bundle.hasPackage()) {
-    				try {
-    					clazz =  Class.forName(bundle.getPackage() + "." + bundle.getName());
-    					folder = new File(iSource, bundle.getPackage().replace('.', File.separatorChar));
-    				} catch (ClassNotFoundException e) {}
-    			}
-				try {
-					clazz = Class.forName(Localization.ROOT + bundle);
-					folder = new File(iSource, Localization.ROOT.replace('.', File.separatorChar));
-				} catch (ClassNotFoundException e) {}
-				try {
-					if (clazz == null) {
-						clazz = Class.forName(Localization.GWTROOT + bundle);
-						folder = new File(iSource, Localization.GWTROOT.replace('.', File.separatorChar));
-					}
-				} catch (ClassNotFoundException e) {}
-				if (clazz == null) {
-					error("Bundle " + bundle + " not found.");
-					continue;
-				}
-				boolean constants = Constants.class.isAssignableFrom(clazz);
+			Map<String, byte[]> downloads = new HashMap<String, byte[]>();
+			if (iDownload) {
+				info("Downloading translations to: " + translations);
+				
+				CloseableHttpClient client = HttpClients.createDefault();
 				
 				for (Locale locale: iLocales) {
 					debug("Locale " + locale);
-					boolean empty = true;
-					
-					File input = new File(translations, bundle.getName() + "_" + locale.getValue() + ".properties");
-					if (!input.exists()) continue;
-					
-					Properties translation = new Properties();
-					translation.load(new InputStreamReader(new FileInputStream(input), iEncoding));
-					
-					File output = new File(folder, bundle.getName() + "_" + locale.getValue() + ".properties");
-					
-					Properties old = new Properties();
-					if (output.exists()) old.load(new FileReader(output));
-					
-					PrintStream out = new PrintStream(output);
-					
-					out.println("# Licensed to The Apereo Foundation under one or more contributor license");
-					out.println("# agreements. See the NOTICE file distributed with this work for");
-					out.println("# additional information regarding copyright ownership.");
-					out.println("#");
-					out.println("# The Apereo Foundation licenses this file to you under the Apache License,");
-					out.println("# Version 2.0 (the \"License\"); you may not use this file except in");
-					out.println("# compliance with the License. You may obtain a copy of the License at:");
-					out.println("#");
-					out.println("# http://www.apache.org/licenses/LICENSE-2.0");
-					out.println("#");
-					out.println("# Unless required by applicable law or agreed to in writing, software");
-					out.println("# distributed under the License is distributed on an \"AS IS\" BASIS,");
-					out.println("# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
-					out.println("#");
-					out.println("# See the License for the specific language governing permissions and");
-					out.println("# limitations under the License.");
-					out.println("#");
-					
-					if (PageNames.class.equals(clazz) && iGeneratePageNames) {
-						TreeSet<String> names = new TreeSet<String>();
-						for (Object o: translation.keySet())
-							names.add((String)o);
-						Properties defaults = new Properties();
-						File defaultFile = new File(translations, bundle.getName() + ".properties");
-						if (defaultFile.exists()) {
-							defaults.load(new FileReader(defaultFile));
-						} else {
-							PageNameGenerator gen = new PageNameGenerator();
-							gen.setSource(iSource);
-							gen.execute();
-							defaults = gen.getProperties();
-						}
-						for (Object o: defaults.keySet())
-							names.add((String)o);
-						for (String name: names) {
-							String value = defaults.getProperty(name);
-							String text = translation.getProperty(name);
-							if (!iFixMe && text == null) continue;
-							out.println();
-							if (value != null)
-								out.println("# Default: " + unicodeEscape(value, false).trim());
-							if (text == null) {
-								if (value != null)
-									out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
-								else
-									out.println("# FIXME: Translate " + name);
-								out.println("# " + name + "=");
-							} else {
-								out.println(name + "=" + unicodeEscape(text, true));
-								empty = false;
+					HttpPost post = new HttpPost("https://api.poeditor.com/v2/projects/export");
+					List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+					params.add(new BasicNameValuePair("api_token", iToken));
+					params.add(new BasicNameValuePair("id", "568029"));
+					params.add(new BasicNameValuePair("language", locale.getValue()));
+					params.add(new BasicNameValuePair("type", "po"));
+					post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+					CloseableHttpResponse response = client.execute(post);
+					HttpEntity entity = response.getEntity();
+					HttpGet get = null;
+					if (entity != null) {
+						JsonObject json = JsonParser.parseReader(new InputStreamReader(entity.getContent())).getAsJsonObject();
+						info("Response: " + json);
+						String url = json.getAsJsonObject("result").get("url").getAsString();
+						debug("URL: " + url);
+						get = new HttpGet(url);
+					}
+					response.close();
+					if (get != null) {
+						response = client.execute(get);
+						entity = response.getEntity();
+						if (entity != null) {
+							info("Downloading " + get.getURI());
+							InputStream in = entity.getContent();
+							byte[] buffer = new byte[10240];
+							File file = new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po");
+							debug("Writing " + file);
+							ByteArrayOutputStream bos = new ByteArrayOutputStream();
+							FileOutputStream out = new FileOutputStream(file);
+							int read = 0;
+							while ((read = in.read(buffer)) > 0) {
+								out.write(buffer, 0, read);
+								bos.write(buffer, 0, read);
 							}
-						}
-					} else {
-						TreeSet<Method> methods = new TreeSet<Method>(new Comparator<Method>() {
-							@Override
-							public int compare(Method m1, Method m2) {
-								return m1.getName().compareTo(m2.getName());
-							}
-						});
-						for (Method method: clazz.getMethods()) methods.add(method);
-						for (Method method: methods) {
-							String value = null;
-							Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
-							if (dm != null)
-								value = dm.value();
-							Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
-							if (db != null)
-								value = (db.value() ? "true" : "false");
-							Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
-							if (dd != null)
-								value = String.valueOf(dd.value());
-							Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
-							if (df != null)
-								value = String.valueOf(df.value());
-							Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
-							if (di != null)
-								value = String.valueOf(di.value());					
-							Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
-							if (ds != null)
-								value = ds.value();
-							Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
-							if (dsa != null)
-								value = array2string(dsa.value());
-							Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
-							if (dsm != null)
-								value = array2string(dsm.value());
-							if ("translateMessage".equals(method.getName())) continue;
-
-							String text = translation.getProperty(method.getName(), old.getProperty(method.getName()));
-							boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
-							if (text == null && (constants || doNotTranslate || !iFixMe)) continue;
-							
-							out.println();
-							if (value != null)
-								out.println("# Default: " + unicodeEscape(value, false).trim());
-							if (text == null) {
-								if (value != null)
-									out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
-								else
-									out.println("# FIXME: Translate " + method.getName());
-								out.println("# " + method.getName() + "=");
-							} else {
-								out.println(method.getName() + "=" + unicodeEscape(text, true));
-								empty = false;
-							}
+							out.flush();
+							out.close();
+							bos.flush();
+							bos.close();
+							downloads.put(locale.getValue(), bos.toByteArray());
 						}
 					}
-					
-					out.flush();
-					out.close();
-					if (empty) output.delete();
+					response.close();
+				}
+				client.close();
+			}
+			
+			if (downloads.isEmpty())
+				info("Importing translations from: " + translations);
+			else
+				info("Importing translations");
+			
+			Map<String, String> pageNames = null;
+    		if (iGeneratePageNames) {
+    			PageNameGenerator gen = new PageNameGenerator();
+    			gen.setSource(iSource);
+    			gen.execute();
+    			pageNames = gen.getPageNames();
+    		} else {
+    			Properties p = new Properties();
+    			p.load(new FileInputStream(new File(iSource, PageNames.class.getName().replace('.', File.separatorChar) + ".properties")));
+    			pageNames = new HashMap<String, String>();
+    			for (Map.Entry e: p.entrySet())
+    				pageNames.put((String)e.getKey(), (String)e.getValue());
+    		}
+			
+			for (Locale locale: iLocales) {
+				debug("Locale " + locale);
+				POHelper helper = new POHelper(locale.getValue(), pageNames);
+
+				byte[] data = downloads.get(locale.getValue());
+				if (data == null) {
+					File input = new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po");
+					if (!input.exists()) {
+						error("Input file " + input + " does not exist.");
+						continue;
+					}
+					helper.readPOFile(null, new InputStreamReader(new FileInputStream(input), StandardCharsets.UTF_8));
+				} else {
+					helper.readPOFile(null, new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8));
+				}
+				
+				for (Bundle bundle: Bundle.values())
+					helper.writePropertiesFile(iSource, bundle);
+			}
+			
+			Set<String> locales = new HashSet<String>();
+			if (iFixGwtConfig) {
+				info("Updating GWT configuration, if needed.");
+				File config = new File(iSource,
+						"org" + File.separator + "unitime" + File.separator + "timetable" + File.separator + "gwt"+  File.separator + "UniTime.gwt.xml");
+				Document document = (new SAXReader()).read(config);
+				for (Iterator<Element> i = document.getRootElement().elementIterator("extend-property"); i.hasNext(); ) {
+					Element e = i.next();
+					if ("locale".equals(e.attributeValue("name")))
+						locales.add(e.attributeValue("values"));
+				}
+				debug("Existing locales: " + locales);
+				boolean changed = false;
+				for (Locale locale: iLocales) {
+					if (!locales.contains(locale.getValue())) {
+						info("added " + locale);
+						changed = true;
+						document.getRootElement().addElement("extend-property")
+							.addAttribute("name", "locale")
+							.addAttribute("values", locale.getValue());
+					}
+				}
+				if (changed) {
+					FileOutputStream out = new FileOutputStream(config);
+		            (new XMLWriter(out, OutputFormat.createPrettyPrint())).write(document);
+		            out.flush(); out.close();
 				}
 			}
 		} catch (Exception e) {
@@ -349,8 +286,8 @@ public class ImportTranslations {
 			ImportTranslations task = new ImportTranslations();
 			task.setBaseDir(System.getProperty("source", "/Users/muller/git/unitime"));
 			task.setSource(System.getProperty("source", "/Users/muller/git/unitime") + File.separator + "JavaSource");
-			task.setBundles(System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtAriaMessages,GwtMessages,StudentSectioningConstants,StudentSectioningMessages"));
 			task.setLocales(System.getProperty("locale", "cs"));
+			task.setToken(System.getProperty("token", "b191dd443ab1800fc1e09ef23e50cdb0"));
 			task.execute();
 		} catch (Exception e) {
 			e.printStackTrace();

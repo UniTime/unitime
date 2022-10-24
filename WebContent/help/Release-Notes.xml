@@ -138,5 +138,21 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Localization: Zanata &gt; POEditor.com</name>
+			<description>
+				<line>Since Zanata is no longer being maintained, UniTime 4.7 translations have been moved to poeditor.com.
+					<line>See https://poeditor.com/join/project/Aa5qIUPsnp for joining the translations effort.</line>
+				</line>
+				<line>Single PO file per locale is now being used for data exchange.</line>
+				<line>Updated ant tasks for import/export scripts, added ability to automatically download PO file and update UniTime.gwt.xml config.</line>
+				<line>To build UniTime for a different language, for example German, just use
+					<line>ant -Dlocale=de import-translations build</line>
+				</line>
+			</description>
+		</item>		
+	</category>
 </release>
 </release-history>

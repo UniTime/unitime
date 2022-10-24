@@ -601,19 +601,7 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<export-translations source="${src.dir}" generatePageNames="true">
-			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
-			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
-			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
-			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
-			<bundle package="org.unitime.localization.messages" name="PageNames"/>
-			<bundle package="org.unitime.localization.messages" name="PointInTimeDataReports"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="CPSolverMessages"/>
+		<export-translations source="${src.dir}" generatePageNames="false">
 			<locale value="${locale}"/>
 		</export-translations>
         <delete dir="${build.dir}" failonerror="false"/>
@@ -641,19 +629,7 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<import-translations source="${src.dir}" generatePageNames="true" encoding="${file.encoding}">
-			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
-			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
-			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
-			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
-			<bundle package="org.unitime.localization.messages" name="PageNames"/>
-			<bundle package="org.unitime.localization.messages" name="PointInTimeDataReports"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
-			<bundle package="org.unitime.timetable.gwt.resources" name="CPSolverMessages"/>
+		<import-translations source="${src.dir}" generatePageNames="false" download="true" token="b191dd443ab1800fc1e09ef23e50cdb0">
 			<locale value="${locale}"/>
 		</import-translations>
         <delete dir="${build.dir}" failonerror="false"/>

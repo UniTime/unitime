@@ -26,19 +26,64 @@ import java.util.Map;
  */
 public interface CPSolverMessages extends Messages, Constants {
 
-	@DefaultStringMapValue({})
+	@DefaultStringMapValue({
+		"Course Timetabling Solver Info",
+		"See Czech localization for an example",
+		"Solver property 1 original",
+		"Solver property 1 translated",
+		"Solver property 2 original",
+		"Solver property 2 translated",
+		"...",
+		"..."
+	})
 	Map<String, String> courseInfoMessages();
 	
-	@DefaultStringMapValue({})
+	@DefaultStringMapValue({
+		"Course Timetabling Objectives",
+		"See Czech localization for an example",
+		"Objective 1 original",
+		"Objective 1 translated",
+		"Objective 2 original",
+		"Objective 2 translated",
+		"...",
+		"..."
+	})
 	Map<String, String> courseObjectives();
 	
-	@DefaultStringMapValue({})
+	@DefaultStringMapValue({
+		"Examination Timetabling Solver Info",
+		"Same format as Solver:courseInfoMessages",
+		"Solver property 1 original",
+		"Solver property 1 translated",
+		"Solver property 2 original",
+		"Solver property 2 translated",
+		"...",
+		"..."
+	})
 	Map<String, String> examInfoMessages();
 	
-	@DefaultStringMapValue({})
+	@DefaultStringMapValue({
+		"Student Scheduling Solver Info",
+		"Same format as Solver:courseInfoMessages",
+		"Solver property 1 original",
+		"Solver property 1 translated",
+		"Solver property 2 original",
+		"Solver property 2 translated",
+		"...",
+		"..."
+	})
 	Map<String, String> studentInfoMessages();
 	
-	@DefaultStringMapValue({})
+	@DefaultStringMapValue({
+		"Instructor Scheduling Solver Info",
+		"Same format as Solver:courseInfoMessages",
+		"Solver property 1 original",
+		"Solver property 1 translated",
+		"Solver property 2 original",
+		"Solver property 2 translated",
+		"...",
+		"..."
+	})
 	Map<String, String> instructorInfoMessages();
 	
 	@DefaultMessage("loading class {0}")

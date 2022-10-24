@@ -799,11 +799,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.zanata</groupId>
-				<artifactId>zanata-maven-plugin</artifactId>
-				<version>4.6.2</version>
-			</plugin>
 		</plugins>
 	</build>
 

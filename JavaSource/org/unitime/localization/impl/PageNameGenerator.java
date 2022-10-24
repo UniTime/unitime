@@ -251,6 +251,8 @@ public class PageNameGenerator {
 		return properties;
 	}
 	
+	public Map<String, String> getPageNames() { return iPageNames; }
+	
 	public Collection<String> execute() throws Exception {
 		checkPageNamecClass();
 		checkMenuXML();
