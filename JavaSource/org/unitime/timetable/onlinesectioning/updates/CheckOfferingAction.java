@@ -378,6 +378,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				
 				boolean tx = helper.beginTransaction();
 				try {
+					Date dropTS = null;
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
 					Map<Long, StudentClassEnrollment> oldEnrollments = new HashMap<Long, StudentClassEnrollment>();
 					String approvedBy = null; Date approvedDate = null;
@@ -386,6 +387,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
 							(r.getLastEnrollment() != null && enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getLastEnrollment().getCourseId()))) {
 							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
+							if (dropTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().before(dropTS)))
+								dropTS = enrl.getTimestamp();
 							oldEnrollments.put(enrl.getClazz().getUniqueId(), enrl);
 							if (approvedBy == null && enrl.getApprovedBy() != null) {
 								approvedBy = enrl.getApprovedBy();
@@ -471,7 +474,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								cd.setAlternative(false);
 							}
 							cd.setWaitlist(true);
-							cd.setWaitlistedTimeStamp(ts);
+							cd.setWaitlistedTimeStamp(dropTS == null ? ts : dropTS);
 							cd.setWaitListSwapWithCourseOffering(null);
 							helper.getHibSession().saveOrUpdate(cd);
 							student.addWaitList(
@@ -479,7 +482,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 									WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
 						}
 						if (!r.getRequest().isWaitlist()) {
-							r.getRequest().setWaitListedTimeStamp(ts);
+							r.getRequest().setWaitListedTimeStamp(dropTS == null ? ts : dropTS);
 							r.getRequest().setWaitListSwapWithCourseOffering(null);
 							boolean otherRequestsChanged = false;
 							XStudent xs = r.getStudent();
