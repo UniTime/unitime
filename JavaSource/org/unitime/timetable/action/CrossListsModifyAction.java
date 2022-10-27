@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -52,6 +53,9 @@ import org.unitime.timetable.form.CrossListsModifyForm;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingInCrosslistAddAction;
+import org.unitime.timetable.model.AdvisorClassPref;
+import org.unitime.timetable.model.AdvisorCourseRequest;
+import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -280,11 +284,13 @@ public class CrossListsModifyAction extends Action {
         HashMap saList = new HashMap();
         List<CurriculumCourse> cc = new ArrayList<CurriculumCourse>();
         List<CourseRequest> courseRequests = new ArrayList<CourseRequest>();
+        Map<String, List<AdvisorCourseRequest>> advCourseReqs = new HashMap<String, List<AdvisorCourseRequest>>();
         
         try {
 	        tx = hibSession.beginTransaction();
 	        StringTokenizer strTok = new StringTokenizer(origCourseIds);
 	        
+        	List<CourseOffering> deletedOfferings = new ArrayList<CourseOffering>();
 	        while (strTok.hasMoreTokens()) {
 	            
 	            String origCrs = strTok.nextToken();
@@ -332,6 +338,11 @@ public class CrossListsModifyAction extends Action {
                     		hibSession.delete(oldReq);
                     	}
                     
+                    advCourseReqs.put(co2.getCourseName(), (List<AdvisorCourseRequest>)hibSession.createQuery(
+                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId")
+                			.setLong("courseId", co1.getUniqueId()).list());
+                    
+                    deletedOfferings.add(co2);
 /*	                
 	                hibSession.saveOrUpdate(io1);
 	                hibSession.flush();
@@ -416,7 +427,7 @@ public class CrossListsModifyAction extends Action {
 	        }
 	        
 	        // 3. For all added courses - delete all preferences and change the instr offering id  
-	        Vector addedOfferings = new Vector();
+	        Vector<CourseOffering> addedOfferings = new Vector();
 	        StringTokenizer strTok2 = new StringTokenizer(courseIds);
 	
 	        while (strTok2.hasMoreTokens()) {
@@ -465,7 +476,10 @@ public class CrossListsModifyAction extends Action {
 	                    		courseRequests.add(newReq);
 	                    		hibSession.delete(oldReq);
 	                    	}
-
+	                    
+	                    advCourseReqs.put(co3.getCourseName(), (List<AdvisorCourseRequest>)hibSession.createQuery(
+	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId")
+	                			.setLong("courseId", co2.getUniqueId()).list());
 	                    addedOfferings.addElement(co3);
 
     	                int indx = frm.getIndex(course);
@@ -534,6 +548,33 @@ public class CrossListsModifyAction extends Action {
 	        for (CourseRequest x: courseRequests) {
 		        x.getCourseDemand().getCourseRequests().add(x);
 	        	hibSession.saveOrUpdate(x);
+	        }
+	        // for advisor course recommendations, keep the requests but remove class preferences as they no longer apply (courses moved away)
+	        for (CourseOffering co: deletedOfferings) {
+	        	List<AdvisorCourseRequest> acrs = advCourseReqs.get(co.getCourseName());
+	        	if (acrs != null) {
+	        		for (AdvisorCourseRequest req: acrs) {
+	        			req.setCourseOffering(co);
+                    	for (Iterator<AdvisorSectioningPref> ip = req.getPreferences().iterator(); ip.hasNext(); ) {
+                    		AdvisorSectioningPref p = ip.next();
+                    		if (p instanceof AdvisorClassPref) {
+                    			hibSession.delete(p);
+                    			ip.remove();
+                    		}
+                    	}
+	    	        	hibSession.saveOrUpdate(req);
+	    	        }
+	        	}
+	        }
+	        // for advisor course recommendations, keep the requests (courses moved in)
+	        for (CourseOffering co: addedOfferings) {
+	        	List<AdvisorCourseRequest> acrs = advCourseReqs.get(co.getCourseName());
+	        	if (acrs != null) {
+	        		for (AdvisorCourseRequest req: acrs) {
+	        			req.setCourseOffering(co);
+	    	        	hibSession.saveOrUpdate(req);
+	    	        }
+	        	}
 	        }
             
 	        // Update managing department on all classes
