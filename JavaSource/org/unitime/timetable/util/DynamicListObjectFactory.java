@@ -25,6 +25,7 @@ package org.unitime.timetable.util;
  * 
  * @author Heston Fernandes
  */
+@Deprecated
 public interface DynamicListObjectFactory<T> {
     
         /**

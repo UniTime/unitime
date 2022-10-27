@@ -39,8 +39,6 @@ import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
@@ -88,14 +86,7 @@ public class CourseOfferingEditForm implements UniTimeForm {
     private Set<String> overrides;
     private String waitList;
     
-    protected DynamicListObjectFactory factory;
-
     public CourseOfferingEditForm() {
-    	factory = new DynamicListObjectFactory() {
-            public Object create() {
-                return new String(Preference.BLANK_PREF_VALUE);
-            }
-        };
         reset();
     }
 
@@ -176,13 +167,9 @@ public class CourseOfferingEditForm implements UniTimeForm {
         ioNotOffered = null;
         catalogLinkLabel = null;
         catalogLinkLocation = null;
-        instructors = DynamicList.getInstance(new ArrayList(), factory);
-        responsibilities = DynamicList.getInstance(new ArrayList(), factory);
-        percentShares = DynamicList.getInstance(new ArrayList(), new DynamicListObjectFactory() {
-            public Object create() {
-                return "";
-            }
-        });
+        instructors = new ArrayList();
+        responsibilities = new ArrayList();
+        percentShares = new ArrayList<String>();
         byReservationOnly = false;
         wkEnroll = null; wkChange = null; wkDrop = null;
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;

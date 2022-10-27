@@ -48,7 +48,7 @@ public class CourseRequestOption extends BaseCourseRequestOption {
 
 	
     public OnlineSectioningLog.CourseRequestOption.OptionType getType() {
-    	return (getOptionType() == null ? null : OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(getOptionType()));
+    	return (getOptionType() == null ? null : OnlineSectioningLog.CourseRequestOption.OptionType.forNumber(getOptionType()));
     }
         
     public OnlineSectioningLog.CourseRequestOption getOption() throws InvalidProtocolBufferException {

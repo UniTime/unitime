@@ -64,12 +64,10 @@ public class UniTimeTextBox extends TextBox implements HasFocus {
 		setReadOnly(!editable);
 	}
 
-	@Deprecated
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
 	}
 	
-	@Deprecated
 	public boolean isEnabled() {
 		return super.isEnabled();
 	}

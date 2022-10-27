@@ -87,6 +87,7 @@ public class ClassInstructorAssignmentAction extends UniTimeAction<ClassInstruct
     public String execute() throws Exception {
         if (form == null) {
         	form = new ClassInstructorAssignmentForm();
+        	form.reset();
         }
 
         // Get operation

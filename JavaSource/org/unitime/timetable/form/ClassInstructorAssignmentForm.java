@@ -36,7 +36,6 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.comparators.InstructorComparator;
@@ -45,8 +44,6 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /**
@@ -87,18 +84,6 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	private List<String> externalIds;
 	private List<String> responsibilities;
 
-    /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory<String> factoryClasses;
-    
-    public ClassInstructorAssignmentForm() {
-    	factoryClasses = new DynamicListObjectFactory<String>() {
-            public String create() {
-                return new String(Preference.BLANK_PREF_VALUE);
-            }
-        };
-    	reset();
-    }
-		
 	public void reset() {
 		op = "";
         nextId = previousId = null;
@@ -117,31 +102,21 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	}
 
 	private void resetLists() {
-    	classIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	classLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	classLabelIndents = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	instructorUids = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	percentShares = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	leadFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-    	displayFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-    	times = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	rooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	allowDeletes = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-    	readOnlyClasses = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	classHasErrors = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-    	showDisplay = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-    	externalIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	responsibilities = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	classIds = new ArrayList<String>();
+    	classLabels = new ArrayList<String>();
+    	classLabelIndents = new ArrayList<String>();
+    	instructorUids = new ArrayList<String>();
+    	percentShares = new ArrayList<String>();
+    	leadFlags = new ArrayList<Boolean>();
+    	displayFlags = new ArrayList<Boolean>();
+    	times = new ArrayList<String>();
+    	rooms = new ArrayList<String>();
+    	allowDeletes = new ArrayList<Boolean>();
+    	readOnlyClasses = new ArrayList<String>();
+    	classHasErrors = new ArrayList<Boolean>();
+    	showDisplay = new ArrayList<Boolean>();
+    	externalIds = new ArrayList<String>();
+    	responsibilities = new ArrayList<String>();
 	}
 
 	public void validate(UniTimeAction action) {

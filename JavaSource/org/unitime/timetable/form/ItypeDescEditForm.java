@@ -30,6 +30,7 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  * @author Tomas Muller
  */
 public class ItypeDescEditForm implements UniTimeForm {
+	private static final long serialVersionUID = 3555401912530970356L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private Integer iUniqueId = null;
     private String iId = null;

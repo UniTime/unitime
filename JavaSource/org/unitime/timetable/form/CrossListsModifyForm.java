@@ -27,8 +27,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
@@ -65,15 +63,7 @@ public class CrossListsModifyForm implements UniTimeForm {
 	
     private Long readOnlyCrsOfferingId;
 
-    /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory<String> factoryCourseOfferings;
-    
     public CrossListsModifyForm() {
-    	factoryCourseOfferings = new DynamicListObjectFactory<String>() {
-            public String create() {
-                return new String("");
-            }
-        };
         reset();
     }
 
@@ -102,32 +92,16 @@ public class CrossListsModifyForm implements UniTimeForm {
         ctrlCrsOfferingId = null;
         readOnlyCrsOfferingId = null;
         instrOfferingName = null;
-        originalOfferings = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() { return -1l; }
-        });
-        courseOfferingIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() { return -1l; }
-        });
-        courseOfferingNames = DynamicList.getInstance(new ArrayList<String>(), factoryCourseOfferings);
-        ownedCourse = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-        resvId = DynamicList.getInstance(new ArrayList<String>(), factoryCourseOfferings);
-        limits = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
-            public Integer create() { return null; }
-        });
-        requested = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
-            public Integer create() { return null; }
-        });
-        projected = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
-            public Integer create() { return null; }
-        });
-        lastTerm = DynamicList.getInstance(new ArrayList<Integer>(), new DynamicListObjectFactory<Integer>() {
-            public Integer create() { return null; }
-        });
-        canDelete = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
+        originalOfferings = new ArrayList<Long>();
+        courseOfferingIds = new ArrayList<Long>();
+        courseOfferingNames = new ArrayList<String>();
+        ownedCourse = new ArrayList<Boolean>();
+        resvId = new ArrayList<String>();
+        limits = new ArrayList<Integer>();
+        requested = new ArrayList<Integer>();
+        projected = new ArrayList<Integer>();
+        lastTerm = new ArrayList<Integer>();
+        canDelete = new ArrayList<Boolean>();
         ioLimit = null;
         unlimited = null;
     }

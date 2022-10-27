@@ -29,8 +29,6 @@ import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
@@ -72,23 +70,9 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
     private boolean teachingRequests;
     private String fundingDepartment;
 
-
-    // --------------------------------------------------------- Classes
-
-    /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory factoryCourseOfferings = null;
-    
     public InstructionalOfferingDetailForm() {
-    	factoryCourseOfferings = new DynamicListObjectFactory() {
-            public Object create() {
-                return new String("");
-            }
-        };
         reset();
     }
-
-   
-    // --------------------------------------------------------- Methods
 
     /** 
      * Method validate
@@ -118,7 +102,7 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
         notOffered = null;
         instrOfferingName = "";
         instrOfferingNameNoTitle = "";
-        courseOfferings = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
+        courseOfferings = new ArrayList();
         nextId = previousId = null;
         catalogLinkLabel = null;
         catalogLinkLocation = null;

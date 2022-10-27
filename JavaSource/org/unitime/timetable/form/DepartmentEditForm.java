@@ -38,8 +38,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.ReferenceList;
 
 
@@ -143,16 +141,8 @@ public class DepartmentEditForm implements UniTimeForm {
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false; iAllowEvents = false;
         iInheritInstructorPreferences = false; iAllowStudentScheduling = false;
-        iDependentDepartments = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() {
-                return -1l;
-            }
-        });
-        iDependentStatuses = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() {
-                return "";
-            }
-        });
+        iDependentDepartments = new ArrayList<Long>();
+        iDependentStatuses = new ArrayList<String>();
         iFullyEditable = false;
 	}
 

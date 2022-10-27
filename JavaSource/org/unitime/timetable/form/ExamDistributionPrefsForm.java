@@ -33,8 +33,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 
@@ -59,13 +57,8 @@ public class ExamDistributionPrefsForm implements UniTimeForm {
 	private Collection<SubjectArea> filterSubjectAreas;
 	private List<IdValue> subjectAreas;
 	private String filterCourseNbr;
-	
-    protected DynamicListObjectFactory factory;
     
     public ExamDistributionPrefsForm() {
-    	 factory = new DynamicListObjectFactory() {
-    		 public Object create() { return Long.valueOf(-1); }
-    	 };
     	 reset();
     }
 
@@ -91,9 +84,9 @@ public class ExamDistributionPrefsForm implements UniTimeForm {
         distPrefId=null;
         distType=Preference.BLANK_PREF_VALUE;
         prefLevel=Preference.BLANK_PREF_VALUE;
-        subjectArea = DynamicList.getInstance(new ArrayList<Long>(), factory);    
-        courseNbr = DynamicList.getInstance(new ArrayList<Long>(), factory);    
-        exam = DynamicList.getInstance(new ArrayList<Long>(), factory);    
+        subjectArea = new ArrayList<Long>();
+        courseNbr = new ArrayList<Long>();
+        exam = new ArrayList<Long>();
         filterSubjectAreaId = null;
         filterCourseNbr = null; 
         filterSubjectAreas = new ArrayList<SubjectArea>();

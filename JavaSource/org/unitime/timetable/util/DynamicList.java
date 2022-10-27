@@ -32,7 +32,7 @@ import java.util.ListIterator;
  * 
  * @author Heston Fernandes
  */
-
+@Deprecated
 public class DynamicList<T> implements List<T> {
 
     /**

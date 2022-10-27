@@ -28,9 +28,6 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ContactCategory;
 import org.unitime.timetable.model.dao.ContactCategoryDAO;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 
@@ -60,15 +57,7 @@ public class InquiryForm implements UniTimeForm {
     private String iFileContentType;  
     private String iFileFileName;
 
-	/** Factory to create dynamic list element for email addresses */
-	protected DynamicListObjectFactory<String> factoryEmails;
-	
 	public InquiryForm() {
-		factoryEmails = new DynamicListObjectFactory() {
-			public Object create() {
-				return new String(Constants.BLANK_OPTION_VALUE);
-			}
-		};
 		reset();
 	}
 
@@ -86,8 +75,8 @@ public class InquiryForm implements UniTimeForm {
 		iMessage = null;
 		iType = -1;
 		puid = null;
-		carbonCopy = DynamicList.getInstance(new ArrayList<String>(), factoryEmails);
-		carbonCopyName = DynamicList.getInstance(new ArrayList<String>(), factoryEmails);
+		carbonCopy = new ArrayList<String>();
+		carbonCopyName = new ArrayList<String>();
 		iFile = null; iFileContentType = null; iFileFileName = null;
 	}
 

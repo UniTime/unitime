@@ -354,7 +354,7 @@ public class CourseOfferingEdit extends Composite {
 				@Override
 				public void onChange(ChangeEvent event) {
 					iSubjectArea.clearHint();
-					Long subjectAreaId = new Long(iSubjectArea.getWidget().getSelectedValue());
+					Long subjectAreaId = Long.parseLong(iSubjectArea.getWidget().getSelectedValue());
 					//Reload
 					RPC.execute(new CourseOfferingCheckPermissions(null, subjectAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
 						@Override
@@ -833,7 +833,7 @@ public class CourseOfferingEdit extends Composite {
 	protected void onBack(boolean iIsEdit, Long courseOfferingId) {
 		if (iIsEdit) {
 			Long instructionalOfferingId = null;
-			instructionalOfferingId = new Long(iCourseOffering.getInstrOfferingId());
+			instructionalOfferingId = iCourseOffering.getInstrOfferingId();
 			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + instructionalOfferingId);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingSearch.action");
@@ -2026,7 +2026,7 @@ public class CourseOfferingEdit extends Composite {
 		Long subjectAreaId;
 		
 		if (iIsAdd) {
-			subjectAreaId = new Long(iSubjectArea.getWidget().getSelectedValue());
+			subjectAreaId = Long.parseLong(iSubjectArea.getWidget().getSelectedValue());
 			iCourseOffering.setSubjectAreaId(subjectAreaId);
 		}
 		
@@ -2053,15 +2053,15 @@ public class CourseOfferingEdit extends Composite {
 		iCourseOffering.setNotes(iRequestsNotes.getWidget().getValue());
 		
 		if (iConsent.getWidget().getSelectedValue() != null && !iConsent.getWidget().getSelectedValue().equals("none")) {
-			iCourseOffering.setConsent(new Long(iConsent.getWidget().getSelectedValue()));
+			iCourseOffering.setConsent(Long.parseLong(iConsent.getWidget().getSelectedValue()));
 		} else {
 			iCourseOffering.setConsent(null);
 		}
 		
 		if (iCredit.getWidget().getSelectedValue() != null && !iCredit.getWidget().getSelectedValue().equals("select")) {
 			iCourseOffering.setCreditFormat(iCredit.getWidget().getSelectedValue());
-			iCourseOffering.setCreditType(new Long(iCreditType.getWidget().getSelectedValue()));
-			iCourseOffering.setCreditUnitType(new Long(iCreditUnitType.getWidget().getSelectedValue()));
+			iCourseOffering.setCreditType(Long.parseLong(iCreditType.getWidget().getSelectedValue()));
+			iCourseOffering.setCreditUnitType(Long.parseLong(iCreditUnitType.getWidget().getSelectedValue()));
 			try {
 				iCourseOffering.setUnits(iUnits.getWidget().getValue() == null ? 0 : Float.parseFloat(iUnits.getWidget().getValue()));
 			} catch (NumberFormatException e) {
@@ -2101,7 +2101,7 @@ public class CourseOfferingEdit extends Composite {
 			if ("none".equals(iCourseDemands.getWidget().getSelectedValue())) {
 				iCourseOffering.setDemandOfferingId(null);
 			} else {
-				iCourseOffering.setDemandOfferingId(new Long (iCourseDemands.getWidget().getSelectedValue()));
+				iCourseOffering.setDemandOfferingId(Long.parseLong (iCourseDemands.getWidget().getSelectedValue()));
 			}
 		}
 
@@ -2110,7 +2110,7 @@ public class CourseOfferingEdit extends Composite {
 				if ("none".equals(iAlternativeCourseOfferings.getWidget().getSelectedValue())) {
 					iCourseOffering.setAlternativeCourseOfferingId(null);
 				} else {
-					iCourseOffering.setAlternativeCourseOfferingId(new Long (iAlternativeCourseOfferings.getWidget().getSelectedValue()));
+					iCourseOffering.setAlternativeCourseOfferingId(Long.parseLong (iAlternativeCourseOfferings.getWidget().getSelectedValue()));
 				}
 			}
 		}
@@ -2120,7 +2120,7 @@ public class CourseOfferingEdit extends Composite {
 				if ("none".equals(iFundingDepartment.getWidget().getSelectedValue())) {
 					iCourseOffering.setFundingDepartmentId(null);
 				} else {
-					iCourseOffering.setFundingDepartmentId(new Long (iFundingDepartment.getWidget().getSelectedValue()));
+					iCourseOffering.setFundingDepartmentId(Long.parseLong (iFundingDepartment.getWidget().getSelectedValue()));
 				}
 			}
 		}
@@ -2143,7 +2143,7 @@ public class CourseOfferingEdit extends Composite {
 			if (iCourseType.getWidget().getSelectedValue().isEmpty()) {
 				iCourseOffering.setCourseTypeId(null);
 			} else {
-				iCourseOffering.setCourseTypeId(new Long (iCourseType.getWidget().getSelectedValue()));
+				iCourseOffering.setCourseTypeId(Long.parseLong(iCourseType.getWidget().getSelectedValue()));
 			}
 		} else {
 			iCourseOffering.setCourseTypeId(null);

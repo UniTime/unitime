@@ -114,7 +114,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		}
 		
 		int j = 0;
-		Long tempSubjId = new Long(0);
+		Long tempSubjId = 0l;
 		
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
 			if (context.hasPermission(subject, Right.AddCourseOffering)) {

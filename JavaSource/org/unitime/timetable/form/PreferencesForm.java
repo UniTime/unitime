@@ -35,8 +35,6 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /**
@@ -83,29 +81,6 @@ public class PreferencesForm implements UniTimeForm {
     protected boolean allowHardPrefs;
     
     private boolean hasNotAvailable;
-
-    // --------------------------------------------------------- Classes
-
-    /** Factory to create dynamic list element for Preference */
-    protected DynamicListObjectFactory<String> factoryPref = new DynamicListObjectFactory<String>() {
-        public String create() {
-            return new String(Preference.BLANK_PREF_VALUE);
-        }
-    };
-
-    /** Factory to create dynamic list element for Preference Level */
-    protected DynamicListObjectFactory<String> factoryPrefLevel = new DynamicListObjectFactory<String>() {
-        public String create() {
-            return new String(PreferenceLevel.PREF_LEVEL_NEUTRAL);
-        }
-    };
-
-    /** Factory to create dynamic list element for Time Pattern */
-    protected DynamicListObjectFactory<String> factoryPattern = new DynamicListObjectFactory<String>() {
-        public String create() {
-            return new String("-1");
-        }
-    };
     
     /**
      * Checks that there are no duplicates and that all prior prefs have a value
@@ -786,10 +761,8 @@ public class PreferencesForm implements UniTimeForm {
 		if (prefs == null) return;
 		if (prefs.size() == patterns.size()) {
 			Collections.sort(patterns); //, new DatePattenNameComparator()
-			List<String> newPrefs = DynamicList.getInstance(new ArrayList<String>(),
-					factoryPref);
-			List<String> newPrefLevels = DynamicList.getInstance(new ArrayList<String>(),
-					factoryPrefLevel);
+			List<String> newPrefs = new ArrayList<String>();
+			List<String> newPrefLevels = new ArrayList<String>();
 			newPrefs.addAll(prefs);
 			for (int i = 0; i < newPrefs.size(); i++) {
 				String ith_pattern = patterns.get(i).getUniqueId().toString();
@@ -961,26 +934,26 @@ public class PreferencesForm implements UniTimeForm {
 	public void reset() {
 		op= "";
         timePattern = null;
-        timePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryPattern);
+        timePatterns = new ArrayList<String>();
         availableTimePatterns = new ArrayList<TimePattern>();
-        roomPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        bldgPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        bldgPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        roomFeaturePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomFeaturePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        roomGroups = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        roomGroupLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        distPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        distPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        datePatternPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        datePatternPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        coursePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        coursePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        attributePrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        attributePrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
-        instructorPrefs = DynamicList.getInstance(new ArrayList<String>(), factoryPref);
-        instructorPrefLevels = DynamicList.getInstance(new ArrayList<String>(), factoryPrefLevel);
+        roomPrefs = new ArrayList<String>();
+        roomPrefLevels = new ArrayList<String>();
+        bldgPrefs = new ArrayList<String>();
+        bldgPrefLevels = new ArrayList<String>();
+        roomFeaturePrefs = new ArrayList<String>();
+        roomFeaturePrefLevels = new ArrayList<String>();
+        roomGroups = new ArrayList<String>();
+        roomGroupLevels = new ArrayList<String>();
+        distPrefs = new ArrayList<String>();
+        distPrefLevels = new ArrayList<String>();
+        datePatternPrefs = new ArrayList<String>();
+        datePatternPrefLevels = new ArrayList<String>();
+        coursePrefs = new ArrayList<String>();
+        coursePrefLevels = new ArrayList<String>();
+        attributePrefs = new ArrayList<String>();
+        attributePrefLevels = new ArrayList<String>();
+        instructorPrefs = new ArrayList<String>();
+        instructorPrefLevels = new ArrayList<String>();
         nextId = previousId = null;
         allowHardPrefs = true;
         hasNotAvailable = false;

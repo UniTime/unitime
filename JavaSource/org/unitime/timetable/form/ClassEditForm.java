@@ -31,12 +31,9 @@ import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
@@ -107,18 +104,8 @@ public class ClassEditForm extends PreferencesForm {
     private String fundingDept;
     private Boolean datePatternEditable;
     
-    // --------------------------------------------------------- Classes
-
-    /** Factory to create dynamic list element for Instructors */
-    protected DynamicListObjectFactory factoryInstructors;
-    
     public ClassEditForm() {
     	super();
-    	factoryInstructors = new DynamicListObjectFactory() {
-            public Object create() {
-                return new String(Preference.BLANK_PREF_VALUE);
-            };
-    	};
         reset();
     }
 
@@ -190,7 +177,7 @@ public class ClassEditForm extends PreferencesForm {
         parentClassName = "-";
         itypeDesc = "";
         datePattern = null;
-        instrLead = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        instrLead = new ArrayList();
         managingDeptLabel = "-";
         notes="";
         displayInstructor = null;
@@ -203,13 +190,13 @@ public class ClassEditForm extends PreferencesForm {
         isCrosslisted = null;
         isCancelled = null;
 
-        instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
-        instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        instructors = new ArrayList();
+        instrPctShare= new ArrayList();
         assignments = null;
         enrollment = null;
         snapshotLimit = null;
         accommodation = null;
-        instrResponsibility = DynamicList.getInstance(new ArrayList(), factoryInstructors);
+        instrResponsibility = new ArrayList();
         TeachingResponsibility tr = TeachingResponsibility.getDefaultInstructorTeachingResponsibility();
         defaultTeachingResponsibilityId = (tr == null ? "" : tr.getUniqueId().toString());
         lms = null;

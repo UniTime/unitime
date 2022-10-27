@@ -172,7 +172,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					}
 				}
 				if (log.getResult() != null) {
-					OnlineSectioningLog.Action.ResultType res = OnlineSectioningLog.Action.ResultType.valueOf(log.getResult());
+					OnlineSectioningLog.Action.ResultType res = OnlineSectioningLog.Action.ResultType.forNumber(log.getResult());
 					if (res != null)
 						a.setResult(Constants.toInitialCase(res.name()));
 				}

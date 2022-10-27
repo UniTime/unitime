@@ -29,8 +29,6 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /**
@@ -82,27 +80,13 @@ public class TimetableManagerForm implements UniTimeForm {
         dept=null;
         solverGr = null;
         lookupEnabled = null;
-        depts = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() { return -1l; }
-        });
-        deptLabels = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() { return ""; }
-        });
-        roles= DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() { return -1l; }
-        });
-        roleRefs= DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() { return ""; }
-        });
-        roleReceiveEmailFlags = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() { return false; }
-        });
-        solverGrs = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() { return -1l; }
-        });
-        solverGrLabels = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() { return ""; }
-        });
+        depts = new ArrayList<Long>();
+        deptLabels = new ArrayList<String>();
+        roles= new ArrayList<Long>();
+        roleRefs= new ArrayList<String>();
+        roleReceiveEmailFlags = new ArrayList<Boolean>();
+        solverGrs = new ArrayList<Long>();
+        solverGrLabels = new ArrayList<String>();
     }
 
     public void validate(UniTimeAction action) {

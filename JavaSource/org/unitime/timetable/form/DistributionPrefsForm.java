@@ -29,8 +29,6 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
@@ -80,22 +78,9 @@ public class DistributionPrefsForm implements UniTimeForm {
 	private Collection filterSubjectAreas;
 	private String filterCourseNbr;
     
-
-    // --------------------------------------------------------- Classes
-
-    /** Factory to create dynamic list element for Distribution Objects */
-    protected DynamicListObjectFactory factoryDistObj;
-    
     public DistributionPrefsForm() {
-    	factoryDistObj = new DynamicListObjectFactory() {
-            public Object create() {
-                return Preference.BLANK_PREF_VALUE;
-            };
-    	};
     	reset();
     }
-
-    // --------------------------------------------------------- Methods
 
     /** 
      * Method validate
@@ -197,10 +182,10 @@ public class DistributionPrefsForm implements UniTimeForm {
         owner="";
         description="";
         groupingDescription="";
-        subjectArea = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
-        courseNbr = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
-        itype = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
-        classNumber = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
+        subjectArea = new ArrayList();
+        courseNbr = new ArrayList();
+        itype = new ArrayList();
+        classNumber = new ArrayList();
         grouping = Preference.BLANK_PREF_VALUE;
         filterSubjectAreaId = null;
         filterCourseNbr = null; 

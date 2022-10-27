@@ -32,13 +32,10 @@ import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstructionalMethod;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 
@@ -146,27 +143,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 	private static String DISPLAY_LMS_TOKEN = "displayLms";
 	private static String LMS_TOKEN = "lms";
 	
-    /** Factory to create dynamic list element for Course Offerings */
-    protected DynamicListObjectFactory<String> factoryClasses;
-    protected DynamicListObjectFactory<Boolean> factoryBoolean;
-    protected DynamicListObjectFactory<Integer> factoryInteger;
-    
     public InstructionalOfferingModifyForm() {
-    	factoryClasses = new DynamicListObjectFactory<String>() {
-            public String create() {
-                return Preference.BLANK_PREF_VALUE;
-            }
-    	};
-    	factoryBoolean = new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() {
-                return Boolean.FALSE;
-            }
-    	}; 
-    	factoryInteger = new DynamicListObjectFactory<Integer>() {
-            public Integer create() {
-                return 0;
-            }
-    	}; 
     	reset();
     }
 		
@@ -403,7 +380,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     }
     
     private void initClassHasErrorsToFalse(){
-		this.setClassHasErrors(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+		this.setClassHasErrors(new ArrayList<Boolean>());
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
 			this.getClassHasErrors().add(Boolean.valueOf(false));
 			it.next();
@@ -411,8 +388,8 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     }
     
     private void initClassMoveDirections(){
-    	this.setClassCanMoveDown(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
-		this.setClassCanMoveUp(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+    	this.setClassCanMoveDown(new ArrayList<Boolean>());
+		this.setClassCanMoveUp(new ArrayList<Boolean>());
 		for(Iterator it = this.getClassIds().iterator(); it.hasNext();){
 			this.getClassCanMoveDown().add(Boolean.valueOf(false));
 			this.getClassCanMoveUp().add(Boolean.valueOf(false));
@@ -459,43 +436,43 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     }
     
     private void resetLists(){
-    	classIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	subpartIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	itypes = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	mustHaveChildClasses = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	parentClassIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	readOnlyClasses = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	readOnlyDatePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	classHasErrors = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-       	classLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	classLabelIndents = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	enrollments = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	snapshotLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	minClassLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	maxClassLimits = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	roomRatios = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	numberOfRooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-      	departments = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	datePatterns = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-      	displayInstructors = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	enabledForStudentScheduling = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	subtotalIndexes = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
-       	subtotalLabels = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-       	subtotalValues = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
-       	subtotalSnapValues = DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger);
-       	enableAllClassesForStudentSchedulingForSubpart = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-       	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	classCanMoveUp = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	classCanMoveDown = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	readOnlySubparts = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	times = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	rooms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	instructors = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	externalIds = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
-    	canDelete = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	canCancel = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	isCancelled = DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean);
-    	lms = DynamicList.getInstance(new ArrayList<String>(), factoryClasses);
+    	classIds = new ArrayList<String>();
+    	subpartIds = new ArrayList<String>();
+    	itypes = new ArrayList<String>();
+    	mustHaveChildClasses = new ArrayList<Boolean>();
+    	parentClassIds = new ArrayList<String>();
+    	readOnlyClasses = new ArrayList<String>();
+    	readOnlyDatePatterns = new ArrayList<String>();
+       	classHasErrors = new ArrayList<Boolean>();
+       	classLabels = new ArrayList<String>();
+       	classLabelIndents = new ArrayList<String>();
+       	enrollments = new ArrayList<String>();
+       	snapshotLimits = new ArrayList<String>();
+       	minClassLimits = new ArrayList<String>();
+    	maxClassLimits = new ArrayList<String>();
+    	roomRatios = new ArrayList<String>();
+    	numberOfRooms = new ArrayList<String>();
+      	departments = new ArrayList<String>();
+    	datePatterns = new ArrayList<String>();
+      	displayInstructors = new ArrayList<String>();
+    	enabledForStudentScheduling = new ArrayList<String>();
+       	subtotalIndexes = new ArrayList<Integer>();
+       	subtotalLabels = new ArrayList<String>();
+       	subtotalValues = new ArrayList<Integer>();
+       	subtotalSnapValues = new ArrayList<Integer>();
+       	enableAllClassesForStudentSchedulingForSubpart = new ArrayList<Boolean>();
+       	displayAllClassesInstructorsForSubpart = new ArrayList<Boolean>();
+    	classCanMoveUp = new ArrayList<Boolean>();
+    	classCanMoveDown = new ArrayList<Boolean>();
+    	readOnlySubparts = new ArrayList<Boolean>();
+    	times = new ArrayList<String>();
+    	rooms = new ArrayList<String>();
+    	instructors = new ArrayList<String>();
+    	externalIds = new ArrayList<String>();
+    	canDelete = new ArrayList<Boolean>();
+    	canCancel = new ArrayList<Boolean>();
+    	isCancelled = new ArrayList<Boolean>();
+    	lms = new ArrayList<String>();
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -629,13 +606,13 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 
     public void initalizeSubpartSubtotalsAndDisplayFlags(){
 		HashMap subpartToIndex = new HashMap();
-    	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
-		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList<String>(), factoryClasses));
-		this.setSubtotalValues(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
-		this.setSubtotalSnapValues(DynamicList.getInstance(new ArrayList<Integer>(), factoryInteger));
-		this.setEnableAllClassesForStudentSchedulingForSubpart(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
-		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
-		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList<Boolean>(), factoryBoolean));
+    	this.setSubtotalIndexes(new ArrayList<Integer>());
+		this.setSubtotalLabels(new ArrayList<String>());
+		this.setSubtotalValues(new ArrayList<Integer>());
+		this.setSubtotalSnapValues(new ArrayList<Integer>());
+		this.setEnableAllClassesForStudentSchedulingForSubpart(new ArrayList<Boolean>());
+		this.setDisplayAllClassesInstructorsForSubpart(new ArrayList<Boolean>());
+		this.setReadOnlySubparts(new ArrayList<Boolean>());
 		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;
     	int i = 0;

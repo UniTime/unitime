@@ -37,7 +37,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -48,8 +47,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
 
 /**
@@ -114,22 +111,9 @@ public class ExamEditForm extends PreferencesForm {
     	return getSeatingTypeIdx() == 1;
     }
     public String[] getObjectTypes() { return ExamOwner.sOwnerTypes; }
-
-    protected DynamicListObjectFactory<String> factory;
-    protected DynamicListObjectFactory<Long> idfactory;
     
     public ExamEditForm() {
     	super();
-    	factory = new DynamicListObjectFactory<String>() {
-            public String create() {
-                return new String(Preference.BLANK_PREF_VALUE);
-            }
-        };
-        idfactory = new DynamicListObjectFactory<Long>() {
-            public Long create() {
-                return Long.valueOf(-1);
-            }
-        };
     	reset();
     }
 
@@ -397,11 +381,11 @@ public class ExamEditForm extends PreferencesForm {
         printOffset = null;
         avgPeriod = null;
         seatingType = MSG.examSeatingTypeExam();
-        instructors = DynamicList.getInstance(new ArrayList(), factory);
-        subjectArea = DynamicList.getInstance(new ArrayList(), idfactory);
-        courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
-        itype = DynamicList.getInstance(new ArrayList(), idfactory);
-        classNumber = DynamicList.getInstance(new ArrayList(), idfactory);
+        instructors = new ArrayList();
+        subjectArea = new ArrayList();
+        courseNbr = new ArrayList();
+        itype = new ArrayList();
+        classNumber = new ArrayList();
         examType = null;
         clone = false;
         accommodation = null;

@@ -43,8 +43,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.DynamicList;
-import org.unitime.timetable.util.DynamicListObjectFactory;
 
 
 /** 
@@ -102,36 +100,12 @@ public class SolverGroupEditForm implements UniTimeForm {
 	public void reset() {
 		iOp = null; iUniqueId = null;
 		iName = null; iAbbv = null;
-		iAssignedDepartments = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() {
-                return false;
-            }
-        });
-		iAssignedManagers = DynamicList.getInstance(new ArrayList<Boolean>(), new DynamicListObjectFactory<Boolean>() {
-            public Boolean create() {
-                return false;
-            }
-        });
-		iManagerIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() {
-                return -1l;
-            }
-        });
-		iManagerNames = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() {
-                return "";
-            }
-        });
-		iDepartmentIds = DynamicList.getInstance(new ArrayList<Long>(), new DynamicListObjectFactory<Long>() {
-            public Long create() {
-                return -1l;
-            }
-        });
-		iDepartmentNames = DynamicList.getInstance(new ArrayList<String>(), new DynamicListObjectFactory<String>() {
-            public String create() {
-                return "";
-            }
-        });
+		iAssignedDepartments = new ArrayList<Boolean>();
+		iAssignedManagers = new ArrayList<Boolean>();
+		iManagerIds = new ArrayList<Long>();
+		iManagerNames = new ArrayList<String>();
+		iDepartmentIds = new ArrayList<Long>();
+		iDepartmentNames = new ArrayList<String>();
 		iDepartmentsEditable = false;
 	}
 	

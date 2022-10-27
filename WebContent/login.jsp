@@ -53,7 +53,7 @@
 	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" onload="document.getElementById('username').focus();">
-	<s:if test="externalHeader != null">
+	<s:if test="externalHeader != null && !externalHeader.isEmpty()">
 		<s:include value="%{externalHeader}"/>
 	</s:if>
 	<span class='top-menu'>
@@ -130,7 +130,7 @@
 	<tt:hasProperty name="tmtbl.page.disclaimer">
 		<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
 	</tt:hasProperty>
-	<s:if test="externalFooter != null">
+	<s:if test="externalFooter != null && !externalFooter.isEmpty()">
 		<s:include value="%{externalFooter}"/>
 	</s:if>
 </body>
