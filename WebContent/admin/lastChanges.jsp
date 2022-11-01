@@ -25,7 +25,7 @@
 <s:form action="lastChanges">
  
 <script type="text/javascript" src="scripts/block.js"></script>
- 	<script type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+ 	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 	<table class="unitime-MainTable">
 		<tr>	
 		<th nowrap="nowrap" align="right"><loc:message name="filterDepartment"/></th>

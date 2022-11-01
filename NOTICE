@@ -58,10 +58,6 @@ Commons BeanUtils (commons-beanutils-1.8.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/beanutils/
 
-Commons Chain (commons-chain-1.2.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/chain/
-
 Apache Commons Codec (commons-codec-1.10.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-codec/
@@ -74,9 +70,9 @@ Commons DBCP (commons-dbcp-1.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/dbcp/
 
-Digester (commons-digester-1.8.jar)
+Commons Digester (commons-digester-2.0.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://jakarta.apache.org/commons/digester/
+	http://commons.apache.org/digester/
 
 Apache Commons FileUpload (commons-fileupload-1.3.3.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -90,17 +86,13 @@ Commons Lang (commons-lang-2.6.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/lang/
 
-Logging (commons-logging-1.0.4.jar)
+Commons Logging (commons-logging-1.1.1.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://jakarta.apache.org/commons/logging/
+	http://commons.apache.org/logging
 
 Commons Pool (commons-pool-1.5.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/pool/
-
-Validator (commons-validator-1.3.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/
 
 Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.6.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -137,9 +129,17 @@ JGroups Replication (ehcache-jgroupsreplication-1.7.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://ehcache.org/ehcache-jgroupsreplication
 
+OGNL - Object Graph Navigation Library (ognl-3.1.29.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://ognl.org
+
 Apache Commons Collections (commons-collections4-4.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-collections/
+
+Apache Commons Lang (commons-lang3-3.8.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://commons.apache.org/proper/commons-lang/
 
 Apache Log4j API (log4j-api-2.17.1.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -165,21 +165,69 @@ Apache POI (poi-3.17.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://poi.apache.org/
 
-Struts Core (struts-core-1.3.10.jar)
+Struts 2 Convention Plugin (struts2-convention-plugin-2.5.30.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://struts.apache.org
+	http://struts.apache.org/struts2-plugins/struts2-convention-plugin/
 
-Struts Extras (struts-extras-1.3.10.jar)
+Struts 2 Core (struts2-core-2.5.30.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://struts.apache.org
+	http://struts.apache.org/struts2-core/
 
-Struts Taglib (struts-taglib-1.3.10.jar)
+Struts 2 Tiles Plugin (struts2-tiles-plugin-2.5.30.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://struts.apache.org
+	http://struts.apache.org/struts2-plugins/struts2-tiles-plugin/
 
-Struts Tiles (struts-tiles-1.3.10.jar)
+Tiles - API (tiles-api-3.0.8.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://struts.apache.org
+	http://tiles.apache.org/framework/tiles-api/
+
+Autotag - Core runtime (tiles-autotag-core-runtime-1.2.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/tiles-autotag/tiles-autotag-core-runtime/
+
+Tiles - Core Library (tiles-core-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-core/
+
+Tiles - EL support (tiles-el-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-el/
+
+Tiles - FreeMarker Support (tiles-freemarker-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-freemarker/
+
+Tiles - JSP support (tiles-jsp-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-jsp/
+
+Tiles - OGNL support (tiles-ognl-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-ognl/
+
+Tiles request - API (tiles-request-api-1.0.7.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/tiles-request/tiles-request-api/
+
+Tiles Request - Freemarker support (tiles-request-freemarker-1.0.7.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/tiles-request/tiles-request-freemarker/
+
+Tiles Request - JSP support (tiles-request-jsp-1.0.7.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/tiles-request/tiles-request-jsp/
+
+Tiles request - Servlet support (tiles-request-servlet-1.0.7.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/tiles-request/tiles-request-servlet/
+
+Tiles - Servlet support (tiles-servlet-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-servlet/
+
+Tiles - Template Technologies Support (tiles-template-3.0.8.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://tiles.apache.org/framework/tiles-template/
 
 AspectJ runtime (aspectjrt-1.8.7.jar)
 	under Eclipse Public License (EPL), Version 1.0
@@ -277,7 +325,19 @@ JGroups (jgroups-3.6.6.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
-asm (asm-9.2.jar)
+asm (asm-7.3.1.jar)
+	under BSD-3-Clause
+	http://asm.ow2.io/
+
+asm-analysis (asm-analysis-7.3.1.jar)
+	under BSD-3-Clause
+	http://asm.ow2.io/
+
+asm-commons (asm-commons-7.3.1.jar)
+	under BSD-3-Clause
+	http://asm.ow2.io/
+
+asm-tree (asm-tree-7.3.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
@@ -288,6 +348,10 @@ reactive-streams (reactive-streams-1.0.3.jar)
 Restlet Core - API and Engine (org.restlet-2.3.12.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://restlet.org/org.restlet
+
+JCL 1.1.1 implemented over SLF4J (jcl-over-slf4j-1.7.6.jar)
+	under MIT License
+	http://www.slf4j.org
 
 SLF4J API Module (slf4j-api-1.7.25.jar)
 	under MIT License
@@ -329,10 +393,6 @@ Spring Messaging (spring-messaging-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Struts (spring-struts-3.2.18.RELEASE.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://github.com/SpringSource/spring-framework
-
 Spring Transaction (spring-tx-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
@@ -340,10 +400,6 @@ Spring Transaction (spring-tx-5.3.20.jar)
 Spring Web (spring-web-5.3.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
-
-Spring Web MVC (spring-webmvc-3.2.18.RELEASE.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://github.com/SpringSource/spring-framework
 
 Spring Integration Core (spring-integration-core-5.4.12.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -404,9 +460,6 @@ spring-security-web (spring-security-web-5.7.5.jar)
 CPSolver (cpsolver-1.4-SNAPSHOT.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
 	http://www.cpsolver.org
-
-oro (oro-2.0.8.jar)
-	under Apache Software License (ASL), Version 2.0
 
 Tomcat Migration Tool for Jakarta EE (jakartaee-migration-1.0.0.jar)
 	under the Apache Software License (ASL), Version 2.0

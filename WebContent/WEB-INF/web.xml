@@ -50,27 +50,6 @@
         <session-timeout>45</session-timeout>
     </session-config>
 
-	<!-- Struts Action Servlet -->
-	<servlet>
-		<servlet-name>action</servlet-name>
-		<servlet-class>
-			org.apache.struts.action.ActionServlet
-		</servlet-class>
-		<init-param>
-			<param-name>config</param-name>
-			<param-value>/WEB-INF/struts-config.xml</param-value>
-		</init-param>
-		<init-param>
-			<param-name>debug</param-name>
-			<param-value>3</param-value>
-		</init-param>
-		<init-param>
-			<param-name>detail</param-name>
-			<param-value>3</param-value>
-		</init-param>
-		<load-on-startup>0</load-on-startup>
-	</servlet>
-	
 	<!-- Sprint Servlets -->
 	<servlet>
 		<servlet-name>gwt-dispatcher</servlet-name>
@@ -190,11 +169,6 @@
 
 	<!-- Servlet Mappings -->
 	<servlet-mapping>
-		<servlet-name>action</servlet-name>
-		<url-pattern>*.do</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
 		<servlet-name>remoteLogging</servlet-name>
 		<url-pattern>/unitime/remote_logging</url-pattern>
 	</servlet-mapping>
@@ -226,10 +200,6 @@
 		<filter-class>
 			org.unitime.timetable.filter.PageAccessFilter
 		</filter-class>
-		<init-param>
-			<param-name>config</param-name>
-			<param-value>/WEB-INF/struts-config.xml</param-value>
-		</init-param>
 	</filter>
 
 	<filter>
@@ -298,6 +268,11 @@
 			<param-value>struts-default.xml,struts-plugin.xml,../struts.xml</param-value>
 		</init-param>
     </filter>
+    
+    <filter>
+    	<filter-name>Do-Action Redirect</filter-name>
+    	<filter-class>org.unitime.timetable.filter.DoToActionRedirectFilter</filter-class>
+    </filter>
 
 	<!-- Filter Mappings -->
 	<filter-mapping>
@@ -308,6 +283,11 @@
         <dispatcher>INCLUDE</dispatcher>
         <dispatcher>ERROR</dispatcher>
         <dispatcher>ASYNC</dispatcher><!-- Servlet 3.0 w/ disabled auto-initialization only; not supported in 2.5 -->
+    </filter-mapping>
+    
+    <filter-mapping>
+    	<filter-name>Do-Action Redirect</filter-name>
+    	<url-pattern>*.do</url-pattern>
     </filter-mapping>
 	
 	<filter-mapping>
@@ -337,11 +317,6 @@
 
 	<filter-mapping>
 		<filter-name>Query Log Filter</filter-name>
-		<url-pattern>*.do</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>*.action</url-pattern>
 	</filter-mapping>
 
@@ -363,11 +338,6 @@
 	<filter-mapping>
 		<filter-name>Query Log Filter</filter-name>
 		<url-pattern>/api/*</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>Locale Filter</filter-name>
-		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
 	
 	<filter-mapping>
