@@ -19,29 +19,10 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
-<%@ taglib uri="/struts-tags"  prefix="s" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
-<%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
-<%@ page import="org.springframework.security.access.AccessDeniedException"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 
-<%
-	try {
-		if (exception==null && session.getAttribute("exception")!=null) {
-			exception = (Exception)session.getAttribute("exception");
-			session.removeAttribute("exception");
- 		}
- 	} catch (IllegalStateException e) {}
- 	if (exception != null && (exception instanceof AccessDeniedException || "Access Denied.".equals(exception.getMessage()))) {
-%>
-		<jsp:forward page="/loginRequired.action">
-			<jsp:param name="message" value="<%=exception.getMessage()%>"/>
-		</jsp:forward>
-<%
- 	}
- %>
- <% if (exception != null) request.setAttribute("__exception", exception); %>
 <HTML>
 <HEAD>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -56,7 +37,7 @@
     <tt:hasProperty name="tmtbl.custom.css">
 		<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>
-    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
+    <script type="text/javascript" src="unitime/unitime.nocache.js"></script>
 </HEAD>
 <BODY class="bodyMain">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
@@ -108,7 +89,7 @@
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
     			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 		    </tt:propertyEquals>
-    <script language="JavaScript" type="text/javascript">
+    <script type="text/javascript">
     	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
     		var c = unescape(document.cookie);
@@ -140,7 +121,7 @@
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 	<% if (exception!=null) { %>
-		<TABLE width="100%" border="0">
+		<TABLE style="unitime-MainTable">
 			<TR>
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%= 
@@ -152,25 +133,9 @@
 	                </DIV>
 				</TD>
 			</TR>
-		<% 
-		    WebOutputStream wos = new WebOutputStream();
-	        PrintWriter pw = new PrintWriter(wos);
-	        exception.printStackTrace(pw);
-	        pw.close();
-			String stackTrace = wos.toString();
-		%>
 			<TR align="left" valign="top">
 				<TD>Trace:</TD>
-				<TD><FONT color="898989"><% out.print(stackTrace); %></FONT></TD>
-			</TR>
-		</TABLE>
-	<% } else {%>
-		<TABLE width="100%" border="0">
-			<TR><TD colspan="2">
-				<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><s:property value="exception"/></FONT></DIV>
-			</TD></TR>
-			<TR align="left" valign="top">
-				<td>Trace:</td><td style="white-space: pre; color: #898989;"><s:property value="exceptionStack" /></td>
+				<TD><FONT color="898989" style="white-space: pre;"><% exception.printStackTrace(new PrintWriter(out));%></FONT></TD>
 			</TR>
 		</TABLE>
 	<% } %>

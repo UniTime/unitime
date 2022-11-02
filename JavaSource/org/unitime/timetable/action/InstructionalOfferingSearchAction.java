@@ -562,7 +562,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 	}
 	
 	public String printTable() throws Exception {
-		new WebInstructionalOfferingTableBuilder().htmlTableForInstructionalOfferings(
+    	new WebInstructionalOfferingTableBuilder().htmlTableForInstructionalOfferings(
 				sessionContext,
 				getClassAssignmentService().getAssignment(),
 				getExaminationSolverService().getSolver(),

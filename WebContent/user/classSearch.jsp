@@ -46,7 +46,9 @@
 								<loc:message name="columnDemand"/>
 							</TD>
 						</TR>
-					</s:if>
+					</s:if><s:else>
+						<s:hidden name="form.demand"/>
+					</s:else>
 					<s:hidden name="form.demandIsVisible"/>
 					<TR>
 						<TD></TD>
@@ -86,7 +88,9 @@
 								<loc:message name="columnFundingDepartment"/>
 							</TD>
 						</TR>
-					</tt:propertyEquals>
+					</tt:propertyEquals><tt:propertyNotEquals name="unitime.courses.funding_departments_enabled" value="true">
+						<s:hidden name="form.fundingDepartment"/>
+					</tt:propertyNotEquals>
 					<TR>
 						<TD></TD>
 						<TD>

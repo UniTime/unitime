@@ -18,7 +18,6 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ taglib prefix="s" uri="/struts-tags" %>

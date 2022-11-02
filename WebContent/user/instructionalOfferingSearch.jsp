@@ -146,7 +146,9 @@
 								<loc:message name="columnFundingDepartment"/>
 							</TD>
 						</TR>
-					</tt:propertyEquals>
+					</tt:propertyEquals><tt:propertyNotEquals name="unitime.courses.funding_departments_enabled" value="true">
+						<s:hidden name="form.fundingDepartment"/>
+					</tt:propertyNotEquals>
 					<TR>
 						<TD></TD>
 						<TD colspan="2">

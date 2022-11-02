@@ -257,7 +257,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	    	if (form.getExams() != null)
 	    		sessionContext.getUser().setProperty("ClassList.exams",form.getExams() ? "1" : "0");
 	    	
-	    	sessionContext.getUser().setProperty("ClassList.fundingDepartment",form.getFundingDepartment() ? "1" : "0");	    	
+	    	sessionContext.getUser().setProperty("ClassList.fundingDepartment", (form.getFundingDepartment() == null ? "0" : form.getFundingDepartment() ? "1" : "0"));	    	
 	    	sessionContext.getUser().setProperty("ClassList.sortBy", form.getSortBy());
 	    	sessionContext.getUser().setProperty("ClassList.filterAssignedRoom", form.getFilterAssignedRoom());		    	
 	    	sessionContext.getUser().setProperty("ClassList.filterInstructor", form.getFilterInstructor());		    	

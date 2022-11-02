@@ -23,44 +23,32 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.BlankForm;
-import org.unitime.timetable.model.QueryLog;
-import org.unitime.timetable.security.rights.Right;
 
-/** 
+/**
  * @author Tomas Muller
  */
-@Action(value = "stats", results = {
-		@Result(name = "show", type = "tiles", location = "stats.tiles")
+@Action(value = "error", results = {
+		@Result(name = "success", type = "tiles", location = "error.tiles")
 	})
-@TilesDefinition(name = "stats.tiles", extend = "baseLayout", putAttributes =  {
-		@TilesPutAttribute(name = "title", value = "Page Statistics"),
-		@TilesPutAttribute(name = "body", value = "/admin/stats.jsp")
+@TilesDefinition(name = "error.tiles", extend = "baseLayout", putAttributes =  {
+		@TilesPutAttribute(name = "title", value = "Runtime Error"),
+		@TilesPutAttribute(name = "body", value = "/error-struts2.jsp")
 	})
-public class StatsAction extends UniTimeAction<BlankForm> {
-	private static final long serialVersionUID = -1957840172304483386L;
-
-	@Override
+public class ErrorAction extends UniTimeAction<BlankForm>{
+	private static final long serialVersionUID = -5805604919312822390L;
+	
+	private String uri;
+    
 	public String execute() {
-		sessionContext.checkPermission(Right.PageStatistics);
-		WebTable.setOrder(sessionContext,"pageStats.ord",request.getParameter("ord"), 1);
-		return "show";
+		uri = request.getRequestURI().substring(request.getContextPath().length() + 1);
+		if (request.getQueryString() != null && !request.getQueryString().isEmpty())
+			uri += "?" + request.getQueryString();
+        return "success";
 	}
 	
-	public QueryLog.ChartType[] getChartTypes() {
-		return QueryLog.ChartType.values();
+	public String getURL() {
+		return uri;
 	}
 	
-	public QueryLog.ChartWindow[] getChartWindows() {
-		return QueryLog.ChartWindow.values();
-	}
-	
-	public String getChartUrl(QueryLog.ChartWindow w, QueryLog.ChartType t) {
-		return QueryLog.getChart(w, t);
-	}
-	
-	public String getQueryTable() {
-		return QueryLog.getTopQueries(7).printTable(WebTable.getOrder(sessionContext, "pageStats.ord"));
-	}
 }

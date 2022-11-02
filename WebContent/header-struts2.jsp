@@ -17,10 +17,8 @@
  * limitations under the License.
  * 
 --%>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
-
 <div id="loading" class="unitime-PageLoading" style="visibility:hidden;display:none">
 	<img align="middle" vspace="5" border="0" src="images/loading.gif">
 </div>

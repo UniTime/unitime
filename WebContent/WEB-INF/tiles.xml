@@ -23,16 +23,13 @@
  -->
 <tiles-definitions>
 	<definition name="baseLayout" template="/layouts/layout-struts2.jsp">
-		<put-attribute name="onLoadFunction" type="string" value="" />
 		<put-attribute name="title" value="University Timetabling Application" />
 		<put-attribute name="header" value="/header-struts2.jsp" />
 		<put-attribute name="body" value="" />
- 		<put-attribute name="body2" value="" />
  		<put-attribute name="showNavigation" value="false" cascade="true"/>
 		<put-attribute name="showSolverWarnings" value="none" />
  		<put-attribute name="checkLogin" value="true" />
  		<put-attribute name="checkRole" value="true" />
- 		<put-attribute name="checkAdmin" value="false" />
  		<put-attribute name="showMenu" value="true" />
  		<put-attribute name="updateRegistration" value="false" />
  		<put-attribute name="includeTimeStamp" value="true"/>

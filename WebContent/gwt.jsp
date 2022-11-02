@@ -42,7 +42,7 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
-    <script language="JavaScript" type="text/javascript" src="scripts/rtt.js"></script>
+    <script type="text/javascript" src="scripts/rtt.js"></script>
   </head>
   <body class="unitime-Body">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
@@ -95,7 +95,7 @@
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
     			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 		    </tt:propertyEquals>
-    <script language="JavaScript" type="text/javascript">
+    <script type="text/javascript">
     	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
     		var c = unescape(document.cookie);
@@ -148,7 +148,7 @@
 	</span>
 </span></span></span>
 
-    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
+    <script type="text/javascript" src="unitime/unitime.nocache.js"></script>
   </body>
 </html>
 </loc:bundle>

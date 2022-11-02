@@ -31,20 +31,32 @@
     <constant name="struts.multipart.enabled" value="true"/>
     <constant name="struts.multipart.saveDir" value="${catalina.home}/data/unitime/uploads"/>
     <constant name="struts.multipart.maxSize" value="10737418240"/>
+    <constant name="struts.el.throwExceptionOnFailure" value="true"/>
     <package name="unitime" extends="convention-default">
     	<result-types>
 	        <result-type name="tiles" class="org.apache.struts2.views.tiles.TilesResult" />
         </result-types> 
+        <interceptors>
+        	<interceptor-stack name="errorloggingStack">
+        		<interceptor-ref name="defaultStack">
+        			<param name="exception.logEnabled">true</param>
+        			<param name="exception.logLevel">WARN</param>
+        		</interceptor-ref>
+        	</interceptor-stack>
+    	</interceptors>
+    	<default-interceptor-ref name="errorloggingStack"/>
     	<global-results>
-    		<result name="exception">/error.jsp</result>
+    		<result name="exception" type="chain">
+    			<param name="actionName">error</param>
+    		</result>
     		<result name="securityException" type="chain">
     			<param name="actionName">loginRequired</param>
     			<param name="message">${exception}</param>
     		</result>
     	</global-results>
     	<global-exception-mappings>
-    		<exception-mapping exception="java.lang.Exception" result="exception"/>
     		<exception-mapping exception="org.springframework.security.access.AccessDeniedException" result="securityException"/>
+    		<exception-mapping exception="java.lang.Exception" result="exception"/>
     	</global-exception-mappings>
     </package>
 </struts>

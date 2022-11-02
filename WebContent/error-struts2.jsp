@@ -17,11 +17,18 @@
  * limitations under the License.
  * 
 --%>
-<%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
-<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
-<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages">
-<sec:authorize access="!hasPermission(null, null, 'IsAdmin')">
-<% if (true) throw new AccessDeniedException(MSG.authenticationInsufficient());%>
-</sec:authorize>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
+<loc:bundle name="CourseMessages">
+<table class="unitime-MainTable" style="max-width: 800px;">
+	<tr><td colspan="2">
+		<div class="WelcomeRowHead"><loc:message name="propError"/> <font color="#FF0000"><s:property value="exception.message"/></font></div>
+	</td></tr>
+	<tr>
+		<td><loc:message name="propQuery"/></td><td style="word-break: break-word;"><s:property value="URL"/></td>
+	</tr>		
+	<tr align="left" valign="top">
+		<td><loc:message name="propStackTrace"/></td><td style="white-space: pre; color: #898989;"><s:property value="exceptionStack"/></td>
+	</tr>
+</table>
 </loc:bundle>

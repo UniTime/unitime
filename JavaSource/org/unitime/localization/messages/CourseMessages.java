@@ -4081,6 +4081,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Query:")
 	String propQuery();
 	
+	@DefaultMessage("Trace:")
+	String propStackTrace();
+	
 	@DefaultMessage("Detailed Statistics")
 	String sectDetailedStatistics();
 	

@@ -38,8 +38,7 @@ import org.unitime.timetable.security.rights.Right;
 	})
 @TilesDefinition(name = "hibernateStats.tiles", extend = "baseLayout", putAttributes =  {
 		@TilesPutAttribute(name = "title", value = "Hibernate Statistics"),
-		@TilesPutAttribute(name = "body", value = "/admin/hibernateStats.jsp"),
-		@TilesPutAttribute(name = "checkAdmin", value = "true")
+		@TilesPutAttribute(name = "body", value = "/admin/hibernateStats.jsp")
 	})
 public class HibernateStatistics extends UniTimeAction<BlankForm>{
 	private static final long serialVersionUID = 5335714912646440433L;

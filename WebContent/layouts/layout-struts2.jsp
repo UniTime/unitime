@@ -35,11 +35,6 @@
 <s:if test="#request.checkRole">
 	<%@ include file="/checkRole.jspf"%>
 </s:if>
-<tiles:importAttribute name="checkAdmin" scope="request"/>
-<s:if test="#request.checkAdmin">
-	<%@ include file="/checkAdmin.jspf"%>
-</s:if>
-
 <html>
 <head>
 	<meta http-equiv="pragma" content="no-cache">
@@ -66,7 +61,7 @@
 	<script type="text/javascript" src="scripts/rtt.js"></script>
 	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
 </head>
-<body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
+<body class="unitime-Body">
 	<loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages" id="GWTMSG">
 	<script type="text/javascript">
 		if (!String.prototype.trim) {
@@ -181,10 +176,7 @@
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class='content unitime-Struts2'>
         	<span id='UniTimeGWT:Content'>
-	    		<tiles:insertAttribute name="body">
-					<tiles:putAttribute name="body2" value="${body2}"/>
-					<tiles:putAttribute name="action2" value="${action2}"/>
-				</tiles:insertAttribute>
+	    		<tiles:insertAttribute name="body"/>
         	</span>
         </span>
     </span><span class='footer' id="unitime-Footer">
