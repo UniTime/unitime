@@ -46,6 +46,7 @@ import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -588,78 +589,22 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         form.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
         form.setDistPrefId(distPrefId);
         
-        org.hibernate.Session hibSession = dpDao.getSession();
-
-        // Get Subpart Distribution Prefs
-        StringBuffer query = new StringBuffer(""); 
-        query.append("select sa.uniqueId, co.uniqueId, su.uniqueId, -1,  do.sequenceNumber ");
-        query.append("  from ");
-        query.append("       DistributionObject do, ");
-        query.append("       SchedulingSubpart su, ");
-        query.append("       InstrOfferingConfig ioc, ");
-        query.append("       InstructionalOffering io, ");
-        query.append("       CourseOffering co, ");
-        query.append("       SubjectArea sa ");
-        query.append(" where co.isControl=true ");
-        query.append("   and do.distributionPref.uniqueId=:distPrefId ");
-        query.append("   and do.prefGroup.uniqueId=su.uniqueId ");
-        query.append("   and su.instrOfferingConfig.uniqueId=ioc.uniqueId ");
-        query.append("   and ioc.instructionalOffering.uniqueId=io.uniqueId ");
-        query.append("   and co.instructionalOffering.uniqueId=io.uniqueId ");
-        query.append("   and co.subjectArea.uniqueId=sa.uniqueId ");
-
-        Query q = hibSession.createQuery(query.toString());
-        q.setLong("distPrefId", Long.parseLong(distPrefId));
-        List distPrefs1 = q.list();
-        
-        // Get class Distribution Prefs
-        StringBuffer query2 = new StringBuffer(""); 
-        query2.append("select sa.uniqueId, co.uniqueId, su.uniqueId, c.uniqueId, do.sequenceNumber ");
-        query2.append("  from ");
-        query2.append("       DistributionObject do, ");
-        query2.append("       Class_ c, ");
-        query2.append("       SchedulingSubpart su, ");
-        query2.append("       InstrOfferingConfig ioc, ");
-        query2.append("       InstructionalOffering io, ");
-        query2.append("       CourseOffering co, ");
-        query2.append("       SubjectArea sa ");
-        query2.append(" where co.isControl=true ");
-        query2.append("   and do.distributionPref.uniqueId=:distPrefId ");
-        query2.append("   and do.prefGroup.uniqueId=c.uniqueId ");
-        query2.append("   and c.schedulingSubpart.uniqueId=su.uniqueId ");
-        query2.append("   and su.instrOfferingConfig.uniqueId=ioc.uniqueId ");
-        query2.append("   and ioc.instructionalOffering.uniqueId=io.uniqueId ");
-        query2.append("   and co.instructionalOffering.uniqueId=io.uniqueId ");
-        query2.append("   and co.subjectArea.uniqueId=sa.uniqueId ");
-
-        q = hibSession.createQuery(query2.toString());
-        q.setLong("distPrefId", Long.parseLong(distPrefId));
-        List distPrefs2 = q.list();
-        
-        // Combine subparts and classes
-        ArrayList distPrefs = new ArrayList();
-        if(distPrefs1!=null && distPrefs1.size()>0)
-            distPrefs.addAll(distPrefs1);
-        if(distPrefs2!=null && distPrefs2.size()>0)
-            distPrefs.addAll(distPrefs2);
-        
-        if(distPrefs!=null && distPrefs.size()>0) {
-            Iterator iter = distPrefs.iterator();
-            int i = 0;
-            while (iter.hasNext()) {
-                Object[] rec = (Object[]) iter.next();
-                int indx;
-                if (rec[4] == null){
-                	indx = i;
-                } else {
-                	indx = ((Integer) rec[4]).intValue() - 1;
-                }
-                form.setSubjectArea(indx, rec[0].toString());
-                form.setCourseNbr(indx, rec[1].toString());
-                form.setItype(indx, rec[2].toString());
-                form.setClassNumber(indx, rec[3].toString());
-                i++;
-            }                
+        for (DistributionObject dObj: new TreeSet<DistributionObject>(dp.getDistributionObjects())) {
+        	if (dObj.getPrefGroup() instanceof Class_) {
+        		Class_ c = (Class_)dObj.getPrefGroup();
+        		CourseOffering co = c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+        		form.getSubjectArea().add(co.getSubjectArea().getUniqueId().toString());
+                form.getCourseNbr().add(co.getUniqueId().toString());
+                form.getItype().add(c.getSchedulingSubpart().getUniqueId().toString());
+                form.getClassNumber().add(c.getUniqueId().toString());
+        	} else if (dObj.getPrefGroup() instanceof SchedulingSubpart) {
+        		SchedulingSubpart ss = (SchedulingSubpart)dObj.getPrefGroup();
+        		CourseOffering co = ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+        		form.getSubjectArea().add(co.getSubjectArea().getUniqueId().toString());
+                form.getCourseNbr().add(co.getUniqueId().toString());
+                form.getItype().add(ss.getUniqueId().toString());
+                form.getClassNumber().add("-1");
+        	}
         }            
     }
     

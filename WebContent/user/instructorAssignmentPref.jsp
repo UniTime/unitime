@@ -34,7 +34,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<s:property value="#form.name"/>
+						<s:property value="form.name"/>
 					</tt:section-title>
 					<s:submit accesskey='%{#msg.accessUpdatePreferences()}' name='op' value='%{#msg.actionUpdatePreferences()}'
 						title='%{#msg.titleUpdatePreferences(#msg.accessUpdatePreferences())}'/>

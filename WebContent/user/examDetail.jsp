@@ -33,7 +33,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<s:property value="#form.label"/>
+						<s:property value="form.label"/>
 					</tt:section-title>
 				<sec:authorize access="hasPermission(#form.examId, 'Exam', 'ExaminationEdit')">
 					<s:submit accesskey='%{#msg.accessExamEdit()}' name='op' value='%{#msg.actionExamEdit()}' title='%{#msg.titleExamEdit()}'/>

@@ -85,6 +85,8 @@
 	<s:set var="projTotal" value="0"/>
 	<s:set var="lastTermTotal" value="0"/>
 	<s:set var="resvExists" value="false"/>
+	<s:set var="projSpace" value="0"/>
+	<s:set var="lastTermSpace" value="0"/>
 	<s:hidden name="form.instrOfferingId"/>
 	<s:hidden name="form.instrOfferingName"/>
 	<s:hidden name="form.readOnlyCrsOfferingId"/>
@@ -164,7 +166,7 @@
 					
 					<s:iterator value="form.courseOfferingIds" var="co" status="stat"><s:set var="ctr" value="%{#stat.index}"/>
 						<s:set var="style" value="'BottomBorderGray'"/>
-						<s:if test="#stat.last"><s:set var="style" value=""/></s:if>
+						<s:if test="#stat.last"><s:set var="style" value="''"/></s:if>
 					<TR>
 						<TD class="${style}">
 							<s:hidden name="form.courseOfferingIds[%{#ctr}]"/>
@@ -214,7 +216,7 @@
 							<s:hidden name="form.lastTerm[%{#ctr}]"/>
 							<s:if test="form.lastTerm[#ctr] != null">
 								<s:property value="form.lastTerm[#ctr]"/>
-								<s:set var="lastTermSpace" value="#lastTermSpace + form.projected[#ctr]"/>
+								<s:set var="lastTermSpace" value="#lastTermSpace + form.lastTerm[#ctr]"/>
 							</s:if><s:else>
 								-
 							</s:else>
@@ -232,7 +234,7 @@
 					<TR>
 						<TD align="left" class='rowTotal'><I> <loc:message name="rowCrossListsTotal"/> </I></TD>
 						<TD align="center" class='rowTotal'><I> &nbsp; </I></TD>
-						<TD class='rowTotal' align='right' style="padding-right:24px;"><DIV id='resvTotal'><s:if test="resvExists==true"><s:property value="#resvTotal"/></s:if></DIV></TD>
+						<TD class='rowTotal' align='right' style="padding-right:24px;"><DIV id='resvTotal'><s:if test="#resvExists==true"><s:property value="#resvTotal"/></s:if></DIV></TD>
 						<TD align="right" class='rowTotal'><!-- I> Requested </I --></TD>
 						<TD class='rowTotal' align='right' style="padding-right:5px;"><s:property value="#projTotal"/></TD>
 						<TD class='rowTotal' align='right' style="padding-right:5px;"><s:property value="#lastTermTotal"/></TD>

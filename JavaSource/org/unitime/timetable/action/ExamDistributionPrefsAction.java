@@ -192,9 +192,9 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 	        }
 	        if (request.getParameter("examId")!=null) {
 	            Exam exam = new ExamDAO().get(Long.valueOf(request.getParameter("examId")));
-	            form.setExam(0, exam.getUniqueId());
-	            form.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
-                form.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
+	            form.getExam().add(exam.getUniqueId());
+	            form.getSubjectArea().add(exam.firstSubjectArea().getUniqueId());
+                form.getCourseNbr().add(exam.firstCourseOffering().getUniqueId());
                 form.setExamType(exam.getExamType().getUniqueId());
 	        }
             form.getSubjectArea().add(Long.valueOf(-1));

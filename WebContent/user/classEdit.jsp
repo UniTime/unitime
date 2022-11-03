@@ -119,7 +119,7 @@
 			<TD><s:property value="form.managingDeptLabel"/></TD>
 		</TR>
 
-		<s:if test="form.parentClassName != '-'">
+		<s:if test="form.parentClassName != \"-\"">
 			<TR>
 				<TD><loc:message name="propertyParentClass"/></TD>
 				<TD><s:property value="form.parentClassName"/></TD>

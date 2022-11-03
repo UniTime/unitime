@@ -24,7 +24,7 @@
 	<s:hidden name="form.authority" id="authority"/>
 	<s:hidden name="form.target"/>
 	<table class="unitime-MainTable">
-		<s:if test="list != 'Y'">
+		<s:if test="list != \"Y\"">
 			<tr><td colspan='4'><i><loc:message name="infoNoDefaultAuthority"/><br><br></i></td></tr>
 		</s:if>
 		<s:property value="#request.userRoles" escapeHtml="false"/>

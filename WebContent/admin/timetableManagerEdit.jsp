@@ -39,7 +39,7 @@
 						<s:property value="form.middleName"/>
 						<s:property value="form.lastName"/>
 					</tt:section-title>
-					<s:if test="form.uniqueId == null || form.uniqueId.isEmpty()">
+					<s:if test="form.uniqueId == null">
 						<s:submit name="op" value="%{#msg.actionSaveManager()}"
 							accesskey="%{#msg.acessSaveManager()}" title="%{#msg.titleSaveManager(#msg.acessSaveManager())}"/>
 					</s:if><s:else>
@@ -254,7 +254,7 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-					<s:if test="form.uniqueId == null || form.uniqueId.isEmpty()">
+					<s:if test="form.uniqueId == null">
 						<s:submit name="op" value="%{#msg.actionSaveManager()}"
 							accesskey="%{#msg.acessSaveManager()}" title="%{#msg.titleSaveManager(#msg.acessSaveManager())}"/>
 					</s:if><s:else>

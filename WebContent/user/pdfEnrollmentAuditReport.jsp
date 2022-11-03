@@ -127,7 +127,7 @@
 			<s:select name="form.mode" list="form.modes" listKey="value" listValue="label"/>
 		</TD>
 	</TR>
-	<s:if test="form.canEmal == false">
+	<s:if test="form.canEmail == false">
 		<s:hidden name="form.email"/>
 	</s:if><s:else>
 	<TR>

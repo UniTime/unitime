@@ -120,6 +120,7 @@
 			</span>
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
+		<span class="content">
 	<% if (exception!=null) { %>
 		<TABLE style="unitime-MainTable">
 			<TR>
@@ -139,6 +140,7 @@
 			</TR>
 		</TABLE>
 	<% } %>
+		</span>
 	    </span><span class='footer' id="unitime-Footer">
 		<span class="unitime-Footer">
 			<span class="row">

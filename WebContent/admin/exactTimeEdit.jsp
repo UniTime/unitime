@@ -46,10 +46,10 @@
 					<s:else><s:property value="#ex.minsPerMtgMin"/> .. <s:property value="#ex.minsPerMtgMax"/></s:else>
 				</td>
 				<td align='center'>
-					<s:textfield name="form.nrTimeSlots[%{#idx}]" type="number" style="text-align: right; width: 100px;"/>
+					<s:textfield name="form.nrTimeSlots[%{#idx}]" type="number" style="text-align: right;" min='0' max='999'/>
 				</td>
 				<td align='center'>
-					<s:textfield name="form.breakTime[%{#idx}]" type="number" style="text-align: right; width: 100px;"/>
+					<s:textfield name="form.breakTime[%{#idx}]" type="number" style="text-align: right;" min='0' max='999'/>
 				</td>
 				<td></td>
 			</tr>

@@ -239,7 +239,7 @@
 					name="form.bldgPrefLevels[%{#stat.index}]"
 					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 					headerKey="-" headerValue="-"
-					disabled="form.isBuidingDisabled(#stat.index)"
+					disabled="form.isBuildingDisabled(#stat.index)"
 					/>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveBuildingPreference()}'

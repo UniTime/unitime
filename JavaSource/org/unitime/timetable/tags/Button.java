@@ -41,7 +41,7 @@ public class Button extends Submit {
 	public void evaluateParams() {
 		if (name == null)
 			name = "op";
-        if (value != null) {
+        if (value != null && value.startsWith("%")) {
         	String name = (String)findValue(value);
         	String access = UniTimeAction.guessAccessKey(name);
         	if (access != null) {

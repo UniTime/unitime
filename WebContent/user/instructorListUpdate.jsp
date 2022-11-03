@@ -50,7 +50,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<s:property value="#form.deptName"/>
+						<s:property value="form.deptName"/>
 					</tt:section-title>
 					<s:submit accesskey='%{#msg.accessUpdateInstructorsList()}' name='op' value='%{#msg.actionUpdateInstructorsList()}'
 						title='%{#msg.titleUpdateInstructorsList(#msg.accessUpdateInstructorsList())}'/>

@@ -36,7 +36,7 @@
 					</s:else>
 					</tt:section-title>
 					<s:if test="enabled == true">
-						<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+						<s:submit name='op' value='%{#msg.actionDisableStatistics()}'/>
 						<s:if test="details == true">
 							<s:submit name='op' value='%{#msg.actionHideDetails()}'/>
 						</s:if><s:else>
@@ -64,7 +64,7 @@
 		<TR>
 			<TD align='right'>
 				<s:if test="enabled == true">
-					<s:submit name='op' value='%{#msg.actionEnableStatistics()}'/>
+					<s:submit name='op' value='%{#msg.actionDisableStatistics()}'/>
 					<s:if test="details == true">
 						<s:submit name='op' value='%{#msg.actionHideDetails()}'/>
 					</s:if><s:else>

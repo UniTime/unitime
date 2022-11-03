@@ -28,8 +28,8 @@
 	<s:hidden name='op2' value='' id="op2"/>
 	<s:set var="model" value="form.model"/>
 	<s:set var="clazz" value="#model.clazz"/>
-	<s:set var="classId" value="#exam.classId"/>
-	<s:set var="className" value="#exam.className"/>
+	<s:set var="classId" value="#clazz.classId"/>
+	<s:set var="className" value="#clazz.className"/>
 	<s:if test="form.op == 'Close'">
 		<script type="text/javascript">
 			parent.hideGwtDialog();
@@ -162,7 +162,7 @@
 			<tr><td colspan='2'>
 				<table class='unitime-Table' style='width:100%;'><tr>
 					<td nowrap><loc:message name="propertyRoomTypes"/></td>
-					<s:iterator value="form.allRoomTypes" var="rf" status="rfIds">
+					<s:iterator value="form.allRoomTypes" var="rf" status="rfIdx">
 						<td nowrap>
 							<s:checkboxlist name="form.roomTypes" list="#{#rf.uniqueId:''}"/>
 							<s:property value="#rf.label"/>&nbsp;&nbsp;&nbsp;

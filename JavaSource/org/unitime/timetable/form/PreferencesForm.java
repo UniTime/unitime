@@ -763,6 +763,7 @@ public class PreferencesForm implements UniTimeForm {
 			Collections.sort(patterns); //, new DatePattenNameComparator()
 			List<String> newPrefs = new ArrayList<String>();
 			List<String> newPrefLevels = new ArrayList<String>();
+			newPrefLevels.addAll(prefLevels);
 			newPrefs.addAll(prefs);
 			for (int i = 0; i < newPrefs.size(); i++) {
 				String ith_pattern = patterns.get(i).getUniqueId().toString();

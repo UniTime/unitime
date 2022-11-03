@@ -50,7 +50,7 @@
 		<tr>	
 		<th nowrap="nowrap" align="right"><loc:message name="filterNumberOfChanges"/></th>
 		<td>
-			<s:textfield name="form.n" size="8" maxlength="5" type="number" min="1" title="%{#msg.filterNumberOfChanges()}"/>
+			<s:textfield name="form.n" size="8" maxlength="5" type="number" min="1" max="99999" title="%{#msg.filterNumberOfChanges()}"/>
 		</td>
 		</tr>
 

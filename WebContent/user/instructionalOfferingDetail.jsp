@@ -272,7 +272,7 @@
 				</s:else>
 			</TD>
 		</TR>
-		<s:if test="form.unlimited == false and form.snapshotLimit! = null">
+		<s:if test="form.unlimited == false && form.snapshotLimit != null">
 		<TR>
 			<TD><loc:message name="propertySnapshotLimit"/> </TD>
 			<TD><s:property value="form.snapshotLimit"/></TD>

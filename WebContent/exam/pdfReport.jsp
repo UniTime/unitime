@@ -54,7 +54,7 @@
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<loc:message name="sectLogOfTask"><s:property value="#requesst.logname"/></loc:message>
+						<loc:message name="sectLogOfTask"><s:property value="#request.logname"/></loc:message>
 					</tt:section-title>
 					<s:hidden name="log" value="#request.logid"/>
 					<s:submit accesskey='%{#msg.accessRegreshLog()}' name='op' value='%{#msg.actionRegreshLog()}' title='%{#msg.titleRegreshLog()}'/>

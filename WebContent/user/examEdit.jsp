@@ -34,7 +34,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<s:property value="#form.label"/>
+						<s:property value="form.label"/>
 					</tt:section-title>
 					<s:if test="form.examId != null">
 						<s:submit accesskey='%{#msg.accessExamUpdate()}' name='op' value='%{#msg.actionExamUpdate()}' title='%{#msg.titleExamUpdate()}'/>
