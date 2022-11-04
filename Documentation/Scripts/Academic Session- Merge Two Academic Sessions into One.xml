@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Academic Session: Merge Two Academic Sessions into One" permission="Academic Session Edit" engine="python" created="Fri Nov 04 09:59:46 EDT 2022">
+  <description><![CDATA[This script takes two academic sessions and merges the data from the two session into one.  It can append prefixes to subject areas to differentiate between campuses. ]]></description>
+  <parameter name="isPrefixSubjects" label="05) Use Campus Prefix on Subject Areas" type="boolean" default="true"/>
+  <parameter name="secondarySessionPrefix" label="08) Prefix to Use for Campus for the Secondary Session" type="text" default="WVL"/>
+  <parameter name="mergeSessionId" label="01) To Session (select only one)" type="sessions"/>
+  <parameter name="classPrefsAction" label="10) Class Preferences Action" type="enum(doNotRoll,rollUnchanged,pushUp)" default="pushUp"/>
+  <parameter name="subpartTimePrefsAction" label="12) Subpart Time Preferences Action" type="enum(doNotRoll,rollUnchanged)" default="rollUnchanged"/>
+  <parameter name="primarySessionId" label="02) Primary Session (select only one)" type="sessions"/>
+  <parameter name="mergeWaitListsProhibitedOverrides" label="13) Merge Wait Lists and Prohibited Overrides" type="boolean" default="true"/>
+  <parameter name="secondarySessionId" label="03) Secondary Session (select only one)" type="sessions"/>
+  <parameter name="isPrefixDepts" label="04) Use Campus Prefix on Departments" type="boolean" default="false"/>
+  <parameter name="prefixSeparator" label="06) Character String used to Separate the Prefix" type="text" default=" - "/>
+  <parameter name="distributionPrefMode" label="14) Distribution Preferences Mode" type="enum(ALL,MIXED,SUBPART,NONE)" default="NONE"/>
+  <parameter name="subpartLocationPrefsAction" label="11) Subpart Location Preferences Action" type="enum(doNotRoll,rollUnchanged)" default="rollUnchanged"/>
+  <parameter name="cancelledClassAction" label="15) Cancelled Class Action" type="enum(REOPEN,KEEP,SKIP)" default="SKIP"/>
+  <parameter name="primarySessionPrefix" label="07) Prefix to Use for Campus for the Primary Session" type="text" default="HMD"/>
+  <parameter name="exceptions" label="09) Prefixes for Specific Departments (one comma separated pair per line)" type="textarea" default="1589,OLC"/>
+  <body><![CDATA[
+from org.unitime.timetable.model import Session
+from java.lang import Long
+from java.util import HashMap
+from org.unitime.timetable.util import AcademicSessionMerge, SessionRollForward
+from org.unitime.timetable.util.SessionRollForward import DistributionMode, CancelledClassAction
+
+def logStartupParamters(mergeSession, primarySession, secondarySession, prefixMap):
+    log.info("Merged Session:  " + mergeSession)
+    log.info("Primary Session:  " + primarySession)
+    log.info("Secondary Session:  " + secondarySession)
+    log.info("Is Prefix Depts:  " + str(isPrefixDepts))
+    log.info("Is Prefix Subject Areas:  " + str(isPrefixSubjects))
+    log.info("Prefix Separator:  " + str(prefixSeparator))
+    log.info("Primary Session Prefix:  " + primarySessionPrefix)
+    log.info("Secondary Session Prefix:  " + secondarySessionPrefix)
+    log.info("Exceptions:  " + exceptions)
+    for key in prefixMap.keySet():
+        log.info("\t Dept:  " + key + ", prefix:  " + prefixMap.get(key))
+
+def getDepartmentPrefixMap():
+    prefixMap = HashMap()
+    lines = exceptions.split()
+    for line in lines:
+        deptInfo = line.split(",")
+        prefixMap.put(deptInfo[0], deptInfo[1])
+    return prefixMap
+
+def execute():
+    prefixMap = getDepartmentPrefixMap()
+    distributionMode = None
+    if DistributionMode.SUBPART.name() == distributionPrefMode:
+	distributionMode = DistributionMode.SUBPART
+    elif DistributionMode.ALL.name() == distributionPrefMode:
+	distributionMode = DistributionMode.ALL
+    elif DistributionMode.MIXED.name() == distributionPrefMode:
+	distributionMode = DistributionMode.MIXED
+    elif DistributionMode.NONE.name() == distributionPrefMode:
+	distributionMode = DistributionMode.NONE
+    else:
+	distributionMode = DistributionMode.NONE
+    canceledAction = None
+    if CancelledClassAction.REOPEN.name() == cancelledClassAction:
+	cancelledAction = CancelledClassAction.REOPEN
+    elif CancelledClassAction.KEEP.name() == cancelledClassAction:
+	cancelledAction = CancelledClassAction.KEEP
+    elif CancelledClassAction.SKIP.name() == cancelledClassAction:
+	cancelledAction = CancelledClassAction.SKIP
+    else:
+	cancelledAction = CancelledClassAction.SKIP
+
+    if mergeSessionId != None and primarySessionId != None and secondarySessionId != None:
+	logStartupParamters(mergeSessionId, primarySessionId, secondarySessionId, prefixMap)
+	AcademicSessionMerge(Long.valueOf(mergeSessionId), Long.valueOf(primarySessionId), Long.valueOf(secondarySessionId), isPrefixDepts, isPrefixSubjects, prefixSeparator, primarySessionPrefix, secondarySessionPrefix, prefixMap, classPrefsAction, subpartLocationPrefsAction, subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionMode, cancelledAction, hibSession, log)
+    else:
+	return
+
+
+if mergeSessionId != None and primarySessionId != None and secondarySessionId != None:
+    execute()
+    log.info("Session Merge Complete, ignore any errors after this message.")
+else:
+    log.info("Make sure Session parameters are set.")
+
+]]></body>
+</script>

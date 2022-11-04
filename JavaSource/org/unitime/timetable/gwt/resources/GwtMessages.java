@@ -7174,4 +7174,8 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Not a Partition")
 	String itemNoParition();
+	
+	@DefaultMessage("Campus")
+	String labelCampus();
+	
 }
