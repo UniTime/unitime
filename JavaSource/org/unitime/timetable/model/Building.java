@@ -114,7 +114,7 @@ public class Building extends BaseBuilding implements Comparable {
 	
 	public static Building findByBldgAbbv(org.hibernate.Session hibSession, Long sessionId, String bldgAbbv) {
 		return (Building)(hibSession == null ? BuildingDAO.getInstance().getSession() : hibSession).createQuery(
-				"from Building where session.uniqueId=:sessionId and b.abbreviation=:bldgAbbv"
+				"from Building b where session.uniqueId=:sessionId and b.abbreviation=:bldgAbbv"
 				).setLong("sessionId", sessionId).setString("bldgAbbv", bldgAbbv).setMaxResults(1).uniqueResult();
 	}
 	
@@ -254,6 +254,9 @@ public class Building extends BaseBuilding implements Comparable {
 	}
 
     public static Building findByExternalIdAndSession(String externalId, Long sessionId){
+    	if (externalId == null) {
+    		return(null);
+    	}
         BuildingDAO bDao = new BuildingDAO();
         List bldgs = bDao.getSession().createCriteria(Building.class)
             .add(Restrictions.eq("externalUniqueId", externalId))
