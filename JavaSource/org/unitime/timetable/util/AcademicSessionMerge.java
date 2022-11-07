@@ -820,7 +820,6 @@ public class AcademicSessionMerge {
 			}
 		}
 		if (defaultPrefix != null) {
-			HashSet<GlobalRoomFeature> features = new HashSet<GlobalRoomFeature>();
 			for (RoomDept rd : fromLocation.getRoomDepts()) {
 				String prefix = findPrefix(rd.getDepartment().getDeptCode(), defaultPrefix);
 				if (prefix != null) {
@@ -1398,7 +1397,7 @@ public class AcademicSessionMerge {
 	
     private SubjectArea findToSubjectArea(SubjectArea fromSubjectArea, String prefix) {
 		SubjectArea toSubjectArea = null;
-		if (!iUseCampusPrefixForSubjectAreas || prefix == null || prefix.isBlank()) {
+		if (!iUseCampusPrefixForSubjectAreas || prefix == null || prefix.isEmpty()) {
 			toSubjectArea = fromSubjectArea.findSameSubjectAreaInSession(iMergedSession);
 		} else {
 			if (iPrefixSeparator != null) {
@@ -1409,7 +1408,7 @@ public class AcademicSessionMerge {
     }
 
 	private void addPrefixToSubjectFields(SubjectArea subjectArea, String prefix) {
-		if (prefix != null && !prefix.isBlank()  && !iPrefixSeparator.isBlank()) {
+		if (prefix != null && !prefix.isEmpty()  && !iPrefixSeparator.isEmpty()) {
 			subjectArea.setSubjectAreaAbbreviation(prefix + iPrefixSeparator + subjectArea.getSubjectAreaAbbreviation());	
 			subjectArea.setTitle(prefix + iPrefixSeparator + subjectArea.getTitle());
 		}	
