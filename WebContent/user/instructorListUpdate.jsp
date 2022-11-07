@@ -113,8 +113,6 @@
 				<script type="text/javascript">blEnd('dispFilter');</script>
 			</TD>
 		</TR>
-		
-		<s:if test=""></s:if>
 
 <!-- Department Instructors -->
 	<s:if test="form.displayListType == null || form.displayListType == 'both' || form.displayListType == 'assigned'">
@@ -137,7 +135,7 @@
 							<TD align="left"><I><loc:message name="columnExternalId"/></I></TD>
 							<TD align="left"><I><loc:message name="columnInstructorName"/></I></TD>
 						</TR>
-						<s:set var="prevPosType" value=""/>
+						<s:set var="prevPosType" value="''"/>
 						<s:set var="idx" value="0"/>
 						<s:iterator value="form.assignedInstr" var="instr" status="stat">
 							<s:set var="posType" value="%{#instr.positionType}"/>
@@ -159,14 +157,14 @@
 										<span style="font-weight: bold; text-decoration: underline;"><s:property value="#currPosType"/></span></TD>
 									<TD colspan="2" align="right">
 										<s:if test="#stat.index > 0">&nbsp;<br></s:if>
-										<IMG src="images/check_all.gif" alt="Select all ${currPosType}" title="Select All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
-										<IMG src="images/clear_all.gif" alt="Clear all ${currPosType}" title="Clear All ${currPosType}" align="middle" onclick="doSelectAll(this, 'na-${posId}', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+										<IMG src="images/check_all.gif" alt="Select all ${currPosType}" title="Select All ${currPosType}" align="middle" onclick="doSelectAll(this, 'as-${posId}', true);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
+										<IMG src="images/clear_all.gif" alt="Clear all ${currPosType}" title="Clear All ${currPosType}" align="middle" onclick="doSelectAll(this, 'as-${posId}', false);" onmouseover="this.style.cursor='hand';this.style.cursor='pointer';">
 									</TD>
 								</TR>
 							</s:if>
 							<TR align="center">
 								<TD class="BottomBorderGray">
-									<s:checkboxlist name="form.assignedSelected" list="#{#instr.uniqueId:''}" id="na-%{#posId}-%{#idx}" disabled="%{!#canDelete}"/>
+									<s:checkboxlist name="form.assignedSelected" list="#{#instr.uniqueId:''}" id="as-%{#posId}-%{#idx}" disabled="%{!#canDelete}"/>
 								</TD>
 								<TD align="left" class="BottomBorderGray">
 									<s:if test="#instr.externalUniqueId != null">
@@ -209,7 +207,7 @@
 							<TD align="left"><I><loc:message name="columnExternalId"/></I></TD>
 							<TD align="left"><I><loc:message name="columnInstructorName"/></I></TD>
 						</TR>
-						<s:set var="prevPosType" value=""/>
+						<s:set var="prevPosType" value="''"/>
 						<s:set var="idx" value="0"/>
 						<s:iterator value="form.availableInstr" var="instr" status="stat">
 							<s:set var="posType" value="%{#instr.positionType}"/>
