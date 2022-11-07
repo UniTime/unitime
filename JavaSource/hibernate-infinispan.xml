@@ -20,7 +20,7 @@
  -->
  <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns="urn:infinispan:config:6.0"
-            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd">
+            xsi:schemaLocation="urn:infinispan:config:6.0 https://infinispan.org/schemas/infinispan-config-6.0.xsd">
    <global>
       <transport
             transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport"
