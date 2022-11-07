@@ -3697,14 +3697,19 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		//check same instructor constraint
     		if (!lecture.values(getAssignment()).isEmpty() && lecture.timeLocations().size()==1 && !lecture.getInstructorConstraints().isEmpty()) {
-        		for (Lecture other: getModel().variables()) {
+        		other: for (Lecture other: getModel().variables()) {
         			if (other.values(getAssignment()).isEmpty() || other.timeLocations().size()!=1 || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
         			Placement p1 = lecture.values(getAssignment()).get(0);
         			Placement p2 = other.values(getAssignment()).get(0);
         			if (!other.getInstructorConstraints().isEmpty()) {
         	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         	           		if (!other.getInstructorConstraints().contains(ic)) continue;
-        	           		if (p1.canShareRooms(p2) && p1.sameRooms(p2)) continue;
+        	           		if (p1.canShareRooms(p2)) {
+        	           			if (lecture.getNrRooms() == 0 || other.getNrRooms() == 0) continue;
+        	           			if (p1.sameRooms(p2)) continue;
+        	           			for (RoomLocation r1: lecture.roomLocations())
+        	           				if (other.roomLocations().contains(r1)) continue other;
+        	           		}
         	           		if (p1.getTimeLocation().hasIntersection(p2.getTimeLocation())) {
         	           			iProgress.message(msglevel("reqInstructorOverlap", Progress.MSGLEVEL_WARN), MSG.warnSameInstructorTimeConflict(
         	           					getClassLabel(lecture), p1.getLongName(iUseAmPm), getClassLabel(other), p2.getLongName(iUseAmPm)));
