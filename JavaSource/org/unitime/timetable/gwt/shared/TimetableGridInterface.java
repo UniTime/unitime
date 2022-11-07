@@ -91,6 +91,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		private static final long serialVersionUID = 0l;
 		private int iResourceType;
 		private Long iResourceId;
+		private String iExternalId;
 		private List<TimetableGridCell> iCells = new ArrayList<TimetableGridCell>();
 		private List<TimetableGridBackground> iBackgrounds = new ArrayList<TimetableGridBackground>();
 		private String iName;
@@ -110,6 +111,9 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		
 		public int getResourceType() { return iResourceType; }
 		public Long getResourceId() { return iResourceId; }
+		
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		public String getExternalId() { return iExternalId; }
 		
 		public void setFirstDay(int firstDay) { iFirstDay = firstDay; }
 		public int getFirstDay() { return iFirstDay; }

@@ -66,8 +66,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.util.Constants;
@@ -239,6 +241,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 	public static TimetableGridModel createModel(TimetableSolver solver, InstructorConstraint instructor, TimetableGridContext context) {
     	TimetableGridModel model = new TimetableGridModel(ResourceType.INSTRUCTOR.ordinal(), instructor.getId());
     	model.setName(instructor.getName());
+    	model.setExternalId(instructor.getPuid());
     	model.setType(instructor.getType());
     	model.setFirstDay(context.getFirstDay());
     	model.setFirstSessionDay(context.getFirstSessionDay());
@@ -446,7 +449,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, TimetableSolver solver, Placement placement, TimetableGridContext context, boolean notAvailable) {
 		List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
 		
-		if (!match(context.getClassFilter(), placement)) return cells;
+		if (!match(context.getClassFilter(), placement, model)) return cells;
 		
 		TimetableGridCell cell = null;
 		
@@ -973,7 +976,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		eq, lt, gt, le, ge
 	};
 	
-	private static boolean match(Query q, final Placement p) {
+	private static boolean match(Query q, final Placement p, final TimetableGridModel m) {
     	return q == null || q.match(new TermMatcher() {
 			@Override
 			public boolean match(String attr, String term) {
@@ -1008,6 +1011,28 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 							String token = s.nextToken();
 							if (term.equalsIgnoreCase(token)) return true;
 						}
+					}
+				} else if ("responsibility".equals(attr)) {
+					for (InstructorConstraint ic: p.variable().getInstructorConstraints()) {
+						if (m.getResourceType() == ResourceType.INSTRUCTOR.ordinal() && !(
+							m.getResourceId().equals(ic.getId()) ||
+							(m.getExternalId() != null && m.getExternalId().equals(ic.getPuid()))))
+						continue;
+						TeachingResponsibility resp = null;
+						if (ic.getPuid() == null)
+							resp = (TeachingResponsibility) TeachingResponsibilityDAO.getInstance().getSession().createQuery(
+									"select ci.responsibility from ClassInstructor ci where " +
+									"ci.classInstructing.uniqueId = :classId and ci.instructor.uniqueId = :instructorId"
+									).setLong("classId", p.variable().getId()).setLong("instructorId", ic.getId())
+									.setMaxResults(1).setCacheable(true).uniqueResult();
+						else
+							resp = (TeachingResponsibility) TeachingResponsibilityDAO.getInstance().getSession().createQuery(
+									"select ci.responsibility from ClassInstructor ci where " +
+									"ci.classInstructing.uniqueId = :classId and ci.instructor.externalUniqueId = :extId"
+									).setLong("classId", p.variable().getId()).setString("extId", ic.getPuid())
+									.setMaxResults(1).setCacheable(true).uniqueResult();
+						if (term.equalsIgnoreCase("null") && resp == null) return true;
+						if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;
 					}
 				} else if ("room".equals(attr)) {
 					if (p.isMultiRoom())

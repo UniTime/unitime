@@ -69,6 +69,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -95,7 +96,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, Assignment assignment, org.hibernate.Session hibSession, TimetableGridContext context, boolean notAvailable) {
     	List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
-    	if (!match(context, assignment)) return cells;
+    	if (!match(context, assignment, model)) return cells;
     	TimetableGridCell cell = null;
 
 		int days = assignment.getDays().intValue();
@@ -512,6 +513,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     public static TimetableGridModel createModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, TimetableGridContext context) {
     	TimetableGridModel model = new TimetableGridModel(ResourceType.ROOM.ordinal(), room.getUniqueId());
     	model.setName(room.getLabel());
+    	model.setExternalId(room.getExternalUniqueId());
     	model.setSize(room.getCapacity().intValue());
     	model.setFirstDay(context.getFirstDay());
     	model.setFirstSessionDay(context.getFirstSessionDay());
@@ -636,6 +638,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     public static TimetableGridModel createModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, TimetableGridContext context) {
     	TimetableGridModel model = new TimetableGridModel(ResourceType.INSTRUCTOR.ordinal(), instructor.getUniqueId());
     	model.setName(instructor.getName(NameFormat.LAST_FIRST_MIDDLE.reference()));
+    	model.setExternalId(instructor.getExternalUniqueId());
     	model.setFirstDay(context.getFirstDay());
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
@@ -726,6 +729,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     public static TimetableGridModel createModel(String solutionIdsStr, Department department, org.hibernate.Session hibSession, TimetableGridContext context) {
     	TimetableGridModel model = new TimetableGridModel(ResourceType.DEPARTMENT.ordinal(), department.getUniqueId());
     	model.setName(department.getShortLabel());
+    	model.setExternalId(department.getExternalUniqueId());
     	model.setFirstDay(context.getFirstDay());
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
@@ -747,6 +751,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     public static TimetableGridModel createModel(String solutionIdsStr, SubjectArea sa, org.hibernate.Session hibSession, TimetableGridContext context) {
     	TimetableGridModel model = new TimetableGridModel(ResourceType.SUBJECT_AREA.ordinal(), sa.getUniqueId());
     	model.setName(sa.getSubjectAreaAbbreviation());
+    	model.setExternalId(sa.getExternalUniqueId());
     	model.setFirstDay(context.getFirstDay());
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
@@ -911,7 +916,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		eq, lt, gt, le, ge
 	};
 	
-	private static boolean match(final TimetableGridContext context, final Assignment a) {
+	private static boolean match(final TimetableGridContext context, final Assignment a, final TimetableGridModel m) {
     	return context.getClassFilter() == null || context.getClassFilter().match(new TermMatcher() {
 			@Override
 			public boolean match(String attr, String term) {
@@ -977,6 +982,38 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 							if (term.equalsIgnoreCase(instructor.getMiddleName())) return true;
 							if (term.equalsIgnoreCase(instructor.getLastName())) return true;
 							if (term.equalsIgnoreCase(instructor.getName(context.getInstructorNameFormat()))) return true;
+						}
+					}
+				} else if ("responsibility".equals(attr)) {
+					if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
+							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
+								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse()) {
+									if (m.getResourceType() == ResourceType.INSTRUCTOR.ordinal() && !(
+											m.getResourceId().equals(instructor.getInstructor().getUniqueId()) ||
+											(m.getExternalId() != null && m.getExternalId().equals(instructor.getInstructor().getExternalUniqueId()))))
+										continue;
+									if (term.equalsIgnoreCase("null") && instructor.getResponsibility() == null) return true;
+									if (instructor.getResponsibility() != null && (
+											term.equalsIgnoreCase(instructor.getResponsibility().getReference()) ||
+											term.equalsIgnoreCase(instructor.getResponsibility().getLabel())))
+										return true;
+								}
+							}							
+						}
+					} else {
+						for (DepartmentalInstructor instructor: a.getInstructors()) {
+							if (m.getResourceType() == ResourceType.INSTRUCTOR.ordinal() && !(
+									m.getResourceId().equals(instructor.getUniqueId()) ||
+									(m.getExternalId() != null && m.getExternalId().equals(instructor.getExternalUniqueId()))))
+								continue;
+							TeachingResponsibility resp = null;
+							for (ClassInstructor ci: instructor.getClasses())
+								if (ci.getClassInstructing().equals(a.getClazz())) {
+									resp = ci.getResponsibility(); break;
+								}
+							if (term.equalsIgnoreCase("null") && resp == null) return true;
+							if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;
 						}
 					}
 				} else if ("limit".equals(attr)) {
