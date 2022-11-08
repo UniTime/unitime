@@ -31,6 +31,7 @@ import javax.naming.spi.NamingManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
@@ -529,5 +530,10 @@ public class HibernateUtil {
     	if (!dialect.getFunctions().containsKey("replace")) {
     		dialect.getFunctions().put("replace", new StandardSQLFunction("replace", StringType.INSTANCE));
     	}
+    }
+    
+    public static String escapeSql(String str) {
+    	if (str == null) return null;
+    	return StringUtils.replace(str, "'", "''");
     }
 }

@@ -101,9 +101,10 @@ import biweekly.property.ExceptionDates;
 import biweekly.property.Method;
 import biweekly.property.Organizer;
 import biweekly.property.Status;
+import biweekly.util.DayOfWeek;
+import biweekly.util.Frequency;
+import biweekly.util.ICalDate;
 import biweekly.util.Recurrence;
-import biweekly.util.Recurrence.DayOfWeek;
-import biweekly.util.Recurrence.Frequency;
 
 
 /**
@@ -281,8 +282,7 @@ public class CalendarServlet extends HttpServlet {
         ICalWriter writer = new ICalWriter(out, ICalVersion.V2_0);
 		try {
 			try {
-				writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
-				writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+				writer.setGlobalTimezone(CalendarVTimeZoneGenerator.download(TimeZone.getDefault()));
 			} catch (IllegalArgumentException e) {
 	        	sLog.warn("Failed to set default time zone: " + e.getMessage());
 	        }
@@ -488,7 +488,7 @@ public class CalendarServlet extends HttpServlet {
         	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
         	cal.set(Calendar.SECOND, 0);
     		if (!time.getWeekCode().get(idx)) {
-    			exdates.addValue(cal.getTime());
+    			exdates.getValues().add(new ICalDate(cal.getTime()));
     		}
     		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
     	}

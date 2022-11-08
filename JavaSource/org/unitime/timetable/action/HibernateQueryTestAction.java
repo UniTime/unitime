@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
@@ -131,7 +131,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 				}
 	        }
 	        if (query.indexOf("%USER%") >= 0)
-	        	query = query.replace("%USER%", StringEscapeUtils.escapeSql(sessionContext.getUser().getExternalUserId()));
+	        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
 	        
         	BufferedPrinter out = new BufferedPrinter(new CSVPrinter(response.getWriter(), false));
         	response.setContentType(out.getContentType() + "; charset=UTF-8");
@@ -173,7 +173,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 					}
 		        }
 		        if (query.indexOf("%USER%") >= 0)
-		        	query = query.replace("%USER%", StringEscapeUtils.escapeSql(sessionContext.getUser().getExternalUserId()));
+		        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
 		        Query q = hibSession.createQuery(query);
@@ -380,7 +380,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         s.append("<td>");
         if (text!=null) {
         	if (text instanceof Document) {
-        		s.append(StringEscapeUtils.escapeHtml(((Document)text).asXML()));
+        		s.append(StringEscapeUtils.escapeHtml4(((Document)text).asXML()));
         	} else {
         		s.append(text.toString());
         	}

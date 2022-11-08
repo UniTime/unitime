@@ -77,9 +77,10 @@ import biweekly.property.Method;
 import biweekly.property.Organizer;
 import biweekly.property.RecurrenceId;
 import biweekly.property.Status;
+import biweekly.util.DayOfWeek;
+import biweekly.util.Frequency;
+import biweekly.util.ICalDate;
 import biweekly.util.Recurrence;
-import biweekly.util.Recurrence.DayOfWeek;
-import biweekly.util.Recurrence.Frequency;
 
 /**
  * @author Tomas Muller
@@ -110,8 +111,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 		
         ICalWriter writer = new ICalWriter(helper.getWriter(), ICalVersion.V2_0);
         try {
-        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
-        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        	writer.setGlobalTimezone(CalendarVTimeZoneGenerator.download(TimeZone.getDefault()));
         } catch (IllegalArgumentException e) {
         	sLog.warn("Failed to set default time zone: " + e.getMessage());
         }
@@ -285,7 +285,7 @@ public class EventsExportEventsToICal extends EventsExporter {
             		}
             	}
             	// add exception
-            	exdates.addValue(date.toDate());
+            	exdates.getValues().add(new ICalDate(date.toDate()));
             }
             // process remaining meetings
             for (ICalendarMeeting ics: meetings) {

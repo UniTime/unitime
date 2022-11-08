@@ -199,18 +199,18 @@ public class XlsReportWriter implements ReportWriter {
 		clone = iWorkbook.createCellStyle();
 		clone.setFont(iWorkbook.getFontAt(style.getFontIndex()));
 		clone.setVerticalAlignment(VerticalAlignment.TOP);
-		clone.setAlignment(style.getAlignmentEnum());
-		clone.setBorderBottom(style.getBorderBottomEnum());
-		clone.setBorderTop(style.getBorderTopEnum());
-		clone.setBorderLeft(style.getBorderLeftEnum());
-		clone.setBorderRight(style.getBorderRightEnum());
+		clone.setAlignment(style.getAlignment());
+		clone.setBorderBottom(style.getBorderBottom());
+		clone.setBorderTop(style.getBorderTop());
+		clone.setBorderLeft(style.getBorderLeft());
+		clone.setBorderRight(style.getBorderRight());
 		clone.setBottomBorderColor(style.getBottomBorderColor());
 		clone.setTopBorderColor(style.getTopBorderColor());
 		clone.setLeftBorderColor(style.getLeftBorderColor());
 		clone.setRightBorderColor(style.getRightBorderColor());
 		clone.setWrapText(true);
 		clone.setFillForegroundColor(style.getFillForegroundColor());
-		clone.setFillPattern(style.getFillPatternEnum());
+		clone.setFillPattern(style.getFillPattern());
 		iStyles.put(name, clone);
 		return clone;
 	}
@@ -223,7 +223,7 @@ public class XlsReportWriter implements ReportWriter {
 	}
 	
 	protected CellStyle addBottomRow(CellStyle style) {
-		if (style.getBorderBottomEnum() == BorderStyle.THIN) return style;
+		if (style.getBorderBottom() == BorderStyle.THIN) return style;
 		String name = getStyleName(style);
 		if (name == null) return style;
 		CellStyle clone = cloneStyle(style, name + "|B");
@@ -233,7 +233,7 @@ public class XlsReportWriter implements ReportWriter {
 	}
 	
 	protected CellStyle addTopRow(CellStyle style) {
-		if (style.getBorderTopEnum() == BorderStyle.THIN) return style;
+		if (style.getBorderTop() == BorderStyle.THIN) return style;
 		String name = getStyleName(style);
 		if (name == null) return style;
 		CellStyle clone = cloneStyle(style, name + "|T");
@@ -243,7 +243,7 @@ public class XlsReportWriter implements ReportWriter {
 	}
 	
 	protected CellStyle addLeftRow(CellStyle style) {
-		if (style.getBorderLeftEnum() == BorderStyle.THIN) return style;
+		if (style.getBorderLeft() == BorderStyle.THIN) return style;
 		String name = getStyleName(style);
 		if (name == null) return style;
 		CellStyle clone = cloneStyle(style, name + "|L");
@@ -253,7 +253,7 @@ public class XlsReportWriter implements ReportWriter {
 	}
 	
 	protected CellStyle addRightRow(CellStyle style) {
-		if (style.getBorderRightEnum() == BorderStyle.THIN) return style;
+		if (style.getBorderRight() == BorderStyle.THIN) return style;
 		String name = getStyleName(style);
 		if (name == null) return style;
 		CellStyle clone = cloneStyle(style, name + "|R");

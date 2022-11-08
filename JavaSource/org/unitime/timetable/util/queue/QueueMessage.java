@@ -24,8 +24,8 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Date;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -94,30 +94,30 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     protected String formatMessageHTML() {
     	switch (getLevel()) {
     	case TRACE:
-    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
     	case DEBUG:
-    		return "&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
     	case INFO:
-    		return "&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml(getMessage());
+    		return "&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml4(getMessage());
     	case WARN:
-    		return "<font color='orange'>" + StringEscapeUtils.escapeHtml(getMessage()) + "</font>";
+    		return "<font color='orange'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
     	case ERROR:
-    		return "<font color='red'>" + StringEscapeUtils.escapeHtml(getMessage()) + "</font>";
+    		return "<font color='red'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
     	case FATAL:
-    		return "<font color='red'><b>" + StringEscapeUtils.escapeHtml(getMessage()) + "</b></font>";
+    		return "<font color='red'><b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b></font>";
     	case PROGRESS:
-    		return "<b>" + StringEscapeUtils.escapeHtml(getMessage()) + "</b>";
+    		return "<b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b>";
     	case STAGE:
-    		return "<b>" + StringEscapeUtils.escapeHtml(getMessage()) + "</b>";
+    		return "<b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b>";
     	case HTML:
     		return getMessage();
     	default:
-    		return StringEscapeUtils.escapeHtml(getMessage());
+    		return StringEscapeUtils.escapeHtml4(getMessage());
 		}
     }
     
     public String toHTML() {
-    	return formatMessageHTML() + (hasError() ? "<br><font color='red'><pre>" + StringEscapeUtils.escapeHtml(getError()) + "</pre></font>" : "");
+    	return formatMessageHTML() + (hasError() ? "<br><font color='red'><pre>" + StringEscapeUtils.escapeHtml4(getError()) + "</pre></font>" : "");
     }
 
 	@Override

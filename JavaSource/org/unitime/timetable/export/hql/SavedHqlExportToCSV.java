@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,6 +40,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.export.BufferedPrinter;
@@ -226,7 +226,7 @@ public class SavedHqlExportToCSV implements Exporter {
 				}
 			}
 			if (hql.indexOf("%USER%") >= 0)
-				hql = hql.replace("%USER%", StringEscapeUtils.escapeSql(user.getExternalUserId()));
+				hql = hql.replace("%USER%", HibernateUtil.escapeSql(user.getExternalUserId()));
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 			org.hibernate.Query q = hibSession.createQuery(hql);
 			if (maxRows > 0)

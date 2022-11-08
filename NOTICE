@@ -26,10 +26,6 @@ AntLR Parser Generator (antlr-2.7.7.jar)
 	under BSD or BSD-style License
 	http://www.antlr.org/
 
-Code Generation Library (cglib-3.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://cglib.sourceforge.net/
-
 Jackson-annotations (jackson-annotations-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
@@ -42,29 +38,33 @@ jackson-databind (jackson-databind-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
 
-Gson (gson-2.9.0.jar)
+vinnie (vinnie-2.0.2.jar)
+	under MIT License
+	http://github.com/mangstadt/vinnie
+
+Gson (gson-2.10.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/google/gson/gson
 
-Protocol Buffers [Core] (protobuf-java-3.19.2.jar)
-	under 3-Clause BSD License
+Protocol Buffers [Core] (protobuf-java-3.21.9.jar)
+	under BSD-3-Clause
 	https://developers.google.com/protocol-buffers/protobuf-java/
 
 iText, a Free Java-PDF library (itext-2.1.7.jar)
 	under GNU Lesser General Public License (LGPL), Version 2.1
 	http://www.lowagie.com/iText/
 
+SparseBitSet (SparseBitSet-1.2.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://github.com/brettwooldridge/SparseBitSet
+
 Commons BeanUtils (commons-beanutils-1.8.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/beanutils/
 
-Apache Commons Codec (commons-codec-1.10.jar)
+Apache Commons Codec (commons-codec-1.15.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/proper/commons-codec/
-
-Apache Commons Configuration (commons-configuration-1.10.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/configuration/
+	https://commons.apache.org/proper/commons-codec/
 
 Commons DBCP (commons-dbcp-1.4.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -74,27 +74,23 @@ Commons Digester (commons-digester-2.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/digester/
 
-Apache Commons FileUpload (commons-fileupload-1.3.3.jar)
+Apache Commons FileUpload (commons-fileupload-1.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-fileupload/
 
-Commons IO (commons-io-1.4.jar)
+Apache Commons IO (commons-io-2.11.0.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/io/
+	https://commons.apache.org/proper/commons-io/
 
-Commons Lang (commons-lang-2.6.jar)
+Apache Commons Logging (commons-logging-1.2.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/lang/
-
-Commons Logging (commons-logging-1.1.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/logging
+	http://commons.apache.org/proper/commons-logging/
 
 Commons Pool (commons-pool-1.5.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/pool/
 
-Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.6.jar)
+Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/reactor/reactor-core
 
@@ -106,20 +102,16 @@ JavaMail API (compat) (mail-1.4.7.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://kenai.com/projects/javamail/mail
 
-jaxen (jaxen-1.1.6.jar)
-	under BSD or BSD-style License
-	http://jaxen.codehaus.org/
-
-Joda-Time (joda-time-2.8.2.jar)
+Joda-Time (joda-time-2.12.1.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.joda.org/joda-time/
+	https://www.joda.org/joda-time/
 
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
-biweekly (biweekly-0.4.3.jar)
+biweekly (biweekly-0.6.6.jar)
 	under BSD or BSD-style License
-	http://sourceforge.net/p/biweekly
+	http://github.com/mangstadt/biweekly
 
 Ehcache Core (ehcache-core-2.6.11.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -133,37 +125,45 @@ OGNL - Object Graph Navigation Library (ognl-3.1.29.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://ognl.org
 
-Apache Commons Collections (commons-collections4-4.1.jar)
+Apache Commons Collections (commons-collections4-4.4.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/proper/commons-collections/
+	https://commons.apache.org/proper/commons-collections/
 
 Apache Commons Lang (commons-lang3-3.8.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-lang/
 
-Apache Log4j API (log4j-api-2.17.1.jar)
+Apache Commons Math (commons-math3-3.6.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://commons.apache.org/proper/commons-math/
+
+Apache Commons Text (commons-text-1.10.0.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://commons.apache.org/proper/commons-text
+
+Apache Log4j API (log4j-api-2.19.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-api/
 
-Apache Log4j Core (log4j-core-2.17.1.jar)
+Apache Log4j Core (log4j-core-2.19.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-core/
 
-Apache Log4j Commons Logging Bridge (log4j-jcl-2.17.1.jar)
+Apache Log4j Commons Logging Bridge (log4j-jcl-2.19.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-jcl/
 
-Apache Log4j SLF4J Binding (log4j-slf4j-impl-2.17.1.jar)
+Apache Log4j SLF4J Binding (log4j-slf4j-impl-2.19.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/
 
-Apache Log4j Web (log4j-web-2.17.1.jar)
+Apache Log4j Web (log4j-web-2.19.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j-web/
 
-Apache POI (poi-3.17.jar)
+Apache POI - Common (poi-5.2.3.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://poi.apache.org/
+	https://poi.apache.org/
 
 Struts 2 Convention Plugin (struts2-convention-plugin-2.5.30.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -229,9 +229,9 @@ Tiles - Template Technologies Support (tiles-template-3.0.8.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://tiles.apache.org/framework/tiles-template/
 
-AspectJ runtime (aspectjrt-1.8.7.jar)
-	under Eclipse Public License (EPL), Version 1.0
-	http://www.aspectj.org
+AspectJ Runtime (aspectjrt-1.9.9.1.jar)
+	under Eclipse Public License - v 2.0
+	https://www.eclipse.org/aspectj/
 
 Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs (bcpkix-jdk15on-1.70.jar)
 	under Bouncy Castle Licence
@@ -249,9 +249,9 @@ dom4j (dom4j-2.1.3.jar)
 	under BSD or BSD-style License
 	http://dom4j.github.io/
 
-FreeMarker (freemarker-2.3.23.jar)
+Apache FreeMarker (freemarker-2.3.31.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://freemarker.org/
+	https://freemarker.apache.org/
 
 gwt-servlet (gwt-servlet-2.10.0.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -293,7 +293,7 @@ Jasig CAS Client for Java - Core (cas-client-core-3.6.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.apereo.org/cas/cas-client-core
 
-Javassist (javassist-3.28.0-GA.jar)
+Javassist (javassist-3.29.2-GA.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.javassist.org/
 
@@ -321,7 +321,7 @@ Java Transaction API (jboss-transaction-api_1.2_spec-1.0.0.Final.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://www.jboss.org/jboss-transaction-api_1.2_spec
 
-JGroups (jgroups-3.6.6.Final.jar)
+JGroups (jgroups-3.6.20.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
@@ -341,8 +341,8 @@ asm-tree (asm-tree-7.3.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
-reactive-streams (reactive-streams-1.0.3.jar)
-	under CC0
+reactive-streams (reactive-streams-1.0.4.jar)
+	under MIT-0
 	http://www.reactive-streams.org/
 
 Restlet Core - API and Engine (org.restlet-2.3.12.jar)
@@ -357,59 +357,59 @@ SLF4J API Module (slf4j-api-1.7.25.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-5.3.20.jar)
+Spring AOP (spring-aop-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-5.3.20.jar)
+Spring Beans (spring-beans-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-5.3.20.jar)
+Spring Context (spring-context-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-5.3.20.jar)
+Spring Context Support (spring-context-support-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-5.3.20.jar)
+Spring Core (spring-core-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-5.3.20.jar)
+Spring Expression Language (SpEL) (spring-expression-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Commons Logging Bridge (spring-jcl-5.3.20.jar)
+Spring Commons Logging Bridge (spring-jcl-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-5.3.20.jar)
+Spring JDBC (spring-jdbc-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-5.3.20.jar)
+Spring Messaging (spring-messaging-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Transaction (spring-tx-5.3.20.jar)
+Spring Transaction (spring-tx-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-5.3.20.jar)
+Spring Web (spring-web-5.3.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Integration Core (spring-integration-core-5.4.12.jar)
+Spring Integration Core (spring-integration-core-5.5.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-Spring Integration File Support (spring-integration-file-5.4.12.jar)
+Spring Integration File Support (spring-integration-file-5.5.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-Spring Integration Mail Support (spring-integration-mail-5.4.12.jar)
+Spring Integration Mail Support (spring-integration-mail-5.5.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
@@ -417,7 +417,7 @@ spring-ldap-core (spring-ldap-core-2.4.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-ldap
 
-Spring Retry (spring-retry-1.3.1.jar)
+Spring Retry (spring-retry-1.3.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.springsource.org
 

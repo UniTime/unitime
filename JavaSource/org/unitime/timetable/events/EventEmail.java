@@ -397,8 +397,7 @@ public class EventEmail {
         	StringWriter ret = new StringWriter();
 	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
 	        try {
-	        	writer.getTimezoneInfo().setGenerator(new CalendarVTimeZoneGenerator());
-	        	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        	writer.setGlobalTimezone(CalendarVTimeZoneGenerator.download(TimeZone.getDefault()));
 	        } catch (IllegalArgumentException e) {
 	        	sLog.warn("Failed to set default time zone: " + e.getMessage());
 	        }

@@ -22,7 +22,6 @@ package org.unitime.timetable.export.hql;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,6 +34,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventAction.EventContext;
@@ -101,7 +101,7 @@ public class TestHqlExportToCSV implements Exporter {
 			}
         }
         if (hql.indexOf("%USER%") >= 0)
-        	hql = hql.replace("%USER%", StringEscapeUtils.escapeSql(helper.getSessionContext().getUser().getExternalUserId()));
+        	hql = hql.replace("%USER%", HibernateUtil.escapeSql(helper.getSessionContext().getUser().getExternalUserId()));
 
 		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), reference(), false);

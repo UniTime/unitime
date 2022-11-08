@@ -1119,23 +1119,23 @@ public class ExportTimetableXLS extends TableExporter {
 				}
 			}
 			if (ps != null) {
-				if (ps.getBorderTopEnum() == BorderStyle.THICK)
+				if (ps.getBorderTop() == BorderStyle.THICK)
 					thickTop = true;
-				if (ps.getBorderTopEnum() == BorderStyle.THIN)
+				if (ps.getBorderTop() == BorderStyle.THIN)
 					thinTop = true;
-				if (ps.getBorderLeftEnum() == BorderStyle.THICK)
+				if (ps.getBorderLeft() == BorderStyle.THICK)
 					thickLeft = true;
-				if (ps.getBorderLeftEnum() == BorderStyle.THIN)
+				if (ps.getBorderLeft() == BorderStyle.THIN)
 					thinLeft = true;
-				if (ps.getBorderBottomEnum() == BorderStyle.THICK)
+				if (ps.getBorderBottom() == BorderStyle.THICK)
 					thickBottom = true;
-				if (ps.getBorderBottomEnum() == BorderStyle.THIN)
+				if (ps.getBorderBottom() == BorderStyle.THIN)
 					thinBottom = true;
-				if (ps.getBorderRightEnum() == BorderStyle.THICK)
+				if (ps.getBorderRight() == BorderStyle.THICK)
 					thickRight = true;
-				if (ps.getBorderRightEnum() == BorderStyle.THIN)
+				if (ps.getBorderRight() == BorderStyle.THIN)
 					thinRight = true;
-				if (color == null && ps.getFillPatternEnum() == FillPatternType.SOLID_FOREGROUND)
+				if (color == null && ps.getFillPattern() == FillPatternType.SOLID_FOREGROUND)
 					color = ps.getFillForegroundColor(); 
 			}
 			String styleId = "line" + (thickTop ? "-ttop" : thinTop ? "-top" : "") + (thickLeft ? "-tleft" : thinLeft ? "-left" : "")

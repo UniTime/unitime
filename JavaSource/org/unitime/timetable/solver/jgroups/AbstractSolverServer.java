@@ -231,7 +231,7 @@ public abstract class AbstractSolverServer implements SolverServer {
 			if (name == null || name.isEmpty())
 				Configurator.setRootLevel(Level.INFO);
 			else
-				Configurator.setLevel(name, null);
+				Configurator.setLevel(name, (Level)null);
 		} else {
 			if (name == null || name.isEmpty())
 				Configurator.setRootLevel(Level.getLevel(level));

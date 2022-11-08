@@ -21,32 +21,34 @@ package org.unitime.commons;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.TimeZone;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 
+import biweekly.ICalendar;
 import biweekly.component.VTimezone;
+import biweekly.io.TimezoneAssignment;
 import biweekly.io.TimezoneInfo;
 import biweekly.io.TzUrlDotOrgGenerator;
-import biweekly.io.VTimezoneGenerator;
 import biweekly.io.text.ICalReader;
 import biweekly.property.TimezoneId;
+import biweekly.property.ValuedProperty;
 import biweekly.util.IOUtils;
 
 /**
  * A variant of the {@link TzUrlDotOrgGenerator} that has been made configurable using unitime.calendar.timezone property. 
  *
  */
-public class CalendarVTimeZoneGenerator implements VTimezoneGenerator {
+public class CalendarVTimeZoneGenerator {
 	private static final Map<URI, VTimezone> cache = Collections.synchronizedMap(new HashMap<URI, VTimezone>());
 
-	@Override
 	public VTimezone generate(TimeZone timezone) throws IllegalArgumentException {
 		URI uri;
 		try {
@@ -61,56 +63,79 @@ public class CalendarVTimeZoneGenerator implements VTimezoneGenerator {
 
 		VTimezone component = cache.get(uri);
 		if (component != null) {
-			return component;
+			return component.copy();
 		}
 
+		ICalendar ical;
 		ICalReader reader = null;
 		try {
-			reader = new ICalReader(uri.toURL().openStream());
-			reader.readNext();
-
-			TimezoneInfo tzinfo = reader.getTimezoneInfo();
-			component = tzinfo.getComponents().iterator().next();
-
-			TimezoneId componentId = component.getTimezoneId();
-			if (componentId == null) {
-				/*
-				 * There should always be a TZID property, but just in case
-				 * there there isn't one, create one.
-				 */
-				component.setTimezoneId(timezone.getID());
-			} else if (!timezone.getID().equals(componentId.getValue())) {
-				/*
-				 * Ensure that the value of the TZID property is identical to
-				 * the ID of the Java TimeZone object. This is to ensure that
-				 * the values of the TZID parameters throughout the iCal match
-				 * the value of the VTIMEZONE component's TZID property.
-				 * 
-				 * For example, if tzurl.org is queried for the "PRC" timezone,
-				 * then a VTIMEZONE component with a TZID of "Asia/Shanghai" is
-				 * *actually* returned. This is a problem because iCal
-				 * properties use the value of the Java TimeZone object to get
-				 * the value of the TZID parameter, so the values of the TZID
-				 * parameters and the VTIMEZONE component's TZID property will
-				 * not be the same.
-				 */
-				componentId.setValue(timezone.getID());
-			}
-
-			cache.put(uri, component);
-			return component;
+			reader = new ICalReader(getInputStream(uri));
+			ical = reader.readNext();
 		} catch (FileNotFoundException e) {
-			throw notFound(e, timezone);
-		} catch (NoSuchElementException e) {
-			throw notFound(e, timezone);
+			throw notFound(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} finally {
 			IOUtils.closeQuietly(reader);
 		}
+
+		/*
+		 * There should always be exactly one iCalendar object in the file, but
+		 * check to be sure.
+		 */
+		if (ical == null) {
+			throw notFound(null);
+		}
+
+		/*
+		 * There should always be exactly one VTIMEZONE component, but check to
+		 * be sure.
+		 */
+		TimezoneInfo tzinfo = ical.getTimezoneInfo();
+		Collection<VTimezone> components = tzinfo.getComponents();
+		if (components.isEmpty()) {
+			components = ical.getComponents(VTimezone.class); //VTIMEZONE components without TZID properties are treated as ordinary components
+			if (components.isEmpty()) {
+				throw notFound(null);
+			}
+		}
+
+		component = components.iterator().next();
+
+		/*
+		 * There should always be a TZID property, but just in case there there
+		 * isn't one, create one.
+		 */
+		TimezoneId id = component.getTimezoneId();
+		if (id == null) {
+			component.setTimezoneId(timezone.getID());
+		} else {
+			String value = ValuedProperty.getValue(id);
+			if (value == null || value.trim().isEmpty()) {
+				id.setValue(timezone.getID());
+			}
+		}
+
+		cache.put(uri, component);
+		return component.copy();
 	}
 	
-	private IllegalArgumentException notFound(Exception e, TimeZone timezone) {
-		return new IllegalArgumentException("Timezone " + timezone.getID() + " not recognized.", e);
+	InputStream getInputStream(URI uri) throws IOException {
+		return uri.toURL().openStream();
+	}
+
+	public static void clearCache() {
+		cache.clear();
+	}
+
+	private static IllegalArgumentException notFound(Exception e) {
+		return new IllegalArgumentException("Timezone ID not recognized.", e);
+	}
+
+	
+	public static TimezoneAssignment download(TimeZone timezone) {
+		CalendarVTimeZoneGenerator generator = new CalendarVTimeZoneGenerator();
+		VTimezone component = generator.generate(timezone);
+		return new TimezoneAssignment(timezone, component);
 	}
 }
