@@ -1474,7 +1474,7 @@ public interface ExaminationMessages extends Messages {
 	String lrNA();
 	
 	@DefaultMessage("limit={0}")
-	String lrLimit(int limit);
+	String lrFooterLimit(int limit);
 	
 	@DefaultMessage("Start Time")
 	String lrStartTime();
@@ -1633,7 +1633,7 @@ public interface ExaminationMessages extends Messages {
 	String lrStudentConflicts(String name);
 	
 	@DefaultMessage("~ ~ ~ ~ ~ EXAMINATION CONFLICTS AND/OR BACK-TO-BACK EXAMINATIONS ~ ~ ~ ~ ~")
-	String lrExaminationConflicts();
+	String lrSectExaminationConflicts();
 	
 	@DefaultMessage("{0}  EXAMINATION CONFLICTS")
 	String lrExaminationConflicts(String name);

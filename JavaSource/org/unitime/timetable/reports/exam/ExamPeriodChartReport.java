@@ -58,9 +58,9 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
     
     public void printReport() throws DocumentException {
         if (iRC!=null && iRC.length()>0)
-            setFooter(iRC+(iLimit>=0?" (" + MSG.lrLimit(iLimit) + ")":""));
+            setFooter(iRC+(iLimit>=0?" (" + MSG.lrFooterLimit(iLimit) + ")":""));
         else if (iLimit>=0)
-            setFooter(MSG.lrLimit(iLimit));
+            setFooter(MSG.lrFooterLimit(iLimit));
         Hashtable<ExamPeriod,TreeSet<ExamAssignmentInfo>> period2exams = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
         	if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;

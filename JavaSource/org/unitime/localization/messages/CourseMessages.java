@@ -4883,7 +4883,7 @@ public interface CourseMessages extends Messages {
 	String titleAutoSetupSolverGroups();
 	
 	@DefaultMessage("Solver Groups - {0}")
-	String sectSolverGroups(String session);
+	String sectSolverGroupsForSession(String session);
 	
 	@DefaultMessage("Abbv")
 	String fieldAbbv();

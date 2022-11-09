@@ -448,7 +448,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 				lpad("", '-', 15)
                                 		));
                                 if (!iNewPage) println();
-                                println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
+                                println(mpad(MSG.lrSectExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                                 printHeader(false);
                                 setCont(MSG.lrExaminationConflicts(shortName));
                                 headerPrinted = true;
@@ -500,7 +500,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             				lpad("", '-', 15)
                             		));
                         	if (!iNewPage) println();
-                            println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
+                            println(mpad(MSG.lrSectExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                             printHeader(false);
                             setCont(MSG.lrExaminationConflicts(shortName));
                             headerPrinted = true;
@@ -571,7 +571,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                                 				lpad("", '-', 15)
                                 		));
                             	if (!iNewPage) println();
-                                println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
+                                println(mpad(MSG.lrSectExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                                 printHeader(false);
                                 setCont(MSG.lrExaminationConflicts(shortName));
                                 headerPrinted = true;
@@ -629,7 +629,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             				lpad("", '-', 15)
                             		));
                             if (!iNewPage) println();
-                            println(mpad(MSG.lrExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
+                            println(mpad(MSG.lrSectExaminationConflicts(),getNrCharsPerLine()).withColSpan(10));
                             printHeader(false);
                             setCont(MSG.lrExaminationConflicts(shortName));
                             headerPrinted = true;

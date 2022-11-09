@@ -327,7 +327,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 		WebTable.setOrder(sessionContext,"solverGroups.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         PdfWebTable webTable = new PdfWebTable( 5,
-			    (html?null:MSG.sectSolverGroups(session.getLabel())),
+			    (html?null:MSG.sectSolverGroupsForSession(session.getLabel())),
                 "solverGroupEdit.action?ord=%%",
 			    new String[] {
 			    		MSG.fieldAbbv(),
@@ -410,6 +410,6 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
     }
     
     public String getTitle() {
-    	return MSG.sectSolverGroups(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()); 
+    	return MSG.sectSolverGroupsForSession(sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()); 
     }
 }
