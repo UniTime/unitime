@@ -30,6 +30,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
@@ -42,6 +43,7 @@ import org.unitime.timetable.util.Constants;
  */
 public class RequiredTimeTable {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static GwtMessages MSG = Localization.create(GwtMessages.class);
 	
     public static String getTimeGridSize(UserContext user) {
     	return UserProperty.GridSize.get(user);
@@ -320,7 +322,9 @@ public class RequiredTimeTable {
         		getModel().getDefaultSelection()+",\n\t"+
         		"'"+getModel().getDefaultPreference()+"',\n\t"+
         		(getModel().getPreferenceCheck()==null?"null":"\""+getModel().getPreferenceCheck()+"\"")+", \n\t"+
-        		showLegend+"));\n"+
+        		showLegend+", \n\t"+
+        		"{'from':'" + MSG.propFrom() + "', 'to':'" + MSG.propTo() + "'}" +
+        		"));\n"+
         		"</script>";
         }
     }

@@ -381,6 +381,7 @@ public class POHelper extends ArrayList<POHelper.Block> {
 	public static class Block implements Comparable<Block> {
 		String msgctxt, msgid, msgstr;
 		boolean dnt = false;
+		boolean fuzzy = false;
 		
 		public Block(String msgctxt, String msgid, String msgstr) {
 			this.msgctxt = msgctxt;
@@ -469,6 +470,10 @@ public class POHelper extends ArrayList<POHelper.Block> {
 		public String getTranslation() {
 			return msgstr;
 		}
+		
+		public void setTranslation(String msgstr) {
+			this.msgstr = msgstr;
+		}
 
 		@Override
 		public int compareTo(Block b) {
@@ -493,6 +498,8 @@ public class POHelper extends ArrayList<POHelper.Block> {
 		
 		public void print(PrintWriter out) {
 			out.println();
+			if (fuzzy)
+				out.println("#, fuzzy");
 			if (dnt)
 				out.println("# \"Do Not Translate\"");
 			out.println("msgctxt \"" + msgctxt + "\"");

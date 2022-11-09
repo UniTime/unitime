@@ -22,7 +22,11 @@
 <loc:bundle name="CourseMessages">
 <table class="unitime-MainTable" style="max-width: 800px;">
 	<tr><td colspan="2">
+	<% try { %>
 		<div class="WelcomeRowHead"><loc:message name="propError"/> <font color="#FF0000"><s:property value="exception.message"/></font></div>
+	<% } catch (Exception e) { %>
+		<div class="WelcomeRowHead"><loc:message name="propError"/> <font color="#FF0000"><s:property value="exception"/></font></div>
+	<% } %>
 	</td></tr>
 	<tr>
 		<td><loc:message name="propQuery"/></td><td style="word-break: break-word;"><s:property value="URL"/></td>

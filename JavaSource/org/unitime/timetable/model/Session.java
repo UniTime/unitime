@@ -20,6 +20,8 @@
 package org.unitime.timetable.model;
 
 import java.io.Serializable;
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -35,7 +37,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.AcademicSessionLookup;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -60,6 +65,8 @@ import org.unitime.timetable.util.ReferenceList;
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 public class Session extends BaseSession implements Comparable<Session>, Qualifiable {
+	protected static GwtConstants CONST = Localization.create(GwtConstants.class);
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	public static final int sHolidayTypeNone = 0;
 
@@ -67,11 +74,16 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 
 	public static final int sHolidayTypeBreak = 2;
 
-	public static String[] sHolidayTypeNames = new String[] { "No Holiday",
-			"Holiday", "(Spring/October/Thanksgiving) Break" };
-
 	public static String[] sHolidayTypeColors = new String[] {
 			"rgb(240,240,240)", "rgb(200,30,20)", "rgb(240,50,240)" };
+	
+	public static String[] getHolidayNames() {
+		return new String[] {
+				MSG.legendNoHoliday(),
+				MSG.legendHoliday(),
+				MSG.legendBreak()
+		};
+	}
 
 	private static final long serialVersionUID = 3691040980400813366L;
 
@@ -395,9 +407,10 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		StringBuffer prefNames = new StringBuffer();
 		StringBuffer prefColors = new StringBuffer();
 		
-		for (int i = 0; i < sHolidayTypeNames.length; i++) {
+		String[] names = getHolidayNames();
+		for (int i = 0; i < sHolidayTypeColors.length; i++) {
 			prefTable.append((i == 0 ? "" : ",") + "'" + i + "'");
-			prefNames.append((i == 0 ? "" : ",") + "'" + sHolidayTypeNames[i]
+			prefNames.append((i == 0 ? "" : ",") + "'" + names[i]
 					+ "'");
 			prefColors.append((i == 0 ? "" : ",") + "'" + sHolidayTypeColors[i]
 					+ "'");
@@ -490,15 +503,26 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		}
 
 		StringBuffer table = new StringBuffer();
-		table
-				.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
-		table.append("<script language='JavaScript'>");
-		table.append("calGenerate2(" + acadYear + "," + startMonth + ","
-				+ endMonth + "," + "[" + holidayArray + "]," + "[" + prefTable
-				+ "]," + "[" + prefNames + "]," + "[" + prefColors + "]," + "'"
-				+ sHolidayTypeNone + "'," + "[" + borderArray + "],[" + colorArray + "]," + editable
-				+ "," + editable + ");");
-		table.append("</script>");
+		table.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
+		table.append("<script language='JavaScript'>\n");
+		table.append("var CAL_WEEKDAYS = [");
+		for (int i = 0; i < 7; i++) {
+			if (i > 0) table.append(", ");
+			table.append("\"" + CONST.days()[(i + 6) % 7] + "\"");
+		}
+		table.append("];\n");
+		table.append("var CAL_MONTHS = [");
+		for (int i = 0; i < 12; i++) {
+			if (i > 0) table.append(", ");
+			table.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
+		}
+		table.append("];\n");
+		table.append("calGenerate2(" + acadYear + "," + startMonth + ",\n\t"
+				+ endMonth + ",\n\t" + "[" + holidayArray + "],\n\t" + "[" + prefTable
+				+ "],\n\t" + "[" + prefNames + "],\n\t" + "[" + prefColors + "],\n\t" + "'"
+				+ sHolidayTypeNone + "',\n\t" + "[" + borderArray + "],\n\t[" + colorArray + "],\n\t"+ editable
+				+ "," + editable + ");\n");
+		table.append("</script>\n");
 		return table.toString();
 	}
 

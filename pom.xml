@@ -510,6 +510,7 @@
 					<exclude>org/unitime/timetable/gwt/command/generator/**/*.*</exclude>
 					<exclude>org/unitime/localization/impl/ImportTranslations.java</exclude>
 					<exclude>org/unitime/localization/impl/ExportTranslations.java</exclude>
+					<exclude>org/unitime/localization/impl/DeepLTranslator.java</exclude>
 				</excludes>
 			</resource>
 			<resource>

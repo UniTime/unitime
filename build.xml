@@ -639,6 +639,32 @@
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
+	
+	<target name="deepl-translator" depends="init">
+		<echo message="Translating ${locale} ..."/>
+		<path id="build.classpath">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<javac destdir="${build.dir}" debug="true" encoding="utf-8" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+			<include name="org/unitime/localization/impl/DeepLTranslator.java"/>
+		</javac>
+		<taskdef name="translate" classname="org.unitime.localization.impl.DeepLTranslator">
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</taskdef>
+		<translate token="${token}">
+			<locale value="${locale}"/>
+		</translate>
+		<delete dir="${build.dir}" failonerror="false"/>
+		<delete dir="${temp.dir}" failonerror="false"/>
+	</target>
 
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,build-dist,done" />

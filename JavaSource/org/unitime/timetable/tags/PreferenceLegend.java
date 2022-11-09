@@ -28,6 +28,8 @@ import javax.servlet.jsp.tagext.TagSupport;
 
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 
@@ -37,6 +39,7 @@ import org.unitime.timetable.model.dao.PreferenceLevelDAO;
  */
 public class PreferenceLegend extends TagSupport {
 	private static final long serialVersionUID = -8994474921509928721L;
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private boolean iNotAvailable = false;
 	private boolean iPrefs = true;
 	private boolean iDpBackgrounds = false;
@@ -97,48 +100,48 @@ public class PreferenceLegend extends TagSupport {
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle'src='"+imgFolder+"prefna.png'>"+
-                    "&nbsp;Not Available&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendNotAvailable() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
         }
         if (isDpOffered()) {
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-offered.png'>"+
-                    "&nbsp;Classes Offered&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendClassesOffered() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-notoffered.png'>"+
-                    "&nbsp;Classes Not Offered&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendClassesNotOffered() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
         }
         if (isDpBackgrounds()) {
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-start.png'>"+
-                    "&nbsp;Start / End&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendClassesStartEnd() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-exam.png'>"+
-                    "&nbsp;Examination Start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legenExaminationStart() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-holiday.png'>"+
-                    "&nbsp;Holiday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendHoliday() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-break.png'>"+
-                    "&nbsp;Break&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendBreakShort() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
         }
         if (isDpAssign()) {
             html.append(
                     "<td style='font-size: 80%;'>"+
                     "<img border='0' align='absmiddle' src='"+imgFolder+"dp-assign.png'>"+
-                    "&nbsp;Assignment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+                    "&nbsp;" + MSG.legendAssignment() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
                     "</td>");
         }
         html.append("</tr></table>");

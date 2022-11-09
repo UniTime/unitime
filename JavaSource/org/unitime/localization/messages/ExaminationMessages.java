@@ -2348,4 +2348,13 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("minutes")
 	String noteMinutes();
+<<<<<<< HEAD
+=======
+	
+	@DefaultMessage("Examinations offered")
+	String legentExaminationsOffered();
+	
+	@DefaultMessage("Examinations not offered")
+	String legentExaminationsNotOffered();
+>>>>>>> 9972b0739 (Localization: Date and Time Patterns)
 }

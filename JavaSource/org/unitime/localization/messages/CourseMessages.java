@@ -5679,4 +5679,34 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Preview of {0}")
 	String sectPreviewOfDatePattern(String name);
+	
+	@DefaultMessage("Not Available")
+	String legendNotAvailable();
+	
+	@DefaultMessage("Classes Offered")
+	String legendClassesOffered();
+	
+	@DefaultMessage("Classes Not Offered")
+	String legendClassesNotOffered();
+	
+	@DefaultMessage("No Holiday")
+	String legendNoHoliday();
+	
+	@DefaultMessage("Holiday")
+	String legendHoliday();
+	
+	@DefaultMessage("(Spring/October/Thanksgiving) Break")
+	String legendBreak();
+	
+	@DefaultMessage("Break")
+	String legendBreakShort();
+	
+	@DefaultMessage("Start / End")
+	String legendClassesStartEnd();
+	
+	@DefaultMessage("Examination Start")
+	String legenExaminationStart();
+	
+	@DefaultMessage("Assignment")
+	String legendAssignment();
 }

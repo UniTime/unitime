@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -57,6 +60,7 @@ import org.unitime.timetable.util.Formats;
 public class ExamPeriodEditForm implements UniTimeForm {
 	private static final long serialVersionUID = -8152697759737310033L;
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	protected static GwtConstants CONS = Localization.create(GwtConstants.class);
 	
 	private Long iUniqueId;
     private String iOp;
@@ -797,19 +801,31 @@ public class ExamPeriodEditForm implements UniTimeForm {
 		border.append("]");
 		pattern.append("]");
 		StringBuffer sb = new StringBuffer(); 
-        sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
-		sb.append("<script language='JavaScript'>");
+        sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
+		sb.append("<script language='JavaScript'>\n");
+		sb.append("var CAL_WEEKDAYS = [");
+		for (int i = 0; i < 7; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + CONS.days()[(i + 6) % 7] + "\"");
+		}
+		sb.append("];\n");
+		sb.append("var CAL_MONTHS = [");
+		for (int i = 0; i < 12; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
+		}
+		sb.append("];\n");
 		sb.append(
-			"calGenerate("+iSession.getSessionStartYear()+","+
-				iSession.getStartMonth()+","+
-				iSession.getEndMonth()+","+
-				pattern+","+
-				"['1','0'],"+
-				"['Examinations offered','Examinations not offered'],"+
-				"['rgb(240,240,50)','rgb(240,240,240)'],"+
-				"'1',"+
-				border+","+true+","+true+");");
-		sb.append("</script>");
+			"calGenerate("+iSession.getSessionStartYear()+",\n\t"+
+				iSession.getStartMonth()+",\n\t"+
+				iSession.getEndMonth()+",\n\t"+
+				pattern+",\n\t"+
+				"['1','0'],\n\t"+
+				"['" + MSG.legentExaminationsOffered() +"','" + MSG.legentExaminationsNotOffered() + "'],\n\t"+
+				"['rgb(240,240,50)','rgb(240,240,240)'],\n\t"+
+				"'1',\n\t"+
+				border+","+true+","+true+");\n");
+		sb.append("</script>\n");
 		return sb.toString();
 		} catch (Exception e) {
 			e.printStackTrace();

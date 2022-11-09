@@ -60,7 +60,7 @@ public class DispDatePatternAction extends UniTimeAction<BlankForm>{
 				return clazz.effectiveDatePattern();
 		}
 		if (subpartId != null) {
-			SchedulingSubpart ss = SchedulingSubpartDAO.getInstance().get(classId);
+			SchedulingSubpart ss = SchedulingSubpartDAO.getInstance().get(subpartId);
 			if (ss != null) 
 				return ss.effectiveDatePattern();
 		}

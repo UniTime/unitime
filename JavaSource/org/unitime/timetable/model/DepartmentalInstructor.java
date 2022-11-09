@@ -20,6 +20,8 @@
 package org.unitime.timetable.model;
 
 import java.text.SimpleDateFormat;
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -41,7 +43,9 @@ import org.hibernate.NonUniqueResultException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -65,6 +69,7 @@ import org.unitime.timetable.util.NameInterface;
  */
 public class DepartmentalInstructor extends BaseDepartmentalInstructor implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
+	protected static GwtConstants CONS = Localization.create(GwtConstants.class);
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public DepartmentalInstructor () {
@@ -690,19 +695,31 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public String getUnavailablePatternHtml(boolean editable, boolean includeScript) {
 		StringBuffer sb = new StringBuffer(); 
         if (includeScript)
-            sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
-		sb.append("<script language='JavaScript'>");
+            sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
+		sb.append("<script language='JavaScript'>\n");
+		sb.append("var CAL_WEEKDAYS = [");
+		for (int i = 0; i < 7; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + CONS.days()[(i + 6) % 7] + "\"");
+		}
+		sb.append("];\n");
+		sb.append("var CAL_MONTHS = [");
+		for (int i = 0; i < 12; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
+		}
+		sb.append("];\n");
 		sb.append(
-			"calGenerate2("+getSession().getSessionStartYear()+","+
-				(getSession().getPatternStartMonth()) +","+
-				(getSession().getPatternEndMonth())+","+
-				getUnavailablePatternArray()+","+
-				"['1','0'],"+
-				"['" + MSG.dateNotAvailable() + "','" + MSG.dateAvailable() + "'],"+
-				"['rgb(150,150,150)','rgb(240,240,240)'],"+
-				"'1',"+
-				getUnavailableBorderArray()+","+getSession().getColorArray()+","+editable+","+editable+");");
-		sb.append("</script>");
+			"calGenerate2("+getSession().getSessionStartYear()+",\n\t"+
+				(getSession().getPatternStartMonth()) +",\n\t"+
+				(getSession().getPatternEndMonth())+",\n\t"+
+				getUnavailablePatternArray()+",\n\t"+
+				"['1','0'],\n\t"+
+				"['" + MSG.dateNotAvailable() + "','" + MSG.dateAvailable() + "'],\n\t"+
+				"['rgb(150,150,150)','rgb(240,240,240)'],\n\t"+
+				"'1',\n\t"+
+				getUnavailableBorderArray()+","+getSession().getColorArray()+","+editable+","+editable+");\n");
+		sb.append("</script>\n");
 		return sb.toString();
 	}
 	

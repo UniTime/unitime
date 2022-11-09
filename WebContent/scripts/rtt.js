@@ -205,7 +205,7 @@ function tpGenTimeHeader(tpName, editable, time, startTime, endTime, minDay, max
 	}
 }
   
-function tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay) {
+function tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay, messages) {
 	tpOutput += ("<TR>");
 	if (tpIsBlockEditable(tpName,editable,minTime,maxTime,minDay,maxDay)) {
 		var onclick = "";
@@ -220,9 +220,9 @@ function tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minT
  				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  				"onmouseout=\"this.style.border='white 1px solid';\" "+
 	 			"onclick=\""+onclick+"\" "+
- 				"align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+ 				"align=right>" + messages['from'] + "<BR><FONT color=gray>" + messages['to'] + "</FONT></TH>");
  	} else {
-	 	tpOutput += ("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+	 	tpOutput += ("<TH align=right>" + messages['from'] + "<BR><FONT color=gray>" + messages['to'] + "</FONT></TH>");
  	}
  	for (var t=minTime;t<=maxTime;t++) {
  		tpGenTimeHeader(tpName,editable,t,startTimes[t],endTimes[t], minDay, maxDay);
@@ -252,7 +252,7 @@ function tpGenDayHeader(tpName, editable, day, text, minTime, maxTime) {
  	}
 }
   
-function tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, minDay, maxDay) {
+function tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, minDay, maxDay, messages) {
  	tpOutput += ("<TR>");
  	if (tpIsBlockEditable(tpName,editable,minTime,maxTime,minDay,maxDay)) {
 		var onclick = "";
@@ -267,9 +267,9 @@ function tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, min
  				"onmouseover=\"this.style.border='rgb(0,0,242) 1px solid';this.style.cursor='pointer';\" "+
  				"onmouseout=\"this.style.border='white 1px solid';\" "+
 	 			"onclick=\""+onclick+"\" "+
-				"align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+				"align=right>" + messages['from'] + "<BR><FONT color=gray>" + messages['to'] + "</FONT></TH>");
 	} else {
-	 	tpOutput += ("<TH align=right>from:<BR><FONT color=gray>to:</FONT></TH>");
+	 	tpOutput += ("<TH align=right>" + messages['from'] + "<BR><FONT color=gray>" + messages['to'] + "</FONT></TH>");
 	}
  	for (var d=minDay;d<=maxDay;d++) {
  		tpGenDayHeader(tpName,editable,d,days[d], minTime, maxTime);
@@ -314,14 +314,14 @@ function tpGenRowVertical(tpName, editable, time, startTime, endTime, text, high
  	tpOutput += ("</tr>");
 }
 
-function tpGenTable(tpName, horizontal, editable, days, startTimes, endTimes, text, highlight, sel, minTime, maxTime, minDay, maxDay) {
+function tpGenTable(tpName, horizontal, editable, days, startTimes, endTimes, text, highlight, sel, minTime, maxTime, minDay, maxDay, messages) {
 	tpOutput += ("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
 	if (horizontal) {
-		tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay);
+		tpGenTimeHeadersHorizontal(tpName, editable, startTimes, endTimes, minTime, maxTime, minDay, maxDay, messages);
 		for (var d=minDay;d<=maxDay;d++)
 			tpGenRowHorizontal(tpName, editable,d,days[d],(text==null?null:text[d]), highlight, sel, minTime, maxTime);
 	} else {
-		tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, minDay, maxDay);		
+		tpGenDayHeadersHorizontal(tpName, editable, days, minTime, maxTime, minDay, maxDay, messages);		
 		for (var t=minTime;t<=maxTime;t++)
 			tpGenRowVertical(tpName, editable,t,startTimes[t],endTimes[t],text, highlight, sel, minDay, maxDay);
 	}
@@ -390,14 +390,14 @@ function tpGenSelection(tpName, selections, defSelection) {
 	tpOutput += ("</select>");
 }
 
-function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes, endTimes, text, preferences, highlight, editable, prefTable, prefColors, prefNames, prefEnables, selections, defSelection, defPreference, prefCheck, showLegend) {
+function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes, endTimes, text, preferences, highlight, editable, prefTable, prefColors, prefNames, prefEnables, selections, defSelection, defPreference, prefCheck, showLegend, messages) {
 	tpOutput = "";
 	tpGenVariables(tpName,nrTimes,nrDays,preferences, prefTable, prefColors, selections, defPreference, prefCheck, prefNames, editable);
 	tpOutput += ("<table border='0'>");
 	if (title==null) {
 		if (selections==null) {
 			tpOutput += ("<tr><td>");
-			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1);
+			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1, messages);
 			if (showLegend) {
 				tpOutput += ("</td><td width='10'>&nbsp;</td><td>");
 				tpGenLegend(tpName, editable, prefTable, prefNames, prefEnables);
@@ -414,7 +414,7 @@ function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes
 			tpOutput += ("<tr><td valign='top'>");
 			for (var i=0;i<selections.length;i++) {
 				tpOutput += ("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
-				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3]);
+				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3], messages);
 				tpOutput += ("</div>");
 			}
 			tpOutput += ("</td></tr>");
@@ -429,7 +429,7 @@ function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes
 			}
 			tpOutput += ("</td></tr>");
 			tpOutput += ("<tr><td valign='top'>");
-			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1);
+			tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, 0, 0, nrTimes-1, 0, nrDays-1, messages);
 			tpOutput += ("</td></tr>");
 		} else {
 			tpOutput += ("<tr><td>");
@@ -444,7 +444,7 @@ function tpGenerate(tpName, horizontal, title, nrTimes, nrDays, days, startTimes
 			tpOutput += ("<tr><td colspan='2' valign='top'>");
 			for (var i=0;i<selections.length;i++) {
 				tpOutput += ("<div name='"+tpName+"_sel"+i+"' id='"+tpName+"_sel"+i+"' style='display:"+(i==defSelection?"block":"none")+";'>");
-				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3]);
+				tpGenTable(tpName,horizontal,editable,days,startTimes,endTimes,text, highlight, i, selections[i][1][0], selections[i][1][1], selections[i][1][2], selections[i][1][3], messages);
 				tpOutput += ("</div>");
 			}
 			tpOutput += ("</td></tr>");

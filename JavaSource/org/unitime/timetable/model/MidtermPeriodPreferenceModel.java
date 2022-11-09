@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model;
 
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
@@ -313,24 +315,36 @@ public class MidtermPeriodPreferenceModel {
         legendColor.append("'rgb(150,150,150)']");
 
         StringBuffer sb = new StringBuffer(); 
-        sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
-        sb.append("<script language='JavaScript'>");
+        sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
+        sb.append("<script language='JavaScript'>\n");
+        sb.append("var CAL_WEEKDAYS = [");
+		for (int i = 0; i < 7; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + CONSTANTS.days()[(i + 6) % 7] + "\"");
+		}
+		sb.append("];\n");
+		sb.append("var CAL_MONTHS = [");
+		for (int i = 0; i < 12; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
+		}
+		sb.append("];\n");
         int legendIdx = (starts.size()==1?0:starts.size()==2?1:starts.size()/2);
         int idx = 0;
         for (Integer start: starts) {
             String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN);
             String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(start+iLength.get(start))+Constants.FIRST_SLOT_TIME_MIN);
             sb.append(
-                    "calGenerate("+getYear()+","+
-                        getStartMonth()+","+
-                        getEndMonth()+","+
-                        getPattern(start)+","+
-                        legendCode+","+legendText+","+legendColor+",'0',"+
-                        getBorderArray(start)+","+editable+","+(editable && legendIdx==idx)+","+
-                        "'"+iName+start+"','("+startTime+" - "+endTime+")',6,"+(start==starts.first())+","+(start==starts.last())+");");
+                    "calGenerate("+getYear()+",\n\t"+
+                        getStartMonth()+",\n\t"+
+                        getEndMonth()+",\n\t"+
+                        getPattern(start)+",\n\t"+
+                        legendCode+","+legendText+","+legendColor+",'0',\n\t"+
+                        getBorderArray(start)+","+editable+","+(editable && legendIdx==idx)+",\n\t"+
+                        "'"+iName+start+"','("+startTime+" - "+endTime+")',6,"+(start==starts.first())+","+(start==starts.last())+");\n");
             idx++;
         }
-        sb.append("</script>");
+        sb.append("</script>\n");
 		return sb.toString();
 	}
     
