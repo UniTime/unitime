@@ -234,7 +234,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	protected String getAdminParameter() {
-		return ApplicationProperties.getProperty("banner.xe.adminParameter", "persona");
+		return ApplicationProperties.getProperty("banner.xe.adminParameter", "systemIn");
 	}
 
 	protected String getBannerId(XStudent student) {
