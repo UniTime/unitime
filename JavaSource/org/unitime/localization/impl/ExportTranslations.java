@@ -137,6 +137,7 @@ public class ExportTranslations {
 					helper.readProperties(bundle, iSource, locale.getValue());
 				
 				helper.writePOFile(new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po"));
+				helper.writePOTFile(new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + ".pot"));
 			}
     	} catch (Exception e) {
     		e.printStackTrace();

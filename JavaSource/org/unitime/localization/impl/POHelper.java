@@ -359,6 +359,25 @@ public class POHelper extends ArrayList<POHelper.Block> {
 		out.flush(); out.close();		
 	}
 	
+	public void writePOTFile(File file) throws IOException {
+		PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+		
+		out.println("msgid \"\"");
+		out.println("msgstr \"\"");
+		out.println("\"MIME-Version: 1.0\\n\"");
+		out.println("\"Content-Transfer-Encoding: 8bit\\n\"");
+		out.println("\"Content-Type: text/plain; charset=UTF-8\\n\"");
+		out.println("\"PO-Revision-Date: " + new Date() + "\\n\"");
+		out.println("\"Language: " + iLocale + "\\n\"");
+		out.println("\"X-Generator: UniTime " + org.unitime.timetable.util.Constants.VERSION + "\\n\"");
+		
+		for (Block block: this) {
+			block.printPOT(out);
+		}
+		
+		out.flush(); out.close();
+	}
+	
 	public static class Block implements Comparable<Block> {
 		String msgctxt, msgid, msgstr;
 		boolean dnt = false;
@@ -480,6 +499,15 @@ public class POHelper extends ArrayList<POHelper.Block> {
 			POHelper.print(out, "msgid", msgid);
 			POHelper.print(out, "msgstr", msgstr);
 		}
+		
+		public void printPOT(PrintWriter out) {
+			out.println();
+			if (dnt)
+				out.println("# \"Do Not Translate\"");
+			out.println("msgctxt \"" + msgctxt + "\"");
+			POHelper.print(out, "msgid", msgid);
+			POHelper.print(out, "msgstr", "");
+		}
 	}
 	
 	private static String array2string(String[] value) {
@@ -528,7 +556,10 @@ public class POHelper extends ArrayList<POHelper.Block> {
     }
 	
 	private static void print(PrintWriter out, String tag, String text) {
-		if (text == null) return;
+		if (text == null) {
+			out.println(tag + " \"\"");
+			return;
+		}
 		if (text.indexOf('\n') >= 0) {
 			String[] t = text.split("\n");
 			for (int i = 0; i < t.length; i++) {
