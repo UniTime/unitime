@@ -350,7 +350,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 			}
 
 			iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
-			iOp = "Save";
+			iOp = MSG.actionSaveExaminationPeriod();
 			iEditable = true;
 		} else {
 		    iUniqueId = ep.getUniqueId();
@@ -362,7 +362,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 			iPrefLevel = ep.getPrefLevel().getUniqueId();
 			iType = ep.getExamType().getUniqueId();
 			context.setAttribute(SessionAttribute.ExamType, iType);
-			iOp = "Update";
+			iOp = MSG.actionUpdateExaminationPeriod();
 			iEditable = !ep.isUsed();
 		}
 	}

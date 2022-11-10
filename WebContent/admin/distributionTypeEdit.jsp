@@ -132,7 +132,7 @@
 		</TR>
 
 		<TR>
-			<TD valign="top">Departments:</TD>
+			<TD valign="top"><loc:message name="propDepartments"/></TD>
 			<TD>
 				<s:iterator value="form.departmentIds" var="deptId" status="stat"><s:set var="idx" value="%{#stat.index}"/>
 					<s:hidden name="form.departmentIds[%{#idx}]"/>
