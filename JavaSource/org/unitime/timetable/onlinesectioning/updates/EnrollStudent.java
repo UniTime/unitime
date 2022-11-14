@@ -142,7 +142,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> lockedCourses = new HashSet<Long>();
 		List<EnrollmentFailure> failures = null;
 		boolean includeRequestInTheReturnMessage = false;
-		boolean rescheduling = server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false);
+		boolean rescheduling = server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false) &&
+				server.getConfig().getPropertyBoolean("Enrollment.WaitListLockedCourse", true);
 		getRequest().removeDuplicates();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment()) {
@@ -151,16 +152,20 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				if (server.isOfferingLocked(course.getOfferingId())) {
 					lockedCourses.add(course.getCourseId());
-					if (rescheduling)
-						for (CourseRequestInterface.Request r: getRequest().getCourses())
-							if (!r.isWaitList() && r.hasRequestedCourse()) {
-								for (RequestedCourse rc: r.getRequestedCourse())
-									if (rc.hasCourseId()) {
-										if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
-									} else if (rc.hasCourseName()) {
-										if (course.matchCourse(rc.getCourseName())) r.setWaitList(true);
-									}
-							}
+					if (rescheduling) {
+						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null && offering.isWaitList()) {
+							for (CourseRequestInterface.Request r: getRequest().getCourses())
+								if (!r.isWaitList() && r.hasRequestedCourse()) {
+									for (RequestedCourse rc: r.getRequestedCourse())
+										if (rc.hasCourseId()) {
+											if (rc.getCourseId().equals(course.getCourseId())) r.setWaitList(true);
+										} else if (rc.hasCourseName()) {
+											if (course.matchCourse(rc.getCourseName())) r.setWaitList(true);
+										}
+								}
+						}
+					}
 				} else {
 					offeringIds.add(course.getOfferingId());
 				}

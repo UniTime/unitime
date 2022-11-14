@@ -101,7 +101,8 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 			}
 			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) return false;
 		}
-		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections))
+		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections) &&
+			!server.getConfig().getPropertyBoolean("Enrollment.CanKeepTimeConflict", false))
 			for (XRequest r: student.getRequests())
 			if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
 				XEnrollment e = ((XCourseRequest)r).getEnrollment();

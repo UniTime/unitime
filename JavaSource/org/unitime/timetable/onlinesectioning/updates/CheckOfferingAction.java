@@ -573,7 +573,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				return false;
 			}
 		}
-		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections))
+		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections) &&
+			!server.getConfig().getPropertyBoolean("Enrollment.CanKeepTimeConflict", false))
 			for (XRequest r: student.getRequests()) {
 				if (request.getPriority() <= r.getPriority()) continue; // only check time conflicts with courses of higher priority
 				if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {

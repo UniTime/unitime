@@ -325,7 +325,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		if (oldOffering != null)
 			courseIds.addAll(oldOffering.getCourses());
 		
-		if (server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false)) {
+		if (server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false) || 
+				server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingOnUnlock", false)) {
 			// re-scheduling
 			for (XCourseId course: courseIds) {
 				for (XStudent[] student: students) {
@@ -737,7 +738,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		for (XSection s1: sections)
 			for (XSection s2: sections)
 				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2)) return false;
-		if (!offering.isAllowOverlap(student, enrollment.getConfigId(), enrollment, sections))
+		if (!offering.isAllowOverlap(student, enrollment.getConfigId(), enrollment, sections) &&
+			!server.getConfig().getPropertyBoolean("Enrollment.CanKeepTimeConflict", false))
 			for (XRequest r: student.getRequests()) {
 				if (r instanceof XCourseRequest) {
 					XCourseRequest cr = (XCourseRequest)r;
