@@ -23,13 +23,26 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.extension.StudentQuality;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.online.OnlineReservation;
+import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -82,11 +95,16 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
+import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
@@ -775,6 +793,111 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			}
 		}
 		
+		boolean questionTimeConflict = false;
+		boolean questionInconStuPref = false;
+		if (!(server instanceof DatabaseServer)) {
+			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+			model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
+			boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
+			Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+			
+			org.cpsolver.studentsct.model.Student student = new org.cpsolver.studentsct.model.Student(request.getStudentId());
+			student.setExternalId(original.getExternalId());
+			student.setName(original.getName());
+			student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+			student.setAllowDisabled(original.isAllowDisabled());
+			student.setClassFirstDate(original.getClassStartDate());
+			student.setClassLastDate(original.getClassEndDate());
+			student.setBackToBackPreference(original.getBackToBackPreference());
+			student.setModalityPreference(original.getModalityPreference());
+			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Set<XDistribution> distributions = new HashSet<XDistribution>();
+			boolean hasAssignment = false;
+			for (XRequest reqest: original.getRequests()) {
+				if (reqest instanceof XCourseRequest && ((XCourseRequest)reqest).getEnrollment() != null) {
+					hasAssignment = true; break;
+				}
+			}
+			for (CourseRequestInterface.Request c: request.getCourses())
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
+			for (CourseRequestInterface.Request c: request.getAlternatives())
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
+			model.addStudent(student);
+			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+			for (XDistribution link: distributions) {
+				if (link.getDistributionType() == XDistributionType.LinkedSections) {
+					List<Section> sections = new ArrayList<Section>();
+					for (Long sectionId: link.getSectionIds()) {
+						Section x = classTable.get(sectionId);
+						if (x != null) sections.add(x);
+					}
+					if (sections.size() >= 2)
+						model.addLinkedSections(linkedClassesMustBeUsed, sections);
+				}
+			}
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.dummyReservation", "false"))) {
+				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+					Request r = (Request)e.next();
+					if (r instanceof CourseRequest) {
+						CourseRequest cr = (CourseRequest)r;
+						for (Course course: cr.getCourses()) {
+							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), 5000, true, 1, true, true, true, true, true);
+							continue;
+						}
+					}
+				}
+			}
+			
+			// Single section time conflict check
+			Map<Section, Course> singleSections = new HashMap<Section, Course>();
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r.isAlternative()) continue; // no alternate course requests
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (course.getOffering().getConfigs().size() == 1) { // take only single config courses
+							for (Subpart subpart: course.getOffering().getConfigs().get(0).getSubparts()) {
+								if (subpart.getSections().size() == 1) { // take only single section subparts
+									Section section = subpart.getSections().get(0);
+									for (Section other: singleSections.keySet()) {
+										if (section.isOverlapping(other)) {
+											boolean confirm = (original.getRequestForCourse(course.getId()) == null || original.getRequestForCourse(singleSections.get(other).getId()) == null) && (cr.getCourses().size() == 1);
+											response.addMessage(course.getId(), course.getName(), "OVERLAP",
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getName()).replace("{other}", singleSections.get(other).getName()),
+													confirm ? CONF_UNITIME : CONF_NONE);
+											if (confirm) questionTimeConflict = true;
+										}
+									}
+									if (cr.getCourses().size() == 1) {
+										// remember section when there are no alternative courses provided
+										singleSections.put(section, course);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// Inconsistent requirements
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (SectioningRequest.hasInconsistentRequirements(cr, course.getId())) {
+							boolean confirm = (original.getRequestForCourse(course.getId()) == null);
+							response.addMessage(course.getId(), course.getName(), "STUD_PREF",
+									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getName()),
+									confirm ? CONF_UNITIME : CONF_NONE);
+							if (confirm) questionInconStuPref = true;
+						}
+					}
+				}
+			}
+		}
+		
 		// Check for critical course removals
 		boolean questionDropCritical = false;
 		boolean dropImportant = false, dropVital = false, dropCritical = false;
@@ -1096,69 +1219,80 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"), CONF_UNITIME, -1);
 			response.addConfirmation("", CONF_UNITIME, 1);
 		}
+		int line = 2;
 		if (creditError != null) {
-			response.addConfirmation(creditError, CONF_UNITIME, 2);
+			response.addConfirmation(creditError, CONF_UNITIME, line++);
 		}
 		if (questionNoAlt)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", (creditError != null ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", (line > 2 ? "\n" : "") +
 					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."),
-					CONF_UNITIME, 3);
+					CONF_UNITIME, line ++);
+		
+		if (questionTimeConflict)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.timeConflicts", (line > 2 ? "\n" : "") +
+					"Two or more single section courses are conflicting with each other. You will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
+					CONF_UNITIME, line ++);
+		
+		if (questionInconStuPref)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", (line > 2 ? "\n" : "") +
+					"One or more courses are not available due to the selected preferences."),
+					CONF_UNITIME, line ++);
 		
 		if (questionDropCritical) {
 			if (dropVital && !dropCritical && !dropImportant)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (line > 2 ? "\n" : "") +
 						"One or more vital courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
-						CONF_UNITIME, 4);
+						CONF_UNITIME, line ++);
 			else if (dropImportant && !dropVital && !dropCritical)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (line > 2 ? "\n" : "") +
 						"One or more important courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
-						CONF_UNITIME, 4);
+						CONF_UNITIME, line ++);
 			else if (advCritical != Critical.NORMAL)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (line > 2 ? "\n" : "") +
 						"One or more critical courses have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
-						CONF_UNITIME, 4);
+						CONF_UNITIME, line ++);
 			else
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.dropCritical", (line > 2 ? "\n" : "") +
 						"One or more courses that are marked as critical in your degree plan have been removed. This may prohibit progress towards degree. Please consult with your academic advisor."),
-						CONF_UNITIME, 4);
+						CONF_UNITIME, line ++);
 		}
 		
 		if (questionMissingAdvisorCritical)
 			if (advCritical == Critical.IMPORTANT || (missImportant && !missCritical && !missVital))
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (line > 2 ? "\n" : "") +
 						"One or more courses that are marked by your advisor as important have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
-						CONF_UNITIME, 5);
+						CONF_UNITIME, line ++);
 			else if (advCritical == Critical.VITAL || (missVital && !missCritical && !missImportant))
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (line > 2 ? "\n" : "") +
 						"One or more courses that are marked by your advisor as vital have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
-						CONF_UNITIME, 5);
+						CONF_UNITIME, line ++);
 			else if (advCritical == Critical.CRITICAL)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (line > 2 ? "\n" : "") +
 						"One or more courses that are marked by your advisor as critical have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
-						CONF_UNITIME, 5);
+						CONF_UNITIME, line ++);
 			else
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (creditError != null || questionNoAlt || questionDropCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.missingAdvisedCritical", (line > 2 ? "\n" : "") +
 						"One or more courses that are marked as critical in your degree plan and that have been listed by your advisor have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
-						CONF_UNITIME, 5);
+						CONF_UNITIME, line ++);
 		
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.onlineOnlyNotMet", (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.onlineOnlyNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the newly requested courses have no online-only option at the moment. You may not be able to get a full schedule because becasue you are not allowed to take these courses."),
-					CONF_UNITIME, 6);
+					CONF_UNITIME, line ++);
 			else
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.residentialNotMet", (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.residentialNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the newly requested courses have no residential option at the moment. You may not be able to get a full schedule because becasue you are not allowed to take these courses."),
-					CONF_UNITIME, 6);
+					CONF_UNITIME, line ++);
 		}
 		if (questionFreeTime) {
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeRequested", (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.freeTimeRequested", (line > 2 ? "\n" : "") +
 					"Free time requests will be considered as time blocks during the pre-registration process. When possible, classes should be avoided during free time. However, if a free time request is placed higher than a course, the course cannot be attended during free time and you may not receive a full schedule."),
-					CONF_UNITIME, 7);
+					CONF_UNITIME, line ++);
 		}
 		
-		if (creditError != null || questionNoAlt || questionDropCritical || questionMissingAdvisorCritical || questionRestrictionsNotMet || questionFreeTime)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 8);
+		if (line > 2)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, line ++);
 
 		Set<Integer> conf = response.getConfirms();
 		if (conf.contains(CONF_UNITIME)) {
