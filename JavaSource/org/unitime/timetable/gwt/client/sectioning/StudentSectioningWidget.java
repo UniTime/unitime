@@ -981,7 +981,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										course.isCanWaitList() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST) &&
 										course.isNotAvailable() && !iCourseRequests.isWaitListed(course.getCourseId())) {
 										UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), 
-												(course.isFull() ? MESSAGES.suggestionsNoChoicesCourseIsFull(course.getCourseName()) : MESSAGES.suggestionsNoChoices(course.getCourseName()))+ "\n" + MESSAGES.confirmQuickWaitList(course.getCourseName()), new Command() {
+												(course.isFull() ? MESSAGES.suggestionsNoChoicesCourseIsFull(course.getCourseName()) :
+												(course.hasHasIncompReqs() ? MESSAGES.suggestionsNoChoicesDueToStudentPrefs(course.getCourseName()) :
+												MESSAGES.suggestionsNoChoices(course.getCourseName())))+ "\n" + MESSAGES.confirmQuickWaitList(course.getCourseName()), new Command() {
 											@Override
 											public void execute() {
 												final CourseRequestInterface undo = iCourseRequests.getRequest();
@@ -1866,6 +1868,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					} else if (course.isNotAvailable()) {
 						if (course.isFull())
 							unassignedMessage = MESSAGES.courseIsFull();
+						else if (course.hasHasIncompReqs())
+							unassignedMessage = MESSAGES.classNotAvailableDueToStudentPrefs();
 						else
 							unassignedMessage = MESSAGES.classNotAvailable();
 					} else if (course.isLocked()) {

@@ -47,6 +47,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 /**
  * @author Tomas Muller
@@ -139,6 +140,8 @@ public class UnasignedCourseRequests implements StudentSectioningReport {
 				if (av.isEmpty() || (av.size() == 1 && av.get(0).equals(courseRequest.getInitialAssignment()) && getModel().inConflict(assignment, av.get(0)))) {
 					if (courseRequest.getCourses().get(0).getLimit() >= 0)
 						line.add(new CSVFile.CSVField(MSG.courseIsFull()));
+					else if (SectioningRequest.hasInconsistentRequirements(courseRequest, null))
+						line.add(new CSVFile.CSVField(MSG.classNotAvailableDueToStudentPrefs()));
 					else
 						line.add(new CSVFile.CSVField(MSG.classNotAvailable()));
 				} else {

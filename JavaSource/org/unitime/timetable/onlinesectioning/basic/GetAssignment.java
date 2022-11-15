@@ -497,7 +497,8 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						});
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server, wlMode).getAvaiableEnrollmentsSkipSameTime(assignment);
+						CourseRequest crq = SectioningRequest.convert(assignment, r, server, wlMode);
+						Collection<Enrollment> avEnrls = crq.getAvaiableEnrollmentsSkipSameTime(assignment);
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
 							for (Request q: enrl.getStudent().getRequests()) {
@@ -546,6 +547,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								}
 								ca.setFull(enrl >= course.getLimit());
 							}
+							ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(crq, course.getCourseId()));
 						}
 						if (student.getMaxCredit() != null) {
 							Float minCred = course.getMinCredit();

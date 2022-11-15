@@ -175,7 +175,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null, iRequested = null, iSnapShotLimit = null;
 		
 		private ArrayList<String> iOverlaps = null;
-		private boolean iNotAvailable = false, iFull = false, iLocked = false, iCanWaitList = false;
+		private boolean iNotAvailable = false, iFull = false, iLocked = false, iCanWaitList = false, iHasIncompReqs = false;
 		private String iInstead;
 		private String iEnrollmentMessage = null;
 		private Date iRequestedDate = null;
@@ -267,6 +267,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isFull() { return iFull; }
 		public void setFull(boolean full) { iFull = full; }
+		
+		public boolean hasHasIncompReqs() { return iHasIncompReqs; }
+		public void setHasIncompReqs(boolean incompReqs) { iHasIncompReqs = incompReqs; }
 		
 		public boolean isOverMaxCredit() { return iOverMaxCredit != null; }
 		public Float getOverMaxCredit() { return iOverMaxCredit; }

@@ -1071,6 +1071,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				} else if (course.isNotAvailable()) {
 					if (course.isFull())
 						unassignedMessage = MESSAGES.courseIsFull();
+					else if (course.hasHasIncompReqs())
+						unassignedMessage = MESSAGES.classNotAvailableDueToStudentPrefs();
 					else
 						unassignedMessage = MESSAGES.classNotAvailable();
 				} else if (course.isLocked()) {

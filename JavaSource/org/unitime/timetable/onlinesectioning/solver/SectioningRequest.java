@@ -40,6 +40,7 @@ import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
@@ -402,6 +403,50 @@ public class SectioningRequest implements LastSectionProvider {
 		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
 		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null, null, wlMode);
 		return assignment.getValue(cr);
+	}
+	
+	public static boolean hasRequirements(CourseRequest cr) {
+		if (cr.getStudent().getClassFirstDate() != null) return true;
+		if (cr.getStudent().getClassLastDate() != null) return true;
+		if (cr.getStudent().getModalityPreference() == ModalityPreference.ONLINE_REQUIRED) return true;
+		return !cr.getRequiredChoices().isEmpty();
+	}
+	
+	private static boolean check(CourseRequest cr, Course course, Config config, HashSet<Section> sections, int idx) {
+		if (idx == 0) {
+			if (cr.isNotAllowed(course, config)) return false;
+		}
+		if (config.getSubparts().size() == idx) {
+			Enrollment e = new Enrollment(cr, 0, course, config, new HashSet<SctAssignment>(sections), null);
+            if (cr.isNotAllowed(e)) return false;
+            return true;
+		} else {
+			Subpart subpart = config.getSubparts().get(idx);
+			for (Section section : subpart.getSections()) {
+                if (section.isCancelled()) continue;
+                if (!cr.isRequired(section)) continue;
+                if (section.getParent() != null && !sections.contains(section.getParent())) continue;
+                if (section.isOverlapping(sections)) continue;
+                if (cr.isNotAllowed(course, section)) continue;
+                if (!cr.getStudent().isAllowDisabled() && !section.isEnabled(cr.getStudent())) continue;
+                sections.add(section);
+                if (check(cr, course, config, sections, idx + 1))
+                	return true;
+                sections.remove(section);
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hasInconsistentRequirements(CourseRequest cr, Long courseId) {
+		if (!hasRequirements(cr)) return false;
+		for (Course course: cr.getCourses()) {
+			if (courseId != null && course.getId() != courseId) continue;
+			for (Config config: course.getOffering().getConfigs()) {
+				if (check(cr, course, config, new HashSet<Section>(), 0)) return false;
+			}
+		}
+		return true;
 	}
 	
 	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment, XCourseId dropCourse, WaitListMode wlMode) {

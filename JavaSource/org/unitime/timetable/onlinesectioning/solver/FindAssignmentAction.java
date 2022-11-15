@@ -1046,6 +1046,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (r.getAvaiableEnrollments(assignment).isEmpty()) {
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
+								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;
@@ -1135,6 +1136,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (avEnrls.isEmpty()) {
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
+								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;

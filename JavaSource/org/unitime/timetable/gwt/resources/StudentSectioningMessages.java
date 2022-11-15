@@ -432,6 +432,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0} is not available (course is full).")
 	String suggestionsNoChoicesCourseIsFull(String source);
 	
+	@DefaultMessage("{0} is not available (due to preferences selected).")
+	String suggestionsNoChoicesDueToStudentPrefs(String source);
+	
 	@DefaultMessage("{0} conflicts with {1}.")
 	String suggestionsNoChoicesCourseIsConflicting(String course, String conflict);
 	
@@ -704,6 +707,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not available.")
 	String classNotAvailable();
+	
+	@DefaultMessage("Not available (due to preferences selected).")
+	String classNotAvailableDueToStudentPrefs();
 	
 	@DefaultMessage("Not available (course is full).")
 	String courseIsFull();

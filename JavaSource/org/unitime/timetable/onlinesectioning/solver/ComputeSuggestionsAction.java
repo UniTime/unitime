@@ -534,6 +534,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				messages.addMessage(MSG.suggestionsNoChoicesCourseIsConflicting(MSG.course(course.getSubjectArea(), course.getCourseNumber()), overlapMessage));
 			} else if (course.getLimit() == 0) {
 				messages.addMessage(MSG.suggestionsNoChoicesCourseIsFull(MSG.course(course.getSubjectArea(), course.getCourseNumber())));
+			} else if (SectioningRequest.hasInconsistentRequirements(request, course.getId())) {
+				messages.addMessage(MSG.suggestionsNoChoicesDueToStudentPrefs(MSG.course(course.getSubjectArea(), course.getCourseNumber())));
 			}
 			if (student.hasMaxCredit()) {
 				float assignedCredit = 0;
