@@ -72,6 +72,7 @@ import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 
 /**
  * @author Tomas Muller
@@ -454,6 +455,22 @@ public class XStudent extends XStudentId implements Externalizable {
     	if (iClassEndDate == null) return null;
     	return new LocalDate(datePatternFirstDate).plusDays(iClassEndDate).toDate();
     }
+    
+    public boolean hasRequirements(XCourseId course) {
+		if (iClassStartDate != null) return true;
+		if (iClassEndDate != null) return true;
+		if (iModalityPreference == ModalityPreference.ONLINE_REQUIRED) return true;
+		if (course != null) {
+			XCourseRequest cr = getRequestForCourse(course.getCourseId());
+			if (cr != null) {
+				List<XPreference> prefs = cr.getPreferences(course);
+				if (prefs != null)
+					for (XPreference p: prefs)
+						if (p.isRequired()) return true;
+			}
+		}
+		return false;
+	}
 
     /**
      * List of academic area, classification, and major codes ({@link XAreaClassificationMajor}) for the given student

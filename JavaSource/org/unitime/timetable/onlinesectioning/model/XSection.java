@@ -42,6 +42,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Unavailability;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Assignment;
@@ -54,6 +55,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TeachingClassRequest;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
@@ -461,6 +463,33 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     
     public boolean isPast() {
     	return iPast;
+    }
+    
+    public boolean isEnabled(XStudent student, AcademicSessionInfo session) {
+    	if (!iEnabledForScheduling) return false;
+        if (student != null && student.getModalityPreference() == ModalityPreference.ONLINE_REQUIRED && !isOnline()) return false;
+        if (student != null && getTime() != null) {
+            if (student.getClassStartDate() != null) {
+                if (getTime().getDays() != 0 && getTime().getFirstMeeting(session.getDayOfWeekOffset()) < student.getClassStartDate())
+                    return false;
+                else if (getTime().getDays() == 0) {
+                    int firstMeeting = getTime().getWeeks().nextSetBit(0);
+                    if (firstMeeting >= 0 && firstMeeting < student.getClassStartDate())
+                        return false;
+                }
+            }
+            if (student.getClassEndDate() != null) {
+            	if (getTime().getDays() != 0 && getTime().getLastMeeting(session.getDayOfWeekOffset()) > student.getClassEndDate())
+                    return false;
+            	else if (getTime().getDays() == 0) {
+                    int lastMeeting = getTime().getWeeks().length() - 1;
+                    if (lastMeeting >= 0 && lastMeeting > student.getClassEndDate())
+                        return false;
+                }
+            }    
+        }
+        return true;
+    	
     }
     
     /**

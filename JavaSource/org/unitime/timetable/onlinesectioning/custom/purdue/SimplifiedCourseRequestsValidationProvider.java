@@ -98,10 +98,13 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
@@ -726,6 +729,41 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+		
+		if (!(server instanceof DatabaseServer)) {
+			Map<XSection, XCourseId> singleSections = new HashMap<XSection, XCourseId>();
+			for (XRequest r: original.getRequests()) {
+				if (r.isAlternative()) continue; // no alternate course requests
+				if (r instanceof XCourseRequest) {
+					XCourseRequest cr = (XCourseRequest)r;
+					for (XCourseId course: cr.getCourseIds()) {
+						XOffering offering = server.getOffering(course.getOfferingId());
+						if (offering != null && offering.getConfigs().size() == 1) { // take only single config courses
+							for (XSubpart subpart: offering.getConfigs().get(0).getSubparts()) {
+								if (subpart.getSections().size() == 1) { // take only single section subparts
+									XSection section = subpart.getSections().get(0);
+									for (XSection other: singleSections.keySet()) {
+										if (section.isOverlapping(offering.getDistributions(), other)) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "OVERLAP",
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getCourseName()).replace("{other}", singleSections.get(other).getCourseName()),
+													ORD_UNITIME);
+										}
+									}
+									if (cr.getCourseIds().size() == 1) {
+										// remember section when there are no alternative courses provided
+										singleSections.put(section, course);
+									}
+								}
+							}
+						}
+						if (offering.hasInconsistentRequirements(original, cr, course, server.getAcademicSession()))
+							request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "STUD_PREF",
+									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getCourseName()),
+									ORD_UNITIME);
 					}
 				}
 			}
@@ -1532,6 +1570,109 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				}
 			}
 		
+		boolean questionTimeConflict = false;
+		boolean questionInconStuPref = false;
+		if (!(server instanceof DatabaseServer)) {
+			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
+			model.setDayOfWeekOffset(server.getAcademicSession().getDayOfWeekOffset());
+			boolean linkedClassesMustBeUsed = server.getConfig().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
+			Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+			
+			org.cpsolver.studentsct.model.Student student = new org.cpsolver.studentsct.model.Student(request.getStudentId());
+			student.setExternalId(original.getExternalId());
+			student.setName(original.getName());
+			student.setNeedShortDistances(original.hasAccomodation(server.getDistanceMetric().getShortDistanceAccommodationReference()));
+			student.setAllowDisabled(original.isAllowDisabled());
+			student.setClassFirstDate(original.getClassStartDate());
+			student.setClassLastDate(original.getClassEndDate());
+			student.setBackToBackPreference(original.getBackToBackPreference());
+			student.setModalityPreference(original.getModalityPreference());
+			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Set<XDistribution> distributions = new HashSet<XDistribution>();
+			boolean hasAssignment = false;
+			for (XRequest reqest: original.getRequests()) {
+				if (reqest instanceof XCourseRequest && ((XCourseRequest)reqest).getEnrollment() != null) {
+					hasAssignment = true; break;
+				}
+			}
+			for (CourseRequestInterface.Request c: request.getCourses())
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
+			for (CourseRequestInterface.Request c: request.getAlternatives())
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
+			model.addStudent(student);
+			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
+			for (XDistribution link: distributions) {
+				if (link.getDistributionType() == XDistributionType.LinkedSections) {
+					List<Section> sections = new ArrayList<Section>();
+					for (Long sectionId: link.getSectionIds()) {
+						Section x = classTable.get(sectionId);
+						if (x != null) sections.add(x);
+					}
+					if (sections.size() >= 2)
+						model.addLinkedSections(linkedClassesMustBeUsed, sections);
+				}
+			}
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.dummyReservation", "false"))) {
+				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+					Request r = (Request)e.next();
+					if (r instanceof CourseRequest) {
+						CourseRequest cr = (CourseRequest)r;
+						for (Course course: cr.getCourses()) {
+							new OnlineReservation(XReservationType.Dummy.ordinal(), -3l, course.getOffering(), 5000, true, 1, true, true, true, true, true);
+							continue;
+						}
+					}
+				}
+			}
+			
+			// Single section time conflict check
+			Map<Section, Course> singleSections = new HashMap<Section, Course>();
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r.isAlternative()) continue; // no alternate course requests
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (course.getOffering().getConfigs().size() == 1) { // take only single config courses
+							for (Subpart subpart: course.getOffering().getConfigs().get(0).getSubparts()) {
+								if (subpart.getSections().size() == 1) { // take only single section subparts
+									Section section = subpart.getSections().get(0);
+									for (Section other: singleSections.keySet()) {
+										if (section.isOverlapping(other)) {
+											response.addMessage(course.getId(), course.getName(), "OVERLAP",
+													ApplicationProperties.getProperty("purdue.specreg.messages.courseOverlaps", "Conflicts with {other}.").replace("{course}", course.getName()).replace("{other}", singleSections.get(other).getName()),
+													CONF_UNITIME);
+											questionTimeConflict = true;
+										}
+									}
+									if (cr.getCourses().size() == 1) {
+										// remember section when there are no alternative courses provided
+										singleSections.put(section, course);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			// Inconsistent requirements
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (SectioningRequest.hasInconsistentRequirements(cr, course.getId())) {
+							response.addMessage(course.getId(), course.getName(), "STUD_PREF",
+									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getName()),
+									CONF_UNITIME);
+							questionInconStuPref = true;
+						}
+					}
+				}
+			}
+		}
+		
 		String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 		boolean questionRestrictionsNotMet = false;
 		boolean onlineOnly = false;
@@ -1750,31 +1891,39 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"), CONF_UNITIME, -1);
 			response.addConfirmation("", CONF_UNITIME, 1);
 		}
+		int line = 2;
 		if (creditError != null) {
-			response.addConfirmation(creditError, CONF_UNITIME, 2);
+			response.addConfirmation(creditError, CONF_UNITIME, line ++);
 		}
 		if (questionNoAlt)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (creditError != null ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no alternatives provided. The student may not be able to get a full schedule."),
-					CONF_UNITIME, 3);
-		
+					CONF_UNITIME, line ++);
+		if (questionTimeConflict)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.timeConflicts", (line > 2 ? "\n" : "") +
+					"Two or more single section courses are conflicting with each other. The student will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
+					CONF_UNITIME, line ++);
+		if (questionInconStuPref)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.inconsistentStudPref", (line > 2 ? "\n" : "") +
+					"One or more courses are not available due to the selected preferences."),
+					CONF_UNITIME, line ++);
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no online-only option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 5);
 			else
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (creditError != null || questionNoAlt ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no residential option at the moment. The student may not be able to get a full schedule."),
 					CONF_UNITIME, 5);
 		}
 		if (questionFreeTime) {
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.freeTimeRequested", (creditError != null || questionNoAlt ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.freeTimeRequested", (line > 2 ? "\n" : "") +
 					"Free time requests will be considered as time blocks during the pre-registration process. When possible, classes should be avoided during free time. However, if a free time request is placed higher than a course, the course cannot be attended during free time and the student may not receive a full schedule."),
 					CONF_UNITIME, 6);
 		}
 		
-		if (creditError != null || questionNoAlt || questionRestrictionsNotMet || questionFreeTime)
+		if (line > 2)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 7);
 
 		Set<Integer> conf = response.getConfirms();

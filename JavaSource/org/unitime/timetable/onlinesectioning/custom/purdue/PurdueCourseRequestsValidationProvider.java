@@ -1926,6 +1926,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								}
 							}
 						}
+						if (offering.hasInconsistentRequirements(original, cr, course, server.getAcademicSession()))
+							request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "STUD_PREF",
+									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getCourseName()),
+									ORD_UNITIME);
 					}
 				}
 			}
@@ -3281,6 +3285,23 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		
+		// Inconsistent requirements
+		boolean questionInconStuPref = false;
+		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+			Request r = (Request)e.next();
+			if (r instanceof CourseRequest) {
+				CourseRequest cr = (CourseRequest)r;
+				for (Course course: cr.getCourses()) {
+					if (SectioningRequest.hasInconsistentRequirements(cr, course.getId())) {
+						response.addMessage(course.getId(), course.getName(), "STUD_PREF",
+								ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getName()),
+								CONF_UNITIME);
+						questionInconStuPref = true;
+					}
+				}
+			}
+		}
+		
 		boolean questionRestrictionsNotMet = false;
 		boolean onlineOnly = false;
 		String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
@@ -3683,33 +3704,39 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"), CONF_UNITIME, -1);
 			response.addConfirmation("", CONF_UNITIME, 1);
 		}
+		int line = 2;
 		if (creditError != null) {
-			response.addConfirmation(creditError, CONF_UNITIME, 2);
+			response.addConfirmation(creditError, CONF_UNITIME, line ++);
 		}
 		if (questionNoAlt)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (creditError != null ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no alternatives provided. The student may not be able to get a full schedule."),
-					CONF_UNITIME, 3);
+					CONF_UNITIME, line ++);
 		if (questionTimeConflict)
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.timeConflicts", (creditError != null || questionNoAlt ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.timeConflicts", (line > 2 ? "\n" : "") +
 					"Two or more single section courses are conflicting with each other. The student will likely not be able to get the conflicting course, so please provide an alternative course if possible."),
-					CONF_UNITIME, 4);
+					CONF_UNITIME, line ++);
+		if (questionInconStuPref)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.inconsistentStudPref", (line > 2 ? "\n" : "") +
+					"One or more courses are not available due to the selected preferences."),
+					CONF_UNITIME, line ++);
+		
 		if (questionRestrictionsNotMet) {
 			if (onlineOnly)
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (creditError != null || questionNoAlt || questionTimeConflict ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.onlineOnlyNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no online-only option at the moment. The student may not be able to get a full schedule."),
-					CONF_UNITIME, 7);
+					CONF_UNITIME, line ++);
 			else
-				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (creditError != null || questionNoAlt || questionTimeConflict ? "\n" : "") +
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.residentialNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no residential option at the moment. The student may not be able to get a full schedule."),
-					CONF_UNITIME, 7);
+					CONF_UNITIME, line ++);
 		}
 		if (questionFreeTime) {
-			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.freeTimeRequested", (creditError != null || questionNoAlt || questionTimeConflict || questionRestrictionsNotMet ? "\n" : "") +
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.freeTimeRequested", (line > 2 ? "\n" : "") +
 					"Free time requests will be considered as time blocks during the pre-registration process. When possible, classes should be avoided during free time. However, if a free time request is placed higher than a course, the course cannot be attended during free time and the student may not receive a full schedule."),
-					CONF_UNITIME, 8);
+					CONF_UNITIME, line ++);
 		}
-		if (creditError != null || questionNoAlt || questionTimeConflict || questionRestrictionsNotMet || questionFreeTime)
+		if (line > 2)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 9);
 		
 		Set<Integer> conf = response.getConfirms();

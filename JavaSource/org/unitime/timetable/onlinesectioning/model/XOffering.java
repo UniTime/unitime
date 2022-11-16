@@ -74,6 +74,7 @@ import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -889,6 +890,48 @@ public class XOffering implements Serializable, Externalizable {
 							}
 				}
     }
+    
+	private boolean check(XStudent student, XCourseRequest cr, XConfig config, XCourseId courseId, AcademicSessionInfo session, HashSet<XSection> sections, int idx) {
+		if (config.getSubparts().size() == idx) {
+			if (isNotAllowed(student, courseId, config, sections)) return false;
+            return true;
+		} else {
+			XSubpart subpart = config.getSubparts().get(idx);
+			for (XSection section : subpart.getSections()) {
+                if (section.isCancelled()) continue;
+                if (!cr.isRequired(this, config, section, courseId)) continue;
+                if (section.getParentId() != null) {
+                	XSection parent = null;
+                	for (XSection p: sections)
+                		if (section.getParentId().equals(p.getSectionId())) { parent = p; break; }
+                	if (parent == null) continue;
+                }
+                if (section.isOverlapping(getDistributions(), sections)) continue;
+                if (!student.isAllowDisabled() && !section.isEnabled(student, session)) continue;
+                sections.add(section);
+                if (check(student, cr, config, courseId, session, sections, idx + 1))
+                	return true;
+                sections.remove(section);
+			}
+		}
+		return false;
+	}
+	
+	private boolean isNotAllowed(XStudent student, XCourseId courseId, XConfig config, Collection<XSection> sections) {
+		for (XRestriction r: iRestrictions) {
+			if (r.isApplicable(student, courseId) && !r.isIncluded(config.getConfigId(), sections))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean hasInconsistentRequirements(XStudent student, XCourseRequest cr, XCourseId courseId, AcademicSessionInfo session) {
+		if (!student.hasRequirements(courseId)) return false;
+		for (XConfig config: iConfigs) {
+			if (check(student, cr, config, courseId, session, new HashSet<XSection>(), 0)) return false;
+		}
+		return true;
+	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

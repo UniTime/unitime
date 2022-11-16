@@ -394,6 +394,23 @@ public class XTime implements Serializable, Externalizable {
         return iFirstMeeting;
     }
     
+    transient Integer iLastMeeting = null;
+    public int getLastMeeting(int dayOfWeekOffset) {
+        if (iLastMeeting == null) {
+        	if (getDays() != 0) {
+        		int idx = -1;
+                while ((idx = getWeeks().nextSetBit(1 + idx)) >= 0) {
+                    int dow = (idx + dayOfWeekOffset) % 7;
+                    if ((getDays() & Constants.DAY_CODES[dow]) != 0)
+                        iLastMeeting = idx;
+                }
+        	} else {
+        		iLastMeeting = getWeeks().length() - 1;
+        	}
+        }
+        return iLastMeeting;
+    }
+    
     public boolean isPast(int currentDateIdnex, AcademicSessionInfo session) {
     	if (currentDateIdnex <= 0) return false;
     	int fm = getFirstMeeting(session.getDayOfWeekOffset());

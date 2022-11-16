@@ -22,9 +22,9 @@ package org.unitime.timetable.onlinesectioning.model;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -94,7 +94,7 @@ public abstract class XRestriction extends XRestrictionId {
     /**
      * Return true if the given enrollment meets the reservation.
      */
-    public boolean isIncluded(Long configId, List<XSection> sections) {
+    public boolean isIncluded(Long configId, Collection<XSection> sections) {
         // no restrictions -> not included
         if (iConfigs.isEmpty() && iSections.isEmpty()) return false;
         

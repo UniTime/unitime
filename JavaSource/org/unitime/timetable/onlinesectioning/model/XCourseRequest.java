@@ -645,6 +645,49 @@ public class XCourseRequest extends XRequest {
         return true;
     }
     
+    public boolean isRequired(XOffering offering, XConfig config, XSection section, XCourseId course) {
+    	List<XPreference> prefs = getPreferences(course);
+    	if (prefs == null || prefs.isEmpty()) return true;
+        // check given section
+    	boolean hasConfig = false, hasMatchingConfig = false;
+        boolean hasSubpart = false, hasMatchingSection = false;
+        boolean hasSectionReq = false;
+        for (XPreference choice: prefs) {
+        	// only check required choices
+        	if (!choice.isRequired()) continue;
+
+            // has config -> check config
+        	if (choice.getType() == XPreferenceType.INSTR_METHOD) {
+        		hasConfig = true;
+        		if (config.getInstructionalMethod() != null && choice.getUniqueId().equals(config.getInstructionalMethod().getUniqueId()))
+        			hasMatchingConfig = true;
+        	}
+
+        	// has section of the matching subpart -> check section
+        	if (choice.getType() == XPreferenceType.SECTION) {
+        		XSection reqSection = offering.getSection(choice.getUniqueId());
+                hasSectionReq = true;
+                if (reqSection.getSubpartId().equals(section.getSubpartId())) {
+                    hasSubpart = true;
+                    if (reqSection.equals(section)) hasMatchingSection = true;
+                } else if (!hasMatchingConfig) {
+                    for (XSubpart subpart: config.getSubparts()) {
+                        if (reqSection.getSubpartId().equals(subpart.getSubpartId())) {
+                            hasMatchingConfig = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (hasConfig && !hasMatchingConfig) return false;
+        if (hasSubpart && !hasMatchingSection) return false;
+        // no match, but there are section requirements for a different config -> not satisfied 
+        if (!hasMatchingConfig && !hasMatchingSection && hasSectionReq) return false;
+        return true;
+    }
+    
     public String getEnrollmentMessage() { return iMessage; }
     
     public void setEnrollmentMessage(String message) { iMessage = message; }
