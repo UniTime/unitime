@@ -924,11 +924,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
-            ret += "<td><i>Students</i></td>";
-            ret += "<td><i>Conflict</i></td>";
-            ret += "<td><i>Exam</i></td>";
-            ret += "<td><i>Period</i></td>";
-            ret += "<td><i>Room</i></td>";
+            ret += "<td><i>" + MSG.colStudents() + "</i></td>";
+            ret += "<td><i>" + MSG.colConflict() + "</i></td>";
+            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
             ret += "</tr>";
         }
         for (Iterator i=getDirectConflicts().iterator();i.hasNext();)
@@ -944,11 +944,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public String getConflictInfoTable() {
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
-        ret += "<td><i>Students</i></td>";
-        ret += "<td><i>Conflict</i></td>";
-        ret += "<td><i>Exam</i></td>";
-        ret += "<td><i>Period</i></td>";
-        ret += "<td><i>Room</i></td>";
+        ret += "<td><i>" + MSG.colStudents() + "</i></td>";
+        ret += "<td><i>" + MSG.colConflict() + "</i></td>";
+        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
         ret += "</tr>";
         for (DirectConflict dc : getDirectConflicts())
             ret += dc.toString(true);
@@ -968,11 +968,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
-            ret += "<td><i>Preference</i></td>";
-            ret += "<td><i>Distribution</i></td>";
-            ret += "<td><i>Exam</i></td>";
-            ret += "<td><i>Period</i></td>";
-            ret += "<td><i>Room</i></td>";
+            ret += "<td><i>" + MSG.colPreference() + "</i></td>";
+            ret += "<td><i>" + MSG.colDistribution() + "</i></td>";
+            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
             ret += "</tr>";
         }
         for (Iterator i=getDistributionConflicts().iterator();i.hasNext();)
@@ -984,11 +984,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public String getDistributionInfoConflictTable() {
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
-        ret += "<td><i>Preference</i></td>";
-        ret += "<td><i>Distribution</i></td>";
-        ret += "<td><i>Exam</i></td>";
-        ret += "<td><i>Period</i></td>";
-        ret += "<td><i>Room</i></td>";
+        ret += "<td><i>" + MSG.colPreference() + "</i></td>";
+        ret += "<td><i>" + MSG.colDistribution() + "</i></td>";
+        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
         ret += "</tr>";
         for (DistributionConflict dc : getDistributionConflicts())
             ret += dc.toString(true);
@@ -1073,11 +1073,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         if (header) {
             ret += "<tr>";
-            ret += "<td><i>Instructors</i></td>";
-            ret += "<td><i>Conflict</i></td>";
-            ret += "<td><i>Exam</i></td>";
-            ret += "<td><i>Period</i></td>";
-            ret += "<td><i>Room</i></td>";
+            ret += "<td><i>" + MSG.colInstructors() + "</i></td>";
+            ret += "<td><i>" + MSG.colConflict() + "</i></td>";
+            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
             ret += "</tr>";
         }
         for (Iterator i=getInstructorDirectConflicts().iterator();i.hasNext();)
@@ -1093,11 +1093,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     public String getInstructorConflictInfoTable() {
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
-        ret += "<td><i>Students</i></td>";
-        ret += "<td><i>Conflict</i></td>";
-        ret += "<td><i>Exam</i></td>";
-        ret += "<td><i>Period</i></td>";
-        ret += "<td><i>Room</i></td>";
+        ret += "<td><i>" + MSG.colInstructors() + "</i></td>";
+        ret += "<td><i>" + MSG.colConflict() + "</i></td>";
+        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
+        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
+        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
         ret += "</tr>";
         for (DirectConflict dc : getInstructorDirectConflicts())
             ret += dc.toString(true);
@@ -1242,7 +1242,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += (getOtherExam()==null?(isOtherClass()?"Class":"Event"):"Direct");
+            ret += (getOtherExam()==null?(isOtherClass()?MSG.typeClass():MSG.typeEvent()):MSG.conflictDirect());
             ret += "</td>";
             if (getOtherExam()==null) {
                 if (iOtherEventName!=null) {
@@ -1250,7 +1250,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     ret += "<td>"+iOtherEventDate+" "+iOtherEventTime+"</td>";
                     ret += "<td>"+iOtherEventRoom+"</td>";
                 } else {
-                    ret += "<td colspan='3'>Student/instructor not available for unknown reason.</td>";
+                    ret += "<td colspan='3'>" + MSG.infoNotAvailableForUnknownReason() + "</td>";
                 }
             } else {
                 ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
@@ -1330,7 +1330,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
-            ret += "Back-To-Back";
+            ret += MSG.conflictBackToBack();
             if (isDistance()) ret+="<br>("+Math.round(10.0*getDistance())+" m)";
             ret += "</td>";
             ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
@@ -1423,7 +1423,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += String.valueOf(getNrStudents());
             ret += "</td>";
             ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
-            ret += "&gt;2 A Day";
+            ret += MSG.conflictMoreThanTwoADay().replace(">", "&gt;");
             ret += "</td>";
             for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
                 ExamAssignment a = (ExamAssignment)i.next();

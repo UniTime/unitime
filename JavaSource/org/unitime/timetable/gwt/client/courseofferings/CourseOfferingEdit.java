@@ -396,10 +396,10 @@ public class CourseOfferingEdit extends Composite {
 		iTitle = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox());
 		iTitle.getWidget().setMaxLength(200);
 		iTitle.getWidget().setVisibleLength(100);
-		iTitleLine = iPanel.addRow(MESSAGES.propTitle(), iTitle);
+		iTitleLine = iPanel.addRow(MESSAGES.propCourseTitle(), iTitle);
 		
 		iTitleText = new Label("Override");
-		iTitleTextLine = iPanel.addRow(MESSAGES.propTitle(), iTitleText, 1);
+		iTitleTextLine = iPanel.addRow(MESSAGES.propCourseTitle(), iTitleText, 1);
 		iPanel.getRowFormatter().setVisible(iTitleTextLine, false);
 		
 		iExternalId = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(30, ValueBoxBase.TextAlignment.LEFT));
@@ -628,7 +628,7 @@ public class CourseOfferingEdit extends Composite {
 		
 		List<Widget> instructorHeader = new ArrayList<Widget>();
 		P nameColumnHeader = new P();
-		nameColumnHeader.setText(MESSAGES.fieldName());
+		nameColumnHeader.setText(MESSAGES.colNamePerson());
 		instructorHeader.add(nameColumnHeader);
 		
 		P shareColumnHeader = new P();

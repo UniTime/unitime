@@ -29,8 +29,11 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -56,6 +59,8 @@ import org.unitime.timetable.security.context.HttpSessionContext;
  */
 public class LastChange extends BodyTagSupport {
 	private static final long serialVersionUID = -983949265164022751L;
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected static final GwtMessages GWT = Localization.create(GwtMessages.class);
 	private String iPackage = "org.unitime.timetable.model";
     private String iType = null;
     private String iId = null;
@@ -131,9 +136,9 @@ public class LastChange extends BodyTagSupport {
         
         WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
-        WebTable webTable = new WebTable( 5, "Last Changes",
+        WebTable webTable = new WebTable( 5, MSG.columnLastChanges(),
                 "instructionalOfferingDetail.action?io="+io.getUniqueId()+"&lcord=%%",
-                new String[] {"Page", "Object", "Operation", "Manager", "Date"},
+                new String[] {MSG.columnPage(), MSG.columnObject(), MSG.columnOperation(), MSG.columnManager(), MSG.columnDate()},
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true, false} );
         //webTable.setRowStyle("white-space:nowrap");
@@ -231,9 +236,9 @@ public class LastChange extends BodyTagSupport {
         
         WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
-        WebTable webTable = new WebTable( 5, "Last Changes",
+        WebTable webTable = new WebTable( 5, MSG.columnLastChanges(),
                 "instructorDetail.action?instructorId="+inst.getUniqueId()+"&lcord=%%",
-                new String[] {"Page", "Object", "Operation", "Manager", "Date"},
+                new String[] {MSG.columnPage(), MSG.columnObject(), MSG.columnOperation(), MSG.columnManager(), MSG.columnDate()},
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true, false} );
         //webTable.setRowStyle("white-space:nowrap");
@@ -267,9 +272,9 @@ public class LastChange extends BodyTagSupport {
         
         WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
-        WebTable webTable = new WebTable( 5, "Last Changes",
-                "roomDetail.do?id="+location.getUniqueId()+"&lcord=%%",
-                new String[] {"Page", "Object", "Operation", "Manager", "Date"},
+        WebTable webTable = new WebTable( 5, MSG.columnLastChanges(),
+                "roomDetail.action?id="+location.getUniqueId()+"&lcord=%%",
+                new String[] { MSG.columnPage(), MSG.columnObject(), MSG.columnOperation(), MSG.columnManager(), MSG.columnDate()},
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] { true, true, true, true, false} );
         //webTable.setRowStyle("white-space:nowrap");
@@ -343,16 +348,16 @@ public class LastChange extends BodyTagSupport {
             }
 
             ChangeLog lch = ChangeLog.findLastChange(objectType,objectId,source);
-            pageContext.getOut().println("<TR><TD>Last Change:</TD><TD>");
+            pageContext.getOut().println("<TR><TD>" + GWT.propLastChange() + "</TD><TD>");
             if (lch==null)
-                pageContext.getOut().print("<i>N/A</i>");
+                pageContext.getOut().print("<i>" + GWT.notApplicable() + "</i>");
             else
                 pageContext.getOut().print(lch.getShortLabel());
             pageContext.getOut().println("</TD></TR>");
         } catch (Exception e) {
             Debug.error(e);
             try {
-                pageContext.getOut().print("<font color='red'>ERROR: "+e.getMessage()+"</font>");
+                pageContext.getOut().print("<font color='red'>"+GWT.failedToComputeReport(e.getMessage())+"</font>");
             } catch (IOException io) {}
         }
         

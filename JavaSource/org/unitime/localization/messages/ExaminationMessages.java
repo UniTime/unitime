@@ -600,6 +600,9 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Instructor")
 	String colInstructor();
 	
+	@DefaultMessage("Instructors")
+	String colInstructors();
+	
 	@DefaultMessage("Capacity")
 	String colRoomCapacity();
 	
@@ -863,6 +866,9 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Students")
 	String colStudents();
+	
+	@DefaultMessage("Conflict")
+	String colConflict();
 	
 	@DefaultMessage("not-assigned")
 	String notAssigned();
@@ -2348,13 +2354,19 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("minutes")
 	String noteMinutes();
-<<<<<<< HEAD
-=======
 	
 	@DefaultMessage("Examinations offered")
 	String legentExaminationsOffered();
 	
 	@DefaultMessage("Examinations not offered")
 	String legentExaminationsNotOffered();
->>>>>>> 9972b0739 (Localization: Date and Time Patterns)
+	
+	@DefaultMessage("Student/instructor not available for unknown reason.")
+	String infoNotAvailableForUnknownReason();
+	
+	@DefaultMessage("All Dates")
+	String itemAllDates();
+	
+	@DefaultMessage("Week {0} ({1} - {2})")
+	String itemWeek(int weekNumber, String from, String to);
 }

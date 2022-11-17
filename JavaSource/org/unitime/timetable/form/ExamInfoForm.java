@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -43,6 +44,7 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 public class ExamInfoForm implements UniTimeForm {
 	private static final long serialVersionUID = 424087977258798931L;
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
+	protected static final CourseMessages CMSG = Localization.create(CourseMessages.class);
 	
 	private String iOp;
     private ExamInfoModel iModel;
@@ -213,7 +215,7 @@ public class ExamInfoForm implements UniTimeForm {
     	Set<RoomFeatureType> types = RoomFeatureType.getRoomFeatureTypes(iSessionId, iExamTypeId);
     	if (RoomFeatureType.hasRoomFeatureWithNoType(iSessionId, iExamTypeId)) {
     		RoomFeatureType f = new RoomFeatureType();
-    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel("Room Features");
+    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel(CMSG.labelRoomfeatures());
     		types.add(f);
     	}
     	return types;

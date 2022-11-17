@@ -1500,6 +1500,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Title:")
 	String propTitle();
 	
+	@DefaultMessage("Title:")
+	String propCourseTitle();
+	
 	@DefaultMessage("Instructor:")
 	String propInstructor();
 	
@@ -7136,7 +7139,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Display")
 	String colDisplayInstructors();
 
-	@DefaultMessage("Course Supervisor / Student System Access:")
+	@DefaultMessage("Coordinators:")
 	String labelCourseCoordinators();
 
 	@DefaultMessage("Class")

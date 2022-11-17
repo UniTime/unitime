@@ -425,10 +425,10 @@ public class ExamInfoModel implements Serializable {
                     		MSG.colAvailablePeriod().replace("\n", "<br>"),
                     		MSG.colViolatedDistributions().replace("\n", "<br>"),
                     		MSG.colStudentDirectConflicts().replace("\n", "<br>"),
-                    		MSG.colStudentMoreThanTwoExamsADayConflicts().replace("\n", "<br>").replace(">", "&gt;"),
+                    		MSG.colStudentMoreThanTwoExamsADayConflicts().replace(">", "&gt;").replace("\n", "<br>"),
                     		MSG.colStudentBackToBackConflicts().replace("\n", "<br>"),
                     		MSG.colInstructorDirectConflicts().replace("\n", "<br>"),
-                    		MSG.colInstructorMoreThanTwoExamsADayConflicts().replace("\n", "<br>").replace(">", "&gt;"),
+                    		MSG.colInstructorMoreThanTwoExamsADayConflicts().replace(">", "&gt;").replace("\n", "<br>"),
                     		MSG.colInstructorBackToBackConflicts().replace("\n", "<br>")},
                     new String[] {"left", "left", "right", "right", "right", "right", "right", "right", "right"},
                     new boolean[] { true, true, true, true, true, true, true, true});

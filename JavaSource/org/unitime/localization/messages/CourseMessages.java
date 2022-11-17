@@ -5205,6 +5205,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Last Change")
 	String columnLastChange();
 	
+	@DefaultMessage("Last Changes")
+	String columnLastChanges();
+	
 	@DefaultMessage("{0} ({1}) on {2}")
 	String formatLastChange(String page, String action, String date);
 	
@@ -5709,4 +5712,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Assignment")
 	String legendAssignment();
+	
+	@DefaultMessage("Room Features")
+	String labelRoomfeatures();
 }

@@ -125,7 +125,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 					for (DepartmentalInstructor di : instructorList) {
 						instructors.add(new ListItem(di.getUniqueId().toString(), di.getName(nf)));
 					}
-					return new Field(MESSAGES.fieldName(), FieldType.list, 300, instructors);
+					return new Field(MESSAGES.colNamePerson(), FieldType.list, 300, instructors);
 			case PCT_SHARE : return new Field(MESSAGES.fieldPercentShare(), FieldType.number, 60, 40);
 			case CHECK_CONFICTS : return new Field(MESSAGES.fieldCheckConflicts(), FieldType.toggle, 120, 40);
 			case RESPONSIBILITY : 

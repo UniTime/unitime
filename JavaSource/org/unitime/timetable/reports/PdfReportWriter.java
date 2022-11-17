@@ -35,6 +35,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.reports.AbstractReport.Cell;
 import org.unitime.timetable.reports.AbstractReport.Line;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
@@ -197,7 +198,7 @@ public class PdfReportWriter implements ReportWriter {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "UniTime "+Constants.getVersion(), document.left(), document.top() + 24, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, iTitle, document.right(), document.top() + 24, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_CENTER, iTitle2, (document.left() + document.right()) / 2, document.top() + 24, 0);
-			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()), document.left(), document.top() + 16, 0);
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, Formats.getDateFormat(Formats.Pattern.DATE_MEETING).format(new Date()), document.left(), document.top() + 16, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, iSession, document.right(), document.top() + 16, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, "("+iCont+" Continued)", document.right(), document.top() + 4, 0);
 			cb.endText();
@@ -211,7 +212,7 @@ public class PdfReportWriter implements ReportWriter {
 			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, "UniTime "+Constants.getVersion(), document.left(), document.top() + 14, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, iTitle, document.right(), document.top() + 14, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_CENTER, iTitle2, (document.left() + document.right()) / 2, document.top() + 14, 0);
-			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()), document.left(), document.top() + 4, 0);
+			cb.showTextAligned(PdfContentByte.ALIGN_LEFT, Formats.getDateFormat(Formats.Pattern.DATE_MEETING).format(new Date()), document.left(), document.top() + 4, 0);
 			cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, iSession, document.right(), document.top() + 4, 0);
 			cb.endText();
 			cb.setColorStroke(Color.BLACK);

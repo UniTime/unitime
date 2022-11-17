@@ -178,8 +178,11 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 				form.setSubjectAreaId(subjects.first().getUniqueId());
 			form.setIsControl(true);
 			form.setAllowDemandCourseOfferings(true);
-			for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
+			for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                 form.getInstructors().add(Preference.BLANK_PREF_VALUE);
+                form.getPercentShares().add("");
+                form.getResponsibilities().add(form.getDefaultTeachingResponsibilityId());
+			}
 			form.setAdd(true);
 			Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 	        form.setWkEnrollDefault(session.getLastWeekToEnroll());
@@ -213,6 +216,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		if (op.equals(MSG.actionAddCoordinator()) ) {
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
                 form.getInstructors().add(Preference.BLANK_PREF_VALUE);
+                form.getPercentShares().add("");
                 form.getResponsibilities().add(form.getDefaultTeachingResponsibilityId());
             }
             doReload();

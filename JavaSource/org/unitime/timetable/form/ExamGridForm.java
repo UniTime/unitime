@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -46,6 +48,7 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
  */
 public class ExamGridForm implements UniTimeForm {
 	private static final long serialVersionUID = 1429431006186003906L;
+	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	private Long iSessionId;
     private Map<String, TreeSet> iPeriods = new HashMap<String, TreeSet>();
     private int iSessionBeginWeek;
@@ -157,7 +160,7 @@ public class ExamGridForm implements UniTimeForm {
 
     public Vector<ComboBoxLookup> getDates(String examType) {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
-        ret.addElement(new ComboBoxLookup("All Dates", String.valueOf(Integer.MIN_VALUE)));
+        ret.addElement(new ComboBoxLookup(MSG.itemAllDates(), String.valueOf(Integer.MIN_VALUE)));
         HashSet added = new HashSet();
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
         for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
@@ -177,9 +180,7 @@ public class ExamGridForm implements UniTimeForm {
                 String first = df.format(cal.getTime());
                 while (cal.get(Calendar.DAY_OF_WEEK)!=Calendar.SATURDAY) cal.add(Calendar.DAY_OF_YEAR, 1);
                 String end = df.format(cal.getTime());
-                ret.addElement(new ComboBoxLookup(
-                        "Week "+week+" ("+first+" - "+end+")",
-                        String.valueOf(1000+week)));
+                ret.addElement(new ComboBoxLookup(MSG.itemWeek(week, first, end), String.valueOf(1000+week)));
             }
         }
         for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {

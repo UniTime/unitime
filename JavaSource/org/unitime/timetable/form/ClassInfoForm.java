@@ -209,7 +209,7 @@ public class ClassInfoForm implements UniTimeForm {
     	Set<RoomFeatureType> types = RoomFeatureType.getRoomFeatureTypes(iSessionId, false);
     	if (RoomFeatureType.hasRoomFeatureWithNoType(iSessionId, false)) {
     		RoomFeatureType f = new RoomFeatureType();
-    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel("Room Features");
+    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel(MSG.labelRoomfeatures());
     		types.add(f);
     	}
     	return types;

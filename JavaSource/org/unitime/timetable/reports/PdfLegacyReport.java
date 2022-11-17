@@ -31,6 +31,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.reports.AbstractReport.Line;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfFont;
 
 import com.lowagie.text.Document;
@@ -231,7 +232,7 @@ public class PdfLegacyReport implements ReportWriter {
                     renderMiddle("UniTime "+Constants.getVersion(),iTitle),
                     iTitle2));
             out(mpad(
-                    new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
+            		Formats.getDateFormat(Formats.Pattern.DATE_MEETING).format(new Date()),
                     iSession,' ',iNrChars));
             outln('=');
             iLineNo=0;
@@ -246,7 +247,7 @@ public class PdfLegacyReport implements ReportWriter {
     protected void printFooter() throws DocumentException {
         iEmpty=false;
         out("");
-        out(renderEnd(renderMiddle((iFooter==null?"":iFooter),"Page "+(iPageNo+1)),(iPageId==null||iPageId.length()==0?"":iPageId)+"  "));
+        out(renderEnd(renderMiddle((iFooter==null?"":iFooter),MSG.lrPage(iPageNo+1)),(iPageId==null||iPageId.length()==0?"":iPageId)+"  "));
         if (iPrint!=null) {
             iPrint.print(iBuffer);
         } else {

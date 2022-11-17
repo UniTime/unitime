@@ -113,7 +113,7 @@ public class LastChangesAction extends UniTimeAction<LastChangesForm> {
         
         WebTable.setOrder(sessionContext,"lastChanges.ord2",request.getParameter("ord"),1);
         
-        WebTable webTable = new WebTable( 7, "Last Changes",
+        WebTable webTable = new WebTable( 7, MSG.columnLastChanges(),
                 "lastChanges.action?ord=%%",
                 new String[] {MSG.columnDate().replace("|", nl), 
                 		MSG.columnDepartment().replace("|", nl), 
