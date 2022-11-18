@@ -504,7 +504,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (SectioningRequest.hasInconsistentRequirements(cr, course.getId())) {
 						boolean confirm = (original.getRequestForCourse(course.getId()) == null);
 						response.addMessage(course.getId(), course.getName(), "STUD_PREF",
-								ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getName()),
+								ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not available due to preferences selected.").replace("{course}", course.getName()),
 								confirm ? CONF_UNITIME : CONF_NONE);
 						if (confirm) questionInconStuPref = true;
 					}
@@ -1928,7 +1928,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						}
 						if (offering.hasInconsistentRequirements(original, cr, course, server.getAcademicSession()))
 							request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "STUD_PREF",
-									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getCourseName()),
+									ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not available due to preferences selected.").replace("{course}", course.getCourseName()),
 									ORD_UNITIME);
 					}
 				}
@@ -3294,7 +3294,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (Course course: cr.getCourses()) {
 					if (SectioningRequest.hasInconsistentRequirements(cr, course.getId())) {
 						response.addMessage(course.getId(), course.getName(), "STUD_PREF",
-								ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not avaiable due to preferences selected.").replace("{course}", course.getName()),
+								ApplicationProperties.getProperty("purdue.specreg.messages.inconsistentStudPref", "Not available due to preferences selected.").replace("{course}", course.getName()),
 								CONF_UNITIME);
 						questionInconStuPref = true;
 					}

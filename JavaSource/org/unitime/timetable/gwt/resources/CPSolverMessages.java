@@ -583,6 +583,6 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("room {0} not available at {1}")
 	String reasonRoomNotAvailable(String instructor, String time);
 	
-	@DefaultMessage("room or instructor not avaiable")
+	@DefaultMessage("room or instructor not available")
 	String reasonNotKnown();
 }
