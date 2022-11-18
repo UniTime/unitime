@@ -87,17 +87,19 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private SpecialRegistrationContext iSpecReg;
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
+	private boolean iShowWaitLists = true;
 	
 	public CourseFinderCourses() {
-		this(false, false, false, null);
+		this(false, false, false, null, true);
 	}
 	
-	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg) {
+	public CourseFinderCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg, boolean showWaitLists) {
 		super("courses");
 		
 		iShowCourseTitles = showCourseTitles;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		iSpecReg = specReg;
+		iShowWaitLists = showWaitLists;
 		
 		iCourses = new UniTimeTable<CourseAssignment>();
 		iCourses.setAllowMultiSelect(false);
@@ -109,7 +111,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		head.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		head.add(new UniTimeTableHeader(MESSAGES.colCredit()));
 		head.add(new UniTimeTableHeader(MESSAGES.colNote()));
-		head.add(new UniTimeTableHeader(MESSAGES.colWaitListAndAllowedOverrides()));
+		head.add(new UniTimeTableHeader(iShowWaitLists ? MESSAGES.colWaitListAndAllowedOverrides() : MESSAGES.colAllowedOverrides()));
 		iCourses.addRow(null, head);
 		iCourses.addMouseDoubleClickListener(new UniTimeTable.MouseDoubleClickListener<CourseAssignment>() {
 			@Override
@@ -175,6 +177,11 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		add(iCourseDetailsTabBar);
 		add(iCourseDetailsPanel);
 		add(iCoursesTip);
+	}
+	
+	public void setShowWaitLists(boolean showWaitLists) {
+		iShowWaitLists = showWaitLists;
+		((UniTimeTableHeader)iCourses.getWidget(0, 6)).setText(iShowWaitLists ? MESSAGES.colWaitListAndAllowedOverrides() : MESSAGES.colAllowedOverrides());
 	}
 
 	@Override
@@ -285,7 +292,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 						line.add(new HTML(record.getNote() == null ? "" : record.getNote()));
 						if (record.hasNote()) hasNote = true;
 						P wl = new P("courses-wl");
-						if (record.isCanWaitList()) {
+						if (record.isCanWaitList() && iShowWaitLists) {
 							Label l = new Label(MESSAGES.courseAllowsForWaitListing());
 							l.setTitle(MESSAGES.courseAllowsForWaitListingTitle(record.getCourseName())); 
 							wl.add(l);

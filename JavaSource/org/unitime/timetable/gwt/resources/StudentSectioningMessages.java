@@ -208,6 +208,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("WL/Override")
 	String colWaitListAndAllowedOverrides();
 	
+	@DefaultMessage("Override")
+	String colAllowedOverrides();
+	
 	@DefaultMessage("Preference")
 	String colSchedulingPreference();
 	

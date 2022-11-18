@@ -183,6 +183,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			iWaitList.setVisible(iWaitListMode == WaitListMode.WaitList || iWaitListMode == WaitListMode.NoSubs);
 			changeVisibleStyle();
 		}
+		for (CourseSelectionBox box: iCourses)
+			box.iCourseFinderMultipleCourses.setShowWaitLists(iWaitListMode == WaitListMode.WaitList);
 	}
 	
 	public boolean getWaitList() {
@@ -527,7 +529,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = (alternative ? new CourseFinderDialog() : new SelectAllCourseFinderDialog());
 					
-					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg);
+					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg,
+							iWaitListMode == WaitListMode.WaitList);
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {

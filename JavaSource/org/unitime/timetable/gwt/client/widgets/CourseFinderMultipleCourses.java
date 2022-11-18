@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
@@ -89,17 +90,20 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	private boolean iAllowMultiSelection = true;
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
+	private boolean iShowWaitLists = true;
 	
 	public CourseFinderMultipleCourses() {
-		this(false, false, false, null);
+		this(false, false, false, null, true);
 	}
 	
-	public CourseFinderMultipleCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg) {
+	public CourseFinderMultipleCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg, boolean showWaitLists) {
 		super("courses");
 		
 		iShowCourseTitles = showCourseTitles;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		iSpecReg = specReg;
+		iShowWaitLists = showWaitLists;
+		UniTimeNotifications.info("Show wait-lists: " + showWaitLists);
 		
 		iCourses = new UniTimeTable<CourseAssignment>();
 		iCourses.setAllowMultiSelect(false);
@@ -112,7 +116,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		head.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		head.add(new UniTimeTableHeader(MESSAGES.colCredit()));
 		head.add(new UniTimeTableHeader(MESSAGES.colNote()));
-		head.add(new UniTimeTableHeader(MESSAGES.colWaitListAndAllowedOverrides()));
+		head.add(new UniTimeTableHeader(iShowWaitLists ? MESSAGES.colWaitListAndAllowedOverrides() : MESSAGES.colAllowedOverrides()));
 		iCourses.addRow(null, head);
 		iCourses.setColumnVisible(0, iAllowMultiSelection);
 		iCourses.addMouseDoubleClickListener(new UniTimeTable.MouseDoubleClickListener<CourseAssignment>() {
@@ -179,6 +183,11 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		add(iCourseDetailsTabBar);
 		add(iCourseDetailsPanel);
 		add(iCoursesTip);
+	}
+	
+	public void setShowWaitLists(boolean showWaitLists) {
+		iShowWaitLists = showWaitLists;
+		((UniTimeTableHeader)iCourses.getWidget(0, 7)).setText(iShowWaitLists ? MESSAGES.colWaitListAndAllowedOverrides() : MESSAGES.colAllowedOverrides());
 	}
 
 	@Override
@@ -329,7 +338,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 						line.add(new Label(record.getNote() == null ? "" : record.getNote()));
 						if (record.hasNote()) hasNote = true;
 						P wl = new P("courses-wl");
-						if (record.isCanWaitList()) {
+						if (record.isCanWaitList() && iShowWaitLists) {
 							Label l = new Label(MESSAGES.courseAllowsForWaitListing());
 							l.setTitle(MESSAGES.courseAllowsForWaitListingTitle(record.getCourseName())); 
 							wl.add(l);

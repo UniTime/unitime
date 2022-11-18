@@ -2510,6 +2510,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void checkEligibility(final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret, String pin) {
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
+		iQuickAddFinder = null;
 		iStartOver.setVisible(false); iStartOver.setEnabled(false);
 		iSpecRegCx.reset();
 		iContext.setPin(pin);
@@ -3309,7 +3310,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 			});
-			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecRegCx);
+			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecRegCx,
+					iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST));
 			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
