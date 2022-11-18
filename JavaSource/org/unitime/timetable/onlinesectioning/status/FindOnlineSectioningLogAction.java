@@ -284,7 +284,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						html += (i > 0 ? ", " : "") + e.getParameter(i).getValue();
 					}
 					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
-					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() : "");
+					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() : 
+						idx == 0 && r.getVital() ? MSG.opSetVital() : "");
 					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
 					html += (idx == 0 && r.getWaitList() && r.hasWaitlistedTimeStamp() ? df.format(new Date(r.getWaitlistedTimeStamp())) :
 						idx == 0 && r.getWaitList() ? MSG.courseWaitListed() : idx == 0 && r.getNoSubs() ? MSG.courseNoSubs() : "");
@@ -357,7 +358,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
 					if (note != null) html += note;
 					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
-					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() : "");
+					html += (idx == 0 && r.getCritical() ? MSG.opSetCritical() : idx == 0 && r.getImportant() ? MSG.opSetImportant() :
+						idx == 0 && r.getVital() ? MSG.opSetVital() : "");
 					html += (r.getPriority() > 0 && idx == 0 ? "</td><td class='top-border-dashed'>" : "</td><td>" );
 					html += (idx == 0 && r.getWaitList() ? MSG.courseWaitListed() : idx == 0 && r.getNoSubs() ? MSG.courseNoSubs() : "");
 					html += "</td></tr>";
