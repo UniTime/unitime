@@ -115,7 +115,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
                     (ExamTypeDAO.getInstance().get(form.getExamType()).getType() == ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
 
             if (bounds!=null && RoomAvailability.getInstance()!=null) {
-                RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], exclude, "Refresh".equals(op));
+                RoomAvailability.getInstance().activate(session.getUniqueId(), bounds[0], bounds[1], exclude, "Refresh".equals(op));
             }
 
             WebTable.setOrder(sessionContext,(form.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);

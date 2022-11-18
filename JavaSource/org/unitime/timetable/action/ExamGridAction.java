@@ -103,7 +103,7 @@ public class ExamGridAction extends UniTimeAction<ExamGridForm> {
             Date[] bounds = ExamPeriod.getBounds(session, form.getExamType());
             String exclude = ExamTypeDAO.getInstance().get(form.getExamType()).getReference();
             if (bounds != null) {
-            	RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
+            	RoomAvailability.getInstance().activate(session.getUniqueId(),bounds[0],bounds[1],exclude,false);
             	RoomAvailability.setAvailabilityWarning(request, session, form.getExamType(), true, false);
             }
         }

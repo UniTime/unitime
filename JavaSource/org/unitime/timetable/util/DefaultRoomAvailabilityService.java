@@ -42,7 +42,6 @@ import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.MidtermExamEvent;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 
@@ -148,17 +147,17 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             return ret;
         }
     }
-    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
+    public void activate(Long sessionId, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
         iInstructorAvailabilityEnabled = ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue();
         TimeFrame time = new TimeFrame(startTime, endTime);
-        EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(session.getUniqueId()) : null);
+        EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(sessionId) : null);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
             if (cache==null) {
                 cache = new CacheElement(time, excludeType);
                 iCache.insertElementAt(cache, 0);
             }
-            cache.update(class2eventDateMap, session.getUniqueId(), iInstructorAvailabilityEnabled);
+            cache.update(class2eventDateMap, sessionId, iInstructorAvailabilityEnabled);
         }
     }
     

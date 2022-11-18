@@ -131,7 +131,7 @@ public class ExamInfoAction extends UniTimeAction<ExamInfoForm> {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType().getUniqueId());
             String exclude = model.getExam().getExamType().getReference();
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
+            RoomAvailability.getInstance().activate(session.getUniqueId(),bounds[0],bounds[1],exclude,false);
             RoomAvailability.setAvailabilityWarning(request, session, model.getExam().getExamType().getUniqueId(), true, true);
         }
         

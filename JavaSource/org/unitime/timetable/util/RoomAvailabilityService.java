@@ -48,6 +48,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -133,10 +134,11 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         return null;
     }
     
-    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
+    public void activate(Long sessionId, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
         TimeFrame time = new TimeFrame(startTime, endTime);
         sLog.debug("Activate: "+time);
         CacheElement cache = get(time);
+        Session session = SessionDAO.getInstance().get(sessionId);
         if (cache==null) {
             cache = new CacheElement(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(), time);
             iCache.add(cache);

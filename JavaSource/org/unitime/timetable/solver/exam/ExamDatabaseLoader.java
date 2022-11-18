@@ -1089,7 +1089,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
     
     public void roomAvailabilityActivate(RoomAvailabilityInterface availability, Date startTime, Date endTime, String exclude) {
         try {
-        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, exclude, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
+        	availability.activate(iSessionId, startTime, endTime, exclude, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());

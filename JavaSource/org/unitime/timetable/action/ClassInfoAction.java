@@ -146,7 +146,7 @@ public class ClassInfoAction extends UniTimeAction<ClassInfoForm> {
         if (RoomAvailability.getInstance()!=null && op==null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = DatePattern.getBounds(session.getUniqueId());
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
+            RoomAvailability.getInstance().activate(session.getUniqueId(),bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
             RoomAvailability.setAvailabilityWarning(request, session, true, true);
         }
         

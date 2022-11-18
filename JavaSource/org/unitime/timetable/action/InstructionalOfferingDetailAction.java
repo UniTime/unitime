@@ -328,7 +328,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         if (RoomAvailability.getInstance()!=null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
             Session session = io.getSession();
             Date[] bounds = DatePattern.getBounds(session.getUniqueId());
-            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
+            RoomAvailability.getInstance().activate(session.getUniqueId(),bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
             RoomAvailability.setAvailabilityWarning(request, session, true, true);
         }
 

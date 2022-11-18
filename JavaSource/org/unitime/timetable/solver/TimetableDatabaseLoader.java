@@ -3799,7 +3799,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     public void roomAvailabilityActivate(RoomAvailabilityInterface availability, Date startTime, Date endTime) {
         try {
-        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
+        	availability.activate(iSessionId, startTime, endTime, RoomAvailabilityInterface.sClassType, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), MSG.warnRoomAvailableServiceFailed(e.getMessage()));

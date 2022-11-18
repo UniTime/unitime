@@ -185,7 +185,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     			
     			if (cx.getResourceType() == ResourceType.ROOM.ordinal()) {
     				if (RoomAvailability.getInstance() != null) {
-    			        RoomAvailability.getInstance().activate(acadSession, cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
+    			        RoomAvailability.getInstance().activate(acadSession.getUniqueId(), cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
     		            String ts = RoomAvailability.getInstance().getTimeStamp(cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType);
     		            if (ts == null)
     		            	response.addPageMessage(new PageMessage(PageMessageType.WARNING, MESSAGES.warnCourseSolverNoRoomAvailability()));
@@ -205,7 +205,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				}
     			} else if (cx.getResourceType() == ResourceType.INSTRUCTOR.ordinal()) {
     				if (RoomAvailability.getInstance() != null && cx.isShowEvents()) {
-    			        RoomAvailability.getInstance().activate(acadSession, cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
+    			        RoomAvailability.getInstance().activate(acadSession.getUniqueId(), cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
     		            String ts = RoomAvailability.getInstance().getTimeStamp(cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType);
     		            if (ts == null)
     		            	response.addPageMessage(new PageMessage(PageMessageType.WARNING, MESSAGES.warnCourseSolverNoRoomAvailability()));

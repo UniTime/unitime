@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.model.Session;
 
 /**
  * @author Tomas Muller
@@ -38,7 +37,7 @@ public interface RoomAvailabilityInterface {
     public String getTimeStamp(Date startTime, Date endTime, String excludeType);
     public Collection<TimeBlock> getRoomAvailability(Long locationId, Date startTime, Date endTime, String excludeType);
     public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType);
-    public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync);
+    public void activate(Long sessionId, Date startTime, Date endTime, String excludeType, boolean waitForSync);
     
     public void startService();
     public void stopService();
