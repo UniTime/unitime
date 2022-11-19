@@ -35,7 +35,7 @@ public class DefaultCriticalCourses implements CriticalCoursesProvider {
 				if (ar.isCritical() && !ar.isSubstitute() && ar.hasCourseId() && ar.getAlternative() == 0) {
 					cc.addCritical(ar.getCourseId());
 					for (XAdvisorRequest alt: student.getAdvisorRequests()) {
-						if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute()) {
+						if (alt.getPriority() == ar.getPriority() && alt.getAlternative() > 0 && !alt.isSubstitute() && alt.hasCourseId()) {
 							cc.addCritical(alt.getCourseId());
 						}
 					}
