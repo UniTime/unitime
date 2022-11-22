@@ -77,6 +77,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
+import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
@@ -1956,6 +1957,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' events for class changed");
 						changed = true;
 					}	
+					String preference = null;
+					if (tp != null && tp.getType() == TimePattern.sTypeExactTime) {
+						if (meetingTime != null) {
+							preference = meetingTime.getDayCode() + "," + meetingTime.getStartPeriod(); 
+						} else if (clazz.effectiveTimePatterns() == null || clazz.effectiveTimePatterns().contains(tp)){
+							tp = null;
+						}
+					}
 					if (tp != null && clazz.effectiveTimePatterns() != null && !clazz.effectiveTimePatterns().contains(tp)){
 						if (clazz.getTimePreferences() != null) {
 							for (Iterator it = clazz.getTimePreferences().iterator(); it.hasNext();){
@@ -1967,6 +1976,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						tpref.setTimePattern(tp);
 						tpref.setOwner(clazz);
 						tpref.setPrefLevel(requiredPrefLevel);
+						tpref.setPreference(preference);
 						clazz.addTopreferences(tpref);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class changed");
 						changed = true;
@@ -1975,6 +1985,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						tpref.setTimePattern(tp);
 						tpref.setOwner(clazz);
 						tpref.setPrefLevel(requiredPrefLevel);
+						tpref.setPreference(preference);
 						clazz.addTopreferences(tpref);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class added");
 						changed = true;						

@@ -233,6 +233,26 @@ public abstract class EventRelatedImports extends BaseImport {
 			}						
 		}
 		
+		public int getDayCode() {
+			if (days == null || days.isEmpty()) return 0;
+			int dayCode = 0;
+			if (days.contains(Calendar.MONDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_MON];
+			if (days.contains(Calendar.TUESDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_TUE];
+			if (days.contains(Calendar.WEDNESDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_WED];
+			if (days.contains(Calendar.THURSDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_THU];
+			if (days.contains(Calendar.FRIDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_FRI];
+			if (days.contains(Calendar.SATURDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_SAT];
+			if (days.contains(Calendar.SUNDAY))
+				dayCode += Constants.DAY_CODES[Constants.DAY_SUN];
+			return dayCode;
+		}
+		
 		public Integer getStartPeriod() {
 			return startPeriod;
 		}
