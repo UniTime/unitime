@@ -95,7 +95,9 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
         if (MSG.actionUpdateStatusType().equals(op) || MSG.actionSaveStatusType().equals(op)) {
             // Validate input
             form.validate(this);
-            if (!hasFieldErrors()) {
+            if (hasFieldErrors()) {
+            	form.setOp(op);
+            } else {
         		Transaction tx = null;
         		
                 try {

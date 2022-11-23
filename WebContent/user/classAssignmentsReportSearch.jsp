@@ -130,10 +130,10 @@
 			</TD>
 		</TR>
 		<TR>
-			<TD valign="top">
+			<TD valign="top" nowrap>
 				<b><loc:message name="filterSubject"/></b>
 			</TD>
-			<TD>
+			<TD nowrap>
 				<s:if test="form.subjectAreas.size == 1">
 					<s:select name="form.subjectAreaIds" id="subjectAreaIds"
 						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
@@ -143,7 +143,7 @@
 						list="form.subjectAreas" listKey="uniqueId" listValue="subjectAreaAbbreviation"/>
 				</s:else>
 			</TD>
-			<TD align="left" valign="top" nowrap style="padding-left: 10px;">
+			<TD align="left" valign="top" nowrap style="padding-left: 10px; width: 100%;">
 				<s:submit name='doit' value="%{#msg.actionSearchClassAssignments()}"
 						title="%{#msg.titleSearchClasses(#msg.accessSearchClasses())}"
 						accesskey="%{#msg.accessSearchClasses()}"/>

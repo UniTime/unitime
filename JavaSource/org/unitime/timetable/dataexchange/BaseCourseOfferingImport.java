@@ -78,7 +78,6 @@ import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.TimePatternDays;
-import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
@@ -1959,7 +1958,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						changed = true;
 					}	
 					String preference = null;
-					if (tp != null && tp.getType() == TimePattern.sTypeExactTime) {
+					if (tp != null && tp.isExactTime()) {
 						if (meetingTime != null) {
 							preference = meetingTime.getDayCode() + "," + meetingTime.getStartPeriod(); 
 						} else if (clazz.effectiveTimePatterns() == null || clazz.effectiveTimePatterns().contains(tp)){
