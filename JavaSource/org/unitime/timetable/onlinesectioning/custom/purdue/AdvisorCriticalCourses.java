@@ -231,6 +231,20 @@ public class AdvisorCriticalCourses implements CriticalCoursesProvider {
 				return combine(request.getEffectiveCritical(), parent);
 			}
 		}
+		
+		@Override
+		public int isCritical(XAdvisorRequest request) {
+			if (request.getCourseId() == null || request.isSubstitute()) return CourseDemand.Critical.NORMAL.ordinal();
+			CourseDemand.Critical parent = (iParent == null ? CourseDemand.Critical.NORMAL : CourseDemand.Critical.values()[iParent.isCritical(request.getCourseId())]);
+			if (iCritical == Critical.NORMAL) {
+				if (Boolean.TRUE.equals(request.isNoSub()))
+					return combine(CourseDemand.Critical.VITAL, parent);
+				else
+					return parent.ordinal();
+			} else {
+				return combine(CourseDemand.Critical.values()[request.getCritical()], parent);
+			}
+		}
 	}
 
 }

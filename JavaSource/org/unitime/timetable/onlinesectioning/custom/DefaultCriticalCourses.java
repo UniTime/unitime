@@ -85,6 +85,11 @@ public class DefaultCriticalCourses implements CriticalCoursesProvider {
 		public int isCritical(AdvisorCourseRequest request) {
 			return request.getEffectiveCritical().ordinal();
 		}
+		
+		@Override
+		public int isCritical(XAdvisorRequest request) {
+			return request.getCritical();
+		}
 	}
 
 }

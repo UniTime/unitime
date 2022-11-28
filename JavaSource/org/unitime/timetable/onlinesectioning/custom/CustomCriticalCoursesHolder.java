@@ -38,7 +38,11 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
-import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
@@ -126,35 +130,76 @@ public class CustomCriticalCoursesHolder {
 			return 0;
 		}
 		
+		protected int isCritical(XCourseRequest cr, CriticalCourses critical) {
+			if (critical == null || cr.isAlternative()) return 0;
+			for (XCourseId courseId: cr.getCourseIds()) {
+				return critical.isCritical(courseId);
+			}
+			return 0;
+		}
+		
+		protected int isCritical(XAdvisorRequest cr, CriticalCourses critical) {
+			if (critical == null) return 0;
+			if (critical instanceof CriticalCoursesProvider.AdvisorCriticalCourses) {
+				return ((CriticalCoursesProvider.AdvisorCriticalCourses)critical).isCritical(cr);
+			}
+			if (cr.isSubstitute() || cr.getCourseId() == null) return 0;
+			return critical.isCritical(cr.getCourseId());
+		}
+		
 		protected boolean recheckStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Long studentId) {
 			helper.beginTransaction();
 			try {
-				Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-				
+				XStudent student = server.getStudent(studentId);
 				boolean changed = false;
 				if (student != null) {
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(studentId)
-							.setExternalId(student.getExternalUniqueId())
-							.setName(helper.getStudentNameFormat().format(student))
+							.setExternalId(student.getExternalId())
+							.setName(student.getName())
 							.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 					long c0 = OnlineSectioningHelper.getCpuTime();
 					try {
-						CriticalCourses critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, new XStudentId(student, helper), action);
-						for (CourseDemand cd: student.getCourseDemands()) {
-							int crit = isCritical(cd, critical);
-							if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
-								cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
-							}
-						}
-						if (student.getAdvisorCourseRequests() != null)
-							for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
-								int crit = acr.isCritical(critical);
-								if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
-									acr.setCritical(crit); helper.getHibSession().update(acr);
+						CriticalCourses critical = CustomCriticalCoursesHolder.getProvider().getCriticalCourses(server, helper, student, action);
+						boolean courseDemandsNeedChange = false;
+						for (XRequest r: student.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								if (cr.getCritical() != isCritical(cr, critical)) {
+									courseDemandsNeedChange = true;
+									break;
 								}
 							}
+						}
+						if (courseDemandsNeedChange) {
+							Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+							for (CourseDemand cd: dbStudent.getCourseDemands()) {
+								int crit = isCritical(cd, critical);
+								if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
+									cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
+								}
+							}
+						}
+						boolean advisorRecommendationsNeedChange = false;
+						if (student.getAdvisorRequests() != null) {
+							for (XAdvisorRequest acr: student.getAdvisorRequests()) {
+								if (acr.getCritical() != isCritical(acr, critical)) {
+									advisorRecommendationsNeedChange = true;
+									break;
+								}
+							}
+						}
+						if (advisorRecommendationsNeedChange) {
+							Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+							if (dbStudent.getAdvisorCourseRequests() != null)
+								for (AdvisorCourseRequest acr: dbStudent.getAdvisorCourseRequests()) {
+									int crit = acr.isCritical(critical);
+									if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
+										acr.setCritical(crit); helper.getHibSession().update(acr);
+									}
+								}
+						}
 						if (changed) {
 			        		action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 			        	} else {
