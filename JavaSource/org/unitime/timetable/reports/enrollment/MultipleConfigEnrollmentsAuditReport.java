@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
@@ -37,13 +38,13 @@ import com.lowagie.text.DocumentException;
  * @author Stephanie Schluttenhofer
  *
  */
-public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditReport {
+public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditReport {
 
-    public MultipleCourseEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
+    public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
         super(mode, getTitle(), file, session, subjectAreas, subTitle);
     }
 
-    public MultipleCourseEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
+    public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
     	super(mode, getTitle(), file, session);
     }
 
@@ -54,7 +55,7 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
         Vector<String> lines = new Vector<String>();
         Iterator it = results.iterator();
         while(it.hasNext()) {
-        	MultipleCourseEnrollmentsAuditResult result = new MultipleCourseEnrollmentsAuditResult((Object[]) it.next());
+        	MultipleConfigEnrollmentsAuditResult result = new MultipleConfigEnrollmentsAuditResult((Object[]) it.next());
         	lines.add(buildLineString(result));
         }
         printHeader();
@@ -91,7 +92,7 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	}
 
 	public static String getTitle() {
-		return ("Multiple Course Enrollments (Same Configuration)");
+		return ("Multiple Course Enrollments (Different Configurations)");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -101,18 +102,15 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct s.externalUniqueId, s.lastName, s.firstName, s.middleName,")
 		  .append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
-		  .append(" s.uniqueId, ss.itype.abbv, ss.uniqueId,")
-		  .append(" ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId and sce1.courseOffering = sce.courseOffering) ")
-		  .append(", sce.courseOffering.uniqueId")
-		  .append(" from Student s inner join s.classEnrollments as sce, SchedulingSubpart ss")
-		  .append(" where  ss.instrOfferingConfig.uniqueId = sce.clazz.schedulingSubpart.instrOfferingConfig.uniqueId")
-		  .append(" and s.session.uniqueId = :sessId")
+		  .append(" s.uniqueId, sce.courseOffering.uniqueId")
+		  .append(" from Student s inner join s.classEnrollments as sce")
+		  .append(" where s.session.uniqueId = :sessId")
 		  .append(" and sce.courseOffering.subjectArea.uniqueId = :subjectId")
-		  .append(" and 1 < ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId and sce1.courseOffering = sce.courseOffering)")
+		  .append(" and 1 < ( select count(distinct cfg1) from StudentClassEnrollment sce1")
+		  .append(" inner join sce1.clazz.schedulingSubpart.instrOfferingConfig cfg1")
+		  .append(" where sce1.courseOffering = sce.courseOffering and sce1.student = sce.student)")
 		  .append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
-		  .append(" sce.courseOffering.title, ss.itype.abbv");
+		  .append(" sce.courseOffering.title");
 
 		if (isShowId()){
 			sb.append(", s.externalUniqueId");
@@ -124,12 +122,12 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	
 	}
 	
-	private String buildLineString(MultipleCourseEnrollmentsAuditResult result) {
+	private String buildLineString(MultipleConfigEnrollmentsAuditResult result) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(buildBaseAuditLine(result));
 		sb.append(" | ")
 		  .append(" ")
-		  .append(rpad(result.classesListStr(), ' ', multipleClassesLength));
+		  .append(rpad(result.configsListStr(), ' ', multipleClassesLength));
 		return(sb.toString());
 	}
 
@@ -149,9 +147,9 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		sb2.append(" | ");
 		
 		sb0.append(" ")
-		   .append(rpad("Multiple Classes", ' ', multipleClassesLength));
+		   .append(rpad("Multiple Configs", ' ', multipleClassesLength));
 		sb1.append(" ")
-		   .append(rpad("of Same Subpart", ' ', multipleClassesLength));
+		   .append(rpad("of Same Course", ' ', multipleClassesLength));
 		sb2.append(" ")
 		   .append(rpad("", '-', multipleClassesLength));
 
@@ -162,50 +160,45 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		return(hdr);
 	}
 
-	private class MultipleCourseEnrollmentsAuditResult extends EnrollmentAuditResult {
+	private class MultipleConfigEnrollmentsAuditResult extends EnrollmentAuditResult {
 		private Long studentUniqueId;
-		private Long subpartId;
 		private Long courseId;
-		private java.util.Vector<String> classes = new java.util.Vector<String>();
+		private TreeSet<String> configs = new TreeSet<String>();
 
 
-		public MultipleCourseEnrollmentsAuditResult(Object[] result) {
+		public MultipleConfigEnrollmentsAuditResult(Object[] result) {
 			super(result);
 			if (result[7] != null) this.studentUniqueId = Long.valueOf(result[7].toString());
-			if (result[9] != null) this.subpartId = Long.valueOf(result[9].toString());
-			if (result[11] != null) this.courseId = Long.valueOf(result[11].toString());
-			findClasses();
+			if (result[8] != null) this.courseId = Long.valueOf(result[8].toString());
+			findConfigs();
 		}
 				
-		private void findClasses(){
+		private void findConfigs(){
 			StringBuilder sb = new StringBuilder();
-			sb.append("select sce.clazz.schedulingSubpart.itype.abbv, sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache")
-			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.clazz.schedulingSubpart.uniqueId = :subpartId and sce.courseOffering.uniqueId = :courseId")
-			  .append(" order by sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache");
+			sb.append("select distinct sce.clazz.schedulingSubpart.instrOfferingConfig")
+			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.courseOffering.uniqueId = :courseId");
 			Iterator it = StudentClassEnrollmentDAO.getInstance()
 					.getQuery(sb.toString())
 					.setLong("studId", studentUniqueId)
-					.setLong("subpartId", subpartId)
 					.setLong("courseId", courseId)
 					.iterate();
 			while (it.hasNext()){
-				Object[] result = (Object[]) it.next();
-				String className = createClassString(result[0].toString(), result[1].toString(), result[2].toString());
-				classes.add(className);
+				InstrOfferingConfig result = (InstrOfferingConfig) it.next();
+				configs.add(result.getName());
 			}
 			
 		}
 		
-		public String classesListStr(){
+		public String configsListStr(){
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;
-			for (String clazz : classes){
+			for (String config : configs){
 				if (first){
 					first = false;
 				} else {
 					sb.append(", ");
 				}
-				sb.append(clazz);
+				sb.append(config);
 			}
 			return(sb.toString());
 		}

@@ -50,7 +50,8 @@ public abstract class PdfEnrollmentAuditReport extends PdfLegacyReport {
     static {
         sRegisteredReports.put("struct", EnrollmentsViolatingCourseStructureAuditReport.class);
         sRegisteredReports.put("missing", MissingCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("many", MultipleCourseEnrollmentsAuditReport.class);
+        sRegisteredReports.put("many-subp", MultipleCourseEnrollmentsAuditReport.class);
+        sRegisteredReports.put("many-conf", MultipleConfigEnrollmentsAuditReport.class);
         for (String report : sRegisteredReports.keySet())
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }

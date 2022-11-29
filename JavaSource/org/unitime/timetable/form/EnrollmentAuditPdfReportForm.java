@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
 import org.unitime.timetable.reports.enrollment.MissingCourseEnrollmentsAuditReport;
+import org.unitime.timetable.reports.enrollment.MultipleConfigEnrollmentsAuditReport;
 import org.unitime.timetable.reports.enrollment.MultipleCourseEnrollmentsAuditReport;
 import org.unitime.timetable.security.SessionContext;
 
@@ -74,7 +75,8 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     static {
         sRegisteredReports.put("Enrollments Violating Course Structure", EnrollmentsViolatingCourseStructureAuditReport.class);
         sRegisteredReports.put("Missing Course Enrollments", MissingCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("Multiple Course Enrollments", MultipleCourseEnrollmentsAuditReport.class);
+        sRegisteredReports.put("Multiple Course Enrollments (Same Config)", MultipleCourseEnrollmentsAuditReport.class);
+        sRegisteredReports.put("Multiple Course Enrollments (Different Configs)", MultipleConfigEnrollmentsAuditReport.class);
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
