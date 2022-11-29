@@ -103,13 +103,14 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		  .append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
 		  .append(" s.uniqueId, ss.itype.abbv, ss.uniqueId,")
 		  .append(" ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId ) ")
+		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId and sce1.courseOffering = sce.courseOffering) ")
+		  .append(", sce.courseOffering.uniqueId")
 		  .append(" from Student s inner join s.classEnrollments as sce, SchedulingSubpart ss")
 		  .append(" where  ss.instrOfferingConfig.uniqueId = sce.clazz.schedulingSubpart.instrOfferingConfig.uniqueId")
 		  .append(" and s.session.uniqueId = :sessId")
 		  .append(" and sce.courseOffering.subjectArea.uniqueId = :subjectId")
 		  .append(" and 1 < ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId )")
+		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId and sce1.courseOffering = sce.courseOffering)")
 		  .append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
 		  .append(" sce.courseOffering.title, ss.itype.abbv");
 
@@ -164,6 +165,7 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	private class MultipleCourseEnrollmentsAuditResult extends EnrollmentAuditResult {
 		private Long studentUniqueId;
 		private Long subpartId;
+		private Long courseId;
 		private java.util.Vector<String> classes = new java.util.Vector<String>();
 
 
@@ -171,18 +173,20 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			super(result);
 			if (result[7] != null) this.studentUniqueId = Long.valueOf(result[7].toString());
 			if (result[9] != null) this.subpartId = Long.valueOf(result[9].toString());
+			if (result[11] != null) this.courseId = Long.valueOf(result[11].toString());
 			findClasses();
 		}
 				
 		private void findClasses(){
 			StringBuilder sb = new StringBuilder();
 			sb.append("select sce.clazz.schedulingSubpart.itype.abbv, sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache")
-			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.clazz.schedulingSubpart.uniqueId = :subpartId")
+			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.clazz.schedulingSubpart.uniqueId = :subpartId and sce.courseOffering.uniqueId = :courseId")
 			  .append(" order by sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache");
 			Iterator it = StudentClassEnrollmentDAO.getInstance()
 					.getQuery(sb.toString())
-					.setLong("studId", studentUniqueId.longValue())
-					.setLong("subpartId", subpartId.longValue())
+					.setLong("studId", studentUniqueId)
+					.setLong("subpartId", subpartId)
+					.setLong("courseId", courseId)
 					.iterate();
 			while (it.hasNext()){
 				Object[] result = (Object[]) it.next();
