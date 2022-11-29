@@ -570,8 +570,14 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 							.setLevel(OnlineSectioningLog.Message.Level.WARN)
 							.setText(p.message));
 				} else {
-					if ("TIME".equals(p.code) && timeCrns != null && timeCrns.contains(p.crn)) {
-						grantedOverride = "TIME-CNFLT";
+					if ("TIME".equals(p.code) && timeCrns != null) {
+						if (timeCrns.contains(p.crn)) {
+							grantedOverride = "TIME-CNFLT";
+						} else if (p.message != null && p.message.startsWith("Time conflict with CRN ")) {
+							String crn = p.message.substring("Time conflict with CRN ".length());
+							if (timeCrns.contains(crn))
+								grantedOverride = "TIME-CNFLT for " + crn;
+						}
 					} else if (iAutoOverrides) {
 						String override = getDefaultOverride(student, p.crn, p.code);
 						if (override != null && (iAllowedOverrides.contains(override) || lcCrns.contains(p.crn))) {
