@@ -88,9 +88,9 @@ import org.unitime.timetable.util.duration.DurationModel;
 public class TimetableGridSolutionHelper extends TimetableGridHelper {
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 
-	protected static void createCells(TimetableGridModel model, List<Assignment> assignments, org.hibernate.Session hibSession, TimetableGridContext context, boolean notAvailable) {
+	public static void createCells(TimetableGridModel model, List<Assignment> assignments, org.hibernate.Session hibSession, TimetableGridContext context, boolean notAvailable) {
     	for (Assignment assignment: assignments) {
-    		createCells(model, assignment, hibSession, context, false);
+    		createCells(model, assignment, hibSession, context, notAvailable);
 		}
     }
     
@@ -398,7 +398,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		return cell;
 	}
     
-    protected static double countUtilization(Iterable<Assignment> assignments, TimetableGridContext context) {
+    public static double countUtilization(Iterable<Assignment> assignments, TimetableGridContext context) {
     	Set<Integer> slots = new HashSet<Integer>();
         for (Assignment assignment: assignments) {
         	TimeLocation t = (assignment == null ? null : assignment.getTimeLocation());
