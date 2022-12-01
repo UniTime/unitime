@@ -31,7 +31,6 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
@@ -102,9 +101,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		iShowCourseTitles = showCourseTitles;
 		iShowDefaultSuggestions = showDefaultSuggestions;
 		iSpecReg = specReg;
-		iShowWaitLists = showWaitLists;
-		UniTimeNotifications.info("Show wait-lists: " + showWaitLists);
-		
+		iShowWaitLists = showWaitLists;		
 		iCourses = new UniTimeTable<CourseAssignment>();
 		iCourses.setAllowMultiSelect(false);
 		iCourses.setAllowSelection(true);

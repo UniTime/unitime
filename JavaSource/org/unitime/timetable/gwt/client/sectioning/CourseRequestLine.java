@@ -184,7 +184,8 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			changeVisibleStyle();
 		}
 		for (CourseSelectionBox box: iCourses)
-			box.iCourseFinderMultipleCourses.setShowWaitLists(iWaitListMode == WaitListMode.WaitList);
+			if (box.iCourseFinderMultipleCourses != null)
+				box.iCourseFinderMultipleCourses.setShowWaitLists(iWaitListMode == WaitListMode.WaitList);
 	}
 	
 	public boolean getWaitList() {
