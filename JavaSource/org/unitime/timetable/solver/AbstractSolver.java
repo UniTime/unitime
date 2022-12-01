@@ -152,6 +152,8 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             ret.put("MAX_PROGRESS",Long.valueOf(p.getProgressMax()));
             ret.put("VERSION", Constants.getVersion());
             return ret;
+        } catch (NullPointerException e) {
+        	return null;
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             return null;

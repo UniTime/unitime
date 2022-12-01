@@ -1055,6 +1055,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
             	Progress.getInstance(model).setStatus(MSG.statusReady());
             }
             
+            clearCachedData();
+            
             return true;
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
