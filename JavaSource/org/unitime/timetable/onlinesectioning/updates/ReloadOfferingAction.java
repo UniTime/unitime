@@ -615,6 +615,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						cd.setWaitlist(false);
 						helper.getHibSession().saveOrUpdate(cd);
 						student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
+					} else if (cd != null) {
+						student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					if (r.getRequest().isWaitlist())
 						r.setRequest(server.waitlist(r.getRequest(), false));

@@ -443,6 +443,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							cd.setWaitlist(false);
 							helper.getHibSession().saveOrUpdate(cd);
 							student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
+						} else if (cd != null) {
+							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_CHECK, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 						}
 						if (r.getRequest().isWaitlist())
 							server.waitlist(r.getRequest(), false);

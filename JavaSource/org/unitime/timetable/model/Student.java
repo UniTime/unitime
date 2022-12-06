@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface.Sc
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
+import org.unitime.timetable.model.WaitList.WaitListType;
 import org.unitime.timetable.model.base.BaseStudent;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -436,7 +437,8 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		enrolled = null; // if section swap and the enrollment does not meet requirements -> not enrolled
     	CourseOffering lastSwap = (last == null ? null : last.getSwapCourseOffering());
     	CourseOffering swap = (cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
-    	if (lastWaitListed != waitListed || !(lastEnrolled == null ? enrolled == null : lastEnrolled.equals(enrolled)) || !(lastSwap == null ? swap == null : lastSwap.equals(swap))) {
+    	if (lastWaitListed != waitListed || !(lastEnrolled == null ? enrolled == null : lastEnrolled.equals(enrolled)) || !(lastSwap == null ? swap == null : lastSwap.equals(swap)) ||
+    			type == WaitListType.RE_BATCH_ON_RELOAD || type == WaitListType.RE_BATCH_ON_CHECK) {
     		WaitList wl = new WaitList();
     		wl.setChangedBy(changedBy);
     		wl.setCourseOffering(cr == null ? co : cr.getCourseDemand().getFirstChoiceCourseOffering());
