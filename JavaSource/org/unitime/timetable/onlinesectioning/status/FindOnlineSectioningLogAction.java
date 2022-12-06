@@ -583,7 +583,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = '" + body + "' and adv.session.uniqueId = s.session.uniqueId)";
 				}
 			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
-				return "lower(l.operation) = '" + body.toLowerCase() + "'";
+				return "l.operation = '" + body.toLowerCase() + "'";
 			} else if ("max-age".equalsIgnoreCase(attr) || "age".equalsIgnoreCase(attr)) {
 				return HibernateUtil.addDate("l.timeStamp", body) + " > current_date()";
 			} else if ("limit".equalsIgnoreCase(attr)) {

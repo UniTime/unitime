@@ -428,7 +428,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (m.matches()) {
 				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
 						"select distinct operation from OnlineSectioningLog where " +
-						"lower(operation) like :q || '%' and session.uniqueId = :sessionId order by operation"
+						"operation like :q || '%' and session.uniqueId = :sessionId order by operation"
 						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + op,
@@ -440,7 +440,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (m.matches()) {
 				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
 						"select distinct operation from OnlineSectioningLog where " +
-						"lower(operation) like :q || '%' and session.uniqueId = :sessionId order by operation"
+						"operation like :q || '%' and session.uniqueId = :sessionId order by operation"
 						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + op,
