@@ -217,7 +217,7 @@ public class RollForwardSessionForm extends ActionForm {
 			RoomFeatureDAO rfDao = new RoomFeatureDAO();
 			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Room Features", rfDao.getQuery("from RoomFeature rf where rf.department.session.uniqueId = " + toAcadSession.getUniqueId().toString()).list());
 			RoomGroupDAO rgDao = new RoomGroupDAO();
-			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Room Groups", rgDao.getQuery("from RoomGroup rg where rg.session.uniqueId = " + toAcadSession.getUniqueId().toString() + " and rg.global = 0").list());
+			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Room Groups", rgDao.getQuery("from RoomGroup rg where rg.session.uniqueId = " + toAcadSession.getUniqueId().toString() + " and rg.global = false").list());
 		}		
 	}
 
@@ -1047,7 +1047,7 @@ public class RollForwardSessionForm extends ActionForm {
 				errors.add("mustSelectDepartment", new ActionMessage("errors.rollForward.generic", "Teaching Requests", "No subject area selected."));
 			} else {
 				validateRollForward(errors, toAcadSession, getSessionToRollInstructorDataForwardFrom(), "Teaching Requests",
-					TeachingRequestDAO.getInstance().getQuery("select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId in :subjectIds")
+					TeachingRequestDAO.getInstance().getQuery("select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and cast(co.subjectArea.uniqueId as string) in :subjectIds")
 					.setParameterList("subjectIds", getRollForwardOfferingCoordinatorsSubjectIds(), new StringType()).list());
 			}
 		}

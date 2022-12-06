@@ -36,6 +36,15 @@
 				<line>Added ability to disable computation of allocated memory of each solver instance (by setting unitime.solvers.memory to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Roll Forward Session: Building and Room Data, Teaching Requests</name>
+			<description>
+				<line>Fixed the following two errors caused by PostgreSQL being less lenient when it comes to query parameter types than MySQL or Oracle.
+					<line>Roll Building and Room Data Forward From Session: operator does not exist: boolean = integer</line>
+					<line>Roll Forward Teaching Request For Subject Areas: operator does not exist: bigint = character varying</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
