@@ -3452,4 +3452,28 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Max Credit")
 	String tabRequestNoteMaxCredit();
+	
+	@DefaultMessage("There has been a change")
+	String emailReschedulingReason();
+	
+	@DefaultMessage("One or more classes have been cancelled.")
+	String reschedulingReasonCancelledClass();
+	
+	@DefaultMessage("There is a time conflict without an override.")
+	String reschedulingReasonTimeConflict();
+	
+	@DefaultMessage("Enrolled in a class combination that is not allowed.")
+	String reschedulingReasonClassLink();
+	
+	@DefaultMessage("Missing a class.")
+	String reschedulingReasonMissingClass();
+	
+	@DefaultMessage("Enrolled in classes from two or more configurations.")
+	String reschedulingReasonMultipleConfigs();
+	
+	@DefaultMessage("Enrolled in multiple classes of the same type.")
+	String reschedulingReasonMultipleClasses();
+	
+	@DefaultMessage("Course is no longer requested.")
+	String reschedulingReasonNoRequest();
 }

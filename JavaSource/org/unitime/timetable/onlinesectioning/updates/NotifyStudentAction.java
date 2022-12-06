@@ -36,6 +36,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.ReschedulingReason;
 
 /**
  * @author Tomas Muller
@@ -54,6 +55,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private XEnrollment iFailedEnrollment;
 	private XEnrollment iDropEnrollment;
 	private SectioningException iFailure;
+	private ReschedulingReason iReason;
 	
 	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -87,6 +89,11 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	
 	public NotifyStudentAction oldStudent(XStudent oldStudent) {
 		iOldStudent = oldStudent;
+		return this;
+	}
+	
+	public NotifyStudentAction rescheduling(ReschedulingReason reason) {
+		iReason = reason;
 		return this;
 	}
 	
@@ -131,7 +138,9 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				if (isEmailEnabled(server, helper)) {
 					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction)
 							.failedEnrollment(iFailedOffering, iFailedCourseId, iFailedEnrollment, iFailure)
-							.dropEnrollment(iDropEnrollment),
+							.dropEnrollment(iDropEnrollment)
+							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
+							.rescheduling(iReason),
 							helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
@@ -186,7 +195,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 							.forStudent(getStudentId())
 							.fromAction(iSourceAction)
 							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
-							.dropEnrollment(iDropEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
+							.dropEnrollment(iDropEnrollment)
+							.rescheduling(iReason), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -241,7 +251,11 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				helper.debug(message);
 				if (isEmailEnabled(server, helper)) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
+					server.execute(server.createAction(StudentEmail.class)
+							.forStudent(getStudentId())
+							.fromAction(iSourceAction)
+							.oldStudent(iOldStudent)
+							.rescheduling(iReason), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);

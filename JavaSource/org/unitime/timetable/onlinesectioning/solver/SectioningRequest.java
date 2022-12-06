@@ -80,9 +80,20 @@ public class SectioningRequest implements LastSectionProvider {
 	private int iAlternativity = 0;
 	private XCourseId iCourseId = null;
 	private XCourseId iDropCourseId = null;
-	private boolean iRescheduling;
+	private ReschedulingReason iRescheduling;
+	
+	public static enum ReschedulingReason {
+		CLASS_CANCELLED,
+		TIME_CONFLICT,
+		MISSING_CLASS,
+		MULTIPLE_ENRLS,
+		CLASS_LINK,
+		MULTIPLE_CONFIGS,
+		NO_REQUEST,
+		;
+	}
 
-	public SectioningRequest(XOffering offering, XCourseRequest request, XCourseId courseId, XStudent student, boolean rescheduling, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
+	public SectioningRequest(XOffering offering, XCourseRequest request, XCourseId courseId, XStudent student, ReschedulingReason rescheduling, StudentPriority priority, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
 		iStudent = student;
 		iOffering = offering;
@@ -130,7 +141,8 @@ public class SectioningRequest implements LastSectionProvider {
 		return getRequest().getCourseIdByOfferingId(getOffering().getOfferingId());
 	}
 	
-	public boolean isRescheduling() { return iRescheduling; }
+	public boolean isRescheduling() { return iRescheduling != null; }
+	public ReschedulingReason getReschedulingReason() { return iRescheduling; }
 	
 	public XOffering getOffering() { return (iOffering == null ? iOldOffering : iOffering); }
 	public SectioningRequest setOldOffering(XOffering offering) { iOldOffering = offering; return this; }

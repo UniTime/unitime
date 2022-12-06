@@ -112,6 +112,7 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.ReschedulingReason;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
@@ -159,6 +160,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private boolean iIncludeAdvisorRequestsPDF = false;
 	private Boolean iOptional = false;
 	private String iSourceAction = "not-set";
+	private ReschedulingReason iReason = null;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -211,6 +213,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail setOptional(Boolean optional) {
 		iOptional = optional;
+		return this;
+	}
+	
+	public StudentEmail rescheduling(ReschedulingReason reason) {
+		iReason = reason;
 		return this;
 	}
 	
@@ -834,6 +841,32 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			}
 		}
 		
+		if (iReason != null) {
+			switch (iReason) {
+			case CLASS_CANCELLED:
+				input.put("reason", MSG.reschedulingReasonCancelledClass());
+				break;
+			case TIME_CONFLICT:
+				input.put("reason", MSG.reschedulingReasonTimeConflict());
+				break;
+			case CLASS_LINK:
+				input.put("reason", MSG.reschedulingReasonClassLink());
+				break;
+			case MISSING_CLASS:
+				input.put("reason", MSG.reschedulingReasonMissingClass());
+				break;
+			case MULTIPLE_CONFIGS:
+				input.put("reason", MSG.reschedulingReasonMultipleConfigs());
+				break;
+			case MULTIPLE_ENRLS:
+				input.put("reason", MSG.reschedulingReasonMultipleClasses());
+				break;
+			case NO_REQUEST:
+				input.put("reason", MSG.reschedulingReasonNoRequest());
+				break;
+			}
+		}
+		
 		AcademicSessionInfo session = server.getAcademicSession();
 		if (getFailedOffering() != null) {
 			
@@ -940,14 +973,25 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 				input.put("changes", listOfChanges);
 			} else {
+				if (getOldOffering() != null && getOldEnrollment() != null) {
+					for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+						XSubpart subpart = getOldOffering().getSubpart(old.getSubpartId());
+						XSection parent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(course.getCourseId());
+						listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, getCourseUrl(session, course)));
+					}
+					input.put("changes", listOfChanges);
+				}
 				setSubject(MSG.emailDropFailed(course.getSubjectArea(), course.getCourseNumber(), iFailure == null ? null : iFailure.getMessage()));
 			}
 			if (iFailure != null) {
 				String message = MSG.emailEnrollmentFailedMessage(iFailure.getMessage());
 				if (iFailure.hasErrors())
 					for (ErrorMessage error: iFailure.getErrors()) {
-						if (course.getCourseName().startsWith(error.getCourse()))
-							message += "<br>" + error;
+						//if (course.getCourseName().startsWith(error.getCourse()))
+						message += "<br>" + error;
 					}
 				input.put("changeMessage", message);
 			}

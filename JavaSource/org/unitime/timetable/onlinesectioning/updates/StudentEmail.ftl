@@ -41,6 +41,11 @@
  				<tr><td style="white-space: pre-wrap;">${message}</td></tr>
  			</#if>
  			
+ 			<#if reason?? && reason?has_content>
+ 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailReschedulingReason()}</td></tr>
+ 				<tr><td style="white-space: pre-wrap;">${reason}</td></tr>
+ 			</#if>
+
  			<#if changedCourse??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailCourseEnrollment(changedCourse.subjectArea,changedCourse.courseNumber)}</td></tr>
  				<#if changes??>

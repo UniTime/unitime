@@ -215,7 +215,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		WaitListComparatorProvider cmpProvider = Customization.WaitListComparatorProvider.getProvider();
 		Comparator<SectioningRequest> cmp = (cmpProvider == null ? new SectioningRequestComparator() : cmpProvider.getComparator(server, helper));
 		
-		SectioningRequest sr = new SectioningRequest(offering, request, courseId, student, false, getStudentPriority(student, server, helper), null);
+		SectioningRequest sr = new SectioningRequest(offering, request, courseId, student, null, getStudentPriority(student, server, helper), null);
 		int before = 0, total = 0;
 		for (XCourseRequest cr: enrl.getRequests()) {
 			if (!cr.isWaitlist()) continue; // skip not wait-listed
@@ -232,7 +232,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 			if (!isWaitListedAssumeApproved(s, cr, offering, c, server, helper)) continue; // skip not wait-listed
 			total ++;
 			if (!cr.equals(request)) {
-				SectioningRequest other = new SectioningRequest(offering, cr, c, s, false, getStudentPriority(s, server, helper), null);
+				SectioningRequest other = new SectioningRequest(offering, cr, c, s, null, getStudentPriority(s, server, helper), null);
 				if (cmp.compare(other, sr) < 0) before ++;
 			}
 		}

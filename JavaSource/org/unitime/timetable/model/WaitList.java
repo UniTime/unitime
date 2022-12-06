@@ -41,6 +41,8 @@ public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 		EXTERNAL_UPDATE,
 		RELOAD,
 		OTHER,
+		RE_BATCH_ON_RELOAD,
+		RE_BATCH_ON_CHECK,
 		;
 		
 	}

@@ -70,6 +70,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.ReschedulingReason;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
 
 /**
@@ -262,8 +263,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			if (iSkipStudentIds != null && iSkipStudentIds.contains(request.getStudentId())) continue;
 			if (iStudentIds != null && !iStudentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
-			boolean check = check(server, student, offering, request);
-			if (isWaitListed(student, request, offering, server, helper) || !check) {
+			ReschedulingReason check = check(server, student, offering, request);
+			if (isWaitListed(student, request, offering, server, helper) || check != null) {
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
 						OnlineSectioningLog.Entity.newBuilder()
@@ -282,7 +283,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					action.addEnrollment(enrollment);
 				}
 				action.addRequest(OnlineSectioningHelper.toProto(request));
-				queue.add(new SectioningRequest(offering, request, request.getCourseIdByOfferingId(offering.getOfferingId()), student, !check, getStudentPriority(student, server, helper), action).setNewEnrollment(request.getEnrollment()));
+				queue.add(new SectioningRequest(offering, request, request.getCourseIdByOfferingId(offering.getOfferingId()), student, check, getStudentPriority(student, server, helper), action).setNewEnrollment(request.getEnrollment()));
 			}
 		}
 		
@@ -339,8 +340,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment())
 									.failedEnrollment(offering, r.getCourseId(), enrollment, e)
-									.dropEnrollment(dropEnrollment),
+									.dropEnrollment(dropEnrollment)
+									.rescheduling(r.getReschedulingReason()),
 									helper.getUser());
 						continue;
 					}
@@ -529,7 +532,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							.forStudent(r.getRequest().getStudentId())
 							.fromAction(name())
 							.oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment())
-							.dropEnrollment(dropEnrollment), helper.getUser());
+							.dropEnrollment(dropEnrollment)
+							.rescheduling(r.getReschedulingReason()), helper.getUser());
 					
 					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
@@ -552,27 +556,27 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		}
 	}
 	
-	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request) {
-		if (request.getEnrollment() == null) return true;
-		if (!offering.getOfferingId().equals(request.getEnrollment().getOfferingId())) return true;
-		if (!server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false)) return true;
-		if (!hasWaitListingStatus(student, server)) return true; // no changes for students that cannot be wait-listed
+	public ReschedulingReason check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request) {
+		if (request.getEnrollment() == null) return null;
+		if (!offering.getOfferingId().equals(request.getEnrollment().getOfferingId())) return null;
+		if (!server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false)) return null;
+		if (!hasWaitListingStatus(student, server)) return null; // no changes for students that cannot be wait-listed
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) {
-			return false;
+			return (sections.size() < config.getSubparts().size() ? ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS);
 		}
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
 				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
-					return false;
+					return ReschedulingReason.TIME_CONFLICT;
 				}
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
-					return false;
+					return ReschedulingReason.CLASS_LINK;
 				}
 			}
 			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) {
-				return false;
+				return ReschedulingReason.MULTIPLE_CONFIGS;
 			}
 		}
 		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections) &&
@@ -587,7 +591,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (!other.isAllowOverlap(student, e.getConfigId(), e, assignment))
 							for (XSection section: sections)
 								if (section.isOverlapping(offering.getDistributions(), assignment)) {
-									return false;
+									return ReschedulingReason.TIME_CONFLICT;
 								}
 					}
 				}
@@ -595,8 +599,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (!server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false))
 			for (XSection section: sections)
 				if (section.isCancelled())
-					return false;
-		return true;
+					return ReschedulingReason.CLASS_CANCELLED;
+		return null;
 	}
 
 	@Override
