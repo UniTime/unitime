@@ -58,5 +58,25 @@ public class TimeStampOnlyWaitListComparatorProvider implements WaitListComparat
 				return 0;
 			}
 		}
+		
+		@Override
+		protected int compareBothAssigned(SectioningRequest s, SectioningRequest r) {
+			// check student priority and request priority
+			int cmp = super.compareBothAssignedOrNotAssigned(s, r);
+			if (cmp != 0) return cmp;
+			
+			// Use enrollment time stamp
+			if (s.getLastEnrollment().getTimeStamp() != null) {
+				if (r.getLastEnrollment().getTimeStamp() != null) {
+					return s.getLastEnrollment().getTimeStamp().compareTo(r.getLastEnrollment().getTimeStamp());
+				} else {
+					return 1;
+				}
+			} else if (r.getLastEnrollment().getTimeStamp() != null) {
+				return -1;
+			} else {
+				return 0;
+			}
+		}
 	}
 }
