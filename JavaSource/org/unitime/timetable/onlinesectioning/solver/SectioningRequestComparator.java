@@ -74,8 +74,19 @@ public class SectioningRequestComparator implements Comparator<SectioningRequest
 		// Alternativity (first choice before first alternative, etc.)
 		if (s.getAlternativity() != r.getAlternativity())
 			return s.getAlternativity() < r.getAlternativity() ? -1 : 1;
-
-		return 0;
+		
+		// Use enrollment time stamp
+		if (s.getLastEnrollment().getTimeStamp() != null) {
+			if (r.getLastEnrollment().getTimeStamp() != null) {
+				return s.getLastEnrollment().getTimeStamp().compareTo(r.getLastEnrollment().getTimeStamp());
+			} else {
+				return 1;
+			}
+		} else if (r.getLastEnrollment().getTimeStamp() != null) {
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 	
 	protected int compareFallBack(SectioningRequest s, SectioningRequest r) {
