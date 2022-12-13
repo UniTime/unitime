@@ -855,6 +855,16 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("{0} Not Wait-Listed Courses")
 	String labelOfferedNotWaitListedCourses(String subjectAreaAbbv);
 	
+	@DefaultMessage("{0} Courses Allowing Re-Scheduling")
+	String labelOfferedCoursesAllowingReScheduling(String subjectAreaAbbv);
+	
+	@DefaultMessage("{0} Not Wait-Listed Courses Allowing Re-Scheduling")
+	String labelOfferedNotWaitListedCoursesAllowingReScheduling(String subjectAreaAbbv);
+	
+	@DefaultMessage("{0} Courses Not Allowing Re-Scheduling")
+	String labelOfferedCoursesNotAllowingReScheduling(String subjectAreaAbbv);
+	
+	
 	@DefaultMessage("There are no courses currently offered for {0} subject.")
 	String errorNoCoursesOffered(String subjectAreaAbbv);
 
@@ -3040,16 +3050,22 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Wait-Listing:")
 	String propertyWaitListing();
 	
-	@DefaultMessage("Default (Enabled)")
+	@DefaultMessage("Default (Wait-Listing Enabled)")
 	String waitListDefaultEnabled();
 	
-	@DefaultMessage("Default (Disabled)")
+	@DefaultMessage("Default (Wait-Listing Disabled)")
 	String waitListDefaultDisabled();
 	
-	@DefaultMessage("Enabled")
+	@DefaultMessage("Default (Re-Scheduling Enabled)")
+	String waitListDefaultReschedule();
+	
+	@DefaultMessage("Wait-Listing Enabled")
 	String waitListEnabled();
 	
-	@DefaultMessage("Disabled")
+	@DefaultMessage("Re-Scheduling Enabled")
+	String waitListReschedule();
+	
+	@DefaultMessage("Wait-Listing Disabled")
 	String waitListDisabled();
 	
 	@DefaultMessage("Wait-listing is enabled for this offering.")
@@ -3057,6 +3073,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
+	
+	@DefaultMessage("Wait-listing is not enabled, but the students can be automatically re-scheduled for this offering.")
+	String descWaitListReschedule();
 	
 	@DefaultMessage("{0} allows for {1}.")
 	String problemWaitListProhibitedOverride(String course, String override);
@@ -3072,6 +3091,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Not Wait-Listed Courses")
 	String itemWaitListNotWaitListed();
+	
+	@DefaultMessage("Courses Allowing Re-Scheduling")
+	String itemWaitListReschedule();
+	
+	@DefaultMessage("Not Wait-Listed Courses Allowing Re-Scheduling")
+	String itemWaitListNotWaitListedReschedule();
+	
+	@DefaultMessage("Courses Not Allowing Re-Scheduling")
+	String itemWaitListNotReschedule();
 	
 	@DefaultMessage("All Subjects")
 	String itemAllSubjects();

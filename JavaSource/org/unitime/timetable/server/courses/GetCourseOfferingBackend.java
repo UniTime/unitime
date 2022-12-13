@@ -167,7 +167,7 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.addCourseOverride(override.getUniqueId().toString());
 		}
 		
-		cof.setWaitList(instructionalOffering.getWaitlist());
+		cof.setWaitList(instructionalOffering.getWaitlistMode());
 
 		response.setCourseOffering(cof);
 

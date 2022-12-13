@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.SolverPredefinedSetting.Appearance;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -98,17 +97,5 @@ public abstract class BaseSolverPredefinedSetting implements Serializable {
 			"\n	Name: " + getName() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
-	}
-	
-	public Appearance getAppearanceType() {
-		if (getAppearance() == null) return null;
-		return Appearance.values()[getAppearance()];
-	}
-	
-	public void setAppearanceType(Appearance appearance) {
-		if (appearance == null)
-			setAppearance(null);
-		else
-			setAppearance(appearance.ordinal());
 	}
 }

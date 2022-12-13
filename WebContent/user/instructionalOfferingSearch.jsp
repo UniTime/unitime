@@ -298,7 +298,7 @@
 		<s:if test="form.waitlist != null">
 			<TR><TD colspan='6' style='padding-top: 0px;'>
 			<span style='min-width: 120px; display: inline-block; padding: 3px;'><B><loc:message name="filterWaitlist"/></B></span>
-			<s:select name="form.waitlist" list="#{'A':#msg.itemWaitListAllCourses(), 'W':#msg.itemWaitListWaitListed(), 'N':#msg.itemWaitListNotWaitListed()}" style="min-width: 200px;" id="waitlistFilter"/>
+			<s:select name="form.waitlist" list="#{'A':#msg.itemWaitListAllCourses(), 'W':#msg.itemWaitListWaitListed(), 'N':#msg.itemWaitListNotWaitListed(), 'R':#msg.itemWaitListReschedule(), 'Z':#msg.itemWaitListNotWaitListedReschedule(), 'X':#msg.itemWaitListNotReschedule()}" style="min-width: 200px;" id="waitlistFilter"/>
 			</TD></TR>
 		</s:if>
 		<TR>

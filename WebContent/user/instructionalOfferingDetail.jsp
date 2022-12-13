@@ -336,11 +336,15 @@
 			<TR>
 				<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
 				<TD>
-					<s:if test="form.waitList == 'true'">
+					<s:if test="form.waitList == 'WaitList'">
 						<IMG src="images/accept.png" alt="${MSG.waitListEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 						<loc:message name="descWaitListEnabled"/>
 					</s:if>
-					<s:elseif test="form.waitList == 'false'">
+					<s:elseif test="form.waitList == 'ReSchedule'">
+						<IMG src="images/accept_gold.png" alt="${MSG.waitListReschedule()}" title="${MSG.descWaitListReschedule()}" border="0" align="top">
+						<loc:message name="descWaitListReschedule"/>
+					</s:elseif>
+					<s:elseif test="form.waitList == 'Disabled'">
 						<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 						<loc:message name="descWaitListDisabled"/>
 					</s:elseif>

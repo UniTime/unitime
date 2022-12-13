@@ -64,7 +64,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private Long iFundingDepartmentId;
 	private Long iEffectiveFundingDepartmentId;
 	private Long iCourseTypeId;
-	private Boolean iWaitList;
+	private Integer iWaitList;
 	private String iCreditFormat;
 	private String iCreditText;
 	private Long iCreditType;
@@ -180,8 +180,8 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	public Long getCourseTypeId() { return iCourseTypeId; }
 	public void setCourseTypeId(Long courseTypeId) { iCourseTypeId = courseTypeId; }
 	
-	public Boolean getWaitList() { return iWaitList; }
-	public void setWaitList(Boolean waitList) { iWaitList = waitList; }
+	public Integer getWaitList() { return iWaitList; }
+	public void setWaitList(Integer waitList) { iWaitList = waitList; }
 
 	private Long iSubjectAreaId;
 	public void setSubjectAreaId(Long iSubjectAreaId) {
@@ -513,7 +513,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private Boolean iCoursesFundingDepartmentsEnabled;
 		private Boolean iCanEditExternalIds;
 		private Boolean iCanShowExternalIds;
-		private Boolean iWaitListDefault;
+		private Integer iWaitListDefault;
 		private Integer wkEnrollDefault;
 		private Integer wkChangeDefault;
 		private Integer wkDropDefault;
@@ -596,8 +596,8 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		public void setCanEditExternalIds(Boolean canEditExternalIds) { iCanEditExternalIds = canEditExternalIds; }
 		public Boolean getCanEditExternalIds() { return iCanEditExternalIds; }
 		
-		public void setWaitListDefault(Boolean waitListDefault) { iWaitListDefault = waitListDefault; }
-		public Boolean getWaitListDefault() { return iWaitListDefault; }
+		public void setWaitListDefault(Integer waitListDefault) { iWaitListDefault = waitListDefault; }
+		public Integer getWaitListDefault() { return iWaitListDefault; }
 
 		public void setCanShowExternalIds(Boolean canShowExternalIds) { iCanShowExternalIds = canShowExternalIds; }
 		public Boolean getCanShowExternalIds() { return iCanShowExternalIds; }

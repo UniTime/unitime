@@ -456,9 +456,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toInstructionalOffering.setLastWeekToDrop(fromInstructionalOffering.getLastWeekToDrop());
 		toInstructionalOffering.setNotes(fromInstructionalOffering.getNotes());
 		if (isWaitListsAndProhibitedOverrides()) {
-			toInstructionalOffering.setWaitlist(fromInstructionalOffering.getWaitlist());
+			toInstructionalOffering.setWaitlistMode(fromInstructionalOffering.getWaitlistMode());
 		} else {
-			toInstructionalOffering.setWaitlist(false);
+			toInstructionalOffering.setWaitlistMode(null);
 		}
 		CourseOffering fromCourseOffering = null;
 		CourseOffering toCourseOffering = null;

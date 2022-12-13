@@ -172,5 +172,17 @@ public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 		public String getType() { return iType;}
 		public boolean getEnabled() { return iEnabled; }
 		public boolean getDisabled() { return !iEnabled; }
-	}	
+	}
+	
+	public Appearance getAppearanceType() {
+		if (getAppearance() == null) return null;
+		return Appearance.values()[getAppearance()];
+	}
+	
+	public void setAppearanceType(Appearance appearance) {
+		if (appearance == null)
+			setAppearance(null);
+		else
+			setAppearance(appearance.ordinal());
+	}
 }

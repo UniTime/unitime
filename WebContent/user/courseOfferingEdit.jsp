@@ -539,16 +539,32 @@
 						<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultEnabled"/>
 					</tt:propertyEquals>
-					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
-					<img src="images/cancel.png" alt="${MSG.waitListDefaultDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="WaitList">
+						<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
+						<loc:message name="waitListDefaultEnabled"/>
+					</tt:propertyEquals>
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="ReSchedule">
+						<img src="images/accept_gold.png" alt="${MSG.waitListDefaultReschedule()}" title="${MSG.descWaitListReschedule()}" border="0" align="top">
+						<loc:message name="waitListDefaultReschedule"/>
+					</tt:propertyEquals>
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="false">
+						<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultDisabled"/>
-					</tt:propertyNotEquals>
+					</tt:propertyEquals>
+					<tt:propertyEquals name="unitime.offering.waitListDefault" value="Disabled">
+						<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
+						<loc:message name="waitListDefaultDisabled"/>
+					</tt:propertyEquals>
 				</s:if>
-				<s:if test="form.waitList == 'true'">
+				<s:if test="form.waitList == 'WaitList' || form.waitList == 'true'">
 					<img src="images/accept.png" alt="${MSG.waitListEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 					<loc:message name="waitListEnabled"/>
 				</s:if>
-				<s:if test="form.waitList == 'false'">
+				<s:if test="form.waitList == 'ReSchedule'">
+					<img src="images/accept_gold.png" alt="${MSG.waitListReschedule()}" title="${MSG.descWaitListReschedule()}" border="0" align="top">
+					<loc:message name="waitListReschedule"/>
+				</s:if>
+				<s:if test="form.waitList == 'false' || form.waitList == 'Disabled'">
 					<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 					<loc:message name="waitListDisabled"/>
 				</s:if>

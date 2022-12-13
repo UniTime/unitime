@@ -60,6 +60,7 @@ import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructionalOffering.OfferingWaitListMode;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OverrideType;
@@ -380,27 +381,38 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			response.addOverrideType(overrideTypeObject);
 		}
 		
-		response.setWaitListDefault(ApplicationProperty.OfferingWaitListDefault.isTrue());
+		response.setWaitListDefault(InstructionalOffering.getDefaultWaitListMode().ordinal());
 		
 		WaitListInterface waitListDefault = new WaitListInterface();
-		if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
+		switch (InstructionalOffering.getDefaultWaitListMode()) {
+		case WaitList:
 			waitListDefault.setLabel(MSG.waitListDefaultEnabled());
 			waitListDefault.setValue("");
 			response.addWaitList(waitListDefault);
-		} else {
+			break;
+		case Disabled:
 			waitListDefault.setLabel(MSG.waitListDefaultDisabled());
+			waitListDefault.setValue("");
+			response.addWaitList(waitListDefault);
+		case ReSchedule:
+			waitListDefault.setLabel(MSG.waitListDefaultReschedule());
 			waitListDefault.setValue("");
 			response.addWaitList(waitListDefault);
 		}
 
 		WaitListInterface waitListEnabled = new WaitListInterface();
 		waitListEnabled.setLabel(MSG.waitListEnabled());
-		waitListEnabled.setValue("true");
+		waitListEnabled.setValue(String.valueOf(OfferingWaitListMode.WaitList.ordinal()));
 		response.addWaitList(waitListEnabled);
 		
+		WaitListInterface waitListReSchedule = new WaitListInterface();
+		waitListReSchedule.setLabel(MSG.waitListReschedule());
+		waitListReSchedule.setValue(String.valueOf(OfferingWaitListMode.ReSchedule.ordinal()));
+		response.addWaitList(waitListReSchedule);
+
 		WaitListInterface waitListDisabled = new WaitListInterface();
 		waitListDisabled.setLabel(MSG.waitListDisabled());
-		waitListDisabled.setValue("false");
+		waitListDisabled.setValue(String.valueOf(OfferingWaitListMode.Disabled.ordinal()));
 		response.addWaitList(waitListDisabled);
 
 		return response;

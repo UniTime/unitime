@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructionalOffering.OfferingWaitListMode;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OverrideType;
@@ -120,7 +121,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	}
 	
 	private Boolean isWaitlistingProhibited(CourseOfferingInterface courseOfferingInterface, OverrideType prohibitedOverride) {
-		if (prohibitedOverride != null && (courseOfferingInterface.getWaitList() == null ? ApplicationProperty.OfferingWaitListDefault.isTrue() : courseOfferingInterface.getWaitList()) && !courseOfferingInterface.getCourseOverrides().contains(prohibitedOverride.getUniqueId().toString())) {
+		if (prohibitedOverride != null && (courseOfferingInterface.getWaitList() == null ? InstructionalOffering.getDefaultWaitListMode().isWaitlist() : courseOfferingInterface.getWaitList() == OfferingWaitListMode.WaitList.ordinal()) && !courseOfferingInterface.getCourseOverrides().contains(prohibitedOverride.getUniqueId().toString())) {
 			return true;
 		} else {
 			return false;
@@ -154,10 +155,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             }
             
             if (courseOffering.isIsControl()) {
-    			if (courseOfferingInterface.getWaitList() == null)
-					io.setWaitlist(null);
-				else
-					io.setWaitlist(courseOfferingInterface.getWaitList());
+            	io.setWaitlistMode(courseOfferingInterface.getWaitList());
 				if (limitedEdit)
 					hibSession.update(io);
     		}
@@ -443,7 +441,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 		    io.setSession(subjArea.getSession());
 		    io.generateInstrOfferingPermId();
 		    io.setLimit(Integer.valueOf(0));
-		    io.setWaitlist(courseOfferingInterface.getWaitList());
+		    io.setWaitlistMode(courseOfferingInterface.getWaitList());
 
 		    courseOffering.setInstructionalOffering(io);
 		    io.addTocourseOfferings(courseOffering);

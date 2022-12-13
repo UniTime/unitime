@@ -1870,6 +1870,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         			iDocument.add(new Paragraph(MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
 		    	else if (isFilterNonWaitlist())
 		    		iDocument.add(new Paragraph(MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else if (isFilterCoursesAllowingReScheduling())
+		    		iDocument.add(new Paragraph(MSG.labelOfferedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else if (isFilterCoursesNotAllowingReScheduling())
+		    		iDocument.add(new Paragraph(MSG.labelOfferedCoursesNotAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
+		    	else if (isFilterNonWaitedCoursesAllowingReScheduling())
+		    		iDocument.add(new Paragraph(MSG.labelOfferedNotWaitListedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
 		    	else
 		    		iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
     		}
