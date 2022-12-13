@@ -333,6 +333,11 @@ public class WebInstructionalOfferingTableBuilder {
     
     public boolean isFilterWaitlist() { return "W".equals(filterWaitlist); }
     public boolean isFilterNonWaitlist() { return "N".equals(filterWaitlist); }
+    public boolean isFilterCoursesAllowingReScheduling() { return "R".equals(filterWaitlist); }
+    public boolean isFilterNonWaitedCoursesAllowingReScheduling() { return "Z".equals(filterWaitlist); }
+    public boolean isFilterCoursesNotAllowingReScheduling() { return "X".equals(filterWaitlist); }
+    
+    
     public void setFilterWaitlist(String filterWaitlist) { this.filterWaitlist = filterWaitlist; }
 
     public boolean isShowLms() {
@@ -2257,6 +2262,12 @@ public class WebInstructionalOfferingTableBuilder {
     		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     		    	else if (isFilterNonWaitlist())
     		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else if (isFilterCoursesAllowingReScheduling())
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else if (isFilterCoursesNotAllowingReScheduling())
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCoursesNotAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
+    		    	else if (isFilterNonWaitedCoursesAllowingReScheduling())
+    		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedNotWaitListedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     		    	else
     		    		outputStream.write("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {

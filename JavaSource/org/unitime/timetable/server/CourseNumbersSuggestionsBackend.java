@@ -30,6 +30,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructionalOffering.OfferingWaitListMode;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
 
@@ -56,16 +58,31 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
         String wlFilter = "";
         if (params.containsKey("waitlist")) {
         	if ("W".equals(params.get("waitlist"))) {
-        		if (ApplicationProperty.OfferingWaitListDefault.isTrue())
-        			wlFilter = " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and co.instructionalOffering.notOffered = false ";
+    			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.WaitList)
+    				wlFilter = " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 1) and co.instructionalOffering.notOffered = false ";
     			else
-    				wlFilter = " and co.instructionalOffering.waitlist = true and co.instructionalOffering.notOffered = false ";
-        	} else if ("N".equals(params.get("waitlist"))) {
-        		if (ApplicationProperty.OfferingWaitListDefault.isFalse())
-        			wlFilter = " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = false) and co.instructionalOffering.notOffered = false ";
+    				wlFilter = " and co.instructionalOffering.waitlistMode = 1 and co.instructionalOffering.notOffered = false ";
+    		} else if ("N".equals(params.get("waitlist"))) {
+    			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.WaitList)
+    				wlFilter = " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode != 1) and co.instructionalOffering.notOffered = false ";
     			else
-    				wlFilter = " and co.instructionalOffering.waitlist = false and co.instructionalOffering.notOffered = false ";
-        	}
+    				wlFilter = " and co.instructionalOffering.waitlistMode != 1 and co.instructionalOffering.notOffered = false ";
+    		} else if ("R".equals(params.get("waitlist"))) {
+    			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.Disabled)
+    				wlFilter = " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode > 0) and co.instructionalOffering.notOffered = false ";
+    			else
+    				wlFilter = " and co.instructionalOffering.waitlistMode > 0 and co.instructionalOffering.notOffered = false ";
+    		} else if ("X".equals(params.get("waitlist"))) {
+    			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.Disabled)
+    				wlFilter = " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 0) and co.instructionalOffering.notOffered = false ";
+    			else
+    				wlFilter = " and co.instructionalOffering.waitlistMode = 0 and co.instructionalOffering.notOffered = false ";
+    		} else if ("Z".equals(params.get("waitlist"))) {
+    			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.ReSchedule)
+    				wlFilter = " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 2) and co.instructionalOffering.notOffered = false ";
+    			else
+    				wlFilter = " and co.instructionalOffering.waitlistMode = 2 and co.instructionalOffering.notOffered = false ";
+    		}
         }
         
         if (params.containsKey("subjectAbbv")) {

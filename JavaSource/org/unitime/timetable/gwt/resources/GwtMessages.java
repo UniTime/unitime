@@ -7205,23 +7205,32 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to Send Update to External System:  {0} = {1}")
 	String exceptionExternalSystemUpdateFailure(String exceptionType, String failedClassName);
 	
-	@DefaultMessage("Default (Enabled)")
+	@DefaultMessage("Default (Wait-Listing Enabled)")
 	String waitListDefaultEnabled();
 	
-	@DefaultMessage("Default (Disabled)")
+	@DefaultMessage("Default (Wait-Listing Disabled)")
 	String waitListDefaultDisabled();
 	
-	@DefaultMessage("Enabled")
+	@DefaultMessage("Default (Re-Scheduling Enabled)")
+	String waitListDefaultReschedule();
+	
+	@DefaultMessage("Wait-Listing Enabled")
 	String waitListEnabled();
 	
-	@DefaultMessage("Disabled")
+	@DefaultMessage("Wait-Listing Disabled")
 	String waitListDisabled();
+	
+	@DefaultMessage("Re-Scheduling Enabled")
+	String waitListReschedule();
 	
 	@DefaultMessage("Wait-listing is enabled for this offering.")
 	String descWaitListEnabled();
 	
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
+	
+	@DefaultMessage("Wait-listing is not enabled, but the students can be automatically re-scheduled for this offering.")
+	String descWaitListReschedule();
 	
 	@DefaultMessage("Course Offering")
 	String sectCourseOffering();

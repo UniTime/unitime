@@ -32,6 +32,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
@@ -142,7 +143,7 @@ public class CourseOfferingEditForm implements UniTimeForm {
 		}
 		
 		OverrideType prohibitedOverride = OverrideType.findByReference(ApplicationProperty.OfferingWaitListProhibitedOverride.value());
-		if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? ApplicationProperty.OfferingWaitListDefault.isTrue() : "true".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
+		if (prohibitedOverride != null && (waitList == null || waitList.isEmpty() ? InstructionalOffering.getDefaultWaitListMode().isWaitlist() : "waitlist".equalsIgnoreCase(waitList)) && !overrides.contains(prohibitedOverride.getUniqueId().toString()))
 			action.addFieldError("form.waitList", MSG.errorWaitListingOverrideMustBeProhibited(prohibitedOverride.getLabel()));
     }
     
@@ -426,12 +427,20 @@ public class CourseOfferingEditForm implements UniTimeForm {
     
     public List<ComboBoxLookup> getWaitListOptions() {
     	List<ComboBoxLookup> ret = new ArrayList<ComboBoxLookup>();
-    	if (ApplicationProperty.OfferingWaitListDefault.isTrue())
-    		ret.add(new ComboBoxLookup(MSG.waitListDefaultEnabled(), ""));
-    	else
+    	switch (InstructionalOffering.getDefaultWaitListMode()) {
+    	case Disabled:
     		ret.add(new ComboBoxLookup(MSG.waitListDefaultDisabled(), ""));
-    	ret.add(new ComboBoxLookup(MSG.waitListEnabled(), "true"));
-    	ret.add(new ComboBoxLookup(MSG.waitListDisabled(), "false"));
+    		break;
+    	case WaitList:
+    		ret.add(new ComboBoxLookup(MSG.waitListDefaultEnabled(), ""));
+    		break;
+    	case ReSchedule:
+    		ret.add(new ComboBoxLookup(MSG.waitListDefaultReschedule(), ""));
+    		break;
+    	}
+    	ret.add(new ComboBoxLookup(MSG.waitListEnabled(), "WaitList"));
+    	ret.add(new ComboBoxLookup(MSG.waitListReschedule(), "ReSchedule"));
+    	ret.add(new ComboBoxLookup(MSG.waitListDisabled(), "Disabled"));
     	return ret;
     }
 }

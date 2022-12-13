@@ -64,6 +64,7 @@ import org.unitime.timetable.model.TeachingRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
+import org.unitime.timetable.model.InstructionalOffering.OfferingWaitListMode;
 import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
@@ -282,9 +283,13 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        // Update wait-list
 	        if (co.isIsControl()) {
 		        if (form.getWaitList() == null || form.getWaitList().isEmpty())
-		        	io.setWaitlist(null);
+		        	io.setWaitListMode(null);
+		        else if ("waitlist".equalsIgnoreCase(form.getWaitList()))
+		        	io.setWaitListMode(OfferingWaitListMode.WaitList);
+		        else if ("reschedule".equalsIgnoreCase(form.getWaitList()))
+		        	io.setWaitListMode(OfferingWaitListMode.ReSchedule);
 		        else
-		        	io.setWaitlist("true".equalsIgnoreCase(form.getWaitList()));
+		        	io.setWaitListMode(OfferingWaitListMode.Disabled);
 		        if (limitedEdit)
 		        	hibSession.update(io);
 	        }
@@ -615,9 +620,13 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        }
 	        
 	        if (form.getWaitList() == null || form.getWaitList().isEmpty())
-	        	io.setWaitlist(null);
+	        	io.setWaitListMode(null);
+	        else if ("waitlist".equalsIgnoreCase(form.getWaitList()))
+	        	io.setWaitListMode(OfferingWaitListMode.WaitList);
+	        else if ("reschedule".equalsIgnoreCase(form.getWaitList()))
+	        	io.setWaitListMode(OfferingWaitListMode.ReSchedule);
 	        else
-	        	io.setWaitlist("true".equalsIgnoreCase(form.getWaitList()));
+	        	io.setWaitListMode(OfferingWaitListMode.Disabled);
 	        
 	        io.setNotes(form.getNotes() == null || form.getNotes().length() <= 2000 ? form.getNotes() : form.getNotes().substring(0, 2000));
 
@@ -718,7 +727,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         form.setWkChangeDefault(io.getSession().getLastWeekToChange());
         form.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         form.setWkDropDefault(io.getSession().getLastWeekToDrop());
-        form.setWaitList(io.isWaitlist() == null ? "" : io.isWaitlist().booleanValue() ? "true" : "false");
+        form.setWaitList(io.getWaitlistMode() == null ? "" : io.getWaitListMode().name());
         form.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         form.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
         form.setAlternativeCourseOfferingId(co.getAlternativeOffering() == null ? null : co.getAlternativeOffering().getUniqueId());

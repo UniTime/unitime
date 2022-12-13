@@ -64,6 +64,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.InstructionalOffering.OfferingWaitListMode;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -186,15 +187,30 @@ public class PdfWorksheet {
 			}
         }
         if ("W".equals(filterWaitList)) {
-			if (ApplicationProperty.OfferingWaitListDefault.isTrue())
-				query += " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and co.instructionalOffering.notOffered = false";
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.WaitList)
+				query += " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 1) and co.instructionalOffering.notOffered = false ";
 			else
-				query += " and co.instructionalOffering.waitlist = true and co.instructionalOffering.notOffered = false";
+				query += " and co.instructionalOffering.waitlistMode = 1 and co.instructionalOffering.notOffered = false ";
 		} else if ("N".equals(filterWaitList)) {
-			if (ApplicationProperty.OfferingWaitListDefault.isFalse())
-				query += " and (co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = false) and co.instructionalOffering.notOffered = false";
+			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.WaitList)
+				query += " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode != 1) and co.instructionalOffering.notOffered = false ";
 			else
-				query += " and co.instructionalOffering.waitlist = false and co.instructionalOffering.notOffered = false";
+				query += " and co.instructionalOffering.waitlistMode != 1 and co.instructionalOffering.notOffered = false ";
+		} else if ("R".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.Disabled)
+				query += " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode > 0) and co.instructionalOffering.notOffered = false ";
+			else
+				query += " and co.instructionalOffering.waitlistMode > 0 and co.instructionalOffering.notOffered = false ";
+		} else if ("X".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.Disabled)
+				query += " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 0) and co.instructionalOffering.notOffered = false ";
+			else
+				query += " and co.instructionalOffering.waitlistMode = 0 and co.instructionalOffering.notOffered = false ";
+		} else if ("Z".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.ReSchedule)
+				query += " and (co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 2) and co.instructionalOffering.notOffered = false ";
+			else
+				query += " and co.instructionalOffering.waitlistMode = 2 and co.instructionalOffering.notOffered = false ";
 		}
         
         Query q = new SessionDAO().getSession().createQuery(query);

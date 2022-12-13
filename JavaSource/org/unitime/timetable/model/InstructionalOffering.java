@@ -52,6 +52,19 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	private static final long serialVersionUID = 1L;
 
 	private CourseOffering controllingCourseOffering = null;
+	
+	public static enum OfferingWaitListMode {
+		Disabled,
+		WaitList,
+		ReSchedule,
+		;
+		public boolean isWaitlist() {
+			return this == WaitList;
+		}
+		public boolean isReschedule() {
+			return this == WaitList || this == ReSchedule;
+		}
+	}
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public InstructionalOffering () {
@@ -266,15 +279,30 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		}
 		
 		if ("W".equals(filterWaitList)) {
-			if (ApplicationProperty.OfferingWaitListDefault.isTrue())
-				query.append(" and (io.waitlist is null or io.waitlist = true) and io.notOffered = false");
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.WaitList)
+				query.append(" and (io.waitlistMode is null or io.waitlistMode = 1) and io.notOffered = false");
 			else
-				query.append(" and io.waitlist = true and io.notOffered = false");
+				query.append(" and io.waitlistMode = 1 and io.notOffered = false");
 		} else if ("N".equals(filterWaitList)) {
-			if (ApplicationProperty.OfferingWaitListDefault.isFalse())
-				query.append(" and (io.waitlist is null or io.waitlist = false) and io.notOffered = false");
+			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.WaitList)
+				query.append(" and (io.waitlistMode is null or io.waitlistMode != 1) and io.notOffered = false");
 			else
-				query.append(" and io.waitlist = false and io.notOffered = false");
+				query.append(" and io.waitlistMode != 1 and io.notOffered = false");
+		} else if ("R".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() != OfferingWaitListMode.Disabled)
+				query.append(" and (io.waitlistMode is null or io.waitlistMode > 0) and io.notOffered = false");
+			else
+				query.append(" and io.waitlistMode > 0 and io.notOffered = false");
+		} else if ("X".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.Disabled)
+				query.append(" and (io.waitlistMode is null or io.waitlistMode = 0) and io.notOffered = false");
+			else
+				query.append(" and io.waitlistMode = 0 and io.notOffered = false");
+		} else if ("Z".equals(filterWaitList)) {
+			if (InstructionalOffering.getDefaultWaitListMode() == OfferingWaitListMode.ReSchedule)
+				query.append(" and (io.waitlistMode is null or io.waitlistMode = 2) and io.notOffered = false");
+			else
+				query.append(" and io.waitlistMode = 2 and io.notOffered = false");
 		}
 
 		query.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
@@ -701,13 +729,55 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return getCourseOfferings().size() > 1;
     }
     
+    public OfferingWaitListMode getEffectiveWaitListMode() {
+    	if (getWaitlistMode() != null) return getWaitListMode();
+    	return getDefaultWaitListMode();
+    }
+    
     public boolean effectiveWaitList() {
-    	if (isWaitlist() != null)
-    		return isWaitlist().booleanValue();
-    	return ApplicationProperty.OfferingWaitListDefault.isTrue();
+    	return getEffectiveWaitListMode().isWaitlist();
+    }
+    
+    public boolean effectiveReSchedule() {
+    	return getEffectiveWaitListMode().isReschedule();
     }
 
     public Department getEffectiveFundingDept() {
     	return getControllingCourseOffering().getEffectiveFundingDept();
+    }
+    
+    public static OfferingWaitListMode getDefaultWaitListMode() {
+    	String value = ApplicationProperty.OfferingWaitListDefault.value();
+    	if ("waitlist".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value))
+    		return OfferingWaitListMode.WaitList;
+    	else if ("reschedule".equalsIgnoreCase(value))
+    		return OfferingWaitListMode.ReSchedule;
+    	else
+    		return OfferingWaitListMode.Disabled;
+    }
+    
+    public OfferingWaitListMode getWaitListMode() {
+    	if (getWaitlistMode() == null)
+    		return OfferingWaitListMode.Disabled;
+    	return OfferingWaitListMode.values()[getWaitlistMode()];
+    }
+    
+    public void setWaitListMode(OfferingWaitListMode mode) {
+    	if (mode == null)
+    		setWaitlistMode(null);
+    	else
+    		setWaitlistMode(mode.ordinal());
+    }
+    
+    public Boolean isWaitlist() {
+    	return getWaitListMode().isWaitlist();
+    }
+    
+    public Boolean getWaitlist() {
+    	return getWaitListMode().isWaitlist();
+    }
+    
+    public Boolean isReschedule() {
+    	return getWaitListMode().isReschedule();
     }
 }

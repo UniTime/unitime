@@ -504,7 +504,7 @@ public class InstructionalOfferingListForm implements UniTimeForm, Instructional
 	}
 	
 	public boolean areAllCoursesGiven() {
-		return (getCourseNbr()==null || getCourseNbr().isEmpty()) && !"W".equals(getWaitlist()) && !"N".equals(getWaitlist());
+		return (getCourseNbr()==null || getCourseNbr().isEmpty()) && ("A".equals(getWaitlist()) || getWaitlist() == null || getWaitlist().isEmpty());
 	}
 
 	public Boolean getFundingDepartment() {

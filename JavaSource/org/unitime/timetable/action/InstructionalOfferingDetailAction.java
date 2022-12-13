@@ -380,7 +380,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         form.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
         form.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
         form.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
-        if (io.effectiveWaitList() || ApplicationProperty.OfferingWaitListDefault.isTrue()) form.setWaitList(io.effectiveWaitList() ? "true" : "false");
+        form.setWaitList(io.getEffectiveWaitListMode().name());
         form.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         form.setHasConflict(hasConflicts(request, io));
 

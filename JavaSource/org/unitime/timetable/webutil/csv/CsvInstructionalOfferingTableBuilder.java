@@ -1492,6 +1492,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         			iFile.addLine(MSG.labelOfferedWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()));
 		    	else if (isFilterNonWaitlist())
 		    		iFile.addLine(MSG.labelOfferedNotWaitListedCourses(subjectArea.getSubjectAreaAbbreviation()));
+		    	else if (isFilterCoursesAllowingReScheduling())
+		    		iFile.addLine(MSG.labelOfferedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()));
+		    	else if (isFilterCoursesNotAllowingReScheduling())
+		    		iFile.addLine(MSG.labelOfferedCoursesNotAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()));
+		    	else if (isFilterNonWaitedCoursesAllowingReScheduling())
+		    		iFile.addLine(MSG.labelOfferedNotWaitListedCoursesAllowingReScheduling(subjectArea.getSubjectAreaAbbreviation()));
 		    	else
 		    		iFile.addLine(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()));
     		csvBuildTableHeader(context.getUser().getCurrentAcademicSessionId());

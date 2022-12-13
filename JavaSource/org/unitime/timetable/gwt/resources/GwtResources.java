@@ -122,4 +122,7 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/arrow_down.png")
 	ImageResource orderDown();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/accept_gold.png")
+	ImageResource reSchedulingOn();
 }

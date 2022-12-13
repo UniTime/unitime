@@ -2982,10 +2982,12 @@ public enum ApplicationProperty {
 	@Since(4.5)
 	CourseTimetablingCommitSkipChecking("unitime.commit.skipConflictChecking"),
 
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Instructional Offering: wait-list toggle default value")
+	@Type(String.class)
+	@DefaultValue("WaitList")
+	@Description("Instructional Offering: wait-listing default value " +
+	"(ReSchedule means that wait-listing is not enabled, but UniTime will automatically move students around after unlock -- when enabled by student status)")
 	@Since(4.6)
+	@Values({"WaitList", "ReSchedule", "Disabled"})
 	OfferingWaitListDefault("unitime.offering.waitListDefault"),
 	
 	@Type(String.class)

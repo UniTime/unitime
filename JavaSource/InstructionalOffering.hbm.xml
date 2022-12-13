@@ -210,9 +210,9 @@
             not-null="false"/>
 
         <property
-            name="waitlist"
+            name="waitlistMode"
             column="waitlist"
-            type="java.lang.Boolean"
+            type="java.lang.Integer"
             not-null="false"/>
             
 	</class>

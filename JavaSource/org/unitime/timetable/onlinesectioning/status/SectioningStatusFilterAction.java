@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalMethod;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -1173,10 +1174,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", "CourseRequest wcr");
-			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and (wcr.courseOffering.instructionalOffering.waitlist is null or wcr.courseOffering.instructionalOffering.waitlist = true)");
+			if (InstructionalOffering.getDefaultWaitListMode().isWaitlist()) {
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and (wcr.courseOffering.instructionalOffering.waitlistMode is null or wcr.courseOffering.instructionalOffering.waitlistMode = 1)");
 			} else {
-				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlist = true");
+				query.addWhere("assignment", "wcr.courseDemand.waitlist = true and wcr.courseDemand.student = s and wcr.courseOffering.instructionalOffering.waitlistMode = 1");
 			}
 		}
 		
@@ -1445,10 +1446,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
 			query.addFrom("assignment", null);
-			if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-				query.addWhere("assignment", "(co.instructionalOffering.waitlist is null or co.instructionalOffering.waitlist = true) and cd.waitlist = true");
+			if (InstructionalOffering.getDefaultWaitListMode().isWaitlist()) {
+				query.addWhere("assignment", "(co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 1) and cd.waitlist = true");
 			} else {
-				query.addWhere("assignment", "co.instructionalOffering.waitlist = true and cd.waitlist = true");
+				query.addWhere("assignment", "co.instructionalOffering.waitlistMode = 1 and cd.waitlist = true");
 			}
 		}
 		
@@ -1530,10 +1531,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		public QueryInstance selectCourses(String select, FilterRpcRequest request) {
 			if (request.hasOption("assignment") && "Wait-Listed".equalsIgnoreCase(request.getOption("assignment"))) {
-				if (ApplicationProperty.OfferingWaitListDefault.isTrue()) {
-					addWhere("assignment", "not co.instructionalOffering.waitlist = false");
+				if (InstructionalOffering.getDefaultWaitListMode().isWaitlist()) {
+					addWhere("assignment", "(co.instructionalOffering.waitlistMode is null or co.instructionalOffering.waitlistMode = 1)");
 				} else {
-					addWhere("assignment", "co.instructionalOffering.waitlist = true");
+					addWhere("assignment", "co.instructionalOffering.waitlistMode = 1");
 				}
 			}
 			return new QueryInstance(select) {

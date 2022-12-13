@@ -14542,4 +14542,7 @@
 		<pgsql onFail="next">create index idx_meeting_all on %SCHEMA%.meeting using btree (event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date)</pgsql>
 		<pgsql onFail="next">create index idx_session_initiative on %SCHEMA%.sessions using btree (academic_initiative)</pgsql>
 	</update>
+	<update version="255" date="13-Dec-2022" comment="Offering Waitlist Options">
+	    <pgsql>alter table %SCHEMA%.instructional_offering alter waitlist type integer using case when waitlist then 1 else 0 end</pgsql>
+	</update>	
 </dbupdate>

@@ -1637,19 +1637,27 @@ public class CourseOfferingEdit extends Composite {
 					}
 					
 					if (courseOffering.getWaitList() == null) {
-						if (result.getWaitListDefault()) {
+						if (result.getWaitListDefault() == 1) {
 							iWaitListingText.setText(MESSAGES.waitListDefaultEnabled());
 							waitListingImage.setTitle(MESSAGES.descWaitListEnabled());
+						} else if (result.getWaitListDefault() == 2) {
+							waitListingImage.setResource(RESOURCES.reSchedulingOn());
+							iWaitListingText.setText(MESSAGES.waitListDefaultReschedule());
+							waitListingImage.setTitle(MESSAGES.descWaitListReschedule());
 						} else {
-							waitListingImage.setUrl(RESOURCES.cancel().getSafeUri());
+							waitListingImage.setResource(RESOURCES.cancel());
 							waitListingImage.setTitle(MESSAGES.descWaitListDisabled());
 							iWaitListingText.setText(MESSAGES.waitListDefaultDisabled());
 						}
-					} else if (courseOffering.getWaitList()) {
+					} else if (courseOffering.getWaitList() == 1) {
 						iWaitListingText.setText(MESSAGES.waitListEnabled());
 						waitListingImage.setTitle(MESSAGES.descWaitListEnabled());
+					} else if (courseOffering.getWaitList() == 2) {
+						waitListingImage.setResource(RESOURCES.reSchedulingOn());
+						iWaitListingText.setText(MESSAGES.waitListReschedule());
+						waitListingImage.setTitle(MESSAGES.descWaitListReschedule());
 					} else {
-						waitListingImage.setUrl(RESOURCES.cancel().getSafeUri());
+						waitListingImage.setResource(RESOURCES.cancel());
 						waitListingImage.setTitle(MESSAGES.descWaitListDisabled());
 						iWaitListingText.setText(MESSAGES.waitListDisabled());
 					}
@@ -2133,7 +2141,7 @@ public class CourseOfferingEdit extends Composite {
 			if (iWaitListing.getWidget().getSelectedValue().isEmpty()) {
 				iCourseOffering.setWaitList(null);
 			} else {
-				iCourseOffering.setWaitList("true".equalsIgnoreCase(iWaitListing.getWidget().getSelectedValue()));
+				iCourseOffering.setWaitList(Integer.valueOf(iWaitListing.getWidget().getSelectedValue()));
 			}
 		} else {
 			iCourseOffering.setWaitList(null);
