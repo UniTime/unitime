@@ -255,7 +255,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    //Get depts where funding dept flag is true
 		    StringBuffer queryClause2 = new StringBuffer("");
 
-			queryClause2.append(" and i.externalFundingDept = 1");
+			queryClause2.append(" and i.externalFundingDept = true");
 
 		    StringBuffer query2 = new StringBuffer();
 		    query2.append("select distinct i from Department i ");

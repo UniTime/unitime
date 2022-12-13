@@ -534,18 +534,18 @@
 		<TR>
 			<TD valign="top"><loc:message name="propertyWaitListing"/></TD>
 			<TD valign="top">
-				<s:if test="form.waitList == null">
+				<s:if test="form.waitList == null || form.waitList.isEmpty()">
 					<tt:propertyEquals name="unitime.offering.waitListDefault" value="true">
-						<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.waitListDefaultEnabled()}" border="0" align="top">
+						<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultEnabled"/>
 					</tt:propertyEquals>
 					<tt:propertyNotEquals name="unitime.offering.waitListDefault" value="true">
-					<img src="images/cancel.png" alt="${MSG.waitListDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
+					<img src="images/cancel.png" alt="${MSG.waitListDefaultDisabled()}" title="${MSG.descWaitListDisabled()}" border="0" align="top">
 						<loc:message name="waitListDefaultDisabled"/>
 					</tt:propertyNotEquals>
 				</s:if>
 				<s:if test="form.waitList == 'true'">
-					<img src="images/accept.png" alt="${MSG.waitListDefaultEnabled()}" title="${MSG.waitListDefaultEnabled()}" border="0" align="top">
+					<img src="images/accept.png" alt="${MSG.waitListEnabled()}" title="${MSG.descWaitListEnabled()}" border="0" align="top">
 					<loc:message name="waitListEnabled"/>
 				</s:if>
 				<s:if test="form.waitList == 'false'">
