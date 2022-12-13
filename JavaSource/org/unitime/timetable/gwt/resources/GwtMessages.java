@@ -3902,6 +3902,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageSolverParams();
 	
+	@DefaultMessage("Instructor Survey")
+	@DoNotTranslate
+	String pageInstructorSurvey();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -4758,6 +4762,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Delete this row.")
 	String titleDeleteRow();
+	
+	@DefaultMessage("Add another row.")
+	String titleAddRow();
 	
 	@DefaultMessage("External Id")
 	String fieldExternalId();
@@ -7618,4 +7625,40 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Re-Scheduling")
 	String toggleReSchedule();
+
+	@DefaultMessage("Position:")
+	String propPosition();
+	
+	@DefaultMessage("Room Groups")
+	String colRoomGroups();
+	
+	@DefaultMessage("Room Geatures")
+	String colRoomFeatures();
+	
+	@DefaultMessage("Distributions")
+	String colDistributions();
+	
+	@DefaultMessage("Notes / Other Preferences:")
+	String propOtherPreferences();
+		
+	@DefaultMessage("Preferences & Requirements")
+	String sectGeneralPreferences();
+	
+	@DefaultMessage("Individual Course Requirements")
+	String sectCoursePreferences();
+	
+	@DefaultMessage("Section(s)")
+	String colSurveySection();
+	
+	@DefaultMessage("Save for Later")
+	String buttonSaveInstructorSurvey();
+	
+	@DefaultMessage("<u>S</u>ubmit")
+	String buttonSubmitInstructorSurvey();
+	
+	@DefaultMessage("Please provide reason for the {0} {1}.")
+	String hintProvideReasonFor(String pref, String item);
+	
+	@DefaultMessage("Please provide reason for the prohibited time(s).")
+	String hintProvideReasonForProhibitedTimes();
 }

@@ -116,7 +116,9 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 	}
 	
 	public void setValue(CourseInterface course, boolean fireEvents) {
-		RequestedCourse rc = new RequestedCourse(); rc.setCourseId(course.getId()); rc.setCourseName(course.getCourseName());
+		RequestedCourse rc = new RequestedCourse();
+		rc.setCourseId(course.getId());
+		rc.setCourseName(course.getCourseName());
 		setValue(rc, fireEvents);
 	}
 	

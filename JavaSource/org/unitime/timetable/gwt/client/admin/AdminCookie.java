@@ -29,7 +29,7 @@ import com.google.gwt.user.client.Cookies;
 public class AdminCookie {
 	private static AdminCookie sInstance = null;
 	
-	private int iSortTasksBy = 0, iSortTaskExecutionsBy = 0, iSortBuildingsBy = 0, iSortDepartmentsBy = 0, iShowAlldepartments = 0;
+	private int iSortTasksBy = 0, iSortTaskExecutionsBy = 0, iSortBuildingsBy = 0, iSortDepartmentsBy = 0, iShowAlldepartments = 0, iSortSurveyCourses = 0;
 	
 	private AdminCookie() {
 		try {
@@ -42,13 +42,14 @@ public class AdminCookie {
 				iSortBuildingsBy = Integer.valueOf(params[idx++]);
 				iSortDepartmentsBy = Integer.valueOf(params[idx++]);
 				iShowAlldepartments = Integer.valueOf(params[idx++]);
+				iSortSurveyCourses = Integer.valueOf(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		String cookie = iSortTasksBy + "|" + iSortTaskExecutionsBy + "|" + iSortBuildingsBy+ "|" + iSortDepartmentsBy + "|" + iShowAlldepartments;
+		String cookie = iSortTasksBy + "|" + iSortTaskExecutionsBy + "|" + iSortBuildingsBy+ "|" + iSortDepartmentsBy + "|" + iShowAlldepartments + "|" + iSortSurveyCourses;
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Admin", cookie, expires);
 	}
@@ -73,4 +74,7 @@ public class AdminCookie {
 	
 	public int getShowAllDepartments() { return iShowAlldepartments; }
 	public void setShowAllDepartments(int showAlldepartments) { iShowAlldepartments = showAlldepartments; save(); }
+	
+	public int getSortSurveyCourses() { return iSortSurveyCourses; }
+	public void setSortSurveyCourses(int sort) { iSortSurveyCourses = sort; }
 }

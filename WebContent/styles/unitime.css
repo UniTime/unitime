@@ -7401,3 +7401,116 @@ unitime-RoomSharingWidget .legend .blank {
 	color: -internal-light-dark(graytext, rgb(170, 170, 170));
     opacity: 0.7;
 }
+
+.unitime-InstructorSurveyPage .email {
+	max-width: 400px;
+}
+
+.unitime-InstructorSurveyPage .preference-table {
+	white-space: nowrap;
+}
+
+.unitime-InstructorSurveyPage .preference-line {
+	display: block;
+}
+
+.unitime-InstructorSurveyPage .preference-cell {
+	display: inline-block;
+	margin-right: 1px;
+	margin-top: 1px;
+}
+
+.unitime-InstructorSurveyPage .preference-line select {
+	width: 300px;
+}
+
+.unitime-InstructorSurveyPage .preference-line img {
+	vertical-align: text-top;
+}
+
+.unitime-InstructorSurveyPage .preference-line .first {
+	border-left: 1px solid black;
+}
+
+.unitime-InstructorSurveyPage .preference-line .legend {
+	display: inline-table;
+	vertical-align: top;
+	padding-top: 1px;
+}
+
+.unitime-InstructorSurveyPage .preference-line .box {
+	cursor: pointer;
+	display: table-cell;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+	width: 38px;
+	height: 22px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-InstructorSurveyPage .preference-line .blank {
+	display: table-cell;
+	width: 38px;
+	height: 24px;
+}
+
+.unitime-InstructorSurveyPage .preference-line .selected {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	font-weight: bold;
+}
+
+.unitime-InstructorSurveyPage .preference-line .description {
+	white-space: pre-wrap;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	margin-right: 2px;
+	max-width: 300px;
+	width: 300px;
+	vertical-align: top;
+	display: inline-block;
+}
+
+.unitime-InstructorSurveyPage .preference-line .wide-description {
+	max-width: 640px;
+	width: 640px;
+}
+
+.unitime-InstructorSurveyPage .preference-line .gwt-RadioButton {
+	white-space: nowrap;
+}
+
+.unitime-InstructorSurveyPage .preference-line .gwt-Image {
+	float: right;
+}
+
+.unitime-InstructorSurveyPage .preference-line .reason {
+	margin-top: 2px;
+	margin-bottom: 2px;
+	display: inline-block;
+}
+
+.unitime-InstructorSurveyPage .notes-hint {
+	color: #AAAAAA;
+	font-style: italic;
+}
+
+.unitime-CourseSelectionBox .course-title {
+	white-space: normal;
+	max-width: 148px;
+	font-style: italic;
+	color: #9CB0CE;
+	font-size: x-small;
+	padding-left: 5px;
+}
+
+.unitime-InstructorSurveyCourseTable .unitime-ClickableTableHeader .gwt-HTML {
+	white-space: pre-wrap !important;
+}

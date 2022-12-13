@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.instructor.SetupTeachingRequestsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsPage;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage;
 import org.unitime.timetable.gwt.client.limitandprojectionsnapshot.LimitAndProjectionSnapshotPage;
 import org.unitime.timetable.gwt.client.offerings.AssignClassInstructorsPage;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
@@ -285,6 +286,10 @@ public enum Pages {
 	assignClassInstructors(new PageFactory() {
 		public Widget create() { return new AssignClassInstructorsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAdministration(); }
+		}),
+	instructorSurvey(new PageFactory() {
+		public Widget create() { return new InstructorSurveyPage(); }
+		public String name(GwtMessages messages) { return messages.pageInstructorSurvey(); }
 		}),
 	;
 	
