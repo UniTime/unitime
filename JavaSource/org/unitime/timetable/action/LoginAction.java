@@ -35,7 +35,7 @@ import org.unitime.timetable.spring.SpringApplicationContextHolder;
  * @author Tomas Muller
  */
 @Action(value = "login", results = {
-		@Result(name = "login", location = "/login.jsp"),
+		@Result(name = "login", location = "/login2.jsp"),
 		@Result(name = "selectPrimaryRole", type = "redirect", location = "/selectPrimaryRole.action"),
 })
 public class LoginAction extends UniTimeAction<BlankForm> {
@@ -44,6 +44,7 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 	private int error = 0;
 	private String menu;
 	private String target;
+	private String force;
 	
 	public Integer getE() { return error; }
 	public void setE(Integer error) { this.error = error; }
@@ -56,6 +57,9 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 		default: return null;
 		}
 	}
+	
+	public String getForce() { return force; }
+	public void setForce(String force) { this.force = force; }
 	
 	public String getMenu() { return menu; }
 	public void setMenu(String menu) { this.menu = menu; }
@@ -91,12 +95,15 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 	}
 
 	public String execute() throws Exception {
+		if ("true".equals(force))
+			return "login";
+		
 		if ("forward".equalsIgnoreCase(ApplicationProperty.LoginMethod.value())) {
 			String login = ApplicationProperty.LoginPage.value();
 			
-			if (login == null || "login.jsp".equals(login) || "/login.jsp".equals(login) || "login".equals(login))
+			if (login == null || "login.jsp".equals(login) || "/login.jsp".equals(login) || "login".equals(login) || "login.action".equals(login))
 				return "login";
-			else if ("selectPrimaryRole.do".equals(login) || "/selectPrimaryRole.do".equals(login) || "selectPrimaryRole".equals(login))
+			else if ("selectPrimaryRole.do".equals(login) || "/selectPrimaryRole.do".equals(login) || "selectPrimaryRole".equals(login) || "selectPrimaryRole.action".equals(login))
 				return "selectPrimaryRole";
 			
 			request.getRequestDispatcher(ApplicationProperty.LoginPage.value()).forward(request, response);
