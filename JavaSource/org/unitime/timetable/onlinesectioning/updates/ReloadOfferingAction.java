@@ -315,7 +315,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		if (newOffering == null && oldOffering == null)
 			return;
 		
-		if (newOffering != null && !newOffering.isWaitList())
+		if (newOffering != null && !newOffering.isReSchedule())
 			return;
 		
 		WaitListComparatorProvider cmp = Customization.WaitListComparatorProvider.getProvider();
@@ -339,7 +339,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XCourseRequest newRequest = getRequest(newStudent, course); 
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
 					if (oldRequest == null && newRequest == null) continue;
-					if (!hasWaitListingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no changes for students that cannot be wait-listed
+					if (!hasReSchedulingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no changes for students that cannot be re-scheduled
 					
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
@@ -641,7 +641,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					}
 					if (r.getRequest().isWaitlist())
 						r.setRequest(server.waitlist(r.getRequest(), false));
-				} else { // wait-list
+				} else if (r.getOffering().isWaitList() && hasWaitListingStatus(r.getStudent(), server)) { // wait-list
 					if (cd != null && !cd.isWaitlist()) {
 						// ensure that the dropped course is the first choice 
 						CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
@@ -708,6 +708,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						} else
 							r.setRequest(server.waitlist(r.getRequest(), true));
 					}
+				} else if (r.getLastEnrollment() != null) {
+					CourseOffering co = CourseOfferingDAO.getInstance().get(r.getLastEnrollment().getCourseId(), helper.getHibSession());
+					if (co != null)
+						student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 				}
 				
 				helper.getHibSession().save(student);

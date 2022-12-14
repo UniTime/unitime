@@ -93,7 +93,7 @@ public class XOffering implements Serializable, Externalizable {
     private List<XReservation> iReservations = new ArrayList<XReservation>();
     private List<XDistribution> iDistrubutions = new ArrayList<XDistribution>();
     private List<XRestriction> iRestrictions = new ArrayList<XRestriction>();
-    private boolean iWaitList = false;
+    private boolean iWaitList = false, iReSchedule = false;
 
     public XOffering() {
     }
@@ -106,6 +106,7 @@ public class XOffering implements Serializable, Externalizable {
     	iUniqueId = offering.getUniqueId();
     	iName = offering.getCourseName();
     	iWaitList = offering.effectiveWaitList();
+    	iReSchedule = offering.effectiveReSchedule();
     	for (CourseOffering course: offering.getCourseOfferings())
     		if (course.isAllowStudentScheduling())
     			iCourses.add(new XCourse(course, helper));
@@ -220,6 +221,10 @@ public class XOffering implements Serializable, Externalizable {
     
     public boolean isWaitList() {
     	return iWaitList;
+    }
+    
+    public boolean isReSchedule() {
+    	return iReSchedule;
     }
     
     public XCourse getControllingCourse() {
@@ -938,6 +943,7 @@ public class XOffering implements Serializable, Externalizable {
 		iUniqueId = in.readLong();
 		iName = (String)in.readObject();
 		iWaitList = in.readBoolean();
+		iReSchedule = in.readBoolean();
 		
 		int nrConfigs = in.readInt();
 		iConfigs.clear();
@@ -1001,6 +1007,7 @@ public class XOffering implements Serializable, Externalizable {
 		out.writeLong(iUniqueId);
 		out.writeObject(iName);
 		out.writeBoolean(iWaitList);
+		out.writeBoolean(iReSchedule);
 		
 		out.writeInt(iConfigs.size());
 		for (XConfig config: iConfigs)

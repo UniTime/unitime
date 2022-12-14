@@ -57,6 +57,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Set<String> iWaitlistStatuses = null;
+	private Set<String> iReschedulingStatuses = null;
 	private Map<StudentPriority, String> iPriorityStudentGroupReference = null;
 	private Map<StudentPriority, Query> iPriorityStudentQuery = null;
 	
@@ -72,9 +73,21 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		return true;
 	}
 	
+	public boolean hasReSchedulingStatus(XStudent student, OnlineSectioningServer server) {
+		// Check student status
+		String status = student.getStatus();
+		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
+		if (status != null) {
+			if (iReschedulingStatuses == null)
+				iReschedulingStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.enrollment);
+			if (!iReschedulingStatuses.contains(status)) return false;
+		}
+		return true;
+	}
+	
 	public boolean isWaitListed(XStudent student, XCourseRequest request, XOffering offering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		// Check wait-list toggle first
-		if (student == null || request == null || !request.isWaitlist()) return false;
+		if (student == null || request == null || !request.isWaitlist() || !offering.isWaitList()) return false;
 		
 		// If already enrolled
 		if (request.getEnrollment() != null) {
