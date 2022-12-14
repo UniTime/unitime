@@ -2634,6 +2634,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setCanRequire(status.hasOption(StudentSectioningStatus.Option.canreq));
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setNoSchedule(status.hasOption(StudentSectioningStatus.Option.noschedule));
+		info.setReSchedule(status.hasOption(StudentSectioningStatus.Option.reschedule));
 		info.setMessage(status.getMessage());
 		if (status.getFallBackStatus() != null)
 			info.setFallback(status.getFallBackStatus().getLabel());
@@ -2717,6 +2718,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
 				info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 				info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
+				info.setReSchedule(waitlist && s.hasOption(StudentSectioningStatus.Option.reschedule));
 			} else {
 				info = new StudentStatusInfo();
 				info.setReference("");
@@ -2726,6 +2728,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				info.setWaitList(waitlist);
 				info.setSpecialRegistration(specreg);
 				info.setRequestValiadtion(reqval);
+				info.setReSchedule(waitlist);
 			}
 			ret.add(info);
 		}

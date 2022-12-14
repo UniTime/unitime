@@ -3476,4 +3476,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course is no longer requested.")
 	String reschedulingReasonNoRequest();
+	
+	@DefaultMessage("Re-Scheduling:")
+	String propStatusReSchedule();
+	
+	@DefaultMessage("Student can be re-scheduled after a course change.")
+	String messageStatusReSchedule();
+	
+	@DefaultMessage("Student can NOT be re-scheduled after a course change.")
+	String messageStatusNoReSchedule();
 }

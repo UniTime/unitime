@@ -59,6 +59,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/*32768 */ canreq("Can Require Sections / IMs"),
 		/*65536 */ noschedule("Do Not Show Personal Schedule"),
 		/*131072*/ nosubs("No-Substitutions Enabled"),
+		/*262144*/ reschedule("Re-Scheduling Allowed"),
 		;
 		
 		private String iName;
