@@ -18,8 +18,6 @@
  * 
 */
 
-alter table instructional_offering alter waitlist type integer using case when waitlist then 1 else 0 end;
-
 update sectioning_status set status = status + 262144 where (status & 64 = 64) and (status & 262144 = 0);
 
 /*

@@ -7606,4 +7606,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The subject area and all associated data will be deleted. Continue?")
 	String confirmDeleteSubjectArea();
+	
+	@DefaultMessage("Re-Scheduling")
+	String toggleReSchedule();
 }
