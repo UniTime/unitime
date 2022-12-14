@@ -249,7 +249,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	}
 	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering, Set<Long> recheckOfferingIds) {
-		if (!server.getAcademicSession().isSectioningEnabled() || offering == null || !offering.isWaitList()) return;
+		if (!server.getAcademicSession().isSectioningEnabled() || offering == null || !offering.isReSchedule()) return;
 		if (recheckOfferingIds != null) recheckOfferingIds.remove(offering.getOfferingId());
 		
 		if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return;
@@ -453,7 +453,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						}
 						if (r.getRequest().isWaitlist())
 							server.waitlist(r.getRequest(), false);
-					} else { // wait-list
+					} else if (r.getOffering().isWaitList() && hasWaitListingStatus(r.getStudent(), server)) { // enable wait-list
 						if (cd != null && !cd.isWaitlist()) { // course demand is not wait-listed > enable wait-listing for the course
 							// ensure that the dropped course is the first choice 
 							CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
@@ -520,6 +520,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							} else
 								r.setRequest(server.waitlist(r.getRequest(), true));
 						}
+					} else if (r.getLastEnrollment() != null) {
+						CourseOffering co = CourseOfferingDAO.getInstance().get(r.getLastEnrollment().getCourseId(), helper.getHibSession());
+						if (co != null)
+							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_CHECK, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					
 					helper.getHibSession().save(student);
@@ -562,7 +566,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (request.getEnrollment() == null) return null;
 		if (!offering.getOfferingId().equals(request.getEnrollment().getOfferingId())) return null;
 		if (!server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false)) return null;
-		if (!hasWaitListingStatus(student, server)) return null; // no changes for students that cannot be wait-listed
+		if (!hasReSchedulingStatus(student, server)) return null; // no changes for students that cannot be wait-listed
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) {
