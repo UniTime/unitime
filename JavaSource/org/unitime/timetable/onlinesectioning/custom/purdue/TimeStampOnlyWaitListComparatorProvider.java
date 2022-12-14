@@ -59,6 +59,7 @@ public class TimeStampOnlyWaitListComparatorProvider implements WaitListComparat
 			}
 		}
 		
+		/*
 		@Override
 		protected int compareBothAssigned(SectioningRequest s, SectioningRequest r) {
 			// check student priority and request priority
@@ -78,5 +79,6 @@ public class TimeStampOnlyWaitListComparatorProvider implements WaitListComparat
 				return 0;
 			}
 		}
+		*/
 	}
 }
