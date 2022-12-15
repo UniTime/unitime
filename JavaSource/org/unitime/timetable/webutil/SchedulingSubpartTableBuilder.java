@@ -121,7 +121,7 @@ public class SchedulingSubpartTableBuilder {
 	        }
 	        request.setAttribute("subpartsExist", "true");
 	        
-	        String varLimitsCheckBox = "<input type='checkbox' name='varLimits' value='y' <<0>>" +  (varLimits ? "checked":"") + " onClick=\"doClick('multipleLimits', 0);\"> <small>Allow variable limits</small>";
+	        String varLimitsCheckBox = "<input type='checkbox' name='varLimits' value='y' <<0>>" +  (varLimits ? "checked":"") + " onClick=\"doClick('multipleLimits', 0);\"> <small>"+MSG.labelAllowVariableLimits()+"</small>";
 	        String tblStr = tbl.printTable();	        
 	        if (request.getAttribute("varLimits")!=null) {
 	            tblStr = tblStr.replaceAll("<<00>>", varLimitsCheckBox);

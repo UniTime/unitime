@@ -5715,4 +5715,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Room Features")
 	String labelRoomfeatures();
+	
+	@DefaultMessage("Allow variable limits")
+	String labelAllowVariableLimits();
 }
