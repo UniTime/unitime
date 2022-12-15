@@ -231,11 +231,11 @@ public class LookupTables {
      * @param department
      * @param currentDatePattern
      */
-    public static void setupDatePatterns(HttpServletRequest request, org.unitime.timetable.model.Session acadSession, boolean includeExtended, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
+    public static void setupDatePatterns(HttpServletRequest request, Long acadSessionId, boolean includeExtended, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
     	Vector list = new Vector();
     	list.addElement(new IdValue(Long.valueOf(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
-    		for (DatePattern dp: DatePattern.findAll(acadSession, includeExtended, department, currentDatePattern))
+    		for (DatePattern dp: DatePattern.findAll(acadSessionId, includeExtended, department, currentDatePattern))
     			list.addElement(new IdValue(dp.getUniqueId(),dp.getName()));
     	} catch (Exception e) {
     		Debug.error(e);

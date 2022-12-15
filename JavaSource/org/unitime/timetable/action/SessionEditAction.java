@@ -143,8 +143,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		sessionEditForm.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
 		sessionEditForm.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
 		
-        Session sessn = Session.getSessionById(id);
-		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+		LookupTables.setupDatePatterns(request, id, false, Constants.BLANK_OPTION_LABEL, null, null, null);
 		request.setAttribute("Sessions.holidays", sessionEditForm.getSession().getHolidaysHtml());
 		
 		sessionEditForm.setWkEnroll(acadSession.getLastWeekToEnroll());
@@ -204,6 +203,20 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
         } else {
         	sessionContext.checkPermission(sessionEditForm.getSessionId(), "Session", Right.AcademicSessionEdit);
         }
+        
+        String refresh = request.getParameter("refresh");
+        
+        if (refresh!=null && refresh.equals("1")) {
+        	Session sessn = sessionEditForm.getSession();
+            ActionErrors errors = new ActionErrors();
+            setHolidays(request, sessionEditForm, errors, sessn);
+            if (sessn.getSessionId()!=null){
+                LookupTables.setupDatePatterns(request, sessn.getSessionId(), false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                return mapping.findForward("showEdit");
+            }
+            else
+                return mapping.findForward("showAdd");
+        }
 
         Transaction tx = null;
         org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -218,26 +231,11 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             else 
                 sessn.setSessionId(null);
             
-            String refresh = request.getParameter("refresh");
-            
-            if (refresh!=null && refresh.equals("1")) {
-                
-                ActionErrors errors = new ActionErrors(); 
-                setHolidays(request, sessionEditForm, errors, sessn);
-                if (sessn.getSessionId()!=null){
-                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-                    request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
-                    return mapping.findForward("showEdit");
-                }
-                else
-                    return mapping.findForward("showAdd");
-            }
-            
             ActionMessages errors = sessionEditForm.validate(mapping, request);
             if (errors.size()>0) {
                 saveErrors(request, errors);
                 if (sessn.getSessionId()!=null) {
-                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                    LookupTables.setupDatePatterns(request, sessn.getSessionId(), false, Constants.BLANK_OPTION_LABEL, null, null, null);
                     request.setAttribute("Sessions.holidays", sessn.getHolidaysHtml());     
                     return mapping.findForward("showEdit");
                 }

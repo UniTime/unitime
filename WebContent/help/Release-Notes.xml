@@ -45,6 +45,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Academic Session: Bugfix</name>
+			<description>
+				<line>Ensure that the academic session is not updated when the page is reloaded due to a date change.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
