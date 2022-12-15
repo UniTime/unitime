@@ -287,7 +287,7 @@
 						<TD><I><loc:message name="columnInstructorName"/></I></TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorShare"/> </I>&nbsp;</TD>
 						<TD>&nbsp;<I><loc:message name="columnInstructorCheckConflicts"/> </I>&nbsp;</TD>
-						<s:if test="#request.responsibilities != null">
+						<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
 							<TD>&nbsp;<I><loc:message name="columnTeachingResponsibility"/> </I>&nbsp;</TD>
 						</s:if>
 						<TD>&nbsp;</TD>
@@ -311,7 +311,7 @@
 								<s:checkbox name="form.instrLead[%{#stat.index}]" id="instrLead%{#stat.index}"
 									onclick="instructorChanged(%{#stat.index}, this);"/>
 							</TD>
-							<s:if test="#request.responsibilities != null">
+							<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
 								<TD>
 									<s:if test="form.defaultTeachingResponsibilityId == null || form.instrResponsibility[#stat.index] == ''">
 										<s:select name="form.instrResponsibility[%{#stat.index}]"

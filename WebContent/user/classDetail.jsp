@@ -251,7 +251,7 @@
 				<TD>
 					<table style="border-spacing: 0px;">
 						<tr><td width='250'><i><loc:message name="columnInstructorName"/></i></td><td width='80'><i><loc:message name="columnInstructorShare"/></i></td><td width='100'><i><loc:message name="columnInstructorCheckConflicts"/></i></td>
-						<s:if test="#request.responsibilities != null">
+						<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
 							<td width='200'><i><loc:message name="columnTeachingResponsibility"/></i></td>
 						</s:if>
 						</tr>
