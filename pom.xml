@@ -169,6 +169,21 @@
 			<groupId>org.apache.struts</groupId>
 			<artifactId>struts2-convention-plugin</artifactId>
 			<version>${struts2.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-commons</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -778,6 +793,7 @@
 		<jackson.version>2.13.0</jackson.version>
 		<ant.version>1.10.12</ant.version>
 		<text.version>1.10.0</text.version>
+		<asm.version>9.2</asm.version>
 	</properties>
 
 	<distributionManagement>
