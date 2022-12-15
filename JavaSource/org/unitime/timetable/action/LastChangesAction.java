@@ -62,8 +62,6 @@ public class LastChangesAction extends UniTimeAction<LastChangesForm> {
 	
 	@SuppressWarnings("unchecked")
 	public String execute() throws Exception {
-        sessionContext.checkPermission(Right.Examinations);
-        
         if (getForm() == null) setForm(new LastChangesForm());
 		
         // Check Access
