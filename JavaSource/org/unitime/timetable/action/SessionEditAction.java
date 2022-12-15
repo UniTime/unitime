@@ -133,7 +133,7 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
 		form.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
 		form.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
 		
-		LookupTables.setupDatePatterns(request, acadSession, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+		LookupTables.setupDatePatterns(request, sessionId, false, Constants.BLANK_OPTION_LABEL, null, null, null);
 		request.setAttribute("holidays", form.getSession().getHolidaysHtml());
 		
 		form.setWkEnroll(acadSession.getLastWeekToEnroll());
@@ -175,6 +175,18 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
         	sessionContext.checkPermission(form.getSessionId(), "Session", Right.AcademicSessionEdit);
         }
 
+        if (Boolean.TRUE.equals(refresh)) {
+            Session sessn = form.getSession();
+            setHolidays(sessn);
+            if (form.getSessionId() != null){
+                LookupTables.setupDatePatterns(request, form.getSessionId(), false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                if (!hasFieldErrors())
+                	request.setAttribute("holidays", sessn.getHolidaysHtml());
+                return "showEdit";
+            } else
+                return "showAdd";
+        }
+
         Transaction tx = null;
         org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
         
@@ -188,20 +200,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             else 
                 sessn.setSessionId(null);
             
-            if (Boolean.TRUE.equals(refresh)) {
-                setHolidays(sessn);
-                if (sessn.getSessionId() != null){
-                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
-                    request.setAttribute("holidays", sessn.getHolidaysHtml());     
-                    return "showEdit";
-                } else
-                    return "showAdd";
-            }
-            
             form.validate(this);
             if (hasFieldErrors()) {
                 if (sessn.getSessionId()!=null) {
-                    LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
+                    LookupTables.setupDatePatterns(request, sessn.getSessionId(), false, Constants.BLANK_OPTION_LABEL, null, null, null);
                     request.setAttribute("holidays", sessn.getHolidaysHtml());     
                     return "showEdit";
                 } else {
