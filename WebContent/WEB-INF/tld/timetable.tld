@@ -378,6 +378,18 @@
 			<type>java.lang.String</type>
 		</attribute>
 	</tag>
+	
+	<tag>
+		<name>alert</name>
+		<tag-class>org.unitime.timetable.tags.Alert</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+	</tag>
 
 	<tag>
 		<name>exams</name>

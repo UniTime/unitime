@@ -5718,4 +5718,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Allow variable limits")
 	String labelAllowVariableLimits();
+	
+	@DefaultMessage("WARNING: Application of this preference will remove all required preferences.")
+	String alertReqPrefsWillBeRemoved();
+	
+	@DefaultMessage("WARNING: Application of required preference will remove all not required preferences.")
+	String alertNotReqPrefsWillBeRemoved();
 }

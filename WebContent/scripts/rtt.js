@@ -333,13 +333,9 @@ function tpPrefSelected(tpName, pref) {
 	document.getElementById(tpName+"_reqSelect").value=pref;
 	document.getElementById(tpName+'_req'+pref).style.border='rgb(0,0,240) 2px solid';
 	var reqUsed = document.getElementById(tpName+"_reqUsed").value;
-	if (window.jsConfirm!=false) {
-		if (pref!='R' && pref!='0' && reqUsed=='1')
-			alert('WARNING: Application of this preference will remove all required preferences.');
-		if (pref=='R' && reqUsed=='0')
-			alert('WARNING: Application of required preference will remove all not required preferences.');
-		eval("fn_"+tpName+"_prefCheck('"+pref+"');");
-	}
+	if (alertReqPrefsWillBeRemoved && pref!='R' && pref!='0' && reqUsed=='1') alertReqPrefsWillBeRemoved();
+	if (alertNotReqPrefsWillBeRemoved && pref=='R' && reqUsed=='0') alertNotReqPrefsWillBeRemoved();
+	eval("fn_"+tpName+"_prefCheck('"+pref+"');");
 }
 
 function tpGenPreference(tpName, editable, pref, title, enable) {
