@@ -398,7 +398,7 @@ function resetAllDisplayFlags(value, baseName) {
 						<s:if test="form.readOnlyClasses[#ctr] == 'false'">
 							<s:textfield name='form.maxClassLimits[%{#ctr}]' tabindex="%{(4000 + #ctr)}" maxlength="5" size="4"/>
 						</s:if>
-						<s:if test="form.readOnlyClasses == true">
+						<s:if test="form.readOnlyClasses[#ctr] == 'true'">
 							<s:hidden name="form.maxClassLimits[%{#ctr}]"/>
 							<s:property value="%{form.maxClassLimits[#ctr]}"/>
 					</s:if></TD>
