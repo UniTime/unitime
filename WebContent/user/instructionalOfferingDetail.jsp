@@ -412,10 +412,10 @@
 		<TR>
 			<TD colspan="2">
 				<a id="reservations"></a>
-				<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') and hasPermission(null, null, 'ReservationAdd')">
+				<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'ReservationOffering') and hasPermission(null, null, 'ReservationAdd')">
 					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</sec:authorize>
-				<sec:authorize access="not hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') or not hasPermission(null, null, 'ReservationAdd')">
+				<sec:authorize access="not hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'ReservationOffering') or not hasPermission(null, null, 'ReservationAdd')">
 					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><s:property value="form.instrOfferingId"/></div>
 				</sec:authorize>
 			</TD>
