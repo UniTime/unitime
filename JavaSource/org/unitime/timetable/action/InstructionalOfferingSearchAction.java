@@ -324,7 +324,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 						MSG.labelInstructionalOfferings() + " ("+names + (form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr()) + ")", 
 						true, true);
 
-				if ("Back".equals(op)) {
+				if (!"Back".equals(op)) {
 			        
 				    // Search produces 1 result - redirect to offering detail
 					if (form.getSubjectAreaIds().length == 1) {
