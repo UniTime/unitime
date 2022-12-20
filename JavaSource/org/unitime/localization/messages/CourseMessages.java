@@ -3190,9 +3190,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Refresh Log (Alt + {0})")
 	String titleRefreshLog(String access);
 	
-	@DefaultMessage("Data Exchange")
-	String sectionDataExcahngeQueue();
-	
 	@DefaultMessage("Name")
 	String fieldQueueName();
 	

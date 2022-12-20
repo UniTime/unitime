@@ -134,7 +134,7 @@ public class DataImportAction extends UniTimeAction<DataImportForm> {
         WebTable.setOrder(sessionContext, "dataImport.ord", getOrd(), 1);
 		String log = request.getParameter("log");
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
-		List<QueueItem> queue = getSolverServerService().getQueueProcessor().getItems(null, null, MSG.sectionDataExcahngeQueue());
+		List<QueueItem> queue = getSolverServerService().getQueueProcessor().getItems(null, null, "Data Exchange");
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, MSG.sectionDataExchangeQueue(), "dataImport.action?ord=%%",
 				new String[] { MSG.fieldQueueName(), MSG.fieldQueueStatus(), MSG.fieldQueueProgress(), MSG.fieldQueueOwner(),
