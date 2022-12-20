@@ -633,7 +633,7 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<import-translations source="${src.dir}" generatePageNames="false" download="true" token="b191dd443ab1800fc1e09ef23e50cdb0">
+		<import-translations source="${src.dir}" generatePageNames="false" download="${download}" token="b191dd443ab1800fc1e09ef23e50cdb0">
 			<locale value="${locale}"/>
 		</import-translations>
         <delete dir="${build.dir}" failonerror="false"/>
