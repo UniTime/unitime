@@ -202,7 +202,9 @@ public class Registration extends BodyTagSupport {
 				if (isUpdate()) {
 					Obtrusiveness obtrusiveness = Obtrusiveness.valueOf(ApplicationProperty.RegistrationPopupObtrusiveness.value());
 					if (getSessionContext().hasPermission(Right.Registration)) {
-						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
+						HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
+						String uri = request.getRequestURL().toString().replaceFirst("/layouts/.*jsp", "/main.action?refresh=1");
+						String backUrl = URLEncoder.encode(uri, "ISO-8859-1");
 						pageContext.getOut().println(
 								"<br><span style=\"font-size: x-small;\">Click <a "+
 								"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
