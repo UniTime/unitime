@@ -267,5 +267,29 @@ public class InstructorPermissions {
 		public Class<Session> type() { return Session.class; }
 	}
 
+	@PermissionForRight(Right.InstructorSurvey)
+	public static class InstructorSurvey implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.InstructorSurvey);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
 	
+	@PermissionForRight(Right.InstructorSurveyAdmin)
+	public static class InstructorSurveyAdmin implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.InstructorSurvey);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
 }

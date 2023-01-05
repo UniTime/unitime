@@ -22,8 +22,10 @@ package org.unitime.timetable.server.instructor.survey;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
@@ -32,46 +34,64 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterf
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CustomField;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.IdLabel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorDepartment;
-import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurvey;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorTimePreferencesModel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.PrefLevel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.InstructorCourseRequirement;
+import org.unitime.timetable.model.InstructorCourseRequirementNote;
+import org.unitime.timetable.model.InstructorCourseRequirementType;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
+import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
  */
 @GwtRpcImplements(InstructorSurveyRequest.class)
-public class RequestInstructorSurveyBackend implements GwtRpcImplementation<InstructorSurveyRequest, InstructorSurvey> {
+public class RequestInstructorSurveyBackend implements GwtRpcImplementation<InstructorSurveyRequest, InstructorSurveyData> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	@Override
-	public InstructorSurvey execute(InstructorSurveyRequest request, SessionContext context) {
-		String externalId = request.getExternalId();
-		if (externalId == null) externalId = context.getUser().getExternalUserId();
+	public InstructorSurveyData execute(InstructorSurveyRequest request, SessionContext context) {
+		String externalId = context.getUser().getExternalUserId();
+		if (request.getExternalId() != null && !request.getExternalId().isEmpty()) {
+			context.checkPermission(Right.InstructorSurveyAdmin);
+			externalId = request.getExternalId();
+		} else {
+			context.checkPermission(Right.InstructorSurvey);
+		}
 		
-		InstructorSurvey survey = new InstructorSurvey();
+		final InstructorSurveyData survey = new InstructorSurveyData();
 		survey.setExternalId(externalId);
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		
@@ -93,6 +113,20 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			survey.setFormattedName(context.getUser().getName());
 		if (!survey.hasEmail())
 			survey.setEmail(context.getUser().getEmail());
+		
+		List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder").list();
+		Map<Long, CustomField> customFields = new HashMap<Long, CustomField>();
+		for (InstructorCourseRequirementType type: types) {
+			CustomField cf = new CustomField(type.getUniqueId(), type.getReference(), type.getLength());
+			customFields.put(type.getUniqueId(), cf);
+			survey.addCustomField(cf);
+		}
+		
+		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
+				).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
 		
 		InstructorTimePreferencesModel timePref = new InstructorTimePreferencesModel();
 		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|0|4|90|246|12"));
@@ -206,6 +240,56 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		if (distPref.hasItems())
 			survey.setDistributionPreferences(distPref);
 		
+		if (is != null) {
+			for (Preference p: is.getPreferences()) {
+				if (p instanceof TimePref) {
+					TimePref tp = (TimePref)p;
+					timePref.setPattern(tp.getPreference());
+					timePref.setNote(tp.getNote());
+				} else if (p instanceof BuildingPref) {
+					BuildingPref bp = (BuildingPref)p;
+					buildingPrefs.addSelection(new Selection(bp.getBuilding().getUniqueId(), bp.getPrefLevel().getUniqueId(), p.getNote()));
+				} else if (p instanceof RoomGroupPref) {
+					RoomGroupPref gp = (RoomGroupPref)p;
+					groupPrefs.addSelection(new Selection(gp.getRoomGroup().getUniqueId(), gp.getPrefLevel().getUniqueId(), p.getNote()));
+				} else if (p instanceof RoomFeaturePref) {
+					RoomFeaturePref fp = (RoomFeaturePref)p;
+					if (fp.getRoomFeature().getFeatureType() != null) {
+						Preferences prefs = typedFeaturePrefs.get(fp.getRoomFeature().getFeatureType().getUniqueId());
+						if (prefs != null)
+							prefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+					} else {
+						featurePrefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+					}
+				} else if (p instanceof DistributionPref) {
+					DistributionPref dp = (DistributionPref)p;
+					distPref.addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
+				}
+			}
+		}
+		
+		Set<Long> courseIds = new HashSet<Long>();
+		if (is != null) {
+			survey.setSubmitted(is.getSubmitted());
+			if (is.getEmail() != null && !is.getEmail().isEmpty())
+				survey.setEmail(is.getEmail());
+			survey.setNote(is.getNote());
+			for (InstructorCourseRequirement r: is.getCourseRequirements()) {
+				Course ci = new Course();
+				ci.setReqId(r.getUniqueId());
+				ci.setId(r.getCourseOffering() == null ? null : r.getCourseOffering().getUniqueId());
+				ci.setCourseName(r.getCourseOffering() == null ? r.getCourse() : r.getCourseOffering().getCourseName());
+				ci.setCourseTitle(r.getCourseOffering() == null ? null : r.getCourseOffering().getTitle());
+				if (r.getCourseOffering() != null)
+					courseIds.add(r.getCourseOffering().getUniqueId());
+				for (InstructorCourseRequirementNote n: r.getNotes()) {
+					CustomField cf = customFields.get(n.getType().getUniqueId());
+					if (cf != null)
+						ci.setCustomField(cf, n.getNote());
+				}
+				survey.addCourse(ci);
+			}
+		}
 		for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct co from CourseOffering co, " +
 				"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
@@ -216,29 +300,29 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				.setString("id", externalId)
 				.setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
 				.setCacheable(true).list()) {
-			Course ci = new Course();
-			ci.setId(co.getUniqueId());
-			ci.setCourseName(co.getCourseName());
-			ci.setCoruseTitle(co.getTitle());
-			survey.addCourse(ci);
+			if (courseIds.add(co.getUniqueId())) {
+				Course ci = new Course();
+				ci.setId(co.getUniqueId());
+				ci.setCourseName(co.getCourseName());
+				ci.setCourseTitle(co.getTitle());
+				survey.addCourse(ci);
+			}
 		}
 		if (survey.hasCourses())
-			Collections.sort(survey.getCourses(), new Comparator<CourseInterface>() {
+			Collections.sort(survey.getCourses(), new Comparator<Course>() {
 				@Override
-				public int compare(CourseInterface co1, CourseInterface co2) {
-					return co1.getCourseName().compareTo(co2.getCourseName());
+				public int compare(Course co1, Course co2) {
+					int cmp = co1.getCourseName().compareTo(co2.getCourseName());
+					if (cmp != 0) return cmp;
+					for (CustomField f: survey.getCustomFields()) {
+						String cf1 = co1.getCustomField(f);
+						String cf2 = co2.getCustomField(f);
+						cmp = (cf1 == null ? "" : cf1).compareTo(cf2 == null ? "" : cf2);
+						if (cmp != 0) return cmp;
+					}
+					return 0;
 				}
 			});
-		
-		/*
-		survey.addCustomField(new CustomField(1l, "Est.\nLimit", 5));
-		survey.addCustomField(new CustomField(2l, "Estim. %\nAttendance", 8));
-		survey.addCustomField(new CustomField(3l, "Instructor\nUCO", 10));
-		survey.addCustomField(new CustomField(4l, "Time\nPreferences", 20));
-		survey.addCustomField(new CustomField(5l, "Room\nPreferences", 20));
-		survey.addCustomField(new CustomField(6l, "Additional\nNotes", 40));
-		*/
-		survey.addCustomField(new CustomField(6l, "Notes", 82));
 		return survey;
 	}
 
