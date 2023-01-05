@@ -66,6 +66,7 @@ public abstract class BaseRoomFeaturePref extends Preference implements Serializ
 
 	public String toDebugString() {
 		return "RoomFeaturePref[" +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	RoomFeature: " + getRoomFeature() +

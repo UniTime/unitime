@@ -49,6 +49,13 @@
             insert="true"
             update="true"/>
 
+		<property
+			name="note"
+			column="note"
+			type="java.lang.String"
+			not-null="false"
+			length="2048"/>
+
         <union-subclass
             name="RoomPref"
             table="room_pref"

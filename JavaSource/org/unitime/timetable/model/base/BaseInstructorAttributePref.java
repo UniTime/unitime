@@ -67,6 +67,7 @@ public abstract class BaseInstructorAttributePref extends Preference implements 
 	public String toDebugString() {
 		return "InstructorAttributePref[" +
 			"\n	Attribute: " + getAttribute() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

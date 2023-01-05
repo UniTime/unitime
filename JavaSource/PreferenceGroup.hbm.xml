@@ -1253,5 +1253,45 @@
             	not-null="true"
             	length="3"/>
         </union-subclass>
+        <union-subclass name="InstructorSurvey" table="instructor_survey">
+			<many-to-one
+                name="session"
+                class="Session"
+                column="session_id"
+                not-null="true"
+                foreign-key="fk_instr_surv_session"/>
+            <property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                not-null="true"
+                length="40"/>
+			<property
+                name="email"
+                column="email"
+                type="java.lang.String"
+                not-null="false"
+                length="200"/>
+			<property
+                name="note"
+                column="note"
+                type="java.lang.String"
+                not-null="false"
+                length="2048"/>
+            <property
+                name="submitted"
+                column="submitted"
+                type="java.sql.Timestamp"
+                not-null="false"/>
+            <set
+            	name="courseRequirements"
+            	table="instr_course_req_notes"
+            	inverse="true"
+            	cascade="all">
+            	<cache include="non-lazy" usage="transactional"/>
+            	<key column="survey_id" foreign-key="fk_instr_crsreq_survey"/>
+            	<one-to-many class="InstructorCourseRequirement"/>
+            </set>
+        </union-subclass>
     </class>
 </hibernate-mapping>

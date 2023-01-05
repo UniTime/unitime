@@ -72,6 +72,7 @@ public abstract class BaseTimePref extends Preference implements Serializable {
 
 	public String toDebugString() {
 		return "TimePref[" +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	Preference: " + getPreference() +

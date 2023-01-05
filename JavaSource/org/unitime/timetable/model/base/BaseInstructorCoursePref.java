@@ -67,6 +67,7 @@ public abstract class BaseInstructorCoursePref extends Preference implements Ser
 	public String toDebugString() {
 		return "InstructorCoursePref[" +
 			"\n	Course: " + getCourse() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

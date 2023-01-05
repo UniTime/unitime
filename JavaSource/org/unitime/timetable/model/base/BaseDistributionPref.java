@@ -90,6 +90,7 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 		return "DistributionPref[" +
 			"\n	DistributionType: " + getDistributionType() +
 			"\n	Grouping: " + getGrouping() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

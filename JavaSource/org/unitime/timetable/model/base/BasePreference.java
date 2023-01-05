@@ -33,11 +33,13 @@ public abstract class BasePreference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
+	private String iNote;
 
 	private PreferenceGroup iOwner;
 	private PreferenceLevel iPrefLevel;
 
 	public static String PROP_UNIQUEID = "uniqueId";
+	public static String PROP_NOTE = "note";
 
 	public BasePreference() {
 		initialize();
@@ -52,6 +54,9 @@ public abstract class BasePreference implements Serializable {
 
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
 
 	public PreferenceGroup getOwner() { return iOwner; }
 	public void setOwner(PreferenceGroup owner) { iOwner = owner; }
@@ -76,6 +81,7 @@ public abstract class BasePreference implements Serializable {
 
 	public String toDebugString() {
 		return "Preference[" +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

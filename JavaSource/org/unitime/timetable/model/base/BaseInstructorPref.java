@@ -67,6 +67,7 @@ public abstract class BaseInstructorPref extends Preference implements Serializa
 	public String toDebugString() {
 		return "InstructorPref[" +
 			"\n	Instructor: " + getInstructor() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

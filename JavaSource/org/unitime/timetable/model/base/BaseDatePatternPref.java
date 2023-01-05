@@ -67,6 +67,7 @@ public abstract class BaseDatePatternPref extends Preference implements Serializ
 	public String toDebugString() {
 		return "DatePatternPref[" +
 			"\n	DatePattern: " + getDatePattern() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +
