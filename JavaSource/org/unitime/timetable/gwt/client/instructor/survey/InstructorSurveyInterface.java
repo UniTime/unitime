@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.instructor.survey;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,11 +41,13 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class InstructorSurveyInterface implements IsSerializable {
 
-	public static class InstructorSurvey implements GwtRpcResponse {
+	public static class InstructorSurveyData implements GwtRpcResponse {
 		private Long iId;
 		private String iExternalId;
 		private String iFormattedName;
 		private String iEmail;
+		private String iNote;
+		private Date iSubmitted;
 		private List<InstructorDepartment> iDepartments;
 		private InstructorTimePreferencesModel iTimePrefs;
 		private List<Preferences> iRoomPrefs;
@@ -53,7 +56,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private List<Course> iCourses;
 		private List<CustomField> iCustomFields;
 		
-		public InstructorSurvey() {}
+		public InstructorSurveyData() {}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
@@ -65,6 +68,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
 		public String getEmail() { return iEmail; }
 		public void setEmail(String email) { iEmail = email; }
+		
+		public Date getSubmitted() { return iSubmitted; }
+		public void setSubmitted(Date submitted) { iSubmitted = submitted; }
+		
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
 		
 		public boolean hasDepartments() { return iDepartments != null && !iDepartments.isEmpty(); }
 		public boolean hasDepartment(Long id) {
@@ -105,6 +115,12 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iCourses == null) iCourses = new ArrayList<Course>();
 			iCourses.add(course);
 		}
+		public void setCourses(List<Course> courses) {
+			iCourses = courses;
+		}
+		public void clearCourses() {
+			if (iCourses != null) iCourses.clear();
+		}
 		
 		public List<CustomField> getCustomFields() { return iCustomFields; }
 		public boolean hasCustomFields() { return iCustomFields != null && !iCustomFields.isEmpty(); }
@@ -114,10 +130,30 @@ public class InstructorSurveyInterface implements IsSerializable {
 		}
 	}
 	
+	public static class Selection implements IsSerializable {
+		private Long iItem;
+		private Long iLevel;
+		private String iNote;
+		
+		public Selection() {}
+		public Selection(Long item, Long level, String note) {
+			iItem = item; iLevel = level; iNote = note;
+		}
+		
+		public Long getItem() { return iItem; }
+		public void setItem(Long item) { iItem = item; }
+		public Long getLevel() { return iLevel; }
+		public void setLevel(Long level) { iLevel = level; }
+		public String getNote() { return iNote; }
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		public void setNote(String note) { iNote = note; }
+	}
+	
 	public static class Preferences implements IsSerializable, Comparable<Preferences> {
 		private Long iId;
 		private String iType;
 		private TreeSet<IdLabel> iItems;
+		private List<Selection> iSelections;
 		
 		public Preferences() {}
 		public Preferences(Long id, String type) {
@@ -151,6 +187,16 @@ public class InstructorSurveyInterface implements IsSerializable {
 		@Override
 		public int compareTo(Preferences other) {
 			return getType().compareTo(other.getType());
+		}
+		
+		public boolean hasSelections() { return iSelections != null && !iSelections.isEmpty(); }
+		public void clearSelections() {
+			if (iSelections != null) iSelections.clear();
+		}
+		public List<Selection> getSelections() { return iSelections; }
+		public void addSelection(Selection selection) {
+			if (iSelections == null) iSelections = new ArrayList<Selection>();
+			iSelections.add(selection);
 		}
 	}
 	
@@ -242,7 +288,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean isHard() { return "R".equals(iCode) || "P".equals(iCode); }
 	}
 	
-	public static class InstructorSurveyRequest implements GwtRpcRequest<InstructorSurvey> {
+	public static class InstructorSurveyRequest implements GwtRpcRequest<InstructorSurveyData> {
 		private String iExternalId;
 		
 		public InstructorSurveyRequest() {}
@@ -252,7 +298,27 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setExternalId(String externalId) { iExternalId = externalId; }
 	}
 	
+	public static class InstructorSurveySaveRequest implements GwtRpcRequest<InstructorSurveyData> {
+		private InstructorSurveyData iData;
+		private boolean iSubmit = false;
+		
+		public InstructorSurveySaveRequest() {}
+		public InstructorSurveySaveRequest(InstructorSurveyData data, boolean submit) {
+			iData = data;
+			iSubmit = submit;
+		}
+		
+		public InstructorSurveyData getData() { return iData; }
+		public void setData(InstructorSurveyData data) { iData = data; }
+		public boolean isSubmit() { return iSubmit; }
+		public void setSubmit(boolean submit) { iSubmit = submit; }
+	}
+	
 	public static class InstructorTimePreferencesModel extends InstructorAvailabilityModel {
+		@Override
+		public boolean hasNote() {
+			return false;
+		}
 	}
 	
 	public static class CustomField implements IsSerializable {
@@ -284,26 +350,20 @@ public class InstructorSurveyInterface implements IsSerializable {
 	}
 	
 	public static class Course extends CourseInterface {
+		private Long iId;
 		private String iCourseTitle;
-		private String iNote;
-		private String iSection;
 		private Map<Long, String> iCustoms;
 		
 		public Course() {
 			super();
 		}
+		
+		public Long getReqId() { return iId; }
+		public void setReqId(Long id) { iId = id; }
 
 		public boolean hasCourseTitle() { return iCourseTitle != null && !iCourseTitle.isEmpty(); }
 		public String getCourseTitle() { return iCourseTitle; }
-		public void setCoruseTitle(String courseTitle) { iCourseTitle = courseTitle; }
-		
-		public boolean hasSection() { return iSection != null && !iSection.isEmpty(); }
-		public String getSection() { return iSection; }
-		public void setSection(String section) { iSection = section; }
-		
-		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
-		public String getNote() { return iNote; }
-		public void setNote(String note) { iNote = note; }
+		public void setCourseTitle(String courseTitle) { iCourseTitle = courseTitle; }
 		
 		public boolean hasCustomField(CustomField f) {
 			String val = getCustomField(f);
@@ -313,16 +373,22 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iCustoms == null) return null;
 			return iCustoms.get(f.getId());
 		}
+		public String getCustomField(Long id) {
+			if (iCustoms == null) return null;
+			return iCustoms.get(id);
+		}
 		public void setCustomField(CustomField f, String value) {
 			if (iCustoms == null) iCustoms = new HashMap<Long, String>();
-			if (value != null)
+			if (value != null && !value.isEmpty())
 				iCustoms.put(f.getId(), value);
 			else
 				iCustoms.remove(f.getId());
 		}
+		
+		public boolean hasCustomFields() { return iCustoms != null && !iCustoms.isEmpty(); }
 	}
 	
 	public static enum CourseColumn {
-		COURSE, SECTION, CUSTOM,
+		COURSE, CUSTOM,
 	}
 }

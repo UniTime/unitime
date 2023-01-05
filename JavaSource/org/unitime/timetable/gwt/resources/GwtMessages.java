@@ -3738,6 +3738,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageTeachingResponsibilities();
 	
+	@DefaultMessage("Instructor Survey Note Type")
+	@DoNotTranslate
+	String pageInstructorSurveyNoteType();
+	
+	@DefaultMessage("Instructor Survey Note Types")
+	@DoNotTranslate
+	String pageInstructorSurveyNoteTypes();
+	
 	@DefaultMessage("Setup Teaching Requests")
 	@DoNotTranslate
 	String pageSetupTeachingRequests();
@@ -7647,9 +7655,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Individual Course Requirements")
 	String sectCoursePreferences();
 	
-	@DefaultMessage("Section(s)")
-	String colSurveySection();
-	
 	@DefaultMessage("Save for Later")
 	String buttonSaveInstructorSurvey();
 	
@@ -7661,4 +7666,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please provide reason for the prohibited time(s).")
 	String hintProvideReasonForProhibitedTimes();
+	
+	@DefaultMessage("Column Width")
+	String fieldColumnWidth();
+	
+	@DefaultMessage("Submitted:")
+	String propSubmitted();
 }

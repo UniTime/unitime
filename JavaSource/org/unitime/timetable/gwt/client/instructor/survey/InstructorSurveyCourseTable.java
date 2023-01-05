@@ -51,6 +51,7 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private CourseColumn iSortBy = null;
 	private boolean iAsc = true;
+	private int iCustom = 0;
 	private List<CustomField> iCustomFields;
 	
 	public InstructorSurveyCourseTable(List<CustomField> cf) {
@@ -60,10 +61,11 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		for (final CourseColumn col: CourseColumn.values()) {
 			for (int i = 0; i < getColSpan(col); i++) {
 				final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col, i));
+				final int index = i;
 				if (CourseComparator.isApplicable(col)) {
 					Operation op = new SortOperation() {
 						@Override
-						public void execute() { doSort(col); }
+						public void execute() { doSort(col, index); }
 						@Override
 						public boolean isApplicable() { return getRowCount() > 1 && h.isVisible(); }
 						@Override
@@ -98,7 +100,6 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	public String getColumnName(CourseColumn column, int index) {
 		switch (column) {
 		case COURSE: return MESSAGES.colCourse();
-		case SECTION: return MESSAGES.colSurveySection();
 		case CUSTOM: return iCustomFields.get(index).getName();
 		default: return column.name();
 		}
@@ -116,11 +117,11 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 					if (event.getValue() == null) {
 						course.setId(null);
 						course.setCourseName(null);
-						course.setCoruseTitle(null);
+						course.setCourseTitle(null);
 					} else {
 						course.setId(event.getValue().getCourseId());
 						course.setCourseName(event.getValue().getCourseName());
-						course.setCoruseTitle(event.getValue().getCourseTitle());
+						course.setCourseTitle(event.getValue().getCourseTitle());
 						int row = getRowForWidget(box);
 						if (row == getRowCount() - 1) {
 							addRow(new Course());
@@ -129,20 +130,6 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 				}
 			});
 			return box;
-		case SECTION:
-			Note section = new Note();
-			section.setCharacterWidth(8);
-			section.getElement().setAttribute("maxlength", "100");
-			section.addStyleName("course-section");
-			if (course != null && course.hasSection())
-				section.setText(course.getSection());
-			section.addValueChangeHandler(new ValueChangeHandler<String>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
-					course.setSection(event.getValue());
-				}
-			});
-			return section;
 		case CUSTOM:
 			final CustomField cf = iCustomFields.get(index);
 			Note custom = new Note();
@@ -181,11 +168,12 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		sort();
 	}
 	
-	protected void doSort(CourseColumn column) {
-		if (column == iSortBy) {
+	protected void doSort(CourseColumn column, int index) {
+		if (column == iSortBy && index == iCustom) {
 			iAsc = !iAsc;
 		} else {
 			iSortBy = column;
+			iCustom = index;
 			iAsc = true;
 		}
 		AdminCookie.getInstance().setSortBuildingsBy(getSortBy());
@@ -193,17 +181,38 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
-	public int getSortBy() { return iSortBy == null ? 0 : iAsc ? 1 + iSortBy.ordinal() : -1 - iSortBy.ordinal(); }
+	public int getSortBy() {
+		if (iSortBy == CourseColumn.CUSTOM) {
+			return iAsc ? CourseColumn.values().length + iSortBy.ordinal() : -CourseColumn.values().length - iSortBy.ordinal();
+		} else {
+			return iSortBy == null ? 0 : iAsc ? 1 + iSortBy.ordinal() : -1 - iSortBy.ordinal();
+		}
+	}
 	public void setSortBy(int sortBy) {
 		if (sortBy == 0) {
 			iSortBy = null;
 			iAsc = true;
+			iCustom = 0;
 		} else if (sortBy > 0) {
-			iSortBy = CourseColumn.values()[sortBy - 1];
-			iAsc = true;
+			if (sortBy >= CourseColumn.values().length) {
+				iCustom = sortBy - CourseColumn.values().length;
+				iSortBy = CourseColumn.CUSTOM;
+				iAsc = true;
+			} else {
+				iSortBy = CourseColumn.values()[sortBy - 1];
+				iAsc = true;
+				iCustom = 0;
+			}
 		} else {
-			iSortBy = CourseColumn.values()[-1 - sortBy];
-			iAsc = false;
+			if (-sortBy >= CourseColumn.values().length) {
+				iCustom = -sortBy - CourseColumn.values().length;
+				iSortBy = CourseColumn.CUSTOM;
+				iAsc = true;
+			} else {
+				iSortBy = CourseColumn.values()[-1 - sortBy];
+				iAsc = false;
+				iCustom = 0;
+			}
 		}
 		sort();
 	}
@@ -211,16 +220,21 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	public void sort() {
 		if (iSortBy == null) return;
 		UniTimeTableHeader header = getHeader(iSortBy.ordinal());
-		sort(header, new CourseComparator(iSortBy, true), iAsc);
+		if (iSortBy == CourseColumn.CUSTOM)
+			header = getHeader(CourseColumn.CUSTOM.ordinal() + iCustom);
+		CustomField cf = (iCustom >= 0 && iCustomFields != null && iCustom < iCustomFields.size() ? iCustomFields.get(iCustom) : null);
+		sort(header, new CourseComparator(iSortBy, cf, true), iAsc);
 	}
 
 	public static class CourseComparator implements Comparator<Course>{
 		private CourseColumn iColumn;
 		private boolean iAsc;
+		private CustomField iCustomField;
 		
-		public CourseComparator(CourseColumn column, boolean asc) {
+		public CourseComparator(CourseColumn column, CustomField cf, boolean asc) {
 			iColumn = column;
 			iAsc = asc;
+			iCustomField = cf;
 		}
 		
 		public int compareById(Course r1, Course r2) {
@@ -231,14 +245,17 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 			return compare(r1.getCourseName(), r2.getCourseName());
 		}
 		
-		public int compareBySection(Course r1, Course r2) {
-			return compare(r1.getSection(), r2.getSection());
+		public int compareByCustom(Course r1, Course r2) {
+			if (iCustomField != null)
+				return compare(r1.getCustomField(iCustomField), r2.getCustomField(iCustomField));
+			else
+				return 0;
 		}
 
 		protected int compareByColumn(Course r1, Course r2) {
 			switch (iColumn) {
 			case COURSE: return compareByName(r1, r2);
-			case SECTION: return compareBySection(r1, r2);
+			case CUSTOM: return compareByCustom(r1, r2);
 			default: return compareByName(r1, r2);
 			}
 		}
@@ -246,7 +263,7 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		public static boolean isApplicable(CourseColumn column) {
 			switch (column) {
 			case COURSE:
-			case SECTION:
+			case CUSTOM:
 				return true;
 			default:
 				return false;
@@ -257,7 +274,7 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		public int compare(Course r1, Course r2) {
 			int cmp = compareByColumn(r1, r2);
 			if (cmp == 0) cmp = compareByName(r1, r2);
-			if (cmp == 0) cmp = compareBySection(r1, r2);
+			if (cmp == 0) cmp = compareByCustom(r1, r2);
 			if (cmp == 0) cmp = compareById(r1, r2);
 			return (iAsc ? cmp : -cmp);
 		}
