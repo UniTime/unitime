@@ -73,6 +73,8 @@
 		</TR>
 		
 		<TR><TD colspan='3'><tt:section-title><br><loc:message name="sectCourseTimetabling"/></tt:section-title></TD></TR>
+		<TR><TD><loc:message name="propInstructorSurvey"/></TD><TD><s:checkbox name="form.instructorSurvey"/></TD>
+  			<TD><i><loc:message name="descInstructorSurvey"/></i></TD></TR>
 		<TR><TD><loc:message name="propOwnerView"/></TD><TD><s:checkbox name="form.canOwnerView"/></TD>
 			<TD><i><loc:message name="descOwnerView"/></i></TD></TR>
 		<TR><TD><loc:message name="propOwnerLimitedEdit"/></TD><TD><s:checkbox name="form.canOwnerLimitedEdit"/></TD>

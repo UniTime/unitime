@@ -67,6 +67,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
     private boolean iAllowNoRole = false;
     private boolean iAllowRollForward = false;
     private boolean iEventManagement = false;
+    private boolean iInstructorSurvey = false;
     
     public DeptStatusTypeEditForm() {
     	reset();
@@ -119,6 +120,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         iAllowNoRole = false;
         iAllowRollForward = false;
         iEventManagement = false;
+        iInstructorSurvey = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -187,6 +189,8 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
     public boolean getAllowRollForward() { return iAllowRollForward; }
     public void setEventManagement(boolean eventManagement) { iEventManagement = eventManagement; }
     public boolean getEventManagement() { return iEventManagement; }
+    public void setInstructorSurvey(boolean instructorSurvey) { iInstructorSurvey = instructorSurvey; }
+    public boolean getInstructorSurvey() { return iInstructorSurvey; }
 
 
     public int getRights() {
@@ -213,6 +217,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         if (getAllowNoRole()) rights += DepartmentStatusType.Status.AllowNoRole.toInt();
         if (getAllowRollForward()) rights += DepartmentStatusType.Status.AllowRollForward.toInt();
         if (getEventManagement()) rights += DepartmentStatusType.Status.EventManagement.toInt();
+        if (getInstructorSurvey()) rights += DepartmentStatusType.Status.InstructorSurvey.toInt();
         return rights;
     }
     public void setRights(int rights) {
@@ -238,6 +243,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         setAllowNoRole(DepartmentStatusType.Status.AllowNoRole.has(rights));
         setAllowRollForward(DepartmentStatusType.Status.AllowRollForward.has(rights));
         setEventManagement(DepartmentStatusType.Status.EventManagement.has(rights));
+        setInstructorSurvey(DepartmentStatusType.Status.InstructorSurvey.has(rights));
     }
 	
 	public void load(DepartmentStatusType s) {
