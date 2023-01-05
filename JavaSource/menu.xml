@@ -996,6 +996,12 @@
 					<hasPermission name="TeachingResponsibilities"/>
 				</condition>
 			</item>
+			<item name="Instructor Survey Note Types" page="admin" type="gwt">
+				<parameter name="type">instrSurveyNoteTypes</parameter>
+				<condition>
+					<hasPermission name="InstructorSurveyNoteTypes"/>
+				</condition>
+			</item>
 			<item name="Student Status Types" page="admin" type="gwt">
 				<parameter name="type">sectioning</parameter>
 				<condition>

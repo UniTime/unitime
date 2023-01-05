@@ -182,6 +182,9 @@ public enum Right {
     InstructorAttributeAssign(InstructorAttribute.class),
     InstructorGlobalAttributeEdit(Session.class),
     
+    InstructorSurvey(Department.class),
+    InstructorSurveyAdmin(Department.class),
+    
 	Rooms(Session.class),
 	RoomsExportPdf(Session.class),
 	RoomsExportCsv(Session.class),
@@ -597,6 +600,9 @@ public enum Right {
 
 	LearningManagementSystemInfos,
 	LearningManagementSystemInfoEdit,
+	
+	InstructorSurveyNoteTypes,
+	InstructorSurveyNoteTypeEdit,
 
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,
