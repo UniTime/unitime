@@ -483,6 +483,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public Long getId() { return iCourseId; }
 		public void setId(Long id) { iCourseId = id; }
 		
+		public boolean hasCourseName() { return iCourseName != null && !iCourseName.isEmpty(); }
 		public String getCourseName() { return iCourseName; }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
 		

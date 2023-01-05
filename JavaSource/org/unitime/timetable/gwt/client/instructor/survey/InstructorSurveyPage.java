@@ -25,9 +25,12 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.IdLabel;
-import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurvey;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveySaveRequest;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorTimePreferencesModel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.PrefLevel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -60,6 +63,8 @@ import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -78,23 +83,26 @@ public class InstructorSurveyPage extends Composite {
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	
 	private UniTimeTextBox iEmail;
 	private InstructorTimePreferences iTimePrefs;
+	private List<PreferencesTable> iRoomPrefs;
+	private PreferencesTable iDistPrefs;
 	private Note iPrefsNote;
 	private InstructorSurveyCourseTable iCourses;
 	
-	private InstructorSurveyInterface.InstructorSurvey iSurvey;
+	private InstructorSurveyInterface.InstructorSurveyData iSurvey;
 	
 	public InstructorSurveyPage() {
 		iPanel = new SimpleForm(3);
 		iPanel.addStyleName("unitime-InstructorSurveyPage");
 		
 		LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
-		RPC.execute(new InstructorSurveyInterface.InstructorSurveyRequest(Location.getParameter("id")), new AsyncCallback<InstructorSurveyInterface.InstructorSurvey>() {
+		RPC.execute(new InstructorSurveyInterface.InstructorSurveyRequest(Location.getParameter("id")), new AsyncCallback<InstructorSurveyInterface.InstructorSurveyData>() {
 			@Override
 			public void onFailure(Throwable t) {
 				LoadingWidget.hideLoading();
@@ -102,7 +110,7 @@ public class InstructorSurveyPage extends Composite {
 			}
 
 			@Override
-			public void onSuccess(InstructorSurvey survey) {
+			public void onSuccess(InstructorSurveyData survey) {
 				setValue(survey);
 				LoadingWidget.hideLoading();
 			}
@@ -111,7 +119,7 @@ public class InstructorSurveyPage extends Composite {
 		initWidget(iPanel);
 	}
 	
-	public void setValue(InstructorSurveyInterface.InstructorSurvey survey) {
+	public void setValue(InstructorSurveyInterface.InstructorSurveyData survey) {
 		iSurvey = survey;
 		iPanel.clear();
 		
@@ -119,13 +127,39 @@ public class InstructorSurveyPage extends Composite {
 		iHeader.addButton("save", MESSAGES.buttonSaveInstructorSurvey(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
-				UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
+				iHeader.clearMessage();
+				RPC.execute(new InstructorSurveySaveRequest(getValue(), false), new AsyncCallback<InstructorSurveyData>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						UniTimeNotifications.error(caught.getMessage());
+						iHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(InstructorSurveyData result) {
+						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
+						setValue(result);
+					}
+				});
 			}
 		});
 		iHeader.addButton("submit", MESSAGES.buttonSubmitInstructorSurvey(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
-				UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
+				iHeader.clearMessage();
+				RPC.execute(new InstructorSurveySaveRequest(getValue(), true), new AsyncCallback<InstructorSurveyData>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						UniTimeNotifications.error(caught.getMessage());
+						iHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(InstructorSurveyData result) {
+						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
+						setValue(result);
+					}
+				});
 			}
 		});
 		iPanel.addHeaderRow(iHeader);
@@ -136,6 +170,10 @@ public class InstructorSurveyPage extends Composite {
 		iEmail.addStyleName("email");
 		if (survey.hasEmail()) iEmail.setText(survey.getEmail());
 		iPanel.addRow(MESSAGES.propEmail(), iEmail);
+		
+		if (survey.getSubmitted() != null) {
+			iPanel.addRow(MESSAGES.propSubmitted(), new Label(sTimeStampFormat.format(survey.getSubmitted())));	
+		}
 		
 		if (survey.hasDepartments()) {
 			P depts = new P("departments");
@@ -152,15 +190,21 @@ public class InstructorSurveyPage extends Composite {
 		iTimePrefs.setMode(survey.getTimePrefs().getModes().get(0), true);
 		iPanel.addRow(iTimePrefs.getPanel());
 		iPanel.addRow("", iTimePrefs.getReason());
+		iRoomPrefs = new ArrayList<PreferencesTable>();
 		if (survey.hasRoomPreferences()) {
 			for (Preferences p: survey.getRoomPreferences()) {
-				iPanel.addRow(p.getType() + ":", new PreferencesTable(p.getItems(), survey.getPrefLevels()));
+				PreferencesTable tab = new PreferencesTable(p, survey.getPrefLevels());
+				iRoomPrefs.add(tab);
+				iPanel.addRow(p.getType() + ":", tab);
 			}
 		}
+		iDistPrefs = null;
 		if (survey.hasDistributionPreferences()) {
-			iPanel.addRow(MESSAGES.propDistributionPreferences(), new PreferencesTable(survey.getDistributionPreferences().getItems(), survey.getPrefLevels()));
+			iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey.getPrefLevels());
+			iPanel.addRow(MESSAGES.propDistributionPreferences(), iDistPrefs);
 		}
 		iPrefsNote = new Note();
+		iPrefsNote.setText(survey.getNote());
 		iPanel.addRow(MESSAGES.propOtherPreferences(), iPrefsNote);
 		
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectCoursePreferences()));
@@ -170,7 +214,7 @@ public class InstructorSurveyPage extends Composite {
 				iCourses.addRow(ci);
 			}
 		}
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 2; i++) {
 			iCourses.addRow(new Course());
 		}
 		int row = iPanel.addRow(iCourses);
@@ -184,16 +228,25 @@ public class InstructorSurveyPage extends Composite {
 		static int lastId = 0;
 		ChangeHandler iChangeHandler;
 		HandlerRegistration iHandlerRegistration;
+		Preferences iPreferences;
 		
-		PreferencesTable(final Collection<IdLabel> items, List<PrefLevel> options) {
+		PreferencesTable(Preferences preferences, List<PrefLevel> options) {
 			super("preference-table");
-			add(new PreferenceLine(items, options));
+			iPreferences = preferences;
+			if (preferences.hasSelections()) {
+				for (Selection selection: preferences.getSelections()) {
+					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), options);
+					p.setValue(selection);
+					add(p);
+				}
+			}
+			add(new PreferenceLine(iPreferences.getItems(), options));
 			
 			iChangeHandler = new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent e) {
 					if (((PreferenceLine)getWidget(getWidgetCount() - 1)).getId() != null) {
-						PreferenceLine p = new PreferenceLine(items, options);
+						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), options);
 						add(p);
 						iHandlerRegistration.removeHandler();
 						iHandlerRegistration = p.addChangeHandler(iChangeHandler);
@@ -202,6 +255,16 @@ public class InstructorSurveyPage extends Composite {
 				}
 			};
 			fixButtons();
+		}
+		
+		protected void update() {
+			iPreferences.clearSelections();
+			for (int i = 0; i < getWidgetCount(); i++) {
+				PreferenceLine p = (PreferenceLine)getWidget(i);
+				Selection selection = p.getValue();
+				if (selection != null)
+					iPreferences.addSelection(selection);
+			}
 		}
 		
 		protected void fixButtons() {
@@ -218,7 +281,7 @@ public class InstructorSurveyPage extends Composite {
 			}
 		}
 		
-		class PreferenceLine extends P implements HasChangeHandlers {
+		class PreferenceLine extends P implements HasChangeHandlers, TakesValue<Selection> {
 			ListBox iList;
 			List<RadioButton> iRadios;
 			Image iButton;
@@ -394,11 +457,57 @@ public class InstructorSurveyPage extends Composite {
 					iButton.setTitle(MESSAGES.titleDeleteRow());
 				}
 			}
+
+			@Override
+			public void setValue(Selection value) {
+				if (value == null) {
+					iList.setSelectedIndex(0);
+					for (RadioButton b: iRadios)
+						b.setValue(false);
+					iReason.setText("");
+				} else {
+					for (int i = 0; i < iList.getItemCount(); i++) {
+						if (value.getItem().toString().equals(iList.getValue(i))) {
+							iList.setSelectedIndex(i); break;
+						}
+					}
+					for (int i = 0; i < iOptions.size(); i++) {
+						RadioButton opt = iRadios.get(i);
+						opt.setValue(iOptions.get(i).getId().equals(value.getLevel()));
+					}
+					iReason.setText(value.getNote() == null ? "" : value.getNote());
+				}
+				fixOptions();
+				iReason.resizeNotes();
+				iReason.setVisible(getSelection() != null && getSelection().isHard());
+			}
+
+			@Override
+			public Selection getValue() {
+				IdLabel item = getItem();
+				PrefLevel pref = getSelection();
+				if (item != null && pref != null)
+					return new Selection(item.getId(), pref.getId(), iReason.getText());
+				return null;
+			}
 		}
 		
 	}
 	
-	public InstructorSurveyInterface.InstructorSurvey getValue() {
+	public InstructorSurveyInterface.InstructorSurveyData getValue() {
+		iSurvey.setEmail(iEmail.getValue());
+		if (iSurvey.getTimePrefs() != null)
+			iSurvey.getTimePrefs().setNote(iTimePrefs.getReason().getText());
+		for (PreferencesTable pt: iRoomPrefs) {
+			pt.update();
+		}
+		if (iDistPrefs != null) iDistPrefs.update();
+		iSurvey.setNote(iPrefsNote.getText());
+		iSurvey.clearCourses();
+		for (Course c: iCourses.getData()) {
+			if (c.hasCourseName() || c.hasCustomFields())
+				iSurvey.addCourse(c);
+		}
 		return iSurvey;
 	}
 	
@@ -518,6 +627,13 @@ public class InstructorSurveyPage extends Composite {
 		
 		public Note getReason() {
 			return iReason;
+		}
+		
+		public void setModel(InstructorTimePreferencesModel model) {
+			super.setModel(model);
+			iReason.setText(model.getNote());
+			iReason.resizeNotes();
+			iReason.setVisible(model.countOptions(-7l)>0);
 		}
 	}
 }
