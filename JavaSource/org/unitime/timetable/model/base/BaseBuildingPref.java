@@ -74,6 +74,7 @@ public abstract class BaseBuildingPref extends Preference implements Serializabl
 		return "BuildingPref[" +
 			"\n	Building: " + getBuilding() +
 			"\n	DistanceFrom: " + getDistanceFrom() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

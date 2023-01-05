@@ -66,6 +66,7 @@ public abstract class BaseRoomGroupPref extends Preference implements Serializab
 
 	public String toDebugString() {
 		return "RoomGroupPref[" +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	RoomGroup: " + getRoomGroup() +

@@ -514,5 +514,17 @@
 	            not-null="true"
 	            foreign-key="fk_campus_session"/>
         </union-subclass>
+        <union-subclass name="InstructorCourseRequirementType" table="instr_crsreq_note_type" abstract="false">
+            <property
+                name="length"
+                column="length"
+                type="java.lang.Integer"
+                not-null="true"/>
+            <property
+                name="sortOrder"
+                column="sort_order"
+                type="java.lang.Integer"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

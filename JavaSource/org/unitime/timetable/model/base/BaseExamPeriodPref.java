@@ -67,6 +67,7 @@ public abstract class BaseExamPeriodPref extends Preference implements Serializa
 	public String toDebugString() {
 		return "ExamPeriodPref[" +
 			"\n	ExamPeriod: " + getExamPeriod() +
+			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	UniqueId: " + getUniqueId() +

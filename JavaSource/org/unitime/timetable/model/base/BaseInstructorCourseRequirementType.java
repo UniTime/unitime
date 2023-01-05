@@ -21,38 +21,44 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.InstructorCourseRequirementType;
+import org.unitime.timetable.model.RefTableEntry;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseRoomPref extends Preference implements Serializable {
+public abstract class BaseInstructorCourseRequirementType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Location iRoom;
+	private Integer iLength;
+	private Integer iSortOrder;
 
 
-	public BaseRoomPref() {
+	public static String PROP_LENGTH = "length";
+	public static String PROP_SORT_ORDER = "sortOrder";
+
+	public BaseInstructorCourseRequirementType() {
 		initialize();
 	}
 
-	public BaseRoomPref(Long uniqueId) {
+	public BaseInstructorCourseRequirementType(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
 
 	protected void initialize() {}
 
-	public Location getRoom() { return iRoom; }
-	public void setRoom(Location room) { iRoom = room; }
+	public Integer getLength() { return iLength; }
+	public void setLength(Integer length) { iLength = length; }
+
+	public Integer getSortOrder() { return iSortOrder; }
+	public void setSortOrder(Integer sortOrder) { iSortOrder = sortOrder; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof RoomPref)) return false;
-		if (getUniqueId() == null || ((RoomPref)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((RoomPref)o).getUniqueId());
+		if (o == null || !(o instanceof InstructorCourseRequirementType)) return false;
+		if (getUniqueId() == null || ((InstructorCourseRequirementType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((InstructorCourseRequirementType)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -61,15 +67,15 @@ public abstract class BaseRoomPref extends Preference implements Serializable {
 	}
 
 	public String toString() {
-		return "RoomPref["+getUniqueId()+"]";
+		return "InstructorCourseRequirementType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "RoomPref[" +
-			"\n	Note: " + getNote() +
-			"\n	Owner: " + getOwner() +
-			"\n	PrefLevel: " + getPrefLevel() +
-			"\n	Room: " + getRoom() +
+		return "InstructorCourseRequirementType[" +
+			"\n	Label: " + getLabel() +
+			"\n	Length: " + getLength() +
+			"\n	Reference: " + getReference() +
+			"\n	SortOrder: " + getSortOrder() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

@@ -14548,4 +14548,222 @@
 		<plsql>update %SCHEMA%.sectioning_status set status = status + 262144 where bitand(status, 16) = 16 and bitand(status, 262144) = 0</plsql>
 		<pgsql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 262144 where (status & 16 = 16) and (status & 262144 = 0)]]></pgsql>
 	</update>	
+	<update version="256" date="4-Jan-2023" comment="Instructor Survey">
+		<!-- Instructor Survey Course Request Note Types -->
+		<plsql>
+			create table %SCHEMA%.instr_crsreq_note_type (
+				uniqueid number(20,0) constraint nn_instr_crsreq_ntype_id not null,
+				reference varchar2(20 char) constraint nn_instr_crsreq_ntype_ref not null,
+				label varchar2(60 char) constraint nn_instr_crsreq_ntype_lab not null,
+				length number(10) constraint nn_instr_crsreq_ntype_length not null,
+				sort_order number(10) constraint nn_instr_crsreq_ntype_sort not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instr_crsreq_note_type add constraint pk_instr_crsreq_note_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.instr_crsreq_note_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				length bigint(10) not null,
+				sort_order bigint(10) not null
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.instr_crsreq_note_type (
+				uniqueid bigint not null,
+			    reference varchar(20) not null,
+			    label varchar(60) not null,
+				length integer not null,
+				sort_order integer not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.instr_crsreq_note_type add constraint pk_instr_crsreq_note_type primary key (uniqueid)</pgsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSurveyNoteTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Majors'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSurveyNoteTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'MajorEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorSurvey'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorPreferences'
+		</sql>
+		<plsql>insert into %SCHEMA%.instr_crsreq_note_type (uniqueid, reference, label, length, sort_order) values
+			(%SCHEMA%.ref_table_seq.nextval, 'Section(s)', 'Section Identification', 8, 0)</plsql>
+		<plsql>insert into %SCHEMA%.instr_crsreq_note_type (uniqueid, reference, label, length, sort_order) values
+			(%SCHEMA%.ref_table_seq.nextval, 'Notes', 'Instructor Requirements', 82, 1)</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.instr_crsreq_note_type
+			(uniqueid, reference, label, length, sort_order) values
+			(%ID%+0, 'Section(s)', 'Section Identification', 8, 0),
+			(%ID%+1, 'Notes', 'Instructor Requirements', 82, 1) 
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<pgsql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</pgsql>
+		<pgsql>
+			insert into %SCHEMA%.instr_crsreq_note_type
+			(uniqueid, reference, label, length, sort_order) values
+			(%ID%+0, 'Section(s)', 'Section Identification', 8, 0),
+			(%ID%+1, 'Notes', 'Instructor Requirements', 82, 1) 
+		</pgsql>
+		<pgsql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</pgsql>
+		
+		<!-- Preference notes -->
+		<plsql>alter table %SCHEMA%.room_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.room_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.room_feature_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room_feature_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.room_feature_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.building_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.building_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.building_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.time_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.time_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.time_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.date_pattern_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.date_pattern_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.date_pattern_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.distribution_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.distribution_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.distribution_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.room_group_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room_group_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.room_group_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.exam_period_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.exam_period_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.exam_period_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.attribute_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.attribute_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.attribute_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.course_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.course_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.course_pref add note varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.instructor_pref add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.instructor_pref add note varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.instructor_pref add note varchar(2048)</pgsql>
+		
+		<!-- Instructor Survey -->
+		<plsql>
+			create table %SCHEMA%.instructor_survey (
+				uniqueid number(20,0) constraint nn_instructor_survey_id not null,
+				session_id number(20,0) constraint nn_instructor_survey_sess not null,
+				external_uid varchar2(40 char) constraint nn_instructor_survey_ext not null,
+				email varchar2(200 char),
+				note varchar2(2048 char),
+				submitted timestamp
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instructor_survey add constraint pk_instructor_survey primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.instructor_survey (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				external_uid varchar(40) not null,
+				email varchar(200),
+				note varchar(2048),
+				submitted datetime
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.instructor_survey (
+				uniqueid bigint not null,
+				session_id bigint not null,
+				external_uid varchar(40) not null,
+				email varchar(200),
+				note varchar(2048),
+				submitted timestamp with time zone
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.instructor_survey add constraint pk_instructor_survey primary key (uniqueid)</pgsql>
+		<sql>
+			alter table %SCHEMA%.instructor_survey add constraint fk_instr_surv_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		
+		<!-- Instructor Survey Course Requirements -->
+		<plsql>
+			create table %SCHEMA%.instr_crsreq (
+				uniqueid number(20,0) constraint nn_instr_crsreq_id not null,
+				survey_id number(20,0) constraint nn_instr_crsreq_survey not null,
+				course varchar2(1024 char),
+				course_offering_id number(20,0)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instr_crsreq add constraint pk_instr_crsreq primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.instr_crsreq (
+				uniqueid decimal(20,0) primary key not null,
+				survey_id decimal(20,0) not null,
+				course varchar(1024),
+				course_offering_id decimal(20,0)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.instr_crsreq (
+				uniqueid bigint not null,
+				survey_id bigint not null,
+			    course varchar(1024),
+			    course_offering_id bigint
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.instr_crsreq add constraint pk_instr_crsreq primary key (uniqueid)</pgsql>
+		<sql>
+			alter table %SCHEMA%.instr_crsreq add constraint fk_instr_crsreq_survey foreign key (survey_id)
+			references %SCHEMA%.instructor_survey (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.instr_crsreq add constraint fk_instr_crsreq_course foreign key (course_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+		
+		<!-- Instructor Survey Course Requirement Notes -->
+		<plsql>
+			create table %SCHEMA%.instr_crsreq_note (
+				requirement_id number(20,0) constraint nn_instr_crsreq_note_req not null,
+				type_id number(20,0) constraint nn_instr_crsreq_note_req_type not null,
+				note varchar2(2048 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instr_crsreq_note add constraint pk_instr_crsreq_note primary key (requirement_id, type_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.instr_crsreq_note (
+				requirement_id decimal(20,0) not null,
+				type_id decimal(20,0) not null,
+				note varchar(2048),
+				primary key(requirement_id, type_id)
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.instr_crsreq_note (
+				requirement_id bigint not null,
+				type_id bigint not null,
+			    note varchar(2048)
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.instr_crsreq_note add constraint pk_instr_crsreq_note primary key (requirement_id, type_id)</pgsql>
+		<sql>
+			alter table %SCHEMA%.instr_crsreq_note add constraint fk_instr_crsreq_note_req foreign key (requirement_id)
+			references %SCHEMA%.instr_crsreq (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.instr_crsreq_note add constraint fk_instr_crsreq_note_type foreign key (type_id)
+			references %SCHEMA%.instr_crsreq_note_type (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

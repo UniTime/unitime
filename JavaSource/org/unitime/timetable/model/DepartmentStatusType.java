@@ -56,6 +56,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		AllowNoRole,
 		AllowRollForward,
 		EventManagement,
+		InstructorSurvey,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -223,6 +224,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
     public boolean isTestSession() {
     	return can(Status.TestSession);
     }
+    
+    public boolean isInstructorSurveyEnabled() {
+		return can(Status.InstructorSurvey);
+	}
 
     public boolean canNoRoleReportExam() {
         return canNoRoleReportExamFinal() || canNoRoleReportExamMidterm();
