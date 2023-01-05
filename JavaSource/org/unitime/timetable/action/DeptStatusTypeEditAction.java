@@ -256,6 +256,10 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
             	if (rights.length()>0) rights+="; ";
                 rights += MSG.rightRollFoward();
             }
+            if (s.isInstructorSurveyEnabled()) {
+            	if (rights.length()>0) rights+="; ";
+                rights += MSG.rightInstructorSurvey();
+            }
             if (s.canOwnerView() || s.canOwnerLimitedEdit() || s.canOwnerEdit()) {
                 if (rights.length()>0) rights+="; ";
                 if (s.canOwnerView() && s.canOwnerEdit())
@@ -357,7 +361,7 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
                         }
                     }
                     if (r == null) r = "";
-                    rights += MSG.rightNoRoleCan(r);
+                    rights += MSG.rightNoRoleCan(r).trim();
                 }
             }
             if (s.isTestSession()) {

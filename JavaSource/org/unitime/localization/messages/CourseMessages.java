@@ -5072,6 +5072,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("test session")
 	String rightTestSession();
 	
+	@DefaultMessage("instructor survey")
+	String rightInstructorSurvey();
+	
 	@DefaultMessage("The status will be deleted. Continue?")
 	String confirmStatusTypeDelete();
 	
@@ -5143,6 +5146,11 @@ public interface CourseMessages extends Messages {
 	String propCommit();
 	@DefaultMessage("The schedule manager can commit a timetable.")
 	String descCommit();
+	
+	@DefaultMessage("Instructor Survey:")
+	String propInstructorSurvey();
+	@DefaultMessage("Instructors can fill in their requirements using the Instructor Survey page.")
+	String descInstructorSurvey();
 
 	@DefaultMessage("Exam View:")
 	String propExamView();
