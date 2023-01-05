@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeNote;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ChangeStatus;
@@ -33,6 +35,8 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistration;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ValidationOperation;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
  * @author Tomas Muller
@@ -165,6 +169,26 @@ public class SpecialRegistrationHelper {
 	
 	public static boolean isEmpty(CheckRestrictionsRequest req) { 
 		return (req.changes == null || isEmpty(req.changes)) && (req.alternatives == null || isEmpty(req.alternatives)); 
+	}
+	
+	public static String pgrmcode(String programCode) {
+		if (programCode == null || programCode.isEmpty()) return null;
+		if (programCode.endsWith("-OL")) return "OL";
+		if (programCode.endsWith("-HY")) return "HY";
+		return "RT";
+	}
+	
+	public static String getProgramCode(XStudent student) {
+		for (XAreaClassificationMajor acm: student.getMajors()) {
+			return SpecialRegistrationHelper.pgrmcode(acm.getProgram());
+		}
+		return null;
+	}
+
+	public static String getProgramCode(Student student) {
+		StudentAreaClassificationMajor primary = student.getPrimaryAreaClasfMajor();
+		if (primary == null || primary.getProgram() == null) return null;
+		return SpecialRegistrationHelper.pgrmcode(primary.getProgram().getReference());
 	}
 
 }

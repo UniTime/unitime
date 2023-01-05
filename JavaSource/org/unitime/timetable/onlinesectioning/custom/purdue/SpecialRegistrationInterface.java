@@ -115,6 +115,8 @@ public class SpecialRegistrationInterface {
 		public CompletionStatus completionStatus;
 		/** Validation request */
 		public RestrictionsCheckRequest validation;
+		/** Primary program code */
+		public String pgrmcode;
 	}
 	
 	/** Possible operations for a change (work order) */

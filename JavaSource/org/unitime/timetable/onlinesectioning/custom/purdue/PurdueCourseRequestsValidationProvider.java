@@ -1285,6 +1285,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		SpecialRegistrationRequest req = new SpecialRegistrationRequest();
 		req.studentId = getBannerId(original);
+		req.pgrmcode = SpecialRegistrationHelper.getProgramCode(original);
 		req.term = getBannerTerm(server.getAcademicSession());
 		req.campus = getBannerCampus(server.getAcademicSession());
 		req.mode = getSpecialRegistrationApiMode();
@@ -2597,6 +2598,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		SpecialRegistrationRequest submitRequest = new SpecialRegistrationRequest();
 		submitRequest.studentId = getBannerId(original);
+		submitRequest.pgrmcode = SpecialRegistrationHelper.getProgramCode(original);
 		submitRequest.term = getBannerTerm(server.getAcademicSession());
 		submitRequest.campus = getBannerCampus(server.getAcademicSession());
 		submitRequest.mode = getSpecialRegistrationApiMode();

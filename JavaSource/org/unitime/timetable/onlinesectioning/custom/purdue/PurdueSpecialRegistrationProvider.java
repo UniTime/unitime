@@ -938,6 +938,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
+			request.pgrmcode = SpecialRegistrationHelper.getProgramCode(student);
 			buildChangeList(request, server, helper, student, input.getClassAssignments(), input.getErrors(), input.getCredit(), input.getNotes());
 			// buildChangeList(request, server, helper, student, input.getClassAssignments(), validate(server, helper, student, input.getClassAssignments()));
 			request.regRequestId = input.getRequestId();
@@ -2754,6 +2755,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				req.term = getBannerTerm(session);
 				req.campus = getBannerCampus(session);
 				req.studentId = getBannerId(student);
+				req.pgrmcode = SpecialRegistrationHelper.getProgramCode(student);
 				req.changes = new ArrayList<Change>();
 				if (request.getMaxCredit() != null && cred > request.getMaxCredit()) {
 					req.maxCredit = cred;
@@ -2909,6 +2911,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			request.term = getBannerTerm(session);
 			request.campus = getBannerCampus(session);
 			request.studentId = getBannerId(student);
+			request.pgrmcode = SpecialRegistrationHelper.getProgramCode(student);
 			request.regRequestId = input.getRequestId();
 			request.mode = (input.isPreReg() ? ApiMode.valueOf(ApplicationProperties.getProperty("purdue.specreg.mode.validation", "PREREG")) : getSpecialRegistrationMode()); 
 			if (helper.getUser() != null) {
@@ -3020,6 +3023,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			req.term = getBannerTerm(session);
 			req.campus = getBannerCampus(session);
 			req.studentId = getBannerId(student);
+			req.pgrmcode = SpecialRegistrationHelper.getProgramCode(student);
 			req.changes = new ArrayList<Change>();
 			if (request.getMaxCredit() != null) {
 				req.maxCredit = request.getMaxCredit();
