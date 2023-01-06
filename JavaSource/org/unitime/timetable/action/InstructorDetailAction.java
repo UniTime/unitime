@@ -53,6 +53,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.InstructorAttribute;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -532,6 +533,11 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		form.setEmail(inst.getEmail());
 		form.setDeptCode(inst.getDepartment().getDeptCode());
 		form.setDeptName(inst.getDepartment().getLabel());
+		
+		InstructorSurvey is = InstructorSurvey.getInstructorSurvey(inst);
+		form.setShowInstructorSurvey(is != null || sessionContext.hasPermission(inst.getDepartment(), Right.InstructorSurveyAdmin));
+		if (is == null && sessionContext.getUser().getExternalUserId().equals(inst.getExternalUniqueId()) && sessionContext.hasPermission(Right.InstructorSurvey))
+			form.setShowInstructorSurvey(true);	
 		
 		String puid = inst.getExternalUniqueId();
 		if (puid != null) {

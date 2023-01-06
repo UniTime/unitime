@@ -5766,4 +5766,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("WARNING: Application of required preference will remove all not required preferences.")
 	String alertNotReqPrefsWillBeRemoved();
+	
+	@DefaultMessage("Instructor Survey")
+	String actionInstructorSurvey();
+	
+	@DefaultMessage("Open Instructor Survey (Alt + {0})")
+	String titleInstructorSurvey(String access);
+	
+	@DefaultMessage("S")
+	String accessInstructorSurvey();
 }

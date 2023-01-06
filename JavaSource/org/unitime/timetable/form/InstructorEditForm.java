@@ -94,6 +94,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private Map<Long, Boolean> attributes;
 	private List<IdValue> departments;
 	private NameFormat nameFormat;
+	private Boolean showInstructorSurvey;
 	
 	public InstructorEditForm() {
 		super();
@@ -373,5 +374,8 @@ public class InstructorEditForm extends PreferencesForm  {
 	
 	public void setNameFormat(NameFormat format) { nameFormat = format; }
 	public NameFormat getNameFormat() { return nameFormat; }
+	
+	public void setShowInstructorSurvey(Boolean showInstructorSurvey) { this.showInstructorSurvey = showInstructorSurvey; }
+	public Boolean getShowInstructorSurvey() { return showInstructorSurvey; }
 }
 

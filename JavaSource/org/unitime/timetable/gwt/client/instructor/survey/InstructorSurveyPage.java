@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.IdLabel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
@@ -66,6 +67,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -162,6 +164,15 @@ public class InstructorSurveyPage extends Composite {
 				});
 			}
 		});
+		if (ToolBox.hasParent() || "hide".equals(Window.Location.getParameter("menu"))) {
+			iHeader.addButton("close", MESSAGES.buttonCloseInstructorSurvey(), new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent e) {
+					ToolBox.closeWindow();
+				}
+			});
+		}
+
 		iHeader.setEnabled("save", iSurvey.isEditable());
 		iHeader.setEnabled("submit", iSurvey.isEditable());
 		iPanel.addHeaderRow(iHeader);

@@ -61,8 +61,11 @@ import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 
 /**
  * @author Tomas Muller
@@ -73,9 +76,11 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 
 	@Override
 	public InstructorSurveyData execute(InstructorSurveySaveRequest request, SessionContext context) {
+		if (!context.isAuthenticated() || context.getUser().getCurrentAuthority() == null)
+        	throw new AccessDeniedException();
 		InstructorSurveyData survey = request.getData();
 		if (context.getUser() == null || survey.getExternalId().equals(context.getUser().getExternalUserId())) {
-			context.checkPermission(Right.InstructorSurvey);
+			context.checkPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", context.getUser().getCurrentAcademicSessionId())});
 		} else {
 			context.checkPermission(Right.InstructorSurveyAdmin);
 		}
