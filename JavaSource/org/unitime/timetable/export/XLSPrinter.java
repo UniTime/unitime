@@ -223,28 +223,28 @@ public class XLSPrinter implements Printer {
 				}
 			} else if (f.hasChunks()) {
 				StringBuffer text = new StringBuffer();
-				List<Object[]> font = new ArrayList<Object[]>(); 
+				List<Integer[]> font = new ArrayList<Integer[]>(); 
 				for (A g: f.getChunks()) {
 					if (g.hasText()) {
 						if (text.length() > 0) text.append(f.has(F.INLINE) ? " " : "\n");
-						font.add(new Object[] {text.length(), getFont(g.has(F.BOLD), g.has(F.ITALIC), g.has(F.UNDERLINE), g.getColor()).getIndex()});
+						font.add(new Integer[] {text.length(), getFont(g.has(F.BOLD), g.has(F.ITALIC), g.has(F.UNDERLINE), g.getColor()).getIndex()});
 						text.append(g.getText());
 					}
 					if (g.hasChunks()) {
 						for (A h: g.getChunks()) {
 							if (h.hasText()) {
 								if (text.length() > 0) text.append(" ");
-								font.add(new Object[] {text.length(), getFont(h.has(F.BOLD), h.has(F.ITALIC), h.has(F.UNDERLINE), h.getColor()).getIndex()});
+								font.add(new Integer[] {text.length(), getFont(h.has(F.BOLD), h.has(F.ITALIC), h.has(F.UNDERLINE), h.getColor()).getIndex()});
 								text.append(h.getText());
 							}
 						}
 					}
 				}
 				nrLines = Math.max(nrLines, text.toString().split("\n").length);
-				font.add(new Object[] {text.length(), (short)0});
+				font.add(new Integer[] {text.length(), 0});
 				HSSFRichTextString value = new HSSFRichTextString(text.toString());
 				for (int i = 0; i < font.size() - 1; i++)
-					value.applyFont((Integer)font.get(i)[0], (Integer)font.get(1 + i)[0], (Short)font.get(i)[1]);
+					value.applyFont((Integer)font.get(i)[0], (Integer)font.get(1 + i)[0], font.get(i)[1].shortValue());
 				cell.setCellValue(value);
 			}
 		}
