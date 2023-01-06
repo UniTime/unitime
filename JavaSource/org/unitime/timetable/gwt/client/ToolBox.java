@@ -297,6 +297,16 @@ public class ToolBox {
 		element.scrollIntoView();
 	}-*/;
 	
+	public native static boolean hasParent()/*-{
+		if ($wnd.parent) return true;
+		return false;
+	}-*/;
+	
+	public native static void closeWindow()/*-{
+		return $wnd.parent.hideGwtDialog();
+		return $wnd.parent.refreshPage();
+	}-*/;
+	
 	public static Throwable unwrap(Throwable e) {
 		if (e == null) return null;
 		if (e instanceof UmbrellaException) {

@@ -7681,4 +7681,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor survey has been submitted.")
 	String infoInstructorSurveySubmitted();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonCloseInstructorSurvey();
 }

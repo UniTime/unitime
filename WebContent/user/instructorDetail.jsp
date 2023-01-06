@@ -48,6 +48,14 @@
 				<s:submit accesskey='%{#msg.accessEditInstructorPreferences()}' name='op' value='%{#msg.actionEditInstructorPreferences()}'
 					title='%{#msg.titleEditInstructorPreferences(#msg.accessEditInstructorPreferences())}'/>
 			</sec:authorize>
+			<s:if test="form.showInstructorSurvey == true">
+				<input type="button" value="${MSG.actionInstructorSurvey()}" 
+								title="${MSG.titleInstructorSurvey(MSG.accessInstructorSurvey())}" 
+								class="btn" 
+								accesskey="${MSG.accessInstructorSurvey()}"
+								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'gwt.jsp?page=instructorSurvey&menu=hide&id=${form.puId}','900','90%');"
+						/>
+			</s:if>
 			<s:if test="form.previousId != null">
 				<s:submit accesskey='%{#msg.accessPreviousInstructor()}' name='op' value='%{#msg.actionPreviousInstructor()}'
 					title='%{#msg.titlePreviousInstructor(#msg.accessPreviousInstructor())}'/>
@@ -284,6 +292,14 @@
 					<s:submit accesskey='%{#msg.accessEditInstructorPreferences()}' name='op' value='%{#msg.actionEditInstructorPreferences()}'
 						title='%{#msg.titleEditInstructorPreferences(#msg.accessEditInstructorPreferences())}'/>
 				</sec:authorize>
+				<s:if test="form.showInstructorSurvey == true">
+					<input type="button" value="${MSG.actionInstructorSurvey()}" 
+								title="${MSG.titleInstructorSurvey(MSG.accessInstructorSurvey())}" 
+								class="btn" 
+								accesskey="${MSG.accessInstructorSurvey()}"
+								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'gwt.jsp?page=instructorSurvey&menu=hide&id=${form.puId}','900','90%');"
+							/>
+				</s:if>
 				<s:if test="form.previousId != null">
 					<s:submit accesskey='%{#msg.accessPreviousInstructor()}' name='op' value='%{#msg.actionPreviousInstructor()}'
 						title='%{#msg.titlePreviousInstructor(#msg.accessPreviousInstructor())}'/>

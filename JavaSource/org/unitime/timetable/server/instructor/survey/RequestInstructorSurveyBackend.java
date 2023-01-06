@@ -74,8 +74,11 @@ import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 
 /**
  * @author Tomas Muller
@@ -86,6 +89,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 
 	@Override
 	public InstructorSurveyData execute(InstructorSurveyRequest request, SessionContext context) {
+		if (!context.isAuthenticated() || context.getUser().getCurrentAuthority() == null)
+        	throw new AccessDeniedException();
 		boolean admin = context.hasPermission(Right.InstructorSurveyAdmin);
 		String externalId = context.getUser().getExternalUserId();
 		if (request.getExternalId() != null && !request.getExternalId().isEmpty() && !externalId.equals(request.getExternalId())) {
@@ -99,7 +104,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
 
 		if (!admin) {
-			editable = context.hasPermission(Right.InstructorSurvey);
+			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", context.getUser().getCurrentAcademicSessionId())});
 			if (is != null && is.getSubmitted() != null)
 				editable = false;
 			if (!editable && is == null)
@@ -110,6 +115,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		survey.setExternalId(externalId);
 		survey.setEditable(editable);
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
+		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
+			survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
+		}
 		
 		Preferences roomPrefs = new Preferences(-4l, MESSAGES.colBuilding());
 		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
@@ -159,7 +167,6 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				timePref.setDefaultOption(option);
 				continue;
 			}
-			survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
 		}
 		timePref.setDefaultHorizontal(true);
 		timePref.setNoteEditable(false);
