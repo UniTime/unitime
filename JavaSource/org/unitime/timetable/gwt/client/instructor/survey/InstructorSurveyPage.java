@@ -162,14 +162,20 @@ public class InstructorSurveyPage extends Composite {
 				});
 			}
 		});
+		iHeader.setEnabled("save", iSurvey.isEditable());
+		iHeader.setEnabled("submit", iSurvey.isEditable());
 		iPanel.addHeaderRow(iHeader);
 		
 		iPanel.addRow(MESSAGES.propExternalId(), new Label(survey.getExternalId()));
 		
-		iEmail = new UniTimeTextBox();
-		iEmail.addStyleName("email");
-		if (survey.hasEmail()) iEmail.setText(survey.getEmail());
-		iPanel.addRow(MESSAGES.propEmail(), iEmail);
+		if (survey.isEditable()) {
+			iEmail = new UniTimeTextBox();
+			iEmail.addStyleName("email");
+			if (survey.hasEmail()) iEmail.setText(survey.getEmail());
+			iPanel.addRow(MESSAGES.propEmail(), iEmail);
+		} else if (survey.hasEmail()) {
+			iPanel.addRow(MESSAGES.propEmail(), new Label(survey.getEmail()));
+		}
 		
 		if (survey.getSubmitted() != null) {
 			iPanel.addRow(MESSAGES.propSubmitted(), new Label(sTimeStampFormat.format(survey.getSubmitted())));	
@@ -185,43 +191,73 @@ public class InstructorSurveyPage extends Composite {
 		}
 		
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectGeneralPreferences()));
-		iTimePrefs = new InstructorTimePreferences();
+		iTimePrefs = new InstructorTimePreferences(survey.isEditable());
 		iTimePrefs.setModel(survey.getTimePrefs());
 		iTimePrefs.setMode(survey.getTimePrefs().getModes().get(0), true);
+		iTimePrefs.getReason().setEnabled(iSurvey.isEditable());
 		iPanel.addRow(iTimePrefs.getPanel());
-		iPanel.addRow("", iTimePrefs.getReason());
+		if (iSurvey.isEditable()) {
+			iPanel.addRow("", iTimePrefs.getReason());
+			iTimePrefs.getReason().resizeNotes();
+		}
+		else if (!iTimePrefs.getReason().getText().isEmpty()) {
+			iPanel.addRow("", new ReadOnlyNote(iTimePrefs.getReason().getText()));
+		}
+			
 		iRoomPrefs = new ArrayList<PreferencesTable>();
 		if (survey.hasRoomPreferences()) {
 			for (Preferences p: survey.getRoomPreferences()) {
-				PreferencesTable tab = new PreferencesTable(p, survey.getPrefLevels());
-				iRoomPrefs.add(tab);
-				iPanel.addRow(p.getType() + ":", tab);
+				if (iSurvey.isEditable()) {
+					PreferencesTable tab = new PreferencesTable(p, survey.getPrefLevels());
+					iRoomPrefs.add(tab);
+					iPanel.addRow(p.getType() + ":", tab);
+					tab.resizeNotes();
+				} else if (p.hasSelections()) {
+					iPanel.addRow(p.getType() + ":", new PreferencesReadOnlyTable(p, survey.getPrefLevels()));
+				}
 			}
 		}
 		iDistPrefs = null;
 		if (survey.hasDistributionPreferences()) {
-			iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey.getPrefLevels());
-			iPanel.addRow(MESSAGES.propDistributionPreferences(), iDistPrefs);
+			if (iSurvey.isEditable()) {
+				iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey.getPrefLevels());
+				iPanel.addRow(MESSAGES.propDistributionPreferences(), iDistPrefs);
+				iDistPrefs.resizeNotes();
+			} else if (survey.getDistributionPreferences().hasSelections()) {
+				iPanel.addRow(MESSAGES.propDistributionPreferences(), new PreferencesReadOnlyTable(survey.getDistributionPreferences(), survey.getPrefLevels()));
+			}
 		}
-		iPrefsNote = new Note();
-		iPrefsNote.setText(survey.getNote());
-		iPanel.addRow(MESSAGES.propOtherPreferences(), iPrefsNote);
+		if (survey.isEditable()) {
+			iPrefsNote = new Note();
+			iPrefsNote.setText(survey.getNote());
+			iPanel.addRow(MESSAGES.propOtherPreferences(), iPrefsNote);
+			iPrefsNote.resizeNotes();
+		} else if (survey.hasNote()) {
+			iPanel.addRow(MESSAGES.propOtherPreferences(), new ReadOnlyNote(survey.getNote()));
+		}
 		
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectCoursePreferences()));
-		iCourses = new InstructorSurveyCourseTable(survey.getCustomFields());
+		iCourses = new InstructorSurveyCourseTable(survey.getCustomFields(), survey.isEditable());
 		if (survey.hasCourses()) {
 			for (Course ci: survey.getCourses()) {
 				iCourses.addRow(ci);
 			}
 		}
-		for (int i = 0; i < 2; i++) {
-			iCourses.addRow(new Course());
-		}
+		if (survey.isEditable())
+			for (int i = 0; i < 2; i++) {
+				iCourses.addRow(new Course());
+			}
 		int row = iPanel.addRow(iCourses);
 		iPanel.getCellFormatter().getElement(row, 0).getStyle().setPadding(0, Unit.PX);
 		
 		iFooter = iHeader.clonePanel("");
 		iPanel.addBottomRow(iFooter);
+		if (!iSurvey.isEditable()) {
+			if (iSurvey.getSubmitted() != null)
+				iHeader.setMessage(MESSAGES.infoInstructorSurveySubmitted());
+			else
+				iHeader.setMessage(MESSAGES.infoInstructorSurveyNotEditable());
+		}
 	}
 	
 	static class PreferencesTable extends P {
@@ -278,6 +314,13 @@ public class InstructorSurveyPage extends Composite {
 					p.setButtonAdd(true);
 					iHandlerRegistration = p.addChangeHandler(iChangeHandler);		
 				}
+			}
+		}
+		
+		protected void resizeNotes() {
+			for (int i = 0; i < getWidgetCount(); i++) {
+				PreferenceLine p = ((PreferenceLine)getWidget(i));
+				p.iReason.resizeNotes();
 			}
 		}
 		
@@ -478,8 +521,8 @@ public class InstructorSurveyPage extends Composite {
 					iReason.setText(value.getNote() == null ? "" : value.getNote());
 				}
 				fixOptions();
-				iReason.resizeNotes();
 				iReason.setVisible(getSelection() != null && getSelection().isHard());
+				iReason.resizeNotes();
 			}
 
 			@Override
@@ -492,6 +535,68 @@ public class InstructorSurveyPage extends Composite {
 			}
 		}
 		
+	}
+	
+	static class PreferencesReadOnlyTable extends P {
+		
+		PreferencesReadOnlyTable(Preferences preferences, List<PrefLevel> options) {
+			super("preference-table");
+			if (preferences.hasSelections()) {
+				for (Selection selection: preferences.getSelections()) {
+					IdLabel item = preferences.getItem(selection.getItem());
+					for (PrefLevel prefLevel: options) {
+						if (prefLevel.getId().equals(selection.getLevel())) {
+							add(new PreferenceLine(item, prefLevel, selection));
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		class PreferenceLine extends P {
+			P iItem;
+			P iPreference;
+			P iDescription;
+			P iReason;
+			List<PrefLevel> iOptions;
+			Collection<IdLabel> iItems;
+			
+			PreferenceLine(IdLabel item, PrefLevel preference, Selection selection) {
+				super("preference-line", "preference-line-readonly");
+				P line1 = new P("first-line");
+				add(line1);
+				
+				iPreference = new P("preference-cell");
+				iPreference.setText(preference.getTitle());
+				iPreference.getElement().getStyle().setColor(preference.getColor());
+				line1.add(iPreference);
+
+				iItem = new P("preference-cell");
+				iItem.setText(item.getLabel());
+				iItem.getElement().getStyle().setColor(preference.getColor());
+				line1.add(iItem);
+
+				if (item.hasDescription()) {
+					iDescription = new P("description");
+					iDescription.setVisible(true);
+					iDescription.setHTML(item.getDescription());
+					P line2 = new P("second-line");
+					line2.add(iDescription);
+					add(line2);
+				}
+				
+				if (preference.isHard() && selection.hasNote()) {
+					iReason = new P("reason");
+					iReason.setVisible(false);
+					iReason.setVisible(true);
+					iReason.setText(selection.getNote());
+					P line2 = new P("second-line");
+					line2.add(iReason);
+					add(line2);
+				}
+			}
+		}
 	}
 	
 	public InstructorSurveyInterface.InstructorSurveyData getValue() {
@@ -509,6 +614,13 @@ public class InstructorSurveyPage extends Composite {
 				iSurvey.addCourse(c);
 		}
 		return iSurvey;
+	}
+	
+	public static class ReadOnlyNote extends Label {
+		public ReadOnlyNote(String text) {
+			addStyleName("read-only-note");
+			setText(text);
+		}
 	}
 	
 	public static class Note extends TextArea {
@@ -610,8 +722,8 @@ public class InstructorSurveyPage extends Composite {
 	public static class InstructorTimePreferences extends RoomSharingWidget {
 		Note iReason;
 		
-		public InstructorTimePreferences() {
-			super(true, false);
+		public InstructorTimePreferences(boolean editable) {
+			super(editable, false);
 			
 			iReason = new Note(); iReason.addStyleName("prohibited-times-reason");
 			iReason.setVisible(false);

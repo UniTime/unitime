@@ -7497,6 +7497,28 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 }
 
+.unitime-InstructorSurveyPage .preference-line-readonly .preference-cell {
+	padding-right: 3px;
+}
+
+.unitime-InstructorSurveyPage .preference-line-readonly .reason {
+	white-space: pre-wrap;
+	padding-left: 5px;
+	max-width: 640px;
+}
+
+.unitime-InstructorSurveyPage .preference-line-readonly .description {
+	white-space: pre-wrap;
+	padding-left: 5px;
+	max-width: 640px;
+	width: 640px;
+}
+
+.unitime-InstructorSurveyPage .read-only-note {
+	max-width: 640px;
+	white-space: pre-wrap;
+}
+
 .unitime-InstructorSurveyPage .notes-hint {
 	color: #AAAAAA;
 	font-style: italic;

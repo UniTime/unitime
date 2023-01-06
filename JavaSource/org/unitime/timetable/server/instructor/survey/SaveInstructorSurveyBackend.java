@@ -43,12 +43,14 @@ import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
 import org.unitime.timetable.model.InstructorCourseRequirementType;
 import org.unitime.timetable.model.InstructorSurvey;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -57,6 +59,7 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -172,6 +175,15 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 									gp.setPrefLevel(pl);
 									gp.setNote(selection.getNote());
 									gp.setOwner(is);is.getPreferences().add(gp);
+								}
+							} else if (p.getId() == -4l) {
+								Location r = LocationDAO.getInstance().get(selection.getItem(), hibSession);
+								if (r != null && pl != null) {
+									RoomPref rp = new RoomPref();
+									rp.setRoom(r);
+									rp.setPrefLevel(pl);
+									rp.setNote(selection.getNote());
+									rp.setOwner(is);is.getPreferences().add(rp);
 								}
 							} else {
 								RoomFeature rf = RoomFeatureDAO.getInstance().get(selection.getItem(), hibSession);

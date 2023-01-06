@@ -55,6 +55,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private List<PrefLevel> iPrefLevels;
 		private List<Course> iCourses;
 		private List<CustomField> iCustomFields;
+		private boolean iEditable = true;
 		
 		public InstructorSurveyData() {}
 		
@@ -64,6 +65,9 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setExternalId(String externalId) { iExternalId = externalId; }
 		public String getFormattedName() { return iFormattedName; }
 		public void setFormattedName(String name) { iFormattedName = name; }
+		
+		public boolean isEditable() { return iEditable; }
+		public void setEditable(boolean editable) { iEditable = editable; }
 		
 		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
 		public String getEmail() { return iEmail; }
@@ -167,6 +171,12 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public boolean hasItems() { return iItems != null && !iItems.isEmpty(); }
 		public Set<IdLabel> getItems() { return iItems; }
+		public IdLabel getItem(Long id) {
+			if (iItems == null) return null;
+			for (IdLabel item: iItems)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
 		public IdLabel addItem(Long id, String label, String description) {
 			if (iItems == null) iItems = new TreeSet<IdLabel>();
 			IdLabel item = new IdLabel(id, label, description);

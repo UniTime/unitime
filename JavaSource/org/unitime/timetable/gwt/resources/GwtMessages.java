@@ -7672,4 +7672,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Submitted:")
 	String propSubmitted();
+	
+	@DefaultMessage("It is not allowed to submit an instructor survey at the moment.")
+	String errorInstructorSurveyNotAllowed();
+	
+	@DefaultMessage("Instructor survey cannot be edited at this moment.")
+	String infoInstructorSurveyNotEditable();
+	
+	@DefaultMessage("Instructor survey has been submitted.")
+	String infoInstructorSurveySubmitted();
 }

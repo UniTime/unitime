@@ -593,7 +593,7 @@ public enum ApplicationProperty {
 	BuildingsExternalUpdateClassification("unitime.external.room.update.classifications"),
 
 	@Parameter("index")
-	@Description("Room Sharing Mode: defines %-th room sharing grid (starting with 1, format is name|first slot|last slot|first day|last day|increment, e.g., Workdays \u00D7 Daytime|0|4|90|222|6 means Monday - Friday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments)")
+	@Description("Room Sharing Mode: defines %-th room sharing grid (starting with 1, format is name|first day|last day|first slot|last slot|increment, e.g., Workdays \u00D7 Daytime|0|4|90|222|6 means Monday - Friday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments)")
 	RoomSharingMode("unitime.room.sharingMode%"),
 
 	@Type(Boolean.class)
@@ -3108,6 +3108,13 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Assign Instructors: use the user's preferred name format when ordering instructors in the dropdown (instead of the default last name first)")
 	InstructorsDropdownFollowNameFormatting("unitime.instructors.useNameFormatInDropdowns"),
+	
+	@Type(String.class)
+	@DefaultValue("0|4|90|246|12")
+	@Description("Instructor Survey: time preferences model; " +
+	"the format format is first day|last day|first slot|last slot|increment, e.g., 0|4|90|246|12 means Monday - Friday, starting at 7:30 am, ending at 8:30 pm, in one hour increments")
+	@Since(4.7)
+	InstructorSurveyTimePreferences("unitime.instructorSurvey.timePrefs"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
