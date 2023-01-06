@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Label;
@@ -53,9 +54,11 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	private boolean iAsc = true;
 	private int iCustom = 0;
 	private List<CustomField> iCustomFields;
+	private boolean iEditable = true;
 	
-	public InstructorSurveyCourseTable(List<CustomField> cf) {
+	public InstructorSurveyCourseTable(List<CustomField> cf, boolean editable) {
 		iCustomFields = cf;
+		iEditable = editable;
 		addStyleName("unitime-InstructorSurveyCourseTable");
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (final CourseColumn col: CourseColumn.values()) {
@@ -129,24 +132,35 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 					}
 				}
 			});
+			box.setEnabled(iEditable);
 			return box;
 		case CUSTOM:
 			final CustomField cf = iCustomFields.get(index);
-			Note custom = new Note();
-			custom.setCharacterWidth(cf.getLength());
-			custom.getElement().setAttribute("maxlength", "2048");
-			custom.addStyleName("custom-" + cf.getId());
-			if (course != null && course.hasCustomField(cf)) {
-				custom.setText(course.getCustomField(cf));
-				custom.resizeNotes();
-			}
-			custom.addValueChangeHandler(new ValueChangeHandler<String>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
-					course.setCustomField(cf, event.getValue());
+			if (iEditable) {
+				Note custom = new Note();
+				custom.setCharacterWidth(cf.getLength());
+				custom.getElement().setAttribute("maxlength", "2048");
+				custom.addStyleName("custom-" + cf.getId());
+				custom.setEnabled(iEditable);
+				if (course != null && course.hasCustomField(cf)) {
+					custom.setText(course.getCustomField(cf));
+					custom.resizeNotes();
 				}
-			});
-			return custom;
+				custom.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						course.setCustomField(cf, event.getValue());
+					}
+				});
+				return custom;
+			} else {
+				Label custom = new Label();
+				if (course != null && course.hasCustomField(cf))
+					custom.setText(course.getCustomField(cf));
+				custom.getElement().getStyle().setWidth(6.77 * cf.getLength(), Unit.PX);
+				custom.addStyleName("readonly-note");
+				return custom;
+			}
 		default:
 			return null;
 		}

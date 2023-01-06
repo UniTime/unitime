@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CustomField;
@@ -40,6 +41,7 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterf
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.PrefLevel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -61,6 +63,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -83,18 +86,32 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 
 	@Override
 	public InstructorSurveyData execute(InstructorSurveyRequest request, SessionContext context) {
+		boolean admin = context.hasPermission(Right.InstructorSurveyAdmin);
 		String externalId = context.getUser().getExternalUserId();
-		if (request.getExternalId() != null && !request.getExternalId().isEmpty()) {
+		if (request.getExternalId() != null && !request.getExternalId().isEmpty() && !externalId.equals(request.getExternalId())) {
 			context.checkPermission(Right.InstructorSurveyAdmin);
 			externalId = request.getExternalId();
-		} else {
-			context.checkPermission(Right.InstructorSurvey);
+		}
+		boolean editable = true;
+		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
+				).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
+
+		if (!admin) {
+			editable = context.hasPermission(Right.InstructorSurvey);
+			if (is != null && is.getSubmitted() != null)
+				editable = false;
+			if (!editable && is == null)
+				throw new GwtRpcException(MESSAGES.errorInstructorSurveyNotAllowed());
 		}
 		
 		final InstructorSurveyData survey = new InstructorSurveyData();
 		survey.setExternalId(externalId);
+		survey.setEditable(editable);
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		
+		Preferences roomPrefs = new Preferences(-4l, MESSAGES.colBuilding());
 		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
 				.setString("id", externalId)
@@ -108,6 +125,13 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					di.getDepartment().getUniqueId(), di.getDepartment().getLabel(),
 					di.getPositionType() == null ? null : new IdLabel(di.getPositionType().getUniqueId(), di.getPositionType().getLabel(), null)
 							));
+			for (RoomDept rd: di.getDepartment().getRoomDepts()) {
+				if (rd.getPreference() != null && rd.getPreference().getPrefProlog().equals(PreferenceLevel.sProhibited)) continue;
+				Location location = rd.getRoom();
+				IdLabel rp = roomPrefs.addItem(location.getUniqueId(), location.getLabel(), location.getDisplayName());
+				for (PrefLevel pl: survey.getPrefLevels())
+					if (!pl.isHard()) rp.addAllowedPref(pl.getId());
+			}
 		}
 		if (survey.getFormattedName() == null)
 			survey.setFormattedName(context.getUser().getName());
@@ -123,18 +147,11 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			survey.addCustomField(cf);
 		}
 		
-		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
-				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-				).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
-		
 		InstructorTimePreferencesModel timePref = new InstructorTimePreferencesModel();
-		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|0|4|90|246|12"));
+		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value()));
 		timePref.setDefaultMode(0);
-		timePref.setDefaultEditable(true);
+		timePref.setDefaultEditable(editable);
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
-			// if (PreferenceLevel.sStronglyPreferred.equals(pref.getPrefProlog())) continue;
-			// if (PreferenceLevel.sStronglyDiscouraged.equals(pref.getPrefProlog())) continue;
 			RoomSharingOption option = new RoomSharingOption(timePref.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true);
 			if (!PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
 				timePref.addOption(option);
@@ -142,16 +159,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				timePref.setDefaultOption(option);
 				continue;
 			}
-			// if (PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
-
-			/*
-			else if (PreferenceLevel.sPreferred.equals(pref.getPrefProlog()))
-				survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefName(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
-			else if (PreferenceLevel.sDiscouraged.equals(pref.getPrefProlog()))
-				survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefName(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
-				*/
-			else
-				survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
+			survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
 		}
 		timePref.setDefaultHorizontal(true);
 		timePref.setNoteEditable(false);
@@ -211,6 +219,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				}
 			}
 		}
+		if (roomPrefs.hasItems())
+			survey.addRoomPreference(roomPrefs);
 		if (buildingPrefs.hasItems())
 			survey.addRoomPreference(buildingPrefs);
 		if (groupPrefs.hasItems())
