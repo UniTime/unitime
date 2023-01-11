@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections4.map.HashedMap;
 import org.unitime.timetable.model.base.BaseInstructorSurvey;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 
@@ -50,5 +54,26 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	public static InstructorSurvey getInstructorSurvey(DepartmentalInstructor di) {
 		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().isEmpty()) return null;
 		return getInstructorSurvey(di.getExternalUniqueId(), di.getDepartment().getSessionId());
+	}
+	
+	public static boolean hasInstructorSurveys(Long departmentId) {
+		return ((Number)InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"select count(s) from DepartmentalInstructor di, InstructorSurvey s where " +
+				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
+				"di.department = :deptId")
+				.setLong("deptId", departmentId).setCacheable(true).uniqueResult()
+				).intValue() > 0;
+	}
+	
+	public static Map<String, InstructorSurvey> getInstructorSurveysForDepartment(Long departmentId) {
+		Map<String, InstructorSurvey> ret = new HashedMap<String, InstructorSurvey>();
+		for (InstructorSurvey is: (List<InstructorSurvey>)InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"select s from DepartmentalInstructor di, InstructorSurvey s where " +
+				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
+				"di.department = :deptId")
+				.setLong("deptId", departmentId).setCacheable(true).list()) {
+			ret.put(is.getExternalUniqueId(), is);
+		}
+		return ret;
 	}
 }

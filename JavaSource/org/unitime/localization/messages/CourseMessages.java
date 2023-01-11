@@ -5775,4 +5775,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("S")
 	String accessInstructorSurvey();
+	
+	@DefaultMessage("Survey<br>Submitted")
+	String columnInstrSurvey();
+	
+	@DefaultMessage("Survey\nSubmitted")
+	String columnInstrSurveyPDF();
+	
+	@DefaultMessage("Not Submitted")
+	String instrSurveyNotSubmitted();
+	
+	@DefaultMessage("Not Filled")
+	String instrSurveyNotFilled();
 }
