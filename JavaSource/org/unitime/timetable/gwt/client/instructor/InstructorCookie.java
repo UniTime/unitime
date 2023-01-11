@@ -40,6 +40,7 @@ public class InstructorCookie {
 	private boolean iShowTeachingRequests = false;
 	private boolean iShowTeachingAssignments = false;
 	private String[] iQuery = new String[] {"", "", ""};
+	private boolean iShowSurveyDetails = false;
 
 	private InstructorCookie() {
 		try {
@@ -59,6 +60,7 @@ public class InstructorCookie {
 				iShowTeachingRequests = "T".equals(params[idx++]);
 				iShowTeachingAssignments = "T".equals(params[idx++]);
 				iQuery = new String[] {params[idx++], params[idx++], params[idx++]};
+				iShowSurveyDetails = "T".equals(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -78,7 +80,8 @@ public class InstructorCookie {
 				"|" + iAssignmentChangesBase + "|" + iSortAssignmentChangesBy + "|" + iAssignmentChangesColumns +
 				"|" + (iShowTeachingRequests ? "T" : "F") +
 				"|" + (iShowTeachingAssignments ? "T" : "F") +
-				"|" + (iQuery[0] == null ? "" : iQuery[0]) + "|" + (iQuery[1] == null ? "" : iQuery[1]) + "|" + (iQuery[2] == null ? "" : iQuery[2]);
+				"|" + (iQuery[0] == null ? "" : iQuery[0]) + "|" + (iQuery[1] == null ? "" : iQuery[1]) + "|" + (iQuery[2] == null ? "" : iQuery[2]) +
+				"|" + (iShowSurveyDetails ? "T" : "F");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -204,4 +207,7 @@ public class InstructorCookie {
 	
 	public String getQuery(Boolean assigned) { return iQuery[assigned == null ? 2 : assigned ? 0 : 1]; }
 	public void setQuery(Boolean assigned, String query) { iQuery[assigned == null ? 2 : assigned ? 0 : 1] = query; save(); }
+	
+	public boolean isShowSurveyDetails() { return iShowSurveyDetails; }
+	public void setShowSurveyDetails(boolean showSurveyDetails) { iShowSurveyDetails = showSurveyDetails; save(); }
 }

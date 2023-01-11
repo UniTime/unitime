@@ -178,6 +178,12 @@
 				</TD></TR>
 			</s:if>
 		</s:iterator>
+		
+		<s:if test="form.hasInstructorSurvey == true">
+			<TR><TD colspan="2">
+				<div id='UniTimeGWT:InstructorSurvey' style="display: none;"><s:property value="form.puId"/></div>
+			</TD></TR>
+		</s:if>
 
 <!-- Class Assignments -->
 		<TR>

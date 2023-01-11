@@ -7640,13 +7640,13 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room Groups")
 	String colRoomGroups();
 	
-	@DefaultMessage("Room Geatures")
+	@DefaultMessage("Room Features")
 	String colRoomFeatures();
 	
 	@DefaultMessage("Distributions")
 	String colDistributions();
 	
-	@DefaultMessage("Notes / Other Preferences:")
+	@DefaultMessage("Other Requirements:")
 	String propOtherPreferences();
 		
 	@DefaultMessage("Preferences & Requirements")
@@ -7673,6 +7673,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Submitted:")
 	String propSubmitted();
 	
+	@DefaultMessage("Not Submitted")
+	String notSubbitted();
+	
 	@DefaultMessage("It is not allowed to submit an instructor survey at the moment.")
 	String errorInstructorSurveyNotAllowed();
 	
@@ -7684,4 +7687,22 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>C</u>lose")
 	String buttonCloseInstructorSurvey();
+	
+	@DefaultMessage("Saving instructor survey ...")
+	String waitSavingInstructorSurvey();
+	
+	@DefaultMessage("Submitting instructor survey ...")
+	String waitSubmittingInstructorSurvey();
+	
+	@DefaultMessage("Instructor Survey")
+	String sectInstructorSurvey();
+	
+	@DefaultMessage("Course Requirements:")
+	String propInstructorCoursePreferences();
+	
+	@DefaultMessage("Edit <u>S</u>urvey")
+	String buttonEditInstructorSurvey();
+	
+	@DefaultMessage("Time:")
+	String propTimePrefs();
 }

@@ -21,11 +21,50 @@ package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirement;
 
-public class InstructorCourseRequirement extends BaseInstructorCourseRequirement {
+public class InstructorCourseRequirement extends BaseInstructorCourseRequirement implements Comparable<InstructorCourseRequirement> {
 	private static final long serialVersionUID = 3076787808984760805L;
 
 	public InstructorCourseRequirement() {
 		super();
 	}
 
+	public int compareTo(InstructorCourseRequirement req) { 
+		if (getInstructorSurvey().equals(req.getInstructorSurvey())) {
+			// same survey
+			int cmp = getCourse().compareTo(req.getCourse());
+			if (cmp != 0) return cmp;
+			InstructorCourseRequirementNote n1 = getFirstNote();
+			InstructorCourseRequirementNote n2 = req.getFirstNote();
+			if (n1 == null) {
+				if (n2 == null) return getUniqueId().compareTo(req.getUniqueId());
+				else return 1;
+			} else if (n2 == null) {
+				return -1;
+			}
+			cmp = n1.getType().getSortOrder().compareTo(n2.getType().getSortOrder());
+			if (cmp != 0) return cmp;
+			cmp = (n1.getNote() == null ? "" : n1.getNote()).compareTo(n2.getNote() == null ? "" : n2.getNote());
+			if (cmp != 0) return cmp;
+		} else {
+			int cmp = getInstructorSurvey().getExternalUniqueId().compareTo(req.getInstructorSurvey().getExternalUniqueId());
+			if (cmp != 0) return cmp;
+		}
+		return getUniqueId().compareTo(req.getUniqueId());
+	}
+	
+	public InstructorCourseRequirementNote getFirstNote() {
+		InstructorCourseRequirementNote ret = null;
+		for (InstructorCourseRequirementNote note: getNotes()) {
+			if (ret == null || note.getType().getSortOrder() < ret.getType().getSortOrder())
+				ret = note;
+		}
+		return ret;
+	}
+	
+	public InstructorCourseRequirementNote getNote(InstructorCourseRequirementType type) {
+		for (InstructorCourseRequirementNote note: getNotes()) {
+			if (note.getType().equals(type)) return note;
+		}
+		return null;
+	}
 }

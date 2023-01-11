@@ -155,7 +155,7 @@ public class RoomInterface implements IsSerializable {
 		private List<RoomSharingDisplayMode> iModes;
 		private List<RoomSharingOption> iOptions;
 		private List<RoomSharingOption> iOtherOptions;
-		private Map<Integer, Map<Integer, Long>> iModel;
+		protected Map<Integer, Map<Integer, Long>> iModel;
 		private Map<Integer, Map<Integer, Boolean>> iEditable;
 		private int iDefaultMode = 0;
 		private boolean iDefaultEditable = true;
