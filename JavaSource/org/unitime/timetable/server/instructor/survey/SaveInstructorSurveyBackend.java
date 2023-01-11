@@ -204,7 +204,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 					}
 				}
 			}
-			if (survey.getTimePrefs() != null) {
+			if (survey.getTimePrefs() != null && !survey.getTimePrefs().isEmpty()) {
 				TimePref tp = new TimePref();
 				tp.setNote(survey.getTimePrefs().getNote());
 				tp.setPreference(survey.getTimePrefs().getPattern());

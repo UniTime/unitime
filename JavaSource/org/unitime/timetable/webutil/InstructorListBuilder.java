@@ -21,8 +21,10 @@ package org.unitime.timetable.webutil;
 
 import java.awt.Image;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.commons.web.WebTable;
@@ -40,6 +42,7 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.InstructorAttributeType;
 import org.unitime.timetable.model.InstructorCoursePref;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
@@ -51,6 +54,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 
 /**
@@ -80,6 +84,8 @@ public class InstructorListBuilder {
 			boolean hasTeachPref = false;
 			boolean hasMaxLoad = false;
 			boolean hasUnavailableDates = false;
+			Map<String, InstructorSurvey> instructorSurveys = InstructorSurvey.getInstructorSurveysForDepartment(Long.valueOf(deptId));
+			boolean hasInstructorSurvey = (instructorSurveys != null && !instructorSurveys.isEmpty());
 			TreeSet<InstructorAttributeType> attributeTypes = new TreeSet<InstructorAttributeType>(new Comparator<InstructorAttributeType>() {
 				@Override
 				public int compare(InstructorAttributeType o1, InstructorAttributeType o2) {
@@ -109,7 +115,9 @@ public class InstructorListBuilder {
 					MSG.columnInstructorExamAssignments(),
 					MSG.columnInstructorIgnoreTooFar()};
 			
-			String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
+			String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) +
+			                              (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() +
+			                              fixedHeaders2.length + (hasInstructorSurvey ? 1 : 0)];
 			String[] aligns = new String[headers.length];
 			boolean[] asc = new boolean[headers.length];
 			int idx = 0;
@@ -155,6 +163,12 @@ public class InstructorListBuilder {
 				asc[idx] = true;
 				idx++;
 			}
+			if (hasInstructorSurvey) {
+				headers[idx] = MSG.columnInstrSurvey();
+				aligns[idx] = "left";
+				asc[idx] = true;
+				idx++;
+			}
 			
 			// Create new table
 			WebTable webTable = new WebTable(headers.length, "", "instructorSearch.action?order=%%&deptId=" + deptId, headers, aligns, asc);
@@ -164,6 +178,7 @@ public class InstructorListBuilder {
 			
 			String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 			String instructorSortOrder = UserProperty.SortNames.get(context.getUser());
+			Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 			
 			for (Iterator iter = list.iterator(); iter.hasNext();) {
 				DepartmentalInstructor di = (DepartmentalInstructor) iter.next();
@@ -357,6 +372,30 @@ public class InstructorListBuilder {
 				}
 				idx ++;
 				
+				if (hasInstructorSurvey) {
+					if (di.getExternalUniqueId() == null || di.getExternalUniqueId().isEmpty()) {
+						line[idx] = "";
+						cmp[idx] = -2l;
+					} else {
+						InstructorSurvey is = instructorSurveys.get(di.getExternalUniqueId());
+						if (is != null && is.getCourseRequirements().isEmpty() && is.getPreferences().isEmpty() && (is.getNote() == null || is.getNote().isEmpty()))
+							is = null;
+						if (is != null) {
+							if (is.getSubmitted() != null) {
+								line[idx] = df.format(is.getSubmitted());
+								cmp[idx] = is.getSubmitted().getTime();
+							} else {
+								line[idx] = "<span style='color:#dcb414; font-style: italic;'>" + MSG.instrSurveyNotSubmitted() + "</span>";
+								cmp[idx] = 0l;
+							}
+						} else {
+							line[idx] = "<span style='color:#c81e14; font-style: italic;'>" + MSG.instrSurveyNotFilled() + "</span>";
+							cmp[idx] = -1l;
+						}
+					}
+					idx++;
+				}
+				
 				boolean back = di.getUniqueId().toString().equals(backId);
 				if (back) line[0] = "<A name=\"back\"></A>" + line[0];
 				
@@ -388,6 +427,8 @@ public class InstructorListBuilder {
 		boolean hasTeachPref = false;
 		boolean hasMaxLoad = false;
 		boolean hasUnavailableDates = false;
+		Map<String, InstructorSurvey> instructorSurveys = InstructorSurvey.getInstructorSurveysForDepartment(Long.valueOf(deptId));
+		boolean hasInstructorSurvey = (instructorSurveys != null && !instructorSurveys.isEmpty());
 		TreeSet<InstructorAttributeType> attributeTypes = new TreeSet<InstructorAttributeType>(new Comparator<InstructorAttributeType>() {
 			@Override
 			public int compare(InstructorAttributeType o1, InstructorAttributeType o2) {
@@ -417,7 +458,9 @@ public class InstructorListBuilder {
 				MSG.columnInstructorExamAssignmentsPDF(),
 				MSG.columnInstructorIgnoreTooFarPDF()};
 		
-		String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) + (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() + fixedHeaders2.length];
+		String[] headers = new String[fixedHeaders1.length + (hasCoursePrefs ? 1 : 0) + (hasTeachPref ? 1 : 0) +
+		                              (hasMaxLoad ? 1 : 0) + (hasUnavailableDates ? 1 : 0) + attributeTypes.size() +
+		                              fixedHeaders2.length + (hasInstructorSurvey ? 1 : 0)];
 		String[] aligns = new String[headers.length];
 		boolean[] asc = new boolean[headers.length];
 		int idx = 0;
@@ -464,11 +507,19 @@ public class InstructorListBuilder {
 			idx++;
 		}
 		
+		if (hasInstructorSurvey) {
+			headers[idx] = MSG.columnInstrSurvey();
+			aligns[idx] = "left";
+			asc[idx] = true;
+			idx++;
+		}
+		
 		// Create new table
 		PdfWebTable webTable = new PdfWebTable(headers.length, MSG.sectionTitleInstructorList(), null, headers, aligns, asc);
 
 		String instructorNameFormat =  UserProperty.NameFormat.get(context.getUser());
 		String instructorSortOrder = UserProperty.SortNames.get(context.getUser());
+		Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 		
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			DepartmentalInstructor di = (DepartmentalInstructor) iter.next(); 
@@ -662,6 +713,30 @@ public class InstructorListBuilder {
 				cmp[idx] = false;
 			}
 			idx ++;
+			
+			if (hasInstructorSurvey) {
+				if (di.getExternalUniqueId() == null || di.getExternalUniqueId().isEmpty()) {
+					line[idx] = "";
+					cmp[idx] = -2l;
+				} else {
+					InstructorSurvey is = instructorSurveys.get(di.getExternalUniqueId());
+					if (is != null && is.getCourseRequirements().isEmpty() && is.getPreferences().isEmpty() && (is.getNote() == null || is.getNote().isEmpty()))
+						is = null;
+					if (is != null) {
+						if (is.getSubmitted() != null) {
+							line[idx] = df.format(is.getSubmitted());
+							cmp[idx] = is.getSubmitted().getTime();
+						} else {
+							line[idx] = "@@COLOR #dcb414 @@ITALIC " + MSG.instrSurveyNotSubmitted();
+							cmp[idx] = 0l;
+						}
+					} else {
+						line[idx] = "@@COLOR #c81e14 @@ITALIC " + MSG.instrSurveyNotFilled();
+						cmp[idx] = -1l;
+					}
+				}
+				idx++;
+			}
 			
 			// Add to web table
 			webTable.addLine(null, line, cmp);
