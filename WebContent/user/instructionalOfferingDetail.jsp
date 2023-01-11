@@ -138,85 +138,85 @@
 						</tt:hasProperty>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
-				<s:iterator value="form.courseOfferings" var="co">
+				<s:iterator value="form.courseOfferings" var="cx">
 					<TR>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
-							<s:if test="#co.isControl == true">
+							<s:if test="#cx.isControl == true">
 								<IMG src="images/accept.png" alt="${MSG.altControllingCourse()}" title="${MSG.titleControllingCourse()}" border="0">
 							</s:if>
 							&nbsp;
 						</TD>
 						<s:if test="form.hasCourseTypes == true">
 							<TD class="BottomBorderGray">
-								<s:if test="#co.courseType != null">
-									<span title='${co.courseType.label}'><s:property value="#co.courseType.reference"/></span>
+								<s:if test="#cx.courseType != null">
+									<span title='${cx.courseType.label}'><s:property value="#cx.courseType.reference"/></span>
 								</s:if>
 							</TD>
 						</s:if>
-						<TD class="BottomBorderGray"><s:property value="#co.courseNameWithTitle"/></TD>
+						<TD class="BottomBorderGray"><s:property value="#cx.courseNameWithTitle"/></TD>
 						<s:if test="form.hasCourseExternalId == true">
 							<TD class="BottomBorderGray">
-								<s:if test="#co.externalUniqueId != null">
-									<s:property value="#co.externalUniqueId"/>
+								<s:if test="#cx.externalUniqueId != null">
+									<s:property value="#cx.externalUniqueId"/>
 								</s:if>
 							</TD>
 						</s:if>
 						<s:if test="form.hasCourseReservation == true">
 							<TD class="BottomBorderGray">
-								<s:if test="#co.reservation != null">
-									<s:property value="#co.reservation"/>
+								<s:if test="#cx.reservation != null">
+									<s:property value="#cx.reservation"/>
 								</s:if>
 							</TD>
 						</s:if>
 						<s:if test="form.hasCredit == true">
 							<TD class="BottomBorderGray">
-								<s:if test="#co.credit != null">
-									<span title='${co.credit.creditText()}'><s:property value="#co.credit.creditAbbv()"/></span>
+								<s:if test="#cx.credit != null">
+									<span title='${cx.credit.creditText()}'><s:property value="#cx.credit.creditAbbv()"/></span>
 								</s:if>
 							</TD>
 						</s:if>
 						<s:if test="form.hasScheduleBookNote == true">
-							<TD class="BottomBorderGray" style="white-space: pre-wrap;"><s:property value="#co.scheduleBookNote" escapeHtml="false"/></TD>
+							<TD class="BottomBorderGray" style="white-space: pre-wrap;"><s:property value="#cx.scheduleBookNote" escapeHtml="false"/></TD>
 						</s:if>
 						<s:if test="form.hasDemandOfferings == true">
 							<TD class="BottomBorderGray">&nbsp;
-								<s:if test="#co.demandOffering != null">
-									<s:property value="#co.demandOffering.courseName"/>
+								<s:if test="#cx.demandOffering != null">
+									<s:property value="#cx.demandOffering.courseName"/>
 								</s:if>
 							</TD>
 						</s:if>
 						<s:if test="form.hasAlternativeCourse == true">
 							<TD class="BottomBorderGray">&nbsp;
-								<s:if test="#co.alternativeOffering != null">
-									<s:property value="#co.alternativeOffering.courseName"/>
+								<s:if test="#cx.alternativeOffering != null">
+									<s:property value="#cx.alternativeOffering.courseName"/>
 								</s:if>
 							</TD>
 						</s:if>
 						<TD class="BottomBorderGray">
-							<s:if test="#co.consentType == null">
+							<s:if test="#cx.consentType == null">
 								<loc:message name="noConsentRequired"/>
 							</s:if>
 							<s:else>
-								<s:property value="#co.consentType.abbv"/>
+								<s:property value="#cx.consentType.abbv"/>
 							</s:else>
 						</TD>
 						<s:if test="form.hasDisabledOverrides == true">
 							<TD class="BottomBorderGray">
-								<s:iterator value="#co.disabledOverrides" var="override" status="stat">
+								<s:iterator value="#cx.disabledOverrides" var="override" status="stat">
 									<span title='${override.label}'><s:property value="#override.reference"/></span><s:if test="!#stat.last">, </s:if>
 								</s:iterator>
 							</TD>
 						</s:if>
 						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
 							<TD class="BottomBorderGray">
-								<span name='UniTimeGWT:CourseLink' style="display: none;"><s:property value="#co.uniqueId"/></span>
+								<span name='UniTimeGWT:CourseLink' style="display: none;"><s:property value="#cx.uniqueId"/></span>
 							</TD>
 						</tt:hasProperty>
 						<TD align="right" class="BottomBorderGray">
-							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
+							<sec:authorize access="hasPermission(#cx, 'EditCourseOffering') or hasPermission(#cx, 'EditCourseOfferingNote') or hasPermission(#cx, 'EditCourseOfferingCoordinators')">
 								<s:submit name='op' value='%{#msg.actionEditCourseOffering()}' title='%{#msg.titleEditCourseOffering()}'
-									onclick="document.getElementById('courseOfferingId').value = '%{#co.uniqueId}'; return true;"
+									onclick="document.getElementById('courseOfferingId').value = '%{#cx.uniqueId}'; return true;"
 								/>
 							</sec:authorize>
 						</TD>

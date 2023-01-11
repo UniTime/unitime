@@ -109,6 +109,7 @@ public class InstructorSurveyPage extends Composite {
 			public void onFailure(Throwable t) {
 				LoadingWidget.hideLoading();
 				UniTimeNotifications.error(MESSAGES.failedToLoadPage(t.getMessage()), t);
+				ToolBox.checkAccess(t);
 			}
 
 			@Override
@@ -130,15 +131,18 @@ public class InstructorSurveyPage extends Composite {
 			@Override
 			public void onClick(ClickEvent e) {
 				iHeader.clearMessage();
+				LoadingWidget.showLoading(MESSAGES.waitSavingInstructorSurvey());
 				RPC.execute(new InstructorSurveySaveRequest(getValue(), false), new AsyncCallback<InstructorSurveyData>() {
 					@Override
 					public void onFailure(Throwable caught) {
+						LoadingWidget.hideLoading();
 						UniTimeNotifications.error(caught.getMessage());
 						iHeader.setErrorMessage(caught.getMessage());
 					}
 
 					@Override
 					public void onSuccess(InstructorSurveyData result) {
+						LoadingWidget.hideLoading();
 						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
 						setValue(result);
 					}
@@ -149,15 +153,18 @@ public class InstructorSurveyPage extends Composite {
 			@Override
 			public void onClick(ClickEvent e) {
 				iHeader.clearMessage();
+				LoadingWidget.showLoading(MESSAGES.waitSubmittingInstructorSurvey());
 				RPC.execute(new InstructorSurveySaveRequest(getValue(), true), new AsyncCallback<InstructorSurveyData>() {
 					@Override
 					public void onFailure(Throwable caught) {
+						LoadingWidget.hideLoading();
 						UniTimeNotifications.error(caught.getMessage());
 						iHeader.setErrorMessage(caught.getMessage());
 					}
 
 					@Override
 					public void onSuccess(InstructorSurveyData result) {
+						LoadingWidget.hideLoading();
 						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
 						setValue(result);
 					}
@@ -221,10 +228,10 @@ public class InstructorSurveyPage extends Composite {
 				if (iSurvey.isEditable()) {
 					PreferencesTable tab = new PreferencesTable(p, survey.getPrefLevels());
 					iRoomPrefs.add(tab);
-					iPanel.addRow(p.getType() + ":", tab);
+					iPanel.addRow(p.getType(), tab);
 					tab.resizeNotes();
 				} else if (p.hasSelections()) {
-					iPanel.addRow(p.getType() + ":", new PreferencesReadOnlyTable(p, survey.getPrefLevels()));
+					iPanel.addRow(p.getType(), new PreferencesReadOnlyTable(p, survey.getPrefLevels()));
 				}
 			}
 		}
@@ -232,10 +239,10 @@ public class InstructorSurveyPage extends Composite {
 		if (survey.hasDistributionPreferences()) {
 			if (iSurvey.isEditable()) {
 				iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey.getPrefLevels());
-				iPanel.addRow(MESSAGES.propDistributionPreferences(), iDistPrefs);
+				iPanel.addRow(survey.getDistributionPreferences().getType(), iDistPrefs);
 				iDistPrefs.resizeNotes();
 			} else if (survey.getDistributionPreferences().hasSelections()) {
-				iPanel.addRow(MESSAGES.propDistributionPreferences(), new PreferencesReadOnlyTable(survey.getDistributionPreferences(), survey.getPrefLevels()));
+				iPanel.addRow(survey.getDistributionPreferences().getType(), new PreferencesReadOnlyTable(survey.getDistributionPreferences(), survey.getPrefLevels()));
 			}
 		}
 		if (survey.isEditable()) {

@@ -19,13 +19,22 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirementType;
+import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
 
 public class InstructorCourseRequirementType extends BaseInstructorCourseRequirementType {
 	private static final long serialVersionUID = -2083877056369018586L;
 
 	public InstructorCourseRequirementType() {
 		super();
+	}
+	
+	public static List<InstructorCourseRequirementType> getInstructorCourseRequirementTypes() {
+		return (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder")
+				.setCacheable(true).list();
 	}
 
 }

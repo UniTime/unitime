@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.instructor;
 
+import java.util.Map;
+
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -175,6 +177,15 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 		@Override
 		public String toString() {
 			return getPattern();
+		}
+		
+		public boolean isEmpty() {
+			if (iModel == null) return true;
+			Long neutral = char2id('2');
+			for (Map<Integer, Long> slot2id: iModel.values())
+				for (Long id: slot2id.values())
+					if (!neutral.equals(id)) return false;
+			return true;
 		}
 	}
 }

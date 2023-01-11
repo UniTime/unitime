@@ -535,9 +535,12 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		form.setDeptName(inst.getDepartment().getLabel());
 		
 		InstructorSurvey is = InstructorSurvey.getInstructorSurvey(inst);
-		form.setShowInstructorSurvey(is != null || sessionContext.hasPermission(inst.getDepartment(), Right.InstructorSurveyAdmin));
-		if (is == null && sessionContext.getUser().getExternalUserId().equals(inst.getExternalUniqueId()) && sessionContext.hasPermission(Right.InstructorSurvey))
-			form.setShowInstructorSurvey(true);	
+		form.setHasInstructorSurvey(is != null);
+		if (is == null) {
+			form.setShowInstructorSurvey(sessionContext.hasPermission(inst.getDepartment(), Right.InstructorSurveyAdmin));
+			if (sessionContext.getUser().getExternalUserId().equals(inst.getExternalUniqueId()) && sessionContext.hasPermission(Right.InstructorSurvey))
+				form.setShowInstructorSurvey(true);
+		}
 		
 		String puid = inst.getExternalUniqueId();
 		if (puid != null) {

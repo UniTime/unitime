@@ -7536,3 +7536,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-InstructorSurveyCourseTable .unitime-ClickableTableHeader .gwt-HTML {
 	white-space: pre-wrap !important;
 }
+
+.unitime-InstructorSurveyPage .not-submitted {
+	color: red;
+	font-style: italic;	
+}
