@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 
@@ -56,6 +57,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private List<Course> iCourses;
 		private List<CustomField> iCustomFields;
 		private boolean iEditable = true;
+		private boolean iCanApply = true;
 		
 		public InstructorSurveyData() {}
 		
@@ -68,6 +70,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public boolean isEditable() { return iEditable; }
 		public void setEditable(boolean editable) { iEditable = editable; }
+		public boolean isCanApply() { return iCanApply; }
+		public void setCanApply(boolean canApply) { iCanApply = canApply; }
 		
 		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
 		public String getEmail() { return iEmail; }
@@ -206,7 +210,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public List<Selection> getSelections() { return iSelections; }
 		public void addSelection(Selection selection) {
 			if (iSelections == null) iSelections = new ArrayList<Selection>();
-			iSelections.add(selection);
+			if (getItem(selection.getItem()) != null)
+				iSelections.add(selection);
 		}
 	}
 	
@@ -300,12 +305,27 @@ public class InstructorSurveyInterface implements IsSerializable {
 	
 	public static class InstructorSurveyRequest implements GwtRpcRequest<InstructorSurveyData> {
 		private String iExternalId;
+		private Long iInstructorId;
 		
 		public InstructorSurveyRequest() {}
 		public InstructorSurveyRequest(String externalId) { iExternalId = externalId; }
+		public InstructorSurveyRequest(Long instructorId) { iInstructorId = instructorId; }
 		
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+	}
+	
+	public static class InstructorSurveyApplyRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private Long iInstructorId;
+		
+		public InstructorSurveyApplyRequest() {}
+		public InstructorSurveyApplyRequest(Long instructorId) { iInstructorId = instructorId; }
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
 	}
 	
 	public static class InstructorSurveySaveRequest implements GwtRpcRequest<InstructorSurveyData> {

@@ -72,7 +72,6 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
-import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
@@ -94,6 +93,11 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 	public InstructorSurveyData execute(InstructorSurveyRequest request, SessionContext context) {
 		if (!context.isAuthenticated() || context.getUser().getCurrentAuthority() == null)
         	throw new AccessDeniedException();
+		DepartmentalInstructor instructor = null;
+		if (request.getInstructorId() != null) {
+			instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId());
+			if (instructor != null) request.setExternalId(instructor.getExternalUniqueId());
+		}
 		boolean admin = context.hasPermission(Right.InstructorSurveyAdmin);
 		String externalId = context.getUser().getExternalUserId();
 		if (request.getExternalId() != null && !request.getExternalId().isEmpty() && !externalId.equals(request.getExternalId())) {
@@ -117,6 +121,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		final InstructorSurveyData survey = new InstructorSurveyData();
 		survey.setExternalId(externalId);
 		survey.setEditable(editable);
+		survey.setCanApply(is != null && is.getSubmitted() != null && instructor != null && context.hasPermission(instructor, Right.InstructorPreferences) && !is.getPreferences().isEmpty());
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			if (pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) continue;
@@ -124,6 +129,26 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		}
 		
 		Preferences roomPrefs = new Preferences(-4l, CMSG.propertyRooms());
+		Preferences buildingPrefs = new Preferences(-1l, CMSG.propertyBuildings());
+		Preferences groupPrefs = new Preferences(-2l, CMSG.propertyRoomGroups());
+		Preferences featurePrefs = new Preferences(-3l, CMSG.propertyRoomFeatures());
+		Map<Long, Preferences> typedFeaturePrefs = new HashMap<Long, Preferences>();
+		
+		for (RoomGroup g: RoomGroup.getAllGlobalRoomGroups(context.getUser().getCurrentAcademicSessionId()))
+			groupPrefs.addItem(g.getUniqueId(), g.getName(), g.getDescription());
+		for (RoomFeature f: RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId())) {
+			if (f.getFeatureType() != null) {
+				Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
+				if (fp == null) {
+					fp = new Preferences(f.getFeatureType().getUniqueId(), f.getFeatureType().getLabel() + ":");
+					typedFeaturePrefs.put(f.getFeatureType().getUniqueId(), fp);
+				}
+				fp.addItem(f.getUniqueId(), f.getLabel(), f.getDescription());;
+			} else {
+				featurePrefs.addItem(f.getUniqueId(), f.getLabel(), f.getDescription());
+			}
+		}
+
 		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
 				.setString("id", externalId)
@@ -141,8 +166,28 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				if (rd.getPreference() != null && rd.getPreference().getPrefProlog().equals(PreferenceLevel.sProhibited)) continue;
 				Location location = rd.getRoom();
 				IdLabel rp = roomPrefs.addItem(location.getUniqueId(), location.getLabel(), location.getDisplayName());
-				for (PrefLevel pl: survey.getPrefLevels())
-					if (!pl.isHard()) rp.addAllowedPref(pl.getId());
+				if (rp != null)
+					for (PrefLevel pl: survey.getPrefLevels())
+						if (!pl.isHard()) rp.addAllowedPref(pl.getId());
+				if (location instanceof Room) {
+					Building bldg = ((Room)location).getBuilding();
+					buildingPrefs.addItem(bldg.getUniqueId(), bldg.getAbbrName(), null);
+				}
+			}
+			for (RoomGroup g: RoomGroup.getAllDepartmentRoomGroups(di.getDepartment())) {
+				groupPrefs.addItem(g.getUniqueId(), g.getName() + " (" + g.getDepartment().getDeptCode() + ")", g.getDescription());
+			}
+			for (DepartmentRoomFeature f: RoomFeature.getAllDepartmentRoomFeatures(di.getDepartment())) {
+				if (f.getFeatureType() != null) {
+					Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
+					if (fp == null) {
+						fp = new Preferences(f.getFeatureType().getUniqueId(), f.getFeatureType().getLabel() + ":");
+						typedFeaturePrefs.put(f.getFeatureType().getUniqueId(), fp);
+					}
+					fp.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());;
+				} else {
+					featurePrefs.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());
+				}
 			}
 		}
 		if (survey.getFormattedName() == null)
@@ -176,60 +221,6 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		timePref.setNoteEditable(false);
 		survey.setTimePrefs(timePref);
 		
-		Preferences buildingPrefs = new Preferences(-1l, CMSG.propertyBuildings());
-		Preferences groupPrefs = new Preferences(-2l, CMSG.propertyRoomGroups());
-		Preferences featurePrefs = new Preferences(-3l, CMSG.propertyRoomFeatures());
-		Map<Long, Preferences> typedFeaturePrefs = new HashMap<Long, Preferences>();
-
-		boolean includeExtDepts = true;
-		boolean hasDepts = survey.hasDepartments();
-		for (Location location: (List<Location>)RoomDAO.getInstance().getSession().createQuery(
-				"select distinct r from Location r inner join r.roomDepts rd" + (hasDepts ? ", DepartmentalInstructor i":"") + " where " +
-				(!hasDepts ? "rd.department.externalManager = true and rd.department.inheritInstructorPreferences = true" : 
-						includeExtDepts ? "(rd.department = i.department or (rd.department.externalManager = true and rd.department.inheritInstructorPreferences = true))"
-						: "rd.department = i.department") +
-				(hasDepts ? " and i.externalUniqueId=:id and i.department.session=:sessionId"
-						: " and :id = :id") +
-				" and r.session = :sessionId")
-				.setString("id", externalId)
-				.setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-				.setCacheable(true).list()) {
-			if (location instanceof Room) {
-				Building bldg = ((Room)location).getBuilding();
-				buildingPrefs.addItem(bldg.getUniqueId(), bldg.getAbbrName(), null);
-			}
-			for (RoomGroup g: location.getRoomGroups()) {
-				if (g.isGlobal())
-					groupPrefs.addItem(g.getUniqueId(), g.getName(), g.getDescription());
-				else if (survey.hasDepartment(g.getDepartment().getUniqueId())) {
-					groupPrefs.addItem(g.getUniqueId(), g.getName() + " (" + g.getDepartment().getDeptCode() + ")", g.getDescription());
-				}
-			}
-			for (RoomFeature f: location.getGlobalRoomFeatures()) {
-				if (f.getFeatureType() != null) {
-					Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
-					if (fp == null) {
-						fp = new Preferences(f.getFeatureType().getUniqueId(), f.getFeatureType().getLabel());
-						typedFeaturePrefs.put(f.getFeatureType().getUniqueId(), fp);
-					}
-					fp.addItem(f.getUniqueId(), f.getLabel(), f.getDescription());;
-				} else {
-					featurePrefs.addItem(f.getUniqueId(), f.getLabel(), f.getDescription());
-				}
-			}
-			for (DepartmentRoomFeature f: location.getDepartmentRoomFeatures()) {
-				if (f.getFeatureType() != null) {
-					Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
-					if (fp == null) {
-						fp = new Preferences(f.getFeatureType().getUniqueId(), f.getFeatureType().getLabel() + ":");
-						typedFeaturePrefs.put(f.getFeatureType().getUniqueId(), fp);
-					}
-					fp.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());;
-				} else {
-					featurePrefs.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());;
-				}
-			}
-		}
 		if (buildingPrefs.hasItems())
 			survey.addRoomPreference(buildingPrefs);
 		if (roomPrefs.hasItems())

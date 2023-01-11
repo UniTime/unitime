@@ -28,10 +28,12 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.I
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.PreferencesReadOnlyTable;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.ReadOnlyNote;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -44,6 +46,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
@@ -58,9 +62,10 @@ public class InstructorSurveyWidget extends Composite {
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	protected static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
-	private String iInstructorId;
+	private Long iInstructorId;
 	private UniTimeHeaderPanel iHeader;
 	private SimpleForm iForm;
+	private InstructorSurveyData iSurvey;
 	
 	public InstructorSurveyWidget() {
 		iForm = new SimpleForm();
@@ -86,11 +91,33 @@ public class InstructorSurveyWidget extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				UniTimeFrameDialog.openDialog(MESSAGES.sectInstructorSurvey(),
-						"gwt.jsp?page=instructorSurvey&menu=hide&id=" + iInstructorId,
+						"gwt.jsp?page=instructorSurvey&menu=hide&id=" + iSurvey.getExternalId(),
 						"900","90%");
 			}
 		});
 		iHeader.setEnabled("survey", false);
+		iHeader.addButton("apply", MESSAGES.buttonApplyInstructorSurveyPreferences(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				UniTimeConfirmationDialog.confirm(MESSAGES.questionApplyInstructorSurveyPreferences(), new Command() {
+					@Override
+					public void execute() {
+						iHeader.showLoading();
+						RPC.execute(new InstructorSurveyInterface.InstructorSurveyApplyRequest(iInstructorId), new AsyncCallback<GwtRpcResponseNull>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								iHeader.setErrorMessage(caught.getMessage());						
+							}
+							@Override
+							public void onSuccess(GwtRpcResponseNull result) {
+								Window.Location.reload();
+							}
+						});
+					}
+				});
+			}
+		});
+		iHeader.setEnabled("apply", false);
 		
 		iForm.addHeaderRow(iHeader);
 		
@@ -98,7 +125,7 @@ public class InstructorSurveyWidget extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
-		iInstructorId = panel.getElement().getInnerText();
+		iInstructorId = Long.valueOf(panel.getElement().getInnerText());
 		panel.getElement().setInnerText(null);
 		panel.add(this);
 		panel.setVisible(true);
@@ -122,11 +149,13 @@ public class InstructorSurveyWidget extends Composite {
 	}
 	
 	protected void setValue(InstructorSurveyData survey) {
+		iSurvey = survey;
 		if (iForm.getRowCount() > 1) {
 			iForm.clear();
 			iForm.addHeaderRow(iHeader);
 		}
 		iHeader.setEnabled("survey", survey.isEditable());
+		iHeader.setEnabled("apply", survey.isCanApply());
 		
 		if (survey.hasEmail()) {
 			iForm.addRow(MESSAGES.propEmail(), new Label(survey.getEmail()));

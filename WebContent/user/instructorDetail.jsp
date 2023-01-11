@@ -181,7 +181,7 @@
 		
 		<s:if test="form.hasInstructorSurvey == true">
 			<TR><TD colspan="2">
-				<div id='UniTimeGWT:InstructorSurvey' style="display: none;"><s:property value="form.puId"/></div>
+				<div id='UniTimeGWT:InstructorSurvey' style="display: none;"><s:property value="form.instructorId"/></div>
 			</TD></TR>
 		</s:if>
 

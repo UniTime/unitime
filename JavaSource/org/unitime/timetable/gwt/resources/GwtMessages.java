@@ -7703,6 +7703,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit <u>S</u>urvey")
 	String buttonEditInstructorSurvey();
 	
+	@DefaultMessage("Copy Preferences")
+	String buttonApplyInstructorSurveyPreferences();
+	
 	@DefaultMessage("Time:")
 	String propTimePrefs();
+	
+	@DefaultMessage("Existing instructor preferences will be overwritten with the preferences from the instructor survey. Are you ready to do that?")
+	String questionApplyInstructorSurveyPreferences();
 }
