@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,5 +76,26 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 			ret.put(is.getExternalUniqueId(), is);
 		}
 		return ret;
+	}
+	
+	public DepartmentalInstructor getInstructor(InstructionalOffering io) {
+		Map<Department, DepartmentalInstructor> ret = new HashMap<Department, DepartmentalInstructor>();
+		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where externalUniqueId = :extId and department.session = :sessionId")
+				.setString("extId", getExternalUniqueId())
+				.setLong("sessionId", io.getSessionId())
+				.setCacheable(true).list()) {
+			if (di.getDepartment().equals(io.getDepartment()))
+				return di;
+			ret.put(di.getDepartment(), di);
+		}
+		if (ret.isEmpty()) return null;
+		if (ret.size() == 1)
+			return ret.entrySet().iterator().next().getValue();
+		for (CourseOffering co: io.getCourseOfferings()) {
+			DepartmentalInstructor di = ret.get(co.getDepartment());
+			if (di != null) return di;
+		}
+		return ret.entrySet().iterator().next().getValue();
 	}
 }

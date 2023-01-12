@@ -286,7 +286,7 @@ public class InstructorPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.InstructorSurvey);
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.InstructorSurvey, DepartmentStatusType.Status.OwnerEdit);
 		}
 
 		@Override

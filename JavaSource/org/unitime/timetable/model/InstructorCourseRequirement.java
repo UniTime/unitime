@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirement;
+import org.unitime.timetable.model.dao.InstructorCourseRequirementDAO;
 
 public class InstructorCourseRequirement extends BaseInstructorCourseRequirement implements Comparable<InstructorCourseRequirement> {
 	private static final long serialVersionUID = 3076787808984760805L;
@@ -66,5 +69,15 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 			if (note.getType().equals(type)) return note;
 		}
 		return null;
+	}
+	
+	public static List<InstructorCourseRequirement> getRequirementsForOffering(InstructionalOffering io) {
+		return (List<InstructorCourseRequirement>)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+				"select r from InstructorCourseRequirement r, CourseOffering co " +
+				"where co.instructionalOffering = :offeringId and " +
+				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
+				"r.instructorSurvey.submitted is not null"
+				).setLong("offeringId", io.getUniqueId())
+				.setCacheable(true).list();
 	}
 }

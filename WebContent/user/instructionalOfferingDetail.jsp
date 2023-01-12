@@ -403,6 +403,16 @@
 				</TR>
 			</s:if>
 		</tt:propertyEquals>
+		<s:if test="#request.survey != null">
+			<TR>
+				<TD valign="top"><loc:message name="propertyInstructorCourseRequirements"/></TD>
+				<TD>
+					<TABLE style="border-spacing:0px; width: 100%;">
+						<s:property value="#request.survey" escapeHtml="false"/>
+					</TABLE>
+				</TD>
+			</TR>
+		</s:if>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>
