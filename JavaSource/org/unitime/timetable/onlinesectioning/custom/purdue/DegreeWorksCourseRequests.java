@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -152,6 +154,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	protected Query getStudentFilter() {
 		String filter = ApplicationProperties.getProperty("banner.dgw.studentFilter");
 		return (filter == null || filter.isEmpty() ? null : new Query(filter)); 
+	}
+	
+	protected boolean isPlaceholderUseDescription() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderUseDescription", "false"));
 	}
 
 	protected String getBannerId(XStudentId student) {
@@ -372,7 +378,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					for (XCourse c: phc) {
 						if (lastSubject != null && lastSubject.equals(c.getSubjectArea()) && lastCourse != null && c.getCourseNumber().startsWith(lastCourse)) continue;
 						courses.add(c);
-						lastSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
+						lastSubject = c.getSubjectArea();
 						lastCourse = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), c.getSubjectArea(), c.getCourseNumber());
 					}
 				}
@@ -516,6 +522,22 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
+	protected boolean matchCourse(AcademicSessionInfo session, XCourseId course, String bannerCourse) {
+		if (course.getCourseName().startsWith(bannerCourse)) return true;
+		if (session == null || iExternalTermProvider == null) return false;
+		String xsubject = iExternalTermProvider.getExternalSubject(session, course.getSubjectArea(), course.getCourseNumber());
+		String xcourseNbr = iExternalTermProvider.getExternalCourseNumber(session, course.getSubjectArea(), course.getCourseNumber());
+		return bannerCourse.equals(xsubject + " " + xcourseNbr);
+	}
+	
+	protected boolean matchCourse(AcademicSessionInfo session, CourseOffering course, String bannerCourse) {
+		if (course.getCourseName().startsWith(bannerCourse)) return true;
+		if (session == null || iExternalTermProvider == null) return false;
+		String xsubject = iExternalTermProvider.getExternalSubject(session, course.getSubjectAreaAbbv(), course.getCourseNbr());
+		String xcourseNbr = iExternalTermProvider.getExternalCourseNumber(session, course.getSubjectAreaAbbv(), course.getCourseNbr());
+		return bannerCourse.equals(xsubject + " " + xcourseNbr);
+	}
+	
 	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.Group g, CourseMatcher matcher) {
 		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
 		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
@@ -536,9 +558,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				Collection<? extends XCourseId> ids = server.findCourses(c.courseDiscipline + " " + c.courseNumber, -1, matcher);
 				if (ids != null) {
 					for (XCourseId id: ids) {
+						if (!matchCourse(server.getAcademicSession(), id, c.courseDiscipline + " " + c.courseNumber)) continue;
 						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
 						if (xc == null) continue;
-						if (!id.getCourseName().startsWith(c.courseDiscipline + " " + c.courseNumber)) continue;
 						CourseAssignment ca = new CourseAssignment();
 						ca.setCourseId(xc.getCourseId());
 						ca.setSubject(xc.getSubjectArea());
@@ -602,17 +624,21 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					phg.setDescription(ph.placeholderValue);
 					phg.setId(ph.id);
 					phg.setCritical(isCriticalPlaceholder(ph));
-					DegreePlanInterface.DegreeCourseInterface course = null;
+					Map<String, DegreePlanInterface.DegreeCourseInterface> courses = new HashMap<String, DegreePlanInterface.DegreeCourseInterface>();
 					for (XCourse xc: phc) {
-						if (course == null || !course.getSubject().equals(xc.getSubjectArea()) || !xc.getCourseNumber().startsWith(course.getCourse())) {
+						String bannerSubject = iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber());
+						String bannerCourse = iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber());
+						DegreePlanInterface.DegreeCourseInterface course = courses.get(xc.getSubjectArea() + " " + bannerCourse);
+						if (course == null) {
 							course = new DegreePlanInterface.DegreeCourseInterface();
-							course.setSubject(iExternalTermProvider.getExternalSubject(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
-							course.setCourse(iExternalTermProvider.getExternalCourseNumber(server.getAcademicSession(), xc.getSubjectArea(), xc.getCourseNumber()));
+							course.setSubject(bannerSubject);
+							course.setCourse(bannerCourse);
 							course.setTitle(xc.getTitle());
 							course.setId(ph.id + "-" + xc.getCourseId());
 							course.setCourseId(xc.getCourseId());
 							course.setSelected(false);
 							phg.addCourse(course);
+							courses.put(xc.getSubjectArea() + " " + bannerCourse, course);
 						}
 						CourseAssignment ca = new CourseAssignment();
 						ca.setCourseId(xc.getCourseId());
@@ -651,8 +677,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					group.addGroup(phg);
 				} else {
 					DegreePlanInterface.DegreePlaceHolderInterface placeHolder = new DegreePlanInterface.DegreePlaceHolderInterface();
-					placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
-					placeHolder.setName(ph.placeholderValue);
+					if (ph.placeholderType != null && isPlaceholderUseDescription()) {
+						placeHolder.setType(ph.placeholderValue);
+						placeHolder.setName(ph.placeholderType.description);
+					} else {
+						placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
+						placeHolder.setName(ph.placeholderValue);
+					}
 					placeHolder.setId(ph.id);
 					group.addPlaceHolder(placeHolder);
 				}
@@ -920,7 +951,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 
 			action.addOptionBuilder().setKey("plans").setValue(getGson(helper).toJson(current));
 			
-			CriticalCoursesImpl courses = new CriticalCoursesImpl();
+			CriticalCoursesImpl courses = new CriticalCoursesImpl(server.getAcademicSession());
 			for (XEInterface.DegreePlan p: current) {
 				if (getDegreeWorksActiveOnly() && (p.isActive == null || !p.isActive.value)) continue;
 				if (p.years != null)
@@ -976,9 +1007,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
-	protected static class CriticalCoursesImpl implements CriticalCourses {
+	protected class CriticalCoursesImpl implements CriticalCourses {
+		private AcademicSessionInfo iSession;
 		private Set<String> iCriticalCourses = new TreeSet<String>();
 		private Set<XCourseId> iCriticalCourseIds = null;
+		
+		CriticalCoursesImpl(AcademicSessionInfo session) {
+			iSession = session;
+		}
 		
 		public boolean add(XEInterface.Course c) { return iCriticalCourses.add(c.courseDiscipline + " " + c.courseNumber); }
 		
@@ -993,7 +1029,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (iCriticalCourseIds != null) {
 				for (Iterator<XCourseId> i = iCriticalCourseIds.iterator(); i.hasNext(); ) {
 					XCourseId c = i.next();
-					if (c.getCourseName().startsWith(subjectArea + " " + courseNbr)) {
+					if (matchCourse(iSession, c, subjectArea + " " + courseNbr)) {
 						i.remove(); removed = true;
 					}
 				}
@@ -1007,7 +1043,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		@Override
 		public int isCritical(CourseOffering course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.CRITICAL.ordinal();
+				if (matchCourse(iSession, course, c)) return CourseDemand.Critical.CRITICAL.ordinal();
 			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(new XCourseId(course))) return CourseDemand.Critical.CRITICAL.ordinal();
 			return CourseDemand.Critical.NORMAL.ordinal();
 		}
@@ -1015,7 +1051,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		@Override
 		public int isCritical(XCourseId course) {
 			for (String c: iCriticalCourses)
-				if (course.getCourseName().startsWith(c)) return CourseDemand.Critical.CRITICAL.ordinal();
+				if (matchCourse(iSession, course, c)) return CourseDemand.Critical.CRITICAL.ordinal();
 			if (iCriticalCourseIds != null && iCriticalCourseIds.contains(course)) return CourseDemand.Critical.CRITICAL.ordinal();
 			return CourseDemand.Critical.NORMAL.ordinal();
 		}
