@@ -14500,5 +14500,46 @@
 			alter table %SCHEMA%.room add constraint fk_room_parent foreign key (parent_room_id)
 			references %SCHEMA%.room (uniqueid) on delete set null
 		</sql>
-	</update>	
+	</update>
+	<update version="254" date="13-Jan-2023" comment="Additional Indexes">
+		<plsql onFail="next">create index %SCHEMA%.idx_advisor_crsreq_student on %SCHEMA%.advisor_crsreq(student_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_student_acm_id on %SCHEMA%.student_area_clasf_major(student_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_sectioning_log_opstd on %SCHEMA%.sectioning_log(operation, student)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_student_ext on %SCHEMA%.student(session_id, external_uid, uniqueid)</plsql>
+		<mysql onFail="next">create index idx_sectioning_log_opstd on %SCHEMA%.sectioning_log(operation, student)</mysql>
+		<mysql onFail="next">create index idx_student_ext on %SCHEMA%.student(session_id, external_uid, uniqueid)</mysql>
+		<pgsql onFail="next">create index idx_advisor_crsreq_student on %SCHEMA%.advisor_crsreq USING btree (student_id)</pgsql>
+		<pgsql onFail="next">create index idx_student_acm_id on %SCHEMA%.student_area_clasf_major USING btree (student_id)</pgsql>
+		<pgsql onFail="next">create index idx_sectioning_log_opstd on %SCHEMA%.sectioning_log USING btree (operation, student)</pgsql>
+		<pgsql onFail="next">create index idx_student_ext on %SCHEMA%.student USING btree (session_id, external_uid, uniqueid)</pgsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_student_enrl_course_std on %SCHEMA%.student_class_enrl(course_offering_id, student_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_meeting_date_room_stop on %SCHEMA%.meeting(meeting_date, location_perm_id, stop_period)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_course_offering_ctrlcourse on %SCHEMA%.course_offering(is_control, instr_offr_id, subject_area_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_room_session on %SCHEMA%.room(session_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_manager_ext on %SCHEMA%.timetable_manager(external_uid, uniqueid)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_meeting_date_room_apr on %SCHEMA%.meeting(meeting_date, location_perm_id, event_id, approval_status)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_course_offering_rolled_from on %SCHEMA%.course_offering(uid_rolled_fwd_from)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_event_contact_extid on %SCHEMA%.event_contact(external_id)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_meeting_all on %SCHEMA%.meeting(event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_session_initiative on %SCHEMA%.sessions(academic_initiative)</plsql>
+		<mysql onFail="next">create index idx_student_enrl_course_std on %SCHEMA%.student_class_enrl(course_offering_id, student_id)</mysql>
+		<mysql onFail="next">create index idx_meeting_date_room_stop on %SCHEMA%.meeting(meeting_date, location_perm_id, stop_period)</mysql>
+		<mysql onFail="next">create index idx_course_offering_ctrlcourse on %SCHEMA%.course_offering(is_control, instr_offr_id, subject_area_id)</mysql>
+		<mysql onFail="next">create index idx_manager_ext on %SCHEMA%.timetable_manager(external_uid, uniqueid)</mysql>
+		<mysql onFail="next">create index idx_meeting_date_room_apr on %SCHEMA%.meeting(meeting_date, location_perm_id, event_id, approval_status)</mysql>
+		<mysql onFail="next">create index idx_course_offering_rolled_from on %SCHEMA%.course_offering(uid_rolled_fwd_from)</mysql>
+		<mysql onFail="next">create index idx_event_contact_extid on %SCHEMA%.event_contact(external_id)</mysql>
+		<mysql onFail="next">create index idx_meeting_all on %SCHEMA%.meeting(event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date)</mysql>
+		<mysql onFail="next">create index idx_session_initiative on %SCHEMA%.sessions(academic_initiative)</mysql>
+		<pgsql onFail="next">create index idx_student_enrl_course_std on %SCHEMA%.student_class_enrl using btree (course_offering_id, student_id)</pgsql>
+		<pgsql onFail="next">create index idx_meeting_date_room_stop on %SCHEMA%.meeting using btree (meeting_date, location_perm_id, stop_period)</pgsql>
+		<pgsql onFail="next">create index idx_course_offering_ctrlcourse on %SCHEMA%.course_offering using btree (is_control, instr_offr_id, subject_area_id)</pgsql>
+		<pgsql onFail="next">create index idx_room_session on %SCHEMA%.room using btree (session_id)</pgsql>
+		<pgsql onFail="next">create index idx_manager_ext on %SCHEMA%.timetable_manager using btree (external_uid, uniqueid)</pgsql>
+		<pgsql onFail="next">create index idx_meeting_date_room_apr on %SCHEMA%.meeting using btree (meeting_date, location_perm_id, event_id, approval_status)</pgsql>
+		<pgsql onFail="next">create index idx_course_offering_rolled_from on %SCHEMA%.course_offering using btree (uid_rolled_fwd_from)</pgsql>
+		<pgsql onFail="next">create index idx_event_contact_extid on %SCHEMA%.event_contact using btree (external_id)</pgsql>
+		<pgsql onFail="next">create index idx_meeting_all on %SCHEMA%.meeting using btree (event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date)</pgsql>
+		<pgsql onFail="next">create index idx_session_initiative on %SCHEMA%.sessions using btree (academic_initiative)</pgsql>
+	</update>
 </dbupdate>
