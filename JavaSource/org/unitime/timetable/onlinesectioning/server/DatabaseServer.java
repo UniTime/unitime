@@ -82,7 +82,10 @@ public class DatabaseServer extends AbstractLockingServer {
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false and (" +
-				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
+				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or " +
+				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like '% - ' || :q || '%' or " +
+				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') or " +
+				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like '% - ' || :q || '%') " +
 				(query.length() > 2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 				"order by case " +
 				"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first

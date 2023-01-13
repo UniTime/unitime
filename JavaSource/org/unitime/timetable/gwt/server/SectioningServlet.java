@@ -396,6 +396,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") +
 					" or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like '% - ' || :q || '%'" +
+					" or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like '% - ' || :q || '%'" +
 					" or lower(c.courseNbr) like :q || '%') " +
 					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in (" + types + ")) " : " and ct.reference in (" + types + ") ") +
 					"order by case " +
