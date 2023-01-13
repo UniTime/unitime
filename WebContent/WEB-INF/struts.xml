@@ -29,7 +29,7 @@
     <constant name="struts.convention.action.includeJars" value=".*?/timetable.*?jar(!/)?,.*?/unitime*?jar(!/)?"/>
     <constant name="struts.objectFactory.spring.autoWire.alwaysRespect" value="true" />
     <constant name="struts.multipart.enabled" value="true"/>
-    <constant name="struts.multipart.saveDir" value="${catalina.home}/data/unitime/uploads"/>
+    <constant name="struts.multipart.saveDir" value="${catalina.base}/data/unitime/uploads"/>
     <constant name="struts.multipart.maxSize" value="10737418240"/>
     <constant name="struts.el.throwExceptionOnFailure" value="true"/>
     <package name="unitime" extends="convention-default">
