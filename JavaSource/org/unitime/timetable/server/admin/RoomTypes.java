@@ -82,6 +82,7 @@ public class RoomTypes implements AdminTable {
 			r.setField(2, type.isRoom() ? "room" : "other", canEdit && (nbrRooms == 0));
 			r.setField(3, String.valueOf(nbrRooms), false);
 			r.setDeletable(canEdit && nbrRooms == 0);
+			r.setOrder(type.getOrd());
 		}
 		data.setAddable(context.hasPermission(Right.RoomTypes));
 		data.setEditable(context.hasPermission(Right.RoomTypes));
