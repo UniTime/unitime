@@ -7541,3 +7541,12 @@ unitime-RoomSharingWidget .legend .blank {
 	color: red;
 	font-style: italic;	
 }
+
+.unitime-InstructorSurveyCourseTable .readonly-note {
+	white-space: pre-wrap;
+}
+
+.unitime-InstructorSurveyPage .updated-after-applied {
+	color: orange;
+	font-style: italic;
+}

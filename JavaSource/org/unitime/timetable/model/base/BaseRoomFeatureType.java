@@ -32,9 +32,11 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 	private static final long serialVersionUID = 1L;
 
 	private Boolean iShowInEventManagement;
+	private Boolean iShowInInstructorSurvey;
 
 
 	public static String PROP_EVENTS = "showInEventManagement";
+	public static String PROP_SURVEY = "showInInstructorSurvey";
 
 	public BaseRoomFeatureType() {
 		initialize();
@@ -50,6 +52,10 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 	public Boolean isShowInEventManagement() { return iShowInEventManagement; }
 	public Boolean getShowInEventManagement() { return iShowInEventManagement; }
 	public void setShowInEventManagement(Boolean showInEventManagement) { iShowInEventManagement = showInEventManagement; }
+
+	public Boolean isShowInInstructorSurvey() { return iShowInInstructorSurvey; }
+	public Boolean getShowInInstructorSurvey() { return iShowInInstructorSurvey; }
+	public void setShowInInstructorSurvey(Boolean showInInstructorSurvey) { iShowInInstructorSurvey = showInInstructorSurvey; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomFeatureType)) return false;
@@ -71,6 +77,7 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 			"\n	Label: " + getLabel() +
 			"\n	Reference: " + getReference() +
 			"\n	ShowInEventManagement: " + getShowInEventManagement() +
+			"\n	ShowInInstructorSurvey: " + getShowInInstructorSurvey() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

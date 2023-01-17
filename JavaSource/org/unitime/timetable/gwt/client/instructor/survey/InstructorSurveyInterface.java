@@ -48,7 +48,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private String iFormattedName;
 		private String iEmail;
 		private String iNote;
-		private Date iSubmitted;
+		private String iChangedBy, iAppliedDept;
+		private Date iSubmitted, iApplied, iChanged;
 		private List<InstructorDepartment> iDepartments;
 		private InstructorTimePreferencesModel iTimePrefs;
 		private List<Preferences> iRoomPrefs;
@@ -58,6 +59,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private List<CustomField> iCustomFields;
 		private boolean iEditable = true;
 		private boolean iCanApply = true;
+		private boolean iAdmin = true;
 		
 		public InstructorSurveyData() {}
 		
@@ -72,6 +74,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setEditable(boolean editable) { iEditable = editable; }
 		public boolean isCanApply() { return iCanApply; }
 		public void setCanApply(boolean canApply) { iCanApply = canApply; }
+		public boolean isAdmin() { return iAdmin; }
+		public void setAdmin(boolean admin) { iAdmin = admin; }
 		
 		public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
 		public String getEmail() { return iEmail; }
@@ -79,6 +83,14 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public Date getSubmitted() { return iSubmitted; }
 		public void setSubmitted(Date submitted) { iSubmitted = submitted; }
+		public String getAppliedDeptCode() { return iAppliedDept; }
+		public void setAppliedDeptCode(String deptCode) { iAppliedDept = deptCode; }
+		public Date getApplied() { return iApplied; }
+		public void setApplied(Date applied) { iApplied = applied; }
+		public String getChangedBy() { return iChangedBy; }
+		public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+		public Date getChanged() { return iChanged; }
+		public void setChanged(Date changed) { iChanged = changed; }
 		
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
 		public String getNote() { return iNote; }
@@ -261,15 +273,18 @@ public class InstructorSurveyInterface implements IsSerializable {
 	public static class InstructorDepartment implements IsSerializable {
 		private Long iId;
 		private String iLabel;
+		private String iDeptCode;
 		private IdLabel iPosition;
 		
 		public InstructorDepartment() {}
-		public InstructorDepartment(Long id, String label, IdLabel position) {
-			iId = id; iLabel = label; iPosition = position;
+		public InstructorDepartment(Long id, String deptCode, String label, IdLabel position) {
+			iId = id; iDeptCode = deptCode; iLabel = label; iPosition = position;
 		}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
+		public String getDeptCode() { return iDeptCode; }
+		public void setDeptCode(String deptCode) { iDeptCode = deptCode; }
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
 		
@@ -330,7 +345,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 	
 	public static class InstructorSurveySaveRequest implements GwtRpcRequest<InstructorSurveyData> {
 		private InstructorSurveyData iData;
+		private Long iInstructorId;
 		private boolean iSubmit = false;
+		private boolean iUnsubmit = false;
+		private boolean iChanged = true;
 		
 		public InstructorSurveySaveRequest() {}
 		public InstructorSurveySaveRequest(InstructorSurveyData data, boolean submit) {
@@ -342,6 +360,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setData(InstructorSurveyData data) { iData = data; }
 		public boolean isSubmit() { return iSubmit; }
 		public void setSubmit(boolean submit) { iSubmit = submit; }
+		public boolean isUnsubmit() { return iUnsubmit; }
+		public void setUnsubmit(boolean unsubmit) { iUnsubmit = unsubmit; }
+		public boolean isChanged() { return iChanged; }
+		public void setChanged(boolean changed) { iChanged = changed; }
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
 	}
 	
 	public static class InstructorTimePreferencesModel extends InstructorAvailabilityModel {

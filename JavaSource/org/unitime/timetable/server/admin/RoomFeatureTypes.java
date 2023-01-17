@@ -58,7 +58,8 @@ public class RoomFeatureTypes implements AdminTable {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field(MESSAGES.fieldEventManagement(), FieldType.toggle, 40)
+				new Field(MESSAGES.fieldEventManagement(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldInstructorSurvey(), FieldType.toggle, 40)
 				);
 		data.setSortBy(2, 1);
 		for (RoomFeatureType ftype: RoomFeatureTypeDAO.getInstance().findAll()) {
@@ -66,6 +67,7 @@ public class RoomFeatureTypes implements AdminTable {
 			r.setField(0, ftype.getReference());
 			r.setField(1, ftype.getLabel());
 			r.setField(2, ftype.isShowInEventManagement() ? "true" : "false");
+			r.setField(3, ftype.isShowInInstructorSurvey() ? "true" : "false");
 			int used =
 					((Number)hibSession.createQuery(
 							"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId")
@@ -97,6 +99,7 @@ public class RoomFeatureTypes implements AdminTable {
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setShowInEventManagement("true".equals(record.getField(2)));
+		type.setShowInInstructorSurvey("true".equals(record.getField(3)));
 		record.setUniqueId((Long)hibSession.save(type));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -112,10 +115,12 @@ public class RoomFeatureTypes implements AdminTable {
 		if (type == null) return;
 		if (ToolBox.equals(type.getReference(), record.getField(0)) &&
 				ToolBox.equals(type.getLabel(), record.getField(1)) &&
-				ToolBox.equals(type.getShowInEventManagement(), "true".equals(record.getField(2)))) return;
+				ToolBox.equals(type.getShowInEventManagement(), "true".equals(record.getField(2))) &&
+				ToolBox.equals(type.getShowInInstructorSurvey(), "true".equals(record.getField(3)))) return;
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setShowInEventManagement("true".equals(record.getField(2)));
+		type.setShowInInstructorSurvey("true".equals(record.getField(3)));
 		hibSession.saveOrUpdate(type);
 		ChangeLog.addChange(hibSession,
 				context,

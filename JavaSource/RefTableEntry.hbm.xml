@@ -319,6 +319,11 @@
                 column="events"
                 type="java.lang.Boolean"
                 not-null="true"/>
+           <property
+                name="showInInstructorSurvey"
+                column="survey"
+                type="java.lang.Boolean"
+                not-null="true"/>
         </union-subclass>
 
         <union-subclass name="CourseType"

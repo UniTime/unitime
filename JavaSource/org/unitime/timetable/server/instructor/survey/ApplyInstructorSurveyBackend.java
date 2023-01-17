@@ -1,5 +1,6 @@
 package org.unitime.timetable.server.instructor.survey;
 
+import java.util.Date;
 import java.util.Iterator;
 
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyApplyRequest;
@@ -60,6 +61,8 @@ public class ApplyInstructorSurveyBackend implements GwtRpcImplementation<Instru
 		if (is.getEmail() != null && !is.getEmail().isEmpty())
 			di.setEmail(is.getEmail());
 		hibSession.update(di);
+		is.setAppliedDeptCode(di.getDepartment().getDeptCode());
+		is.setApplied(new Date());
 		hibSession.flush();
 		return new GwtRpcResponseNull();
 	}

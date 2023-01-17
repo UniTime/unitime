@@ -14766,4 +14766,21 @@
 			references %SCHEMA%.instr_crsreq_note_type (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="257" date="17-Jan-2023" comment="Instructor Survey Improvements">
+	    <plsql>alter table %SCHEMA%.feature_type add survey number(1) default 1</plsql>
+	    <mysql>alter table %SCHEMA%.feature_type add survey int(1) default 1</mysql>
+	    <pgsql>alter table %SCHEMA%.feature_type add survey boolean default true</pgsql>
+	    <plsql>alter table %SCHEMA%.instructor_survey add changed_by varchar2(40 char)</plsql>
+	    <mysql>alter table %SCHEMA%.instructor_survey add changed_by varchar(40)</mysql>
+	    <pgsql>alter table %SCHEMA%.instructor_survey add changed_by varchar(40)</pgsql>
+	    <plsql>alter table %SCHEMA%.instructor_survey add changed_ts timestamp</plsql>
+	    <mysql>alter table %SCHEMA%.instructor_survey add changed_ts datetime</mysql>
+	    <pgsql>alter table %SCHEMA%.instructor_survey add changed_ts timestamp with time zone</pgsql>
+	    <plsql>alter table %SCHEMA%.instructor_survey add applied_dept varchar2(50 char)</plsql>
+	    <mysql>alter table %SCHEMA%.instructor_survey add applied_dept varchar(50)</mysql>
+	    <pgsql>alter table %SCHEMA%.instructor_survey add applied_dept varchar(50)</pgsql>
+	    <plsql>alter table %SCHEMA%.instructor_survey add applied_ts timestamp</plsql>
+	    <mysql>alter table %SCHEMA%.instructor_survey add applied_ts datetime</mysql>
+	    <pgsql>alter table %SCHEMA%.instructor_survey add applied_ts timestamp with time zone</pgsql>
+	</update>
 </dbupdate>

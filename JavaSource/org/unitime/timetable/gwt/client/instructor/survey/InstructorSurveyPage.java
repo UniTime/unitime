@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -65,6 +66,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -143,8 +145,10 @@ public class InstructorSurveyPage extends Composite {
 					@Override
 					public void onSuccess(InstructorSurveyData result) {
 						LoadingWidget.hideLoading();
-						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
+						UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
 						setValue(result);
+						if (ToolBox.hasParent())
+							ToolBox.closeWindow();
 					}
 				});
 			}
@@ -153,20 +157,27 @@ public class InstructorSurveyPage extends Composite {
 			@Override
 			public void onClick(ClickEvent e) {
 				iHeader.clearMessage();
-				LoadingWidget.showLoading(MESSAGES.waitSubmittingInstructorSurvey());
-				RPC.execute(new InstructorSurveySaveRequest(getValue(), true), new AsyncCallback<InstructorSurveyData>() {
+				UniTimeConfirmationDialog.confirm(MESSAGES.questionSubmitInstructorSurvey(), new Command() {
 					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.hideLoading();
-						UniTimeNotifications.error(caught.getMessage());
-						iHeader.setErrorMessage(caught.getMessage());
-					}
+					public void execute() {
+						LoadingWidget.showLoading(MESSAGES.waitSubmittingInstructorSurvey());
+						RPC.execute(new InstructorSurveySaveRequest(getValue(), true), new AsyncCallback<InstructorSurveyData>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.hideLoading();
+								UniTimeNotifications.error(caught.getMessage());
+								iHeader.setErrorMessage(caught.getMessage());
+							}
 
-					@Override
-					public void onSuccess(InstructorSurveyData result) {
-						LoadingWidget.hideLoading();
-						UniTimeNotifications.info(MESSAGES.fieldSavedSuccessfully());
-						setValue(result);
+							@Override
+							public void onSuccess(InstructorSurveyData result) {
+								LoadingWidget.hideLoading();
+								UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
+								setValue(result);
+								if (ToolBox.hasParent())
+									ToolBox.closeWindow();
+							}
+						});
 					}
 				});
 			}
@@ -272,7 +283,7 @@ public class InstructorSurveyPage extends Composite {
 		iPanel.addBottomRow(iFooter);
 		if (!iSurvey.isEditable()) {
 			if (iSurvey.getSubmitted() != null)
-				iHeader.setMessage(MESSAGES.infoInstructorSurveySubmitted());
+				iHeader.setMessage(MESSAGES.infoInstructorSurveySubmitted(sTimeStampFormat.format(iSurvey.getSubmitted())));
 			else
 				iHeader.setMessage(MESSAGES.infoInstructorSurveyNotEditable());
 		}

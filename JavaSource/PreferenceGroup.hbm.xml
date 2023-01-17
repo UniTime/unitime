@@ -1283,6 +1283,28 @@
                 column="submitted"
                 type="java.sql.Timestamp"
                 not-null="false"/>
+            <property
+                name="changedBy"
+                column="changed_by"
+                type="java.lang.String"
+                not-null="false"
+                length="40"/>
+            <property
+                name="changed"
+                column="changed_ts"
+                type="java.sql.Timestamp"
+                not-null="false"/>
+			<property
+                name="appliedDeptCode"
+                column="applied_dept"
+                type="java.lang.String"
+                not-null="false"
+                length="50"/>              
+			<property
+                name="applied"
+                column="applied_ts"
+                type="java.sql.Timestamp"
+                not-null="false"/>              
             <set
             	name="courseRequirements"
             	table="instr_course_req_notes"

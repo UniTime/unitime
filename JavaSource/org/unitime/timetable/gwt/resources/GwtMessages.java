@@ -7655,11 +7655,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Individual Course Requirements")
 	String sectCoursePreferences();
 	
-	@DefaultMessage("Save for Later")
+	@DefaultMessage("Save for <u>L</u>ater")
 	String buttonSaveInstructorSurvey();
 	
 	@DefaultMessage("<u>S</u>ubmit")
 	String buttonSubmitInstructorSurvey();
+	
+	@DefaultMessage("<u>U</u>nsubmit")
+	String buttonUnsubmitInstructorSurvey();
 	
 	@DefaultMessage("Please provide reason for the {0} {1}.")
 	String hintProvideReasonFor(String pref, String item);
@@ -7676,14 +7679,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Not Submitted")
 	String notSubbitted();
 	
+	@DefaultMessage("The survey has been updated after the preferences have been copied to the instructor.")
+	String surveyUpdatedAfterApply();
+	
 	@DefaultMessage("It is not allowed to submit an instructor survey at the moment.")
 	String errorInstructorSurveyNotAllowed();
 	
 	@DefaultMessage("Instructor survey cannot be edited at this moment.")
 	String infoInstructorSurveyNotEditable();
 	
-	@DefaultMessage("Instructor survey has been submitted.")
-	String infoInstructorSurveySubmitted();
+	@DefaultMessage("Instructor survey has been submitted on {0}.")
+	String infoInstructorSurveySubmitted(String ts);
 	
 	@DefaultMessage("<u>C</u>lose")
 	String buttonCloseInstructorSurvey();
@@ -7693,6 +7699,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Submitting instructor survey ...")
 	String waitSubmittingInstructorSurvey();
+	
+	@DefaultMessage("Updating instructor survey ...")
+	String waitUpdatingInstructorSurvey();
 	
 	@DefaultMessage("Instructor Survey")
 	String sectInstructorSurvey();
@@ -7711,4 +7720,22 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Existing instructor preferences will be overwritten with the preferences from the instructor survey. Are you ready to do that?")
 	String questionApplyInstructorSurveyPreferences();
+	
+	@DefaultMessage("Instructor Survey")
+	String fieldInstructorSurvey();
+	
+	@DefaultMessage("No instructor survey have been saved for the instructor yet.")
+	String errorNoInstructorSurvey();
+	
+	@DefaultMessage("The survey has been sucessfully updated.")
+	String infoInstructorSurveyUpdated();
+	
+	@DefaultMessage("You are about to submit the instructor survey. Once submitted you will not be able to make changes. Are you ready to do that?")
+	String questionSubmitInstructorSurvey();
+	
+	@DefaultMessage("Preferences Copied:")
+	String propLastApplied();
+	
+	@DefaultMessage("{0} for {1}")
+	String lastApply(String date, String dept);
 }
