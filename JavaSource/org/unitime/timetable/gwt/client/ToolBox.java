@@ -298,7 +298,7 @@ public class ToolBox {
 	}-*/;
 	
 	public native static boolean hasParent()/*-{
-		if ($wnd.parent) return true;
+		if ($wnd.parent && $wnd.parent !== $wnd.self) return true;
 		return false;
 	}-*/;
 	

@@ -27,6 +27,7 @@ import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveySaveRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
@@ -92,13 +93,17 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 					"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
 					).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
 					.setString("externalId", survey.getExternalId()).setMaxResults(1).uniqueResult();
+			if (is == null && !request.isChanged()) {
+				throw new GwtRpcException(MESSAGES.errorNoInstructorSurvey());
+			}
+			
 			if (is == null) {
 				is = new InstructorSurvey();
 				is.setExternalUniqueId(survey.getExternalId());
 				is.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 				is.setPreferences(new HashSet<Preference>());
 				is.setCourseRequirements(new HashSet<InstructorCourseRequirement>());
-			} else {
+			} else if (request.isChanged()) {
 				is.getPreferences().clear();
 				for (InstructorCourseRequirement icr: is.getCourseRequirements()) {
 					hibSession.delete(icr);
@@ -107,115 +112,128 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 			}
 			is.setEmail(survey.getEmail());
 			is.setNote(survey.getNote());
+			Date ts = new Date();
 			if (request.isSubmit()) {
-				is.setSubmitted(new Date());
+				is.setSubmitted(ts);
 				survey.setSubmitted(is.getSubmitted());
+				survey.setEditable(context.hasPermission(Right.InstructorSurveyAdmin));
+			} else if (request.isUnsubmit()) {
+				is.setSubmitted(null);
 			}
-			
-			if (survey.hasCourses()) {
-				List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)hibSession.createQuery(
-						"from InstructorCourseRequirementType order by sortOrder").list();
-				for (Course ci: survey.getCourses()) {
-					if (!ci.hasCustomFields()) continue;
-					CourseOffering co = null;
-					if (ci.getId() != null)
-						co = CourseOfferingDAO.getInstance().get(ci.getId(), hibSession);
-					if (co != null || ci.hasCourseName()) {
-						InstructorCourseRequirement icr = new InstructorCourseRequirement();
-						icr.setCourseOffering(co);
-						icr.setCourse(co == null ? ci.getCourseName() : co.getCourseName());
-						icr.setInstructorSurvey(is);
-						icr.setNotes(new HashSet<InstructorCourseRequirementNote>());
-						for (InstructorCourseRequirementType type: types) {
-							String note = ci.getCustomField(type.getUniqueId());
-							if (note != null) {
-								InstructorCourseRequirementNote n = new InstructorCourseRequirementNote();
-								n.setType(type);
-								n.setRequirement(icr);
-								n.setNote(note);
-								icr.getNotes().add(n);
+			if (request.isChanged()) {
+				is.setChanged(ts);
+				is.setChangedBy(context.getUser().getExternalUserId());
+				
+				if (survey.hasCourses()) {
+					List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)hibSession.createQuery(
+							"from InstructorCourseRequirementType order by sortOrder").list();
+					for (Course ci: survey.getCourses()) {
+						if (!ci.hasCustomFields()) continue;
+						CourseOffering co = null;
+						if (ci.getId() != null)
+							co = CourseOfferingDAO.getInstance().get(ci.getId(), hibSession);
+						if (co != null || ci.hasCourseName()) {
+							InstructorCourseRequirement icr = new InstructorCourseRequirement();
+							icr.setCourseOffering(co);
+							icr.setCourse(co == null ? ci.getCourseName() : co.getCourseName());
+							icr.setInstructorSurvey(is);
+							icr.setNotes(new HashSet<InstructorCourseRequirementNote>());
+							for (InstructorCourseRequirementType type: types) {
+								String note = ci.getCustomField(type.getUniqueId());
+								if (note != null) {
+									InstructorCourseRequirementNote n = new InstructorCourseRequirementNote();
+									n.setType(type);
+									n.setRequirement(icr);
+									n.setNote(note);
+									icr.getNotes().add(n);
+								}
 							}
-						}
-						is.getCourseRequirements().add(icr);
-					}
-				}
-			}
-			
-			if (survey.hasDistributionPreferences()) {
-				Preferences p = survey.getDistributionPreferences();
-				if (p.hasSelections()) {
-					for (Selection selection: p.getSelections()) {
-						DistributionType dt = DistributionTypeDAO.getInstance().get(selection.getItem(), hibSession);
-						PreferenceLevel pl = PreferenceLevelDAO.getInstance().get(selection.getLevel(), hibSession);
-						if (dt != null && pl != null) {
-							DistributionPref dp = new DistributionPref();
-							dp.setDistributionType(dt);
-							dp.setPrefLevel(pl);
-							dp.setNote(selection.getNote());
-							dp.setOwner(is);
-							is.getPreferences().add(dp);
+							is.getCourseRequirements().add(icr);
 						}
 					}
 				}
-			}
-			if (survey.hasRoomPreferences()) {
-				for (Preferences p: survey.getRoomPreferences()) {
+				
+				if (survey.hasDistributionPreferences()) {
+					Preferences p = survey.getDistributionPreferences();
 					if (p.hasSelections()) {
 						for (Selection selection: p.getSelections()) {
+							DistributionType dt = DistributionTypeDAO.getInstance().get(selection.getItem(), hibSession);
 							PreferenceLevel pl = PreferenceLevelDAO.getInstance().get(selection.getLevel(), hibSession);
-							if (p.getId() == -1l) {
-								Building b = BuildingDAO.getInstance().get(selection.getItem(), hibSession);
-								if (b != null && pl != null) {
-									BuildingPref bp = new BuildingPref();
-									bp.setBuilding(b);
-									bp.setPrefLevel(pl);
-									bp.setNote(selection.getNote());
-									bp.setOwner(is);is.getPreferences().add(bp);
-								}
-							} else if (p.getId() == -2l) {
-								RoomGroup rg = RoomGroupDAO.getInstance().get(selection.getItem(), hibSession);
-								if (rg != null && pl != null) {
-									RoomGroupPref gp = new RoomGroupPref();
-									gp.setRoomGroup(rg);
-									gp.setPrefLevel(pl);
-									gp.setNote(selection.getNote());
-									gp.setOwner(is);is.getPreferences().add(gp);
-								}
-							} else if (p.getId() == -4l) {
-								Location r = LocationDAO.getInstance().get(selection.getItem(), hibSession);
-								if (r != null && pl != null) {
-									RoomPref rp = new RoomPref();
-									rp.setRoom(r);
-									rp.setPrefLevel(pl);
-									rp.setNote(selection.getNote());
-									rp.setOwner(is);is.getPreferences().add(rp);
-								}
-							} else {
-								RoomFeature rf = RoomFeatureDAO.getInstance().get(selection.getItem(), hibSession);
-								if (rf != null && pl != null) {
-									RoomFeaturePref fp = new RoomFeaturePref();
-									fp.setRoomFeature(rf);
-									fp.setPrefLevel(pl);
-									fp.setNote(selection.getNote());
-									fp.setOwner(is);is.getPreferences().add(fp);
+							if (dt != null && pl != null) {
+								DistributionPref dp = new DistributionPref();
+								dp.setDistributionType(dt);
+								dp.setPrefLevel(pl);
+								dp.setNote(selection.getNote());
+								dp.setOwner(is);
+								is.getPreferences().add(dp);
+							}
+						}
+					}
+				}
+				if (survey.hasRoomPreferences()) {
+					for (Preferences p: survey.getRoomPreferences()) {
+						if (p.hasSelections()) {
+							for (Selection selection: p.getSelections()) {
+								PreferenceLevel pl = PreferenceLevelDAO.getInstance().get(selection.getLevel(), hibSession);
+								if (p.getId() == -1l) {
+									Building b = BuildingDAO.getInstance().get(selection.getItem(), hibSession);
+									if (b != null && pl != null) {
+										BuildingPref bp = new BuildingPref();
+										bp.setBuilding(b);
+										bp.setPrefLevel(pl);
+										bp.setNote(selection.getNote());
+										bp.setOwner(is);is.getPreferences().add(bp);
+									}
+								} else if (p.getId() == -2l) {
+									RoomGroup rg = RoomGroupDAO.getInstance().get(selection.getItem(), hibSession);
+									if (rg != null && pl != null) {
+										RoomGroupPref gp = new RoomGroupPref();
+										gp.setRoomGroup(rg);
+										gp.setPrefLevel(pl);
+										gp.setNote(selection.getNote());
+										gp.setOwner(is);is.getPreferences().add(gp);
+									}
+								} else if (p.getId() == -4l) {
+									Location r = LocationDAO.getInstance().get(selection.getItem(), hibSession);
+									if (r != null && pl != null) {
+										RoomPref rp = new RoomPref();
+										rp.setRoom(r);
+										rp.setPrefLevel(pl);
+										rp.setNote(selection.getNote());
+										rp.setOwner(is);is.getPreferences().add(rp);
+									}
+								} else {
+									RoomFeature rf = RoomFeatureDAO.getInstance().get(selection.getItem(), hibSession);
+									if (rf != null && pl != null) {
+										RoomFeaturePref fp = new RoomFeaturePref();
+										fp.setRoomFeature(rf);
+										fp.setPrefLevel(pl);
+										fp.setNote(selection.getNote());
+										fp.setOwner(is);is.getPreferences().add(fp);
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			if (survey.getTimePrefs() != null && !survey.getTimePrefs().isEmpty()) {
-				TimePref tp = new TimePref();
-				tp.setNote(survey.getTimePrefs().getNote());
-				tp.setPreference(survey.getTimePrefs().getPattern());
-				tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
-				tp.setOwner(is); is.getPreferences().add(tp);
+				if (survey.getTimePrefs() != null && !survey.getTimePrefs().isEmpty()) {
+					TimePref tp = new TimePref();
+					tp.setNote(survey.getTimePrefs().getNote());
+					tp.setPreference(survey.getTimePrefs().getPattern());
+					tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+					tp.setOwner(is); is.getPreferences().add(tp);
+				}
 			}
 			
 			hibSession.saveOrUpdate(is);
 			survey.setId(is.getUniqueId());
 			
 			tx.commit(); tx = null;
+			if (!request.isChanged())
+				if (request.getInstructorId() != null)
+					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getInstructorId()), context);
+				else
+					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getData().getExternalId()), context);
 			return survey;
 		} catch (Exception ex) {
 			if (tx != null) tx.rollback();

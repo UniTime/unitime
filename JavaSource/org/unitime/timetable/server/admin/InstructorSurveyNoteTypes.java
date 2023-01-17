@@ -77,6 +77,7 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 			r.setField(0, type.getReference());
 			r.setField(1, type.getLabel());
 			r.setField(2, type.getLength().toString());
+			r.setOrder(type.getSortOrder());
 		}
 		data.setEditable(context.hasPermission(Right.InstructorSurveyNoteTypeEdit));
 		return data;
@@ -126,6 +127,7 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 	@PreAuthorize("checkPermission('InstructorSurveyNoteTypeEdit')")
 	public void save(Record record, SessionContext context, Session hibSession) {
 		InstructorCourseRequirementType type = new InstructorCourseRequirementType();
+		if (record.getOrder() == null) record.setOrder(nextOrd());
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setLength(Integer.parseInt(record.getField(2)));

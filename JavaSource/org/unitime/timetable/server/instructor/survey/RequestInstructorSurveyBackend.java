@@ -71,6 +71,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
@@ -121,6 +122,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		final InstructorSurveyData survey = new InstructorSurveyData();
 		survey.setExternalId(externalId);
 		survey.setEditable(editable);
+		survey.setAdmin(admin);
 		survey.setCanApply(is != null && is.getSubmitted() != null && instructor != null && context.hasPermission(instructor, Right.InstructorPreferences) && !is.getPreferences().isEmpty());
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
@@ -138,6 +140,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			groupPrefs.addItem(g.getUniqueId(), g.getName(), g.getDescription());
 		for (RoomFeature f: RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId())) {
 			if (f.getFeatureType() != null) {
+				if (!f.getFeatureType().isShowInInstructorSurvey()) continue;
 				Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
 				if (fp == null) {
 					fp = new Preferences(f.getFeatureType().getUniqueId(), f.getFeatureType().getLabel() + ":");
@@ -148,18 +151,22 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				featurePrefs.addItem(f.getUniqueId(), f.getLabel(), f.getDescription());
 			}
 		}
-
-		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+		
+		List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
 				.setString("id", externalId)
 				.setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-				.setCacheable(true).list()) {
+				.setCacheable(true).list();
+
+		for (DepartmentalInstructor di: instructors) {
 			if (survey.getFormattedName() == null)
 				survey.setFormattedName(di.getName(nameFormat));
 			if (!survey.hasEmail())
 				survey.setEmail(di.getEmail());
 			survey.addDepartment(new InstructorDepartment(
-					di.getDepartment().getUniqueId(), di.getDepartment().getLabel(),
+					di.getDepartment().getUniqueId(),
+					di.getDepartment().getDeptCode(),
+					di.getDepartment().getLabel(),
 					di.getPositionType() == null ? null : new IdLabel(di.getPositionType().getUniqueId(), di.getPositionType().getLabel(), null)
 							));
 			for (RoomDept rd: di.getDepartment().getRoomDepts()) {
@@ -174,9 +181,10 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					buildingPrefs.addItem(bldg.getUniqueId(), bldg.getAbbrName(), null);
 				}
 			}
-			for (RoomGroup g: RoomGroup.getAllDepartmentRoomGroups(di.getDepartment())) {
-				groupPrefs.addItem(g.getUniqueId(), g.getName() + " (" + g.getDepartment().getDeptCode() + ")", g.getDescription());
-			}
+			if (ApplicationProperty.InstructorSurveyRoomGroupPreferencesDept.isTrue(di.getDepartment().getDeptCode(), true))
+				for (RoomGroup g: RoomGroup.getAllDepartmentRoomGroups(di.getDepartment())) {
+					groupPrefs.addItem(g.getUniqueId(), g.getName() + " (" + g.getDepartment().getDeptCode() + ")", g.getDescription());
+				}
 			for (DepartmentRoomFeature f: RoomFeature.getAllDepartmentRoomFeatures(di.getDepartment())) {
 				if (f.getFeatureType() != null) {
 					Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
@@ -185,7 +193,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 						typedFeaturePrefs.put(f.getFeatureType().getUniqueId(), fp);
 					}
 					fp.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());;
-				} else {
+				} else if (ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDept.isTrue(di.getDepartment().getDeptCode(), true)) {
 					featurePrefs.addItem(f.getUniqueId(), f.getLabel() + " (" + f.getDeptCode() + ")", f.getDescription());
 				}
 			}
@@ -205,7 +213,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		}
 		
 		InstructorTimePreferencesModel timePref = new InstructorTimePreferencesModel();
-		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value()));
+		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|" + propertyValue(survey, ApplicationProperty.InstructorSurveyTimePreferencesDept, ApplicationProperty.InstructorSurveyTimePreferences)));
 		timePref.setDefaultMode(0);
 		timePref.setDefaultEditable(editable);
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
@@ -221,13 +229,13 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		timePref.setNoteEditable(false);
 		survey.setTimePrefs(timePref);
 		
-		if (buildingPrefs.hasItems())
+		if (buildingPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyBuildingPreferencesDept, ApplicationProperty.InstructorSurveyBuildingPreferences))
 			survey.addRoomPreference(buildingPrefs);
-		if (roomPrefs.hasItems())
+		if (roomPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomPreferencesDept, ApplicationProperty.InstructorSurveyRoomPreferences))
 			survey.addRoomPreference(roomPrefs);
-		if (groupPrefs.hasItems())
+		if (groupPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomGroupPreferencesDept, ApplicationProperty.InstructorSurveyRoomGroupPreferences))
 			survey.addRoomPreference(groupPrefs);
-		if (featurePrefs.hasItems())
+		if (featurePrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDept, ApplicationProperty.InstructorSurveyRoomFeaturePreferences))
 			survey.addRoomPreference(featurePrefs);
 		if (!typedFeaturePrefs.isEmpty())
 			for (Preferences p: new TreeSet<Preferences>(typedFeaturePrefs.values()))
@@ -288,6 +296,23 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			survey.setSubmitted(is.getSubmitted());
 			if (is.getEmail() != null && !is.getEmail().isEmpty())
 				survey.setEmail(is.getEmail());
+			survey.setApplied(is.getApplied());
+			survey.setAppliedDeptCode(is.getAppliedDeptCode());
+			if (is.getAppliedDeptCode() != null && !instructors.isEmpty()) {
+				for (DepartmentalInstructor di: instructors)
+					if (di.getDepartment().getDeptCode().equals(is.getAppliedDeptCode()))
+						survey.setAppliedDeptCode(di.getDepartment().getLabel());
+			}
+			survey.setChanged(is.getChanged());
+			if (is.getChangedBy() != null) {
+				TimetableManager manager = TimetableManager.findByExternalId(is.getChangedBy());
+				if (manager != null)
+					survey.setChangedBy(manager.getName(nameFormat));
+				else if (!instructors.isEmpty())
+					survey.setChangedBy(instructors.get(0).getName(nameFormat));
+				else
+					survey.setChangedBy(is.getChangedBy());
+			}
 			survey.setNote(is.getNote());
 			for (InstructorCourseRequirement r: is.getCourseRequirements()) {
 				Course ci = new Course();
@@ -339,6 +364,29 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				}
 			});
 		return survey;
+	}
+	
+	protected String propertyValue(InstructorSurveyData survey, ApplicationProperty departmentalProperty, ApplicationProperty globalProperty) {
+		if (survey.hasDepartments()) {
+			for (InstructorDepartment dept: survey.getDepartments()) {
+				String value = departmentalProperty.value(dept.getDeptCode());
+				if (value != null) return value;
+			}
+		}
+		return globalProperty.value();
+	}
+	
+	protected boolean isAllowed(InstructorSurveyData survey, ApplicationProperty departmentalProperty, ApplicationProperty globalProperty) {
+		if (survey.hasDepartments()) {
+			boolean hasFalse = false;
+			for (InstructorDepartment dept: survey.getDepartments()) {
+				String value = departmentalProperty.value(dept.getDeptCode());
+				if ("true".equalsIgnoreCase(value)) return true;
+				if ("false".equalsIgnoreCase(value)) hasFalse = true;
+			}
+			if (hasFalse) return false;
+		}
+		return globalProperty.isTrue();
 	}
 
 }

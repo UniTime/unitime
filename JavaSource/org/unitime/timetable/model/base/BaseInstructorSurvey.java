@@ -40,6 +40,10 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	private String iEmail;
 	private String iNote;
 	private Date iSubmitted;
+	private String iChangedBy;
+	private Date iChanged;
+	private String iAppliedDeptCode;
+	private Date iApplied;
 
 	private Session iSession;
 	private Set<InstructorCourseRequirement> iCourseRequirements;
@@ -48,6 +52,10 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	public static String PROP_EMAIL = "email";
 	public static String PROP_NOTE = "note";
 	public static String PROP_SUBMITTED = "submitted";
+	public static String PROP_CHANGED_EXTID = "changedBy";
+	public static String PROP_CHANGED_TS = "changed";
+	public static String PROP_APPLIED_DEPT = "appliedDeptCode";
+	public static String PROP_APPLIED_TS = "applied";
 
 	public BaseInstructorSurvey() {
 		initialize();
@@ -71,6 +79,18 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 
 	public Date getSubmitted() { return iSubmitted; }
 	public void setSubmitted(Date submitted) { iSubmitted = submitted; }
+
+	public String getChangedBy() { return iChangedBy; }
+	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+
+	public Date getChanged() { return iChanged; }
+	public void setChanged(Date changed) { iChanged = changed; }
+
+	public String getAppliedDeptCode() { return iAppliedDeptCode; }
+	public void setAppliedDeptCode(String appliedDeptCode) { iAppliedDeptCode = appliedDeptCode; }
+
+	public Date getApplied() { return iApplied; }
+	public void setApplied(Date applied) { iApplied = applied; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -99,6 +119,10 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 
 	public String toDebugString() {
 		return "InstructorSurvey[" +
+			"\n	Applied: " + getApplied() +
+			"\n	AppliedDeptCode: " + getAppliedDeptCode() +
+			"\n	Changed: " + getChanged() +
+			"\n	ChangedBy: " + getChangedBy() +
 			"\n	Email: " + getEmail() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	Note: " + getNote() +

@@ -23,10 +23,13 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.instructor.InstructorCookie;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveySaveRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.InstructorTimePreferences;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.PreferencesReadOnlyTable;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage.ReadOnlyNote;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
@@ -96,6 +99,58 @@ public class InstructorSurveyWidget extends Composite {
 			}
 		});
 		iHeader.setEnabled("survey", false);
+		iHeader.addButton("submit", MESSAGES.buttonSubmitInstructorSurvey(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent e) {
+				iHeader.clearMessage();
+				LoadingWidget.showLoading(MESSAGES.waitUpdatingInstructorSurvey());
+				InstructorSurveySaveRequest req = new InstructorSurveySaveRequest(iSurvey, true);
+				req.setChanged(false);
+				req.setInstructorId(iInstructorId);
+				RPC.execute(req, new AsyncCallback<InstructorSurveyData>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.hideLoading();
+						UniTimeNotifications.error(caught.getMessage());
+						iHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(InstructorSurveyData result) {
+						LoadingWidget.hideLoading();
+						UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
+						setValue(result);
+					}
+				});
+			}
+		});
+		iHeader.setEnabled("submit", false);
+		iHeader.addButton("unsubmit", MESSAGES.buttonUnsubmitInstructorSurvey(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent e) {
+				iHeader.clearMessage();
+				LoadingWidget.showLoading(MESSAGES.waitUpdatingInstructorSurvey());
+				InstructorSurveySaveRequest req = new InstructorSurveySaveRequest(iSurvey, false);
+				req.setChanged(false); req.setUnsubmit(true);
+				req.setInstructorId(iInstructorId);
+				RPC.execute(req, new AsyncCallback<InstructorSurveyData>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.hideLoading();
+						UniTimeNotifications.error(caught.getMessage());
+						iHeader.setErrorMessage(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(InstructorSurveyData result) {
+						LoadingWidget.hideLoading();
+						UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
+						setValue(result);
+					}
+				});
+			}
+		});
+		iHeader.setEnabled("unsubmit", false);
 		iHeader.addButton("apply", MESSAGES.buttonApplyInstructorSurveyPreferences(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -155,18 +210,31 @@ public class InstructorSurveyWidget extends Composite {
 			iForm.addHeaderRow(iHeader);
 		}
 		iHeader.setEnabled("survey", survey.isEditable());
+		iHeader.setEnabled("submit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() == null);
+		iHeader.setEnabled("unsubmit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() != null);
 		iHeader.setEnabled("apply", survey.isCanApply());
 		
 		if (survey.hasEmail()) {
 			iForm.addRow(MESSAGES.propEmail(), new Label(survey.getEmail()));
 		}
 		
+		if (survey.getChanged() != null && survey.getChangedBy() != null) {
+			iForm.addRow(MESSAGES.propLastChange(), new Label(MESSAGES.lastChange(sTimeStampFormat.format(survey.getChanged()), survey.getChangedBy())));
+		}
 		if (survey.getSubmitted() != null) {
 			iForm.addRow(MESSAGES.propSubmitted(), new Label(sTimeStampFormat.format(survey.getSubmitted())));	
 		} else {
 			Label notSubmitted = new Label(MESSAGES.notSubbitted());
 			notSubmitted.addStyleName("not-submitted");
 			iForm.addRow(MESSAGES.propSubmitted(), notSubmitted);
+		}
+		if (survey.getApplied() != null && survey.getAppliedDeptCode() != null) {
+			iForm.addRow(MESSAGES.propLastApplied(), new Label(MESSAGES.lastApply(sTimeStampFormat.format(survey.getApplied()), survey.getAppliedDeptCode())));
+			if (survey.getChanged() != null && survey.getApplied().before(survey.getChanged())) {
+				Label updatedAfterApplied = new Label(MESSAGES.surveyUpdatedAfterApply());
+				updatedAfterApplied.addStyleName("updated-after-applied");
+				iForm.addRow("", updatedAfterApplied);
+			}
 		}
 		
 		if (!survey.getTimePrefs().isEmpty()) {

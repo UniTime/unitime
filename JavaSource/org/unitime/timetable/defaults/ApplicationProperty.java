@@ -3115,6 +3115,61 @@ public enum ApplicationProperty {
 	"the format format is first day|last day|first slot|last slot|increment, e.g., 0|4|90|246|12 means Monday - Friday, starting at 7:30 am, ending at 8:30 pm, in one hour increments")
 	@Since(4.7)
 	InstructorSurveyTimePreferences("unitime.instructorSurvey.timePrefs"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for room preferences")
+	@Since(4.7)
+	InstructorSurveyRoomPreferences("unitime.instructorSurvey.roomPrefs"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for building preferences")
+	@Since(4.7)
+	InstructorSurveyBuildingPreferences("unitime.instructorSurvey.buildingPrefs"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for room feature preferences (that do not have a room feature type, room featues with feature type are controlled by Administration > Other > Room Feature Types)")
+	@Since(4.7)
+	InstructorSurveyRoomFeaturePreferences("unitime.instructorSurvey.roomFeaturePrefs"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for room groups preferences")
+	@Since(4.7)
+	InstructorSurveyRoomGroupPreferences("unitime.instructorSurvey.roomGroupPrefs"),
+	
+	@Type(String.class)
+	@Description("Instructor Survey: time preferences model; " +
+	"the format format is first day|last day|first slot|last slot|increment, e.g., 0|4|90|246|12 means Monday - Friday, starting at 7:30 am, ending at 8:30 pm, in one hour increments")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyTimePreferencesDept("unitime.instructorSurvey.timePrefs.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for room preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomPreferencesDept("unitime.instructorSurvey.roomPrefs.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for building preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyBuildingPreferencesDept("unitime.instructorSurvey.buildingPrefs.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for room feature preferences for the given department (that do not have a room feature type, room featues with feature type are controlled by Administration > Other > Room Feature Types)")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomFeaturePreferencesDept("unitime.instructorSurvey.roomFeaturePrefs.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for room groups preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomGroupPreferencesDept("unitime.instructorSurvey.roomGroupPrefs.%"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
