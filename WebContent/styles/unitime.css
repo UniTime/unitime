@@ -7550,3 +7550,33 @@ unitime-RoomSharingWidget .legend .blank {
 	color: orange;
 	font-style: italic;
 }
+
+.unitime-InstructorSurveyPage .preference-changed {
+	-moz-box-shadow: inset 0 0 0 2px yellow;
+	-webkit-box-shadow: inset 0 0 0 2px yellow;
+	box-shadow: inset 0 0 0 2px yellow;
+}
+
+.unitime-InstructorSurveyPage .different-dept {
+	color: gray;
+}
+
+.unitime-InstructorSurveyPage .not-set {
+	background-color: yellow;
+	font-style: italic;
+}
+
+.unitime-InstructorSurveyPage .pref-changed-to {
+	background-color: yellow;
+	font-style: italic;
+}
+
+.unitime-InstructorSurveyPage .pref-set-to {
+	background-color: yellow;
+	font-style: italic;
+}
+
+.unitime-InstructorSurveyPage .pref-not-set {
+	background-color: yellow;
+	font-style: italic;
+}

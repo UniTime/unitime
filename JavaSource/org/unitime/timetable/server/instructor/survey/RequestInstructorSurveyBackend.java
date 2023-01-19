@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterf
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorTimePreferencesModel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.PrefLevel;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Problem;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -309,6 +310,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			survey.setDistributionPreferences(distPref);
 		
 		if (is != null) {
+			Set<Building> deptBuildings = (instructor == null ? null : instructor.getAvailableBuildings());
+			Set<Location> deptRooms = (instructor == null ? null : instructor.getAvailableRooms());
 			for (Preference p: is.getPreferences()) {
 				if (p instanceof TimePref) {
 					TimePref tp = (TimePref)p;
@@ -316,26 +319,69 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					timePref.setNote(tp.getNote());
 				} else if (p instanceof BuildingPref) {
 					BuildingPref bp = (BuildingPref)p;
-					buildingPrefs.addSelection(new Selection(bp.getBuilding().getUniqueId(), bp.getPrefLevel().getUniqueId(), p.getNote()));
+					Problem prob = (deptBuildings == null || deptBuildings.contains(bp.getBuilding()) ? Problem.NOT_APPLIED : Problem.DIFFERENT_DEPT);
+					buildingPrefs.addSelection(new Selection(bp.getBuilding().getUniqueId(), bp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 				} else if (p instanceof RoomGroupPref) {
 					RoomGroupPref gp = (RoomGroupPref)p;
-					groupPrefs.addSelection(new Selection(gp.getRoomGroup().getUniqueId(), gp.getPrefLevel().getUniqueId(), p.getNote()));
+					Problem prob = Problem.NOT_APPLIED;
+					if (gp.getRoomGroup().getDepartment() != null && instructor != null && !instructor.getDepartment().equals(gp.getRoomGroup().getDepartment()))
+						prob = Problem.DIFFERENT_DEPT;
+					groupPrefs.addSelection(new Selection(gp.getRoomGroup().getUniqueId(), gp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 				} else if (p instanceof RoomFeaturePref) {
 					RoomFeaturePref fp = (RoomFeaturePref)p;
+					Problem prob = Problem.NOT_APPLIED;
+					if (instructor != null && fp.getRoomFeature() instanceof DepartmentRoomFeature && !instructor.getDepartment().equals(((DepartmentRoomFeature)fp.getRoomFeature()).getDepartment()))
+						prob = Problem.DIFFERENT_DEPT;
 					if (fp.getRoomFeature().getFeatureType() != null) {
 						Preferences prefs = typedFeaturePrefs.get(fp.getRoomFeature().getFeatureType().getUniqueId());
 						if (prefs != null)
-							prefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+							prefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 					} else {
-						featurePrefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+						featurePrefs.addSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 					}
 				} else if (p instanceof DistributionPref) {
 					DistributionPref dp = (DistributionPref)p;
 					distPref.addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
 				} else if (p instanceof RoomPref) {
 					RoomPref rp = (RoomPref)p;
-					roomPrefs.addSelection(new Selection(rp.getRoom().getUniqueId(), rp.getPrefLevel().getUniqueId(), p.getNote()));
+					Problem prob = (deptRooms == null || deptRooms.contains(rp.getRoom()) ? Problem.NOT_APPLIED : Problem.DIFFERENT_DEPT);
+					roomPrefs.addSelection(new Selection(rp.getRoom().getUniqueId(), rp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 				}
+			}
+			if (instructor != null && is.getApplied() != null) {
+				for (Preference p: instructor.getPreferences()) {
+					if (p instanceof TimePref) {
+						TimePref tp = (TimePref)p;
+						if (timePref.getPattern().equals(tp.getPreference())) {
+							timePref.setProblem(null);
+						} else {
+							timePref.setProblem(Problem.LEVEL_CHANGED);
+							timePref.setInstructorPattern(tp.getPreference());
+						}
+					} else if (p instanceof BuildingPref) {
+						BuildingPref bp = (BuildingPref)p;
+						buildingPrefs.addInstructorSelection(new Selection(bp.getBuilding().getUniqueId(), bp.getPrefLevel().getUniqueId(), p.getNote())); 
+					} else if (p instanceof RoomGroupPref) {
+						RoomGroupPref gp = (RoomGroupPref)p;
+						groupPrefs.addInstructorSelection(new Selection(gp.getRoomGroup().getUniqueId(), gp.getPrefLevel().getUniqueId(), p.getNote()));
+					} else if (p instanceof RoomFeaturePref) {
+						RoomFeaturePref fp = (RoomFeaturePref)p;
+						if (fp.getRoomFeature().getFeatureType() != null) {
+							Preferences prefs = typedFeaturePrefs.get(fp.getRoomFeature().getFeatureType().getUniqueId());
+							if (prefs != null)
+								prefs.addInstructorSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+						} else {
+							featurePrefs.addInstructorSelection(new Selection(fp.getRoomFeature().getUniqueId(), fp.getPrefLevel().getUniqueId(), p.getNote()));
+						}
+					} else if (p instanceof DistributionPref) {
+						DistributionPref dp = (DistributionPref)p;
+						distPref.addInstructorSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
+					} else if (p instanceof RoomPref) {
+						RoomPref rp = (RoomPref)p;
+						roomPrefs.addInstructorSelection(new Selection(rp.getRoom().getUniqueId(), rp.getPrefLevel().getUniqueId(), p.getNote()));
+					}
+				}
+				
 			}
 		}
 		

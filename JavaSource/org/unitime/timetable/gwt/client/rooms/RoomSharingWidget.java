@@ -240,7 +240,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			return h + ":" + (m < 10 ? "0" : "") + m;
 	}
 	
-	private class Cell extends P {
+	public class Cell extends P {
 		private int iDay, iSlot;
 		
 		Cell(int day, int slot) {
@@ -279,6 +279,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			}
 			ValueChangeEvent.fire(RoomSharingWidget.this, getValue());
 		}
+		
+		public int getDay() { return iDay; }
+		public int getSlot() { return iSlot; }
 	}
 	
 	protected void addPreferenceIfNeeded(P line, final RoomSharingOption option) {

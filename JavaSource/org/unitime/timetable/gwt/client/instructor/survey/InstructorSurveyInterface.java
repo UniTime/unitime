@@ -238,7 +238,9 @@ public class InstructorSurveyInterface implements IsSerializable {
 	public static class Selection implements IsSerializable {
 		private Long iItem;
 		private Long iLevel;
+		private Long iInstructorLevel;
 		private String iNote;
+		private Problem iProblem = Problem.NOT_APPLIED;
 		
 		public Selection() {}
 		public Selection(Long item, Long level, String note) {
@@ -249,9 +251,15 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setItem(Long item) { iItem = item; }
 		public Long getLevel() { return iLevel; }
 		public void setLevel(Long level) { iLevel = level; }
+		public Long getInstructorLevel() { return iInstructorLevel; }
+		public void setInstructorLevel(Long level) { iInstructorLevel = level; }
 		public String getNote() { return iNote; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
 		public void setNote(String note) { iNote = note; }
+		
+		public Problem getProblem() { return iProblem; }
+		public void setProblem(Problem problem) { iProblem = problem; }
+		public Selection withProblem(Problem problem) { iProblem = problem; return this; }
 		
 		@Override
 		public boolean equals(Object o) {
@@ -322,6 +330,26 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iSelections == null) iSelections = new ArrayList<Selection>();
 			if (getItem(selection.getItem()) != null)
 				iSelections.add(selection);
+		}
+		public void addInstructorSelection(Selection selection) {
+			Selection original = getSelection(selection.getItem());
+			if (original == null) {
+				selection.setProblem(Problem.NOT_IN_SURVEY);
+				selection.setInstructorLevel(selection.getLevel());
+				selection.setLevel(null);
+				addSelection(selection);
+			} else if (original.getLevel().equals(selection.getLevel())) {
+				original.setProblem(null);
+			} else {
+				original.setProblem(Problem.LEVEL_CHANGED);
+				original.setInstructorLevel(selection.getLevel());
+			}
+		}
+		public Selection getSelection(Long item) {
+			if (iSelections == null) return null;
+			for (Selection selection: iSelections)
+				if (item.equals(selection.getItem())) return selection;
+			return null;
 		}
 		
 		@Override
@@ -491,16 +519,26 @@ public class InstructorSurveyInterface implements IsSerializable {
 	}
 	
 	public static class InstructorTimePreferencesModel extends InstructorAvailabilityModel {
+		private Problem iProblem = Problem.NOT_APPLIED;
+		private String iInstructorPattern;
+		
 		public InstructorTimePreferencesModel() {
 			super();
 		}
 		public InstructorTimePreferencesModel(InstructorTimePreferencesModel model) {
 			super(model);
+			iProblem = model.iProblem;
+			iInstructorPattern = model.iInstructorPattern;
 		}
 		@Override
 		public boolean hasNote() {
 			return false;
 		}
+		
+		public Problem getProblem() { return iProblem; }
+		public void setProblem(Problem problem) { iProblem = problem; }
+		public String getInstructorPattern() { return iInstructorPattern; }
+		public void setInstructorPattern(String pattern) { iInstructorPattern = pattern; }
 		
 		@Override
 		public boolean equals(Object o) {
@@ -604,6 +642,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 	
 	public static enum CourseColumn {
 		COURSE, CUSTOM,
+	}
+	
+	public static enum Problem {
+		NOT_APPLIED,
+		LEVEL_CHANGED,
+		NOT_IN_SURVEY,
+		DIFFERENT_DEPT,
 	}
 	
 	public static boolean equals(Object o1, Object o2) {
