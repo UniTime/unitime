@@ -7747,4 +7747,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("There are unsaved changes in the instructor survey. Do you really want to discard these changes without updating the survey?")
 	String queryLeaveChangesOnInstructorSurvey();
+	
+	@DefaultMessage("-- changed to")
+	String instructorSurveyPreferenceLevelChangedTo();
+	
+	@DefaultMessage("-- added as")
+	String instructorSurveyPreferenceAdded();
+	
+	@DefaultMessage("-- not used")
+	String instructorSurveyPreferenceNotSet();
+	
+	@DefaultMessage("Highlight differences")
+	String instructorSurveyCompareWithInstructorPrefs();
 }

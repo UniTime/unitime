@@ -41,6 +41,7 @@ public class InstructorCookie {
 	private boolean iShowTeachingAssignments = false;
 	private String[] iQuery = new String[] {"", "", ""};
 	private boolean iShowSurveyDetails = false;
+	private boolean iHighlightSurveyChanges = true;
 
 	private InstructorCookie() {
 		try {
@@ -61,6 +62,7 @@ public class InstructorCookie {
 				iShowTeachingAssignments = "T".equals(params[idx++]);
 				iQuery = new String[] {params[idx++], params[idx++], params[idx++]};
 				iShowSurveyDetails = "T".equals(params[idx++]);
+				iHighlightSurveyChanges = "T".equals(params[idx++]);
 			}
 		} catch (Exception e) {
 		}
@@ -81,7 +83,7 @@ public class InstructorCookie {
 				"|" + (iShowTeachingRequests ? "T" : "F") +
 				"|" + (iShowTeachingAssignments ? "T" : "F") +
 				"|" + (iQuery[0] == null ? "" : iQuery[0]) + "|" + (iQuery[1] == null ? "" : iQuery[1]) + "|" + (iQuery[2] == null ? "" : iQuery[2]) +
-				"|" + (iShowSurveyDetails ? "T" : "F");
+				"|" + (iShowSurveyDetails ? "T" : "F" + "|" + (iHighlightSurveyChanges ? "T": "F"));
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
@@ -210,4 +212,7 @@ public class InstructorCookie {
 	
 	public boolean isShowSurveyDetails() { return iShowSurveyDetails; }
 	public void setShowSurveyDetails(boolean showSurveyDetails) { iShowSurveyDetails = showSurveyDetails; save(); }
+	
+	public boolean isHighlightSurveyChanges() { return iHighlightSurveyChanges; }
+	public void setHighlightSurveyChanges(boolean highlightSurveyChanges) { iHighlightSurveyChanges = highlightSurveyChanges; save(); }
 }
