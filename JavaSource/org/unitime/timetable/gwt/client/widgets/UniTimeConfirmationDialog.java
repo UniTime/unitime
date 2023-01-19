@@ -65,7 +65,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	private String iMessage;
 	private boolean iDefaultIsYes = true;
 	
-	protected UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
+	public UniTimeConfirmationDialog(Type type, String message, String question, String answer, Command command) {
 		this(type, message, false, question, answer, command);
 	}
 	

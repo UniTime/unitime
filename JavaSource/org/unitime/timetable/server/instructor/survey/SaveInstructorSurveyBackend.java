@@ -77,13 +77,18 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 
 	@Override
 	public InstructorSurveyData execute(InstructorSurveySaveRequest request, SessionContext context) {
-		if (!context.isAuthenticated() || context.getUser().getCurrentAuthority() == null)
+		if (!context.isAuthenticated() || context.getUser() == null || context.getUser().getCurrentAuthority() == null)
         	throw new AccessDeniedException();
+
+		Long sessionId = request.getData().getSessionId();
+		if (sessionId == null)
+			sessionId = context.getUser().getCurrentAcademicSessionId();
+
 		InstructorSurveyData survey = request.getData();
 		if (context.getUser() == null || survey.getExternalId().equals(context.getUser().getExternalUserId())) {
-			context.checkPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", context.getUser().getCurrentAcademicSessionId())});
+			context.checkPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		} else {
-			context.checkPermission(Right.InstructorSurveyAdmin);
+			context.checkPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		}
 		
 		org.hibernate.Session hibSession = InstructorSurveyDAO.getInstance().getSession();
@@ -91,7 +96,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		try {
 			InstructorSurvey is = (InstructorSurvey)hibSession.createQuery(
 					"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-					).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+					).setLong("sessionId", sessionId)
 					.setString("externalId", survey.getExternalId()).setMaxResults(1).uniqueResult();
 			if (is == null && !request.isChanged()) {
 				throw new GwtRpcException(MESSAGES.errorNoInstructorSurvey());
@@ -100,7 +105,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 			if (is == null) {
 				is = new InstructorSurvey();
 				is.setExternalUniqueId(survey.getExternalId());
-				is.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
+				is.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
 				is.setPreferences(new HashSet<Preference>());
 				is.setCourseRequirements(new HashSet<InstructorCourseRequirement>());
 			} else if (request.isChanged()) {
@@ -116,7 +121,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 			if (request.isSubmit()) {
 				is.setSubmitted(ts);
 				survey.setSubmitted(is.getSubmitted());
-				survey.setEditable(context.hasPermission(Right.InstructorSurveyAdmin));
+				survey.setEditable(context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)}));
 			} else if (request.isUnsubmit()) {
 				is.setSubmitted(null);
 			}
@@ -233,7 +238,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 				if (request.getInstructorId() != null)
 					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getInstructorId()), context);
 				else
-					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getData().getExternalId()), context);
+					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getData().getExternalId(), sessionId.toString()), context);
 			return survey;
 		} catch (Exception ex) {
 			if (tx != null) tx.rollback();

@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 
 import com.google.gwt.core.client.GWT;
@@ -62,6 +63,8 @@ import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -70,12 +73,14 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
 
@@ -99,14 +104,32 @@ public class InstructorSurveyPage extends Composite {
 	private Note iPrefsNote;
 	private InstructorSurveyCourseTable iCourses;
 	
-	private InstructorSurveyInterface.InstructorSurveyData iSurvey;
+	private InstructorSurveyData iSurvey;
+	private InstructorSurveyData iOriginal;
+	private ListBox iSessionSelection;
 	
 	public InstructorSurveyPage() {
 		iPanel = new SimpleForm(3);
 		iPanel.addStyleName("unitime-InstructorSurveyPage");
 		
+		load(Location.getParameter("id"), Location.getParameter("session"));
+		
+		initWidget(iPanel);
+		Window.addWindowClosingHandler(new Window.ClosingHandler() {
+			@Override
+			public void onWindowClosing(ClosingEvent event) {
+				if (isChanged()) {
+					if (LoadingWidget.getInstance().isShowing())
+						LoadingWidget.getInstance().hide();
+					event.setMessage(MESSAGES.queryLeaveChangesOnYourInstructorSurvey());
+				}
+			}
+		});
+	}
+	
+	protected void load(String externalId, String session) {
 		LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
-		RPC.execute(new InstructorSurveyInterface.InstructorSurveyRequest(Location.getParameter("id")), new AsyncCallback<InstructorSurveyInterface.InstructorSurveyData>() {
+		RPC.execute(new InstructorSurveyInterface.InstructorSurveyRequest(externalId, session), new AsyncCallback<InstructorSurveyInterface.InstructorSurveyData>() {
 			@Override
 			public void onFailure(Throwable t) {
 				LoadingWidget.hideLoading();
@@ -120,12 +143,15 @@ public class InstructorSurveyPage extends Composite {
 				LoadingWidget.hideLoading();
 			}
 		});
-		
-		initWidget(iPanel);
+	}
+	
+	public boolean isChanged() {
+		return iOriginal != null && iOriginal.isEditable() && iOriginal.isChanged(getValue());
 	}
 	
 	public void setValue(InstructorSurveyInterface.InstructorSurveyData survey) {
 		iSurvey = survey;
+		iOriginal = new InstructorSurveyData(survey);
 		iPanel.clear();
 		
 		iHeader = new UniTimeHeaderPanel(survey.getFormattedName());
@@ -186,7 +212,18 @@ public class InstructorSurveyPage extends Composite {
 			iHeader.addButton("close", MESSAGES.buttonCloseInstructorSurvey(), new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent e) {
-					ToolBox.closeWindow();
+					if (isChanged()) {
+						if (LoadingWidget.getInstance().isShowing())
+							LoadingWidget.getInstance().hide();
+						UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChangesOnInstructorSurvey(), new Command() {
+							@Override
+							public void execute() {
+								ToolBox.closeWindow();
+							}
+						});
+					} else {
+						ToolBox.closeWindow();
+					}
 				}
 			});
 		}
@@ -196,6 +233,52 @@ public class InstructorSurveyPage extends Composite {
 		iPanel.addHeaderRow(iHeader);
 		
 		iPanel.addRow(MESSAGES.propExternalId(), new Label(survey.getExternalId()));
+		
+		if (survey.hasSessions()) {
+			iSessionSelection = new ListBox();
+			for (AcademicSessionInfo session: survey.getSessions()) {
+				iSessionSelection.addItem(session.getName(), session.getSessionId().toString());
+				if (survey.getSessionId().equals(session.getSessionId()))
+					iSessionSelection.setSelectedIndex(iSessionSelection.getItemCount() - 1);
+			}
+			if (iSessionSelection.getItemCount() <= 1)
+				iSessionSelection.setEnabled(false);
+			iSessionSelection.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					final String newSessionId = iSessionSelection.getSelectedValue();
+					if (!newSessionId.equals(iSurvey.getSessionId().toString())) {
+						if (isChanged()) {
+							UniTimeConfirmationDialog d = new UniTimeConfirmationDialog(
+									UniTimeConfirmationDialog.Type.CONFIRM,
+									MESSAGES.queryLeaveChangesOnInstructorSurvey(),
+									null, null,
+									new Command() {
+										@Override
+										public void execute() {
+											load(iSurvey.getExternalId(), newSessionId);
+										}
+									});
+							d.addCloseHandler(new CloseHandler<PopupPanel>() {
+								@Override
+								public void onClose(CloseEvent<PopupPanel> event) {
+									for (int i = 0; i < iSessionSelection.getItemCount(); i++) {
+										if (iOriginal.getSessionId().toString().equals(iSessionSelection.getValue(i))) {
+											iSessionSelection.setSelectedIndex(i);
+											break;
+										}
+									}
+								}
+							});
+							d.center();
+						} else {
+							load(iSurvey.getExternalId(), newSessionId);
+						}
+					}
+				}
+			});
+			iPanel.addRow(MESSAGES.propAcademicSession(), iSessionSelection);
+		}
 		
 		if (survey.isEditable()) {
 			iEmail = new UniTimeTextBox();
@@ -269,6 +352,7 @@ public class InstructorSurveyPage extends Composite {
 		iCourses = new InstructorSurveyCourseTable(survey.getCustomFields(), survey.isEditable());
 		if (survey.hasCourses()) {
 			for (Course ci: survey.getCourses()) {
+				if (!survey.isEditable() && !ci.hasCustomFields()) continue;
 				iCourses.addRow(ci);
 			}
 		}

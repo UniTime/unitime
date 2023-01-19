@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -46,6 +47,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.model.Building;
@@ -70,14 +72,17 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.AccessDeniedException;
@@ -92,27 +97,48 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 
 	@Override
 	public InstructorSurveyData execute(InstructorSurveyRequest request, SessionContext context) {
-		if (!context.isAuthenticated() || context.getUser().getCurrentAuthority() == null)
+		if (!context.isAuthenticated() || context.getUser() == null || context.getUser().getCurrentAuthority() == null)
         	throw new AccessDeniedException();
+
 		DepartmentalInstructor instructor = null;
+		Long sessionId = null;
 		if (request.getInstructorId() != null) {
 			instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId());
-			if (instructor != null) request.setExternalId(instructor.getExternalUniqueId());
+			if (instructor != null) {
+				request.setExternalId(instructor.getExternalUniqueId());
+				sessionId = instructor.getDepartment().getSessionId();
+			}
 		}
-		boolean admin = context.hasPermission(Right.InstructorSurveyAdmin);
+
+		if (sessionId == null) {
+			sessionId = context.getUser().getCurrentAcademicSessionId();
+			if (request.hasSession()) {
+				try {
+					sessionId = Long.valueOf(request.getSession());
+				} catch (NumberFormatException e) {
+					Number id = (Number)SessionDAO.getInstance().getSession().createQuery(
+							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session"
+							).setString("session", request.getSession()).setMaxResults(1).setCacheable(true).uniqueResult();
+					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
+					sessionId = id.longValue();
+				}
+			}
+		}
+		
+		boolean admin = context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		String externalId = context.getUser().getExternalUserId();
 		if (request.getExternalId() != null && !request.getExternalId().isEmpty() && !externalId.equals(request.getExternalId())) {
-			context.checkPermission(Right.InstructorSurveyAdmin);
+			context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)}); 
 			externalId = request.getExternalId();
 		}
 		boolean editable = true;
 		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-				).setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+				).setLong("sessionId", sessionId)
 				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
 
 		if (!admin) {
-			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", context.getUser().getCurrentAcademicSessionId())});
+			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 			if (is != null && is.getSubmitted() != null)
 				editable = false;
 			if (!editable && is == null)
@@ -123,11 +149,33 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		survey.setExternalId(externalId);
 		survey.setEditable(editable);
 		survey.setAdmin(admin);
+		survey.setSessionId(sessionId);
 		survey.setCanApply(is != null && is.getSubmitted() != null && instructor != null && context.hasPermission(instructor, Right.InstructorPreferences) && !is.getPreferences().isEmpty());
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			if (pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) continue;
 			survey.addPrefLevel(new PrefLevel(pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolorNeutralBlack()));
+		}
+		
+		if (instructor == null) {
+			Set<Long> sessionIds = new HashSet<Long>();
+			for (UserAuthority ua: context.getUser().getAuthorities()) {
+				if (ua.getRole().equals(context.getUser().getCurrentAuthority().getRole())) {
+					InstructorSurvey x = InstructorSurvey.getInstructorSurvey(externalId, (Long)ua.getAcademicSession().getQualifierId());
+					if (x != null || context.hasPermissionAnySession(Right.InstructorSurvey, ua.getAcademicSession()))
+						sessionIds.add((Long)ua.getAcademicSession().getQualifierId());
+				}
+			}
+			if (!sessionIds.isEmpty()) {
+				for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
+						"from Session where uniqueId in :ids order by academicInitiative, sessionBeginDateTime")
+						.setParameterList("ids", sessionIds, LongType.INSTANCE)
+						.setCacheable(true).list()) {
+					survey.addSession(new AcademicSessionInfo(
+							session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+							session.getLabel(), session.getSessionBeginDateTime()));
+				}
+			}
 		}
 		
 		Preferences roomPrefs = new Preferences(-4l, CMSG.propertyRooms());
@@ -136,9 +184,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		Preferences featurePrefs = new Preferences(-3l, CMSG.propertyRoomFeatures());
 		Map<Long, Preferences> typedFeaturePrefs = new HashMap<Long, Preferences>();
 		
-		for (RoomGroup g: RoomGroup.getAllGlobalRoomGroups(context.getUser().getCurrentAcademicSessionId()))
+		for (RoomGroup g: RoomGroup.getAllGlobalRoomGroups(sessionId))
 			groupPrefs.addItem(g.getUniqueId(), g.getName(), g.getDescription());
-		for (RoomFeature f: RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId())) {
+		for (RoomFeature f: RoomFeature.getAllGlobalRoomFeatures(sessionId)) {
 			if (f.getFeatureType() != null) {
 				if (!f.getFeatureType().isShowInInstructorSurvey()) continue;
 				Preferences fp = typedFeaturePrefs.get(f.getFeatureType().getUniqueId());
@@ -155,7 +203,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
 				.setString("id", externalId)
-				.setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+				.setLong("sessionId", sessionId)
 				.setCacheable(true).list();
 
 		for (DepartmentalInstructor di: instructors) {
@@ -338,7 +386,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				"and ci.lead = true and c.schedulingSubpart.itype.organized = true"
 				)
 				.setString("id", externalId)
-				.setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
+				.setLong("sessionId", sessionId)
 				.setCacheable(true).list()) {
 			if (courseIds.add(co.getUniqueId())) {
 				Course ci = new Course();
@@ -369,24 +417,24 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 	protected String propertyValue(InstructorSurveyData survey, ApplicationProperty departmentalProperty, ApplicationProperty globalProperty) {
 		if (survey.hasDepartments()) {
 			for (InstructorDepartment dept: survey.getDepartments()) {
-				String value = departmentalProperty.value(dept.getDeptCode());
+				String value = departmentalProperty.valueOfSession(survey.getSessionId(), dept.getDeptCode());
 				if (value != null) return value;
 			}
 		}
-		return globalProperty.value();
+		return globalProperty.valueOfSession(survey.getSessionId());
 	}
 	
 	protected boolean isAllowed(InstructorSurveyData survey, ApplicationProperty departmentalProperty, ApplicationProperty globalProperty) {
 		if (survey.hasDepartments()) {
 			boolean hasFalse = false;
 			for (InstructorDepartment dept: survey.getDepartments()) {
-				String value = departmentalProperty.value(dept.getDeptCode());
+				String value = departmentalProperty.valueOfSession(survey.getSessionId(), dept.getDeptCode());
 				if ("true".equalsIgnoreCase(value)) return true;
 				if ("false".equalsIgnoreCase(value)) hasFalse = true;
 			}
 			if (hasFalse) return false;
 		}
-		return globalProperty.isTrue();
+		return "true".equalsIgnoreCase(globalProperty.valueOfSession(survey.getSessionId()));
 	}
 
 }

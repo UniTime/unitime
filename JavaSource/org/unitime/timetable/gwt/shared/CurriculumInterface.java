@@ -479,6 +479,14 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private TreeSet<CurriculumCourseGroupInterface> iGroups;
 		
 		public CourseInterface() {}
+		public CourseInterface(CourseInterface course) {
+			iCourseId = course.iCourseId;
+			iCourseName = course.iCourseName;
+			if (course.iCurriculumCourses != null)
+				iCurriculumCourses = new ArrayList<CurriculumCourseInterface>(course.iCurriculumCourses);
+			if (course.iGroups != null)
+				iGroups = new TreeSet<CurriculumCourseGroupInterface>(course.iGroups);
+		}
 		
 		public Long getId() { return iCourseId; }
 		public void setId(Long id) { iCourseId = id; }
