@@ -165,6 +165,33 @@ public class RoomInterface implements IsSerializable {
 		private Long iDefaultPreference = null;
 		
 		public RoomSharingModel() {}
+		public RoomSharingModel(RoomSharingModel model) {
+			iId = model.iId;
+			iName = model.iName;
+			iDefaultOption = model.iDefaultOption;
+			iDefaultHorizontal = model.iDefaultHorizontal;
+			if (model.iModes != null) iModes = new ArrayList<RoomSharingDisplayMode>(model.iModes);
+			if (model.iOptions != null) iOptions = new ArrayList<RoomSharingOption>(model.iOptions);
+			if (model.iOtherOptions != null) iOtherOptions = new ArrayList<RoomSharingOption>(model.iOtherOptions);
+			iDefaultMode = model.iDefaultMode;
+			iDefaultEditable = model.iDefaultEditable;
+			iNote = model.iNote;
+			iNoteEditable = model.iNoteEditable;
+			if (iPreferences != null) iPreferences = new ArrayList<PreferenceInterface>(model.iPreferences);
+			iDefaultPreference = model.iDefaultPreference;
+			if (model.iModel != null) {
+				iModel = new HashMap<Integer, Map<Integer,Long>>();
+				for (Map.Entry<Integer, Map<Integer,Long>> e: model.iModel.entrySet()) {
+					iModel.put(e.getKey(), new HashMap<Integer, Long>(e.getValue()));
+				}
+			}
+			if (model.iEditable != null) {
+				iEditable = new HashMap<Integer, Map<Integer,Boolean>>();
+				for (Map.Entry<Integer, Map<Integer,Boolean>> e: model.iEditable.entrySet()) {
+					iEditable.put(e.getKey(), new HashMap<Integer, Boolean>(e.getValue()));
+				}
+			}
+		}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id;}

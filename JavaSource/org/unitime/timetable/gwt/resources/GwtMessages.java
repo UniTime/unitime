@@ -7738,4 +7738,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} for {1}")
 	String lastApply(String date, String dept);
+	
+	@DefaultMessage("Session {0} not found.")
+	String errorSessionNotFound(String session);
+	
+	@DefaultMessage("There are unsaved changes in your survey. Do you really want to discard these changes without updating your survey?")
+	String queryLeaveChangesOnYourInstructorSurvey();
+	
+	@DefaultMessage("There are unsaved changes in the instructor survey. Do you really want to discard these changes without updating the survey?")
+	String queryLeaveChangesOnInstructorSurvey();
 }

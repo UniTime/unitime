@@ -214,6 +214,8 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         	for (org.cpsolver.studentsct.model.StudentGroup aac: student.getGroups()) {
                 if (aac.getReference() != null && aac.getReference().startsWith("STAR")) return true;
                 if (aac.getReference() != null && aac.getReference().startsWith("VSTAR")) return true;
+                if (aac.getReference() != null && aac.getReference().startsWith("NewStCRF")) return true;
+                if (aac.getReference() != null && aac.getReference().startsWith("NewStOther")) return true;
         	}
         	return false;
         }

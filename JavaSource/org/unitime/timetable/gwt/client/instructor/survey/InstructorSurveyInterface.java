@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 
@@ -44,6 +45,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 
 	public static class InstructorSurveyData implements GwtRpcResponse {
 		private Long iId;
+		private Long iSessionId;
 		private String iExternalId;
 		private String iFormattedName;
 		private String iEmail;
@@ -60,11 +62,46 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private boolean iEditable = true;
 		private boolean iCanApply = true;
 		private boolean iAdmin = true;
+		private List<AcademicSessionInfo> iSessions = null;
 		
 		public InstructorSurveyData() {}
+		public InstructorSurveyData(InstructorSurveyData data) {
+			iId = data.iId;
+			iSessionId = data.iSessionId;
+			iExternalId = data.iExternalId;
+			iFormattedName = data.iFormattedName;
+			iEmail = data.iEmail;
+			iNote = data.iNote;
+			iChangedBy = data.iChangedBy; iAppliedDept = data.iAppliedDept;
+			iSubmitted = data.iSubmitted; iApplied = data.iApplied; iChanged = data.iChanged;
+			if (data.iDepartments != null)
+				iDepartments = new ArrayList<InstructorDepartment>(data.iDepartments);
+			if (data.iTimePrefs != null)
+				iTimePrefs = new InstructorTimePreferencesModel(data.iTimePrefs);
+			if (data.iRoomPrefs != null)
+				for (Preferences p: data.iRoomPrefs)
+					addRoomPreference(new Preferences(p));
+			if (data.iDistPrefs != null)
+				iDistPrefs = new Preferences(data.iDistPrefs);
+			if (data.iPrefLevels != null)
+				iPrefLevels = new ArrayList<InstructorSurveyInterface.PrefLevel>(data.iPrefLevels);
+			if (data.iCourses != null)
+				for (Course course: data.iCourses)
+					addCourse(new Course(course));
+			if (data.iCustomFields != null)
+				iCustomFields = new ArrayList<CustomField>(data.iCustomFields);
+			iEditable = data.iEditable;
+			iCanApply = data.iCanApply;
+			iAdmin = data.iAdmin;
+			if (data.iSessions != null)
+				iSessions = new ArrayList<AcademicSessionInfo>(data.iSessions);
+		}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String externalId) { iExternalId = externalId; }
 		public String getFormattedName() { return iFormattedName; }
@@ -118,6 +155,12 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iRoomPrefs == null) iRoomPrefs = new ArrayList<Preferences>();
 			iRoomPrefs.add(pref);
 		}
+		public Preferences getRoomPreference(Long id) {
+			if (iRoomPrefs == null) return null;
+			for (Preferences p: iRoomPrefs)
+				if (id.equals(p.getId())) return p;
+			return null;
+		}
 		
 		public boolean hasDistributionPreferences() { return iDistPrefs != null && iDistPrefs.hasItems(); }
 		public Preferences getDistributionPreferences() { return iDistPrefs; }
@@ -148,6 +191,48 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iCustomFields == null) iCustomFields = new ArrayList<CustomField>();
 			iCustomFields.add(f);
 		}
+		
+		public boolean hasSessions() { return iSessions != null && !iSessions.isEmpty(); }
+		public List<AcademicSessionInfo> getSessions() { return iSessions; }
+		public void addSession(AcademicSessionInfo session) {
+			if (iSessions == null) iSessions = new ArrayList<AcademicSessionInfo>();
+			iSessions.add(session);
+		}
+		
+		public boolean isChanged(InstructorSurveyData data) {
+			// check basic properties
+			if (!InstructorSurveyInterface.equals(iExternalId, data.iExternalId)) return true;
+			if (!InstructorSurveyInterface.equals(iSessionId, data.iSessionId)) return true;
+			if (!InstructorSurveyInterface.equals(iEmail, data.iEmail)) return true;
+			if (!InstructorSurveyInterface.equals(iNote, data.iNote)) return true;
+			// check preferences
+			if (!InstructorSurveyInterface.equals(iTimePrefs, data.iTimePrefs)) return true;
+			if (!InstructorSurveyInterface.equals(iDistPrefs, data.iDistPrefs)) return true;
+			if (iRoomPrefs != null) {
+				for (Preferences p: iRoomPrefs) {
+					if (!InstructorSurveyInterface.equals(p, data.getRoomPreference(p.getId()))) return true;		
+				}
+			}
+			int courses = 0;
+			if (iCourses != null) {
+				course: for (Course course: iCourses) {
+					if (!course.hasCustomFields()) continue;
+					courses ++;
+					if (data.iCourses != null)
+						for (Course o: data.iCourses)
+							if (course.equals(o)) continue course;
+					return true;
+				}
+			}
+			int other = 0;
+			if (data.iCourses != null) {
+				for (Course course: data.iCourses) {
+					if (course.hasCustomFields()) other++;
+				}
+			}
+			if (courses != other) return true;
+			return false;
+		}
 	}
 	
 	public static class Selection implements IsSerializable {
@@ -167,6 +252,16 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public String getNote() { return iNote; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
 		public void setNote(String note) { iNote = note; }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Selection)) return false;
+			Selection s = (Selection)o;
+			return
+					InstructorSurveyInterface.equals(iItem, s.iItem) &&
+					InstructorSurveyInterface.equals(iLevel, s.iLevel) &&
+					InstructorSurveyInterface.equals(iNote == null ? "" : iNote, s.iNote == null ? "" : s.iNote);
+		}
 	}
 	
 	public static class Preferences implements IsSerializable, Comparable<Preferences> {
@@ -178,6 +273,14 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public Preferences() {}
 		public Preferences(Long id, String type) {
 			iId = id; iType = type;
+		}
+		public Preferences(Preferences p) {
+			iId = p.iId;
+			iType = p.iType;
+			if (p.iItems != null)
+				iItems = new TreeSet<IdLabel>(p.iItems);
+			if (p.iSelections != null)
+				iSelections = new ArrayList<Selection>(p.iSelections);
 		}
 		
 		public Long getId() { return iId; }
@@ -206,11 +309,6 @@ public class InstructorSurveyInterface implements IsSerializable {
 		@Override
 		public int hashCode() { return getId().hashCode(); }
 		@Override
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof IdValue)) return false;
-			return getId().equals(((IdValue)o).getId());
-		}
-		@Override
 		public int compareTo(Preferences other) {
 			return getType().compareTo(other.getType());
 		}
@@ -224,6 +322,24 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iSelections == null) iSelections = new ArrayList<Selection>();
 			if (getItem(selection.getItem()) != null)
 				iSelections.add(selection);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null || !(obj instanceof Preferences)) return false;
+			Preferences original = (Preferences)obj;
+			if (!InstructorSurveyInterface.equals(iId, original.iId)) return false;
+			int selections = (iSelections == null ? 0 : iSelections.size());
+			int originalSelections = (original.iSelections == null ? 0 : original.iSelections.size());
+			if (selections != originalSelections) return false; // different number of selections
+			if (selections > 0) {
+				s: for (Selection s: iSelections) {
+					for (Selection o: original.iSelections)
+						if (s.equals(o)) continue s;
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 	
@@ -321,9 +437,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 	public static class InstructorSurveyRequest implements GwtRpcRequest<InstructorSurveyData> {
 		private String iExternalId;
 		private Long iInstructorId;
+		private String iSession;
 		
 		public InstructorSurveyRequest() {}
-		public InstructorSurveyRequest(String externalId) { iExternalId = externalId; }
+		public InstructorSurveyRequest(String externalId, String session) { iExternalId = externalId; iSession = session; }
 		public InstructorSurveyRequest(Long instructorId) { iInstructorId = instructorId; }
 		
 		public String getExternalId() { return iExternalId; }
@@ -331,6 +448,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public Long getInstructorId() { return iInstructorId; }
 		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+		
+		public String getSession() { return iSession; }
+		public boolean hasSession() { return iSession != null && !iSession.isEmpty(); }
+		public void setSession(String session) { iSession = session; }
 	}
 	
 	public static class InstructorSurveyApplyRequest implements GwtRpcRequest<GwtRpcResponseNull> {
@@ -370,9 +491,25 @@ public class InstructorSurveyInterface implements IsSerializable {
 	}
 	
 	public static class InstructorTimePreferencesModel extends InstructorAvailabilityModel {
+		public InstructorTimePreferencesModel() {
+			super();
+		}
+		public InstructorTimePreferencesModel(InstructorTimePreferencesModel model) {
+			super(model);
+		}
 		@Override
 		public boolean hasNote() {
 			return false;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof InstructorTimePreferencesModel))
+				return false;
+			InstructorTimePreferencesModel p = (InstructorTimePreferencesModel)o;
+			return
+					InstructorSurveyInterface.equals(getPattern(), p.getPattern()) &&
+					InstructorSurveyInterface.equals(getNote(), p.getNote());
 		}
 	}
 	
@@ -412,6 +549,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public Course() {
 			super();
 		}
+		public Course(Course course) {
+			super(course);
+			iId = course.iId;
+			iCourseTitle = course.iCourseTitle;
+			if (course.iCustoms != null)
+				iCustoms = new HashMap<Long, String>(course.iCustoms);
+		}
 		
 		public Long getReqId() { return iId; }
 		public void setReqId(Long id) { iId = id; }
@@ -441,9 +585,28 @@ public class InstructorSurveyInterface implements IsSerializable {
 		}
 		
 		public boolean hasCustomFields() { return iCustoms != null && !iCustoms.isEmpty(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Course)) return false;
+			Course course = (Course)o;
+			if (!InstructorSurveyInterface.equals(getId(), course.getId())) return false;
+			if (!InstructorSurveyInterface.equals(getCourseName(), course.getCourseName())) return false;
+			int custom = (iCustoms == null ? 0 : iCustoms.size());
+			int otherCustom = (course.iCustoms == null ? 0 : course.iCustoms.size());
+			if (custom != otherCustom) return false;
+			if (custom > 0)
+				for (Map.Entry<Long, String> e: iCustoms.entrySet())
+					if (!InstructorSurveyInterface.equals(e.getValue(), course.iCustoms.get(e.getKey()))) return false; 
+			return true;
+		}
 	}
 	
 	public static enum CourseColumn {
 		COURSE, CUSTOM,
 	}
+	
+	public static boolean equals(Object o1, Object o2) {
+        return (o1 == null ? o2 == null : o1.equals(o2));
+    }
 }

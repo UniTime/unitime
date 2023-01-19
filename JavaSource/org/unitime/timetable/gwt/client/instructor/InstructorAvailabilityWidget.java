@@ -113,6 +113,13 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 	};
 	
 	public static class InstructorAvailabilityModel extends RoomInterface.RoomSharingModel {
+		public InstructorAvailabilityModel() {
+			super();
+		}
+		public InstructorAvailabilityModel(InstructorAvailabilityModel model) {
+			super(model);
+		}
+		
 		public char id2char(Long id) {
 			if (id == null) return '2';
 			switch (id.intValue()) {
