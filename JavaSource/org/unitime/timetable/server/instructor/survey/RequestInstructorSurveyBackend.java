@@ -348,7 +348,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					roomPrefs.addSelection(new Selection(rp.getRoom().getUniqueId(), rp.getPrefLevel().getUniqueId(), p.getNote()).withProblem(prob));
 				}
 			}
-			if (instructor != null && is.getApplied() != null) {
+			if (instructor != null) {
 				for (Preference p: instructor.getPreferences()) {
 					if (p instanceof TimePref) {
 						TimePref tp = (TimePref)p;

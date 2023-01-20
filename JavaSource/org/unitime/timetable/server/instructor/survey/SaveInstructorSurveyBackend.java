@@ -127,7 +127,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 			}
 			if (request.isChanged()) {
 				is.setChanged(ts);
-				is.setChangedBy(context.getUser().getExternalUserId());
+				is.setChangedBy(context.getUser().getTrueExternalUserId());
 				
 				if (survey.hasCourses()) {
 					List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)hibSession.createQuery(

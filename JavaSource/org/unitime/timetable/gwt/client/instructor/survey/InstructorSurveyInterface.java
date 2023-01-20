@@ -201,10 +201,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public boolean isChanged(InstructorSurveyData data) {
 			// check basic properties
-			if (!InstructorSurveyInterface.equals(iExternalId, data.iExternalId)) return true;
+			if (!InstructorSurveyInterface.equalsString(iExternalId, data.iExternalId)) return true;
 			if (!InstructorSurveyInterface.equals(iSessionId, data.iSessionId)) return true;
-			if (!InstructorSurveyInterface.equals(iEmail, data.iEmail)) return true;
-			if (!InstructorSurveyInterface.equals(iNote, data.iNote)) return true;
+			if (!InstructorSurveyInterface.equalsString(iEmail, data.iEmail)) return true;
+			if (!InstructorSurveyInterface.equalsString(iNote, data.iNote)) return true;
 			// check preferences
 			if (!InstructorSurveyInterface.equals(iTimePrefs, data.iTimePrefs)) return true;
 			if (!InstructorSurveyInterface.equals(iDistPrefs, data.iDistPrefs)) return true;
@@ -232,6 +232,70 @@ public class InstructorSurveyInterface implements IsSerializable {
 			}
 			if (courses != other) return true;
 			return false;
+		}
+		
+		public String checkChanges(InstructorSurveyData data) {
+			// check basic properties
+			if (!InstructorSurveyInterface.equalsString(iExternalId, data.iExternalId)) return "external id " + iExternalId + "\n vs " + data.iExternalId;
+			if (!InstructorSurveyInterface.equals(iSessionId, data.iSessionId)) return "session id " + iSessionId + "\n vs " + data.iSessionId;
+			if (!InstructorSurveyInterface.equalsString(iEmail, data.iEmail)) return "email " + iEmail + "\n vs " + data.iEmail;
+			if (!InstructorSurveyInterface.equalsString(iNote, data.iNote)) return "note " + iNote + "\n vs " + data.iNote;
+			// check preferences
+			if (!InstructorSurveyInterface.equals(iTimePrefs, data.iTimePrefs)) return "time " + iTimePrefs + "\n vs " + data.iTimePrefs;
+			if (!InstructorSurveyInterface.equals(iDistPrefs, data.iDistPrefs)) return (iDistPrefs != null ? iDistPrefs.getType() : "dist " + iDistPrefs + "\n vs " + data.iDistPrefs);
+			if (iRoomPrefs != null) {
+				for (Preferences p: iRoomPrefs) {
+					if (!InstructorSurveyInterface.equals(p, data.getRoomPreference(p.getId()))) return p.getType() + " " + p + "\n vs " + data.getRoomPreference(p.getId());		
+				}
+			}
+			int courses = 0;
+			if (iCourses != null) {
+				course: for (Course course: iCourses) {
+					if (!course.hasCustomFields()) continue;
+					courses ++;
+					if (data.iCourses != null)
+						for (Course o: data.iCourses)
+							if (course.equals(o)) continue course;
+					return "course " + course;
+				}
+			}
+			int other = 0;
+			if (data.iCourses != null) {
+				for (Course course: data.iCourses) {
+					if (course.hasCustomFields()) other++;
+				}
+			}
+			if (courses != other) return "@#courses " + courses + "/" + iCourses + "\n vs " +  other + "/" + data.iCourses;
+			return "NO CHANGE";
+		}
+		
+		@Override
+		public String toString() {
+			String ret = 
+					"{ id : '" + iExternalId + "',\n  session : " + iSessionId + ",\n  email : " + (iEmail == null ? "null" : "'" + iEmail + "'") +
+					",\n  note : " + (iNote == null ? "null" : "'" + iNote + "'") +
+					",\n  time : " + iTimePrefs +
+					",\n  dist : " + iDistPrefs;
+			if (iRoomPrefs == null)
+				ret += ",\n  room : null";
+			else {
+				ret += ",\n  room : [";
+				for (Preferences p: iRoomPrefs) {
+					ret += ",\n    " + p;
+				}
+				ret += "\n  ]";
+			}
+			if (iCourses == null)
+				ret += ",\n  courses : null";
+			else {
+				ret += ",\n  courses : [";
+				for (Course course: iCourses) {
+					if (!course.hasCustomFields()) continue;
+					ret += ",\n    " + course;
+				}
+				ret += "\n  ]";
+			}
+			return ret + "\n}";
 		}
 	}
 	
@@ -268,7 +332,12 @@ public class InstructorSurveyInterface implements IsSerializable {
 			return
 					InstructorSurveyInterface.equals(iItem, s.iItem) &&
 					InstructorSurveyInterface.equals(iLevel, s.iLevel) &&
-					InstructorSurveyInterface.equals(iNote == null ? "" : iNote, s.iNote == null ? "" : s.iNote);
+					InstructorSurveyInterface.equalsString(iNote, s.iNote);
+		}
+		
+		@Override
+		public String toString() {
+			return "{ item : " + iItem + ", level : " + iLevel + ", note : "+ (iNote == null ? "null" : "'" + iNote + "'") + "}";
 		}
 	}
 	
@@ -369,6 +438,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 			}
 			return true;
 		}
+		
+		@Override
+		public String toString() {
+			return "{ id : " + iId + ", type : " + (iType == null ? "null" : "'" + iType + "'") + ", selections: " + iSelections + "}";
+		}
 	}
 	
 	public static class IdLabel implements IsSerializable, Comparable<IdLabel> {
@@ -412,6 +486,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
+		
+		@Override
+		public String toString() {
+			return "{ id : " + iId + ", label : " + (iLabel == null ? "null" : "'" + iLabel + "'") + "}";
+		}
 	}
 	
 	public static class InstructorDepartment implements IsSerializable {
@@ -435,6 +514,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean hasPosition() { return iPosition != null; }
 		public IdLabel getPosition() { return iPosition; }
 		public void setPosition(IdLabel position) { iPosition = position; }
+		
+		@Override
+		public String toString() {
+			return "{ id : " + iId + ", label : " + (iLabel == null ? "null" : "'" + iLabel + "'") + ", dept : " + (iDeptCode == null ? "null" : "'" + iDeptCode + "'") + "}";
+		}
 	}
 	
 	public static class PrefLevel implements IsSerializable {
@@ -460,6 +544,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public String getColor() { return iColor; }
 		public void setColor(String color) { iColor = color; }
 		public boolean isHard() { return "R".equals(iCode) || "P".equals(iCode); }
+		
+		@Override
+		public String toString() {
+			return "{ id : " + iId + ", label : " + (iLabel == null ? "null" : "'" + iLabel + "'") + "}";
+		}
 	}
 	
 	public static class InstructorSurveyRequest implements GwtRpcRequest<InstructorSurveyData> {
@@ -546,8 +635,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 				return false;
 			InstructorTimePreferencesModel p = (InstructorTimePreferencesModel)o;
 			return
-					InstructorSurveyInterface.equals(getPattern(), p.getPattern()) &&
-					InstructorSurveyInterface.equals(getNote(), p.getNote());
+					((isEmpty() && p.isEmpty()) || InstructorSurveyInterface.equals(getPattern(), p.getPattern())) &&
+					InstructorSurveyInterface.equalsString(getNote(), p.getNote());
+		}
+		
+		@Override
+		public String toString() {
+			return "{ pattern : " + (isEmpty() ? "null" : "'" + getPattern() + "'") + ", note : " + (getNote() == null ? "null" : "'" + getNote() + "'") + "}";
 		}
 	}
 	
@@ -576,6 +670,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof CustomField)) return false;
 			return getId().equals(((CustomField)o).getId());
+		}
+		
+		@Override
+		public String toString() {
+			return "{ id : " + iId + ", name : " + (iName == null ? "null" : "'" + iName + "'") + ", length: "  + iLength + "}";
 		}
 	}
 	
@@ -629,7 +728,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (o == null || !(o instanceof Course)) return false;
 			Course course = (Course)o;
 			if (!InstructorSurveyInterface.equals(getId(), course.getId())) return false;
-			if (!InstructorSurveyInterface.equals(getCourseName(), course.getCourseName())) return false;
+			if (!InstructorSurveyInterface.equalsString(getCourseName(), course.getCourseName())) return false;
 			int custom = (iCustoms == null ? 0 : iCustoms.size());
 			int otherCustom = (course.iCustoms == null ? 0 : course.iCustoms.size());
 			if (custom != otherCustom) return false;
@@ -637,6 +736,11 @@ public class InstructorSurveyInterface implements IsSerializable {
 				for (Map.Entry<Long, String> e: iCustoms.entrySet())
 					if (!InstructorSurveyInterface.equals(e.getValue(), course.iCustoms.get(e.getKey()))) return false; 
 			return true;
+		}
+		
+		@Override
+		public String toString() {
+			return "{ id : " + getId() + ", name : " + (getCourseName() == null ? "null" : "'" + getCourseName() + "'") + ", customs: "  + iCustoms + "}";
 		}
 	}
 	
@@ -649,6 +753,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 		LEVEL_CHANGED,
 		NOT_IN_SURVEY,
 		DIFFERENT_DEPT,
+	}
+	
+	public static boolean equalsString(String o1, String o2) {
+		return (o1 == null ? "" : o1).equals(o2 == null ? "" : o2);
 	}
 	
 	public static boolean equals(Object o1, Object o2) {

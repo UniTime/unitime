@@ -225,6 +225,10 @@ public class InstructorSurveyWidget extends Composite {
 		});
 	}
 	
+	protected boolean isShowDifferences() {
+		return (iSurvey.getSubmitted() != null || (iSurvey.getApplied() != null && iSurvey.getAppliedDeptCode() != null)) && iShowDifferences.getValue();
+	}
+	
 	protected void setValue(InstructorSurveyData survey) {
 		iSurvey = survey;
 		if (iForm.getRowCount() > 1) {
@@ -252,12 +256,13 @@ public class InstructorSurveyWidget extends Composite {
 		}
 		if (survey.getApplied() != null && survey.getAppliedDeptCode() != null) {
 			iForm.addRow(MESSAGES.propLastApplied(), new Label(MESSAGES.lastApply(sTimeStampFormat.format(survey.getApplied()), survey.getAppliedDeptCode())));
+		}
+		if (iSurvey.getSubmitted() != null || (iSurvey.getApplied() != null && iSurvey.getAppliedDeptCode() != null))
 			iForm.addRow("", iShowDifferences);
-			if (survey.getChanged() != null && survey.getApplied().before(survey.getChanged())) {
-				Label updatedAfterApplied = new Label(MESSAGES.surveyUpdatedAfterApply());
-				updatedAfterApplied.addStyleName("updated-after-applied");
-				iForm.addRow("", updatedAfterApplied);
-			}
+		if (survey.getApplied() != null && survey.getChanged() != null && survey.getApplied().before(survey.getChanged())) {
+			Label updatedAfterApplied = new Label(MESSAGES.surveyUpdatedAfterApply());
+			updatedAfterApplied.addStyleName("updated-after-applied");
+			iForm.addRow("", updatedAfterApplied);
 		}
 		
 		if (!survey.getTimePrefs().isEmpty()) {
@@ -269,7 +274,7 @@ public class InstructorSurveyWidget extends Composite {
 			if (!tp.getReason().getText().isEmpty()) {
 				iForm.addRow("", new ReadOnlyNote(tp.getReason().getText()));
 			}
-			if (survey.getApplied() != null && iShowDifferences.getValue()) {
+			if (isShowDifferences()) {
 				if (survey.getTimePrefs().getProblem() == Problem.LEVEL_CHANGED) {
 					RoomSharingDisplayMode mode = survey.getTimePrefs().getModes().get(survey.getTimePrefs().getDefaultMode());
 					int day = mode.getFirstDay();
@@ -342,7 +347,7 @@ public class InstructorSurveyWidget extends Composite {
 							if (prefLevel.getId().equals(selection.getLevel())) level = prefLevel;
 							if (prefLevel.getId().equals(selection.getInstructorLevel())) instructorLevel = prefLevel;
 						}
-						if ((iSurvey.getApplied() == null || !iShowDifferences.getValue()) && level == null) continue;
+						if (!isShowDifferences() && level == null) continue;
 						add(new PreferenceLine(item, level, instructorLevel, selection));
 					}
 				}
@@ -359,7 +364,7 @@ public class InstructorSurveyWidget extends Composite {
 				if (level != null) {
 					P preference = new P("preference-cell");
 					preference.setText(level.getTitle());
-					if (iSurvey.getApplied() != null && iShowDifferences.getValue() && selection.getProblem() == Problem.DIFFERENT_DEPT)
+					if (isShowDifferences() && selection.getProblem() == Problem.DIFFERENT_DEPT)
 						preference.addStyleName("different-dept");
 					else
 						preference.getElement().getStyle().setColor(level.getColor());
@@ -368,13 +373,13 @@ public class InstructorSurveyWidget extends Composite {
 
 				P it = new P("preference-cell");
 				it.setText(item.getLabel());
-				if (iSurvey.getApplied() != null && iShowDifferences.getValue() && selection.getProblem() == Problem.DIFFERENT_DEPT)
+				if (isShowDifferences() && selection.getProblem() == Problem.DIFFERENT_DEPT)
 					it.addStyleName("different-dept");
 				else if (level != null)
 					it.getElement().getStyle().setColor(level.getColor());
 				line1.add(it);
 				
-				if (iSurvey.getApplied() != null && iShowDifferences.getValue() && instructor != null) {
+				if (isShowDifferences() && instructor != null) {
 					if (level != null) {
 						P ct = new P("preference-cell", "pref-changed-to");
 						ct.setText(MESSAGES.instructorSurveyPreferenceLevelChangedTo());
@@ -391,7 +396,7 @@ public class InstructorSurveyWidget extends Composite {
 					line1.add(ip);
 				}
 				
-				if (iSurvey.getApplied() != null && iShowDifferences.getValue() && selection.getProblem() == Problem.NOT_APPLIED) {
+				if (isShowDifferences() && selection.getProblem() == Problem.NOT_APPLIED) {
 					P ip = new P("preference-cell", "pref-not-set");
 					ip.setText(MESSAGES.instructorSurveyPreferenceNotSet());
 					line1.add(ip);
@@ -402,7 +407,7 @@ public class InstructorSurveyWidget extends Composite {
 					P description = new P("description");
 					description.setVisible(true);
 					description.setHTML(item.getDescription());
-					if (iSurvey.getApplied() != null && iShowDifferences.getValue() && selection.getProblem() == Problem.DIFFERENT_DEPT)
+					if (isShowDifferences() && selection.getProblem() == Problem.DIFFERENT_DEPT)
 						description.addStyleName("different-dept");
 					P line2 = new P("second-line");
 					line2.add(description);
@@ -415,7 +420,7 @@ public class InstructorSurveyWidget extends Composite {
 					reason.setVisible(false);
 					reason.setVisible(true);
 					reason.setText(selection.getNote());
-					if (iSurvey.getApplied() != null && iShowDifferences.getValue() && selection.getProblem() == Problem.DIFFERENT_DEPT)
+					if (isShowDifferences() && selection.getProblem() == Problem.DIFFERENT_DEPT)
 						reason.addStyleName("different-dept");
 					P line2 = new P("second-line");
 					line2.add(reason);
