@@ -146,6 +146,13 @@ public class InstructorSurveyPage extends Composite {
 	}
 	
 	public boolean isChanged() {
+		/*
+		if (iOriginal != null && iOriginal.isEditable()) {
+			UniTimeNotifications.info(iOriginal.checkChanges(getValue()));
+			Logger.getLogger(InstructorSurveyPage.class.getName()).info("original: " + iOriginal);
+			Logger.getLogger(InstructorSurveyPage.class.getName()).info("current: " + getValue());
+		}
+		*/
 		return iOriginal != null && iOriginal.isEditable() && iOriginal.isChanged(getValue());
 	}
 	
