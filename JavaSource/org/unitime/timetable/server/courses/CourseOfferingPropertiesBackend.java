@@ -61,6 +61,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -248,6 +249,14 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    		Department fundingDept = childCourseOffering.getSubjectArea().getFundingDept();
 		    		if (fundingDept != null) {
 				    	fundingDeptSet.add(fundingDept);
+		    		}
+		    	}
+		    	for (OfferingCoordinator oc: instructionalOffering.getOfferingCoordinators()) {
+		    		if (!oc.getInstructor().getDepartment().equals(instructionalOffering.getDepartment())) {
+		    			InstructorInterface instructorObject = new InstructorInterface();
+			            instructorObject.setId(oc.getInstructor().getUniqueId());
+			            instructorObject.setLabel(oc.getInstructor().getName(instructorNameFormat) + " (" + oc.getInstructor().getDepartment().getDeptCode() + ")");
+						response.addInstructor(instructorObject);
 		    		}
 		    	}
 		    }
