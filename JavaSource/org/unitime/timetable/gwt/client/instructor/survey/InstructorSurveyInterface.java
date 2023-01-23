@@ -31,9 +31,13 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.CurriculumInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -63,6 +67,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private boolean iCanApply = true;
 		private boolean iAdmin = true;
 		private List<AcademicSessionInfo> iSessions = null;
+		private List<AcademicSessionInfo> iSessionsWithPreferences = null;
+		private List<AcademicSessionInfo> iSessionsWithCourses = null;
 		
 		public InstructorSurveyData() {}
 		public InstructorSurveyData(InstructorSurveyData data) {
@@ -95,6 +101,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 			iAdmin = data.iAdmin;
 			if (data.iSessions != null)
 				iSessions = new ArrayList<AcademicSessionInfo>(data.iSessions);
+			if (data.iSessionsWithPreferences != null)
+				iSessionsWithPreferences = new ArrayList<AcademicSessionInfo>(data.iSessionsWithPreferences);
+			if (data.iSessionsWithCourses != null)
+				iSessionsWithCourses = new ArrayList<AcademicSessionInfo>(data.iSessionsWithCourses);
 		}
 		
 		public Long getId() { return iId; }
@@ -191,12 +201,32 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (iCustomFields == null) iCustomFields = new ArrayList<CustomField>();
 			iCustomFields.add(f);
 		}
+		public CustomField getCustomField(Long id) {
+			if (iCustomFields == null) return null;
+			for (CustomField cf: iCustomFields)
+				if (cf.getId().equals(id)) return cf;
+			return null;
+		}
 		
 		public boolean hasSessions() { return iSessions != null && !iSessions.isEmpty(); }
 		public List<AcademicSessionInfo> getSessions() { return iSessions; }
 		public void addSession(AcademicSessionInfo session) {
 			if (iSessions == null) iSessions = new ArrayList<AcademicSessionInfo>();
 			iSessions.add(session);
+		}
+		
+		public boolean hasSessionsWithPreferences() { return iSessionsWithPreferences != null && !iSessionsWithPreferences.isEmpty(); }
+		public List<AcademicSessionInfo> getSessionsWithPreferences() { return iSessionsWithPreferences; }
+		public void addSessionWithPreferences(AcademicSessionInfo session) {
+			if (iSessionsWithPreferences == null) iSessionsWithPreferences = new ArrayList<AcademicSessionInfo>();
+			iSessionsWithPreferences.add(session);
+		}
+		
+		public boolean hasSessionsWithCourses() { return iSessionsWithCourses != null && !iSessionsWithCourses.isEmpty(); }
+		public List<AcademicSessionInfo> getSessionsWithCourses() { return iSessionsWithCourses; }
+		public void addSessionWithCourses(AcademicSessionInfo session) {
+			if (iSessionsWithCourses == null) iSessionsWithCourses = new ArrayList<AcademicSessionInfo>();
+			iSessionsWithCourses.add(session);
 		}
 		
 		public boolean isChanged(InstructorSurveyData data) {
@@ -607,6 +637,26 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
 	}
 	
+	public static class InstructorSurveyCopyRequest implements GwtRpcRequest<InstructorSurveyData> {
+		private InstructorSurveyData iData;
+		private Long iPreferencesSessionId;
+		private Long iCoursesSessionId;
+		
+		public InstructorSurveyCopyRequest() {}
+		public InstructorSurveyCopyRequest(InstructorSurveyData data, Long preferencesSessionId, Long coursesSessionId) {
+			iData = data;
+			iPreferencesSessionId = preferencesSessionId;
+			iCoursesSessionId = coursesSessionId;
+		}
+		
+		public InstructorSurveyData getData() { return iData; }
+		public void setData(InstructorSurveyData data) { iData = data; }
+		public Long getPreferencesSessionId() { return iPreferencesSessionId; }
+		public void setPreferencesSessionId(Long sessionId) { iPreferencesSessionId = sessionId; }
+		public Long getCoursesSessionId() { return iCoursesSessionId; }
+		public void setCoursesSessionId(Long sessionId) { iCoursesSessionId = sessionId; }
+	}
+	
 	public static class InstructorTimePreferencesModel extends InstructorAvailabilityModel {
 		private Problem iProblem = Problem.NOT_APPLIED;
 		private String iInstructorPattern;
@@ -722,6 +772,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		}
 		
 		public boolean hasCustomFields() { return iCustoms != null && !iCustoms.isEmpty(); }
+		public void clearCustomFields() { iCustoms = null; }
 		
 		@Override
 		public boolean equals(Object o) {
@@ -762,4 +813,106 @@ public class InstructorSurveyInterface implements IsSerializable {
 	public static boolean equals(Object o1, Object o2) {
         return (o1 == null ? o2 == null : o1.equals(o2));
     }
+	
+	public static class ListCourseOfferings implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.CourseAssignment>> {
+		private Long iSessionId;
+		private String iQuery;
+		private Integer iLimit;
+		
+		public ListCourseOfferings() {}
+		public ListCourseOfferings(Long sessionId, String query, Integer limit) {
+			iSessionId = sessionId;
+			iQuery = query;
+			iLimit = limit;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public String getQuery() { return iQuery; }
+		public void setQuery(String query) { iQuery = query; }
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
+	}
+	
+	public static class CourseDetail implements GwtRpcResponse {
+		private String iDetail;
+		
+		public CourseDetail() {}
+		public CourseDetail(String detail) { iDetail = detail; }
+		
+		public String getDetail() { return iDetail; }
+		public void setDetail(String detail) { iDetail = detail; }
+	}
+	
+	public static class RetrieveCourseDetail implements GwtRpcRequest<CourseDetail> {
+		private Long iSessionId;
+		private String iCourse;
+		private Long iCourseId;
+		
+		public RetrieveCourseDetail() {}
+		public RetrieveCourseDetail(Long sessionId, String course, Long courseId) {
+			iSessionId = sessionId;
+			iCourse = course;
+			iCourseId = courseId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
+	
+	public static class ListClasses implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.ClassAssignment>> {
+		private Long iSessionId;
+		private String iCourse;
+		private Long iCourseId;
+		
+		public ListClasses() {}
+		public ListClasses(Long sessionId, String course, Long courseId) {
+			iSessionId = sessionId;
+			iCourse = course;
+			iCourseId = courseId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
+	
+	public static class ListAcademicClassifications implements GwtRpcRequest<GwtRpcResponseList<AcademicClassificationInterface>> {
+		private Long iSessionId;
+		
+		public ListAcademicClassifications() {}
+		public ListAcademicClassifications(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	}
+	
+	public static class ListCurricula implements GwtRpcRequest<GwtRpcResponseList<CurriculumInterface>> {
+		private Long iSessionId;
+		private String iCourse;
+		private Long iCourseId;
+		
+		public ListCurricula() {}
+		public ListCurricula(Long sessionId, String course, Long courseId) {
+			iSessionId = sessionId;
+			iCourse = course;
+			iCourseId = courseId;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
 }

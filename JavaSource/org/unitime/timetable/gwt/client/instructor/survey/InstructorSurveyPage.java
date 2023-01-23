@@ -26,6 +26,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.IdLabel;
+import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyCopyRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyData;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveySaveRequest;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorTimePreferencesModel;
@@ -40,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.MenuBarWithAccessKeys;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -49,6 +51,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionI
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
@@ -80,9 +83,12 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.UIObject;
 
 /**
  * @author Tomas Muller
@@ -162,6 +168,79 @@ public class InstructorSurveyPage extends Composite {
 		iPanel.clear();
 		
 		iHeader = new UniTimeHeaderPanel(survey.getFormattedName());
+		iHeader.addButton("copy", MESSAGES.buttonCopyInstructorSurvey(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBarWithAccessKeys();
+				if (iSurvey.hasSessionsWithPreferences()) {
+					MenuBar submenu = new MenuBar(true);
+					for (final AcademicSessionInfo s: iSurvey.getSessionsWithPreferences()) {
+						submenu.addItem(new MenuItem(s.getName(), new ScheduledCommand() {
+							@Override
+							public void execute() {
+								popup.hide();
+								iHeader.clearMessage();
+								final InstructorSurveyData original = iOriginal;
+								LoadingWidget.showLoading(MESSAGES.waitUpdatingInstructorSurvey());
+								RPC.execute(new InstructorSurveyCopyRequest(getValue(), s.getSessionId(), null), new AsyncCallback<InstructorSurveyData>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.hideLoading();
+										UniTimeNotifications.error(caught.getMessage());
+										iHeader.setErrorMessage(caught.getMessage());
+									}
+
+									@Override
+									public void onSuccess(InstructorSurveyData result) {
+										LoadingWidget.hideLoading();
+										setValue(result); iOriginal = original;
+									}
+								});
+							}
+						}));
+					}
+					MenuItem item = new MenuItem(MESSAGES.opCopyPreferencesRequirements(), true, submenu);
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				if (iSurvey.hasSessionsWithCourses()) {
+					MenuBar submenu = new MenuBar(true);
+					for (final AcademicSessionInfo s: iSurvey.getSessionsWithCourses()) {
+						submenu.addItem(new MenuItem(s.getName(), new ScheduledCommand() {
+							@Override
+							public void execute() {
+								popup.hide();
+								iHeader.clearMessage();
+								final InstructorSurveyData original = iOriginal;
+								LoadingWidget.showLoading(MESSAGES.waitUpdatingInstructorSurvey());
+								RPC.execute(new InstructorSurveyCopyRequest(getValue(), null, s.getSessionId()), new AsyncCallback<InstructorSurveyData>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.hideLoading();
+										UniTimeNotifications.error(caught.getMessage());
+										iHeader.setErrorMessage(caught.getMessage());
+									}
+
+									@Override
+									public void onSuccess(InstructorSurveyData result) {
+										LoadingWidget.hideLoading();
+										setValue(result); iOriginal = original;
+									}
+								});
+							}
+						}));
+					}
+					MenuItem item = new MenuItem(MESSAGES.opCopyCourseRequirements(), true, submenu);
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				menu.setVisible(true);
+				popup.add(menu);
+				popup.showRelativeTo((UIObject)event.getSource());
+				menu.focus();
+			}
+		});
 		iHeader.addButton("save", MESSAGES.buttonSaveInstructorSurvey(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -356,7 +435,7 @@ public class InstructorSurveyPage extends Composite {
 		}
 		
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectCoursePreferences()));
-		iCourses = new InstructorSurveyCourseTable(survey.getCustomFields(), survey.isEditable());
+		iCourses = new InstructorSurveyCourseTable(survey.getSessionId(), survey.getCustomFields(), survey.isEditable());
 		if (survey.hasCourses()) {
 			for (Course ci: survey.getCourses()) {
 				if (!survey.isEditable() && !ci.hasCustomFields()) continue;

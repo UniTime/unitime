@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.admin.AdminCookie;
-import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CourseColumn;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CustomField;
@@ -36,7 +35,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -55,8 +53,10 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	private int iCustom = 0;
 	private List<CustomField> iCustomFields;
 	private boolean iEditable = true;
+	private Long iSessionId;
 	
-	public InstructorSurveyCourseTable(List<CustomField> cf, boolean editable) {
+	public InstructorSurveyCourseTable(Long sessionId, List<CustomField> cf, boolean editable) {
+		iSessionId = sessionId;
 		iCustomFields = cf;
 		iEditable = editable;
 		addStyleName("unitime-InstructorSurveyCourseTable");
@@ -111,7 +111,7 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 	public Widget getColumnWidget(CourseColumn column, final Course course, final int index) {
 		switch (column) {
 		case COURSE:
-			final CourseSelectionBox box = new CourseSelectionBox();
+			final CourseSelectionBox box = new CourseSelectionBox(iSessionId);
 			box.addStyleName("course-box");
 			box.setValue(course);
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -303,43 +303,6 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		
 		protected int compare(Number n1, Number n2) {
 			return (n1 == null ? n2 == null ? 0 : -1 : n2 == null ? 1 : Double.compare(n1.doubleValue(), n2.doubleValue())); 
-		}
-	}
-	
-	public class CourseSelectionBox extends CurriculaCourseSelectionBox {
-		private Label iTitle;
-		
-		public CourseSelectionBox() {
-			super();
-			iTitle = new Label(); iTitle.addStyleName("course-title"); iTitle.setVisible(false);
-			add(iTitle);
-			addCourseSelectionHandler(new CourseSelectionHandler() {
-				@Override
-				public void onCourseSelection(CourseSelectionEvent event) {
-					CourseSelectionBox.this.setTitle(event.getValue() == null ? null : event.getValue().getCourseTitle());
-				}
-			});
-		}
-		
-		public void setTitle(String title) {
-			if (title == null || title.isEmpty()) {
-				iTitle.setText(""); iTitle.setVisible(false);
-			} else {
-				iTitle.setText(title); iTitle.setVisible(true);
-			}
-		}
-		
-		public void setValue(Course course, boolean fireEvents) {
-			RequestedCourse rc = new RequestedCourse();
-			rc.setCourseId(course.getId());
-			rc.setCourseName(course.getCourseName());
-			rc.setCourseTitle(course.getCourseTitle());
-			super.setValue(rc, fireEvents);
-			setTitle(course.getCourseTitle());
-		}
-		
-		public void setValue(Course course) {
-			setValue(course, false);
 		}
 	}
 }

@@ -175,6 +175,21 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					survey.addSession(new AcademicSessionInfo(
 							session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
 							session.getLabel(), session.getSessionBeginDateTime()));
+					if (!session.getUniqueId().equals(sessionId) && survey.isEditable()) {
+						InstructorSurvey x = InstructorSurvey.getInstructorSurvey(survey.getExternalId(), session.getUniqueId());
+						if (x != null) {
+							if ((x.getNote() != null && !x.getNote().isEmpty()) || !x.getPreferences().isEmpty()) {
+								survey.addSessionWithPreferences(new AcademicSessionInfo(
+										session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+										session.getLabel(), session.getSessionBeginDateTime()));
+							}
+							if (!x.getCourseRequirements().isEmpty()) {
+								survey.addSessionWithCourses(new AcademicSessionInfo(
+										session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+										session.getLabel(), session.getSessionBeginDateTime()));
+							}
+						}
+					}
 				}
 			}
 		}

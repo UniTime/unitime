@@ -313,7 +313,7 @@ public class InstructorSurveyWidget extends Composite {
 			iForm.addRow(MESSAGES.propOtherPreferences(), new ReadOnlyNote(survey.getNote()));
 		}
 		
-		InstructorSurveyCourseTable courses = new InstructorSurveyCourseTable(survey.getCustomFields(), false);
+		InstructorSurveyCourseTable courses = new InstructorSurveyCourseTable(survey.getSessionId(), survey.getCustomFields(), false);
 		if (survey.hasCourses()) {
 			for (Course ci: survey.getCourses()) {
 				if (ci.hasCustomFields())
