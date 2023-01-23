@@ -7655,6 +7655,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Individual Course Requirements")
 	String sectCoursePreferences();
 	
+	@DefaultMessage("<u>C</u>opy<span class='unitime-ButtonArrow'>&#9660;</span>")
+	String buttonCopyInstructorSurvey();
+	
+	@DefaultMessage("Preferences & Requirements from")
+	String opCopyPreferencesRequirements();
+	
+	@DefaultMessage("Course Requirements from")
+	String opCopyCourseRequirements();
+	
 	@DefaultMessage("Save for <u>L</u>ater")
 	String buttonSaveInstructorSurvey();
 	

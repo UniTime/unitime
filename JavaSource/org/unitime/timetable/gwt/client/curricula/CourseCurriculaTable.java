@@ -87,7 +87,7 @@ public class CourseCurriculaTable extends Composite {
 	
 	private AsyncCallback<TreeSet<CurriculumInterface>> iCourseCurriculaCallback = null;
 	
-	private TreeSet<AcademicClassificationInterface> iClassifications = null;
+	protected TreeSet<AcademicClassificationInterface> iClassifications = null;
 	
 	private TreeSet<CourseInterface> iCourses = new TreeSet<CourseInterface>();
 	private List<ChainedCommand> iRowClicks = new ArrayList<ChainedCommand>();
@@ -103,7 +103,7 @@ public class CourseCurriculaTable extends Composite {
 	private boolean iEditable = true;
 	
 	private ClickHandler iMenu;
-	private UniTimeHeaderPanel iHeader;
+	protected UniTimeHeaderPanel iHeader;
 	
 	public static enum Type {
 		EXP (MESSAGES.shortRequestedEnrollment()),
