@@ -403,15 +403,11 @@
 				</TR>
 			</s:if>
 		</tt:propertyEquals>
-		<s:if test="#request.survey != null">
-			<TR>
-				<TD valign="top"><loc:message name="propertyInstructorCourseRequirements"/></TD>
-				<TD>
-					<TABLE style="border-spacing:0px; width: 100%;">
-						<s:property value="#request.survey" escapeHtml="false"/>
-					</TABLE>
-				</TD>
-			</TR>
+		
+		<s:if test="form.instructorSurvey == true">
+			<TR><TD colspan="2">
+				<div id='UniTimeGWT:InstructorSurveyOffering' style="display: none;"><s:property value="form.instrOfferingId"/></div>
+			</TD></TR>
 		</s:if>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">

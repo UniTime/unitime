@@ -30,14 +30,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePatternModel;
+import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -108,7 +112,13 @@ public class PatternServlet extends HttpServlet {
 			rtt.getModel().setPreferences(request.getParameter("pref"));
 		}
 		if (rtt != null) {
-			if (request.getParameter("s") != null) {
+			if (request.getParameter("d") != null) {
+				Department d = DepartmentDAO.getInstance().get(Long.valueOf(request.getParameter("d")));
+				String tp = ApplicationProperty.InstructorSurveyTimePreferencesDept.value(d.getDeptCode());
+				if (tp == null)
+					tp = ApplicationProperty.InstructorSurveyTimePreferences.value();
+				((TimePatternModel)rtt.getModel()).setMode("|" + tp);
+			} else if (request.getParameter("s") != null) {
 				try {
 					rtt.getModel().setDefaultSelection(Integer.parseInt(request.getParameter("s")));
 				} catch (NumberFormatException e) {

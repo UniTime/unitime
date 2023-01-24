@@ -7715,6 +7715,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructor Survey")
 	String sectInstructorSurvey();
 	
+	@DefaultMessage("Instructor Requirements")
+	String sectInstructorRequirements();
+	
 	@DefaultMessage("Course Requirements:")
 	String propInstructorCoursePreferences();
 	
@@ -7768,4 +7771,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Highlight differences")
 	String instructorSurveyCompareWithInstructorPrefs();
+	
+	@DefaultMessage("Other")
+	String colOtherPref();
 }

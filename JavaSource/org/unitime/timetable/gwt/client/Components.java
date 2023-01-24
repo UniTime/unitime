@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsWidget;
 import org.unitime.timetable.gwt.client.instructor.TeachingRequestsWidget;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyWidget;
+import org.unitime.timetable.gwt.client.instructor.survey.OfferingDetailWidget;
 import org.unitime.timetable.gwt.client.offerings.AssignInstructorsButton;
 import org.unitime.timetable.gwt.client.page.UniTimeBack;
 import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
@@ -85,6 +86,7 @@ public enum Components {
 	dynamicMap("UniTimeGWT:Map", new ComponentFactory() { public void insert(RootPanel panel) { MapWidget.insert(panel); } }),
 	assignClassInstructors("UniTimeGWT:AssignInstructorsButton", true, new ComponentFactory() { public void insert(RootPanel panel) { new AssignInstructorsButton(true).insert(panel); } }),
 	instructorSurvey("UniTimeGWT:InstructorSurvey", true, new ComponentFactory() { public void insert(RootPanel panel) { new InstructorSurveyWidget().insert(panel); } }),
+	instructorSurveyOffering("UniTimeGWT:InstructorSurveyOffering", true, new ComponentFactory() { public void insert(RootPanel panel) { new OfferingDetailWidget().insert(panel); } }),
 	;
 	
 	private String iId;

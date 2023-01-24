@@ -132,6 +132,12 @@ public class TimePatternModel implements RequiredTimeTableModel {
 			}
 		}
 	}
+    
+    public void setMode(String mode) {
+    	RoomInterface.RoomSharingDisplayMode m = new RoomInterface.RoomSharingDisplayMode(mode);
+    	iModes.add(m);
+    	iDefaultSelection = iModes.size() - 1;
+    }
 	
 	/** 1x30 time pattern */
 	protected TimePatternModel() {

@@ -35,8 +35,6 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.WebTable;
-import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -61,18 +59,14 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorCourseRequirement;
-import org.unitime.timetable.model.InstructorCourseRequirementNote;
-import org.unitime.timetable.model.InstructorCourseRequirementType;
 import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.OverrideType;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TeachingRequest;
-import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -86,7 +80,6 @@ import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder;
 
 
@@ -543,86 +536,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         if (html!=null && html.indexOf(MSG.noPreferencesFound())<0)
         	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
         
-        List<InstructorCourseRequirement> requirements = InstructorCourseRequirement.getRequirementsForOffering(io);
-        if (!requirements.isEmpty()) {
-        	boolean admin = sessionContext.hasPermission(Right.InstructorSurveyAdmin);
-        	boolean timeVertical = RequiredTimeTable.getTimeGridVertical(sessionContext.getUser());
-    		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(sessionContext.getUser());
-    		String timeGridSize = RequiredTimeTable.getTimeGridSize(sessionContext.getUser());
-        	List<InstructorCourseRequirementType> types = InstructorCourseRequirementType.getInstructorCourseRequirementTypes();
-        	int idx = 0;
-        	boolean courseCol = (io.getCourseOfferings().size() > 1);
-        	String[] headers = new String[5 + (courseCol ? 1 : 0) + types.size()];
-        	String[] align = new String[headers.length];
-        	boolean[] asc = new boolean[headers.length];
-        	headers[idx] = MSG.columnInstructor(); align[idx] = "left"; asc[idx] = true; idx++;
-        	if (courseCol) {
-        		headers[idx] = MSG.columnCourse(); align[idx] = "left"; asc[idx] = true; idx++;
-        	}
-        	for (InstructorCourseRequirementType type: types) {
-        		headers[idx] = type.getReference(); align[idx] = "left"; asc[idx] = true; idx++;
-        	}
-        	headers[idx] = MSG.columnTimePref(); align[idx] = "left"; asc[idx] = true; idx++;
-        	headers[idx] = MSG.columnRoomPref(); align[idx] = "left"; asc[idx] = true; idx++;
-        	headers[idx] = MSG.columnDistributionPref(); align[idx] = "left"; asc[idx] = true; idx++;
-        	headers[idx] = MSG.columnOtherPref(); align[idx] = "left"; asc[idx] = true; idx++;
-        	WebTable.setOrder(sessionContext,"InstructorCourseRequirements.ord", request.getParameter("survey"), 0);
-        	WebTable table = new WebTable(headers.length, null, 
-        			"instructionalOfferingDetail.action?op=view&io=" + io.getUniqueId() + "&survey=%%",
-        			headers, align, asc);
-        	for (InstructorCourseRequirement req: new TreeSet<InstructorCourseRequirement>(requirements)) {
-        		String[] line = new String[headers.length];
-        		String name = req.getInstructorSurvey().getExternalUniqueId();
-        		DepartmentalInstructor di = req.getInstructorSurvey().getInstructor(io);
-        		idx = 0;
-        		if (di != null)
-        			name = di.getName(instructorNameFormat);
-        		line[idx] = name; idx++;
-        		if (courseCol) {
-        			line[idx] = (req.getCourseOffering() == null ? req.getCourse() : req.getCourseOffering().getCourseName()); 
-        			idx++;
-        		}
-        		for (InstructorCourseRequirementType type: types) {
-        			InstructorCourseRequirementNote note = req.getNote(type);
-        			line[idx] = (note == null ? "" : note.getNote());
-        			idx++;
-        		}
-        		String time = "", room = "", dist = "", other = "";
-        		for (Preference p: req.getInstructorSurvey().getPreferences()) {
-        			if (p instanceof TimePref) {
-        				TimePref tp = (TimePref)p;
-						RequiredTimeTable rtt = tp.getRequiredTimeTable();
-						if (gridAsText) {
-							time = rtt.getModel().toString().replaceAll(", ","<br>");
-						} else {
-							rtt.getModel().setDefaultSelection(timeGridSize);
-							time = "<img border='0' " +
-									"src='pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;";
-						}
-        			} else if (p instanceof DistributionPref) {
-        				dist = (dist.isEmpty() ? "" : dist + "<br>") + p.preferenceHtml(instructorNameFormat);
-        			} else {
-        				room = (room.isEmpty() ? "" : room + "<br>") + p.preferenceHtml(instructorNameFormat);
-        			}
-        		}
-        		if (req.getInstructorSurvey().getNote() != null)
-        			other = req.getInstructorSurvey().getNote();
-        		line[idx] = time; idx ++;
-        		line[idx] = room; idx ++;
-        		line[idx] = dist; idx ++;
-        		line[idx] = other; idx ++;
-        		String onclick = null;
-        		if (admin)
-        			onclick = "onclick=\"showGwtDialog('" + MSG.actionInstructorSurvey() + "', 'gwt.jsp?page=instructorSurvey&menu=hide&id=" + req.getInstructorSurvey().getExternalUniqueId() + "','900','90%');\"";
-        		else if (di != null)
-        			onclick = "onclick=\"document.location='instructorDetail.action?instructorId=" + di.getUniqueId() + "&deptId=" + di.getDepartment().getUniqueId() + "';\"";
-        		WebTableLine wtl = table.addLine(onclick, line, line);
-        		wtl.setStyle("white-space:pre-wrap;");
-        	}
-        	if (!table.getLines().isEmpty()) {
-        		request.setAttribute("survey", table.printTable(WebTable.getOrder(sessionContext,"InstructorCourseRequirements.ord")));
-        	}
-        }
+        form.setInstructorSurvey(InstructorCourseRequirement.hasRequirementsForOffering(io));
     }
 
     /**

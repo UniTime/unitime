@@ -193,18 +193,21 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		for (RoomSharingDisplayMode mode: iModel.getModes())
 			iModeSelection.addItem(mode.getName());
 		
-		iModeSelection.setSelectedIndex(0);
+		iModeSelection.setSelectedIndex(iModel.getDefaultMode());
+		iHorizontal.setValue(model.isDefaultHorizontal());
 		
-		RoomCookie cookie = RoomCookie.getInstance();
-		if (cookie.hasMode()) {
-			for (int i = 0; i < iModel.getModes().size(); i++)
-				if (cookie.getMode().equals(iModel.getModes().get(i).toHex())) {
-					iModeSelection.setSelectedIndex(i); break;
-				}
-			iHorizontal.setValue(cookie.areRoomsHorizontal());
-		} else {
-			iHorizontal.setValue(model.isDefaultHorizontal());
-			iModeSelection.setSelectedIndex(iModel.getDefaultMode());
+		if (iModeSelection.getItemCount() > 1) {
+			RoomCookie cookie = RoomCookie.getInstance();
+			if (cookie.hasMode()) {
+				for (int i = 0; i < iModel.getModes().size(); i++)
+					if (cookie.getMode().equals(iModel.getModes().get(i).toHex())) {
+						iModeSelection.setSelectedIndex(i); break;
+					}
+				iHorizontal.setValue(cookie.areRoomsHorizontal());
+			} else {
+				iHorizontal.setValue(model.isDefaultHorizontal());
+				iModeSelection.setSelectedIndex(iModel.getDefaultMode());
+			}
 		}
 		
 		iOption = iModel.getDefaultOption();
