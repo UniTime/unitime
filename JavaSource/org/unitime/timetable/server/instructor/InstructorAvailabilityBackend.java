@@ -30,12 +30,15 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -76,6 +79,18 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 		if (request.getInstructorId() != null) {
 			if (request.getInstructorId().length() > 200) {
 				model.setPattern(request.getInstructorId());
+			} else if (request.getInstructorId().startsWith("IS#")) {
+				InstructorSurvey is = InstructorSurveyDAO.getInstance().get(Long.valueOf(request.getInstructorId().substring(3)));
+				for (Preference pref: is.getPreferences()) {
+					if (pref instanceof TimePref) {
+						model.setPattern(((TimePref) pref).getPreference());
+						break;
+					}
+					model.getModes().clear();
+					model.addMode(new RoomSharingDisplayMode(MESSAGES.sectInstructorSurvey() + "|" + ApplicationProperty.InstructorSurveyTimePreferences.value()));
+					model.setDefaultMode(model.getModes().size() - 1);
+					model.setDefaultHorizontal(true);
+				}
 			} else {
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(request.getInstructorId()));
 				for (Preference pref: instructor.getPreferences()) {

@@ -551,6 +551,105 @@ public class InstructorSurveyInterface implements IsSerializable {
 		}
 	}
 	
+	public static class InstructorRequirementData implements GwtRpcResponse {
+		private List<CustomField> iCustomFields;
+		private List<CourseRequirement> iInstructorRequirements;
+		private boolean iCrossList = false;
+		private boolean iAdmin = false;
+		
+		public InstructorRequirementData() {}
+		
+		public List<CustomField> getCustomFields() { return iCustomFields; }
+		public boolean hasCustomFields() { return iCustomFields != null && !iCustomFields.isEmpty(); }
+		public void addCustomField(CustomField f) {
+			if (iCustomFields == null) iCustomFields = new ArrayList<CustomField>();
+			iCustomFields.add(f);
+		}
+		public CustomField getCustomField(Long id) {
+			if (iCustomFields == null) return null;
+			for (CustomField cf: iCustomFields)
+				if (cf.getId().equals(id)) return cf;
+			return null;
+		}
+		
+		public boolean hasInstructorRequirements() { return iInstructorRequirements != null && !iInstructorRequirements.isEmpty(); }
+		public List<CourseRequirement> getInstructorRequirements() { return iInstructorRequirements; }
+		public void addInstructorRequirement(CourseRequirement instructorRequirement) {
+			if (iInstructorRequirements == null) iInstructorRequirements = new ArrayList<CourseRequirement>();
+			iInstructorRequirements.add(instructorRequirement);
+		}
+		
+		public boolean isCrossList() { return iCrossList; }
+		public void setCrossList(boolean crossList) { iCrossList = crossList; }
+		
+		public boolean isAdmin() { return iAdmin; }
+		public void setAdmin(boolean admin) { iAdmin = admin; }
+	}
+	
+	public static class CourseRequirement extends Course implements IsSerializable {
+		private String iExternalId;
+		private Long iInstructorId;
+		private String iInstructorName;
+		private String iNote;
+		private String iTime, iRoom, iDist;
+		private String iTimeHtml, iRoomHtml, iDistHtml;
+		
+		public CourseRequirement() {}
+		
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+
+		public String getInstructorName() { return iInstructorName; }
+		public void setInstructorName(String instructorName) { iInstructorName = instructorName; }
+		
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		
+		public boolean hasTime() { return iTime != null && !iTime.isEmpty(); }
+		public String getTime() { return iTime; }
+		public void setTime(String time) { iTime = time; }
+
+		public boolean hasRoom() { return iRoom != null && !iRoom.isEmpty(); }
+		public String getRoom() { return iRoom; }
+		public void setRoom(String room) { iRoom = room; }
+		public void addRoom(String room) {
+			if (iRoom == null) iRoom = room;
+			else iRoom += "\n" + room;
+		}
+
+		public boolean hasDist() { return iDist != null && !iDist.isEmpty(); }
+		public String getDist() { return iDist; }
+		public void setDist(String dist) { iDist = dist; }
+		public void addDist(String dist) {
+			if (iDist == null) iDist = dist;
+			else iDist += "\n" + dist;
+		}
+		
+		public boolean hasTimeHtml() { return iTimeHtml != null && !iTimeHtml.isEmpty(); }
+		public String getTimeHtml() { return iTimeHtml; }
+		public void setTimeHtml(String time) { iTimeHtml = time; }
+
+		public boolean hasRoomHtml() { return iRoomHtml != null && !iRoomHtml.isEmpty(); }
+		public String getRoomHtml() { return iRoomHtml; }
+		public void setRoomHtml(String room) { iRoomHtml = room; }
+		public void addRoomHtml(String room) {
+			if (iRoomHtml == null) iRoomHtml = room;
+			else iRoomHtml += "\n" + room;
+		}
+
+		public boolean hasDistHtml() { return iDistHtml != null && !iDistHtml.isEmpty(); }
+		public String getDistHtml() { return iDistHtml; }
+		public void setDistHtml(String dist) { iDistHtml = dist; }
+		public void addDistHtml(String dist) {
+			if (iDistHtml == null) iDistHtml = dist;
+			else iDistHtml += "\n" + dist;
+		}
+	}
+	
 	public static class PrefLevel implements IsSerializable {
 		private Long iId;
 		private String iLabel;
@@ -599,6 +698,16 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public String getSession() { return iSession; }
 		public boolean hasSession() { return iSession != null && !iSession.isEmpty(); }
 		public void setSession(String session) { iSession = session; }
+	}
+	
+	public static class InstructorRequirementsRequest implements GwtRpcRequest<InstructorRequirementData> {
+		private Long iOfferingId;
+		
+		public InstructorRequirementsRequest() {}
+		public InstructorRequirementsRequest(Long offeringId) { iOfferingId = offeringId; }
+		
+		public Long getOfferingId() { return iOfferingId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
 	}
 	
 	public static class InstructorSurveyApplyRequest implements GwtRpcRequest<GwtRpcResponseNull> {
@@ -744,6 +853,10 @@ public class InstructorSurveyInterface implements IsSerializable {
 				iCustoms = new HashMap<Long, String>(course.iCustoms);
 		}
 		
+		public boolean isEmpty() {
+			return !hasCourseName() && !hasCustomFields();
+		}
+		
 		public Long getReqId() { return iId; }
 		public void setReqId(Long id) { iId = id; }
 
@@ -769,6 +882,13 @@ public class InstructorSurveyInterface implements IsSerializable {
 				iCustoms.put(f.getId(), value);
 			else
 				iCustoms.remove(f.getId());
+		}
+		public void setCustomField(long customFieldId, String value) {
+			if (iCustoms == null) iCustoms = new HashMap<Long, String>();
+			if (value != null && !value.isEmpty())
+				iCustoms.put(customFieldId, value);
+			else
+				iCustoms.remove(customFieldId);
 		}
 		
 		public boolean hasCustomFields() { return iCustoms != null && !iCustoms.isEmpty(); }

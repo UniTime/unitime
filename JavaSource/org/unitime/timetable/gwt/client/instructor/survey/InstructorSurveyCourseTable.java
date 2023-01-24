@@ -190,14 +190,14 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 			iCustom = index;
 			iAsc = true;
 		}
-		AdminCookie.getInstance().setSortBuildingsBy(getSortBy());
+		AdminCookie.getInstance().setSortSurveyCourses(getSortBy());
 		sort();
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
 	public int getSortBy() {
 		if (iSortBy == CourseColumn.CUSTOM) {
-			return iAsc ? CourseColumn.values().length + iSortBy.ordinal() : -CourseColumn.values().length - iSortBy.ordinal();
+			return iAsc ? CourseColumn.values().length + 1 + iCustom : -CourseColumn.values().length - iCustom - 1;
 		} else {
 			return iSortBy == null ? 0 : iAsc ? 1 + iSortBy.ordinal() : -1 - iSortBy.ordinal();
 		}
@@ -209,7 +209,7 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 			iCustom = 0;
 		} else if (sortBy > 0) {
 			if (sortBy >= CourseColumn.values().length) {
-				iCustom = sortBy - CourseColumn.values().length;
+				iCustom = sortBy - CourseColumn.values().length - 1;
 				iSortBy = CourseColumn.CUSTOM;
 				iAsc = true;
 			} else {
@@ -219,9 +219,9 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 			}
 		} else {
 			if (-sortBy >= CourseColumn.values().length) {
-				iCustom = -sortBy - CourseColumn.values().length;
+				iCustom = -sortBy - CourseColumn.values().length - 1;
 				iSortBy = CourseColumn.CUSTOM;
-				iAsc = true;
+				iAsc = false;
 			} else {
 				iSortBy = CourseColumn.values()[-1 - sortBy];
 				iAsc = false;
@@ -286,6 +286,8 @@ public class InstructorSurveyCourseTable extends UniTimeTable<Course> {
 		
 		@Override
 		public int compare(Course r1, Course r2) {
+			if (r1.isEmpty()) return (r2.isEmpty() ? 0 : 1);
+			if (r2.isEmpty()) return -1;
 			int cmp = compareByColumn(r1, r2);
 			if (cmp == 0) cmp = compareByName(r1, r2);
 			if (cmp == 0) cmp = compareByCustom(r1, r2);

@@ -80,4 +80,14 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 				).setLong("offeringId", io.getUniqueId())
 				.setCacheable(true).list();
 	}
+	
+	public static boolean hasRequirementsForOffering(InstructionalOffering io) {
+		return ((Number)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+				"select count(r) from InstructorCourseRequirement r, CourseOffering co " +
+				"where co.instructionalOffering = :offeringId and " +
+				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
+				"r.instructorSurvey.submitted is not null"
+				).setLong("offeringId", io.getUniqueId())
+				.setCacheable(true).uniqueResult()).intValue() > 0;
+	}
 }

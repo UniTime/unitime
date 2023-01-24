@@ -69,6 +69,7 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
     private String notes;
     private boolean teachingRequests;
     private String fundingDepartment;
+    private boolean instructorSurvey;
 
     public InstructionalOfferingDetailForm() {
         reset();
@@ -115,6 +116,7 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
         notes = null;
         teachingRequests = false;
         fundingDepartment = null;
+        instructorSurvey = false;
     }
     
     public List getCourseOfferings() {
@@ -387,4 +389,6 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
     public void setTeachingRequests(boolean teachingRequests) { this.teachingRequests = teachingRequests; }
     public String getFundingDepartment() { return fundingDepartment; }
     public void setFundingDepartment(String fundingDepartment) { this.fundingDepartment = fundingDepartment; }
+    public boolean getInstructorSurvey() { return instructorSurvey; }
+    public void setInstructorSurvey(boolean instructorSurvey) { this.instructorSurvey = instructorSurvey; }
 }
