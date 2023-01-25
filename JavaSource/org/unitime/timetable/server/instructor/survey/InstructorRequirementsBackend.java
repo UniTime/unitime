@@ -105,7 +105,8 @@ public class InstructorRequirementsBackend implements GwtRpcImplementation<Instr
 						} else {
 							((TimePatternModel)rtt.getModel()).setMode("|" + propertyValue(io.getDepartment(), ApplicationProperty.InstructorSurveyTimePreferencesDept, ApplicationProperty.InstructorSurveyTimePreferences));
 							line.setTimeHtml("<img border='0' " +
-									"onmouseover=\"showGwtInstructorAvailabilityHint(this, 'IS#" + req.getInstructorSurvey().getUniqueId() + "');\" onmouseout=\"hideGwtInstructorAvailabilityHint();\" " +
+									"onmouseover=\"showGwtInstructorAvailabilityHint(this, 'IS#" + req.getInstructorSurvey().getUniqueId() +
+									"#" + io.getDepartment().getDeptCode() + "');\" onmouseout=\"hideGwtInstructorAvailabilityHint();\" " +
 									"src='pattern?v=" + (timeVertical ? 1 : 0) + "&d=" + io.getDepartment().getUniqueId() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;"
 									);
 						}

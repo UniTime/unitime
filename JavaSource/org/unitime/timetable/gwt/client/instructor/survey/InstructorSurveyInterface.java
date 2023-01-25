@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,6 +182,18 @@ public class InstructorSurveyInterface implements IsSerializable {
 			iPrefLevels.add(prefLevel);
 		}
 		public List<PrefLevel> getPrefLevels() { return iPrefLevels; }
+		public PrefLevel getPrefLevel(Long id) {
+			if (iPrefLevels == null) return null;
+			for (PrefLevel level: iPrefLevels)
+				if (level.getId().equals(id)) return level;
+			return null;
+		}
+		public PrefLevel getPrefLevel(String code) {
+			if (iPrefLevels == null) return null;
+			for (PrefLevel level: iPrefLevels)
+				if (level.getCode().equals(code)) return level;
+			return null;
+		}
 		
 		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 		public List<Course> getCourses() { return iCourses; }
@@ -409,6 +422,17 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (!iItems.contains(item)) {
 				iItems.add(item);
 				return item;
+			}
+			return null;
+		}
+		public IdLabel removeItem(Long id) {
+			if (iItems == null) return null;
+			for (Iterator<IdLabel> i = iItems.iterator(); i.hasNext(); ) {
+				IdLabel item = i.next();
+				if (id.equals(item.getId())) {
+					i.remove();
+					return item;
+				}
 			}
 			return null;
 		}

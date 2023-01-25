@@ -280,8 +280,13 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		timePref.addMode(new RoomInterface.RoomSharingDisplayMode("|" + propertyValue(survey, ApplicationProperty.InstructorSurveyTimePreferencesDept, ApplicationProperty.InstructorSurveyTimePreferences)));
 		timePref.setDefaultMode(0);
 		timePref.setDefaultEditable(editable);
+		boolean noProhobitedTimes = false;
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			RoomSharingOption option = new RoomSharingOption(timePref.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true);
+			if (instructor == null && editable && PreferenceLevel.sProhibited.equals(pref.getPrefProlog()) && !isAllowed(survey, ApplicationProperty.InstructorSurveyTimePreferencesDeptHard, ApplicationProperty.InstructorSurveyTimePreferencesHard)) {
+				noProhobitedTimes = true;
+				continue;
+			}
 			if (!PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
 				timePref.addOption(option);
 			if (PreferenceLevel.sNeutral.equals(pref.getPrefProlog())) {
@@ -293,19 +298,47 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		timePref.setNoteEditable(false);
 		survey.setTimePrefs(timePref);
 		
-		if (buildingPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyBuildingPreferencesDept, ApplicationProperty.InstructorSurveyBuildingPreferences))
+		if (buildingPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyBuildingPreferencesDept, ApplicationProperty.InstructorSurveyBuildingPreferences)) {
+			if (!isAllowed(survey, ApplicationProperty.InstructorSurveyBuildingPreferencesDeptHard, ApplicationProperty.InstructorSurveyBuildingPreferencesHard))
+				for (IdLabel item: buildingPrefs.getItems())
+					for (PrefLevel p: survey.getPrefLevels())
+						if (!p.isHard()) item.addAllowedPref(p.getId());
 			survey.addRoomPreference(buildingPrefs);
-		if (roomPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomPreferencesDept, ApplicationProperty.InstructorSurveyRoomPreferences))
+		}
+		if (roomPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomPreferencesDept, ApplicationProperty.InstructorSurveyRoomPreferences)) {
+			if (!isAllowed(survey, ApplicationProperty.InstructorSurveyRoomPreferencesDeptHard, ApplicationProperty.InstructorSurveyRoomPreferencesHard))
+				for (IdLabel item: roomPrefs.getItems())
+					for (PrefLevel p: survey.getPrefLevels())
+						if (!p.isHard()) item.addAllowedPref(p.getId());
 			survey.addRoomPreference(roomPrefs);
-		if (groupPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomGroupPreferencesDept, ApplicationProperty.InstructorSurveyRoomGroupPreferences))
+		}
+		if (groupPrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomGroupPreferencesDept, ApplicationProperty.InstructorSurveyRoomGroupPreferences)) {
+			if (!isAllowed(survey, ApplicationProperty.InstructorSurveyRoomGroupPreferencesDeptHard, ApplicationProperty.InstructorSurveyRoomGroupPreferencesHard))
+				for (IdLabel item: groupPrefs.getItems())
+					for (PrefLevel p: survey.getPrefLevels())
+						if (!p.isHard()) item.addAllowedPref(p.getId());
 			survey.addRoomPreference(groupPrefs);
-		if (featurePrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDept, ApplicationProperty.InstructorSurveyRoomFeaturePreferences))
+		}
+		if (featurePrefs.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDept, ApplicationProperty.InstructorSurveyRoomFeaturePreferences)) {
+			if (!isAllowed(survey, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDeptHard, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesHard))
+				for (IdLabel item: featurePrefs.getItems())
+					for (PrefLevel p: survey.getPrefLevels())
+						if (!p.isHard()) item.addAllowedPref(p.getId());
 			survey.addRoomPreference(featurePrefs);
-		if (!typedFeaturePrefs.isEmpty())
+		}
+		if (!typedFeaturePrefs.isEmpty()) {
+			if (!isAllowed(survey, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesDeptHard, ApplicationProperty.InstructorSurveyRoomFeaturePreferencesHard))
+				for (Preferences prefs: typedFeaturePrefs.values())
+					if (prefs.hasItems())
+						for (IdLabel item: prefs.getItems())
+							for (PrefLevel p: survey.getPrefLevels())
+								if (!p.isHard()) item.addAllowedPref(p.getId());
 			for (Preferences p: new TreeSet<Preferences>(typedFeaturePrefs.values()))
 				survey.addRoomPreference(p);
+		}
 		
 		Preferences distPref = new Preferences(-1l, CMSG.propertyDistribution());
+		boolean hardDistPref = isAllowed(survey, ApplicationProperty.InstructorSurveyDistributionPreferencesDeptHard, ApplicationProperty.InstructorSurveyDistributionPreferencesHard);
 		for (DistributionType dt: DistributionType.findAll(true, false, true)) {
 			if (dt.getDepartments() != null && !dt.getDepartments().isEmpty()) {
 				boolean hasDept = false;
@@ -314,14 +347,19 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				if (!hasDept) continue;
 			}
 			IdLabel dp = distPref.addItem(dt.getUniqueId(), dt.getLabel(), dt.getDescr());
+			boolean hasPref = false;
 			if (dt.getAllowedPref() != null && dt.getAllowedPref().length() > 0)
 				for (int i = 0; i < dt.getAllowedPref().length(); i++) {
-					dp.addAllowedPref(
-							PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(dt.getAllowedPref().charAt(i))).getUniqueId()
-							);
+					PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.char2prolog(dt.getAllowedPref().charAt(i)));
+					if (pref.isHard() && !hardDistPref) continue;
+					dp.addAllowedPref(pref.getUniqueId());
+					if (!pref.getPrefProlog().equals(PreferenceLevel.sNeutral))
+						hasPref = true;
 				}
+			if (!hasPref)
+				distPref.removeItem(dt.getUniqueId());
 		}
-		if (distPref.hasItems())
+		if (distPref.hasItems() && isAllowed(survey, ApplicationProperty.InstructorSurveyDistributionPreferencesDept, ApplicationProperty.InstructorSurveyDistributionPreferences))
 			survey.setDistributionPreferences(distPref);
 		
 		if (is != null) {
@@ -330,7 +368,10 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			for (Preference p: is.getPreferences()) {
 				if (p instanceof TimePref) {
 					TimePref tp = (TimePref)p;
-					timePref.setPattern(tp.getPreference());
+					if (noProhobitedTimes && tp.getPreference() != null)
+						timePref.setPattern(tp.getPreference().replace(PreferenceLevel.sCharLevelProhibited, PreferenceLevel.sCharLevelStronglyDiscouraged));
+					else
+						timePref.setPattern(tp.getPreference());
 					timePref.setNote(tp.getNote());
 				} else if (p instanceof BuildingPref) {
 					BuildingPref bp = (BuildingPref)p;

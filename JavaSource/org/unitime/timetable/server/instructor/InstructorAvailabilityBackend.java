@@ -80,14 +80,25 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 			if (request.getInstructorId().length() > 200) {
 				model.setPattern(request.getInstructorId());
 			} else if (request.getInstructorId().startsWith("IS#")) {
-				InstructorSurvey is = InstructorSurveyDAO.getInstance().get(Long.valueOf(request.getInstructorId().substring(3)));
+				String surveyId = request.getInstructorId().substring(3);
+				String deptCode = null;
+				if (surveyId.indexOf('#') > 0) {
+					deptCode = surveyId.substring(surveyId.indexOf('#') + 1);
+					surveyId = surveyId.substring(0, surveyId.indexOf('#'));
+				}
+				InstructorSurvey is = InstructorSurveyDAO.getInstance().get(Long.valueOf(surveyId));
 				for (Preference pref: is.getPreferences()) {
 					if (pref instanceof TimePref) {
 						model.setPattern(((TimePref) pref).getPreference());
 						break;
 					}
 					model.getModes().clear();
-					model.addMode(new RoomSharingDisplayMode(MESSAGES.sectInstructorSurvey() + "|" + ApplicationProperty.InstructorSurveyTimePreferences.value()));
+					String mode = null;
+					if (deptCode != null)
+						mode = ApplicationProperty.InstructorSurveyTimePreferencesDept.value(deptCode);
+					if (mode == null)
+						mode = ApplicationProperty.InstructorSurveyTimePreferences.value();
+					model.addMode(new RoomSharingDisplayMode(MESSAGES.sectInstructorSurvey() + "|" + mode));
 					model.setDefaultMode(model.getModes().size() - 1);
 					model.setDefaultHorizontal(true);
 				}

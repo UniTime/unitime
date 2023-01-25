@@ -389,24 +389,26 @@ public class InstructorSurveyPage extends Composite {
 		}
 		
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectGeneralPreferences()));
-		iTimePrefs = new InstructorTimePreferences(survey.isEditable());
-		iTimePrefs.setModel(survey.getTimePrefs());
-		iTimePrefs.setMode(survey.getTimePrefs().getModes().get(0), true);
-		iTimePrefs.getReason().setEnabled(iSurvey.isEditable());
-		iPanel.addRow(iTimePrefs.getPanel());
-		if (iSurvey.isEditable()) {
-			iPanel.addRow("", iTimePrefs.getReason());
-			iTimePrefs.getReason().resizeNotes();
-		}
-		else if (!iTimePrefs.getReason().getText().isEmpty()) {
-			iPanel.addRow("", new ReadOnlyNote(iTimePrefs.getReason().getText()));
+		if (survey.getTimePrefs() != null) {
+			iTimePrefs = new InstructorTimePreferences(survey.isEditable());
+			iTimePrefs.setModel(survey.getTimePrefs());
+			iTimePrefs.setMode(survey.getTimePrefs().getModes().get(0), true);
+			iTimePrefs.getReason().setEnabled(iSurvey.isEditable());
+			iPanel.addRow(iTimePrefs.getPanel());
+			if (iSurvey.isEditable()) {
+				iPanel.addRow("", iTimePrefs.getReason());
+				iTimePrefs.getReason().resizeNotes();
+			}
+			else if (!iTimePrefs.getReason().getText().isEmpty()) {
+				iPanel.addRow("", new ReadOnlyNote(iTimePrefs.getReason().getText()));
+			}
 		}
 			
 		iRoomPrefs = new ArrayList<PreferencesTable>();
 		if (survey.hasRoomPreferences()) {
 			for (Preferences p: survey.getRoomPreferences()) {
 				if (iSurvey.isEditable()) {
-					PreferencesTable tab = new PreferencesTable(p, survey.getPrefLevels());
+					PreferencesTable tab = new PreferencesTable(p, survey);
 					iRoomPrefs.add(tab);
 					iPanel.addRow(p.getType(), tab);
 					tab.resizeNotes();
@@ -418,7 +420,7 @@ public class InstructorSurveyPage extends Composite {
 		iDistPrefs = null;
 		if (survey.hasDistributionPreferences()) {
 			if (iSurvey.isEditable()) {
-				iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey.getPrefLevels());
+				iDistPrefs = new PreferencesTable(survey.getDistributionPreferences(), survey);
 				iPanel.addRow(survey.getDistributionPreferences().getType(), iDistPrefs);
 				iDistPrefs.resizeNotes();
 			} else if (survey.getDistributionPreferences().hasSelections()) {
@@ -465,23 +467,31 @@ public class InstructorSurveyPage extends Composite {
 		HandlerRegistration iHandlerRegistration;
 		Preferences iPreferences;
 		
-		PreferencesTable(Preferences preferences, List<PrefLevel> options) {
+		PreferencesTable(Preferences preferences, final InstructorSurveyData survey) {
 			super("preference-table");
 			iPreferences = preferences;
 			if (preferences.hasSelections()) {
 				for (Selection selection: preferences.getSelections()) {
-					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), options);
+					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey);
+					IdLabel item = preferences.getItem(selection.getItem());
+					PrefLevel level = survey.getPrefLevel(selection.getLevel());
+					if (item != null && level != null && !item.isAllowedPref(level.getId())) {
+						if ("P".equals(level.getCode()))
+							selection.setLevel(survey.getPrefLevel("2").getId());
+						if ("R".equals(level.getCode()))
+							selection.setLevel(survey.getPrefLevel("-2").getId());
+					}
 					p.setValue(selection);
 					add(p);
 				}
 			}
-			add(new PreferenceLine(iPreferences.getItems(), options));
+			add(new PreferenceLine(iPreferences.getItems(), survey));
 			
 			iChangeHandler = new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent e) {
 					if (((PreferenceLine)getWidget(getWidgetCount() - 1)).getId() != null) {
-						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), options);
+						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey);
 						add(p);
 						iHandlerRegistration.removeHandler();
 						iHandlerRegistration = p.addChangeHandler(iChangeHandler);
@@ -533,13 +543,13 @@ public class InstructorSurveyPage extends Composite {
 			P iDescription;
 			Note iReason;
 			
-			PreferenceLine(Collection<IdLabel> items, List<PrefLevel> options) {
+			PreferenceLine(Collection<IdLabel> items, final InstructorSurveyData survey) {
 				super("preference-line");
 				P line1 = new P("first-line");
 				P line2 = new P("second-line");
 				add(line1); add(line2);
 				
-				iOptions = options;
+				iOptions = survey.getPrefLevels();
 				iItems = items;
 
 				iList = new ListBox();
@@ -557,7 +567,7 @@ public class InstructorSurveyPage extends Composite {
 				line1.add(iList);
 
 				iRadios = new ArrayList<RadioButton>();
-				for (final PrefLevel option: options) {
+				for (final PrefLevel option: survey.getPrefLevels()) {
 					RadioButton opt = new RadioButton("pref" + lastId, option.getLabel());
 					opt.setTitle(option.getTitle());
 					opt.getElement().getStyle().setColor(option.getColor());
@@ -587,7 +597,7 @@ public class InstructorSurveyPage extends Composite {
 					@Override
 					public void onClick(ClickEvent event) {
 						if (iButtonAdd) {
-							PreferencesTable.this.add(new PreferenceLine(iItems, options));
+							PreferencesTable.this.add(new PreferenceLine(iItems, survey));
 						} else {
 							PreferencesTable.this.remove(PreferenceLine.this);
 						}
