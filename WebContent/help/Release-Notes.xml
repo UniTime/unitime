@@ -152,7 +152,16 @@
 					<line>ant -Dlocale=de import-translations build</line>
 				</line>
 			</description>
-		</item>		
+		</item>
+		<item>
+			<name>Dependencies: Apache Struts 2</name>
+			<description>
+				<line>All the Struts-based pages have been migrated to Apache Struts 2 (from Apache Struts 1).
+					<line>There are only minor cosmetic changes, but all the URLs that used to have .do are now .action.</line>
+				</line>
+				<line>With this change, all pages can now be localized.</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
