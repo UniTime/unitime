@@ -190,7 +190,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 		        if (doSearch()) {
 					BackTracker.markForBack(
 							request, 
-							"instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1" + ids + "&courseNbr="+form.getCourseNbr(), 
+							"instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1" + ids + "&courseNbr="+(form.getCourseNbr() == null ? "" : URLEncoder.encode(form.getCourseNbr(), "utf-8")), 
 							"Instructional Offerings (" + names + (form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr()) + ")", 
 							true, true);
 					setShowTable(true);
@@ -217,7 +217,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 		        if (doSearch()) {
 					BackTracker.markForBack(
 							request, 
-							"instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds="+form.getSubjectAreaIds()[0]+"&courseNbr="+form.getCourseNbr(), 
+							"instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds="+form.getSubjectAreaIds()[0]+"&courseNbr="+(form.getCourseNbr() == null ? "" : URLEncoder.encode(form.getCourseNbr(), "utf-8")), 
 							"Instructional Offerings ("+
 								(form.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():form.getSubjectAreaAbbv())+
 								(form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr())+
