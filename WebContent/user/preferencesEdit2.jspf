@@ -104,12 +104,23 @@
 					</s:if>
 				</s:iterator>
 			</TD><TD>
-				<s:select style="width:350px;"
-					name="form.datePatternPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isDatePatternDisabled(#stat.index)"
-					/>
+				<s:if test="form.isDatePatternDisabled(#stat.index)">
+					<s:hidden name="form.datePatternPrefLevels[%{#stat.index}]"/>
+				</s:if>
+				<s:if test="form.isDatePatternDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.datePatternPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isDatePatternDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.datePatternPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 			</TD>
 		</TR>
 	</s:iterator>
@@ -145,6 +156,10 @@
 	<s:iterator value="form.roomGroups" var="roomGroup" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isRoomGroupDisabled(#stat.index)">
+					<s:hidden name="form.roomGroups[%{#stat.index}]"/>
+					<s:hidden name="form.roomGroupLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.roomGroups[%{#stat.index}]"
 					list="#request.roomGroupsList" listKey="uniqueId" listValue="nameWithTitle"
@@ -152,12 +167,20 @@
 					disabled="form.isRoomGroupDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.roomGroupLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isRoomGroupDisabled(#stat.index)"
-					/>
+				<s:if test="form.isRoomGroupDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.roomGroupLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isRoomGroupDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.roomGroupLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomGroupPreference()}'
 					title='%{#msg.titleRemoveRoomGroupPreference()}'
@@ -183,6 +206,10 @@
 	<s:iterator value="form.roomPrefs" var="roomPref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isRoomDisabled(#stat.index)">
+					<s:hidden name="form.roomPrefs[%{#stat.index}]"/>
+					<s:hidden name="form.roomPrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:if test="#attr.examSeating">
 					<s:select style="width:350px;"
 						name="form.roomPrefs[%{#stat.index}]"
@@ -200,12 +227,20 @@
 						/>
 				</s:else>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.roomPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isRoomDisabled(#stat.index)"
-					/>
+				<s:if test="form.isRoomDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.roomPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isRoomDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.roomPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>				
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomPreference()}'
 					title='%{#msg.titleRemoveRoomPreference()}'
@@ -230,6 +265,10 @@
 	<s:iterator value="form.bldgPrefs" var="bldgPref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isBuildingDisabled(#stat.index)">
+					<s:hidden name="form.bldgPrefs[%{#stat.index}]"/>
+					<s:hidden name="form.bldgPrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.bldgPrefs[%{#stat.index}]"
 					list="#request.bldgsList" listKey="uniqueId" listValue="abbrName"
@@ -237,12 +276,20 @@
 					disabled="form.isBuildingDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.bldgPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isBuildingDisabled(#stat.index)"
-					/>
+				<s:if test="form.isBuildingDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.bldgPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isBuildingDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.bldgPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveBuildingPreference()}'
 					title='%{#msg.titleRemoveBuildingPreference()}'
@@ -267,6 +314,10 @@
 	<s:iterator value="form.roomFeaturePrefs" var="roomFeaturePref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isRoomFeatureDisabled(#stat.index)">
+					<s:hidden name="form.roomFeaturePrefs[%{#stat.index}]"/>
+					<s:hidden name="form.roomFeaturePrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.roomFeaturePrefs[%{#stat.index}]"
 					list="#request.roomFeaturesList" listKey="uniqueId" listValue="labelWithType"
@@ -274,12 +325,20 @@
 					disabled="form.isRoomFeatureDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.roomFeaturePrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isRoomFeatureDisabled(#stat.index)"
-					/>
+				<s:if test="form.isRoomFeatureDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.roomFeaturePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isRoomFeatureDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.roomFeaturePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>				
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomFeaturePreference()}'
 					title='%{#msg.titleRemoveRoomFeaturePreference()}'
@@ -304,6 +363,10 @@
 	<s:iterator value="form.distPrefs" var="distPref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isDistPrefDisabled(#stat.index)">
+					<s:hidden name="form.distPrefs[%{#stat.index}]"/>
+					<s:hidden name="form.distPrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.distPrefs[%{#stat.index}]"
 					list="#request.distributionTypeList" listKey="uniqueId" listValue="label"
@@ -311,12 +374,20 @@
 					disabled="form.isDistPrefDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.distPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isDistPrefDisabled(#stat.index)"
-					/>
+				<s:if test="form.isDistPrefDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.distPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isDistPrefDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.distPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>				
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveDistributionPreference()}'
 					title='%{#msg.titleRemoveDistributionPreference()}'
@@ -341,6 +412,10 @@
 	<s:iterator value="form.attributePrefs" var="attributePref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isAttributePrefDisabled(#stat.index)">
+					<s:hidden name="form.attributePrefs[%{#stat.index}]"/>
+					<s:hidden name="form.attributePrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.attributePrefs[%{#stat.index}]"
 					list="#request.attributesList" listKey="uniqueId" listValue="nameWithType"
@@ -348,12 +423,20 @@
 					disabled="form.isAttributePrefDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.distPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isAttributePrefDisabled(#stat.index)"
-					/>
+				<s:if test="form.isAttributePrefDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.attributePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isAttributePrefDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.attributePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveAttributePreference()}'
 					title='%{#msg.titleRemoveAttributePreference()}'
@@ -378,6 +461,10 @@
 	<s:iterator value="form.coursePrefs" var="coursePref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isCoursePrefDisabled(#stat.index)">
+					<s:hidden name="form.coursePrefs[%{#stat.index}]"/>
+					<s:hidden name="form.coursePrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.coursePrefs[%{#stat.index}]"
 					list="#request.crsOfferingList" listKey="uniqueId" listValue="courseNameWithTitle"
@@ -385,12 +472,20 @@
 					disabled="form.isCoursePrefDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.coursePrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isCoursePrefDisabled(#stat.index)"
-					/>
+				<s:if test="form.isCoursePrefDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.coursePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isCoursePrefDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.coursePrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveCoursePreference()}'
 					title='%{#msg.titleRemoveCoursePreference()}'
@@ -415,6 +510,10 @@
 	<s:iterator value="form.instructorPrefs" var="instructorPref" status="stat">
 		<TR>
 			<TD colspan="2">
+				<s:if test="form.isInstructorPrefDisabled(#stat.index)">
+					<s:hidden name="form.instructorPrefs[%{#stat.index}]"/>
+					<s:hidden name="form.instrPrefLevels[%{#stat.index}]"/>
+				</s:if>
 				<s:select style="width:350px;"
 					name="form.instructorPrefs[%{#stat.index}]"
 					list="#request.instructorsList" listKey="value" listValue="label"
@@ -422,12 +521,20 @@
 					disabled="form.isInstructorPrefDisabled(#stat.index)"
 					/>
 				&nbsp;&nbsp;
-				<s:select style="width:350px;"
-					name="form.instrPrefLevels[%{#stat.index}]"
-					list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
-					headerKey="-" headerValue="-"
-					disabled="form.isInstructorPrefDisabled(#stat.index)"
-					/>
+				<s:if test="form.isInstructorPrefDisabled(#stat.index) || form.allowHardPrefs">
+					<s:select style="width:350px;"
+						name="form.instrPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						disabled="form.isInstructorPrefDisabled(#stat.index)"
+						/>
+				</s:if><s:else>
+					<s:select style="width:350px;"
+						name="form.instrPrefLevels[%{#stat.index}]"
+						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
+						headerKey="-" headerValue="-"
+						/>
+				</s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveInstructorPreference()}'
 					title='%{#msg.titleRemoveInstructorPreference()}'

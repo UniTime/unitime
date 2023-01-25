@@ -135,6 +135,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 		// Load Combo Box Lists 
         LookupTables.setupItypes(request,true);		 // Itypes
         LookupTables.setupPrefLevels(request);	 // Preference Levels
+        request.setAttribute("prefLevelsSoftList", PreferenceLevel.getPreferenceLevelListSoftOnly());
         
         return null;
     }
