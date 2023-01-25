@@ -3170,6 +3170,91 @@ public enum ApplicationProperty {
 	@Parameter("Department code")
 	@Since(4.7)
 	InstructorSurveyRoomGroupPreferencesDept("unitime.instructorSurvey.roomGroupPrefs.%"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard time preferences")
+	@Since(4.7)
+	InstructorSurveyTimePreferencesHard("unitime.instructorSurvey.timePrefsHard"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard room preferences")
+	@Since(4.7)
+	InstructorSurveyRoomPreferencesHard("unitime.instructorSurvey.roomPrefsHard"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard building preferences")
+	@Since(4.7)
+	InstructorSurveyBuildingPreferencesHard("unitime.instructorSurvey.buildingPrefsHard"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard room feature preferences")
+	@Since(4.7)
+	InstructorSurveyRoomFeaturePreferencesHard("unitime.instructorSurvey.roomFeaturePrefsHard"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard room groups preferences")
+	@Since(4.7)
+	InstructorSurveyRoomGroupPreferencesHard("unitime.instructorSurvey.roomGroupPrefsHard"),
+	
+	@Type(String.class)
+	@Description("Instructor Survey: allow for hart time preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyTimePreferencesDeptHard("unitime.instructorSurvey.timePrefsHard.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for hard room preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomPreferencesDeptHard("unitime.instructorSurvey.roomPrefsHard.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for hard building preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyBuildingPreferencesDeptHard("unitime.instructorSurvey.buildingPrefsHard.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for hard room feature preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomFeaturePreferencesDeptHard("unitime.instructorSurvey.roomFeaturePrefsHard.%"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for hard room groups preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyRoomGroupPreferencesDeptHard("unitime.instructorSurvey.roomGroupPrefsHard.%"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for distribution preferences")
+	@Since(4.7)
+	InstructorSurveyDistributionPreferences("unitime.instructorSurvey.distPrefs"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for distribution preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyDistributionPreferencesDept("unitime.instructorSurvey.distPrefs.%"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: allow for hard distribution preferences")
+	@Since(4.7)
+	InstructorSurveyDistributionPreferencesHard("unitime.instructorSurvey.distPrefsHard"),
+	
+	@Type(Boolean.class)
+	@Description("Instructor Survey: allow for hard distribution preferences for the given department")
+	@Parameter("Department code")
+	@Since(4.7)
+	InstructorSurveyDistributionPreferencesDeptHard("unitime.instructorSurvey.distPrefsHard.%"),
+
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
