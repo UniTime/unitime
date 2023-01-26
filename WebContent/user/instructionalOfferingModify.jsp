@@ -445,7 +445,7 @@ function resetAllDisplayFlags(value, baseName) {
 			<TD align="left" valign="top" nowrap>
 				<s:if test="form.readOnlyClasses[#ctr] == 'false'">
 					<s:select name="form.departments[%{#ctr}]" style="width:200px;" tabindex="%{(10000 + #ctr)}"
-						list="#request.externalDepartments" listKey="uniqueId" listValue="managingDeptLabel"
+						list="#request.externalDepartmentslist" listKey="uniqueId" listValue="managingDeptLabel"
 						headerKey="-1" headerValue="%{#msg.dropDeptDepartment()}"/>
 				</s:if>
 				<s:if test="form.readOnlyClasses[#ctr] == 'true'">
@@ -462,7 +462,7 @@ function resetAllDisplayFlags(value, baseName) {
 				<s:if test="form.readOnlyDatePatterns[#ctr] == 'true'">
 					<s:if test="form.datePatterns[#ctr] == ''"><loc:message name="dropDefaultDatePattern"/></s:if>
 					<s:else><s:iterator value="#request.datePatternList" var="dp">
-						<s:if test="form.datePatterns[#ctr] == dp.id"><s:property value="#dp.value"/></s:if>
+						<s:if test="form.datePatterns[#ctr] == #dp.id"><s:property value="#dp.value"/></s:if>
 					</s:iterator></s:else>
 					<s:hidden name="form.datePatterns[%{#ctr}]"/>
 			</s:if></TD>
@@ -475,7 +475,7 @@ function resetAllDisplayFlags(value, baseName) {
 					<s:if test="form.readOnlyClasses[#ctr] == 'true'">
 						<s:if test="form.lms[#ctr] == ''"><loc:message name="dropDefaultLearningManagementSystem"/></s:if>
 						<s:else><s:iterator value="#request.lmsList" var="lmsInfo">
-							<s:if test="form.lms[#ctr] == lmsInfo.id"><s:property value="#lmsInfo.value"/></s:if>
+							<s:if test="form.lms[#ctr] == #lmsInfo.id"><s:property value="#lmsInfo.value"/></s:if>
 						</s:iterator></s:else>
 						<s:hidden name="form.lms[%{#ctr}]"/>
 				</s:if></TD>
@@ -502,7 +502,7 @@ function resetAllDisplayFlags(value, baseName) {
 						<s:checkbox name="form.enabledForStudentScheduling[%{#ctr}]" tabindex="%{(18000 + #ctr)}"/>
 					</s:if>
 					<s:if test="form.readOnlyClasses[#ctr] == 'true'">
-						<s:if test="form.enabledForStudentScheduling[#ctr] == true">
+						<s:if test="form.enabledForStudentScheduling[#ctr] == 'true'">
 							<IMG border='0' title='${MSG.titleEnableTheseClassesForStudentScheduling()}' alt='true' align='middle' src='images/accept.png'>
 						</s:if>
 						<s:hidden name="form.enabledForStudentScheduling[%{#ctr}]"/>
