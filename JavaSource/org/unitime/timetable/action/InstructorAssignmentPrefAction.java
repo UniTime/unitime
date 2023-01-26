@@ -163,19 +163,18 @@ public class InstructorAssignmentPrefAction extends PreferencesAction2<Instructo
         if ("init".equals(op)) {
         	initPrefs(inst, null, true);
         	timePatterns.add(new TimePattern(Long.valueOf(-1)));
+    		// Generate Time Pattern Grids
+    		for (Preference pref: inst.getPreferences()) {
+    			if (pref instanceof TimePref) {
+    				form.setAvailability(((TimePref)pref).getPreference());
+    				break;
+    			}
+    		}
         }
         
 		// Process Preferences Action
 		processPrefAction();
 		
-		// Generate Time Pattern Grids
-		for (Preference pref: inst.getPreferences()) {
-			if (pref instanceof TimePref) {
-				form.setAvailability(((TimePref)pref).getPreference());
-				break;
-			}
-		}
-
         LookupTables.setupCourses(request, inst); // Courses
         LookupTables.setupInstructorAttributeTypes(request, inst);
         LookupTables.setupInstructorAttributes(request, inst);

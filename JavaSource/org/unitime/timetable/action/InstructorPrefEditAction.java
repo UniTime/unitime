@@ -207,7 +207,14 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
         form.setAvailableTimePatterns(null);
         if ("init".equals(op)) {
         	initPrefs(inst, null, true);
+    		// Generate Time Pattern Grids
         	timePatterns.add(new TimePattern(Long.valueOf(-1)));
+    		for (Preference pref: inst.getPreferences()) {
+    			if (pref instanceof TimePref) {
+    				form.setAvailability(((TimePref)pref).getPreference());
+    				break;
+    			}
+    		}
         }
         
         //load class assignments
@@ -238,14 +245,6 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
 		// Process Preferences Action
 		processPrefAction();
 		
-		// Generate Time Pattern Grids
-		for (Preference pref: inst.getPreferences()) {
-			if (pref instanceof TimePref) {
-				form.setAvailability(((TimePref)pref).getPreference());
-				break;
-			}
-		}
-
         LookupTables.setupRooms(request, inst);		 // Room Prefs
         LookupTables.setupBldgs(request, inst);		 // Building Prefs
         LookupTables.setupRoomFeatures(request, inst); // Preference Levels
