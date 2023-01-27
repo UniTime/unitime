@@ -316,6 +316,7 @@ public class InstructorSurveyPage extends Composite {
 
 		iHeader.setEnabled("save", iSurvey.isEditable());
 		iHeader.setEnabled("submit", iSurvey.isEditable());
+		iHeader.setEnabled("copy", iSurvey.isEditable() && (iSurvey.hasSessionsWithPreferences() || iSurvey.hasSessionsWithCourses()));
 		iPanel.addHeaderRow(iHeader);
 		
 		iPanel.addRow(MESSAGES.propExternalId(), new Label(survey.getExternalId()));
