@@ -79,7 +79,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status != null) {
 			if (iReschedulingStatuses == null)
-				iReschedulingStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.enrollment);
+				iReschedulingStatuses = StudentSectioningStatus.getMatchingStatuses(server.getAcademicSession().getUniqueId(), StudentSectioningStatus.Option.reschedule, StudentSectioningStatus.Option.enrollment);
 			if (!iReschedulingStatuses.contains(status)) return false;
 		}
 		return true;

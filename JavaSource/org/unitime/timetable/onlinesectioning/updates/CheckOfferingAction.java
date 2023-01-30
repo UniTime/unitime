@@ -566,7 +566,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (request.getEnrollment() == null) return null;
 		if (!offering.getOfferingId().equals(request.getEnrollment().getOfferingId())) return null;
 		if (!server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false)) return null;
-		if (!hasReSchedulingStatus(student, server)) return null; // no changes for students that cannot be wait-listed
+		if (!hasReSchedulingStatus(student, server)) return null; // no changes for students that cannot be re-scheduled
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) {
