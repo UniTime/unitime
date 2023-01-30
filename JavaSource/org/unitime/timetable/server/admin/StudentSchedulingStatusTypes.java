@@ -77,6 +77,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		RegAdvisor(MESSAGES.toggleRegAdvisor(), StudentSectioningStatus.Option.regadvisor),
 		RegAdmin(MESSAGES.toggleRegAdmin(), StudentSectioningStatus.Option.regadmin),
 		Email(MESSAGES.toggleEmail(), StudentSectioningStatus.Option.email),
+		ReSchedule(MESSAGES.toggleReSchedule(), StudentSectioningStatus.Option.reschedule),
 		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
 		NoSubs(MESSAGES.toggleNoSubs(), StudentSectioningStatus.Option.nosubs),
 		NoBatch(MESSAGES.toggleNoBatch(), StudentSectioningStatus.Option.nobatch),
@@ -85,7 +86,6 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		SpecReg(MESSAGES.toggleSpecialRequests(), StudentSectioningStatus.Option.specreg),
 		CanReq(MESSAGES.toggleCanRequire(), StudentSectioningStatus.Option.canreq),
 		NoSchedule(MESSAGES.toggleNoSchedule(), StudentSectioningStatus.Option.noschedule),
-		ReSchedule(MESSAGES.toggleReSchedule(), StudentSectioningStatus.Option.reschedule),
 		;
 		
 		private StudentSectioningStatus.Option iOption;
