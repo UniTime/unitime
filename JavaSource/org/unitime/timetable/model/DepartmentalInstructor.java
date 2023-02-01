@@ -233,23 +233,30 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(this.nameFirstNameFirst() + ", " + this.getDepartment().getDeptCode());
 	}
 	
-    public Set getAvailableRooms() {
-    	Set rooms =  new TreeSet();
-        for (Iterator i=getDepartment().getRoomDepts().iterator();i.hasNext();) {
-        	RoomDept roomDept = (RoomDept)i.next();
-        	rooms.add(roomDept.getRoom());
-        }
-        return rooms;
+    public Set<Location> getAvailableRooms() {
+    	return new TreeSet<Location>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+    			"select distinct r from RoomDept rd inner join rd.room r inner join rd.department d " +
+    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))"
+    			).setLong("sessionId", getDepartment().getSessionId())
+    			.setLong("deptId", getDepartment().getUniqueId()).setCacheable(true).list());
     }
     
-    public Set getAvailableRoomFeatures() {
-    	Set features = super.getAvailableRoomFeatures();
+    public Set<Building> getAvailableBuildings() {
+    	return new TreeSet<Building>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+    			"select distinct r.building from Room r inner join r.roomDepts rd inner join rd.department d " +
+    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))"
+    			).setLong("sessionId", getDepartment().getSessionId())
+    			.setLong("deptId", getDepartment().getUniqueId()).setCacheable(true).list());
+    }
+    
+    public Set<RoomFeature> getAvailableRoomFeatures() {
+    	Set<RoomFeature> features = super.getAvailableRoomFeatures();
     	features.addAll((DepartmentRoomFeature.getAllDepartmentRoomFeatures(getDepartment())));
     	return features;
     }
     
-    public Set getAvailableRoomGroups() {
-    	Set groups = super.getAvailableRoomGroups();
+    public Set<RoomGroup> getAvailableRoomGroups() {
+    	Set<RoomGroup> groups = super.getAvailableRoomGroups();
     	groups.addAll(RoomGroup.getAllDepartmentRoomGroups(getDepartment()));
     	return groups;
     }

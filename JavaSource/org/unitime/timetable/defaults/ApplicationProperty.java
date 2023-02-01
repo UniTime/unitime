@@ -3178,7 +3178,7 @@ public enum ApplicationProperty {
 	InstructorSurveyTimePreferencesHard("unitime.instructorSurvey.timePrefsHard"),
 	
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Instructor Survey: allow for hard room preferences")
 	@Since(4.7)
 	InstructorSurveyRoomPreferencesHard("unitime.instructorSurvey.roomPrefsHard"),
