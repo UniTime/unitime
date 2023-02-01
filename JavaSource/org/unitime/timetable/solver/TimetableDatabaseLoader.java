@@ -1975,6 +1975,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (ic != null && ic.variables().size() > 1 && iInstructorDistributionsAcrossDepartments) {
     		for (Lecture lecutre: ic.variables())
     			gc.addVariable(lecutre);
+    		if (ic.getUnavailabilities() != null) {
+    			for (Placement p: ic.getUnavailabilities())
+    				if (p.variable().getId() > 0l)
+    					gc.addVariable(p.variable());
+    		}
     	} else {
         	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
         		ClassInstructor classInstructor = (ClassInstructor)i.next();
