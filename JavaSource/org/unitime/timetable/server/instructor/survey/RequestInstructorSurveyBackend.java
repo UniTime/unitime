@@ -66,8 +66,6 @@ import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -233,18 +231,14 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					di.getDepartment().getLabel(),
 					di.getPositionType() == null ? null : new IdLabel(di.getPositionType().getUniqueId(), di.getPositionType().getLabel(), null)
 							));
-			for (RoomDept rd: di.getDepartment().getRoomDepts()) {
-				if (rd.getPreference() != null && rd.getPreference().getPrefProlog().equals(PreferenceLevel.sProhibited)) continue;
-				Location location = rd.getRoom();
-				IdLabel rp = roomPrefs.addItem(location.getUniqueId(), location.getLabel(), location.getDisplayName());
-				if (rp != null)
-					for (PrefLevel pl: survey.getPrefLevels())
-						if (!pl.isHard()) rp.addAllowedPref(pl.getId());
-				if (location instanceof Room) {
-					Building bldg = ((Room)location).getBuilding();
+			if (ApplicationProperty.InstructorSurveyRoomPreferencesDept.isTrue(di.getDepartment().getDeptCode(), true))
+				for (Location location: di.getAvailableRooms()) {
+					roomPrefs.addItem(location.getUniqueId(), location.getLabel(), location.getDisplayName());
+				}
+			if (ApplicationProperty.InstructorSurveyBuildingPreferencesDept.isTrue(di.getDepartment().getDeptCode(), true))
+				for (Building bldg: di.getAvailableBuildings()) {
 					buildingPrefs.addItem(bldg.getUniqueId(), bldg.getAbbrName(), null);
 				}
-			}
 			if (ApplicationProperty.InstructorSurveyRoomGroupPreferencesDept.isTrue(di.getDepartment().getDeptCode(), true))
 				for (RoomGroup g: RoomGroup.getAllDepartmentRoomGroups(di.getDepartment())) {
 					groupPrefs.addItem(g.getUniqueId(), g.getName() + " (" + g.getDepartment().getDeptCode() + ")", g.getDescription());

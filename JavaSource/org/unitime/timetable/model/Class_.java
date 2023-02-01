@@ -489,7 +489,7 @@ public class Class_ extends BaseClass_ {
 			}
 		}
 		// if external department, remove departmental preferences
-		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+		if (instrPrefs != null && !instrPrefs.isEmpty()) { 
 			instrPrefs = removeDepartmentalPreferences(instrPrefs);
 		}
 		
@@ -505,7 +505,7 @@ public class Class_ extends BaseClass_ {
 					subpartPrefs = weakenHardPreferences(subpartPrefs);
 			}
 			// remove departmental preferences
-    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    		if (instrPrefs != null && !instrPrefs.isEmpty()) { 
     			subpartPrefs = removeDepartmentalPreferences(subpartPrefs);
     		}
 		}
@@ -552,7 +552,7 @@ public class Class_ extends BaseClass_ {
     			}
     		}
     		// if external department, remove departmental preferences
-    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    		if (instrPrefs != null && !instrPrefs.isEmpty()) { 
     			instrPrefs = removeDepartmentalPreferences(instrPrefs);
     		}
     	}
@@ -581,7 +581,7 @@ public class Class_ extends BaseClass_ {
 					subpartPrefs = weakenHardPreferences(subpartPrefs);
 			}
 			// remove departmental preferences
-    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    		if (instrPrefs != null && !instrPrefs.isEmpty()) { 
     			subpartPrefs = removeDepartmentalPreferences(subpartPrefs);
     		}
 		}

@@ -342,13 +342,12 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return null;
     }
     
-    public Set getAvailableRooms() {
-    	return new TreeSet();
+    public Set<Location> getAvailableRooms() {
+    	return new TreeSet<Location>();
     }
-    public Set getAvailableBuildings() {
-    	TreeSet bldgs = new TreeSet();
-    	for (Iterator i=getAvailableRooms().iterator();i.hasNext();) {
-    		Location location = (Location)i.next();
+    public Set<Building> getAvailableBuildings() {
+    	TreeSet<Building> bldgs = new TreeSet<Building>();
+    	for (Location location: getAvailableRooms()) {
     		if (location instanceof Room)
     			bldgs.add(((Room)location).getBuilding());
     	}
@@ -356,11 +355,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     public abstract Session getSession();
     
-    public Set getAvailableRoomFeatures() {
-    	return new TreeSet(RoomFeature.getAllGlobalRoomFeatures(getSession()));
+    public Set<RoomFeature> getAvailableRoomFeatures() {
+    	return new TreeSet<RoomFeature>(RoomFeature.getAllGlobalRoomFeatures(getSession()));
     }
-    public Set getAvailableRoomGroups() {
-    	return new TreeSet(RoomGroup.getAllGlobalRoomGroups(getSession()));
+    public Set<RoomGroup> getAvailableRoomGroups() {
+    	return new TreeSet<RoomGroup>(RoomGroup.getAllGlobalRoomGroups(getSession()));
     }
     
     public Set getAvailableCourses() {
