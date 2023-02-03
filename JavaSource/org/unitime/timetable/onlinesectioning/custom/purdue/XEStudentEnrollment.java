@@ -288,7 +288,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if ((pin == null || pin.isEmpty()) && student.hasReleasedPin()) pin = student.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
-			String campus = getBannerCampus(session);
 			boolean admin = isBannerAdmin(helper);
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
@@ -424,7 +423,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (original.registrations != null)
 					for (XEInterface.Registration reg: original.registrations) {
 						if (reg.isRegistered()) {
-							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && campus.equals(reg.campus) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
+							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
 								added += (added.isEmpty() ? "" : ", ") + reg.courseReferenceNumber;
 							OnlineSectioningLog.Section.Builder section = external.addSectionBuilder()
 								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
