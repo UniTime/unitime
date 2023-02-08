@@ -18,7 +18,7 @@
  * 
 */
 
-update sectioning_status set status = status + 262144 where bitand(status, 64) = 64 and bitand(status, 262144) = 0;
+update sectioning_status set status = status + 262144 where bitand(status, 16) = 16 and bitand(status, 262144) = 0;
 
 /*
  * Update database version

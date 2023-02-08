@@ -14544,8 +14544,8 @@
 	</update>
 	<update version="255" date="13-Dec-2022" comment="Offering Waitlist Options">
 	    <pgsql>alter table %SCHEMA%.instructional_offering alter waitlist type integer using case when waitlist then 1 else 0 end</pgsql>
-	    <mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 262144 where (status & 64 = 64) and (status & 262144 = 0)]]></mysql>
-		<plsql>update %SCHEMA%.sectioning_status set status = status + 262144 where bitand(status, 64) = 64 and bitand(status, 262144) = 0</plsql>
-		<pgsql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 262144 where (status & 64 = 64) and (status & 262144 = 0)]]></pgsql>
+	    <mysql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 262144 where (status & 16 = 16) and (status & 262144 = 0)]]></mysql>
+		<plsql>update %SCHEMA%.sectioning_status set status = status + 262144 where bitand(status, 16) = 16 and bitand(status, 262144) = 0</plsql>
+		<pgsql><![CDATA[update %SCHEMA%.sectioning_status set status = status + 262144 where (status & 16 = 16) and (status & 262144 = 0)]]></pgsql>
 	</update>	
 </dbupdate>

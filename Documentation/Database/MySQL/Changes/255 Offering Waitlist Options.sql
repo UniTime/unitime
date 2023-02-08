@@ -18,7 +18,7 @@
  * 
 */
 
-update sectioning_status set status = status + 262144 where (status & 64 = 64) and (status & 262144 = 0);
+update sectioning_status set status = status + 262144 where (status & 16 = 16) and (status & 262144 = 0);
 
 /*
  * Update database version
