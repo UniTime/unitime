@@ -1001,10 +1001,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to load section information ({0}).")
 	String exceptionCustomSectionNamesFailed(String reason);
 	
-	@DefaultMessage("Unable to retrive course details ({0}).")
+	@DefaultMessage("Unable to retrieve course details ({0}).")
 	String exceptionCustomCourseDetailsFailed(String reason);
 	
-	@DefaultMessage("Unable to retrive class details ({0}).")
+	@DefaultMessage("Unable to retrieve class details ({0}).")
 	String exceptionCustomSectionLimitsFailed(String reason);
 	
 	@DefaultMessage("Course detail interface not provided.")
