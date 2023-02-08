@@ -28,6 +28,30 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Re-Scheduling</name>
+			<description>
+				<line>Added a re-scheduling mode to the wait-listing: It does not allow for wait-listing, but students can be moved around when there was a change and re-scheduling is enabled.</line>
+				<line>On an instructional offering (Edit Course Offering for the controlling course), the Wait-Listing can be either
+					<line>Wait-Listing Enabled,</line>
+					<line>Re-Scheduling Enabled -- this is the new mode,</line>
+					<line>Wait-Listing Disabled.</line>
+				</line>
+				<line>The default setting (property unitime.offering.waitListDefault) can now be WaitList, ReSchedule, or Disabled, with the default being Disabled.</line>
+				<line>There is now a new student status scheduling toggle (Re-Scheduling) that indicates whether the student status allows for re-scheduling.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Finder</name>
+			<description>
+				<line>Added ability to filter out courses that do not have any classes that are enabled for student scheduling.</line>
+				<line>To enable, set unitime.custom.CourseMatcherProvider=org.unitime.timetable.onlinesectioning.match.SkipDisabledCourseMatcher</line>
+				<line>When OnlineOnlyCourseMatcherProvider is used already, set unitime.sectioning.config.Filter.ShowDisabled=false instead.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Clustering: custom timeouts and other parameters</name>
