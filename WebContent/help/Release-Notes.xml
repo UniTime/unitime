@@ -28,6 +28,32 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Clustering: custom timeouts and other parameters</name>
+			<description>
+				<line>For the TCP configurations of the hibernate, sectioning, and the solver cluster,
+					the following parameters have been added so that they can be configured without modifying the XML configuration file:
+					<line># TCP &amp; TCPPING protocols -- port range</line>
+					<line>jgroups.tcp.port_range=3</line>
+					<line># FD protocol -- time limit and the number of tries</line>
+					<line>jgroups.fd.timeout=5000</line>
+					<line>jgroups.fd.max_tries=5</line>
+					<line># FD_SOCK protocol - ports, 0 means to pick a random port above 10000</line>
+					<line>jgroups.fd_sock.port_range=50</line>
+					<line>jgroups.fd_sock.start_port=0</line>
+					<line>jgroups.fd_sock.client_bind_port=0</line>
+					<line># VERIFY_SUSPECT protocol -- time limit</line>
+					<line>jgroups.verify_suspect.timeout=2500</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.7.71</version>
+	<release-date>Sat, 28 Jan 2023</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Wait-Listing</name>
