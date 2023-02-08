@@ -325,7 +325,7 @@ JGroups (jgroups-3.6.20.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
-asm (asm-9.2.jar)
+asm (asm-9.4.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 

@@ -793,7 +793,7 @@
 		<jackson.version>2.13.0</jackson.version>
 		<ant.version>1.10.12</ant.version>
 		<text.version>1.10.0</text.version>
-		<asm.version>9.2</asm.version>
+		<asm.version>9.4</asm.version>
 	</properties>
 
 	<distributionManagement>
