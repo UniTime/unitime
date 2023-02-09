@@ -229,6 +229,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private Map<StudentPriority, String> iPriorityStudentGroupReference = new HashMap<StudentPriority, String>();
 	private Map<StudentPriority, Query> iPriorityStudentQuery = new HashMap<StudentPriority, Query>();
 	private Query iProjectedStudentQuery = null;
+	private RequestPriority iLCRequestPriority = null;
+	private Map<Long, Set<Long>> iLCDemands = new HashMap<Long, Set<Long>>();
     
     private Progress iProgress = null;
     
@@ -418,6 +420,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		});
         	if (solver != null) solver.setReport(iStudentHoldsCSV);
         }
+        String lcPriority = model.getProperties().getProperty("Load.LCRequestPriority");
+        if (lcPriority != null && !lcPriority.isEmpty()) {
+        	try {
+        		iLCRequestPriority = RequestPriority.valueOf(lcPriority);
+        	} catch (Exception e) {
+        		iProgress.warn("Failed to parse LC request priority " + lcPriority + ".");
+        	}
+        }
         
         iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
         iUseAdvisorNoSubs = model.getProperties().getPropertyBoolean("Load.UseAdvisorNoSubs", iUseAdvisorNoSubs);
@@ -486,7 +496,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         } catch (Exception e) {
             iProgress.fatal("Unable to load sectioning problem, reason: "+e.getMessage(),e);
             sLog.error(e.getMessage(),e);
-            tx.rollback();
+            if (tx != null) tx.rollback();
         } finally {
             // here we need to close the session since this code may run in a separate thread
             if (hibSession!=null && hibSession.isOpen()) hibSession.close();
@@ -858,7 +868,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (p != null && p.getTimeLocation() != null) {
                     	p.getTimeLocation().setDatePattern(
                     			p.getTimeLocation().getDatePatternId(),
-                    			datePatternName(a.getDatePattern(), p.getTimeLocation()),
+                    			(a == null ? datePatternName(c.effectiveDatePattern(), p.getTimeLocation()) : datePatternName(a.getDatePattern(), p.getTimeLocation())),
                     			p.getTimeLocation().getWeekCode());
                     }
                     if (p == null && iLoadArrangedHoursPlacements) {
@@ -989,22 +999,33 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
         		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
         	} else if (reservation instanceof LearningCommunityReservation) {
+        		CourseOffering co = ((LearningCommunityReservation)reservation).getCourse();
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((LearningCommunityReservation)reservation).getGroup().getStudents())
         			studentIds.add(s.getUniqueId());
-        		CourseOffering co = ((LearningCommunityReservation)reservation).getCourse();
         		for (Course course: offering.getCourses()) {
         			if (co.getUniqueId().equals(course.getId()))
                 		r = new org.cpsolver.studentsct.reservation.LearningCommunityReservation(reservation.getUniqueId(),
                 				(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
                 				course, studentIds);
         		}
-        		r.setPriority(ApplicationProperty.ReservationPriorityLearningCommunity.intValue());
-        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapLearningCommunity.isTrue());
-        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitLearningCommunity.isTrue());
-        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedLearningCommunity.isTrue());
-        		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
-        		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
+        		if (r != null) {
+            		r.setPriority(ApplicationProperty.ReservationPriorityLearningCommunity.intValue());
+            		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapLearningCommunity.isTrue());
+            		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitLearningCommunity.isTrue());
+            		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedLearningCommunity.isTrue());
+            		StudentGroupType type = ((StudentGroupReservation)reservation).getGroup().getType();
+            		if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.WithGroupReservation) r.setAllowDisabled(true);
+            		if (iLCRequestPriority != null) {
+                		Set<Long> courseStudentIds = iLCDemands.get(co.getUniqueId());
+                		if (courseStudentIds == null) {
+                			courseStudentIds = new HashSet<Long>();
+                			iLCDemands.put(co.getUniqueId(), courseStudentIds);
+                		}
+                		for (org.unitime.timetable.model.Student s: ((LearningCommunityReservation)reservation).getGroup().getStudents())
+                			courseStudentIds.add(s.getUniqueId());
+            		}
+        		}
         	} else if (reservation instanceof StudentGroupReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
@@ -1072,10 +1093,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			if (co.getUniqueId().equals(course.getId()))
         				r = new CourseReservation(reservation.getUniqueId(), course);
         		}
-        		r.setPriority(ApplicationProperty.ReservationPriorityCourse.intValue());
-        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCourse.isTrue());
-        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCourse.isTrue());
-        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
+        		if (r != null) {
+        			r.setPriority(ApplicationProperty.ReservationPriorityCourse.intValue());
+            		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCourse.isTrue());
+            		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCourse.isTrue());
+            		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
+        		}
         	}
         	if (r == null) {
         		iProgress.warn("Failed to load reservation " + reservation.getUniqueId() + "."); continue;
@@ -1636,6 +1659,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.effectiveWaitList() || cd.effectiveNoSub(), 
                         cd.getEffectiveCritical().toRequestPriority(),
                         cd.getTimestamp().getTime());
+                if (iLCRequestPriority != null && !alternative) {
+                	Set<Long> studentIds = iLCDemands.get(courses.get(0).getId());
+                	if (studentIds != null && studentIds.contains(student.getId()) && iLCRequestPriority.isHigher(request)) {
+                		iProgress.debug("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") request " + request + " changed to " + iLCRequestPriority + " due to an LC reservation.");
+                		request.setRequestPriority(iLCRequestPriority);
+                	}
+                }
                 request.getSelectedChoices().addAll(selChoices);
                 request.getRequiredChoices().addAll(reqChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
@@ -1808,7 +1838,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		}
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
-           	if (enrl != null) credit += enrl.getCredit();
+           	if (enrl == null) continue;
+           	credit += enrl.getCredit();
     		if ((iAllowToKeepCurrentEnrollment || iTweakLimits) && student.getId() >= 0) {
     			iProgress.info("There was a problem assigning " + cr.getName() + " to " + student.getName() + " (" + student.getExternalId() + ") ");
     			boolean hasMustUse = false;
@@ -3053,7 +3084,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				}
 			} finally {
 				ApplicationProperties.setSessionId(null);
-				hibSession.close();
+				if (hibSession != null) hibSession.close();
 			}
 			iProgress.debug(getName() + " has finished.");
 		}
@@ -3248,7 +3279,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				}
 			} finally {
 				ApplicationProperties.setSessionId(null);
-				hibSession.close();
+				if (hibSession != null) hibSession.close();
 			}
 			iProgress.debug(getName() + " has finished.");
 		}
