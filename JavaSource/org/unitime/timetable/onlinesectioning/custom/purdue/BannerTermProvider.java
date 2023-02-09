@@ -46,6 +46,8 @@ public class BannerTermProvider implements ExternalTermProvider {
 
 	@Override
 	public String getExternalSubject(AcademicSessionInfo session, String subjectArea, String courseNumber) {
+		if (subjectArea != null && subjectArea.indexOf(" - ") >= 0)
+			return subjectArea.substring(subjectArea.indexOf(" - ") + 3);
 		return subjectArea;
 	}
 
@@ -64,6 +66,9 @@ public class BannerTermProvider implements ExternalTermProvider {
 
 	@Override
 	public String getExternalCourseCampus(AcademicSessionInfo session, String subjectArea, String courseNumber) {
-		return session.getCampus();
+		String campus = session.getCampus();
+		if (subjectArea.indexOf(" - ") >= 0)
+			campus = subjectArea.substring(0, subjectArea.indexOf(" - "));
+		return ApplicationProperties.getProperty("tmtbl.banner.campus." + campus, campus);
 	}
 }

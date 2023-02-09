@@ -21,8 +21,11 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +72,7 @@ import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -176,8 +180,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return builder.create();
 	}
 	
-	protected XCourseId getCourse(OnlineSectioningServer server, XEInterface.Course course, CourseMatcher matcher) {
-		Collection<? extends XCourseId> courses = server.findCourses(course.courseDiscipline + " " + course.courseNumber, -1, matcher);
+	protected XCourseId getCourse(OnlineSectioningServer server, XStudent student, XEInterface.Course course, CourseMatcher matcher) {
+		Collection<? extends XCourseId> courses = server.findCourses(course.courseDiscipline + " " + course.courseNumber, -1, matcher,
+				new XCourseIdComparator(server.getAcademicSession(), student));
 		for (XCourseId c: courses)
 			if (c.matchTitle(course.title)) return c;
 		for (XCourseId c: courses)
@@ -220,7 +225,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
-	protected void fillInRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, XEInterface.Group group, CourseMatcher matcher) {
+	protected void fillInRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, CourseRequestInterface request, XEInterface.Group group, CourseMatcher matcher) {
 		if ("CH".equals(group.groupType.code)) {
 			// choice group -- pick (at least) one
 			
@@ -228,7 +233,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			boolean hasSelection = false;
 			for (XEInterface.Course course: group.plannedClasses) {
 				if (course.isGroupSelection) {
-					XCourseId cid = getCourse(server, course, matcher);
+					XCourseId cid = getCourse(server, student, course, matcher);
 					if (cid == null) continue;
 					
 					OnlineSectioningLog.Request.Builder b = helper.getAction().addRequestBuilder()
@@ -256,7 +261,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					// add other courses as alternatives
 					for (XEInterface.Course other: group.plannedClasses) {
 						if (!other.isGroupSelection) {
-							XCourseId ocid = getCourse(server, other, matcher);
+							XCourseId ocid = getCourse(server, student, other, matcher);
 							if (ocid == null || ocid.getCourseId() == null) continue;
 							RequestedCourse orc = new RequestedCourse();
 							orc.setCourseId(ocid.getCourseId());
@@ -276,13 +281,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 			for (XEInterface.Group g: group.groups) {
 				if (hasSelection(g)) {
-					fillInRequests(server, helper, request, g, matcher);
+					fillInRequests(server, helper, student, request, g, matcher);
 					hasSelection = true;
 					
 					// add other courses as alternatives
 					for (XEInterface.Course other: group.plannedClasses) {
 						if (!other.isGroupSelection) {
-							XCourseId ocid = getCourse(server, other, matcher);
+							XCourseId ocid = getCourse(server, student, other, matcher);
 							if (ocid == null || ocid.getCourseId() == null) continue;
 							RequestedCourse orc = new RequestedCourse();
 							orc.setCourseId(ocid.getCourseId());
@@ -316,7 +321,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 				OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
 				for (XEInterface.Course course: group.plannedClasses) {
-					XCourseId cid = getCourse(server, course, matcher);
+					XCourseId cid = getCourse(server, student, course, matcher);
 					if (cid == null || cid.getCourseId() == null) continue;
 					RequestedCourse rc = new RequestedCourse();
 					rc.setCourseId(cid.getCourseId());
@@ -343,7 +348,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		} else {
 			// union group -- take all courses (and sub-groups)
 			for (XEInterface.Course course: group.plannedClasses) {
-				XCourseId cid = getCourse(server, course, matcher);
+				XCourseId cid = getCourse(server, student, course, matcher);
 				if (cid == null) continue;
 				
 				OnlineSectioningLog.Request.Builder b = helper.getAction().addRequestBuilder()
@@ -368,9 +373,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				request.addCourseCriticalFirst(r);
 			}
 			for (XEInterface.Group g: group.groups)
-				fillInRequests(server, helper, request, g, matcher);
+				fillInRequests(server, helper, student, request, g, matcher);
 			for (PlaceHolder ph: group.plannedPlaceholders) {
-				List<XCourse> phc = getPlaceHolderCourses(server, helper, ph, matcher);
+				List<XCourse> phc = getPlaceHolderCourses(server, helper, student, ph, matcher);
 				List<XCourse> courses = null;
 				if (phc != null && !phc.isEmpty()) {
 					courses = new ArrayList<XCourse>();
@@ -444,14 +449,12 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	@Override
-	public CourseRequestInterface getCourseRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student, CourseMatcher matcher) throws SectioningException {
+	public CourseRequestInterface getCourseRequests(final OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId sid, CourseMatcher matcher) throws SectioningException {
 		try {
+			XStudent student = (sid instanceof XStudent ? (XStudent) sid : server.getStudent(sid.getStudentId()));
 			Query q = getStudentFilter();
-			if (q != null) {
-				XStudent s = (student instanceof XStudent ? (XStudent)student : server.getStudent(student.getStudentId()));
-				if (s == null || !q.match(new StudentMatcher(s, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
-					return null;
-			}
+			if (q != null && !q.match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
+				return null;
 			
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
@@ -490,7 +493,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										CourseRequestInterface request = new CourseRequestInterface();
 										request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 										request.setStudentId(student.getStudentId());
-										fillInRequests(server, helper, request, t.group, matcher);
+										fillInRequests(server, helper, student, request, t.group, matcher);
 										if (helper.isDebugEnabled())
 											helper.debug("Course Requests: " + request);
 										
@@ -538,7 +541,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return bannerCourse.equals(xsubject + " " + xcourseNbr);
 	}
 	
-	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.Group g, CourseMatcher matcher) {
+	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, XEInterface.Group g, CourseMatcher matcher) {
 		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
 		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
 		group.setDescription(g.summaryDescription);
@@ -555,7 +558,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				course.setTitle(c.title);
 				course.setId(c.id);
 				course.setCritical(c.isCritical);
-				Collection<? extends XCourseId> ids = server.findCourses(c.courseDiscipline + " " + c.courseNumber, -1, matcher);
+				Collection<? extends XCourseId> ids = server.findCourses(c.courseDiscipline + " " + c.courseNumber, -1, matcher,
+						new XCourseIdComparator(server.getAcademicSession(), student));
 				if (ids != null) {
 					for (XCourseId id: ids) {
 						if (!matchCourse(server.getAcademicSession(), id, c.courseDiscipline + " " + c.courseNumber)) continue;
@@ -605,7 +609,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 		if (g.groups != null)
 			for (XEInterface.Group ch: g.groups) {
-				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, helper, ch, matcher);
+				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, helper, student, ch, matcher);
 				if (childGroup.countItems() <= 1 || childGroup.isChoice() == group.isChoice()) {
 					group.merge(childGroup);
 				} else {
@@ -616,7 +620,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			}
 		if (g.plannedPlaceholders != null)
 			for (XEInterface.PlaceHolder ph: g.plannedPlaceholders) {
-				List<XCourse> phc = getPlaceHolderCourses(server, helper, ph, matcher);
+				List<XCourse> phc = getPlaceHolderCourses(server, helper, student, ph, matcher);
 				if (phc != null && !phc.isEmpty()) {
 					DegreePlanInterface.DegreeGroupInterface phg = new DegreePlanInterface.DegreeGroupInterface();
 					phg.setChoice(true);
@@ -810,7 +814,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						if (y.terms != null)
 							for (XEInterface.Term t: y.terms) {
 								if (t.term != null && term.equals(t.term.code) && t.group != null) {
-									plan.setGroup(toGroup(server, helper, t.group, matcher));
+									plan.setGroup(toGroup(server, helper, student, t.group, matcher));
 								}
 							}
 					}
@@ -892,7 +896,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.placeHolderPartialMatch", "true"));
 	}
 	
-	protected List<XCourse> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph, CourseMatcher matcher) {
+	protected List<XCourse> getPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, XEInterface.PlaceHolder ph, CourseMatcher matcher) {
 		// check provider
 		if (!CustomCourseLookupHolder.hasProvider()) return null;
 		// check placeholder type code
@@ -905,6 +909,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		for (XCourse course: courses)
 			if (matcher.match(course))
 				ret.add(course);
+		Collections.sort(ret, new XCourseIdComparator(server.getAcademicSession(), student));
 		return ret;
 	}
 	
@@ -912,8 +917,8 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return ph.placeholderValue != null && ph.placeholderValue.matches(getCriticalPlaceHolderRegExp());
 	}
 	
-	protected List<XCourse> getCriticalPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XEInterface.PlaceHolder ph, CourseMatcher matcher) {
-		return (isCriticalPlaceholder(ph) ? getPlaceHolderCourses(server, helper, ph, matcher) : null);
+	protected List<XCourse> getCriticalPlaceHolderCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, XEInterface.PlaceHolder ph, CourseMatcher matcher) {
+		return (isCriticalPlaceholder(ph) ? getPlaceHolderCourses(server, helper, student, ph, matcher) : null);
 	}
 
 	@Override
@@ -922,8 +927,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	}
 	
 	@Override
-	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student, OnlineSectioningLog.Action.Builder action) {
+	public CriticalCourses getCriticalCourses(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId sid, OnlineSectioningLog.Action.Builder action) {
 		try {
+			XStudent student = (sid instanceof XStudent ? (XStudent) sid : server.getStudent(sid.getStudentId()));
 			String term = getBannerTerm(server.getAcademicSession());
 			String studentId = getBannerId(student);
 			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
@@ -977,7 +983,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 										}
 								if (t.group != null && t.group.plannedPlaceholders != null)
 									for (XEInterface.PlaceHolder ph: t.group.plannedPlaceholders)
-										courses.add(getCriticalPlaceHolderCourses(server, helper, ph, null));
+										courses.add(getCriticalPlaceHolderCourses(server, helper, student, ph, null));
 							}
 					}
 			}
@@ -1063,6 +1069,30 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				for (XCourseId c: iCriticalCourseIds)
 					courses.add(c.getCourseName());
 			return courses.toString();
+		}
+	}
+	
+	protected class XCourseIdComparator implements Comparator<XCourseId>, Serializable {
+		private static final long serialVersionUID = 8692114368784340841L;
+		private AcademicSessionInfo iSession;
+		private String iCampus = null;
+		XCourseIdComparator(AcademicSessionInfo session, XStudent student) {
+			iSession = session;
+			if (ApplicationProperty.ListCourseOfferingsMatchingCampusFirst.isTrue()) {
+				XAreaClassificationMajor primary = student.getPrimaryMajor();
+				if (primary != null) iCampus = primary.getCampus();
+			}
+		}
+
+		@Override
+		public int compare(XCourseId c1, XCourseId c2) {
+			if (iCampus != null) {
+				boolean p1 = iCampus.equals(iExternalTermProvider.getExternalCourseCampus(iSession, c1.getSubjectArea(), c1.getCourseNumber()));
+				boolean p2 = iCampus.equals(iExternalTermProvider.getExternalCourseCampus(iSession, c2.getSubjectArea(), c2.getCourseNumber()));
+				if (p1 != p2)
+					return (p1 ? -1 : 1);
+			}
+			return c1.getCourseName().compareToIgnoreCase(c2.getCourseName());
 		}
 	}
 }
