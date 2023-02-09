@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.server;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -154,13 +155,18 @@ public class ReplicatedServer extends AbstractServer {
 			return false;
 		}
 	}
-		
+	
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		return findCourses(query, limit, matcher, new CourseComparator(query));
+	}
+		
+	@Override
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher, Comparator<XCourseId> cmp) {
 		Lock lock = readLock();
 		try {
 			DistributedExecutorService ex = new DefaultExecutorService(iCourseForId);
-			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit, new CourseComparator(query));
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit, cmp);
 			String queryInLowerCase = query.toLowerCase();
 			
 			List<Future<Collection<XCourseId>>> futures = ex.submitEverywhere(new FindCoursesCallable(getAcademicSession().getUniqueId(), queryInLowerCase, limit, matcher));

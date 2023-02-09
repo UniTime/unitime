@@ -21,6 +21,8 @@ package org.unitime.timetable.onlinesectioning.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,8 +79,13 @@ public class DatabaseServer extends AbstractLockingServer {
 
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		return findCourses(query, limit, matcher, null); 
+	}
+	
+	@Override
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher, Comparator<XCourseId> cmp) {
 		if (matcher != null) matcher.setServer(this);
-		Collection<XCourseId> ret = new ArrayList<XCourseId>();
+		ArrayList<XCourseId> ret = new ArrayList<XCourseId>();
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false and (" +
@@ -98,6 +105,8 @@ public class DatabaseServer extends AbstractLockingServer {
 				ret.add(course);
 			if (limit != null && limit > 0 && ret.size() >= limit) break;
 		}
+		if (cmp != null)
+			Collections.sort(ret, cmp);
 		return ret;
 	}
 

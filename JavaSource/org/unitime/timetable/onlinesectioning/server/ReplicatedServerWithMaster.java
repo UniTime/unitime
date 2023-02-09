@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -141,10 +142,15 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		return findCourses(query, limit, matcher, new CourseComparator(query));
+	}
+	
+	@Override
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher, Comparator<XCourseId> cmp) {
 		if (matcher != null) matcher.setServer(this);
 		Lock lock = readLock();
 		try {
-			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit, new CourseComparator(query));
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit, cmp);
 			String queryInLowerCase = query.toLowerCase();
 			for (XCourseId c : iCourseForId.values()) {
 				if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
@@ -167,7 +173,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		try {
 			Set<XCourseId> ret = new TreeSet<XCourseId>();
 			for (XCourseId c : iCourseForId.values()) {
-				if (matcher.match(c)) ret.add(c);
+				if (matcher == null || matcher.match(c)) ret.add(c);
 			}
 			return ret;
 		} finally {
@@ -182,7 +188,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		try {
 			List<XStudent> ret = new ArrayList<XStudent>();
 			for (XStudent s: iStudentTable.values())
-				if (matcher.match(s)) ret.add(s);
+				if (matcher == null || matcher.match(s)) ret.add(s);
 			return ret;
 		} finally {
 			lock.release();

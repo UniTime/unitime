@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +46,6 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
-
 /**
  * @author Tomas Muller
  */
@@ -61,6 +61,7 @@ public interface OnlineSectioningServer {
 	public DataProperties getConfig();
 	public OverExpectedCriterion getOverExpectedCriterion();
 	
+	public Collection<? extends XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher, Comparator<XCourseId> cmp);
 	public Collection<? extends XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher);
 	public Collection<? extends XCourseId> findCourses(CourseMatcher matcher);
 	public Collection<? extends XStudentId> findStudents(StudentMatcher matcher);

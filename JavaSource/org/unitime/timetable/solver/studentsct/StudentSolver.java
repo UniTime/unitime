@@ -577,9 +577,13 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		iStudentCache = null;
 	}
 	
-	
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		return findCourses(query, limit, matcher, null);
+	}
+	
+	@Override
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher, Comparator<XCourseId> cmp) {
 		if (matcher != null) matcher.setServer(this);
 		List<XCourseId> ret = new ArrayList<XCourseId>(limit == null || limit < 0 ? 100 : limit);
 		String queryInLowerCase = query.toLowerCase();
@@ -593,6 +597,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				if (limit != null && limit > 0 && ret.size() >= limit) return ret;
 			}
 		}
+		if (cmp != null)
+			Collections.sort(ret, cmp);
 		return ret;
 	}
 
@@ -601,7 +607,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (matcher != null) matcher.setServer(this);
 		List<XCourseId> ret = new ArrayList<XCourseId>();
 		for (XCourse c : getCourseInfoTable().values())
-			if (matcher.match(c)) ret.add(c);
+			if (matcher == null || matcher.match(c)) ret.add(c);
 		return ret;
 	}
 
@@ -612,7 +618,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		for (Student student: getModel().getStudents()) {
 			if (student.isDummy()) continue;
 			XStudentId s = new XStudentId(student);
-			if (!student.isDummy() && matcher.match(s))
+			if (!student.isDummy() && (matcher == null || matcher.match(s)))
 				ret.add(s);
 		}
 		return ret;
