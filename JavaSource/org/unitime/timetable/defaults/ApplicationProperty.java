@@ -1683,6 +1683,9 @@ public enum ApplicationProperty {
 	@Description("People Lookup LDAP: ldap password (if not configured using the ldapPeopleLookupTemplate bean)")
 	@Secret
 	PeopleLookupLdapPassword("tmtbl.lookup.ldap.password"),
+	
+	@Description("People Lookup LDAP: ldap search referral")
+	PeopleLookupLdapReferral("tmtbl.lookup.ldap.referral"),
 
 	@Type(Integer.class)
 	@DefaultValue("100")
@@ -1697,10 +1700,31 @@ public enum ApplicationProperty {
 	@DefaultValue("(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)(mail=%*))")
 	@Description("People Lookup LDAP: search query")
 	PeopleLookupLdapQuery("tmtbl.lookup.ldap.query"),
+	
+	@DefaultValue("uid")
+	@Description("People Lookup LDAP: username attribute")
+	PeopleLookupLdapUidAttribute("tmtbl.lookup.ldap.uid"),
+	
+	@DefaultValue("cn")
+	@Description("People Lookup LDAP: cn attribute (full name)")
+	PeopleLookupLdapCnAttribute("tmtbl.lookup.ldap.cn"),
+	
+	@DefaultValue("sn")
+	@Description("People Lookup LDAP: sn attribute (surname)")
+	PeopleLookupLdapSnAttribute("tmtbl.lookup.ldap.sn"),
+	
+	@DefaultValue("givenName")
+	@Description("People Lookup LDAP: givenName attribute (first + midle name)")
+	PeopleLookupLdapGivenNameAttribute("tmtbl.lookup.ldap.givenName"),
 
 	@DefaultValue("mail")
 	@Description("People Lookup LDAP: email attribute")
 	PeopleLookupLdapEmailAttribute("tmtbl.lookup.ldap.email"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("People Lookup LDAP: email attribute")
+	PeopleLookupLdapSkipWithoutEmail("tmtbl.lookup.ldap.skipWhenNoEmail"),
 
 	@DefaultValue("phone,officePhone,homePhone,telephoneNumber")
 	@Description("People Lookup LDAP: phone attribute")

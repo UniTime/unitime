@@ -77,6 +77,7 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     public String getPhone() { return iPhone; }
     public void setPhone(String phone) { iPhone = phone; }
     
+    public boolean hasEmail() { return iEmail != null && !iEmail.isEmpty(); }
     public String getEmail() { return iEmail; }
     public void setEmail(String email) { iEmail = email; }
     

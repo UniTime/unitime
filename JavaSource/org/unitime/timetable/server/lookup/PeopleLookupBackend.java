@@ -423,6 +423,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			LdapContextSource source = new LdapContextSource();
 			source.setUrl(url);
 			source.setBase(ApplicationProperty.PeopleLookupLdapBase.value());
+			String referral = ApplicationProperty.PeopleLookupLdapReferral.value();
+			if (referral != null)
+				source.setReferral(referral);
 			String user = ApplicationProperty.PeopleLookupLdapUser.value();
 			if (user != null) {
 				source.setUserDn(user);
@@ -477,16 +480,17 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         	    }
     			@Override
     			public Object mapFromAttributes(Attributes a) throws NamingException {
-    				PersonInterface person = new PersonInterface(translate(getAttribute(a,"uid"), Source.LDAP),
-                            Constants.toInitialCase(getAttribute(a,"givenName")),
-                            Constants.toInitialCase(getAttribute(a,"cn")),
-                            Constants.toInitialCase(getAttribute(a,"sn")),
+    				PersonInterface person = new PersonInterface(translate(getAttribute(a, ApplicationProperty.PeopleLookupLdapUidAttribute.value()), Source.LDAP),
+                            Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapGivenNameAttribute.value())),
+                            Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapCnAttribute.value())),
+                            Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapSnAttribute.value())),
                             getAttribute(a, ApplicationProperty.PeopleLookupLdapAcademicTitleAttribute.value()),
                             getAttribute(a, ApplicationProperty.PeopleLookupLdapEmailAttribute.value()),
                             getAttribute(a, ApplicationProperty.PeopleLookupLdapPhoneAttribute.value()),
                             Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapDepartmentAttribute.value())),
                             Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapPositionAttribute.value())),
                             "Directory");
+    				if (ApplicationProperty.PeopleLookupLdapSkipWithoutEmail.isTrue() && !person.hasEmail()) return person;
     				context.addPerson(person);
     				return person;
     			}
@@ -569,7 +573,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			if (iTranslation != null)
 				uid = iTranslation.translate(uid, Source.User, Source.LDAP);
 			
-			return (UserInfo)getLdapTemplate().lookup("uid=" + uid, new AttributesMapper() {
+			return (UserInfo)getLdapTemplate().lookup(ApplicationProperty.PeopleLookupLdapUidAttribute.value() + "=" + uid, new AttributesMapper() {
         		protected String getAttribute(Attributes attrs, String name) {
         	        if (attrs==null) return null;
         	        if (name == null || name.isEmpty()) return null;
@@ -585,14 +589,14 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				@Override
 				public Object mapFromAttributes(Attributes a) throws NamingException {
 		        	UserInfo info = new UserInfo();
-		        	info.setUserName(getAttribute(a,"uid"));
+		        	info.setUserName(getAttribute(a, ApplicationProperty.PeopleLookupLdapUidAttribute.value()));
 		        	if (iTranslation == null)
 		        		info.setExternalId(info.getUserName());
 		        	else
 		        		info.setExternalId(iTranslation.translate(info.getUserName(), Source.LDAP, Source.User));
-		        	info.setFirstName(Constants.toInitialCase(getAttribute(a,"givenName")));
-		        	info.setName(Constants.toInitialCase(getAttribute(a,"cn")));
-		        	info.setLastName(Constants.toInitialCase(getAttribute(a,"sn")));
+		        	info.setFirstName(Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapGivenNameAttribute.value())));
+		        	info.setName(Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapCnAttribute.value())));
+		        	info.setLastName(Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapSnAttribute.value())));
 		        	info.setEmail(getAttribute(a, ApplicationProperty.PeopleLookupLdapEmailAttribute.value()));
 		        	info.setPhone(getAttribute(a, ApplicationProperty.PeopleLookupLdapPhoneAttribute.value()));
 		        	info.setAcademicTitle(getAttribute(a, ApplicationProperty.PeopleLookupLdapAcademicTitleAttribute.value()));
