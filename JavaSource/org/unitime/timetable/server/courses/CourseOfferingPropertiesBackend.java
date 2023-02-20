@@ -394,10 +394,12 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			waitListDefault.setLabel(MSG.waitListDefaultDisabled());
 			waitListDefault.setValue("");
 			response.addWaitList(waitListDefault);
+			break;
 		case ReSchedule:
 			waitListDefault.setLabel(MSG.waitListDefaultReschedule());
 			waitListDefault.setValue("");
 			response.addWaitList(waitListDefault);
+			break;
 		}
 
 		WaitListInterface waitListEnabled = new WaitListInterface();
