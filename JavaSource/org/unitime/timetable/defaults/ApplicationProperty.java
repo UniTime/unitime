@@ -3049,13 +3049,13 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Instructional Offering Configuration: allow instructional method to be changed on a wait-listed course when there are students enrolled")
+	@Description("Instructional Offering Configuration: allow instructional method to be changed on a course that can have students automatically re-scheduled when there are students enrolled")
 	@Since(4.7)
 	WaitListCanChangeInstructionalMethod("unitime.offering.waitList.canChangeInstructionalMethod"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Edit Subpart / Class: allow date pattern to be changed on a wait-listed course when there are students enrolled")
+	@Description("Edit Subpart / Class: allow date pattern to be changed on a course that can have students automatically re-scheduled when there are students enrolled")
 	@Since(4.7)
 	WaitListCanChangeDatePattern("unitime.offering.waitList.canChangeDatePattern"),
 	

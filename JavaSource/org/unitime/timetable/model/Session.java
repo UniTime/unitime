@@ -779,6 +779,10 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
         return canNoRoleReportClass() || canNoRoleReportExam();
     }
     
+    public boolean canOnlineSectionStudents() {
+		return getStatusType() != null && getStatusType().canOnlineSectionStudents() && !getStatusType().isTestSession();
+	}
+    
     public Date getCurrentSnapshotDate() {
     	Object o = InstructionalOfferingDAO.getInstance()
 				.getSession()

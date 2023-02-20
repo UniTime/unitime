@@ -3074,7 +3074,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Wait-listing is not enabled for this offering.")
 	String descWaitListDisabled();
 	
-	@DefaultMessage("Wait-listing is not enabled, but the students can be automatically re-scheduled for this offering.")
+	@DefaultMessage("Wait-listing is not enabled, but students can be automatically re-scheduled for this offering.")
 	String descWaitListReschedule();
 	
 	@DefaultMessage("{0} allows for {1}.")

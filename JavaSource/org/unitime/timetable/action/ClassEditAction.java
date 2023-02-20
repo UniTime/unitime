@@ -420,7 +420,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
         if ("init".equals(op)) {
 	        form.setExpectedCapacity(c.getExpectedCapacity());
 	        form.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
-	        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
+	        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveReScheduleNow());
 	        form.setNbrRooms(c.getNbrRooms());
 	        form.setNotes(c.getNotes());
 	        form.setManagingDept(c.getManagingDept().getUniqueId());

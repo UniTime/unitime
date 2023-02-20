@@ -369,7 +369,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
 
         form.setManagingDeptName(ss.getManagingDept()==null?null:ss.getManagingDept().getManagingDeptLabel());
         form.setControllingDept(ss.getControllingDept().getUniqueId());
-    	form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ss.getInstrOfferingConfig().getEnrollment() == 0 || !ss.getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
+    	form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ss.getInstrOfferingConfig().getEnrollment() == 0 || !ss.getInstrOfferingConfig().getInstructionalOffering().effectiveReScheduleNow());
     }
 
     /**

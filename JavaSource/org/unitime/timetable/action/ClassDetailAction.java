@@ -450,7 +450,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 	    form.setEnrollment(c.getEnrollment());
 	    form.setSnapshotLimit(c.getSnapshotLimit());
         form.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
-        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveWaitList());
+        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveReScheduleNow());
         form.setLms(c.getLms() == null? "" : c.getLms().getLabel());
         if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
         	form.setFundingDept(c.getEffectiveFundingDept().getLabel());

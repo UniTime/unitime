@@ -264,7 +264,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction2<Scheduling
         form.setAutoSpreadInTime(ss.isAutoSpreadInTime());
         form.setStudentAllowOverlap(ss.isStudentAllowOverlap());
         form.setDatePattern(ss.getDatePattern()==null?Long.valueOf(-1):ss.getDatePattern().getUniqueId());
-        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ioc.getEnrollment() == 0 || !io.effectiveWaitList());
+        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || ioc.getEnrollment() == 0 || !io.effectiveReScheduleNow());
         if (form.getCreditText() == null || form.getCreditText().length() == 0){
 	        if (ss.getCredit() != null){
 	        	CourseCreditUnitConfig credit = ss.getCredit();

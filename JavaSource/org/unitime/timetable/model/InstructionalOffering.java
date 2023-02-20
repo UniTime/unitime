@@ -741,6 +741,18 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     public boolean effectiveReSchedule() {
     	return getEffectiveWaitListMode().isReschedule();
     }
+    
+    public boolean effectiveReScheduleNow() {
+    	return getEffectiveWaitListMode().isReschedule() &&
+    			StudentSectioningStatus.hasEffectiveOption(null, getSession(), StudentSectioningStatus.Option.reschedule, StudentSectioningStatus.Option.enrollment) &&
+    			(getSession() != null && getSession().canOnlineSectionStudents());
+    }
+    
+    public boolean effectiveWaitListNow() {
+    	return getEffectiveWaitListMode().isWaitlist() &&
+    			StudentSectioningStatus.hasEffectiveOption(null, getSession(), StudentSectioningStatus.Option.waitlist, StudentSectioningStatus.Option.enrollment) &&
+    			(getSession() != null && getSession().canOnlineSectionStudents());
+    }
 
     public Department getEffectiveFundingDept() {
     	return getControllingCourseOffering().getEffectiveFundingDept();
