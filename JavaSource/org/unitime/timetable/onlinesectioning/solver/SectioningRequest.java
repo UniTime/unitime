@@ -48,6 +48,8 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionProvider;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -220,6 +222,11 @@ public class SectioningRequest implements LastSectionProvider {
 		CourseRequest request = convert(assignment, getRequest(), getDropCourseId(), server, WaitListMode.WaitList);
 		if (request == null) return null;
 		
+		Integer currentDateIndex = null;
+		int dayOfWeekOffset = server.getAcademicSession().getDayOfWeekOffset();
+		if (server.getConfig().getPropertyBoolean("ReScheduling.AvoidPastSections", false))
+			currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays() + server.getConfig().getPropertyInt("ReScheduling.AvoidPastOffset", 0);
+		
 		if (getLastEnrollment() != null)
 			for (Long sectionId: getLastEnrollment().getSectionIds()) {
 				for (Course course: request.getCourses()) {
@@ -231,6 +238,17 @@ public class SectioningRequest implements LastSectionProvider {
 		enrollments: for (Enrollment e: request.getAvaiableEnrollments(assignment)) {
 			// only consider enrollments of the offering that is being checked
 			if (e.getOffering().getId() != getOffering().getOfferingId()) continue;
+
+			// avoid past sections
+			if (currentDateIndex != null)
+				for (Section s: e.getSections()) {
+					if (!iLastSections.contains(s) && s.getTime() != null) {
+						if (s.getTime().getDayCode() != 0 && s.getTime().getFirstMeeting(dayOfWeekOffset) < currentDateIndex)
+							continue enrollments;
+						if (s.getTime().getDayCode() == 0 && !s.getTime().getWeekCode().isEmpty() && s.getTime().getWeekCode().nextSetBit(0) < currentDateIndex)
+							continue enrollments;
+					}
+				}
 			
 			for (Request other: request.getStudent().getRequests()) {
 				if (other.equals(request)) continue;
