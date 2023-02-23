@@ -767,9 +767,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			return sections.size() < config.getSubparts().size() ? 
 					ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS;
 		}
+		boolean ignoreBreakTime = server.getConfig().getPropertyBoolean("ReScheduling.IgnoreBreakTimeConflicts", false);
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
-				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2))
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2, ignoreBreakTime))
 					return ReschedulingReason.TIME_CONFLICT;
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
 					return ReschedulingReason.CLASS_LINK;
@@ -790,7 +791,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							List<XSection> assignment = other.getSections(cr.getEnrollment());
 							if (!other.isAllowOverlap(student, cr.getEnrollment().getConfigId(), cr.getEnrollment(), assignment))
 								for (XSection section: sections)
-									if (section.isOverlapping(offering.getDistributions(), assignment)) return ReschedulingReason.TIME_CONFLICT;
+									if (section.isOverlapping(offering.getDistributions(), assignment, ignoreBreakTime)) return ReschedulingReason.TIME_CONFLICT;
 						}
 					}
 				}

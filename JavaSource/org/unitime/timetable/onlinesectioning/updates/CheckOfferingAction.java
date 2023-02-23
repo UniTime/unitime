@@ -572,9 +572,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (config == null || sections.size() != config.getSubparts().size()) {
 			return (sections.size() < config.getSubparts().size() ? ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS);
 		}
+		boolean ignoreBreakTime = server.getConfig().getPropertyBoolean("ReScheduling.IgnoreBreakTimeConflicts", false);
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
-				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2, ignoreBreakTime)) {
 					return ReschedulingReason.TIME_CONFLICT;
 				}
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
@@ -586,7 +587,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			}
 		}
 		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), request.getEnrollment(), sections) &&
-			!server.getConfig().getPropertyBoolean("Enrollment.CanKeepTimeConflict", false))
+			!server.getConfig().getPropertyBoolean("Enrollment.CanKeepTimeConflict", false)) {
 			for (XRequest r: student.getRequests()) {
 				if (request.getPriority() <= r.getPriority()) continue; // only check time conflicts with courses of higher priority
 				if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
@@ -596,12 +597,13 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						List<XSection> assignment = other.getSections(e);
 						if (!other.isAllowOverlap(student, e.getConfigId(), e, assignment))
 							for (XSection section: sections)
-								if (section.isOverlapping(offering.getDistributions(), assignment)) {
+								if (section.isOverlapping(offering.getDistributions(), assignment, ignoreBreakTime)) {
 									return ReschedulingReason.TIME_CONFLICT;
 								}
 					}
 				}
 			}
+		}
 		if (!server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false))
 			for (XSection section: sections)
 				if (section.isCancelled())

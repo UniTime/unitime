@@ -502,6 +502,17 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         if (isToIgnoreStudentConflictsWith(distributions, other.getSectionId())) return false;
         return getTime().hasIntersection(other.getTime());
     }
+    
+    /**
+     * True, if this section overlaps with the given assignment in time and
+     * space
+     */
+    public boolean isOverlapping(Collection<XDistribution> distributions, XSection other, boolean ignoreBreakTime) {
+        if (isAllowOverlap() || other.isAllowOverlap()) return false;
+        if (getTime() == null || other.getTime() == null) return false;
+        if (isToIgnoreStudentConflictsWith(distributions, other.getSectionId())) return false;
+        return getTime().hasIntersection(other.getTime(), ignoreBreakTime);
+    }
 	
     /**
      * True, if this section overlaps with one of the given set of assignments
@@ -519,6 +530,27 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
             if (isToIgnoreStudentConflictsWith(distributions, assignment.getSectionId()))
                 continue;
             if (getTime().hasIntersection(assignment.getTime()))
+                return true;
+        }
+        return false;
+    }
+    
+    /**
+     * True, if this section overlaps with one of the given set of assignments
+     * in time and space
+     */
+    public boolean isOverlapping(Collection<XDistribution> distributions, Collection<XSection> assignments, boolean ignoreBreakTime) {
+        if (isAllowOverlap()) return false;
+        if (getTime() == null || assignments == null)
+            return false;
+        for (XSection assignment : assignments) {
+            if (assignment.isAllowOverlap())
+                continue;
+            if (assignment.getTime() == null)
+                continue;
+            if (isToIgnoreStudentConflictsWith(distributions, assignment.getSectionId()))
+                continue;
+            if (getTime().hasIntersection(assignment.getTime(), ignoreBreakTime))
                 return true;
         }
         return false;

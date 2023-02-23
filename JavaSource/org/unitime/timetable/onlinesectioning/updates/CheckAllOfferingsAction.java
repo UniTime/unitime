@@ -97,9 +97,10 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 		if (config == null || sections.size() != config.getSubparts().size()) {
 			return (sections.size() < config.getSubparts().size() ? ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS);
 		}
+		boolean ignoreBreakTime = server.getConfig().getPropertyBoolean("ReScheduling.IgnoreBreakTimeConflicts", false);
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
-				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) return ReschedulingReason.TIME_CONFLICT;
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2, ignoreBreakTime)) return ReschedulingReason.TIME_CONFLICT;
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) return ReschedulingReason.MULTIPLE_ENRLS;
 			}
 			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) return ReschedulingReason.MULTIPLE_CONFIGS;
@@ -114,7 +115,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 					List<XSection> assignment = other.getSections(e);
 					if (!other.isAllowOverlap(student, e.getConfigId(), e, assignment))
 						for (XSection section: sections)
-							if (section.isOverlapping(offering.getDistributions(), assignment)) {
+							if (section.isOverlapping(offering.getDistributions(), assignment, ignoreBreakTime)) {
 								if (request.isAlternative() && !r.isAlternative()) return ReschedulingReason.TIME_CONFLICT;
 								if (request.isAlternative() == r.isAlternative() && request.getPriority() > r.getPriority()) return ReschedulingReason.TIME_CONFLICT;
 							}

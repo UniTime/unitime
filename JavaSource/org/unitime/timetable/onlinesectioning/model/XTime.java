@@ -163,6 +163,25 @@ public class XTime implements Serializable, Externalizable {
         return other != null && shareDays(other) && shareHours(other) && shareWeeks(other);
     }
     
+    public boolean shareHoursIgnoreBreakTime(XTime other) {
+    	int s1 = Constants.SLOT_LENGTH_MIN * getSlot();
+    	int e1 = Constants.SLOT_LENGTH_MIN * (getSlot() + getLength()) - getBreakTime();
+    	int s2 = Constants.SLOT_LENGTH_MIN * other.getSlot();
+    	int e2 = Constants.SLOT_LENGTH_MIN * (other.getSlot() + other.getLength()) - other.getBreakTime();
+        return (e1 > s2) && (e2 > s1);
+    }
+    
+    public boolean hasIntersectionIgnoreBreakTime(XTime other) {
+        return other != null && shareDays(other) && shareHoursIgnoreBreakTime(other) && shareWeeks(other);
+    }
+    
+    public boolean hasIntersection(XTime other, boolean ignoreBreakTime) {
+    	if (ignoreBreakTime)
+    		return hasIntersectionIgnoreBreakTime(other);
+    	else
+    		return hasIntersection(other);
+    }
+    
     public int nrSharedDays(XTime anotherLocation) {
         int ret = 0;
         for (int i = 0; i < Constants.NR_DAYS; i++) {
