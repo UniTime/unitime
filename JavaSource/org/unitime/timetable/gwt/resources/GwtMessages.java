@@ -7184,10 +7184,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>U</u>nassign All")
 	String buttonUnassignAll();
 	
-	@DefaultMessage("<u>C</u>opy to Sub-Subparts")
+	@DefaultMessage("<u>C</u>opy to Sub-Classes")
 	String buttonCopyInstructors();
 	
-	@DefaultMessage("This operation will replace all instructor assignments on scheduling subparts of the same instructional with the instructor assignments of their parents (e.g., Lec 1a will have the same instructors as Lec 1).")
+	@DefaultMessage("This operation will copy all instructor assignments from parent classes to all their children with the same instructional type (Lec 1a and Lec 1b will have the same instructors as Lec 1, etc.).")
 	String titleCopyInstructors();
 	
 	@DefaultMessage("Assign Instructors")
