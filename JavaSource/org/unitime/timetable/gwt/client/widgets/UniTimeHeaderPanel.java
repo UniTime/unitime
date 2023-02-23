@@ -245,6 +245,10 @@ public class UniTimeHeaderPanel extends P {
 		addButton(operation, name, guessAccessKey(name), width == null ? null : width + "px", clickHandler);
 	}
 	
+	public Button getButton(String operation) {
+		return (Button)iButtons.getWidget(iOperations.get(operation));
+	}
+	
 	public static Character guessAccessKey(String name) {
 		if (name == null || name.isEmpty()) return null;
 		MatchResult result = sAcessKeyRegExp.exec(name);

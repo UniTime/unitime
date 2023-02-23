@@ -7157,8 +7157,11 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Display<br>(All: {0})")
 	String fieldDisplay(String buttonCharacter);
 
-	@DefaultMessage("Class Unique Id")
+	@DefaultMessage("Class Id")
 	String fieldClassUid();
+	
+	@DefaultMessage("Class Parent Id")
+	String fieldClassParentUid();
 	
 	@DefaultMessage("Instructional Offering Config Unique Id")
 	String fieldConfigUid();
@@ -7180,6 +7183,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<u>U</u>nassign All")
 	String buttonUnassignAll();
+	
+	@DefaultMessage("<u>C</u>opy to Sub-Subparts")
+	String buttonCopyInstructors();
+	
+	@DefaultMessage("This operation will replace all instructor assignments on scheduling subparts of the same instructional with the instructor assignments of their parents (e.g., Lec 1a will have the same instructors as Lec 1).")
+	String titleCopyInstructors();
 	
 	@DefaultMessage("Assign Instructors")
 	String buttonAssignInstructors();

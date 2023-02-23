@@ -3109,6 +3109,12 @@ public enum ApplicationProperty {
 	@Description("Assign Instructors: use the user's preferred name format when ordering instructors in the dropdown (instead of the default last name first)")
 	InstructorsDropdownFollowNameFormatting("unitime.instructors.useNameFormatInDropdowns"),
 
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Assign Instructors: enable the ability to copy instructors to subparts of the same instructional type (e.g., from Lec 1 to Lec 1a and Lec 1b)")
+	@Since(4.7)
+	InstructorsCopyToSubSubparts("unitime.instructors.copyToSubSubparts"),
+
 	;
 
 	String iKey;

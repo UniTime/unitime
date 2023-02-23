@@ -55,6 +55,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 	
 	public static enum DataColumn implements IsSerializable {
 		CLASS_UID,
+		CLASS_PARENT_UID,
 		IS_FIRST_RECORD_FOR_CLASS,
 		HAS_ERROR,
 		CLASS_NAME,
@@ -134,7 +135,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 	public Record addRecord(Long uniqueId, boolean deletable) {
 		Record r = new Record(uniqueId, iFields.length, deletable);
 		for (int i = 0; i < iFields.length; i++)
-			if (!iFields[i].isEditable()) r.setField(i, null, false);
+			if (!iFields[i].isEditable()) r.setField(i, (String)null, false);
 		iRecords.add(r);
 		return r;
 	}
@@ -258,6 +259,18 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 		public void setField(int index, String value, boolean editable) {
 			iValues[index] = value;
 			iEditable[index] = editable;
+		}
+		
+		public void setField(int index, Record record) {
+			iValues[index] = record.getField(index);
+			iEditable[index] = record.isEditable(index);
+			iVisible[index] = record.isVisible(index);
+		}
+		
+		public void setField(int index, Record record, boolean visible) {
+			iValues[index] = record.getField(index);
+			iEditable[index] = record.isEditable(index);
+			iVisible[index] = visible;
 		}
 		
 		public void setField(int index, String value, boolean editable, boolean visible) {

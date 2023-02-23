@@ -21,8 +21,10 @@ package org.unitime.timetable.gwt.client.offerings;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -61,8 +63,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -276,6 +276,65 @@ public class AssignClassInstructorsPage extends Composite {
 			}
 		};
 		
+		ClickHandler copy = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.showLoading(MESSAGES.waitPlease());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iData.getRecords().clear();
+						Map<String, List<Record>> id2records = new HashMap<String, List<Record>>();
+						for (Record r: iTable.getData()) {
+							String uid = r.getField(DataColumn.CLASS_UID.ordinal());
+							List<Record> records = (List<Record>)id2records.get(uid);
+							if (records == null) {
+								records = new ArrayList<Record>(); id2records.put(uid, records);
+							}
+							records.add(r);
+						}
+						Set<String> processed = new HashSet<String>();
+						for (Record r: iTable.getData()) {
+							String uid = r.getField(DataColumn.CLASS_UID.ordinal());
+							if (r.getField(DataColumn.CLASS_PARENT_UID.ordinal()) == null) {
+								// no parent > just copy
+								iData.getRecords().add(r);
+							} else if (!r.isEditable()) {
+								// not editable > just copy
+								iData.getRecords().add(r);
+							} else if (processed.add(uid)) {
+								// otherwise, do only once for each class
+								List<Record> records = (List<Record>)id2records.get(r.getField(DataColumn.CLASS_PARENT_UID.ordinal()));
+								boolean first = true;
+								for (Record parent: records) {
+									Record rec = iData.addRecord(null);
+									rec.setField(DataColumn.CLASS_UID.ordinal(), r);
+									rec.setField(DataColumn.CLASS_PARENT_UID.ordinal(), r);
+									rec.setField(DataColumn.IS_FIRST_RECORD_FOR_CLASS.ordinal(), parent);
+									rec.setField(DataColumn.HAS_ERROR.ordinal(), parent);
+									rec.setField(DataColumn.DELETE.ordinal(), parent);
+									rec.setField(DataColumn.ADD.ordinal(), parent);
+									rec.setField(DataColumn.CLASS_NAME.ordinal(), r, first);
+									rec.setField(DataColumn.CLASS_EXTERNAL_UID.ordinal(), r, first);
+									rec.setField(DataColumn.TIME.ordinal(), r, first);
+									rec.setField(DataColumn.ROOM.ordinal(), r, first);
+									rec.setField(DataColumn.DISPLAY.ordinal(), parent);
+									rec.setField(DataColumn.INSTR_NAME.ordinal(), parent);
+									rec.setField(DataColumn.PCT_SHARE.ordinal(), parent);
+									rec.setField(DataColumn.CHECK_CONFICTS.ordinal(), parent);
+									rec.setField(DataColumn.RESPONSIBILITY.ordinal(), parent);
+									rec.setField(DataColumn.FUNDING_DEPT.ordinal(), parent);
+									first = false;
+								}
+							}
+						}
+						refreshTable();
+						LoadingWidget.hideLoading();
+					}
+				});
+			}
+		};
+		
 		
 		
 		iPanel = new SimpleForm();		
@@ -287,6 +346,8 @@ public class AssignClassInstructorsPage extends Composite {
 		iHeader.add(iCourseTitle);		 
 		
 		iHeader.addButton("unassignAll", MESSAGES.buttonUnassignAll(), 75, removeInstrs);
+		iHeader.addButton("copy", MESSAGES.buttonCopyInstructors(), 75, copy);
+		iHeader.getButton("copy").setTitle(MESSAGES.titleCopyInstructors());
 		iHeader.addButton("save", MESSAGES.buttonSave(), 75, save);
 		iHeader.addButton("prev", MESSAGES.buttonPrevious(), 75, prev);
 		iHeader.addButton("next", MESSAGES.buttonNext(), 75, next);
@@ -306,6 +367,7 @@ public class AssignClassInstructorsPage extends Composite {
 		iPanel.addRow(iTable);
 		
 		iBottom = iHeader.clonePanel();
+		iBottom.getButton("copy").setTitle(MESSAGES.titleCopyInstructors());
 		iPanel.addNotPrintableBottomRow(iBottom);
 		
 		iSimple = new SimplePanel(iPanel);
@@ -343,6 +405,7 @@ public class AssignClassInstructorsPage extends Composite {
 		iHeader.setEnabled("next", false);
 		iHeader.setEnabled("unassignAll", false);
 		iHeader.setEnabled("back", false);
+		iHeader.setEnabled("copy", false);
 		iHeader.setMessage(MESSAGES.waitLoadingData());
 		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
 		
@@ -482,11 +545,17 @@ public class AssignClassInstructorsPage extends Composite {
 			iHeader.setEnabled("save", iEditable);
 			iHeader.setEnabled("prev", iEditable && iData.getPreviousConfigId() != null);
 			iHeader.setEnabled("next", iEditable && iData.getNextConfigId() != null);
+			iHeader.setEnabled("copy", false);
 			iHeader.setEnabled("add", !iEditable);
 			if (iData.isAllInstructorsDeletable()) {
 				iHeader.setEnabled("unassignAll", iEditable);
 			} else {
 				iHeader.setEnabled("unassignAll", false);
+			}
+			for (Record r: iData.getRecords()) {
+				if (r.getField(DataColumn.CLASS_PARENT_UID.ordinal()) != null && r.isEditable()) {
+					iHeader.setEnabled("copy", true); break;
+				}
 			}
 		}
 		if (iData.isShowTimeAndRoom()) {
@@ -549,6 +618,7 @@ public class AssignClassInstructorsPage extends Composite {
 									Record rec = iData.addRecord(Long.valueOf(recId));
 									Record oldRec = iTable.getData(row);
 									rec.setField(DataColumn.CLASS_UID.ordinal(), oldRec.getField(DataColumn.CLASS_UID.ordinal()), false);
+									rec.setField(DataColumn.CLASS_PARENT_UID.ordinal(), oldRec.getField(DataColumn.CLASS_PARENT_UID.ordinal()), false);
 									rec.setField(DataColumn.IS_FIRST_RECORD_FOR_CLASS.ordinal(), Boolean.FALSE.toString(), false);
 									rec.setField(DataColumn.HAS_ERROR.ordinal(), Boolean.FALSE.toString(), false);
 									rec.setField(DataColumn.DELETE.ordinal(), Boolean.TRUE.toString());
@@ -597,8 +667,7 @@ public class AssignClassInstructorsPage extends Composite {
 										nextRec.setField(DataColumn.ROOM.ordinal(), delRec.getField(DataColumn.ROOM.ordinal()), false, true);
 										nextRec.setField(DataColumn.DISPLAY.ordinal(), delRec.getField(DataColumn.DISPLAY.ordinal()), delRec.isEditable(DataColumn.DISPLAY.ordinal()), true);
 										nextRec.setField(DataColumn.FUNDING_DEPT.ordinal(), delRec.getField(DataColumn.FUNDING_DEPT.ordinal()), delRec.isEditable(DataColumn.FUNDING_DEPT.ordinal()), true);
-										if (nextNextRec != null 
-												&& !nextNextRec.getField(DataColumn.CLASS_UID.ordinal()).equals(nextRec.getField(DataColumn.CLASS_UID.ordinal()))){
+										if (nextNextRec == null || !nextNextRec.getField(DataColumn.CLASS_UID.ordinal()).equals(nextRec.getField(DataColumn.CLASS_UID.ordinal()))){
 											nextRec.setField(DataColumn.DELETE.ordinal(), Boolean.FALSE.toString(), false, false);											
 										}
 										fillRow(nextRec, row + 1);
@@ -647,15 +716,6 @@ public class AssignClassInstructorsPage extends Composite {
 						}
 					});
 					initWidget(new UniTimeWidget<TextArea>(textarea));
-					if (iEditable && record.getUniqueId() == null) {
-						textarea.addChangeHandler(new ChangeHandler() {
-							@Override
-							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
-									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
-							}
-						});
-					}
 					break;
 				case number:
 					final NumberBox number = new NumberBox();
@@ -672,15 +732,6 @@ public class AssignClassInstructorsPage extends Composite {
 						}
 					});
 					initWidget(new UniTimeWidget<TextBox>(number));
-					if (iEditable && record.getUniqueId() == null) {
-						number.addChangeHandler(new ChangeHandler() {
-							@Override
-							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
-									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
-							}
-						});
-					}
 					break;
 				case list:
 					final ListBox list = new ListBox();
@@ -705,15 +756,6 @@ public class AssignClassInstructorsPage extends Composite {
 						}
 					});
 					initWidget(new UniTimeWidget<ListBox>(list));
-					if (iEditable && record.getUniqueId() == null) {
-						list.addChangeHandler(new ChangeHandler() {
-							@Override
-							public void onChange(ChangeEvent event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
-									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
-							}
-						});
-					}
 					break;
 				case toggle:
 					final CheckBox check = new CheckBox();
@@ -728,15 +770,6 @@ public class AssignClassInstructorsPage extends Composite {
 					});
 					check.setVisible(record.isVisible(index));
 					initWidget(new UniTimeWidget<CheckBox>(check));
-					if (iEditable && record.getUniqueId() == null) {
-						check.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-							@Override
-							public void onValueChange(ValueChangeEvent<Boolean> event) {
-								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
-									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
-							}
-						});
-					}
 					break;
 				}
 			} else {

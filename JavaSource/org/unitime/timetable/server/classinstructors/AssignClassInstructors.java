@@ -106,6 +106,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 	private Field getFieldForColumn(DataColumn dataColumn, InstrOfferingConfig ioc, SessionContext context) {
 		switch (dataColumn){
 			case CLASS_UID : return new Field(MESSAGES.fieldClassUid(), FieldType.number, 40, Flag.HIDDEN);
+			case CLASS_PARENT_UID: return new Field(MESSAGES.fieldClassParentUid(), FieldType.number, 40, Flag.HIDDEN);
 			case IS_FIRST_RECORD_FOR_CLASS : return new Field(MESSAGES.fieldFirstRecordForClassUid(), FieldType.toggle, 40, Flag.HIDDEN);
 			case HAS_ERROR : return new Field(MESSAGES.fieldError(), FieldType.hasError, 40, Flag.HIDE_LABEL);
 			case CLASS_NAME : return new Field(MESSAGES.fieldClassName(), FieldType.textarea, 120, Flag.READ_ONLY, Flag.HIDE_LABEL);
@@ -273,8 +274,15 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 			int recId = data.getRecords().size() ;
 			Record rec = data.addRecord(Long.valueOf(recId));
 			rec.setDeletable(isEditable);
-			
+
 			rec.setField(DataColumn.CLASS_UID.ordinal(), cls.getUniqueId().toString(), false);
+			if (ApplicationProperty.InstructorsCopyToSubSubparts.isTrue()) {
+				Class_ parent = cls;
+				while (parent.getParentClass() != null && parent.getSchedulingSubpart().getItype().equals(parent.getParentClass().getSchedulingSubpart().getItype()))
+					parent = parent.getParentClass();
+				if (!cls.equals(parent))
+					rec.setField(DataColumn.CLASS_PARENT_UID.ordinal(), parent.getUniqueId().toString(), false);
+			}
 			rec.setField(DataColumn.IS_FIRST_RECORD_FOR_CLASS.ordinal(), Boolean.valueOf(i == 0).toString(), false);
 			rec.setField(DataColumn.HAS_ERROR.ordinal(), Boolean.FALSE.toString(), true, true);
 			if (instructors.size() <= 1) {
