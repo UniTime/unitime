@@ -3068,6 +3068,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Wait-Listing Disabled")
 	String waitListDisabled();
 	
+	@DefaultMessage("Wait-Listing")
+	String waitListEnabledShort();
+	
+	@DefaultMessage("Re-Scheduling")
+	String waitListRescheduleShort();
+	
+	@DefaultMessage("Disabled")
+	String waitListDisabledShort();
+	
 	@DefaultMessage("Wait-listing is enabled for this offering.")
 	String descWaitListEnabled();
 	

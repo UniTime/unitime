@@ -863,7 +863,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("External Id")
 	String colStudentExternalId();
-
+	
 	@DefaultMessage("{0}.")
 	String priority(int priority);
 	
@@ -2194,6 +2194,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("No Break Time Back-to-Backs")
 	String reportBackToBacksNoBreak();
+	
+	@DefaultMessage("Sectioning Issues (for Re-Scheduling)")
+	String reportSectioningIssues();
+	
+	@DefaultMessage("BTB\n{0}")
+	String reportBTB(String col);
+	
+	@DefaultMessage("Wait-Listing")
+	String reportWaitListing();
+	
+	@DefaultMessage("Problem")
+	String reportProblem();
 	
 	@DefaultMessage("{0} (TA)")
 	String teachingAssignment(String className);

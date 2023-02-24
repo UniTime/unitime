@@ -39,12 +39,15 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 
 /**
  * @author Tomas Muller
  */
 public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
 	private StudentSectioningModel iModel = null;
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	public ZeroBreakTimeBackToBacksReport(StudentSectioningModel model) {
         iModel = model;
@@ -90,10 +93,11 @@ public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
                 new CSVFile.CSVField("__Student"),
-                new CSVFile.CSVField("External Id"), new CSVFile.CSVField("Student Name"),
-                new CSVFile.CSVField("Curriculum"), new CSVFile.CSVField("Group"), new CSVFile.CSVField("Advisor"),
-                new CSVFile.CSVField("Course"), new CSVFile.CSVField("Class"), new CSVFile.CSVField("Meeting Time"), new CSVFile.CSVField("Room"),
-                new CSVFile.CSVField("BTB\nCourse"), new CSVFile.CSVField("BTB\nClass"), new CSVFile.CSVField("BTB\nMeeting Time"), new CSVFile.CSVField("BTB\nRoom")
+                new CSVFile.CSVField(MSG.reportStudentId()), new CSVFile.CSVField(MSG.reportStudentName()),
+                new CSVFile.CSVField(MSG.reportStudentCurriculum()), new CSVFile.CSVField(MSG.reportStudentGroup()), new CSVFile.CSVField(MSG.reportStudentAdvisor()),
+                new CSVFile.CSVField(MSG.reportCourse()), new CSVFile.CSVField(MSG.reportClass()), new CSVFile.CSVField(MSG.reportMeetingTime()), new CSVFile.CSVField(MSG.colRoom()),
+                new CSVFile.CSVField(MSG.reportBTB(MSG.reportCourse())), new CSVFile.CSVField(MSG.reportBTB(MSG.reportClass())),
+                new CSVFile.CSVField(MSG.reportBTB(MSG.reportMeetingTime())), new CSVFile.CSVField(MSG.reportBTB(MSG.colRoom())),
                 });
         
         for (Student student: getModel().getStudents()) {
