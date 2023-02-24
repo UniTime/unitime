@@ -570,6 +570,11 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) {
+			for (XSection s1: sections) {
+				if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) {
+					return ReschedulingReason.MULTIPLE_CONFIGS;
+				}
+			}
 			return (sections.size() < config.getSubparts().size() ? ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS);
 		}
 		boolean ignoreBreakTime = server.getConfig().getPropertyBoolean("ReScheduling.IgnoreBreakTimeConflicts", false);

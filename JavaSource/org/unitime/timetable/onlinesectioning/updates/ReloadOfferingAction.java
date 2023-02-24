@@ -764,6 +764,11 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		List<XSection> sections = offering.getSections(enrollment);
 		XConfig config = offering.getConfig(enrollment.getConfigId());
 		if (sections.size() != config.getSubparts().size()) {
+			for (XSection s1: sections) {
+				if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) {
+					return ReschedulingReason.MULTIPLE_CONFIGS;
+				}
+			}
 			return sections.size() < config.getSubparts().size() ? 
 					ReschedulingReason.MISSING_CLASS : ReschedulingReason.MULTIPLE_ENRLS;
 		}
