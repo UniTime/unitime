@@ -223,7 +223,10 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             			form.setOp(MSG.actionUpdateSolverConfig());
             			for (SolverParameter param: setting.getParameters()) {
             				if (!param.getDefinition().isVisible().booleanValue()) continue;
-            				form.setParameter(param.getDefinition().getUniqueId(), param.getValue());
+            				String value = param.getValue();
+            				if ("boolean".equals(param.getDefinition().getType()) && "on".equals(param.getValue()))
+            					value = "true";
+            				form.setParameter(param.getDefinition().getUniqueId(), value);
             				form.setUseDefault(param.getDefinition().getUniqueId(), Boolean.FALSE);
             			}
                 	}
