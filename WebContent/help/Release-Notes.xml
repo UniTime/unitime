@@ -40,6 +40,12 @@
 				</line>
 				<line>The default setting (property unitime.offering.waitListDefault) can now be WaitList, ReSchedule, or Disabled, with the default being Disabled.</line>
 				<line>There is now a new student status scheduling toggle (Re-Scheduling) that indicates whether the student status allows for re-scheduling.</line>
+				<line>When automatically moving students around, added ability to avoid sections that have already started.
+					<line>This can be enabled by setting unitime.sectioning.config.ReScheduling.AvoidPastSections to true.</line>
+				</line>
+				<line>Added ability to ignore time conflicts where two classes are overlapping only over the break time of the first one.
+					<line>To enable set unitime.sectioning.config.ReScheduling.IgnoreBreakTimeConflicts to true (defaults to false, break time conflicts are not allowed).</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -51,6 +57,29 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Student Online Conflicts</name>
+			<description>
+				<line>Added an experimental criterion that tries to minimize cases where a student has an online and in-person class on the same day.</line>
+				<line>Online classes are identified by a regular expression matching the room name and set in the StudentConflict.OnlineRoom parameter
+					<line>it defaults to (?i)(ONLINE|) -- room name is ONLINE or there is no room assigned</line>
+					<line>classes without a room are considered online when the parameter matches a blank string</line>
+					<line>if a class has multiple rooms, all rooms must be online for the class to be considered online</line>
+				</line>
+				<line>The criterion is weighted by the Comparator.StudentOnlineConflictWeight parameter, defaults to one half of the Comparator.StudentConflictWeight</line>
+				<line>To enable add org.cpsolver.coursett.criteria.additional.StudentOnlineConflict into General.AdditionalCriteria paramete.</line>
+			</description>
+		</item>
+		<item>
+			<name>Assign Instructors: Copy Instructor Assignments to Sub-Subparts</name>
+			<description>
+				<line>Added ability to copy instructor assignments to children classes of the same instructional type, e.g., from Lec 1 to Lec 1a and Lec 1b.</line>
+				<line>Only enabled when unitime.instructors.copyToSubSubparts is set to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>	
 	<category>
 		<title>Administration</title>
 		<item>
@@ -70,6 +99,27 @@
 					<line># VERIFY_SUSPECT protocol -- time limit</line>
 					<line>jgroups.verify_suspect.timeout=2500</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>LDAP Lookup: Additional Properties</name>
+			<description>
+				<line>The following application properties have been added in order to make the LDAP people lookup more configurable.
+					<line>LDAP context referral (no referral is set when left not set): tmtbl.lookup.ldap.referral</line>
+					<line>LDAP attributes:
+						<line>user id: tmtbl.lookup.ldap.uid</line>
+						<line>full name: tmtbl.lookup.ldap.cn</line>
+						<line>last name: tmtbl.lookup.ldap.sn</line>
+						<line>first name: tmtbl.lookup.ldap.givenName</line>
+					</line>
+					<line>Added ability to skip entries without email: when tmtbl.lookup.ldap.skipWhenNoEmail is set to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Java 20 Support</name>
+			<description>
+				<line>ASM updated to 9.4 (was 9.2). This is to support Java 19 and Java 20.</line>
 			</description>
 		</item>
 	</category>
