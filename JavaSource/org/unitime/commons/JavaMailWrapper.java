@@ -71,6 +71,8 @@ public class JavaMailWrapper extends Email {
         }
 
         iMailSession = javax.mail.Session.getDefaultInstance(p, a);
+        if ("true".equals(p.getProperty("mail.debug")))
+        	iMailSession.setDebug(true);
         iMail = new MimeMessage(iMailSession);
         iBody = new MimeMultipart();
 	}
