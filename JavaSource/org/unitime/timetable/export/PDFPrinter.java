@@ -24,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -355,6 +356,10 @@ public class PDFPrinter implements Printer {
 			iChunks = new ArrayList<A>();
 			for (A ch: chunks)
 				iChunks.add(ch);
+		}
+		
+		public A(Collection<A> chunks) {
+			iChunks = new ArrayList<A>(chunks);
 		}
 		
 		public A(java.awt.Image image) {

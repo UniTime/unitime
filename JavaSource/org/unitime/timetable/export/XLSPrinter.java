@@ -70,6 +70,7 @@ public class XLSPrinter implements Printer {
 	private boolean iCheckLast = false;
 	private Set<Integer> iHiddenColumns = new HashSet<Integer>();
 	private Sheet iSheet;
+	private int iSheetIndex = -1;
 	private int iRowNum = 0;
 	private Map<String, CellStyle> iStyles;
 	private Map<String, Font> iFonts = new HashMap<String, Font>();
@@ -80,20 +81,10 @@ public class XLSPrinter implements Printer {
 		iOutput = output;
 		iCheckLast = checkLast;
 		iWorkbook = new HSSFWorkbook();
-		iSheet = iWorkbook.createSheet();
-		iSheet.setDisplayGridlines(false);
-		iSheet.setPrintGridlines(false);
-		iSheet.setFitToPage(true);
-		iSheet.setHorizontallyCenter(true);
-        PrintSetup printSetup = iSheet.getPrintSetup();
-        printSetup.setLandscape(true);
-        iSheet.setAutobreaks(true);
-        printSetup.setFitHeight((short)1);
-        printSetup.setFitWidth((short)1);
-        iStyles = new HashMap<String, CellStyle>();
-        
-        CellStyle style;
-        
+
+		iStyles = new HashMap<String, CellStyle>();
+
+		CellStyle style;
         style = iWorkbook.createCellStyle();
         style.setBorderBottom(BorderStyle.THIN);
         style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
@@ -117,6 +108,39 @@ public class XLSPrinter implements Printer {
         style.setVerticalAlignment(VerticalAlignment.TOP);
         style.setFont(getFont(false, false, false, Color.BLACK));
         iStyles.put("number", style);
+        
+		newSheet();
+	}
+	
+	public Workbook getWorkbook() {
+		return iWorkbook;
+	}
+	
+	public int getSheetIndex() {
+		return iSheetIndex;
+	}
+	
+	public Sheet getSheet() { return iSheet; }
+	
+	public int getRow() { return iRowNum; }
+	
+	public void newSheet() {
+		if (iSheet != null && iRowNum > 0)
+			for (short col = 0; col <= iSheet.getRow(0).getLastCellNum(); col++)
+				if (iSheet.getColumnWidth(col) == 256 * iSheet.getDefaultColumnWidth())
+					iSheet.autoSizeColumn(col);
+		iSheet = iWorkbook.createSheet();
+		iSheet.setDisplayGridlines(false);
+		iSheet.setPrintGridlines(false);
+		iSheet.setFitToPage(true);
+		iSheet.setHorizontallyCenter(true);
+        PrintSetup printSetup = iSheet.getPrintSetup();
+        printSetup.setLandscape(true);
+        printSetup.setFitHeight((short)1);
+        printSetup.setFitWidth((short)1);
+        iSheet.setAutobreaks(true);
+        iRowNum = 0;
+        iSheetIndex++;
 	}
 	
 	@Override
@@ -525,9 +549,10 @@ public class XLSPrinter implements Printer {
 	
 	@Override
 	public void close() throws IOException {
-		for (short col = 0; col <= iSheet.getRow(0).getLastCellNum(); col++)
-			if (iSheet.getColumnWidth(col) == 256 * iSheet.getDefaultColumnWidth())
-				iSheet.autoSizeColumn(col);
+		if (iRowNum > 0)
+			for (short col = 0; col <= iSheet.getRow(0).getLastCellNum(); col++)
+				if (iSheet.getColumnWidth(col) == 256 * iSheet.getDefaultColumnWidth())
+					iSheet.autoSizeColumn(col);
 		iWorkbook.write(iOutput);
 		iWorkbook.close();
 	}

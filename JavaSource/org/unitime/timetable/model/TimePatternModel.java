@@ -188,6 +188,10 @@ public class TimePatternModel implements RequiredTimeTableModel {
     public int getMinute(int time) {
         return iMinutes[time] % 60;
     }
+    
+    public int getSlot(int time) {
+    	return iMinutes[time];
+    }
 
     public int getNrDays() {
         return iDays.length;
@@ -631,6 +635,14 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	return false;
     }
     
+    public boolean hasProgibitedPreferences() {
+    	for (int d=0;d<getNrDays();d++)
+    		for (int t=0;t<getNrTimes();t++)
+    			if (PreferenceLevel.sProhibited.equals(iPreferences[d][t]))
+    				return true;
+    	return false;
+    }
+
     public boolean changeRequired2Prohibited() {
     	if (isExactTime()) return false;
     	boolean hasReq = false;

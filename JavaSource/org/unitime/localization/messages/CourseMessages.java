@@ -924,6 +924,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Worksheet PDF")
 	String actionWorksheetPdf();
+	
+	@DefaultMessage("Surveys XLS")
+	String actionExportSurveysXLS();
 
 	@DefaultMessage("Add New")
 	String actionAddNewInstructionalOffering();
