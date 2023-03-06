@@ -83,6 +83,18 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 		return getStartupService().getInitializationException() != null;
 	}
 	
+	public boolean isHasOauth2Authentication() {
+		return ApplicationProperty.AuthenticationOAuht2ClientId.value() != null && !ApplicationProperty.AuthenticationOAuht2ClientId.value().isEmpty();
+	}
+	
+	public String getOauth2LoginMessage() {
+		return ApplicationProperty.AuthenticationOAuht2LoginMessage.value();
+	}
+	
+	public String getOauth2LoginUrl() {
+		return "oauth2/authorization/" + ApplicationProperty.AuthenticationOAuht2Provider.value();
+	}
+	
 	public void printInitializationError() throws IOException {
 		Throwable t = getStartupService().getInitializationException();
 		while (t != null) {

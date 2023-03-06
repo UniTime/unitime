@@ -50,6 +50,12 @@
 		<headers>
 		    <frame-options policy="SAMEORIGIN"/>
 		</headers>
+		<oauth2-login
+			user-service-ref="unitimeOAuth2UserService"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"
+			client-registration-repository-ref="unitimeOAuth2ClientRegistrationRepository"
+			/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
