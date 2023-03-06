@@ -290,7 +290,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
         return PreferenceGroup.class;
     }
     
-    public Set getPreferences(Class type) {
+    public <T> Set<T> getPreferences(Class<T> type) {
     	return getPreferences(type, null);
     }
     
@@ -330,7 +330,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return effectivePreferences(type, fixDurationInTimePreferences);
     }
     
-    public Set effectivePreferences(Class type) {
+    public <T> Set<T> effectivePreferences(Class<T> type) {
     	return effectivePreferences(type, TimePref.class.equals(type));
     }
     

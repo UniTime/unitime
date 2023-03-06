@@ -48,6 +48,11 @@
 						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
 						accesskey="%{#msg.accessExportCsv()}"/>
 				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorSurveyAdmin')">
+					<s:if test="hasSurveys == true">
+						<s:submit name='op' value="%{#msg.actionExportSurveysXLS()}"/>
+					</s:if>
+				</sec:authorize>
 			</s:if>
 			<s:if test="deptId != null">
 				<sec:authorize access="hasPermission(#deptId, 'Department', 'ManageInstructors')">
@@ -71,14 +76,21 @@
 		</table>
 		<table class="unitime-MainTable">
 			<tr><td align="right" class="top-border-solid" style="padding-top: 3px;">
-				<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorsExportPdf')">
-					<s:submit name='op' value="%{#msg.actionExportPdf()}"
-						title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
-						accesskey="%{#msg.accessExportPdf()}"/>
-					<s:submit name='op' value="%{#msg.actionExportCsv()}"
-						title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
-						accesskey="%{#msg.accessExportCsv()}"/>
-				</sec:authorize>
+				<s:if test="#request.instructorList != null">
+					<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorsExportPdf')">
+						<s:submit name='op' value="%{#msg.actionExportPdf()}"
+							title="%{#msg.titleExportPdf(#msg.accessExportPdf())}"
+							accesskey="%{#msg.accessExportPdf()}"/>
+						<s:submit name='op' value="%{#msg.actionExportCsv()}"
+							title="%{#msg.titleExportCsv(#msg.accessExportCsv())}"
+							accesskey="%{#msg.accessExportCsv()}"/>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#deptId, 'Department', 'InstructorSurveyAdmin')">
+						<s:if test="hasSurveys == true">
+							<s:submit name='op' value="%{#msg.actionExportSurveysXLS()}"/>
+						</s:if>
+					</sec:authorize>
+				</s:if>
 				<sec:authorize access="hasPermission(#deptId, 'Department', 'ManageInstructors')">
 					<s:submit name='op' value="%{#msg.actionManageInstructorList()}"
 						title="%{#msg.titleManageInstructorList(#msg.accessManageInstructorList())}"

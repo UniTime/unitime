@@ -930,6 +930,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Time<br>Preferences")
 	String colTimePreferences();
 	
+	@DefaultMessage("Room<br>Preferences")
+	String colRoomPreferences();
+	
 	@DefaultMessage("Course<br>Preferences")
 	String colCoursePreferences();
 	
@@ -7774,4 +7777,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Other")
 	String colOtherPref();
+	
+	@DefaultMessage("Requested\nTime Preferences")
+	String colRequestedTimePrefs();
+	
+	@DefaultMessage("Requested\nRoom Preferences")
+	String colRequestedRoomPrefs();
+	
+	@DefaultMessage("Requested\nDistribution Prefs")
+	String colRequestedDistPrefs();
+	
+	@DefaultMessage("Other\nRequirements")
+	String colRequestedOtherPrefs();
 }

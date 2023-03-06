@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
@@ -62,11 +64,15 @@ public class InstructorSearchAction extends UniTimeAction<BlankForm> {
 	private static final long serialVersionUID = -7920936708671752660L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private String iDeptId;
+	private boolean iHasSurveys = false;
 	
 	public String getDeptId() { return iDeptId; }
 	public void setDeptId(String deptId) { iDeptId = deptId; }
 	
-	public String execute() {
+	public boolean getHasSurveys() { return iHasSurveys; }
+	public void setHasSurveys(boolean hasSurveys) { iHasSurveys = hasSurveys; }
+	
+	public String execute() throws IOException {
 		if (MSG.actionManageInstructorList().equals(getOp())) {
 			return "manageInstructorList";
 		}
@@ -120,7 +126,16 @@ public class InstructorSearchAction extends UniTimeAction<BlankForm> {
 						addActionError(MSG.exportFailed(e.getMessage()));
 					}
 				}
+			} else if (MSG.actionExportSurveysXLS().equals(op)) {
+				response.sendRedirect(response.encodeURL("export?output=instructor-surveys.xls&department=" + getDeptId()));
+				return null;
 			}
+		}
+		
+		if (getDeptId() != null && !getDeptId().isEmpty()) {
+			setHasSurveys(InstructorSurvey.hasInstructorSurveys(Long.valueOf(getDeptId())));
+		} else {
+			setHasSurveys(false);	
 		}
 		
 		if (getDeptId() != null && !getDeptId().isEmpty()) {
