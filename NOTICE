@@ -46,6 +46,10 @@ vinnie (vinnie-2.0.2.jar)
 	under MIT License
 	http://github.com/mangstadt/vinnie
 
+JCIP Annotations under Apache License (jcip-annotations-1.0-1.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://stephenc.github.com/jcip-annotations
+
 Gson (gson-2.10.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/google/gson/gson
@@ -65,6 +69,22 @@ c3p0 (c3p0-0.9.5.5.jar)
 mchange-commons-java (mchange-commons-java-0.2.19.jar)
 	under Eclipse Public License, Version 1.0
 	https://github.com/swaldman/mchange-commons-java
+
+Nimbus Content Type (content-type-2.2.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://bitbucket.org/connect2id/nimbus-content-type
+
+Nimbus LangTag (lang-tag-1.7.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://bitbucket.org/connect2id/nimbus-language-tags
+
+Nimbus JOSE+JWT (nimbus-jose-jwt-9.24.4.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://bitbucket.org/connect2id/nimbus-jose-jwt
+
+OAuth 2.0 SDK with OpenID Connect extensions (oauth2-oidc-sdk-9.43.3.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions
 
 ProtoParser (protoparser-4.0.3.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -148,6 +168,14 @@ jstl (jstl-1.2.jar)
 Byte Buddy (without dependencies) (byte-buddy-1.14.11.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://bytebuddy.net/byte-buddy
+
+ASM based accessors helper used by json-smart (accessors-smart-2.4.9.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://urielch.github.io/
+
+JSON Small and Fast Parser (json-smart-2.4.10.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://urielch.github.io/
 
 biweekly (biweekly-0.6.8.jar)
 	under BSD or BSD-style License
@@ -498,6 +526,14 @@ spring-security-crypto (spring-security-crypto-5.8.10.jar)
 	https://spring.io/projects/spring-security
 
 spring-security-ldap (spring-security-ldap-5.8.10.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://spring.io/projects/spring-security
+
+spring-security-oauth2-client (spring-security-oauth2-client-5.8.10.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://spring.io/projects/spring-security
+
+spring-security-oauth2-core (spring-security-oauth2-core-5.8.10.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
