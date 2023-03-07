@@ -21,13 +21,13 @@ package org.unitime.timetable.export.instructors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.stereotype.Service;
@@ -152,64 +152,8 @@ public class InstructorSurveysXLS implements Exporter {
 			List<A> itime = new ArrayList<A>();
 			List<A> iroom = new ArrayList<A>();
 			List<A> idist = new ArrayList<A>();
-			for (Preference pref: survey.getPreferences()) {
-				if (pref instanceof RoomPref && !instructor.getAvailableRooms().contains(((RoomPref)pref).getRoom())) continue;
-				if (pref instanceof RoomGroupPref && !instructor.getAvailableRoomGroups().contains(((RoomGroupPref)pref).getRoomGroup())) continue;
-				if (pref instanceof RoomFeaturePref && !instructor.getAvailableRoomFeatures().contains(((RoomFeaturePref)pref).getRoomFeature())) continue;
-				if (pref instanceof BuildingPref && !instructor.getAvailableBuildings().contains(((BuildingPref)pref).getBuilding())) continue;
-				if (pref instanceof RoomPref || pref instanceof RoomGroupPref || pref instanceof RoomFeaturePref || pref instanceof BuildingPref) {
-					PreferenceLevel instructorPref = null;
-					if (pref instanceof RoomPref) {
-						RoomPref rp = (RoomPref)pref;
-						for (RoomPref x: instructor.getPreferences(RoomPref.class))
-							if (rp.getRoom().equals(x.getRoom())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof RoomGroupPref) {
-						RoomGroupPref gp = (RoomGroupPref)pref;
-						for (RoomGroupPref x: instructor.getPreferences(RoomGroupPref.class))
-							if (gp.getRoomGroup().equals(x.getRoomGroup())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof RoomFeaturePref) {
-						RoomFeaturePref fp = (RoomFeaturePref)pref;
-						for (RoomFeaturePref x: instructor.getPreferences(RoomFeaturePref.class))
-							if (fp.getRoomFeature().equals(x.getRoomFeature())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof BuildingPref) {
-						BuildingPref bp = (BuildingPref)pref;
-						for (BuildingPref x: instructor.getPreferences(BuildingPref.class))
-							if (bp.getBuilding().equals(x.getBuilding())) instructorPref = pref.getPrefLevel();
-					}
-					A a = new A(pref.getPrefLevel().getPrefName() + " " + pref.preferenceText(instructorNameFormat));
-					a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-					if (instructorPref == null)
-						a.set(F.UNDERLINE);
-					else if (PreferenceLevel.prolog2int(instructorPref.getPrefProlog()) != PreferenceLevel.prolog2int(pref.getPrefLevel().getPrefProlog()))
-						a.set(F.UNDERLINE);
-					room.add(a);
-					if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
-						room.add(new A(" - " + pref.getNote()));
-				} else if (pref instanceof TimePref) {
-					TimePref instructorPref = null;
-					for (TimePref x: instructor.getPreferences(TimePref.class))
-						instructorPref = x;
-					TimePatternModel m = ((TimePref) pref).getTimePatternModel();
-					m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
-					time.addAll(timePrefToA(m, (TimePref)pref, instructorPref));
-					if (m.hasProgibitedPreferences() && pref.getNote() != null && !pref.getNote().isEmpty())
-						time.add(new A(pref.getNote()));
-				} else if (pref instanceof DistributionPref) {
-					DistributionPref dp = (DistributionPref)pref;
-					PreferenceLevel instructorPref = null;
-					for (DistributionPref x: instructor.getPreferences(DistributionPref.class))
-						if (dp.getDistributionType().equals(x.getDistributionType())) instructorPref = pref.getPrefLevel();
-					A a = new A(pref.getPrefLevel().getPrefName() + " " +  dp.preferenceText(instructorNameFormat));
-					a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-					if (instructorPref == null)
-						a.set(F.UNDERLINE);
-					else if (PreferenceLevel.prolog2int(instructorPref.getPrefProlog()) != PreferenceLevel.prolog2int(pref.getPrefLevel().getPrefProlog()))
-						a.set(F.UNDERLINE);
-					dist.add(a);
-					if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
-						dist.add(new A(" - " + pref.getNote()));
-				}
-			}
+			addPreferences(time, room, dist, instructor, survey.getPreferences(), instructor.getPreferences(), instructorNameFormat);
+			addPreferences(itime, iroom, idist, instructor, instructor.getPreferences(), survey.getPreferences(), instructorNameFormat);
 			A other = new A(survey.getNote() == null ? "" : survey.getNote());
 			A is = null;
 			if (survey.getSubmitted() != null) {
@@ -217,54 +161,6 @@ public class InstructorSurveysXLS implements Exporter {
 			} else {
 				is = new A(CMSG.instrSurveyNotSubmitted());
 				is.setColor("#dcb414");
-			}
-			for (Preference pref: instructor.getPreferences()) {
-				if (pref instanceof RoomPref || pref instanceof RoomGroupPref || pref instanceof RoomFeaturePref || pref instanceof BuildingPref) {
-					PreferenceLevel instructorPref = null;
-					if (pref instanceof RoomPref) {
-						RoomPref rp = (RoomPref)pref;
-						for (RoomPref x: survey.getPreferences(RoomPref.class))
-							if (rp.getRoom().equals(x.getRoom())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof RoomGroupPref) {
-						RoomGroupPref gp = (RoomGroupPref)pref;
-						for (RoomGroupPref x: survey.getPreferences(RoomGroupPref.class))
-							if (gp.getRoomGroup().equals(x.getRoomGroup())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof RoomFeaturePref) {
-						RoomFeaturePref fp = (RoomFeaturePref)pref;
-						for (RoomFeaturePref x: survey.getPreferences(RoomFeaturePref.class))
-							if (fp.getRoomFeature().equals(x.getRoomFeature())) instructorPref = pref.getPrefLevel();
-					} else if (pref instanceof BuildingPref) {
-						BuildingPref bp = (BuildingPref)pref;
-						for (BuildingPref x: survey.getPreferences(BuildingPref.class))
-							if (bp.getBuilding().equals(x.getBuilding())) instructorPref = pref.getPrefLevel();
-					}
-					A a = new A(pref.getPrefLevel().getPrefName() + " " + pref.preferenceText(instructorNameFormat));
-					a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-					if (instructorPref == null)
-						a.set(F.UNDERLINE);
-					else if (PreferenceLevel.prolog2int(instructorPref.getPrefProlog()) != PreferenceLevel.prolog2int(pref.getPrefLevel().getPrefProlog()))
-						a.set(F.UNDERLINE);
-					iroom.add(a);
-				} else if (pref instanceof TimePref) {
-					TimePref instructorPref = null;
-					for (TimePref x: survey.getPreferences(TimePref.class))
-						instructorPref = x;
-					TimePatternModel m = ((TimePref) pref).getTimePatternModel();
-					m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
-					itime.addAll(timePrefToA(m, (TimePref)pref, instructorPref));
-				} else if (pref instanceof DistributionPref) {
-					DistributionPref dp = (DistributionPref)pref;
-					PreferenceLevel instructorPref = null;
-					for (DistributionPref x: survey.getPreferences(DistributionPref.class))
-						if (dp.getDistributionType().equals(x.getDistributionType())) instructorPref = pref.getPrefLevel();
-					A a = new A(pref.getPrefLevel().getPrefName() + " " +  dp.preferenceText(instructorNameFormat));
-					a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-					if (instructorPref == null)
-						a.set(F.UNDERLINE);
-					else if (PreferenceLevel.prolog2int(instructorPref.getPrefProlog()) != PreferenceLevel.prolog2int(pref.getPrefLevel().getPrefProlog()))
-						a.set(F.UNDERLINE);
-					idist.add(a);
-				}
 			}
 			printer.printLine(
 					extId,
@@ -328,7 +224,7 @@ public class InstructorSurveysXLS implements Exporter {
 		for (DepartmentalInstructor instructor: instructors) {
 			if (instructor.getExternalUniqueId() == null) continue;
 			InstructorSurvey survey = surveys.get(instructor.getExternalUniqueId());
-			if (survey == null || survey.getCourseRequirements().isEmpty()) continue;
+			if (survey == null) continue;
 			List<InstructorCourseRequirement> reqs = new ArrayList<InstructorCourseRequirement>(survey.getCourseRequirements());
 			Collections.sort(reqs, new Comparator<InstructorCourseRequirement>() {
 				@Override
@@ -351,6 +247,12 @@ public class InstructorSurveysXLS implements Exporter {
 			int firstRowCrs = -1;
 			String prevCourse = null;
 			Iterator<ClassInstructor> classIterator = null;
+			List<ClassInstructor> allClasses = new ArrayList<ClassInstructor>(instructor.getClasses().size());
+			for (ClassInstructor ci: instructor.getClasses()) {
+				if (ci.isLead() && !ci.getClassInstructing().isCancelled()) allClasses.add(ci);
+			}
+			Collections.sort(allClasses, new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY)));
+			if (survey.getCourseRequirements().isEmpty() && allClasses.isEmpty()) continue;
 			for (InstructorCourseRequirement req: reqs) {
 				A[] line = new A[nrCols];
 				String course = (req.getCourseOffering() != null ? req.getCourseOffering().getCourseName() : req.getCourse());
@@ -367,32 +269,7 @@ public class InstructorSurveysXLS implements Exporter {
 					List<A> time = new ArrayList<A>();
 					List<A> room = new ArrayList<A>();
 					List<A> dist = new ArrayList<A>();
-					for (Preference pref: survey.getPreferences()) {
-						if (pref instanceof RoomPref && !instructor.getAvailableRooms().contains(((RoomPref)pref).getRoom())) continue;
-						if (pref instanceof RoomGroupPref && !instructor.getAvailableRoomGroups().contains(((RoomGroupPref)pref).getRoomGroup())) continue;
-						if (pref instanceof RoomFeaturePref && !instructor.getAvailableRoomFeatures().contains(((RoomFeaturePref)pref).getRoomFeature())) continue;
-						if (pref instanceof BuildingPref && !instructor.getAvailableBuildings().contains(((BuildingPref)pref).getBuilding())) continue;
-						if (pref instanceof RoomPref || pref instanceof RoomGroupPref || pref instanceof RoomFeaturePref || pref instanceof BuildingPref) {
-							A a = new A(pref.getPrefLevel().getPrefAbbv() + " " + pref.preferenceAbbv(instructorNameFormat));
-							a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-							room.add(a);
-							if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
-								room.add(new A(" - " + pref.getNote()));
-						} else if (pref instanceof TimePref) {
-							TimePatternModel m = ((TimePref) pref).getTimePatternModel();
-							m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
-							time.addAll(timePrefToA(m));
-							if (m.hasProgibitedPreferences() && pref.getNote() != null && !pref.getNote().isEmpty())
-								time.add(new A(pref.getNote()));
-						} else if (pref instanceof DistributionPref) {
-							DistributionPref dp = (DistributionPref)pref;
-							A a = new A(pref.getPrefLevel().getPrefAbbv() + " " +  dp.preferenceAbbv(instructorNameFormat));
-							a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
-							dist.add(a);
-							if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
-								dist.add(new A(" - " + pref.getNote()));
-						}
-					}
+					addPreferences(time, room, dist, instructor, survey.getPreferences(), instructorNameFormat);
 					A other = new A(survey.getNote() == null ? "" : survey.getNote());
 					line[colRTime] = new A(time);
 					line[colRRoom] = new A(room);
@@ -418,10 +295,13 @@ public class InstructorSurveysXLS implements Exporter {
 					prevCourse = course;
 					classIterator = null;
 					if (req.getCourseOffering() != null) {
-						TreeSet<ClassInstructor> classes = new TreeSet<ClassInstructor>(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));
-						for (ClassInstructor ci: instructor.getClasses()) {
-							if (ci.isLead() && ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().contains(req.getCourseOffering()))
+						List<ClassInstructor> classes = new ArrayList<ClassInstructor>();
+						for (Iterator<ClassInstructor> i = allClasses.iterator(); i.hasNext(); ) {
+							ClassInstructor ci = i.next();
+							if (ci.isLead() && ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings().contains(req.getCourseOffering())) {
 								classes.add(ci);
+								i.remove();
+							}
 						}
 						classIterator = classes.iterator();
 					}
@@ -431,7 +311,7 @@ public class InstructorSurveysXLS implements Exporter {
 					else {
 						String title = req.getCourseOffering().getTitle();
 						if (title != null && !title.isEmpty()) {
-							A t = new A("  " + title); t.setColor("808B96");
+							A t = new A("  " + title); t.setColor("#808B96");
 							line[colCourse] = new A(new A(req.getCourseOffering().getCourseName()), t);
 						} else {
 							line[colCourse] = new A(req.getCourseOffering().getCourseName());
@@ -463,7 +343,40 @@ public class InstructorSurveysXLS implements Exporter {
 			}
 			if (firstRowCrs >= 0 && firstRowCrs < printer.getRow() - 1)
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowCrs, printer.getRow() -1, colCourse, colCourse));
-			if (reqs.size() > 1) {
+			if (!allClasses.isEmpty()) {
+				firstRowCrs = -1;
+				for (ClassInstructor ci: allClasses) {
+					A[] line = new A[nrCols];
+					if (firstRowIns < 0) {
+						firstRowIns = printer.getRow();
+						line[colExtId] = new A(instructor.getExternalUniqueId());
+						line[colName] = new A(instructor.getName(instructorNameFormat));
+						if (survey.getSubmitted() != null) {
+							line[colSurv] = new A(df.format(survey.getSubmitted()));
+						} else {
+							line[colSurv] = new A(CMSG.instrSurveyNotSubmitted());
+							line[colSurv].setColor("#dcb414");
+						}
+						List<A> time = new ArrayList<A>();
+						List<A> room = new ArrayList<A>();
+						List<A> dist = new ArrayList<A>();
+						addPreferences(time, room, dist, instructor, survey.getPreferences(), instructorNameFormat);
+						A other = new A(survey.getNote() == null ? "" : survey.getNote());
+						line[colRTime] = new A(time);
+						line[colRRoom] = new A(room);
+						line[colRDist] = new A(dist);
+						line[colROther] = other;
+					}
+					if (firstRowCrs < 0) {
+						firstRowCrs = printer.getRow();
+						line[colCourse] = new A(CMSG.courseOtherInstructorClasses());
+					}
+					fillClassInfo(line, ci, colClass, instructorNameFormat, classAssignment);
+					printer.printLine(line);
+				}
+				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowCrs, printer.getRow() -1, colCourse, colCourse + types.size()));
+			}
+			if (firstRowCrs >= 0 && firstRowCrs < printer.getRow() -1) {
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colExtId, colExtId));
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colName, colName));
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colSurv, colSurv));
@@ -471,11 +384,9 @@ public class InstructorSurveysXLS implements Exporter {
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colRRoom, colRRoom));
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colRDist, colRDist));
 				printer.getSheet().addMergedRegion(new CellRangeAddress(firstRowIns, printer.getRow() -1, colROther, colROther));
-				
 			}
 			printer.flush();
 		}
-
 		
 		printer.close();
 	}
@@ -547,7 +458,7 @@ public class InstructorSurveysXLS implements Exporter {
 		}
 	}
 	
-	public List<A> timePrefToA(TimePatternModel m, TimePref pref, TimePref other) {
+	protected List<A> timePrefToA(TimePatternModel m, TimePref pref, TimePref other) {
 		List<A> ret = timePrefToA(m);
 		if (other != null) {
 			for (A a: ret) {
@@ -567,7 +478,92 @@ public class InstructorSurveysXLS implements Exporter {
 		return ret;
 	}
 	
-	public List<A> timePrefToA(TimePatternModel m) {
+	protected void addPreference(List<A> ret, Preference pref, PreferenceLevel instructorPref, String instructorNameFormat) {
+		A a = new A(pref.getPrefLevel().getPrefName() + " " + pref.preferenceText(instructorNameFormat));
+		a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
+		if (instructorPref == null)
+			a.set(F.UNDERLINE);
+		else if (PreferenceLevel.prolog2int(instructorPref.getPrefProlog()) != PreferenceLevel.prolog2int(pref.getPrefLevel().getPrefProlog()))
+			a.set(F.UNDERLINE);
+		ret.add(a);
+		if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
+			ret.add(new A(" - " + pref.getNote()));
+	}
+	
+	protected void addPreference(List<A> ret, Preference pref, String instructorNameFormat) {
+		A a = new A((pref.getPrefLevel().getPrefAbbv() == null || pref.getPrefLevel().getPrefAbbv().isEmpty() ? "" : pref.getPrefLevel().getPrefAbbv() + " ") +
+				pref.preferenceText(instructorNameFormat));
+		a.setColor(PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()));
+		ret.add(a);
+		if (pref.getPrefLevel().isHard() && pref.getNote() != null && !pref.getNote().isEmpty())
+			ret.add(new A(" - " + pref.getNote()));
+	}
+	
+	protected boolean applies(DepartmentalInstructor instructor, Preference pref) {
+		if (pref instanceof RoomPref && !instructor.getAvailableRooms().contains(((RoomPref)pref).getRoom())) return false;
+		if (pref instanceof RoomGroupPref && !instructor.getAvailableRoomGroups().contains(((RoomGroupPref)pref).getRoomGroup())) return false;
+		if (pref instanceof RoomFeaturePref && !instructor.getAvailableRoomFeatures().contains(((RoomFeaturePref)pref).getRoomFeature())) return false;
+		if (pref instanceof BuildingPref && !instructor.getAvailableBuildings().contains(((BuildingPref)pref).getBuilding())) return false;
+		return true;
+	}
+	
+	protected boolean match(Preference p1, Preference p2) {
+		if (p1.getType() != p2.getType()) return false;
+		if (p1 instanceof RoomPref && ((RoomPref)p1).getRoom().equals(((RoomPref)p2).getRoom()))
+			return true;
+		if (p1 instanceof RoomGroupPref && ((RoomGroupPref)p1).getRoomGroup().equals(((RoomGroupPref)p2).getRoomGroup()))
+			return true;
+		if (p1 instanceof RoomFeaturePref && ((RoomFeaturePref)p1).getRoomFeature().equals(((RoomFeaturePref)p2).getRoomFeature()))
+			return true;
+		if (p1 instanceof BuildingPref && ((BuildingPref)p1).getBuilding().equals(((BuildingPref)p2).getBuilding()))
+			return true;
+		if (p1 instanceof DistributionPref && ((DistributionPref)p1).getDistributionType().equals(((DistributionPref)p2).getDistributionType()))
+			return true;
+		if (p1 instanceof TimePref) return true;
+		return false;
+	}
+	
+	protected void addPreferences(List<A> time, List<A> room, List<A> dist, DepartmentalInstructor instructor, Collection<Preference> preferences, Collection<Preference> compare, String instructorNameFormat) {
+		for (Preference pref: sorted(preferences)) {
+			if (!applies(instructor, pref)) continue;
+			Preference otherPref = null;
+			PreferenceLevel other = null;
+			for (Preference p: compare)
+				if (match(pref, p)) {
+					otherPref = p;
+					other = p.getPrefLevel();
+					break;
+				}
+			if (pref instanceof RoomPref || pref instanceof RoomGroupPref || pref instanceof RoomFeaturePref || pref instanceof BuildingPref) {
+				addPreference(room, pref, other, instructorNameFormat);
+			} else if (pref instanceof TimePref) {
+				TimePatternModel m = ((TimePref) pref).getTimePatternModel();
+				m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
+				time.addAll(timePrefToA(m, (TimePref)pref, (TimePref)otherPref));
+			} else if (pref instanceof DistributionPref) {
+				addPreference(dist, pref, other, instructorNameFormat);
+			}
+		}
+	}
+	
+	protected void addPreferences(List<A> time, List<A> room, List<A> dist, DepartmentalInstructor instructor, Collection<Preference> preferences, String instructorNameFormat) {
+		for (Preference pref: sorted(preferences)) {
+			if (!applies(instructor, pref)) continue;
+			if (pref instanceof RoomPref || pref instanceof RoomGroupPref || pref instanceof RoomFeaturePref || pref instanceof BuildingPref) {
+				addPreference(room, pref, instructorNameFormat);
+			} else if (pref instanceof TimePref) {
+				TimePatternModel m = ((TimePref) pref).getTimePatternModel();
+				m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
+				time.addAll(timePrefToA(m));
+				if (m.hasProgibitedPreferences() && pref.getNote() != null && !pref.getNote().isEmpty())
+					time.add(new A(pref.getNote()));
+			} else if (pref instanceof DistributionPref) {
+				addPreference(dist, pref, instructorNameFormat);
+			}
+		}
+	}
+	
+	protected List<A> timePrefToA(TimePatternModel m) {
     	Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
     	List<A> ret = new ArrayList<A>();
     	if (m.isExactTime()) {
@@ -672,4 +668,19 @@ public class InstructorSurveysXLS implements Exporter {
             return ret;
     	}
     }
+	
+	protected <T extends Preference> List<T> sorted(Collection<T> input) {
+		List<T> list = new ArrayList<T>(input);
+		Collections.sort(list, new Comparator<Preference>() {
+			@Override
+			public int compare(Preference p1, Preference p2) {
+				if (p1.getType() != p2.getType())
+					return p1.getType().compareTo(p2.getType());
+				int cmp = p1.preferenceText().compareTo(p2.preferenceText());
+				if (cmp != 0) return cmp;
+				return p1.compareTo(p2);
+			}
+		});
+		return list;
+	}
 }

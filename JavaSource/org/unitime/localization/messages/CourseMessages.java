@@ -5790,4 +5790,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Not Filled")
 	String instrSurveyNotFilled();
+	
+	@DefaultMessage("~~ No Requirements ~~")
+	String courseOtherInstructorClasses();
 }
