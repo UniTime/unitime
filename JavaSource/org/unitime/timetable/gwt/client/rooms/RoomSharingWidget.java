@@ -45,6 +45,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -98,6 +99,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	protected boolean iEditable = true;
 	private TextArea iNote = null;
 	private Set<Long> iAddedOptions = new HashSet<Long>();
+	private int iSplit = 24;
 	
 	public RoomSharingWidget(boolean editable) {
 		this(editable, true);
@@ -156,6 +158,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		
 		initWidget(container);
 	}
+	
+	public int getSplit() { return iSplit; }
+	public void setSplit(int split) { iSplit = split; }
 	
 	public AbsolutePanel getPanel() { return iPanel; }
 	
@@ -319,7 +324,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		iPanel.clear();
 		
 		if (horizontal) {
-			for (int page = 0; iMode.getFirstSlot() + 24 * page * iMode.getStep() < iMode.getLastSlot(); page++) {
+			P previousTable = null;
+			for (int page = 0; page == 0 || (iSplit > 0 && iMode.getFirstSlot() + iSplit * page * iMode.getStep() < iMode.getLastSlot()); page++) {
 				P table = new P("table");
 				iPanel.add(table);
 				P box = new P("box");
@@ -330,8 +336,15 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				corner.setHTML(MESSAGES.roomSharingCorner());
 				header.add(corner);
 				
-				int first = iMode.getFirstSlot() + 24 * page * iMode.getStep();
-				int last = Math.min(first + 24 * iMode.getStep(), iMode.getLastSlot());
+				int first = iMode.getFirstSlot();
+				int last = iMode.getLastSlot();
+				if (iSplit > 0) {
+					first = iMode.getFirstSlot() + iSplit * page * iMode.getStep();
+					last = Math.min(first + iSplit * iMode.getStep(), iMode.getLastSlot());
+					if (previousTable != null)
+						previousTable.getElement().getStyle().setDisplay(Display.BLOCK);
+					previousTable = table;
+				}
 				
 				final List<List<Cell>> thisTime = new ArrayList<List<Cell>>();
 				for (int slot = first; slot < last; slot += iMode.getStep()) {
