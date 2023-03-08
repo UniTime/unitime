@@ -392,6 +392,7 @@ public class InstructorSurveyPage extends Composite {
 		iPanel.addHeaderRow(new UniTimeHeaderPanel(MESSAGES.sectGeneralPreferences()));
 		if (survey.getTimePrefs() != null) {
 			iTimePrefs = new InstructorTimePreferences(survey.isEditable());
+			iTimePrefs.setSplit(17);
 			iTimePrefs.setModel(survey.getTimePrefs());
 			iTimePrefs.setMode(survey.getTimePrefs().getModes().get(0), true);
 			iTimePrefs.getReason().setEnabled(iSurvey.isEditable());
