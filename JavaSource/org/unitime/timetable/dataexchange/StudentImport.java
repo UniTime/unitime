@@ -391,7 +391,7 @@ public class StudentImport extends BaseImport {
     	}
     	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
     		Set<String> classifications = area2classifications.get(acm.getAcademicArea().getAcademicAreaAbbreviation());
-    		if (classifications != null && !table.containsKey(acm.getAcademicArea().getAcademicAreaAbbreviation() + "|" + acm.getAcademicClassification().getCode() + "|" + acm.getMajor().getCode()))
+    		if (classifications != null && !table.containsKey(acm.getAcademicArea().getAcademicAreaAbbreviation() + "|" + acm.getAcademicClassification().getCode() + "|" + acm.getMajor().getCode() + "|" + (acm.getConcentration() == null ? "" : acm.getConcentration().getCode())))
     			classifications.remove(acm.getAcademicClassification().getCode());
     	}
     	if (element.element("studentMinors") != null)
@@ -430,7 +430,7 @@ public class StudentImport extends BaseImport {
     				getHibSession().saveOrUpdate(m);
     				code2major.put(area + ":" + major, m);
     			}
-    			if (table.remove(area + "|" + clasf + "|" + major) == null) {
+    			if (table.remove(area + "|" + clasf + "|" + major + "|") == null) {
     				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
     				acm.setAcademicArea(a);
     				acm.setAcademicClassification(f);
