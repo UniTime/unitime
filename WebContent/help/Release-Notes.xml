@@ -28,6 +28,29 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Online Conflicts</name>
+			<description>
+				<line>Online/Offline Room: Added a distribution constraints Online/Offline Room that prevents (or penalizes) a pair of classes
+				which are taught on the same day and one is placed in and online room and the other is not.</line>
+				<line>No Student Online Conflicts: Added a global constraint No Student Online Conflicts that prevents a student from having
+					two classes on the same day, one being online and the other not.
+					<line>To be registered by setting General.GlobalConstraints=org.cpsolver.coursett.constraint.NoStudentOnlineConflicts.</line>
+				</line>
+				<line>Online classes are identified by a regular expression matching the room name and set in the General.OnlineRoom parameter.
+					<line>It defaults to (?i)ONLINE|</line>
+					<line>Classes without a room are considered online when the parameter matches a blank string.</line>
+					<line>If a class has multiple rooms, all rooms must be online for the class to be considered online.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>	
+	<version>4.7.81</version>
+	<release-date>Sat, 4 Mar 2023</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Re-Scheduling</name>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Online/Offline Room Constraint" permission="Distribution Types" engine="ECMAScript" created="Fri Mar 10 15:03:49 CET 2023">
+  <description><![CDATA[Online/Offline Room: Given classes, if scheduled on the same day, must be all in the online room or none of<br>
+them can be in the online room. This means there is a conflict when two classes are placed on the same day,<br>
+but one is in online room and the other is not.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'ONLINE_ROOM').uniqueResult();
+if (type == null) {
+  log.info('Creating Online/Offline Room constraint...');
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('ONLINE_ROOM');
+} else {
+  log.warn('Constraint Online/Offline Room already exists.');
+}
+type.setLabel('Online/Offline Room');
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr('Given classes, if scheduled on the same day, must be all in the online room or none of them can be in the online room. This means there is a conflict when two classes are placed on the same day, but one is in online room and the other is not.');
+type.setAbbreviation('OnlineRoom');
+type.setInstructorPref(false);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);]]></body>
+</script>
