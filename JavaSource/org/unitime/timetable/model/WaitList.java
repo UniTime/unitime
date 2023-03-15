@@ -80,6 +80,11 @@ public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 		return getUniqueId().compareTo(wl.getUniqueId());
 	}
 	
+	public boolean hasMatchingCourse(CourseRequest cr) {
+		if (cr == null) return false;
+		return hasMatchingCourse(cr.getCourseDemand());
+	}
+	
 	public boolean hasMatchingCourse(CourseDemand cd) {
 		if (cd == null) return false;
 		for (CourseRequest cr: cd.getCourseRequests())

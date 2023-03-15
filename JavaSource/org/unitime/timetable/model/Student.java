@@ -424,9 +424,9 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	if (co == null) return null;
     	WaitList last = null;
     	CourseRequest cr = getCourseRequest(co);
-    	if (cr != null && getWaitlists() != null && !getWaitlists().isEmpty()) {
-    		for (WaitList wl: getWaitlists()) {
-    			if ((last == null || last.compareTo(wl) < 0) && wl.hasMatchingCourse(cr.getCourseDemand()))
+    	if (getWaitlists() != null && !getWaitlists().isEmpty()) {
+			for (WaitList wl: getWaitlists()) {
+    			if ((last == null || last.compareTo(wl) < 0) && (wl.getCourseOffering().equals(co) || wl.hasMatchingCourse(cr)))
     				last = wl;
     		}
     	}
