@@ -172,7 +172,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No-Subs")
 	String colNoSubs();
 	
-	@DefaultMessage("Critical")
+	@DefaultMessage("Priority")
 	String colCritical();
 	
 	@DefaultMessage("Changes")
@@ -2263,6 +2263,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request is not critical.")
 	String descriptionRequestNotCritical();
 	
+	@DefaultMessage("Course request has a matching LC reservation.")
+	String descriptionRequestLC();
+	
 	@DefaultMessage("Enrolled")
 	String reqStatusEnrolled();
 
@@ -2781,7 +2784,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Vital")
 	String opSetVital();
-
+	
+	@DefaultMessage("LC")
+	String opSetLC();
+	
 	@DefaultMessage("Not Critical")
 	String opSetNotCritical();
 	

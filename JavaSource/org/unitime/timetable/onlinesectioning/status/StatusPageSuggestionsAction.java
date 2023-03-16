@@ -845,6 +845,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return request().getCritical() == CourseDemand.Critical.VITAL.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Vital", term)) {
 					return request().getCritical() == CourseDemand.Critical.VITAL.ordinal() && !isAssigned();
+				} else if (eq("LC", term)) {
+					return request().getCritical() == CourseDemand.Critical.LC.ordinal();
+				} else if (eq("Assigned LC", term)) {
+					return request().getCritical() == CourseDemand.Critical.LC.ordinal() && isAssigned();
+				} else if (eq("Not Assigned LC", term)) {
+					return request().getCritical() == CourseDemand.Critical.LC.ordinal() && !isAssigned();
 				} else if (eq("Important", term)) {
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal();
 				} else if (eq("Assigned Important", term)) {

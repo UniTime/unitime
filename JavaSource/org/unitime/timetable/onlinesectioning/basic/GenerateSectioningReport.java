@@ -372,6 +372,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 										clonnedRequest.setRequestPriority(RequestPriority.Important);
 									else if (cr.getCritical() == CourseDemand.Critical.VITAL.ordinal())
 										clonnedRequest.setRequestPriority(RequestPriority.Vital);
+									else if (cr.getCritical() == CourseDemand.Critical.LC.ordinal())
+										clonnedRequest.setRequestPriority(RequestPriority.LC);
 								}
 								cr.fillChoicesIn(clonnedRequest);
 								XEnrollment enrollment = cr.getEnrollment();

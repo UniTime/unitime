@@ -46,6 +46,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Learning Communities: Reservations Priority</name>
+			<description>
+				<line>Added a new LC priority level (as the very first one).</line>
+				<line>To be used for courses with LC reservations (by setting solver parameter Load.LCRequestPriority=LC).</line>
+				<line>This is to ensure that LC courses are assigned first.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>	
 	<version>4.7.81</version>

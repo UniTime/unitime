@@ -6691,6 +6691,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Vital<br>Assignments")
 	String colAssignedVitalCourseRequests();
 	
+	@DefaultMessage("LC<br>Assignments")
+	String colAssignedLCCourseRequests();
+	
 	@DefaultMessage("Complete<br>Schedule")
 	String colStudentsWithCompleteSchedule();
 	

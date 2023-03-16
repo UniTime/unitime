@@ -724,7 +724,7 @@ public class OnlineSectioningHelper {
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp());
         	request.setWaitList(cr.isWaitlist());
-        	request.setCritical(cr.getRequestPriority() == RequestPriority.Critical);
+        	request.setCritical(cr.getRequestPriority() == RequestPriority.Critical || cr.getRequestPriority() == RequestPriority.LC);
         	request.setImportant(cr.getRequestPriority() == RequestPriority.Important);
         	request.setVital(cr.getRequestPriority() == RequestPriority.Vital);
     	}

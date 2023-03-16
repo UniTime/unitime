@@ -363,6 +363,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		case COMPLETE: return MESSAGES.colStudentsWithCompleteSchedule();
 		case DISBALANCED: return MESSAGES.colDisbalancedSections();
 		case NO_TIME: return MESSAGES.colClassesWithoutTime();
+		case LC: return MESSAGES.colAssignedLCCourseRequests();
 		default: return column.name();
 		}
 	}
