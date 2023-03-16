@@ -119,6 +119,7 @@ public class PublishedSectioningSolutionInterface implements IsSerializable {
 		CONFIG,
 		COURSE_REQUESTS("Assigned course requests"),
 		PRIORITY_REQUESTS("Assigned priority course requests"),
+		LC("Assigned lc course requests"),
 		CRITICAL("Assigned critical course requests"),
 		IMPORTANT("Assigned important course requests"),
 		VITAL("Assigned vital course requests"),

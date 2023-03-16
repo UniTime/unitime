@@ -415,6 +415,34 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			assignment.add(new Entity(12l, "Not Assigned No-Subs", CONSTANTS.assignmentType()[12], "translated-value", CONSTANTS.assignmentType()[12]));
 		else
 			assignment.add(new Entity(12l, "Not Assigned No-Subs", "Not Assigned No-Subs"));
+		if (server instanceof StudentSolver && "LC".equals(server.getConfig().getProperty("Load.LCRequestPriority"))) {
+			if (CONSTANTS.assignmentType().length > 16)
+				assignment.add(new Entity(16l, "LC", CONSTANTS.assignmentType()[16], "translated-value", CONSTANTS.assignmentType()[16]));
+			else
+				assignment.add(new Entity(16l, "LC", "LC"));
+			if (CONSTANTS.assignmentType().length > 17)
+				assignment.add(new Entity(17l, "Assigned LC", CONSTANTS.assignmentType()[17], "translated-value", CONSTANTS.assignmentType()[17]));
+			else
+				assignment.add(new Entity(17l, "Assigned LC", "Assigned LC"));
+			if (CONSTANTS.assignmentType().length > 18)
+				assignment.add(new Entity(18l, "Not Assigned LC", CONSTANTS.assignmentType()[18], "translated-value", CONSTANTS.assignmentType()[18]));
+			else
+				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned Critical"));
+		} else if (crit2count.containsKey(CourseDemand.Critical.LC.ordinal())) {
+			if (CONSTANTS.assignmentType().length > 16)
+				assignment.add(new Entity(16l, "LC", CONSTANTS.assignmentType()[16], "translated-value", CONSTANTS.assignmentType()[16]));
+			else
+				assignment.add(new Entity(16l, "LC", "LC"));
+			assignment.get(assignment.size() - 1).setCount(crit2count.get(CourseDemand.Critical.LC.ordinal()));
+			if (CONSTANTS.assignmentType().length > 17)
+				assignment.add(new Entity(17l, "Assigned LC", CONSTANTS.assignmentType()[17], "translated-value", CONSTANTS.assignmentType()[17]));
+			else
+				assignment.add(new Entity(17l, "Assigned LC", "Assigned LC"));
+			if (CONSTANTS.assignmentType().length > 18)
+				assignment.add(new Entity(18l, "Not Assigned LC", CONSTANTS.assignmentType()[18], "translated-value", CONSTANTS.assignmentType()[18]));
+			else
+				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned Critical"));
+		}
 		if (!(server instanceof StudentSolver))
 			assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		response.add("assignment", assignment);

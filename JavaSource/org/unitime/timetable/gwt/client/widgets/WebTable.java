@@ -531,6 +531,10 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public Cell(String value) {
 			iValue = value;
 		}
+		public Cell(String value, String title) {
+			iValue = value;
+			iTitle = title;
+		}
 		public Cell(String value, int colSpan, String width) {
 			iValue = value;
 			iColSpan = colSpan;

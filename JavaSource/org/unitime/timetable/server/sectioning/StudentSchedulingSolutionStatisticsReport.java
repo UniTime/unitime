@@ -477,6 +477,29 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 return new String[] { sIntFormat.format(assigned), sIntFormat.format(notAssigned) };
             }
         }, true),
+        LC(new String[] {"LC courses", "Assigned LC courses"},
+        		new String[] {
+        				"Number of course requests with a matching LC reservation"
+        		},
+        		new Statistic() {
+            @Override
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+                int assigned = 0, total = 0;
+                for (Student student: model.getStudents()) {
+                    if (!group.matches(student)) continue;
+                    for (Request r : student.getRequests()) {
+                        if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        CourseRequest cr = (CourseRequest)r;
+                        if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.LC) {
+                            total ++;
+                            if (cr.isAssigned(assignment)) assigned ++;
+                        }
+                    }
+                }
+                if (total == 0) return new String[] { "N/A", ""};
+                return new String[] { sIntFormat.format(total), sPercentFormat.format(100.0 * assigned / total) + "%" };
+            }
+        }),
         CRITICAL(new String[] {"Critical courses", "Assigned critical courses"},
         		new String[] {
         				"Number of course requests marked as critical (~ course/group/placeholder critical in degree plan)"
