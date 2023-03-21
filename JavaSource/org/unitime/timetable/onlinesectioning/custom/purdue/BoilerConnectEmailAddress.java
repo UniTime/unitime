@@ -31,14 +31,14 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 public class BoilerConnectEmailAddress implements StudentEmailProvider {
 
 	@Override
-	public Email createEmail(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional) throws Exception {
+	public Email createEmail(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional, String operation) throws Exception {
 		if (optional == null) {
-			if (isAlwaysUse())
-				return new BoilerConnectEmail(helper.getAction());
+			if (isAlwaysUse(operation))
+				return new BoilerConnectEmail(helper.getAction(), operation);
 			else
 				return Email.createEmail();
 		} else if (optional.booleanValue()) {
-			return new BoilerConnectEmail(helper.getAction());
+			return new BoilerConnectEmail(helper.getAction(), operation);
 		} else {
 			return Email.createEmail();
 		}
@@ -46,7 +46,6 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 
 	@Override
 	public String getToggleCaptionIfOptional() {
-		if (isAlwaysUse()) return null;
 		return ApplicationProperties.getProperty("purdue.boilerconnect.toggleCaption", "Send via BoilerConnect (<i>user@boilerconnect.purdue.edu</i> email address)");
 	}
 
@@ -55,8 +54,11 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.boilerconnect.toggleDefault", "true"));
 	}
 	
-	public boolean isAlwaysUse() {
-		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.boilerconnect.isAlwaysUse", "false"));
+	public boolean isAlwaysUse(String operation) {
+		return "true".equalsIgnoreCase(
+				ApplicationProperties.getProperty("purdue.boilerconnect." + operation + ".enabled",
+						ApplicationProperties.getProperty("purdue.boilerconnect.isAlwaysUse", "false"))
+				);
 	}
 	
 	static class BoilerConnectEmail extends Email {
@@ -64,12 +66,14 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 		String iReplyToEmail = null, iReplyToName = null;
 		String iRecipientEmail = null, iRecipientName = null;
 		String iSuffix;
+		String iOperation;
 		OnlineSectioningLog.Action.Builder iAction;
 		
-		BoilerConnectEmail(OnlineSectioningLog.Action.Builder action) throws Exception {
+		BoilerConnectEmail(OnlineSectioningLog.Action.Builder action, String operation) throws Exception {
 			iEmail = Email.createEmail();
 			iSuffix = ApplicationProperties.getProperty("purdue.boilerconnect.oldSuffix", "@purdue.edu");
 			iAction = action;
+			iOperation = operation;
 		}
 		
 		@Override
@@ -91,7 +95,7 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 		
 		@Override
 		public void send() throws Exception {
-			if (iRecipientEmail != null && iReplyToEmail != null) {
+			if (iRecipientEmail != null && iReplyToEmail != null && (iOperation == null || iOperation.startsWith("user-"))) {
 				String email = iRecipientEmail.replace(iSuffix, ApplicationProperties.getProperty("purdue.boilerconnect.newSuffix", "@boilerconnect.purdue.edu"));
 				iEmail.addRecipient(email, iRecipientName);
 				setFrom(iReplyToEmail, iReplyToName);
@@ -99,6 +103,12 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 					iAction.addOptionBuilder().setKey("bc-email").setValue(email);
 					iAction.addOptionBuilder().setKey("bc-sender").setValue(iReplyToEmail);
 				}
+			} else if (iRecipientEmail != null && iOperation != null && !iOperation.startsWith("user-")) {
+				String email = iRecipientEmail.replace(iSuffix, ApplicationProperties.getProperty("purdue.boilerconnect.newSuffix", "@boilerconnect.purdue.edu"));
+				iEmail.addRecipient(email, iRecipientName);
+				setFrom(iReplyToEmail, iReplyToName);
+				if (iAction != null)
+					iAction.addOptionBuilder().setKey("bc-email").setValue(email);
 			} else if (iRecipientEmail != null) {
 				iEmail.addRecipient(iRecipientEmail, iRecipientName);
 			}

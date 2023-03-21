@@ -158,7 +158,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private boolean iIncludeClassSchedule = true;
 	private boolean iIncludeAdvisorRequests = false;
 	private boolean iIncludeAdvisorRequestsPDF = false;
-	private Boolean iOptional = false;
+	private Boolean iOptional = null;
 	private String iSourceAction = "not-set";
 	private ReschedulingReason iReason = null;
 	
@@ -366,7 +366,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						Email email = null;
 						if (Customization.StudentEmailProvider.hasProvider()) {
 							StudentEmailProvider provider = Customization.StudentEmailProvider.getProvider();
-							email = provider.createEmail(server, helper, iOptional);
+							email = provider.createEmail(server, helper, iOptional, iSourceAction);
 						} else {
 							email = Email.createEmail();
 						}
