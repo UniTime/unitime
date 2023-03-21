@@ -85,12 +85,12 @@ public class MockupEmail extends Email {
 	}
 
 	@Override
-	protected void setBody(String message, String type) throws Exception {
+	public void setBody(String message, String type) throws Exception {
 		iBody = message;
 	}
 
 	@Override
-	protected void addAttachment(String name, DataHandler data) throws Exception {
+	public void addAttachment(String name, DataHandler data) throws Exception {
 		int size = 0, read = 0;
 		byte[] buffer = new byte[1024];
 		InputStream in = data.getInputStream();
