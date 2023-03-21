@@ -2756,7 +2756,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional) throws SectioningException, PageAccessException {
+	public Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional, String sourceOperation) throws SectioningException, PageAccessException {
 		try {
 			if (sessionId == null) sessionId = getStatusPageSessionId();
 			
@@ -2782,6 +2782,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (advisorRequests && !courseRequests && !classSchedule)
 					email.includeAdvisorRequestsPDF();
 			}
+			if (sourceOperation != null) email.fromAction(sourceOperation);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ?
 					(classSchedule ? MSG.defaulSubject() : courseRequests ? MSG.defaulSubjectCourseRequests() : advisorRequests ? MSG.defaulSubjectAdvisorRequests() : MSG.defaulSubjectOther())
