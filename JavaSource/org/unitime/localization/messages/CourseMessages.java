@@ -770,6 +770,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("LMS Integration")
 	String columnLms();
+	
+	@DefaultMessage("Wait-Listing")
+	String columnWaitlistMode();
 
 	@DefaultMessage("LMS Integration:")
 	String propertyLms();

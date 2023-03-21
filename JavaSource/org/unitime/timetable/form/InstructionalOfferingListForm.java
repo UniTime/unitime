@@ -108,6 +108,8 @@ public class InstructionalOfferingListForm implements UniTimeForm, Instructional
 	private Boolean lms;
 	
 	private String waitlist;
+	
+	private Boolean waitlistMode;
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -234,6 +236,7 @@ public class InstructionalOfferingListForm implements UniTimeForm, Instructional
 		instructorAssignment = false;
 		lms = false;
 		waitlist = null;
+		waitlistMode = null;
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
 
@@ -517,6 +520,14 @@ public class InstructionalOfferingListForm implements UniTimeForm, Instructional
 
 	public void setLms(Boolean lms) {
 		this.lms = lms;
+	}
+	
+	public Boolean getWaitlistMode() {
+		return waitlistMode;
+	}
+
+	public void setWaitlistMode(Boolean waitlistMode) {
+		this.waitlistMode = waitlistMode;
 	}
 	
 	public int getSubjectAreaListSize() {

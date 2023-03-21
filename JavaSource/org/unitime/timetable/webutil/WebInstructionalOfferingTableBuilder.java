@@ -172,6 +172,7 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showExamTimetable;  
     private boolean showInstructorAssignment;
     private boolean showLms;
+    private boolean showWaitlistMode;
     private String filterWaitlist;
     
 	private boolean iDisplayDistributionPrefs = true;
@@ -345,6 +346,13 @@ public class WebInstructionalOfferingTableBuilder {
 	}
 	public void setShowLms(boolean showLms) {
 		this.showLms = showLms;
+	}
+	
+	public boolean isShowWaitlistMode() {
+		return showWaitlistMode;
+	}
+	public void setShowWaitlistMode(boolean showWaitlistMode) {
+		this.showWaitlistMode = showWaitlistMode;
 	}
 
 
@@ -610,6 +618,10 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowLms()) {
     		cell = this.headerCell(MSG.columnLms(), 2, 1);
+    		row.addContent(cell);    		
+    	}
+    	if (isShowWaitlistMode()) {
+    		cell = this.headerCell(MSG.columnWaitlistMode(), 2, 1);
     		row.addContent(cell);    		
     	}
     	table.addContent(row);
@@ -1540,9 +1552,12 @@ public class WebInstructionalOfferingTableBuilder {
                 }
     	    }
     	}
-    	if (isShowLms()) {    		
-    			row.addContent(this.buildLmsInfo(prefGroup, isEditable));
+    	if (isShowLms()) {
+    		row.addContent(this.buildLmsInfo(prefGroup, isEditable));
     	}
+    	if (isShowWaitlistMode()) {
+    		row.addContent(initNormalCell("", isEditable));        	
+        }
     }
     
     private void buildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, SchedulingSubpart ss, int indentSpaces, SessionContext context){
@@ -1815,7 +1830,9 @@ public class WebInstructionalOfferingTableBuilder {
     		if (isShowLms()) {
                 row.addContent(initNormalCell("", isEditable));			
     		}
-	    
+    		if (isShowWaitlistMode()) {
+    			row.addContent(initNormalCell("", isEditable));
+    		}
 	        table.addContent(row);
 	        hasConfig = true;
 		}
@@ -2085,6 +2102,21 @@ public class WebInstructionalOfferingTableBuilder {
         }
         if (isShowLms()) {
             row.addContent(initNormalCell("", isEditable));        	
+        }
+        if (isShowWaitlistMode()) {
+        	switch (io.getEffectiveWaitListMode()) {
+        	case Disabled:
+        		row.addContent(initNormalCell(MSG.waitListDisabledShort(), isEditable));
+        		break;
+        	case ReSchedule:
+        		row.addContent(initNormalCell(MSG.waitListRescheduleShort(), isEditable));
+        		break;
+        	case WaitList:
+        		row.addContent(initNormalCell(MSG.waitListEnabledShort(), isEditable));
+        		break;
+        	default:
+        		row.addContent(initNormalCell("", isEditable));
+        	}
         }
         table.addContent(row);
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){
@@ -2363,7 +2395,6 @@ public class WebInstructionalOfferingTableBuilder {
 		} else {
 		    setShowExam(false);
 		}
-		
 		if (form.getInstructorAssignment() != null) {
 			setShowInstructorAssignment(form.getInstructorAssignment());
 		} else {
@@ -2378,6 +2409,11 @@ public class WebInstructionalOfferingTableBuilder {
 			setFilterWaitlist(form.getWaitlist());
 		} else {
 			setFilterWaitlist(null);
+		}
+		if (form.getWaitlistMode() != null) {
+			setShowWaitlistMode(form.getWaitlistMode());
+		} else {
+			setShowWaitlistMode(false);
 		}
 	}
 	
