@@ -9,7 +9,7 @@ public interface StudentEmailProvider {
 	/**
 	 * Return student email address
 	 * */
-	public Email createEmail(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional) throws Exception;
+	public Email createEmail(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional, String operation) throws Exception;
 	
 	/**
 	 * If optional, return display message that needs to be toggled. Return null otherwise.
