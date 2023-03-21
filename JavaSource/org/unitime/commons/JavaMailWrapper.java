@@ -134,7 +134,7 @@ public class JavaMailWrapper extends Email {
 	}
 	
 	@Override
-	protected void addAttachment(String name, DataHandler data) throws MessagingException {
+	public void addAttachment(String name, DataHandler data) throws MessagingException {
         BodyPart attachment = new MimeBodyPart();
         attachment.setDataHandler(data);
         attachment.setFileName(name);

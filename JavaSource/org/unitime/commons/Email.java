@@ -50,7 +50,7 @@ public abstract class Email {
 
 	public abstract void addRecipientBCC(String email, String name) throws Exception;
 	
-	protected abstract void setBody(String message, String type) throws Exception;
+	public abstract void setBody(String message, String type) throws Exception;
 	
 	public void setText(String message) throws Exception {
 		setBody(message, "text/plain; charset=UTF-8");
@@ -68,7 +68,7 @@ public abstract class Email {
 		addRecipientCC(ApplicationProperty.EmailNotificationAddress.value(), ApplicationProperty.EmailNotificationAddressName.value());
 	}
 	
-	protected abstract void addAttachment(String name, DataHandler data) throws Exception;
+	public abstract void addAttachment(String name, DataHandler data) throws Exception;
 	
 	public void addAttachment(File file, String name) throws Exception {
 		addAttachment(name == null ? file.getName() : name, new DataHandler(new FileDataSource(file)));
