@@ -416,6 +416,7 @@ public class EnrollmentTable extends Composite {
 											dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
 											dialog.getIncludeCourseRequests(), iOnline && dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
 											dialog.isOptionalEmailToggle(),
+											"user-enrollments",
 											new AsyncCallback<Boolean>() {
 												@Override
 												public void onFailure(Throwable caught) {

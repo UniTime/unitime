@@ -396,7 +396,8 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						helper.getOptinalParameterBoolean("courseRequests", null),
 						helper.getOptinalParameterBoolean("classSchedule", null),
 						helper.getOptinalParameterBoolean("advisorRequests", false),
-						helper.getOptinalParameterBoolean("customEmail", null)
+						helper.getOptinalParameterBoolean("customEmail", null),
+						helper.getOptinalParameter("sourceAction", "api")
 						);
 			}
 		}, Flag.GET, Flag.POST),

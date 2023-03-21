@@ -1160,7 +1160,7 @@ public class SectioningReports extends Composite {
 			return;
 		}
 		final Long studentId = studentIds.next();
-		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, new AsyncCallback<Boolean>() {
+		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, "user-reports", new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iTableHeader.setErrorMessage(MESSAGES.failedEmail(caught.getMessage()));

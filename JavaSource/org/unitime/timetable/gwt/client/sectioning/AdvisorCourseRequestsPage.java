@@ -1092,6 +1092,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 										dialog.getSubject(), dialog.getMessage(), dialog.getCC(),
 										dialog.getIncludeCourseRequests(), dialog.getIncludeClassSchedule(), dialog.getIncludeAdvisorRequests(),
 										dialog.isOptionalEmailToggle(),
+										"user-acr",
 										new AsyncCallback<Boolean>() {
 											@Override
 											public void onFailure(Throwable caught) {

@@ -3596,7 +3596,7 @@ public class SectioningStatusPage extends Composite {
 	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails, final boolean courseRequests, final boolean classSchedule, final boolean advisorRequests, final Boolean toggle) {
 		if (!studentIds.hasNext()) return;
 		final Long studentId = studentIds.next();
-		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, new AsyncCallback<Boolean>() {
+		iSectioningService.sendEmail(null, studentId, subject, message, cc, courseRequests, classSchedule, advisorRequests, toggle, "user-dashboard", new AsyncCallback<Boolean>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
