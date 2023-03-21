@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.studentsct;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;

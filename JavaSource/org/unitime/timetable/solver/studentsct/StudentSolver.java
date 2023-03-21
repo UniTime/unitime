@@ -103,7 +103,6 @@ import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
-import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.SectioningSolutionLog;
 import org.unitime.timetable.model.SolverPredefinedSetting;
