@@ -48,4 +48,5 @@ public interface InstructionalOfferingListFormInterface {
 	public String getWaitlist();
 	public String getSortBy();
 	public Boolean getFundingDepartment();
+	public Boolean getWaitlistMode();
 }

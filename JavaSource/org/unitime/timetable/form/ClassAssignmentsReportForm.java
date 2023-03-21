@@ -420,6 +420,8 @@ public class ClassAssignmentsReportForm implements UniTimeForm, ClassListFormInt
 	}
 	@Override
 	public String getWaitlist() { return null; }
+	@Override
+	public Boolean getWaitlistMode() { return false; }
 
 	public int getSubjectAreaListSize() {
 		return Math.min(7, getSubjectAreas().size());

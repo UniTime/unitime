@@ -303,6 +303,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.consent", form.getConsent() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.sortBy", form.getSortBy());
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.fundingDepartment", (form.getFundingDepartment() == null ? "0" : form.getFundingDepartment() ? "1" : "0"));
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.waitlistMode", (form.getWaitlistMode() == null ? null : form.getWaitlistMode() ? "1" : "0"));
 		    }
 		    
 		    if (!sessionContext.hasPermission(Right.Examinations))
@@ -420,11 +421,13 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 			form.setLms("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.lms", "0")));
 		else
 			form.setLms(null);
-		if (ApplicationProperty.OfferingWaitListShowFilter.isTrue())
+		if (ApplicationProperty.OfferingWaitListShowFilter.isTrue()) {
 			form.setWaitlist(sessionContext.getUser().getProperty("InstructionalOfferingList.waitlist", "A"));
-		else
+			form.setWaitlistMode("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.waitlistMode", "0")));
+		} else {
 			form.setWaitlist(null);
-		
+			form.setWaitlistMode(null);
+		}
 		form.setFundingDepartment("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.fundingDepartment", "0")));
 	}
 	

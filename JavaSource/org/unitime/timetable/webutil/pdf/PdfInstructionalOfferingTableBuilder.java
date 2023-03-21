@@ -51,6 +51,7 @@ import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorPref;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -189,6 +190,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	    if (isShowExamName()) ret+=1;
     	    if (isShowExamTimetable()) ret+=2;
     	}
+    	if (isShowLms()) ret+=1;
+    	if (isShowWaitlistMode()) ret+=1;
     	return ret;
 	}
 	
@@ -245,6 +248,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 width[idx++] = 80f;
             }
         }
+    	if (isShowLms()) width[idx++] = 100f;
+    	if (isShowWaitlistMode()) width[idx++] = 75f;
     	return width;
 	}
 	
@@ -374,6 +379,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	    c.setColspan((isShowExamName()?1:0)+(isShowExamTimetable()?2:0));
             addText(c, "--------" + MSG.columnExam() + "--------", true, Element.ALIGN_CENTER);
             iPdfTable.addCell(c);
+    	}
+    	if (isShowLms()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnLms(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowWaitlistMode()){
+    		PdfPCell c = createCell();
+    		addText(c, MSG.columnWaitlistMode(), true, Element.ALIGN_LEFT);
+    		iPdfTable.addCell(c);
     	}
     	
     	//second line
@@ -535,6 +550,16 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 iPdfTable.addCell(c);
             }
         }
+        if (isShowLms()){
+        	PdfPCell c = createCell();
+    		c.setBorderWidthBottom(1);
+    		iPdfTable.addCell(c);
+    	}
+    	if (isShowWaitlistMode()){
+    		PdfPCell c = createCell();
+    		c.setBorderWidthBottom(1);
+    		iPdfTable.addCell(c);
+    	}
     	iPdfTable.setHeaderRows(2);
    }
 
@@ -1225,6 +1250,20 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
         return cell;
     }
+    
+    protected PdfPCell pdfBuildLmsInfo(PreferenceGroup prefGroup, boolean isEditable){
+        PdfPCell cell = createCell();
+    	Color color = (isEditable?sEnableColor:sDisableColor);
+    	if (prefGroup instanceof Class_) {
+    		Class_ aClass = (Class_) prefGroup;
+	    	if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(aClass.getSessionId())) {
+	    		if (aClass.getLms() != null) {
+	    			addText(cell, aClass.getLms().getLabel(), false, false, Element.ALIGN_LEFT, color, true);
+	    		}
+	    	}
+    	}
+    	return cell;
+    }
 
     
     //NOTE: if changing column order column order must be changed in
@@ -1326,7 +1365,12 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 iPdfTable.addCell(pdfBuildExamRoom(examAssignment, exams, isEditable));
             }
         }
-    	
+        if (isShowLms()) {
+        	iPdfTable.addCell(pdfBuildLmsInfo(prefGroup, isEditable));        	
+        }
+        if (isShowWaitlistMode()) {
+        	iPdfTable.addCell(createCell());
+        }
     }
     
     private void pdfBuildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, SchedulingSubpart ss, String indentSpaces, SessionContext context){
@@ -1480,6 +1524,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                     iPdfTable.addCell(pdfBuildExamPeriod(examAssignment, exams, isEditable));
                     iPdfTable.addCell(pdfBuildExamRoom(examAssignment, exams, isEditable));
                 }
+            }
+            
+            if (isShowLms()) {
+            	iPdfTable.addCell(createCell());        	
+            }
+            if (isShowWaitlistMode()) {
+            	iPdfTable.addCell(createCell());
             }
 
 	        hasConfig = true;
@@ -1697,6 +1748,24 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 iPdfTable.addCell(pdfBuildExamPeriod(examAssignment, exams, isEditable));
                 iPdfTable.addCell(pdfBuildExamRoom(examAssignment, exams, isEditable));
             }
+        }
+        if (isShowLms()) {
+        	iPdfTable.addCell(createCell());        	
+        }
+        if (isShowWaitlistMode()) {
+        	PdfPCell cell = createCell();
+        	switch (io.getEffectiveWaitListMode()) {
+        	case Disabled:
+        		addText(cell, MSG.waitListDisabledShort(), false, false, Element.ALIGN_LEFT, color, true);
+        		break;
+        	case ReSchedule:
+        		addText(cell, MSG.waitListRescheduleShort(), false, false, Element.ALIGN_LEFT, color, true);
+        		break;
+        	case WaitList:
+        		addText(cell, MSG.waitListEnabledShort(), false, false, Element.ALIGN_LEFT, color, true);
+        		break;
+        	}
+        	iPdfTable.addCell(cell);
         }
 
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){

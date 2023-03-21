@@ -54,6 +54,7 @@ import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorPref;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -153,6 +154,8 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	    if (isShowExamName()) ret+=1;
     	    if (isShowExamTimetable()) ret+=2;
     	}
+    	if (isShowLms()) ret+=1;
+    	if (isShowWaitlistMode()) ret+=1;
     	return ret;
 	}
 	
@@ -251,6 +254,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             	line.add(createCell(MSG.columnExamPeriod()));
             	line.add(createCell(MSG.columnExamRoom()));
             }
+    	}
+    	if (isShowLms()) {
+    		line.add(createCell(MSG.columnLms()));
+    	}
+    	if (isShowWaitlistMode()) {
+    		line.add(createCell(MSG.columnWaitlistMode()));
     	}
     	if (iFile.getHeader() == null && iFile.getLines() == null)
     		iFile.setHeader(line);
@@ -891,6 +900,18 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         addText(cell, sb.toString(), true);
         return cell;
     }
+    
+    protected CSVField csvBuildLmsInfo(PreferenceGroup prefGroup, boolean isEditable){
+    	if (prefGroup instanceof Class_) {
+    		Class_ aClass = (Class_) prefGroup;
+	    	if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(aClass.getSessionId())) {
+	    		if (aClass.getLms() != null) {
+	    			return createCell(aClass.getLms().getLabel());
+	    		}
+	    	}
+    	}
+    	return createCell();
+    }
 
     
     protected void csvBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, SessionContext context){
@@ -991,6 +1012,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 line.add(csvBuildExamPeriod(examAssignment, exams, isEditable));
                 line.add(csvBuildExamRoom(examAssignment, exams, isEditable));
             }
+        }
+        if (isShowLms()) {
+        	line.add(csvBuildLmsInfo(prefGroup, isEditable));        	
+        }
+        if (isShowWaitlistMode()) {
+        	line.add(createCell());
         }
         iFile.addLine(line);
     }
@@ -1142,6 +1169,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                     line.add(csvBuildExamPeriod(examAssignment, exams, isEditable));
                     line.add(csvBuildExamRoom(examAssignment, exams, isEditable));
                 }
+            }
+            if (isShowLms()) {
+                line.add(createCell());        	
+            }
+            if (isShowWaitlistMode()) {
+            	line.add(createCell());
             }
 
 	        hasConfig = true;
@@ -1332,6 +1365,24 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 line.add(csvBuildExamPeriod(examAssignment, exams, isEditable));
                 line.add(csvBuildExamRoom(examAssignment, exams, isEditable));
             }
+        }
+        if (isShowLms()) {
+            line.add(createCell());        	
+        }
+        if (isShowWaitlistMode()) {
+        	switch (io.getEffectiveWaitListMode()) {
+        	case Disabled:
+        		line.add(createCell(MSG.waitListDisabledShort()));
+        		break;
+        	case ReSchedule:
+        		line.add(createCell(MSG.waitListRescheduleShort()));
+        		break;
+        	case WaitList:
+        		line.add(createCell(MSG.waitListEnabledShort()));
+        		break;
+        	default:
+        		line.add(createCell());
+        	}
         }
         iFile.addLine(line);
 

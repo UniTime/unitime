@@ -283,6 +283,15 @@
 							</TD>
 						</TR>
 					</sec:authorize>
+					<s:if test="form.waitlistMode != null">
+					<TR>
+						<TD></TD>
+						<TD colspan="2">
+							<s:checkbox name="form.waitlistMode" />
+							<loc:message name="columnWaitlistMode"/>
+						</TD>
+					</TR>
+					</s:if>
 					<TR>
 						<TD>
 							<B><loc:message name="filterSortBy"/></B>

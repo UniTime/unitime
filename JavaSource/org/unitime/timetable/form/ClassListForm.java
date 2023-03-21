@@ -586,6 +586,8 @@ public class ClassListForm implements UniTimeForm, ClassListFormInterface {
     }
 	@Override
 	public String getWaitlist() { return null; }
+	@Override
+	public Boolean getWaitlistMode() { return false; }
 
 	public int getSubjectAreaListSize() {
 		return Math.min(7, getSubjectAreas().size());
