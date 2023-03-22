@@ -845,10 +845,12 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void clearRequests() {
+		int row = 11;
 		for (AdvisorCourseRequestLine line: iCourses) {
 			line.setValue(null);
 			line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 			line.setCriticalCheck(iDetails == null ? null : iDetails.getCriticalCheck());
+			line.fixWidth(this, row++);
 		}
 		for (AdvisorCourseRequestLine line: iAlternatives)
 			line.setValue(null);
