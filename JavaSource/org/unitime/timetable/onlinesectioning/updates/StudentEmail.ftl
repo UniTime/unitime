@@ -333,6 +333,7 @@
  		<td style="${style}" align="right">${msg.colCredit()}</td>
  		<#if advisor.hasPref><td style="${style}">${msg.colPreferences()}</td></#if>
  		<td style="${style}">${msg.colNotes()}</td>
+ 		<#if advisor.hasCritical><td style="${style}">${advisor.criticalColumn}</td></#if>
  		<#if advisor.hasWait && awlMode == 'WaitList'><td style="${style}">${msg.colWaitList()}</td></#if>
  		<#if advisor.hasWait && awlMode == 'NoSubs'><td style="${style}">${msg.colNoSubs()}</td></#if>
  	</tr>
@@ -372,10 +373,18 @@
  		<#if line.rows gt 0>
  			<#assign noteColSpan="1">
  			<#if line.last>
- 				<#if (advisor.hasWait && awlMode == 'WaitList') || (advisor.hasWait && awlMode == 'NoSubs')>
- 					<#assign noteColSpan="3">
+ 				<#if advisor.hasCritical>
+ 					<#if (advisor.hasWait && awlMode == 'WaitList') || (advisor.hasWait && awlMode == 'NoSubs')>
+ 						<#assign noteColSpan="4">
+ 					<#else>
+ 						<#assign noteColSpan="3">
+	 				</#if>
  				<#else>
- 					<#assign noteColSpan="2">
+ 					<#if (advisor.hasWait && awlMode == 'WaitList') || (advisor.hasWait && awlMode == 'NoSubs')>
+ 						<#assign noteColSpan="3">
+ 					<#else>
+ 						<#assign noteColSpan="2">
+	 				</#if>
  				</#if>
  			</#if>
  			<#if line.note?? && line.note?has_content>
@@ -384,6 +393,11 @@
  				<td style="${style}" rowSpan="${line.rows}" colSpan="${noteColSpan}"></td>
  			</#if>
  		</#if>
+ 		<#if advisor.hasCritical><td style="${style}">
+ 			<#if line.critical>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${advisor.criticalColumnDescription}' alt='${advisor.criticalColumnDescription}'>
+ 			</#if>
+ 		</td></#if>
  		<#if advisor.hasWait && awlMode == 'WaitList' && !line.last><td style="${style}">
  			<#if line.waitlist>
  				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseWaitListed()}'>
@@ -391,7 +405,7 @@
  		</td></#if>
  		<#if advisor.hasWait && awlMode == 'NoSubs' && !line.last><td style="${style}">
  			<#if line.waitlist>
- 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestWaitListed()}' alt='${msg.courseNoSubs()}'>
+ 				<img src='http://www.unitime.org/icons/action_check.png' width='16' height='16' title='${msg.descriptionRequestNoSubs()}' alt='${msg.courseNoSubs()}'>
  			</#if>
  		</td></#if>
  	</tr>
