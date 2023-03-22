@@ -93,6 +93,14 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 			}
 		}
 		
+		protected String getSenderName() {
+			return ApplicationProperties.getProperty("purdue.boilerconnect.senderName");
+		}
+		
+		protected String getSenderEmail() {
+			return ApplicationProperties.getProperty("purdue.boilerconnect.senderEmail");
+		}
+		
 		@Override
 		public void send() throws Exception {
 			if (iRecipientEmail != null && iReplyToEmail != null && (iOperation == null || iOperation.startsWith("user-"))) {
@@ -106,9 +114,14 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 			} else if (iRecipientEmail != null && iOperation != null && !iOperation.startsWith("user-")) {
 				String email = iRecipientEmail.replace(iSuffix, ApplicationProperties.getProperty("purdue.boilerconnect.newSuffix", "@boilerconnect.purdue.edu"));
 				iEmail.addRecipient(email, iRecipientName);
-				setFrom(iReplyToEmail, iReplyToName);
 				if (iAction != null)
 					iAction.addOptionBuilder().setKey("bc-email").setValue(email);
+				String sender = getSenderEmail();
+				if (sender != null && !sender.isEmpty()) {
+					setFrom(sender, getSenderName());
+					if (iAction != null)
+						iAction.addOptionBuilder().setKey("bc-sender").setValue(sender);
+				}
 			} else if (iRecipientEmail != null) {
 				iEmail.addRecipient(iRecipientEmail, iRecipientName);
 			}
