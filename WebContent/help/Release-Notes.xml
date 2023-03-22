@@ -57,6 +57,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Email Notifications</name>
+			<description>
+				<line>Added ability to provide source-action for user/externally initiated emails.</line>
+				<line>When showing advisor recommendations, include Critical column when there is at least one course marked as critical.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>	
 	<version>4.7.81</version>

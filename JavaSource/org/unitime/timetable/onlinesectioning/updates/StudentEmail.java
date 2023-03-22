@@ -1673,6 +1673,20 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		CourseRequestsTable courseRequests = new CourseRequestsTable();
 		Format<Number> df = Formats.getNumberFormat("0.#");
 		int priority = 1;
+		Integer critical = null;
+		if ("Critical".equals(ApplicationProperty.AdvisorCourseRequestsAllowCritical.value())) {
+			critical = CourseDemand.Critical.CRITICAL.ordinal();
+			courseRequests.criticalColumn = MSG.opSetCritical();
+			courseRequests.criticalColumnDescription = MSG.descriptionRequestCritical();
+		} else if ("Vital".equals(ApplicationProperty.AdvisorCourseRequestsAllowCritical.value())) {
+			critical = CourseDemand.Critical.VITAL.ordinal();
+			courseRequests.criticalColumn = MSG.opSetVital();
+			courseRequests.criticalColumnDescription = MSG.descriptionRequestVital();
+		} else if ("Important".equals(ApplicationProperty.AdvisorCourseRequestsAllowCritical.value())) {
+			critical = CourseDemand.Critical.IMPORTANT.ordinal();
+			courseRequests.criticalColumn = MSG.opSetImportant();
+			courseRequests.criticalColumnDescription = MSG.descriptionRequestImportant();
+		}
 		for (Request request: requests.getCourses()) {
 			if (request.hasRequestedCourse()) {
 				boolean first = true;
@@ -1705,6 +1719,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.first = (priority > 1 && first);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
 						line.waitlist = (first && request.isWaitlistOrNoSub(wlMode));
+						if (first && critical != null && critical.equals(request.getCritical())) {
+							line.critical = true;
+							courseRequests.hasCritical = true;
+						}
 						courseRequests.add(line);
 					} else if (rc.isFreeTime()) {
 						String  free = "";
@@ -2793,6 +2811,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		List<CourseRequestLine> lines = new ArrayList<CourseRequestLine>();
 		boolean hasPref = false, hasWarn = false, hasWait = false;
 		String credit = "";
+		boolean hasCritical = false;
+		String criticalColumn = null;
+		String criticalColumnDescription = null;
 		
 		void add(CourseRequestLine line) { lines.add(line); }
 		
@@ -2801,6 +2822,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean getHasWarn() { return hasWarn; }
 		public boolean getHasWait() { return hasWait; }
 		public String getCredit() { return credit; }
+		public boolean getHasCritical() { return hasCritical; }
+		public String getCriticalColumn() { return criticalColumn; }
+		public String getCriticalColumnDescription() { return criticalColumnDescription; }
 	}
 	
 	public class CourseRequestLine {
@@ -2817,6 +2841,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean first = false;
 		public boolean firstalt = false;
 		public boolean last = false;
+		public boolean critical = false;
 		public int rows = 1;
 		public String waitListDate = null;
 		public URL url;
@@ -2835,6 +2860,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean isFirst() { return first; }
 		public boolean isFirstalt() { return firstalt; }
 		public boolean isLast() { return last; }
+		public boolean isCritical() { return critical; }
 		public int getRows() { return rows; }
 		public URL getUrl() { return url; }
 	}
