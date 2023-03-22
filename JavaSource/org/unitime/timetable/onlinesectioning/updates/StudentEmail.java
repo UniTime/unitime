@@ -397,8 +397,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
 							email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
 							helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-						} else
+						} else {
 							email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
+							helper.logOption("subject", getSubject().replace("%session%", server.getAcademicSession().toString()));
+						}
 						
 						if (getMessage() != null && !getMessage().isEmpty())
 							helper.logOption("message", getMessage());
@@ -430,13 +432,16 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								if (suffix != null && cc.indexOf('@') < 0)
 									cc += suffix;
 								email.addRecipientCC(cc, null);
+								helper.logOption("cc", cc);
 							}
 						}
 						
 						if (ApplicationProperty.OnlineSchedulingEmailCCAdvisors.isTrue(iSourceAction)) {
 							for (Advisor advisor: dbStudent.getAdvisors()) {
-								if (advisor.getEmail() != null && !advisor.getEmail().isEmpty())
+								if (advisor.getEmail() != null && !advisor.getEmail().isEmpty()) {
 									email.addRecipientCC(advisor.getEmail(), helper.getInstructorNameFormat().format(advisor));
+									helper.logOption("cc", advisor.getEmail());
+								}
 							}
 						}
 						
