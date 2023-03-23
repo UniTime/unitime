@@ -2198,6 +2198,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Sectioning Issues (for Re-Scheduling)")
 	String reportSectioningIssues();
 	
+	@DefaultMessage("Sectioning Issues (for Re-Scheduling, All Courses)")
+	String reportSectioningIssuesAllCourses();
+	
 	@DefaultMessage("BTB\n{0}")
 	String reportBTB(String col);
 	
