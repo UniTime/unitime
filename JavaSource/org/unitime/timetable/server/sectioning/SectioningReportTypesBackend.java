@@ -82,7 +82,8 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		STATISTICS(SCT_MSG.reportSolutionStatistics(), StudentSchedulingSolutionStatisticsReport.class.getName(), "pritify", "false"),
 		ACCOMMODATIONS(SCT_MSG.reportAccommodationConflicts(), AccommodationConflictsTable.class.getName()),
 		BTB_NO_BREAKS(SCT_MSG.reportBackToBacksNoBreak(), ZeroBreakTimeBackToBacksReport.class.getName()),
-		SECTIONING_ISSUES(SCT_MSG.reportSectioningIssues(), SectioningIssuesReport.class.getName()),
+		SECTIONING_ISSUES(SCT_MSG.reportSectioningIssues(), SectioningIssuesReport.class.getName(), "all", "false"),
+		SECTIONING_ISSUES_ALL(SCT_MSG.reportSectioningIssuesAllCourses(), SectioningIssuesReport.class.getName(), "all", "true"),
 		;
 		
 		String iName, iImplementation;

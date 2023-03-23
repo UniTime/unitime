@@ -141,7 +141,7 @@ public class SectioningIssuesReport implements StudentSectioningReport {
 		return null;
 	}
 
-    public CSVFile createTable(Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, boolean useAmPm) {
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, boolean useAmPm, boolean all) {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
                 new CSVFile.CSVField("__Student"),
@@ -211,6 +211,7 @@ public class SectioningIssuesReport implements StudentSectioningReport {
 					}
 		            line.add(new CSVFile.CSVField(r));
 		            InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(enrollment.getCourse().getOffering().getId());
+		            if (!all && !io.effectiveReSchedule()) continue;
 		            line.add(new CSVFile.CSVField(io.effectiveWaitList() ? CMSG.waitListEnabledShort() : io.effectiveReSchedule() ? CMSG.waitListRescheduleShort() : CMSG.waitListDisabledShort()));
 		            csv.addLine(line);
     			}
@@ -221,6 +222,10 @@ public class SectioningIssuesReport implements StudentSectioningReport {
 
     @Override
     public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        return createTable(assignment, properties.getPropertyBoolean("lastlike", false), properties.getPropertyBoolean("real", true), properties.getPropertyBoolean("useAmPm", true));
+        return createTable(assignment, 
+        		properties.getPropertyBoolean("lastlike", false),
+        		properties.getPropertyBoolean("real", true),
+        		properties.getPropertyBoolean("useAmPm", true),
+        		properties.getPropertyBoolean("all", true));
     }
 }
