@@ -1223,7 +1223,7 @@ public class SimpleEditPage extends Composite {
 					text.setMaxLength(field.getLength());
 					text.setText(record.getField(index));
 					text.setWidth(field.getWidth() + "px");
-					if (!detail) text.getElement().getStyle().setProperty("max-width", "20vw");
+					if (!detail) text.getElement().getStyle().setProperty("maxWidth", "20vw");
 					text.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -1605,7 +1605,7 @@ public class SimpleEditPage extends Composite {
 				case textarea:
 					HTML html = new HTML(getValue());
 					html.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-					//html.getElement().getStyle().setProperty("max-width", (10*field.getWidth())+ " px");
+					html.getElement().getStyle().setProperty("maxWidth", (10*field.getWidth())+ "px");
 					html.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
 					html.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					html.setTitle(getValue());
@@ -1614,7 +1614,7 @@ public class SimpleEditPage extends Composite {
 				default:
 					Label label = new Label(getValue());
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.NORMAL);
-					//label.getElement().getStyle().setProperty("max-width", field.getWidth()+ " px");
+					label.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
 					label.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
 					label.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					label.setTitle(getValue());

@@ -221,7 +221,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		def.setDescription(record.getField(2));
 		def.setType(record.getField(3));
 		def.setDefault(record.getField(4));
-		def.setVisible("true".equals(record.getField(5)));
+		def.setVisible(!"false".equalsIgnoreCase(record.getField(5)));
 		def.setOrder(order);
 		record.setUniqueId((Long)hibSession.save(def));
 		ChangeLog.addChange(hibSession,
@@ -255,7 +255,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		def.setDescription(record.getField(2));
 		def.setType(record.getField(3));
 		def.setDefault(record.getField(4));
-		def.setVisible("true".equals(record.getField(5)));
+		def.setVisible(!"false".equalsIgnoreCase(record.getField(5)));
 		def.setOrder(order);
 		hibSession.saveOrUpdate(def);
 		if (changed)
