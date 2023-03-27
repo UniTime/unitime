@@ -25,8 +25,6 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
@@ -34,7 +32,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XLearningCommunityReservation.XLearningCommunityReservationSerializer.class)
 public class XLearningCommunityReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
@@ -152,19 +149,5 @@ public class XLearningCommunityReservation extends XReservation {
 		
 		iCourseId.writeExternal(out);
 		out.writeInt(iLimit);
-	}
-	
-	public static class XLearningCommunityReservationSerializer implements Externalizer<XLearningCommunityReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XLearningCommunityReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XLearningCommunityReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XLearningCommunityReservation(input);
-		}
 	}
 }

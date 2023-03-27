@@ -1915,11 +1915,6 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: server implementation")
 	OnlineSchedulingServerClass("unitime.enrollment.server.class"),
 
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Online Student Scheduling: server support replications (it can be loaded on multiple machines of the cluster)")
-	OnlineSchedulingServerReplicated("unitime.enrollment.server.replicated"),
-	
 	@Type(Integer.class)
 	@DefaultValue("10")
 	@Description("Online Student Scheduling: asynchronous execution thread pool size")

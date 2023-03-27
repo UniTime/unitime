@@ -26,20 +26,11 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ToolBox;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.TransactionMode;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
@@ -48,7 +39,6 @@ import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
@@ -63,7 +53,6 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
-	private EmbeddedCacheManager iCacheManager = null;
 	private LockService iLockService;
 
 	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) {
@@ -79,32 +68,6 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	@Override
 	public void start() {
 		super.start();
-		createCacheManagerIfNeeded();
-	}
-	
-	private synchronized void createCacheManagerIfNeeded() {
-		if (iCacheManager == null && ApplicationProperty.OnlineSchedulingServerReplicated.isTrue()) {
-			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
-					.build();
-			Configuration config = new ConfigurationBuilder()
-					.clustering().cacheMode(CacheMode.REPL_ASYNC)
-					.async().useReplQueue(true).replQueueInterval(500, TimeUnit.MILLISECONDS).replQueueMaxElements(1000)
-					.transaction().transactionMode(TransactionMode.TRANSACTIONAL)
-					.storeAsBinary().enable()
-					.build();
-			iCacheManager = new DefaultCacheManager(global, config);
-		}
-	}
-	
-	@Override
-	public void stop() {
-		super.stop();
-		if (iCacheManager != null) {
-			iCacheManager.stop();
-			iCacheManager = null;
-		}
 	}
 	
 	@Override
@@ -278,19 +241,9 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 			}
 
 			@Override
-			public EmbeddedCacheManager getCacheManager() {
-				return OnlineStudentSchedulingContainerRemote.this.getCacheManager();
-			}
-
-			@Override
 			public LockService getLockService() {
 				return iLockService;
 			}
 		};
-	}
-    
-	public EmbeddedCacheManager getCacheManager() {
-		createCacheManagerIfNeeded();
-		return iCacheManager;
 	}
 }

@@ -25,13 +25,9 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XIndividualRestriction.XIndividualRestrictionSerializer.class)
 public class XIndividualRestriction extends XRestriction {
 	private static final long serialVersionUID = 1L;
 	private Set<Long> iStudentIds = new HashSet<Long>();
@@ -82,19 +78,5 @@ public class XIndividualRestriction extends XRestriction {
 		out.writeInt(iStudentIds.size());
 		for (Long studentId: iStudentIds)
 			out.writeLong(studentId);
-	}
-	
-	public static class XIndividualRestrictionSerializer implements Externalizer<XIndividualRestriction> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XIndividualRestriction object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XIndividualRestriction readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XIndividualRestriction(input);
-		}
 	}
 }

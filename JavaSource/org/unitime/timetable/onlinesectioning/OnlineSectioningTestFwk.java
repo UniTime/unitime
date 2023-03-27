@@ -35,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxUpHandler;
@@ -116,11 +115,6 @@ public abstract class OnlineSectioningTestFwk {
     			@Override
     			public boolean isWaitTillStarted() {
     				return false;
-    			}
-    			
-    			@Override
-    			public EmbeddedCacheManager getCacheManager() {
-    				return null;
     			}
     			
     			@Override

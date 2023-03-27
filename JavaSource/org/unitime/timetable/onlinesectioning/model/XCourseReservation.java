@@ -23,14 +23,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseReservation;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseReservation.XCourseReservationSerializer.class)
 public class XCourseReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private XCourseId iCourseId;
@@ -103,19 +100,5 @@ public class XCourseReservation extends XReservation {
 		super.writeExternal(out);
 		iCourseId.writeExternal(out);
 		out.writeInt(iLimit);
-	}
-	
-	public static class XCourseReservationSerializer implements Externalizer<XCourseReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseReservation(input);
-		}
 	}
 }

@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,7 +40,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -111,7 +109,6 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
-			boolean replicate = ApplicationProperty.OnlineSchedulingServerReplicated.isTrue();
 			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
 			try {
 				RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(
@@ -167,7 +164,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 						iLog.error("Failed to release master locks for " + session.getLabel() + ": " + e.getMessage(), e);
 						continue;
 					}
-					if (!replicate) continue;
+					continue;
 				}
 				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
@@ -193,62 +190,36 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					continue;
 				}
 				
-				if (replicate) {
-					Collections.shuffle(available);
-					Set<Address> members = solvers.get(session.getUniqueId().toString());
-					if (members != null) {
-						boolean ready = false;
-						for (Address address: members) {
-							OnlineSectioningServer server = iContainer.createProxy(address, session.getUniqueId().toString());
-							if (server.isReady()) { ready = true; break; }
-						}
-						if (!ready) continue;
+				
+				try {
+					// retrieve usage of the available serves
+					Map<Address, Integer> usages = new HashMap<Address, Integer>();
+					for (Address address: available) {
+						Integer usage = iDispatcher.callRemoteMethod(address, "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
+						usages.put(address, usage);
 					}
-					try {
-						for (Address address: available) {
-							if (members != null && members.contains(address)) continue;
-							Boolean created = iContainer.getDispatcher().callRemoteMethod(
-									address,
-									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
-									new Class[] { String.class, DataProperties.class, Address.class },
-									SolverServerImplementation.sFirstResponse);
-							// startup only one server first
-							if (members == null && created) break;
-						}
-					} catch (Exception e) {
-						iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
-					}
-				} else {
-					try {
-						// retrieve usage of the available serves
-						Map<Address, Integer> usages = new HashMap<Address, Integer>();
-						for (Address address: available) {
-							Integer usage = iDispatcher.callRemoteMethod(address, "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
-							usages.put(address, usage);
-						}
-						
-						// while there is a server available, pick one with the lowest usage and try to create the solver there
-						while (!usages.isEmpty()) {
-							Address bestAddress = null;
-							int bestUsage = 0;
-							for (Map.Entry<Address, Integer> entry: usages.entrySet()) {
-								if (bestAddress == null || bestUsage > entry.getValue()) {
-									bestAddress = entry.getKey();
-									bestUsage = entry.getValue();
-								}
+					
+					// while there is a server available, pick one with the lowest usage and try to create the solver there
+					while (!usages.isEmpty()) {
+						Address bestAddress = null;
+						int bestUsage = 0;
+						for (Map.Entry<Address, Integer> entry: usages.entrySet()) {
+							if (bestAddress == null || bestUsage > entry.getValue()) {
+								bestAddress = entry.getKey();
+								bestUsage = entry.getValue();
 							}
-							usages.remove(bestAddress);
-							
-							Boolean created = iContainer.getDispatcher().callRemoteMethod(
-									bestAddress,
-									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
-									new Class[] { String.class, DataProperties.class, Address.class },
-									SolverServerImplementation.sFirstResponse);
-							if (created) break;
 						}
-					} catch (Exception e) {
-						iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+						usages.remove(bestAddress);
+						
+						Boolean created = iContainer.getDispatcher().callRemoteMethod(
+								bestAddress,
+								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
+								new Class[] { String.class, DataProperties.class, Address.class },
+								SolverServerImplementation.sFirstResponse);
+						if (created) break;
 					}
+				} catch (Exception e) {
+					iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 				}
 			}
 		} finally {

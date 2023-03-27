@@ -26,14 +26,11 @@ import java.util.BitSet;
 
 
 import org.cpsolver.studentsct.model.FreeTimeRequest;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseDemand;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XFreeTimeRequest.XFreeTimeRequestSerializer.class)
 public class XFreeTimeRequest extends XRequest {
 	private static final long serialVersionUID = 1L;
 	private XTime iTime;
@@ -71,19 +68,5 @@ public class XFreeTimeRequest extends XRequest {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		iTime.writeExternal(out);
-	}
-	
-	public static class XFreeTimeRequestSerializer implements Externalizer<XFreeTimeRequest> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XFreeTimeRequest object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XFreeTimeRequest readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XFreeTimeRequest(input);
-		}
 	}
 }

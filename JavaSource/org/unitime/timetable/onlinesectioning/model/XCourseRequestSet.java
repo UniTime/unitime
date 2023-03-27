@@ -25,13 +25,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashSet;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseRequestSet.XCourseRequestSetSerializer.class)
 public class XCourseRequestSet extends HashSet<XCourseRequest> implements Externalizable {
 	private static final long serialVersionUID = 1L;
 	
@@ -57,19 +53,5 @@ public class XCourseRequestSet extends HashSet<XCourseRequest> implements Extern
 		out.writeInt(size());
 		for (XCourseRequest request: this)
 			request.writeExternal(out);
-	}
-
-	public static class XCourseRequestSetSerializer implements Externalizer<XCourseRequestSet> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseRequestSet object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseRequestSet readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseRequestSet(input);
-		}		
 	}
 }

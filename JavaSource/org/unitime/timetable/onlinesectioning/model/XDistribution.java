@@ -33,14 +33,11 @@ import org.cpsolver.studentsct.constraint.LinkedSections;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XDistribution.XDistributionSerializer.class)
 public class XDistribution implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iDistributionId = null;
@@ -140,19 +137,5 @@ public class XDistribution implements Serializable, Externalizable {
 		out.writeInt(iSectionIds.size());
 		for (Long sectionId: iSectionIds)
 			out.writeLong(sectionId);
-	}
-	
-	public static class XDistributionSerializer implements Externalizer<XDistribution> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XDistribution object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XDistribution readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XDistribution(input);
-		}
 	}
 }

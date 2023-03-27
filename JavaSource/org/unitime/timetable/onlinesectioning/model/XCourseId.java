@@ -28,15 +28,12 @@ import java.util.Set;
 
 
 import org.cpsolver.studentsct.model.Course;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.CourseOffering;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseId.XCourseIdSerializer.class)
 public class XCourseId implements Serializable, Comparable<XCourseId>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iOfferingId;
@@ -203,19 +200,5 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 		out.writeObject(iTitle);
 		out.writeBoolean(iHasUniqueName);
 		out.writeObject(iType);
-	}
-	
-	public static class XCourseIdSerializer implements Externalizer<XCourseId> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseId object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseId(input);
-		}
 	}
 }

@@ -25,13 +25,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.TreeSet;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseIdSet.XCourseIdSetSerializer.class)
 public class XCourseIdSet extends TreeSet<XCourseId> implements Externalizable {
 	private static final long serialVersionUID = 1L;
 	
@@ -57,19 +53,5 @@ public class XCourseIdSet extends TreeSet<XCourseId> implements Externalizable {
 		out.writeInt(size());
 		for (XCourseId courseId: this)
 			courseId.writeExternal(out);
-	}
-
-	public static class XCourseIdSetSerializer implements Externalizer<XCourseIdSet> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseIdSet object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseIdSet readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseIdSet(input);
-		}		
 	}
 }

@@ -26,14 +26,11 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.StudentNote;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XStudentNote.XStudentNoteSerializer.class)
 public class XStudentNote implements Serializable, Comparable<XStudentNote>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iId;
@@ -91,19 +88,5 @@ public class XStudentNote implements Serializable, Comparable<XStudentNote>, Ext
 		out.writeObject(iNote);
 		out.writeObject(iUserId);
 		out.writeLong(iTimeStamp == null ? 0l : iTimeStamp.getTime());
-	}
-	
-	public static class XStudentNoteSerializer implements Externalizer<XStudentNote> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XStudentNote object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XStudentNote readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XStudentNote(input);
-		}
 	}
 }

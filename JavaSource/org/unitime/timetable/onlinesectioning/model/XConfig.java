@@ -33,8 +33,6 @@ import java.util.TreeSet;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Subpart;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -44,7 +42,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XConfig.XConfigSerializer.class)
 public class XConfig implements Serializable, Comparable<XConfig>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
@@ -218,19 +215,4 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
 		if (iInstructionalMethod != null)
 			iInstructionalMethod.writeExternal(out);
 	}
-	
-	public static class XConfigSerializer implements Externalizer<XConfig> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XConfig object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XConfig readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XConfig(input);
-		}
-	}
-
 }

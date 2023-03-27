@@ -29,14 +29,11 @@ import org.cpsolver.studentsct.reservation.CourseRestriction;
 import org.cpsolver.studentsct.reservation.CurriculumRestriction;
 import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Restriction;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XRestrictionId.XRestrictionIdSerializer.class)
 public class XRestrictionId implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 
@@ -106,19 +103,5 @@ public class XRestrictionId implements Serializable, Externalizable {
 		out.writeInt(iType.ordinal());
 		out.writeLong(iOfferingId);
 		out.writeLong(iRestrictionId);
-	}
-	
-	public static class XRestrictionIdSerializer implements Externalizer<XRestrictionId> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XRestrictionId object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XRestrictionId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XRestrictionId(input);
-		}
 	}
 }

@@ -25,15 +25,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XStudentId.XStudentIdSerializer.class)
 public class XStudentId implements Serializable, Comparable<XStudentId>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId;
@@ -127,20 +124,5 @@ public class XStudentId implements Serializable, Comparable<XStudentId>, Externa
 		out.writeLong(iStudentId);
 		out.writeObject(iExternalId);
 		out.writeObject(iName);
-	}
-	
-	public static class XStudentIdSerializer implements Externalizer<XStudentId> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XStudentId object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XStudentId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XStudentId(input);
-		}
-		
 	}
 }

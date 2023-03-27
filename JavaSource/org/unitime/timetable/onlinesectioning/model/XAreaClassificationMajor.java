@@ -27,8 +27,6 @@ import java.io.Serializable;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
 
@@ -36,7 +34,6 @@ import org.unitime.timetable.model.StudentAreaClassificationMinor;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XAreaClassificationMajor.XAreaClassificationMajorSerializer.class)
 public class XAreaClassificationMajor implements Serializable, Externalizable, Comparable<XAreaClassificationMajor> {
     private static final long serialVersionUID = 1L;
 	private String iAreaCode, iClassificationCode, iMajorCode, iConcentrationCode, iDegreeCode, iProgramCode, iCampusCode;
@@ -198,20 +195,6 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
 		out.writeObject(iCampusCode);
 		out.writeObject(iCampusLabel);
 		out.writeDouble(iWeight);
-	}
-	
-	public static class XAreaClassificationMajorSerializer implements Externalizer<XAreaClassificationMajor> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XAreaClassificationMajor object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XAreaClassificationMajor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XAreaClassificationMajor(input);
-		}
 	}
 
 	@Override

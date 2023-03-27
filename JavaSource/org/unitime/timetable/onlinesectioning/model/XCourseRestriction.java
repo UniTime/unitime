@@ -23,13 +23,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseRestriction.XCourseRestrictionSerializer.class)
 public class XCourseRestriction extends XRestriction {
 	private static final long serialVersionUID = 1L;
 	private XCourseId iCourseId;
@@ -86,19 +82,5 @@ public class XCourseRestriction extends XRestriction {
 		super.writeExternal(out);
 		iCourseId.writeExternal(out);
 		out.writeInt(iLimit);
-	}
-	
-	public static class XCourseRestrictionSerializer implements Externalizer<XCourseRestriction> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseRestriction object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseRestriction readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseRestriction(input);
-		}
 	}
 }

@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumOverrideReservation;
@@ -41,7 +39,6 @@ import org.unitime.timetable.model.PosMinor;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCurriculumReservation.XCurriculumReservationSerializer.class)
 public class XCurriculumReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
@@ -300,19 +297,5 @@ public class XCurriculumReservation extends XReservation {
 		}
 		
 		out.writeObject(iConcentrations);
-	}
-	
-	public static class XCurriculumReservationSerializer implements Externalizer<XCurriculumReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCurriculumReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCurriculumReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCurriculumReservation(input);
-		}
 	}
 }

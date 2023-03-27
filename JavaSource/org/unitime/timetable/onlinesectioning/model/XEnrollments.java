@@ -30,15 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XEnrollments.XEnrollmentsSerializer.class)
 public class XEnrollments implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -193,19 +190,4 @@ public class XEnrollments implements Serializable, Externalizable {
 		for (XCourseRequest request: iRequests)
 			request.writeExternal(out);
 	}
-
-	public static class XEnrollmentsSerializer implements Externalizer<XEnrollments> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XEnrollments object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XEnrollments readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XEnrollments(input);
-		}
-	}
-
 }

@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cpsolver.studentsct.model.Course;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -39,7 +37,6 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourse.XCourseSerializer.class)
 public class XCourse extends XCourseId {
 	private static final long serialVersionUID = 1L;
     private String iDepartment = null;
@@ -211,19 +208,5 @@ public class XCourse extends XCourseId {
 		out.writeInt(iDisabledOverrides.size());
 		for (String override: iDisabledOverrides)
 			out.writeObject(override);
-	}
-	
-	public static class XCourseSerializer implements Externalizer<XCourse> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourse object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourse readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourse(input);
-		}
 	}
 }

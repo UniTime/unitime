@@ -88,7 +88,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 							if (!iRun) break;
 							checkForExpiredReservations(server);
 							persistExpectedSpaces(server);
-						} else if (!ApplicationProperty.OnlineSchedulingServerReplicated.isTrue()) {
+						} else {
 							// not master, but replication is disabled -> unload
 							try {
 								iContainer.unload(getAcademicSession().getUniqueId(), false);

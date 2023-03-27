@@ -47,7 +47,6 @@ import org.cpsolver.studentsct.online.expectations.AvoidUnbalancedWhenNoExpectat
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights;
 import org.hibernate.CacheMode;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.blocks.locking.LockService;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -318,8 +317,6 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				public Long getAcademicSessionId() { return sessionId; }
 				@Override
 				public boolean isWaitTillStarted() { return false; }
-				@Override
-				public EmbeddedCacheManager getCacheManager() { return null; }
 				@Override
 				public LockService getLockService() { return null; }
 			});

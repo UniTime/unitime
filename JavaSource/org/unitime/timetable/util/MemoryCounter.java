@@ -24,9 +24,6 @@ import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.Logger;
-import org.infinispan.Cache;
-import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.solver.jgroups.SolverContainer;
 
@@ -51,7 +48,7 @@ public final class MemoryCounter {
 	
 	private boolean skipObject(Object obj) {
 		if ((obj instanceof String) && (obj == ((String) obj).intern())) return true;
-		if (obj instanceof Marshaller || obj instanceof EmbeddedCacheManager || obj instanceof Thread || obj instanceof Log || obj instanceof Logger || obj instanceof SolverContainer) return true;
+		if (obj instanceof Thread || obj instanceof Log || obj instanceof Logger || obj instanceof SolverContainer) return true;
 		return (obj == null) || iVisited.containsKey(obj);
 	}
 
@@ -77,9 +74,6 @@ public final class MemoryCounter {
 	
 	private long deepSizeOf(Object obj) {
 		if (skipObject(obj)) return 0;
-		if (obj instanceof Cache) {
-			return deepSizeOf(((Cache)obj).getAdvancedCache().getDataContainer().entrySet().toArray());
-		}
 		iVisited.put(obj, null);
 		Class clazz = obj.getClass();
 		if (clazz.isArray()) {

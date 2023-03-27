@@ -45,8 +45,6 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Student.BackToBackPreference;
 import org.cpsolver.studentsct.model.Student.ModalityPreference;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -77,7 +75,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XStudent.XStudentSerializer.class)
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
     private List<XAreaClassificationMajor> iMajors = new ArrayList<XAreaClassificationMajor>();
@@ -765,21 +762,6 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeInt(iModalityPreference.ordinal());
 	}
 	
-	public static class XStudentSerializer implements Externalizer<XStudent> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XStudent object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XStudent readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XStudent(input);
-		}
-	}
-	
-	@SerializeWith(XStudent.XGroupSerializer.class)
 	public static class XGroup implements Externalizable {
 		public String iType, iAbbreaviation, iTitle;
 		
@@ -849,21 +831,6 @@ public class XStudent extends XStudentId implements Externalizable {
 		}
 	}
 	
-	public static class XGroupSerializer implements Externalizer<XGroup> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XGroup object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XGroup readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XGroup(input);
-		}
-	}
-	
-	@SerializeWith(XStudent.XAdvisorSerializer.class)
 	public static class XAdvisor implements Externalizable {
 		public String iExternalId, iName, iEmail;
 		
@@ -906,20 +873,6 @@ public class XStudent extends XStudentId implements Externalizable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof XAdvisor)) return false;
 			return getExternalId().equals(((XAdvisor)o).getExternalId());
-		}
-	}
-	
-	public static class XAdvisorSerializer implements Externalizer<XAdvisor> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XAdvisor object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XAdvisor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XAdvisor(input);
 		}
 	}
 	

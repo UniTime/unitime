@@ -32,7 +32,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.jgroups.UniTimeChannelLookup;
+import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -79,7 +79,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 				iInstructorSchedulingContainer = iServer.getInstructorSchedulingContainer();
 				iOnlineStudentSchedulingContainer = iServer.getOnlineStudentSchedulingContainer();
 			} else {
-				iChannel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
+				iChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
 				
 				iServer = new SolverServerImplementation(true, iChannel);
 				

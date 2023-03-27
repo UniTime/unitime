@@ -31,14 +31,11 @@ import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XExpectations.XExpectationsSerializer.class)
 public class XExpectations implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iOfferingId = null;
@@ -135,20 +132,6 @@ public class XExpectations implements Serializable, Externalizable {
 				out.writeLong(entry.getKey());
 				out.writeDouble(entry.getValue());
 			}
-		}
-	}
-	
-	public static class XExpectationsSerializer implements Externalizer<XExpectations> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XExpectations object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XExpectations readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XExpectations(input);
 		}
 	}
 }

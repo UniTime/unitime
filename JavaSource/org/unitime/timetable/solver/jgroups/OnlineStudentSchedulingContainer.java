@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.blocks.locking.LockService;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -41,7 +40,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
-import org.unitime.timetable.onlinesectioning.server.ReplicatedServerWithMaster;
 
 /**
  * @author Tomas Muller
@@ -144,10 +142,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			ApplicationProperties.setSessionId(academicSessionId);
 			String serverClassName = ApplicationProperty.OnlineSchedulingServerClass.value();
 			if (serverClassName == null)
-				if (ApplicationProperty.OnlineSchedulingServerReplicated.isTrue())
-					serverClassName = ReplicatedServerWithMaster.class.getName();
-				else
-					serverClassName = InMemoryServer.class.getName();
+				serverClassName = InMemoryServer.class.getName();
 			Class serverClass = Class.forName(serverClassName);
 			OnlineSectioningServer server = (OnlineSectioningServer)serverClass.getConstructor(OnlineSectioningServerContext.class).newInstance(getServerContext(academicSessionId));
 			iInstances.put(academicSessionId, server);
@@ -180,11 +175,6 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			@Override
 			public boolean isWaitTillStarted() {
 				return false;
-			}
-
-			@Override
-			public EmbeddedCacheManager getCacheManager() {
-				return null;
 			}
 
 			@Override

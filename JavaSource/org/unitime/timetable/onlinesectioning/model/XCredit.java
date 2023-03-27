@@ -27,14 +27,11 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCredit.XCreditSerializer.class)
 public class XCredit implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iId;
@@ -116,20 +113,6 @@ public class XCredit implements Serializable, Externalizable {
 		out.writeObject(iText);
 		out.writeFloat(iMin);
 		out.writeFloat(iMax);
-	}
-	
-	public static class XCreditSerializer implements Externalizer<XCredit> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCredit object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCredit readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCredit(input);
-		}
 	}
 	
 	public static void main(String[] args) {

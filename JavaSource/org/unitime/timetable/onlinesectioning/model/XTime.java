@@ -31,8 +31,6 @@ import java.util.Enumeration;
 import java.util.Locale;
 
 import org.cpsolver.coursett.model.TimeLocation;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.Assignment;
@@ -48,7 +46,6 @@ import org.unitime.timetable.util.duration.DurationModel;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XTime.XTimeSerializer.class)
 public class XTime implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private int iSlot;
@@ -378,21 +375,6 @@ public class XTime implements Serializable, Externalizable {
     
     public TimeLocation toTimeLocation() {
     	return new TimeLocation(getDays(), getSlot(), getLength(), 0, 0.0, getDatePatternId(), getDatePatternName(), getWeeks(), getBreakTime());
-    }
-    
-    public static class XTimeSerializer implements Externalizer<XTime> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XTime object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XTime readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XTime(input);
-		}
-    	
     }
     
     transient Integer iFirstMeeting = null;

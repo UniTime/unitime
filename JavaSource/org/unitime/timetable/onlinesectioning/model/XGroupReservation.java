@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
@@ -33,7 +31,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XGroupReservation.XGroupReservationSerializer.class)
 public class XGroupReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
@@ -131,20 +128,6 @@ public class XGroupReservation extends XReservation {
 		if (getType() == XReservationType.GroupOverride) {
 			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
 			out.writeBoolean(iOverride);
-		}
-	}
-	
-	public static class XGroupReservationSerializer implements Externalizer<XGroupReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XGroupReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XGroupReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XGroupReservation(input);
 		}
 	}
 }

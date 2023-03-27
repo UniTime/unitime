@@ -34,8 +34,6 @@ import java.util.Map;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -44,7 +42,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XSubpart.XSubpartSerializer.class)
 public class XSubpart implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private static DecimalFormat sF3Z = new DecimalFormat("000"); 
@@ -257,19 +254,4 @@ public class XSubpart implements Serializable, Externalizable {
 			entry.getValue().writeExternal(out);
 		}
 	}
-
-	public static class XSubpartSerializer implements Externalizer<XSubpart> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XSubpart object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XSubpart readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XSubpart(input);
-		}
-	}
-
 }

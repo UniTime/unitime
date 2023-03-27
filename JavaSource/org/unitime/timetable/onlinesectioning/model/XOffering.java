@@ -58,8 +58,6 @@ import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.cpsolver.studentsct.reservation.Restriction;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
@@ -83,7 +81,6 @@ import org.unitime.timetable.solver.studentsct.StudentSolver;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XOffering.XOfferingSerializer.class)
 public class XOffering implements Serializable, Externalizable {
     private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
@@ -1035,19 +1032,5 @@ public class XOffering implements Serializable, Externalizable {
 		out.writeInt(iDistrubutions.size());
 		for (XDistribution distribution: iDistrubutions)
 			distribution.writeExternal(out);
-	}
-	
-	public static class XOfferingSerializer implements Externalizer<XOffering> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XOffering object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XOffering readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XOffering(input);
-		}
 	}
 }

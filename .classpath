@@ -15,10 +15,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet-2.3.12.jar" sourcepath="3rd_party/sources/org.restlet-2.3.12-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-2.11.0.jar" sourcepath="3rd_party/sources/commons-io-2.11.0-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jgroups-3.6.20.Final.jar" sourcepath="3rd_party/sources/jgroups-3.6.20.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-core-7.2.5.Final.jar" sourcepath="3rd_party/sources/infinispan-core-7.2.5.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-spring-7.2.5.Final.jar" sourcepath="3rd_party/sources/infinispan-spring-7.2.5.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-commons-7.2.5.Final.jar" sourcepath="3rd_party/sources/infinispan-commons-7.2.5.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-osgi-1.4.10.Final.jar" sourcepath="3rd_party/sources/jboss-marshalling-osgi-1.4.10.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jbossjta-4.16.6.Final.jar" sourcepath="3rd_party/sources/jbossjta-4.16.6.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-ldap-core-2.4.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jstl-1.2.jar"/>
@@ -29,7 +25,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-commons-annotations-4.0.5.Final.jar" sourcepath="3rd_party/sources/hibernate-commons-annotations-4.0.5.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-core-4.3.11.Final.jar" sourcepath="3rd_party/sources/hibernate-core-4.3.11.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-ehcache-4.3.11.Final.jar" sourcepath="3rd_party/sources/hibernate-ehcache-4.3.11.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-infinispan-4.3.11.Final.jar" sourcepath="3rd_party/sources/hibernate-infinispan-4.3.11.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-jpa-2.1-api-1.0.0.Final.jar" sourcepath="3rd_party/sources/hibernate-jpa-2.1-api-1.0.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-logging-3.4.2.Final.jar" sourcepath="3rd_party/sources/jboss-logging-3.4.2.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-transaction-api_1.2_spec-1.0.0.Final.jar" sourcepath="3rd_party/sources/jboss-transaction-api_1.2_spec-1.0.0.Final-sources.jar"/>

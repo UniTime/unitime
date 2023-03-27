@@ -25,8 +25,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TeachingClassRequest;
@@ -36,7 +34,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XInstructor.XInstructorSerializer.class)
 public class XInstructor implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
@@ -151,19 +148,5 @@ public class XInstructor implements Serializable, Externalizable {
 		out.writeBoolean(iAllowOverlap);
 		out.writeBoolean(iDisplay);
 		out.writeBoolean(iInstructing);
-	}
-	
-	public static class XInstructorSerializer implements Externalizer<XInstructor> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XInstructor object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XInstructor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XInstructor(input);
-		}
 	}
 }

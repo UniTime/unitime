@@ -21,15 +21,10 @@ package org.unitime.timetable.onlinesectioning.model;
 
 import java.io.IOException;
 import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XDummyReservation.XDummyReservationSerializer.class)
 public class XDummyReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 
@@ -61,18 +56,4 @@ public class XDummyReservation extends XReservation {
     public boolean isApplicable(XStudent student, XCourseId course) {
         return false;
     }
-
-	public static class XDummyReservationSerializer implements Externalizer<XDummyReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XDummyReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XDummyReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XDummyReservation(input);
-		}
-	}
 }

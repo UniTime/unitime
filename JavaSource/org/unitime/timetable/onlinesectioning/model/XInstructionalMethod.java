@@ -25,14 +25,11 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.InstructionalMethod;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XInstructionalMethod.XInstructionalMethodSerializer.class)
 public class XInstructionalMethod implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
@@ -89,20 +86,5 @@ public class XInstructionalMethod implements Serializable, Externalizable {
 		out.writeLong(iUniqueId);
 		out.writeObject(iReference);
 		out.writeObject(iLabel);
-	}
-	
-	public static class XInstructionalMethodSerializer implements Externalizer<XInstructionalMethod> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XInstructionalMethod object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XInstructionalMethod readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XInstructionalMethod(input);
-		}
-		
 	}
 }

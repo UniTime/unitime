@@ -28,14 +28,11 @@ import java.io.Serializable;
 
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Location;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XRoom.XRoomSerializer.class)
 public class XRoom implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
@@ -119,20 +116,5 @@ public class XRoom implements Serializable, Externalizable {
 			out.writeDouble(iX);
 			out.writeDouble(iY);
 		}
-	}
-	
-	public static class XRoomSerializer implements Externalizer<XRoom> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XRoom object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XRoom readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XRoom(input);
-		}
-		
 	}
 }

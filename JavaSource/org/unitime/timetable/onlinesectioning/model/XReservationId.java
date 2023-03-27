@@ -33,14 +33,11 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XReservationId.XReservationIdSerializer.class)
 public class XReservationId implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 
@@ -118,19 +115,5 @@ public class XReservationId implements Serializable, Externalizable {
 		out.writeInt(iType.ordinal());
 		out.writeLong(iOfferingId);
 		out.writeLong(iReservationId);
-	}
-	
-	public static class XReservationIdSerializer implements Externalizer<XReservationId> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XReservationId object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XReservationId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XReservationId(input);
-		}
 	}
 }

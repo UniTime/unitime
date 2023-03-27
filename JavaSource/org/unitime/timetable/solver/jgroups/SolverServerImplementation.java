@@ -66,7 +66,7 @@ import org.jgroups.blocks.mux.MuxUpHandler;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.jgroups.UniTimeChannelLookup;
+import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -698,7 +698,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 			
 			StudentSectioningPref.updateStudentSectioningPreferences();
 			
-			final JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
+			final JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
 			
 			sInstance = new SolverServerImplementation(false, channel);
 			

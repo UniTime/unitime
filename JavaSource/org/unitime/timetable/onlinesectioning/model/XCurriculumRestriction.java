@@ -27,13 +27,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCurriculumRestriction.XCurriculumRestrictionSerializer.class)
 public class XCurriculumRestriction extends XRestriction {
 	private static final long serialVersionUID = 1L;
 	private Set<String> iAcadAreas  = new HashSet<String>();
@@ -170,19 +166,5 @@ public class XCurriculumRestriction extends XRestriction {
 			out.writeObject(minor);
 		
 		out.writeObject(iConcentrations);
-	}
-	
-	public static class XCurriculumRestrictionSerializer implements Externalizer<XCurriculumRestriction> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCurriculumRestriction object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCurriculumRestriction readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCurriculumRestriction(input);
-		}
 	}
 }

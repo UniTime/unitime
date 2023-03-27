@@ -26,13 +26,9 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
-
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XApproval.XApprovalSerializer.class)
 public class XApproval implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	
@@ -77,19 +73,4 @@ public class XApproval implements Serializable, Externalizable {
 			out.writeLong(iTimeStamp.getTime());
 		out.writeObject(iName);
 	}
-	
-	public static class XApprovalSerializer implements Externalizer<XApproval> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XApproval object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XApproval readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XApproval(input);
-		}
-	}
-
 }

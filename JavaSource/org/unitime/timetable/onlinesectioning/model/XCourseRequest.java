@@ -41,8 +41,6 @@ import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
@@ -70,7 +68,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XCourseRequest.XCourseRequestSerializer.class)
 public class XCourseRequest extends XRequest {
 	private static final long serialVersionUID = 1L;
 	private List<XCourseId> iCourseIds = new ArrayList<XCourseId>();
@@ -868,20 +865,6 @@ public class XCourseRequest extends XRequest {
 		out.writeBoolean(iWaitListSwapWithCourseOffering != null);
 		if (iWaitListSwapWithCourseOffering != null)
 			iWaitListSwapWithCourseOffering.writeExternal(out);
-	}
-	
-	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XCourseRequest object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XCourseRequest readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XCourseRequest(input);
-		}
 	}
 	
 	public static enum XPreferenceType {

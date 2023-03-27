@@ -26,14 +26,11 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XOverride.XOverrideSerializer.class)
 public class XOverride implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	
@@ -102,19 +99,4 @@ public class XOverride implements Serializable, Externalizable {
 		if (iValue != null)
 			out.writeFloat(iValue);
 	}
-	
-	public static class XOverrideSerializer implements Externalizer<XOverride> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XOverride object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XOverride readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XOverride(input);
-		}
-	}
-
 }

@@ -31,8 +31,6 @@ import java.util.Set;
 
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Section;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
@@ -43,7 +41,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XEnrollment.XEnrollmentSerializer.class)
 public class XEnrollment extends XCourseId implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId = null;
@@ -268,19 +265,5 @@ public class XEnrollment extends XCourseId implements Serializable {
 		out.writeBoolean(iReservation != null);
 		if (iReservation != null)
 			iReservation.writeExternal(out);
-	}
-	
-	public static class XEnrollmentSerializer implements Externalizer<XEnrollment> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XEnrollment object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XEnrollment readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XEnrollment(input);
-		}
 	}
 }

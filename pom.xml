@@ -115,21 +115,6 @@
 			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-infinispan</artifactId>
-			<version>${hibernate.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.hibernate</groupId>
-					<artifactId>hibernate-testing</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.rhq.helpers</groupId>
-					<artifactId>rhq-pluginAnnotations</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
 			<version>${itext.version}</version>
@@ -415,22 +400,6 @@
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
 			<version>${jgroups.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-core</artifactId>
-			<version>${infinispan.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jboss.spec.javax.transaction</groupId>
-					<artifactId>jboss-transaction-api_1.1_spec</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-spring</artifactId>
-			<version>${infinispan.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.jbossts</groupId>
@@ -779,7 +748,6 @@
 		<oracle.version>10.2.0.4.0</oracle.version>
 		<jython.version>2.7.2</jython.version>
 		<jgroups.version>3.6.20.Final</jgroups.version>
-		<infinispan.version>7.2.5.Final</infinispan.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
 		<ehcache.version>2.6.11</ehcache.version>
 		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>

@@ -43,8 +43,6 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.model.Student.ModalityPreference;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -61,7 +59,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XSection.XSectionSerializer.class)
 public class XSection implements Serializable, Comparable<XSection>, Externalizable {
     private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
@@ -677,20 +674,6 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 			}
 		} else {
 			out.writeInt(0);
-		}
-	}
-	
-	public static class XSectionSerializer implements Externalizer<XSection> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XSection object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XSection readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XSection(input);
 		}
 	}
 }

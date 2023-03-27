@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -38,7 +36,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest.XPreference;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XAdvisorRequest.XAdvisorRequestSerializer.class)
 public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	
@@ -206,19 +203,5 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	@Override
 	public int hashCode() {
 		return 100 * getPriority() + getAlternative();
-	}
-
-	public static class XAdvisorRequestSerializer implements Externalizer<XAdvisorRequest> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XAdvisorRequest object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XAdvisorRequest readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XAdvisorRequest(input);
-		}
 	}
 }

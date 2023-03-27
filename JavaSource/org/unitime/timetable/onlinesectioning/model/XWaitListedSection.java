@@ -24,15 +24,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XWaitListedSection.XWaitListedSectionSerializer.class)
 public class XWaitListedSection extends XSection {
 	private static final long serialVersionUID = 1L;
 	private Long iWaitListId = null;
@@ -73,19 +70,5 @@ public class XWaitListedSection extends XSection {
 		if (iTimeStamp != null)
 			out.writeLong(iTimeStamp.getTime());
 		out.writeInt(iType.ordinal());
-	}
-	
-	public static class XWaitListedSectionSerializer implements Externalizer<XWaitListedSection> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XWaitListedSection object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XWaitListedSection readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XWaitListedSection(input);
-		}
 	}
 }

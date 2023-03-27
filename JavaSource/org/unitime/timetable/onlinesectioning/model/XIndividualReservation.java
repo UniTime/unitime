@@ -27,8 +27,6 @@ import java.util.Set;
 
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
-import org.infinispan.commons.marshall.Externalizer;
-import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.OverrideReservation;
@@ -37,7 +35,6 @@ import org.unitime.timetable.model.Student;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XIndividualReservation.XIndividualReservationSerializer.class)
 public class XIndividualReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private Set<Long> iStudentIds = new HashSet<Long>();
@@ -201,19 +198,5 @@ public class XIndividualReservation extends XReservation {
 			out.writeBoolean(iOverride);
 		}
 		out.writeByte(iBreakLinkedSections == null ? 2 : iBreakLinkedSections.booleanValue() ? 1 : 0);
-	}
-	
-	public static class XIndividualReservationSerializer implements Externalizer<XIndividualReservation> {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void writeObject(ObjectOutput output, XIndividualReservation object) throws IOException {
-			object.writeExternal(output);
-		}
-
-		@Override
-		public XIndividualReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XIndividualReservation(input);
-		}
 	}
 }
