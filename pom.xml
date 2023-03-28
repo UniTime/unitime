@@ -762,7 +762,7 @@
 		<struts2.version>2.5.30</struts2.version>
 		<protobuf.version>3.21.9</protobuf.version>
 		<gwt.version>2.10.0</gwt.version>
-		<spring.version>5.3.23</spring.version>
+		<spring.version>5.3.26</spring.version>
 		<spring-security.version>5.7.5</spring-security.version>
 		<spring-integration.version>5.5.15</spring-integration.version>
 		<servlet.version>3.0.1</servlet.version>
