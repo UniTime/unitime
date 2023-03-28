@@ -1955,8 +1955,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorGroupConstraint(DepartmentalInstructor instructor, DistributionPref pref) {
-		Constraint gc = createGroupConstraint(pref);
-		if (gc==null) return;
 		boolean loadConstraint = false;
     	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
@@ -1972,13 +1970,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	} else {
     		ic = iInstructors.get(instructor.getUniqueId());
     	}
-    	if (ic != null && ic.variables().size() > 1 && iInstructorDistributionsAcrossDepartments) {
+    	List<Lecture> variables = new ArrayList<Lecture>();
+    	if (ic != null && iInstructorDistributionsAcrossDepartments) {
     		for (Lecture lecutre: ic.variables())
-    			gc.addVariable(lecutre);
+    			variables.add(lecutre);
     		if (ic.getUnavailabilities() != null) {
     			for (Placement p: ic.getUnavailabilities())
     				if (p.variable().getId() > 0l)
-    					gc.addVariable(p.variable());
+    					variables.add(p.variable());
     		}
     	} else {
         	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
@@ -1989,10 +1988,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
        			if (lecture==null) {
        				errorAddGroupConstraintNotFound(pref, clazz); continue;
        			}
-       			gc.addVariable(lecture);
+       			variables.add(lecture);
         	}
     	}
-   		addGroupConstraint(gc);
+    	if (variables.size() > 1) {
+    		Constraint gc = createGroupConstraint(pref);
+    		if (gc==null) return;
+    		for (Lecture var: variables)
+    			gc.addVariable(var);
+       		addGroupConstraint(gc);
+    	}
     	if (ic != null) {
     		List<DistributionType> distributions = iInstructorDistributions.get(ic);
     		if (distributions == null) {
@@ -4353,6 +4358,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			ic: for (InstructorConstraint ic: getModel().getInstructorConstraints()) {
 		    	incProgress();
 				List<Lecture> variables = ic.variables();
+				if (iInstructorDistributionsAcrossDepartments && ic.getUnavailabilities() != null) {
+					for (Placement p: ic.getUnavailabilities())
+						if (p.variable().getId() > 0l)
+							variables.add(p.variable());
+				}
 				if (variables.size() <= 1) continue;
 				List<DistributionType> distributions = iInstructorDistributions.get(ic);
 				if (distributions != null) {
