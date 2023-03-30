@@ -441,7 +441,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		}
 		List<SolverParameterDef> parameters = (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
 				"from SolverParameterDef d where d.visible = true and d.group.type = :type and d.group.name = :group order by d.order")
-				.setInteger("type", type.ordinal()).setString("group", group).setCacheable(true).list();
+				.setParameter("type", type.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setParameter("group", group, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
 		for (SolverParameterDef def: parameters) {
 			SolverParameter p = new SolverParameter();
 			p.setId(def.getUniqueId());
@@ -455,7 +455,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		}
 		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
 				"from SolverPredefinedSetting s where s.appearance = :appearance"
-				).setInteger("appearance", appearance.ordinal()).setCacheable(true).list();
+				).setParameter("appearance", appearance.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
 		
 		response.setConfigurationId(request.getConfigurationId());
 		for (SolverPredefinedSetting config: configs) {

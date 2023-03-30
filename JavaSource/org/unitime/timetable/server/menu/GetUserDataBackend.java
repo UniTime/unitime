@@ -48,7 +48,7 @@ public class GetUserDataBackend implements GwtRpcImplementation<GetUserDataRpcRe
 		try {
 			for (UserData u: (List<UserData>)hibSession.createQuery(
 					"from UserData u where u.externalUniqueId = :externalUniqueId and u.name in :names")
-					.setString("externalUniqueId", user.getExternalUserId())
+					.setParameter("externalUniqueId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE)
 					.setParameterList("names", request)
 					.setCacheable(true).list()) {
 				ret.put(u.getName(), u.getValue());

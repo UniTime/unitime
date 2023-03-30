@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.DateType;
+import org.hibernate.type.IntegerType;
 import org.hibernate.type.LongType;
 import org.hibernate.type.StringType;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -81,15 +84,23 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		Date today = cal.getTime();
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
-		Map<Integer, Integer> type2count = new HashMap<Integer, Integer>();
-		for (Object[] o: (List<Object[]>)query.select("e.class, count(distinct e)").group("e.class").order("e.class").exclude("query").exclude("type").query(hibSession).list()) {
-			int type = ((Number)o[0]).intValue();
+		Map<Class, Integer> type2count = new HashMap<Class, Integer>();
+		for (Object[] o: (List<Object[]>)query.select("type(e), count(distinct e)").group("type(e)").order("type(e)").exclude("query").exclude("type").query(hibSession).list()) {
+			Class type = (Class)o[0];
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
 		}
 		for (int i = 0; i < Event.sEventTypesAbbv.length; i++) {
 			Entity e = new Entity(Long.valueOf(i), Event.sEventTypesAbbv[i], CONSTANTS.eventTypeAbbv()[i], "translated-value", CONSTANTS.eventTypeShort()[i]);
-			Integer count = type2count.get(i);
+			Integer count = null;
+			switch (i) {
+				case 0: count = type2count.get(ClassEvent.class); break;
+				case 1: count = type2count.get(FinalExamEvent.class); break;
+				case 2: count = type2count.get(MidtermExamEvent.class); break;
+				case 3: count = type2count.get(CourseEvent.class); break;
+				case 4: count = type2count.get(SpecialEvent.class); break;
+				case 5: count = type2count.get(UnavailableEvent.class); break;
+			}
 			e.setCount(count == null ? 0 : count);
 			response.add("type", e);
 		}
@@ -124,7 +135,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		if (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null) {
-			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
+			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and type(e) not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
 					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 			Entity my = new Entity(1l, "My", CONSTANTS.eventModeLabel()[1], "translated-value", CONSTANTS.eventModeAbbv()[1]); my.setCount(myCnt);
 			response.add("mode", my);
@@ -237,12 +248,12 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			if (!session.getStatusType().canNoRoleReportExamMidterm())
 				prohibitedTypes = (prohibitedTypes == null ? "MidtermExamEvent": prohibitedTypes + ",MidtermExamEvent");
 			if (prohibitedTypes != null)
-				query.addWhere("xtype", "e.class not in (" + prohibitedTypes + ")");
+				query.addWhere("xtype", "type(e) not in (" + prohibitedTypes + ")");
 			*/
 			query.addWhere("xstatus",
-					"(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0) and " +
-					"(e.class != FinalExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstFinal) > 0) or bit_and(e.examStatus, :XstFinal) > 0) and " +
-					"(e.class != MidtermExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstMidtr) > 0) or bit_and(e.examStatus, :XstMidtr) > 0)"
+					"(type(e) != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0) and " +
+					"(type(e) != FinalExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstFinal) > 0) or bit_and(e.examStatus, :XstFinal) > 0) and " +
+					"(type(e) != MidtermExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstMidtr) > 0) or bit_and(e.examStatus, :XstMidtr) > 0)"
 					);
 			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
 			query.addParameter("xstatus", "XstFinal", Status.ReportExamsFinal.toInt());
@@ -251,7 +262,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			List<Long> departmentIds = new ArrayList<Long>();
 			for (UserQualifier q: context.getUser().getCurrentAuthority().getQualifiers("Department"))
 				departmentIds.add((Long)q.getQualifierId());
-			query.addWhere("xstatus", "(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0 or e.departmentId in (:XstDepts))");
+			query.addWhere("xstatus", "(type(e) != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0 or e.departmentId in (:XstDepts))");
 			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
 			query.addParameter("xstatus", "XstDepts", departmentIds);
 		}
@@ -278,7 +289,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeUnavailable]))
 					type += UnavailableEvent.class.getName();
 			}
-			query.addWhere("type", "e.class in (" + type + ")");
+			query.addWhere("type", "type(e) in (" + type + ")");
 		}
 		
 		Integer after = null;
@@ -403,7 +414,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
 			if (("my".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[1].equals(mode)) && context.isAuthenticated()) {
-				query.addWhere("mode", "e.mainContact.externalUniqueId = :Xowner and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)");
+				query.addWhere("mode", "e.mainContact.externalUniqueId = :Xowner and type(e) not in (ClassEvent, FinalExamEvent, MidtermExamEvent)");
 				query.addParameter("mode", "Xowner", context.getUser().getExternalUserId());
 			} else if ("approved".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[2].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 1");
@@ -550,30 +561,30 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			return where;
 		}
 		
-		public org.hibernate.Query setParams(org.hibernate.Query query, Collection<String> excludeOption) {
+		public org.hibernate.query.Query setParams(org.hibernate.query.Query query, Collection<String> excludeOption) {
 			for (Map.Entry<String, Map<String, Object>> entry: iParams.entrySet()) {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
-							query.setParameterList(param.getKey(), list, new LongType());
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
 						else if (!list.isEmpty() && list.get(0) instanceof String)
-							query.setParameterList(param.getKey(), list, new StringType());
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 			}
@@ -636,23 +647,29 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					(iOrderBy == null ? "" : " order by " + iOrderBy);
 			}
 			
-			public org.hibernate.Query query(org.hibernate.Session hibSession) {
-				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
+			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
+				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
-					} else if (param.getValue() instanceof Collection<?>) {
-						query.setParameterList(param.getKey(), (Collection<?>)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 				if (iLimit != null)

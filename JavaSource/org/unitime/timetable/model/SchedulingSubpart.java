@@ -494,7 +494,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		Set parentPrefs = new HashSet();
     		for (InstructorCoursePref icp: (List<InstructorCoursePref>)InstructorCoursePrefDAO.getInstance().getSession().createQuery(
     				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId")
-    				.setLong("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId()).setCacheable(true).list()) {
+    				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     			InstructorPref ip = new InstructorPref();
     			ip.setInstructor((DepartmentalInstructor)icp.getOwner());
     			ip.setPrefLevel(icp.getPrefLevel());
@@ -735,7 +735,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		getSession().
     		createQuery("select distinct s from SchedulingSubpart s where " +
     				"s.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId").
-    		setLong("sessionId",sessionId.longValue()).
+    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     		list();
     }
     
@@ -865,8 +865,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return (SchedulingSubpart)new SchedulingSubpartDAO().
             getSession().
             createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
-            setLong("sessionId", sessionId.longValue()).
-            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
             uniqueResult();
     }

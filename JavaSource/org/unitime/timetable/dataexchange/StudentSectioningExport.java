@@ -68,7 +68,7 @@ public class StudentSectioningExport extends BaseExport {
 	        
 	        for (Student student: (List<Student>)getHibSession().createQuery(
 	        		"select s from Student s where s.session.uniqueId = :sessionId")
-	        		.setLong("sessionId", session.getUniqueId()).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Element studentEl = root.addElement("student");
 	        	studentEl.addAttribute("key", student.getExternalUniqueId() == null || student.getExternalUniqueId().isEmpty() ? student.getUniqueId().toString() : student.getExternalUniqueId());
 	        	if (student.getSectioningStatus() != null)

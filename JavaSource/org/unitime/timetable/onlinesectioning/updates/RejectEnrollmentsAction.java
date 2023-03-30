@@ -114,8 +114,8 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						CourseRequest cr = null;
 						for (StudentClassEnrollment e: (List<StudentClassEnrollment>)helper.getHibSession().createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering = :offeringId")
-								.setLong("studentId", enrollment.getStudentId())
-								.setLong("offeringId", getOfferingId())
+								.setParameter("studentId", enrollment.getStudentId(), org.hibernate.type.LongType.INSTANCE)
+								.setParameter("offeringId", getOfferingId(), org.hibernate.type.LongType.INSTANCE)
 								.list()) {
 							if (cr == null) cr = e.getCourseRequest();
 							helper.getHibSession().delete(e);

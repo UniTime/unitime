@@ -35,6 +35,10 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.DateType;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.LongType;
 import org.hibernate.type.StringType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -90,8 +94,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					TimetableManagerDAO.getInstance().getSession().createQuery(
 							"select d.uniqueId from TimetableManager m inner join m.departments d where " +
 							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId")
-							.setLong("sessionId", request.getSessionId())
-							.setString("user", request.getOption("user"))
+							.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("user", request.getOption("user"), org.hibernate.type.StringType.INSTANCE)
 							.setCacheable(true).list()
 					);
 		}
@@ -247,7 +251,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		org.hibernate.Session hibSession = RoomDAO.getInstance().getSession();
 
 		RoomQuery rq = getQuery(sessionId, options, context);
-		org.hibernate.Query q = rq.select().exclude(ignoreCommand).query(hibSession);
+		org.hibernate.query.Query q = rq.select().exclude(ignoreCommand).query(hibSession);
 		List<Location> locations = q.setCacheable(true).list();
 		
 		Set<String> building = (options == null || "building".equals(ignoreCommand) ? null : options.get("building"));
@@ -276,7 +280,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			if (coord.isEmpty()) {
 				for (Building b: (List<Building>)hibSession.createQuery("select b from Building b where" +
 						" b.session.uniqueId = :sessionId and b.abbreviation in :building")
-						.setLong("sessionId", sessionId)
+						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 						.setParameterList("building", building, new StringType())
 						.list()) {
 					coord.add(new Coordinates(-b.getUniqueId(), b.getCoordinateX(), b.getCoordinateY()));
@@ -580,10 +584,10 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			for (String s: features) {
 				if (department == null) {
 					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id;
-					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and f" + id + ".class = GlobalRoomFeature";
+					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and type(f" + id + ") = GlobalRoomFeature";
 				} else {
 					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id + " left outer join f" + id + ".department fd" + id;
-					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and (f" + id + ".class = GlobalRoomFeature or fd" + id +".deptCode = :Xfd)";
+					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and (type(f" + id + ") = GlobalRoomFeature or fd" + id +".deptCode = :Xfd)";
 				}
 				query.addParameter("feature", "Xf" + id, s);
 				id++;
@@ -770,22 +774,30 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			return where;
 		}
 		
-		public org.hibernate.Query setParams(org.hibernate.Query query, Collection<String> excludeOption) {
+		public org.hibernate.query.Query setParams(org.hibernate.query.Query query, Collection<String> excludeOption) {
 			for (Map.Entry<String, Map<String, Object>> entry: iParams.entrySet()) {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 			}
@@ -839,22 +851,30 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					(iOrderBy == null ? "" : " order by " + iOrderBy);
 			}
 			
-			public org.hibernate.Query query(org.hibernate.Session hibSession) {
+			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				// System.out.println("Q: " + query());
-				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
+				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 				if (iLimit != null)

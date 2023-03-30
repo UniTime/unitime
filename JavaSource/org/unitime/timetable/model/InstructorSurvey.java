@@ -47,8 +47,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	public static InstructorSurvey getInstructorSurvey(String externalUniqueId, Long sessionId) {
 		return  (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-				).setLong("sessionId", sessionId)
-				.setString("externalId", externalUniqueId)
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("externalId", externalUniqueId, org.hibernate.type.StringType.INSTANCE)
 				.setMaxResults(1).uniqueResult();
 	}
 	
@@ -62,7 +62,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 				"select count(s) from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
 				"di.department = :deptId")
-				.setLong("deptId", departmentId).setCacheable(true).uniqueResult()
+				.setParameter("deptId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()
 				).intValue() > 0;
 	}
 	
@@ -72,7 +72,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 				"select s from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
 				"di.department = :deptId")
-				.setLong("deptId", departmentId).setCacheable(true).list()) {
+				.setParameter("deptId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			ret.put(is.getExternalUniqueId(), is);
 		}
 		return ret;
@@ -82,8 +82,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 		Map<Department, DepartmentalInstructor> ret = new HashMap<Department, DepartmentalInstructor>();
 		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId = :extId and department.session = :sessionId")
-				.setString("extId", getExternalUniqueId())
-				.setLong("sessionId", io.getSessionId())
+				.setParameter("extId", getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", io.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			if (di.getDepartment().equals(io.getDepartment()))
 				return di;

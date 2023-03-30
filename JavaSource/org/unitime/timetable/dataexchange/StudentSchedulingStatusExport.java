@@ -56,7 +56,7 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        
 	        for (StudentSectioningStatus status: (List<StudentSectioningStatus>)getHibSession().createQuery(
 	        		"from StudentSectioningStatus where session is null or session = :sessionId order by reference"
-	        		).setLong("sessionId", session.getUniqueId()).list()) {
+	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Element statusElement = root.addElement("status");
 	        	statusElement.addAttribute("reference", status.getReference());
 	        	statusElement.addAttribute("name", status.getLabel());

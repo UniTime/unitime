@@ -184,7 +184,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 		try {
 			hibSession = SessionDAO.getInstance().getSession();
             hibSession.setCacheMode(CacheMode.IGNORE);
-            hibSession.setFlushMode(FlushMode.MANUAL);
+            hibSession.setHibernateFlushMode(FlushMode.MANUAL);
             
             tx = hibSession.beginTransaction();
             
@@ -218,7 +218,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
         for (Class_ clazz: (List<Class_>)hibSession.createQuery(
         		"select distinct c from Class_ c where " +
         		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-        		.setLong("sessionId", session.getUniqueId()).list()) {
+        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
         incProgress();
@@ -227,7 +227,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
         setPhase("Loading courses...", 1);
         for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
         		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
-        		.setLong("sessionId", session.getUniqueId()).list()) {
+        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iCourses.put(course.getUniqueId(), course);
         }
         incProgress();

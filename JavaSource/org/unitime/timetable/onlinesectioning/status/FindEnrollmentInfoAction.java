@@ -150,7 +150,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
 				"select c.uniqueId, c.snapshotLimit from " +
 				"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-				"co.uniqueId = :courseId").setLong("courseId", courseId).setCacheable(true).list()) {
+				"co.uniqueId = :courseId").setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Long classId = (Long)o[0];
 			Integer limit = (Integer)o[1];
 			ret.put(classId, limit);

@@ -57,8 +57,8 @@ public class StudentAccomodation extends BaseStudentAccomodation {
                     "select a from StudentAccomodation a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.abbreviation=:abbv").
-             setLong("sessionId", sessionId.longValue()).
-             setString("abbv", abbv).
+             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+             setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -70,7 +70,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name")
-    			.setLong("offeringId", offering.getUniqueId())
+    			.setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -84,7 +84,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.clazz.uniqueId = :classId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name")
-    			.setLong("classId", clazz.getUniqueId())
+    			.setParameter("classId", clazz.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -115,7 +115,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
         			"where " + query + " " +
         			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
         			"order by count(a) desc, a.name")
-        			.setLong("examOwnerId", owner.getOwnerId())
+        			.setParameter("examOwnerId", owner.getOwnerId(), org.hibernate.type.LongType.INSTANCE)
         			.setCacheable(true).list()) {
             	StudentAccomodation a = (StudentAccomodation)line[0];
             	int count = ((Number)line[1]).intValue();

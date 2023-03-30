@@ -52,7 +52,7 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	public static String PROP_EMAIL = "email";
 	public static String PROP_NOTE = "note";
 	public static String PROP_SUBMITTED = "submitted";
-	public static String PROP_CHANGED_EXTID = "changedBy";
+	public static String PROP_CHANGED_BY = "changedBy";
 	public static String PROP_CHANGED_TS = "changed";
 	public static String PROP_APPLIED_DEPT = "appliedDeptCode";
 	public static String PROP_APPLIED_TS = "applied";

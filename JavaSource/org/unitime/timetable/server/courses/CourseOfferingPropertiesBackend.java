@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -207,7 +207,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(5000);
 			q.setCacheable(true);
-			q.setLong("acadSessionId", acadSessionId);
+			q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
 	        
 			List result = q.list();
 			if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
@@ -278,7 +278,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			Query q2 = hibSession2.createQuery(query2.toString());
 			q2.setFetchSize(5000);
 			q2.setCacheable(true);
-			q2.setLong("acadSessionId", acadSessionId);
+			q2.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
 	        
 			List result2 = q2.list();
 	        Collections.sort(result2);

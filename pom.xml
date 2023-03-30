@@ -102,17 +102,16 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-ehcache</artifactId>
+			<artifactId>hibernate-c3p0</artifactId>
 			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-hibernate-cache-v53</artifactId>
+			<version>${infinispan-hibernate.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.lowagie</groupId>
@@ -209,11 +208,6 @@
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>${mail.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>${dbcp.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -439,16 +433,6 @@
 			<version>${jython.version}</version>
 		</dependency>
 		 -->
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache-core</artifactId>
-			<version>${ehcache.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache-jgroupsreplication</artifactId>
-			<version>${ehcache-jgroups.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>net.sf.biweekly</groupId>
 			<artifactId>biweekly</artifactId>
@@ -726,7 +710,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>4.3.11.Final</hibernate.version>
+		<hibernate.version>5.6.15.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>2.5.30</struts2.version>
 		<protobuf.version>3.21.9</protobuf.version>
@@ -737,7 +721,6 @@
 		<servlet.version>3.0.1</servlet.version>
 		<jsp.version>2.2</jsp.version>
 		<mail.version>1.4.7</mail.version>
-		<dbcp.version>1.4</dbcp.version>
 		<io.version>2.11.0</io.version>
 		<restlet.version>2.3.12</restlet.version>
 		<log4j.version>2.19.0</log4j.version>
@@ -749,8 +732,6 @@
 		<jython.version>2.7.2</jython.version>
 		<jgroups.version>3.6.20.Final</jgroups.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
-		<ehcache.version>2.6.11</ehcache.version>
-		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>
 		<joda.version>2.12.1</joda.version>
 		<gson.version>2.10</gson.version>
 		<biweekly.version>0.6.6</biweekly.version>
@@ -762,6 +743,7 @@
 		<ant.version>1.10.12</ant.version>
 		<text.version>1.10.0</text.version>
 		<asm.version>9.4</asm.version>
+		<infinispan-hibernate.version>13.0.15.Final</infinispan-hibernate.version>
 	</properties>
 
 	<distributionManagement>

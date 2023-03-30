@@ -73,7 +73,7 @@ public class SavedHqlExportToJSON extends SavedHqlExportToCSV {
 			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
 		} catch (NumberFormatException e) {}
 		if (hql == null)
-			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setString("name", report).setMaxResults(1).uniqueResult();
+			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setParameter("name", report, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();

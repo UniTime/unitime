@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.type.StringType;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
@@ -68,7 +68,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<Department>((new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct d from Department as d where d.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setCacheable(true).
 			list());
     }
@@ -78,7 +78,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<Department>((new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d where d.externalManager=true and d.session.uniqueId=:sessionId").
-				setLong("sessionId", sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
 				list());
 	}
@@ -88,7 +88,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
         return new TreeSet<Department>((new DepartmentDAO()).
                 getSession().
                 createQuery("select distinct d from Department as d where d.externalManager=false and d.session.uniqueId=:sessionId").
-                setLong("sessionId", sessionId.longValue()).
+                setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
                 setCacheable(true).
                 list());
     }
@@ -115,10 +115,10 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	public static Department findByDeptCode(String deptCode, Long sessionId, org.hibernate.Session hibSession) {
 		return (Department)hibSession.
 			createQuery("select distinct d from Department as d where d.deptCode=:deptCode and d.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId).
-			setString("deptCode", deptCode).
+			setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
+			setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			setFlushMode(FlushMode.MANUAL).
+			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 	}
 
@@ -212,7 +212,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		for (String other: (List<String>)DepartmentDAO.getInstance().getSession().createQuery(
 				"select distinct x.department.roomSharingColor from Department d inner join d.roomDepts rd inner join rd.room.roomDepts x " +
 				"where d.uniqueId = :uniqueId and d != x.department"
-				).setLong("uniqueId", getUniqueId()).setCacheable(true).list()) {
+				).setParameter("uniqueId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (other != null && distance(color, other) < 50) return true;
 		}
 		return false;
@@ -284,7 +284,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return (new DepartmentDAO()).
 			getSession().
 			createQuery("select distinct c from Class_ as c where c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)").
-			setLong("departmentId", getUniqueId().longValue()).
+			setParameter("departmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			list();
 	}
 	
@@ -300,7 +300,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				"left join fetch ioc.instructionalOffering as io "+
 				"left join fetch io.courseOfferings as cox "+
 				"where c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)").
-				setLong("departmentId", getUniqueId().longValue()).
+				setParameter("departmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 				list();
 
 	}
@@ -313,8 +313,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				"select distinct c from Class_ as c where (c.managingDept=:departmentId or (c.managingDept is null and c.controllingDept=:departmentId)) and "+
 				"not exists (from c.assignments as a where a.solution=:solutionId)"
 				).
-		setLong("departmentId", getUniqueId().longValue()).
-		setInteger("solutionId", solution.getUniqueId().intValue()).
+		setParameter("departmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("solutionId", solution.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 		list();
 	}
 	
@@ -324,21 +324,21 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				(new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.timetableManagers as m where d.session.uniqueId=:sessionId").
-				setLong("sessionId", sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
 				list());
 		ret.addAll(
 				(new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.roomDepts as r where d.session.uniqueId=:sessionId").
-				setLong("sessionId", sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
 				list());
 		ret.addAll(
 				(new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.subjectAreas as r where d.session.uniqueId=:sessionId").
-				setLong("sessionId", sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
 				list());
 		return ret;
@@ -421,12 +421,11 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			//   department check to see if the new term has a department that matches 
 			//   the external unique id
 			@SuppressWarnings("unchecked")
-			List<Department> l = hibSession.
-			createCriteria(Department.class).
-			add(Restrictions.eq("externalUniqueId",this.getExternalUniqueId())).
-			add(Restrictions.eq("session.uniqueId", newSessionId)).
-			setFlushMode(FlushMode.MANUAL).
-			setCacheable(true).list();
+			List<Department> l = hibSession.createQuery("from Department where externalUniqueId = :externalUniqueId and session.uniqueId = :newSessionId", Department.class)
+				.setParameter("externalUniqueId",  this.getExternalUniqueId(), StringType.INSTANCE)
+				.setParameter("newSessionId", newSessionId, StringType.INSTANCE)
+				.setHibernateFlushMode(FlushMode.MANUAL)
+				.setCacheable(true).list();
 
 			if (l.size() == 1){
 				newDept = (Department) l.get(0);
@@ -478,7 +477,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<InstructorAttributeType>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select distinct t from InstructorAttribute a inner join a.type t " +
         		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)")
-				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
+				.setParameter("sessionId", getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -486,18 +485,18 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<InstructorAttribute>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select a from InstructorAttribute a " +
         		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)")
-				.setLong("sessionId", getSessionId()).setLong("departmentId", getUniqueId()).setCacheable(true).list());
+				.setParameter("sessionId", getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 	
 	public static boolean isInstructorSchedulingCommitted(Long departmentId) {
 		Number oc = (Number)DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
-				"oc.instructor.department.uniqueId = :departmentId").setLong("departmentId", departmentId).
+				"oc.instructor.department.uniqueId = :departmentId").setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).uniqueResult();
 		if (oc.intValue() > 0) return true;
 		Number ci = (Number)DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
-				"ci.instructor.department.uniqueId = :departmentId").setLong("departmentId", departmentId).
+				"ci.instructor.department.uniqueId = :departmentId").setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).uniqueResult();
 		return ci.intValue() > 0;
 	}

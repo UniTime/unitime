@@ -539,8 +539,8 @@ public class EventImport extends EventRelatedImports {
 		return(Session) this.
 		getHibSession().
 		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.eventBeginDate <= :aDate  and s.eventEndDate >= :aDate").
-		setString("academicInititive", academicInitiative).
-		setDate("aDate", aDate).
+		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aDate", aDate, org.hibernate.type.DateType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -551,9 +551,9 @@ public class EventImport extends EventRelatedImports {
 		if (session != null) {
 			room = (Room) getHibSession().createQuery(
 					"from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session = :sessionId")
-					.setLong("sessionId", session.getUniqueId())
-					.setString("building", buildingAbbv)
-					.setString("roomNbr", roomNumber)
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("building", buildingAbbv, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("roomNbr", roomNumber, org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true)
 					.setMaxResults(1)
 					.setCacheable(true)
@@ -563,10 +563,10 @@ public class EventImport extends EventRelatedImports {
 			List rooms =  this.
 			getHibSession().
 			createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building").
-			setString("building", buildingAbbv).
-			setString("roomNbr", roomNumber).
+			setParameter("building", buildingAbbv, org.hibernate.type.StringType.INSTANCE).
+			setParameter("roomNbr", roomNumber, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			setFlushMode(FlushMode.MANUAL).
+			setHibernateFlushMode(FlushMode.MANUAL).
 			list();
 			if (rooms != null && rooms.size() > 0){
 				room = (Room) rooms.iterator().next();
@@ -581,9 +581,9 @@ public class EventImport extends EventRelatedImports {
 			sponsoringOrg = (SponsoringOrganization)this.
 			getHibSession().
 			createQuery("select distinct so from SponsoringOrganization as so where so.name = :name").
-			setString("name", name).
+			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			setFlushMode(FlushMode.MANUAL).
+			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 		}
 		return(sponsoringOrg);
@@ -617,10 +617,10 @@ public class EventImport extends EventRelatedImports {
 
 		return((Class_) getHibSession().
 		createQuery("select c from Class_ as c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and c.externalUniqueId = :anExternalId").
-		setString("academicInititive", academicInitiative).
-		setString("aYear", year).
-		setString("aTerm", term).
-		setString("anExternalId", externalId).
+		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
+		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
 		uniqueResult());
@@ -634,10 +634,10 @@ public class EventImport extends EventRelatedImports {
 
 		return((InstructionalOffering) getHibSession().
 		createQuery("select io from InstructionalOffering as io inner join io.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and io.externalUniqueId = :anExternalId").
-		setString("academicInititive", academicInitiative).
-		setString("aYear", year).
-		setString("aTerm", term).
-		setString("anExternalId", externalId).
+		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
+		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
 		uniqueResult());
@@ -651,10 +651,10 @@ public class EventImport extends EventRelatedImports {
 
 		return((CourseOffering) getHibSession().
 		createQuery("select co from CourseOffering as co inner join co.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and co.externalUniqueId = :anExternalId").
-		setString("academicInititive", academicInitiative).
-		setString("aYear", year).
-		setString("aTerm", term).
-		setString("anExternalId", externalId).
+		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
+		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
+		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
 		uniqueResult());

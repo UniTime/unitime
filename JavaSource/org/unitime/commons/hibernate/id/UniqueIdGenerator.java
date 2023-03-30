@@ -24,55 +24,76 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.ObjectNameNormalizer;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.id.Configurable;
+import org.hibernate.boot.cfgxml.spi.LoadedConfig;
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.SqlStringGenerationContext;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.hibernate.id.enhanced.TableGenerator;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
  * @author Tomas Muller
  */
-public class UniqueIdGenerator implements IdentifierGenerator, Configurable {
+public class UniqueIdGenerator implements IdentifierGenerator {
     IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
-    private static ObjectNameNormalizer sNormalizer = null;
     
-    public static void configure(Configuration config) {
-        sGenClass = config.getProperty("tmtbl.uniqueid.generator");
-        if (sGenClass==null) sGenClass = "org.hibernate.id.SequenceGenerator";
-        sDefaultSchema = config.getProperty("default_schema");
-        sNormalizer = config.createMappings().getObjectNameNormalizer();
+    public static void configure(LoadedConfig config) {
+        sGenClass = (String)config.getConfigurationValues().get("tmtbl.uniqueid.generator");
+        if (sGenClass==null) sGenClass = "org.hibernate.id.enhanced.SequenceStyleGenerator";
+        sDefaultSchema = (String)config.getConfigurationValues().get("default_schema");
     }
     
     public IdentifierGenerator getGenerator() throws HibernateException {
         if (iGenerator==null) {
-            if (sGenClass==null)
+        	if (sGenClass==null) {
                 throw new HibernateException("UniqueIdGenerator is not configured, please call configure(Config) first.");
-            try {
-                iGenerator = (IdentifierGenerator)Class.forName(sGenClass).getConstructor(new Class[]{}).newInstance(new Object[]{});
-            } catch (Exception e) {
-                throw new HibernateException("Unable to initialize uniqueId generator, reason: "+e.getMessage(),e);
-            }
+        	} else if ("org.hibernate.id.TableHiLoGenerator".equals(sGenClass)) {
+        		iGenerator = new TableGenerator();
+        	} else if ("org.hibernate.id.SequenceGenerator".equals(sGenClass)) {
+        		iGenerator = new SequenceStyleGenerator();
+        	} else { 
+                try {
+                    iGenerator = (IdentifierGenerator)Class.forName(sGenClass).getConstructor(new Class[]{}).newInstance(new Object[]{});
+                } catch (Exception e) {
+                    throw new HibernateException("Unable to initialize uniqueId generator, reason: "+e.getMessage(),e);
+                }
+        	}
         }
         return iGenerator;
     }
     
-    public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
+    @Override
+    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
         return getGenerator().generate(session, object);
     }
     
-    public void configure(Type type, Properties params, Dialect d) throws MappingException {
-        if (getGenerator() instanceof Configurable) {
-            if (params.getProperty("schema") == null && sDefaultSchema != null)
-                params.setProperty("schema", sDefaultSchema);
-            if (params.get("identifier_normalizer") == null && sNormalizer != null)
-            	params.put("identifier_normalizer", sNormalizer);
-            ((Configurable)getGenerator()).configure(type, params, d);
-        }
+    @Override
+    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+    	if (params.getProperty("schema") == null && sDefaultSchema != null)
+            params.setProperty("schema", sDefaultSchema);
+    	if (getGenerator() instanceof TableGenerator) {
+    		params.setProperty("segment_value", "default");//params.getProperty("sequence_name", params.getProperty("sequence")));
+    		params.setProperty("optimizer", "legacy-hilo");
+    		params.setProperty("increment_size", "32767");
+    		params.setProperty("value_column_name", "next_hi");
+    		params.setProperty("table_name", "hibernate_unique_key");
+    		
+    	}
+        getGenerator().configure(type, params, serviceRegistry);
     }
-
+    
+    @Override
+	public void initialize(SqlStringGenerationContext context) {
+    	getGenerator().initialize(context);
+    }
+    
+    @Override
+	public void registerExportables(Database database) {
+    	getGenerator().registerExportables(database);
+    }
 }

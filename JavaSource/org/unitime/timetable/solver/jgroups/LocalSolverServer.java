@@ -209,7 +209,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 					
 					int nrSolutions = ((Number)hibSession.createQuery(
 							"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
-							.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
+							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 					if (nrSolutions == 0) continue;
 					
 					Properties properties = ApplicationProperties.getConfigProperties();

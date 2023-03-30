@@ -23,7 +23,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseExternalBuilding;
 import org.unitime.timetable.model.dao.ExternalBuildingDAO;
 
@@ -75,16 +74,13 @@ public class ExternalBuilding extends BaseExternalBuilding {
 	}
 
 	public static ExternalBuilding findExternalBuildingForSession(String externalUniqueId, Session session){
-		ExternalBuildingDAO bDao = new ExternalBuildingDAO();
-		List extBldgs = bDao.getSession().createCriteria(ExternalBuilding.class)
-			.add(Restrictions.eq("externalUniqueId", externalUniqueId))
-			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
-			.setCacheable(true).list();
-
-		if (extBldgs.size() == 1){
-			return((ExternalBuilding) extBldgs.get(0));
-		}
-		return(null);
+		return ExternalBuildingDAO.getInstance().getSession()
+				.createQuery("from ExternalBuilding where externalUniqueId = :externalId and session.uniqueId = :sessionId", ExternalBuilding.class)
+				.setParameter("externalId", externalUniqueId)
+				.setParameter("sessionId", session.getUniqueId())
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 
@@ -96,17 +92,13 @@ public class ExternalBuilding extends BaseExternalBuilding {
 	 * @return null if no match found
 	 */
 	public static ExternalBuilding findByAbbv (Long sessionId, String bldgAbbr) {
-
-		ExternalBuildingDAO bldgDAO = new ExternalBuildingDAO();
-	    List bldgs = bldgDAO.getSession().createCriteria(ExternalBuilding.class)
-				    .add(Restrictions.eq("session.uniqueId", sessionId))
-				    .add(Restrictions.eq("abbreviation", bldgAbbr))
-				    .list();
-	    
-	    if (bldgs == null || bldgs.size()==0)
-	    	return null;
-	    
-		return (ExternalBuilding)bldgs.get(0);
+		return ExternalBuildingDAO.getInstance().getSession()
+				.createQuery("from ExternalBuilding where abbreviation = :bldgAbbr and session.uniqueId = :sessionId", ExternalBuilding.class)
+				.setParameter("bldgAbbr", bldgAbbr)
+				.setParameter("sessionId", sessionId)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 	/**

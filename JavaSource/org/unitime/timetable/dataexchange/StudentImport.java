@@ -83,70 +83,70 @@ public class StudentImport extends BaseImport {
 	        Hashtable<String, Student> students = new Hashtable<String, Student>();
 	        for (Student student: (List<Student>)getHibSession().createQuery(
 	        		"from Student s where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
-                    setLong("sessionId",session.getUniqueId()).list()) { 
+                    setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) { 
 	        	students.put(student.getExternalUniqueId(), student);
 	        }
 	        
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
             for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from AcademicArea where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
             }
 
             Map<String, AcademicClassification> code2clasf = new Hashtable<String, AcademicClassification>();
             for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
-            		"from AcademicClassification where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from AcademicClassification where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2clasf.put(clasf.getCode(), clasf);
             }
             
             Map<String, PosMajor> code2major = new Hashtable<String, PosMajor>();
             for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
-            		"from PosMajor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from PosMajor where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	for (AcademicArea area: major.getAcademicAreas())
             		code2major.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
             }
             
             Map<String, PosMajorConcentration> code2concentration = new Hashtable<String, PosMajorConcentration>();
             for (PosMajorConcentration conc: (List<PosMajorConcentration>)getHibSession().createQuery(
-            		"from PosMajorConcentration where major.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from PosMajorConcentration where major.session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	for (AcademicArea area: conc.getMajor().getAcademicAreas())
             		code2concentration.put(area.getAcademicAreaAbbreviation() + ":" + conc.getMajor().getCode() + ":" + conc.getCode(), conc);
             }
             
             Map<String, Degree> code2degree = new Hashtable<String, Degree>();
             for (Degree deg: (List<Degree>)getHibSession().createQuery(
-            		"from Degree where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from Degree where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2degree.put(deg.getReference(), deg);
             }
             
             Map<String, Program> code2program = new Hashtable<String, Program>();
             for (Program prog: (List<Program>)getHibSession().createQuery(
-            		"from Program where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from Program where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2program.put(prog.getReference(), prog);
             }
             
             Map<String, Campus> code2campus = new Hashtable<String, Campus>();
             for (Campus camp: (List<Campus>)getHibSession().createQuery(
-            		"from Campus where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from Campus where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2campus.put(camp.getReference(), camp);
             }
             
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
             for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
-            		"from PosMinor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from PosMinor where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	for (AcademicArea area: minor.getAcademicAreas())
             		code2minor.put(area.getAcademicAreaAbbreviation() + ":" + minor.getCode(), minor);
             }
 
             Map<String, StudentGroup> code2group = new Hashtable<String, StudentGroup>();
             for (StudentGroup group: (List<StudentGroup>)getHibSession().createQuery(
-            		"from StudentGroup where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from StudentGroup where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2group.put(group.getGroupAbbreviation(), group);
             }
             
             Map<String, StudentAccomodation> code2accomodation = new Hashtable<String, StudentAccomodation>();
             for (StudentAccomodation accomodation: (List<StudentAccomodation>)getHibSession().createQuery(
-            		"from StudentAccomodation where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from StudentAccomodation where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	code2accomodation.put(accomodation.getAbbreviation(), accomodation);
             }
 	        

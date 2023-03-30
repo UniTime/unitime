@@ -39,6 +39,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.Progress;
@@ -49,9 +53,9 @@ import org.dom4j.io.SAXReader;
 import org.hibernate.CacheMode;
 import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
@@ -123,6 +127,7 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -163,7 +168,11 @@ public class SessionRestore implements SessionRestoreInterface {
 		if (!hasSession) return lookup(entity, property, value);
 		if (entity.getElement(session) != null) return false;
 		try {
-			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).add(Restrictions.isNull(session)).uniqueResult();
+			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
+			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
+			Root root = cr.from(entity.getMetaData().getMappedClass());
+			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
+			Object object = iHibSession.createQuery(cr).uniqueResult();
 			if (object != null)
 				entity.setObject(object);
 			else
@@ -171,7 +180,11 @@ public class SessionRestore implements SessionRestoreInterface {
 			return object != null;
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
-			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).add(Restrictions.isNull(session)).list();
+			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
+			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
+			Root root = cr.from(entity.getMetaData().getMappedClass());
+			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
+			List<Object> list = iHibSession.createQuery(cr).list();
 			if (!list.isEmpty()) {
 				Object object = list.get(0);
 				entity.setObject(object);
@@ -183,7 +196,11 @@ public class SessionRestore implements SessionRestoreInterface {
 	
 	private boolean lookup(Entity entity, String property, Object value) {
 		try {
-			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).uniqueResult();
+			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
+			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
+			Root root = cr.from(entity.getMetaData().getMappedClass());
+			cr.select(root).where(cb.equal(root.get(property), value));
+			Object object = iHibSession.createQuery(cr).uniqueResult();
 			if (object != null)
 				entity.setObject(object);
 			else
@@ -191,7 +208,11 @@ public class SessionRestore implements SessionRestoreInterface {
 			return object != null;
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
-			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).list();
+			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
+			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
+			Root root = cr.from(entity.getMetaData().getMappedClass());
+			cr.select(root).where(cb.equal(root.get(property), value));
+			List<Object> list = iHibSession.createQuery(cr).list();
 			if (!list.isEmpty()) {
 				Object object = list.get(0);
 				entity.setObject(object);
@@ -209,17 +230,18 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (oldSession != null) iIsClone = true;
 			Session session = (Session)entity.getObject();
 			int attempt = 0;
-			while (!iHibSession.createCriteria(Session.class)
-					.add(Restrictions.eq("academicInitiative", session.getAcademicInitiative() + (attempt == 0 ? "" : " [" + attempt + "]")))
-					.add(Restrictions.eq("academicYear", session.getAcademicYear()))
-					.add(Restrictions.eq("academicTerm", session.getAcademicTerm())).list().isEmpty()) {
+			while (!iHibSession.createQuery("from Session where academicInitiative = :academicInitiative and academicYear = :academicYear and academicTerm = :academicTerm", Session.class)
+					.setParameter("academicInitiative", session.getAcademicInitiative() + (attempt == 0 ? "" : " [" + attempt + "]"))
+					.setParameter("academicYear", session.getAcademicYear())
+					.setParameter("academicTerm", session.getAcademicTerm()).list().isEmpty()) {
 				attempt ++;
 			}
 			if (attempt > 0)
 				session.setAcademicInitiative(session.getAcademicInitiative() + " [" + attempt + "]");
 		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
-		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference(), "session")) save = false;
+		if (entity.getObject() instanceof StudentSectioningStatus && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
+		else if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference(), "session")) save = false;
 		if (entity.getObject() instanceof TimetableManager && lookup(entity, "externalUniqueId", ((TimetableManager)entity.getObject()).getExternalUniqueId())) save = false;
 		if (entity.getObject() instanceof ItypeDesc && lookup(entity, "itype", Integer.valueOf(entity.getId()))) save = false;
 		if (entity.getObject() instanceof SolverInfoDef && lookup(entity, "name", ((SolverInfoDef)entity.getObject()).getName())) save = false;
@@ -323,7 +345,15 @@ public class SessionRestore implements SessionRestoreInterface {
 						value  = new DateType().fromStringValue(element.getValue(0));
 					}
 				} else if (type instanceof TimestampType) {
-					value = new TimestampType().fromStringValue(element.getValue(0));
+					try {
+						value = new TimestampType().fromStringValue(element.getValue(0));
+					} catch (HibernateException e) {
+						try {
+							value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
+						} catch (ParseException x) {
+							throw new HibernateException(x);
+						}
+					}
 				} else if (type instanceof StringType) {
 					value = element.getValue(0);
 					Integer len = lengths.get(property);
@@ -360,7 +390,7 @@ public class SessionRestore implements SessionRestoreInterface {
 	
 	
 	private Object checkUnknown(Class clazz, String id, Object object) {
-		if (object == null)
+		if (object == null && !"0".equals(id))
 			message("Unknown " + clazz.getName().substring(clazz.getName().lastIndexOf('.') + 1), id);
 		return object;
 	}
@@ -427,9 +457,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			TableData.Element element = entity.getElement("group");
 			SolverParameterGroup group = (SolverParameterGroup)get(SolverParameterGroup.class, element.getValue(0));
 			if (group != null && group.getUniqueId() != null) {
-				List list = iHibSession.createCriteria(SolverParameterDef.class)
-					.add(Restrictions.eq("name", def.getName()))
-					.add(Restrictions.eq("group", group)).list();
+				List<SolverParameterDef> list = iHibSession.createQuery(
+						"from SolverParameterDef where name = :name and group.uniqueId = :groupId"
+						).setParameter("name", def.getName())
+						.setParameter("groupId", group.getUniqueId()).list();
 				if (!list.isEmpty()) {
 					if (list.size() > 1) 
 						message("Multiple results for SolverParameterDef (name=" + def.getName() + ", group=" + group.getName() + ")", "");
@@ -442,9 +473,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			Roles role = (Roles)get(Roles.class, entity.getElement("role").getValue(0));
 			TimetableManager manager = (TimetableManager)get(TimetableManager.class, entity.getElement("timetableManager").getValue(0));
 			if (role.getRoleId() != null && manager.getUniqueId() != null) {
-				Object object = iHibSession.createCriteria(ManagerRole.class)
-					.add(Restrictions.eq("role", role))
-					.add(Restrictions.eq("timetableManager", manager)).uniqueResult();
+				ManagerRole object = iHibSession.createQuery("from ManagerRole where role.roleId = :roleId and timetableManager.uniqueId = :managerId", ManagerRole.class)
+						.setParameter("roleId", role.getUniqueId())
+						.setParameter("managerId", manager.getUniqueId())
+						.uniqueResult();
 				if (object != null) {
 					entity.setObject(object);
 					return false;
@@ -493,7 +525,7 @@ public class SessionRestore implements SessionRestoreInterface {
             }
             iProgress.incProgress();
             
-    		iHibSession.setFlushMode(FlushMode.MANUAL);
+    		iHibSession.setHibernateFlushMode(FlushMode.MANUAL);
     		iProgress.setPhase("Fixing", iAllEntitites.size());
     		for (Iterator<Entity> i = iAllEntitites.iterator(); i.hasNext(); ) {
     			iProgress.incProgress();
@@ -692,7 +724,15 @@ public class SessionRestore implements SessionRestoreInterface {
 							value  = new DateType().fromStringValue(element.getValue(0));
 						}
 					} else if (type instanceof TimestampType) {
-						value = new TimestampType().fromStringValue(element.getValue(0));
+						try {
+							value = new TimestampType().fromStringValue(element.getValue(0));
+						} catch (HibernateException e) {
+							try {
+								value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
+							} catch (ParseException x) {
+								throw new HibernateException(x);
+							}
+						}
 					} else if (type instanceof StringType) {
 						value = element.getValue(0);
 					} else if (type instanceof BinaryType) {

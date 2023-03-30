@@ -19,10 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.List;
 import java.util.TreeMap;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseGlobalRoomFeature;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
 
@@ -71,29 +69,23 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
     }
     
 	public static GlobalRoomFeature findGlobalRoomFeatureForLabel(Session session, String label){
-		GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
-		List features = grfDao.getSession().createCriteria(GlobalRoomFeature.class)
-			.add(Restrictions.eq("label", label))
-			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
-			.setCacheable(true).list();
-
-		if (features.size() == 1){
-			return((GlobalRoomFeature) features.get(0));
-		}
-		return(null);
+		return GlobalRoomFeatureDAO.getInstance().getSession()
+				.createQuery("from GlobalRoomFeature where label = :label and session.uniqueId = :sessionId", GlobalRoomFeature.class)
+				.setParameter("label", label)
+				.setParameter("sessionId", session.getUniqueId())
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
     
 	public static GlobalRoomFeature findGlobalRoomFeatureForAbbv(Session session, String label){
-		GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
-		List features = grfDao.getSession().createCriteria(GlobalRoomFeature.class)
-			.add(Restrictions.eq("abbv", label))
-			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
-			.setCacheable(true).list();
-
-		if (features.size() == 1){
-			return((GlobalRoomFeature) features.get(0));
-		}
-		return(null);
+		return GlobalRoomFeatureDAO.getInstance().getSession()
+				.createQuery("from GlobalRoomFeature where abbv = :label and session.uniqueId = :sessionId", GlobalRoomFeature.class)
+				.setParameter("label", label)
+				.setParameter("sessionId", session.getUniqueId())
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 	public String htmlLabel() {

@@ -50,14 +50,14 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
 	public static List<CurriculumProjectionRule> findAll(Long sessionId) {
 	    return CurriculumProjectionRuleDAO.getInstance().getSession()
 	        .createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId")
-	        .setLong("sessionId", sessionId)
+	        .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 	        .setCacheable(true).list();
 	}
 
     public static List<CurriculumProjectionRule> findByAcademicArea(Long acadAreaId) {
         return CurriculumProjectionRuleDAO.getInstance().getSession()
             .createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
-            .setLong("acadAreaId", acadAreaId)
+            .setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
     }
     
@@ -65,8 +65,8 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
     	Hashtable<String, Float> ret = new Hashtable<String, Float>();
     	for (CurriculumProjectionRule r: (List<CurriculumProjectionRule>)CurriculumProjectionRuleDAO.getInstance().getSession()
     			.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId and r.academicClassification.uniqueId=:acadClasfId")
-    			.setLong("acadAreaId", acadAreaId)
-    			.setLong("acadClasfId", acadClasfId)
+    			.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("acadClasfId", acadClasfId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {
     		ret.put(r.getMajor() == null ? "" : r.getMajor().getCode(), r.getProjection());
     	}

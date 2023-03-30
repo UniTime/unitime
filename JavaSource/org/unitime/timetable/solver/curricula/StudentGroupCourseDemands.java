@@ -71,7 +71,7 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 		iGroupDemands.put(g.getUniqueId(), demands);
 		
 		List<StudentGroupReservation> reservations = (List<StudentGroupReservation>)iHibSession.createQuery(
-				"from StudentGroupReservation r where r.group.uniqueId = :groupId").setLong("groupId", g.getUniqueId()).setCacheable(true).list();
+				"from StudentGroupReservation r where r.group.uniqueId = :groupId").setParameter("groupId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		
 		int realStudents = g.getStudents().size();
 		int madeupStudents = 0;

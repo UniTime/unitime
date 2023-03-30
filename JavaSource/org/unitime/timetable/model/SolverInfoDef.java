@@ -19,11 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.List;
-
-import org.hibernate.NonUniqueResultException;
-import org.hibernate.criterion.Restrictions;
-import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseSolverInfoDef;
 import org.unitime.timetable.model.dao.SolverInfoDefDAO;
 
@@ -51,18 +46,11 @@ public class SolverInfoDef extends BaseSolverInfoDef {
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static SolverInfoDef findByName(org.hibernate.Session hibSession, String name) {
-		try {
-			try {
-				return (SolverInfoDef)hibSession.createCriteria(SolverInfoDef.class).add(Restrictions.eq("name", name)).setCacheable(true).uniqueResult();
-			} catch (NonUniqueResultException e) {
-				List list = hibSession.createCriteria(SolverInfoDef.class).add(Restrictions.eq("name", name)).setCacheable(true).list();
-				if (!list.isEmpty()) 
-					return (SolverInfoDef)list.get(0);
-			}
-	    } catch (Exception e) {
-			Debug.error(e);
-	    }
-		return null;
+		return hibSession.createQuery("from SolverInfoDef where name = :name", SolverInfoDef.class)
+				.setParameter("name", name)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 	public static SolverInfoDef findByName(String name) {

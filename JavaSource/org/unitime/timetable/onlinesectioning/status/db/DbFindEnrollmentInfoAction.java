@@ -181,7 +181,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				request: for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 						"from CourseRequest where courseOffering.uniqueId = :courseId"
-						).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
+						).setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					
 					if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded() && request.getClassEnrollments().isEmpty()) continue;
 					
@@ -394,7 +394,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if (offering == null) return ret;
 			List<CourseRequest> requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"from CourseRequest where courseOffering.instructionalOffering.uniqueId = :offeringId"
-					).setLong("offeringId", offering.getUniqueId()).setCacheable(true).list();
+					).setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			boolean checkOverrides = !query().hasAttribute("override");
 			

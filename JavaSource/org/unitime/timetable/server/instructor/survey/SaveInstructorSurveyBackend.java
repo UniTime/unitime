@@ -96,8 +96,8 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		try {
 			InstructorSurvey is = (InstructorSurvey)hibSession.createQuery(
 					"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-					).setLong("sessionId", sessionId)
-					.setString("externalId", survey.getExternalId()).setMaxResults(1).uniqueResult();
+					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("externalId", survey.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			if (is == null && !request.isChanged()) {
 				throw new GwtRpcException(MESSAGES.errorNoInstructorSurvey());
 			}

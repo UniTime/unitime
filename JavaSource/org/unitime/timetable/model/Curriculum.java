@@ -47,14 +47,14 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
 	public static List<Curriculum> findAll(Long sessionId) {
 	    return CurriculumDAO.getInstance().getSession()
 	        .createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId")
-	        .setLong("sessionId", sessionId)
+	        .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 	        .setCacheable(true).list();
 	}
 
     public static List<Curriculum> findByDepartment(Long deptId) {
         return CurriculumDAO.getInstance().getSession()
             .createQuery("select c from Curriculum c where c.department.uniqueId=:deptId")
-            .setLong("deptId", deptId)
+            .setParameter("deptId", deptId, org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
     }
     

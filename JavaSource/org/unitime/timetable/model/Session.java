@@ -135,13 +135,13 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    for (Location loc  : (List<Location>)hibSession.createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", id).list()) {
+		    for (Location loc  : (List<Location>)hibSession.createQuery("from Location where session.uniqueId = :sessionId").setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).list()) {
                 loc.getFeatures().clear();
                 loc.getRoomGroups().clear();
                 hibSession.update(loc);
             }
 		    /*
-            for (Iterator i=hibSession.createQuery("from Exam where session.uniqueId=:sessionId").setLong("sessionId", id).iterate();i.hasNext();) {
+            for (Iterator i=hibSession.createQuery("from Exam where session.uniqueId=:sessionId").setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).iterate();i.hasNext();) {
                 Exam x = (Exam)i.next();
                 for (Iterator j=x.getConflicts().iterator();j.hasNext();) {
                     ExamConflict conf = (ExamConflict)j.next();
@@ -154,19 +154,19 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
             hibSession.flush();
             hibSession.createQuery(
 	                    "delete DistributionPref p where p.owner in (select s from Session s where s.uniqueId=:sessionId)").
-	                    setLong("sessionId", id).
+	                    setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).
 	                    executeUpdate();
 		    hibSession.createQuery(
                 "delete InstructionalOffering o where o.session.uniqueId=:sessionId").
-                setLong("sessionId", id).
+                setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).
                 executeUpdate();
             hibSession.createQuery(
                 "delete Department d where d.session.uniqueId=:sessionId").
-                setLong("sessionId", id).
+                setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).
                 executeUpdate();
 		    hibSession.createQuery(
 		            "delete Session s where s.uniqueId=:sessionId").
-		            setLong("sessionId", id).
+		            setParameter("sessionId", id, org.hibernate.type.LongType.INSTANCE).
                     executeUpdate();
 		    String[] a = { "DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref" };
 		    for (String str : a) {       
@@ -177,7 +177,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		    deleteObjects(
 					hibSession,
 					"ExamConflict",
-					hibSession.createQuery("select x.uniqueId from ExamConflict x where x.exams is empty").iterate()
+					hibSession.createQuery("select x.uniqueId from ExamConflict x where x.exams is empty").list().iterator()
 					);
 		    tx.commit();
 		} catch (HibernateException e) {
@@ -277,9 +277,9 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	public static Session getSessionUsingInitiativeYearTerm(
 			String academicInitiative, String academicYear, String academicTerm, org.hibernate.Session hibSession) {
 		return (Session) hibSession.createQuery("from Session s where s.academicInitiative = :academicInitiative and s.academicYear = :academicYear and s.academicTerm = :academicTerm")
-			         .setString("academicInitiative", academicInitiative)
-			         .setString("academicYear", academicYear)
-			         .setString("academicTerm", academicTerm)
+			         .setParameter("academicInitiative", academicInitiative, org.hibernate.type.StringType.INSTANCE)
+			         .setParameter("academicYear", academicYear, org.hibernate.type.StringType.INSTANCE)
+			         .setParameter("academicTerm", academicTerm, org.hibernate.type.StringType.INSTANCE)
 			         .setCacheable(true)
 			         .uniqueResult();	
 		
@@ -663,7 +663,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(x) from StudentClassEnrollment x " +
                         "where x.student.session.uniqueId=:sessionId").
-                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
+                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).uniqueResult()).longValue()>0;
 	}
 	
 	private OnlineSectioningServer getInstance() {
@@ -709,13 +709,13 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		}
         try {
 	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
-	        hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, offering.getUniqueId());
+	        hibSessionFactory.getCache().evictEntityData(InstructionalOffering.class, offering.getUniqueId());
 	        for (CourseOffering course: offering.getCourseOfferings())
-	        	hibSessionFactory.getCache().evictEntity(CourseOffering.class, course.getUniqueId());
+	        	hibSessionFactory.getCache().evictEntityData(CourseOffering.class, course.getUniqueId());
 	        for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
 	        	for (SchedulingSubpart subpart: config.getSchedulingSubparts())
 	        		for (Class_ clazz: subpart.getClasses())
-	        			hibSessionFactory.getCache().evictEntity(Class_.class, clazz.getUniqueId());
+	        			hibSessionFactory.getCache().evictEntityData(Class_.class, clazz.getUniqueId());
         } catch (Exception e) {
         	Debug.error("Failed to evict cache: " + e.getMessage());
         }
@@ -752,8 +752,8 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
                 createQuery("select count(e) from FinalExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
                 		"((e.examStatus is null and bit_and(s.statusType.status, :flag) > 0) or bit_and(e.examStatus, :flag) > 0)"
                 		)
-                .setLong("sessionId", getUniqueId())
-                .setInteger("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt())
+                .setParameter("sessionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt(), org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true).uniqueResult()).longValue() > 0;
 	}
 	
@@ -762,8 +762,8 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
                 createQuery("select count(e) from MidtermExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
                 		"((e.examStatus is null and bit_and(s.statusType.status, :flag) > 0) or bit_and(e.examStatus, :flag) > 0)"
                 		)
-                .setLong("sessionId", getUniqueId())
-                .setInteger("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt())
+                .setParameter("sessionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt(), org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true).uniqueResult()).longValue() > 0;
 	}
 	
@@ -787,7 +787,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
     	Object o = InstructionalOfferingDAO.getInstance()
 				.getSession()
 				.createQuery("select max(io.snapshotLimitDate) from InstructionalOffering io where io.session.uniqueId = :sessId")
-				.setLong("sessId", getUniqueId().longValue())
+				.setParameter("sessId", getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				.uniqueResult();
     	Date snapshotDate = null;
     	if (o != null) {

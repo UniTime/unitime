@@ -134,7 +134,7 @@ public class ScriptConnector extends ApiConnector {
 			throw new IllegalArgumentException("SCRIPT parameter not provided.");
 		
 		Script script = (Script)ScriptDAO.getInstance().getSession().createQuery(
-				"from Script where name = :name").setString("name", scriptName).uniqueResult();
+				"from Script where name = :name").setParameter("name", scriptName, org.hibernate.type.StringType.INSTANCE).uniqueResult();
 		if (script == null)
 			throw new IllegalArgumentException("Script " + scriptName + " does not exist.");
 		
@@ -208,7 +208,6 @@ public class ScriptConnector extends ApiConnector {
 	}
 	
 	public static class BinaryFileItem implements FileItem {
-		private static final long serialVersionUID = 1L;
 		BinaryFile iFile;
 		public BinaryFileItem(BinaryFile file) { iFile = file; }
 		@Override

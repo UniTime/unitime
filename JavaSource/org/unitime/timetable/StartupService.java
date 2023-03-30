@@ -21,11 +21,11 @@ package org.unitime.timetable;
 
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateContext;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
@@ -127,10 +127,10 @@ public class StartupService implements InitializingBean, DisposableBean {
 	         Debug.info(" - Closing Hibernate ... ");
 	         (new _BaseRootDAO() {
 		    		void closeHibernate() {
-		    			SessionFactory sf = sSessionFactory;
-		    			if (sf != null) {
-		    				sSessionFactory = null;
-		    				sf.close();
+		    			HibernateContext cx = sContext;
+		    			if (cx != null) {
+		    				sContext = null;
+		    				cx.getSessionFactory().close();
 		    			}
 		    		}
 		    		protected Class getReferenceClass() { return null; }

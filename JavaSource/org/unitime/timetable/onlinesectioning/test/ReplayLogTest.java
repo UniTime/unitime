@@ -247,19 +247,19 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 				iStudentIds = new HashMap<String, Long>();
 				for (final Object[] o: (List<Object[]>)hibSession.createQuery(
 						"select s.uniqueId, s.externalUniqueId from Student s where s.session.uniqueId = :sessionId")
-						.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+						.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					iStudentIds.put((String)o[1], (Long)o[0]);
 				}
 				iCourseIds = new HashMap<String, Long>();
 				for (final Object[] o: (List<Object[]>)hibSession.createQuery(
 						"select co.uniqueId, co.subjectAreaAbbv || ' ' || co.courseNbr from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId")
-						.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+						.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					iCourseIds.put((String)o[1], (Long)o[0]);
 				}
 				iClassIds = new HashMap<String, Long>();
 				for (Class_ c: (List<Class_>)hibSession.createQuery(
 						"select c  from Class_ c inner join c.schedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where io.session.uniqueId = :sessionId")
-						.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+						.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					iClassIds.put(c.getClassLabel(hibSession), c.getUniqueId());
 				}
 			} finally {

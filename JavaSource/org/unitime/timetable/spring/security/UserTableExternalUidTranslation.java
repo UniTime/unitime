@@ -38,7 +38,7 @@ public class UserTableExternalUidTranslation implements ExternalUidTranslation {
     public String uid2ext(String username) {
 		org.hibernate.Session hibSession = UserDAO.getInstance().createNewSession();
 		try {
-			User user = (User) hibSession.createQuery("from User where username=:username").setString("username", username).setMaxResults(1).uniqueResult();
+			User user = (User) hibSession.createQuery("from User where username=:username").setParameter("username", username, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			return (user == null ? username : user.getExternalUniqueId());
 		} finally {
 			hibSession.close();
@@ -48,7 +48,7 @@ public class UserTableExternalUidTranslation implements ExternalUidTranslation {
     public String ext2uid(String externalUniqueId) {
 		org.hibernate.Session hibSession = UserDAO.getInstance().createNewSession();
 		try {
-			User user = (User) hibSession.createQuery("from User where externalUniqueId=:externalUniqueId").setString("externalUniqueId", externalUniqueId).setMaxResults(1).uniqueResult();
+			User user = (User) hibSession.createQuery("from User where externalUniqueId=:externalUniqueId").setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			return (user == null ? externalUniqueId : user.getUsername());
 		} finally {
 			hibSession.close();

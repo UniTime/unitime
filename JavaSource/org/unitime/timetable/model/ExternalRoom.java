@@ -21,7 +21,6 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseExternalRoom;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
 
@@ -49,23 +48,19 @@ public class ExternalRoom extends BaseExternalRoom {
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static ExternalRoom findExternalRoomForSession(String externalUniqueId, Session session){
-		ExternalRoomDAO erDao = new ExternalRoomDAO();
-		List rooms = erDao.getSession().createCriteria(ExternalRoom.class)
-			.add(Restrictions.eq("externalUniqueId", externalUniqueId))
-			.createCriteria("building")
-				.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
-			.setCacheable(true).list();
-
-		if (rooms.size() == 1){
-			return((ExternalRoom) rooms.get(0));
-		}
-		return(null);
+		return ExternalRoomDAO.getInstance().getSession()
+				.createQuery("from ExternalRoom where externalUniqueId = :externalUniqueId and building.session.uniqueId = :sessionId", ExternalRoom.class)
+				.setParameter("externalUniqueId", externalUniqueId)
+				.setParameter("sessionId", session.getUniqueId())
+				.setCacheable(true)
+				.setMaxResults(1)
+                .uniqueResult();
 	}
     
     public static List findAll(Long sessionId) {
         return new ExternalRoomDAO().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId").
-                setLong("sessionId", sessionId).
+                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
                 setCacheable(true).
                 list();
     }
@@ -74,9 +69,9 @@ public class ExternalRoom extends BaseExternalRoom {
         return (ExternalRoom)new ExternalRoomDAO().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId and " +
                 "r.building.abbreviation=:bldgAbbv and r.roomNumber=:roomNbr").
-                setLong("sessionId", sessionId).
-                setString("bldgAbbv", bldgAbbv).
-                setString("roomNbr", roomNbr).
+                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("bldgAbbv", bldgAbbv, org.hibernate.type.StringType.INSTANCE).
+                setParameter("roomNbr", roomNbr, org.hibernate.type.StringType.INSTANCE).
                 uniqueResult();
     }
 	

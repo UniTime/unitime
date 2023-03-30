@@ -163,10 +163,9 @@ public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
             tx = hibSession.beginTransaction();
             Department department = new DepartmentDAO().get(form.getId(), hibSession);
             if (department.isExternalManager().booleanValue()) {
-                for (Iterator i=hibSession.
-                        createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId").
-                        setLong("deptId", department.getUniqueId()).iterate(); i.hasNext();) {
-                    Class_ clazz = (Class_)i.next();
+                for (Class_ clazz: hibSession.
+                        createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId", Class_.class).
+                        setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                     if (clazz.getSchedulingSubpart().getManagingDept().equals(department)) {
                         // Clear all room preferences from the subpart
                         for (Iterator j = clazz.getSchedulingSubpart().getPreferences().iterator(); j.hasNext(); ) {
@@ -192,7 +191,7 @@ public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
                         "co.isControl=true and " +
                         "c.schedulingSubpart.instrOfferingConfig.instructionalOffering=co.instructionalOffering and "+
                         "co.subjectArea.department.uniqueId=:deptId)").
-                        setLong("deptId", department.getUniqueId()).
+                        setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                         executeUpdate();
             }
             ChangeLog.addChange(

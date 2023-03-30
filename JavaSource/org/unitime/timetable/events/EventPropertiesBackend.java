@@ -149,7 +149,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
 		EventContact contact = (EventContact)hibSession.createQuery(
 				"from EventContact where externalUniqueId = :userId"
-				).setString("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (contact != null) {
 			ContactInterface c = new ContactInterface();
 			c.setFirstName(contact.getFirstName());
@@ -164,7 +164,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		TimetableManager manager = (TimetableManager)hibSession.createQuery(
 				"from TimetableManager where externalUniqueId = :userId"
-				).setString("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (manager != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(manager.getExternalUniqueId());
@@ -178,7 +178,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		DepartmentalInstructor instructor = (DepartmentalInstructor)hibSession.createQuery(
 				"from DepartmentalInstructor where department.session.uniqueId = :sessionId and externalUniqueId = :userId"
-				).setLong("sessionId", sessionId).setString("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("userId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (instructor != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(instructor.getExternalUniqueId());
@@ -192,7 +192,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		Staff staff = (Staff)hibSession.createQuery(
 				"from Staff where externalUniqueId = :userId"
-				).setString("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (staff != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(staff.getExternalUniqueId());
@@ -206,7 +206,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		Student student = (Student)hibSession.createQuery(
 				"from Student where session.uniqueId = :sessionId and externalUniqueId = :userId"
-				).setLong("sessionId", sessionId).setString("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("userId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (student != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(student.getExternalUniqueId());
@@ -268,7 +268,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			response.addStandardNote(n);
 		}
 		for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteSessionDAO.getInstance().getSession().createQuery(
-				"from StandardEventNoteSession where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+				"from StandardEventNoteSession where session.uniqueId = :sessionId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			StandardEventNoteInterface n = new StandardEventNoteInterface();
 			n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 			response.addStandardNote(n);
@@ -285,7 +285,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			}
 			if (allDepartments) {
 				for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
-						"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+						"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					StandardEventNoteInterface n = new StandardEventNoteInterface();
 					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 					response.addStandardNote(n);

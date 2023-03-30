@@ -64,14 +64,14 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	    return new StudentClassEnrollmentDAO().getSession().createQuery(
 	            "select e from StudentClassEnrollment e where "+
 	            "e.student.session.uniqueId=:sessionId").
-	            setLong("sessionId", sessionId.longValue()).list();
+	            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).list();
 	}
 
     public static Iterator findAllForStudent(Long studentId) {
         return new StudentClassEnrollmentDAO().getSession().createQuery(
                 "select e from StudentClassEnrollment e where "+
                 "e.student.uniqueId=:studentId").
-                setLong("studentId", studentId.longValue()).setCacheable(true).list().iterator();
+                setParameter("studentId", studentId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();
     }
 
 	public static boolean sessionHasEnrollments(Long sessionId) {
@@ -79,7 +79,7 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 		    return(((Number) new StudentClassEnrollmentDAO().getSession().createQuery(
 		            "select count(e) from StudentClassEnrollment e where "+
 		            "e.student.session.uniqueId=:sessionId").
-		            setLong("sessionId", sessionId.longValue()).setCacheable(true).uniqueResult()).longValue() > 0);
+		            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0);
 		}
 		return false;
 	}

@@ -42,6 +42,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.hibernate.type.LongType;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -121,7 +122,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				Set<Curriculum> curriculaSet = new HashSet<Curriculum>(hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
 						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-						.setLong("sessionId", session.getUniqueId()).list());
+						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				// include children curricula
 				curriculaSet.addAll(
 						hibSession.createQuery(
@@ -129,7 +130,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 							"where c.academicArea = d.academicArea and d.multipleMajors = true and size(c.majors) <= 1 and size(c.majors) < size(d.majors) and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = c.uniqueId and m not in elements(d.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-							.setLong("sessionId", session.getUniqueId()).list()
+							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()
 						);
 				// include parent curricula
 				curriculaSet.addAll(
@@ -138,7 +139,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 							"where c.multipleMajors = true and size(c.majors) >= 1 and size(c.majors) > size(d.majors) and c.academicArea = d.academicArea and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = d.uniqueId and m not in elements(c.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-							.setLong("sessionId", session.getUniqueId()).list());
+							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				curricula = new ArrayList<Curriculum>(curriculaSet);
 			}
 		}
@@ -146,7 +147,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 		if (curricula == null) {
 			curricula = hibSession.createQuery(
 					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
-					.setLong("sessionId", session.getUniqueId()).list();
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 		}
 
 		List<Initialization> inits = new ArrayList<Initialization>();
@@ -181,9 +182,9 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			// students with no major
 			if (!cc.getCurriculum().isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
-					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
-					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true).list();
 		} else if (!cc.getCurriculum().isMultipleMajors() || cc.getCurriculum().getMajors().size() == 1) {
 			List<Long> majorIds = new ArrayList<Long>();
@@ -191,9 +192,9 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				majorIds.add(major.getUniqueId());
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds")
-					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
-					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -210,12 +211,12 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				params.put("m" + idx, major.getUniqueId());
 				idx ++;
 			}
-			org.hibernate.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
-					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
-					.setLong("clasfId", cc.getAcademicClassification().getUniqueId());
+			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setLong(e.getKey(), e.getValue());
+				q.setParameter(e.getKey(), e.getValue(), LongType.INSTANCE);
 			lines = q.setCacheable(true).list();
 		}
 		Map<CourseOffering, Set<WeightedStudentId>> course2req = new HashMap<CourseOffering,Set<WeightedStudentId>>();

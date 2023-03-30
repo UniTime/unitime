@@ -66,7 +66,6 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -133,7 +132,8 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 						Solution solution = SolutionDAO.getInstance().get(solutionId, hibSession);
 						context.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
 						ids.add(solutionId);
-						List<Solution> solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",solution.getOwner())).list();
+						List<Solution> solutions = hibSession.createQuery("from Solution where owner.uniqueId = :ownerId", Solution.class)
+								.setParameter("ownerId", solution.getOwner().getUniqueId()).list();
 						HashSet<Solution> touchedSolutionSet = new HashSet<Solution>();
 						for (Solution s: solutions) {
             				if (s.equals(solution)) continue;
@@ -321,7 +321,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 
 		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
 				"from SolverPredefinedSetting s where s.appearance = :appearance"
-				).setInteger("appearance", appearance).setCacheable(true).list();
+				).setParameter("appearance", appearance, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
 		
 		for (SolverPredefinedSetting config: configs) {
 			SolverConfiguration c = new SolverConfiguration();

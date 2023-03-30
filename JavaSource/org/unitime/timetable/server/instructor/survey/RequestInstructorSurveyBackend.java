@@ -117,7 +117,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				} catch (NumberFormatException e) {
 					Number id = (Number)SessionDAO.getInstance().getSession().createQuery(
 							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session"
-							).setString("session", request.getSession()).setMaxResults(1).setCacheable(true).uniqueResult();
+							).setParameter("session", request.getSession(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
 					sessionId = id.longValue();
 				}
@@ -133,8 +133,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		boolean editable = true;
 		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
-				).setLong("sessionId", sessionId)
-				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 
 		if (!admin) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
@@ -216,8 +216,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		
 		List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
-				.setString("id", externalId)
-				.setLong("sessionId", sessionId)
+				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list();
 
 		for (DepartmentalInstructor di: instructors) {
@@ -482,8 +482,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
 				"and ci.lead = true and c.schedulingSubpart.itype.organized = true"
 				)
-				.setString("id", externalId)
-				.setLong("sessionId", sessionId)
+				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			if (courseIds.add(co.getUniqueId())) {
 				Course ci = new Course();

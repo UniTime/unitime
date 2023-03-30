@@ -76,11 +76,11 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				subjects.addAll(hibSession.createQuery(
 						"select distinct co.subjectArea from ClassInstructor ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
 						"where co.subjectArea.session.uniqueId = :sessionId and ci.instructor.externalUniqueId = :externalId"
-						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("sessionId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 				subjects.addAll(hibSession.createQuery(
 						"select distinct co.subjectArea from CourseOffering co inner join co.instructionalOffering.offeringCoordinators oc " +
 						"where co.subjectArea.session.uniqueId = :sessionId and oc.instructor.externalUniqueId = :externalId"
-						).setLong("sessionId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("sessionId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 						
 				for (SubjectArea subject: subjects) {
 					response.add(new RelatedObjectLookupRpcResponse(
@@ -94,11 +94,11 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				courses.addAll(hibSession.createQuery(
 						"select distinct co from ClassInstructor ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
 						"where co.subjectArea.uniqueId = :subjectAreaId and ci.instructor.externalUniqueId = :externalId"
-						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("subjectAreaId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 				courses.addAll(hibSession.createQuery(
 						"select distinct co from CourseOffering co inner join co.instructionalOffering.offeringCoordinators oc " +
 						"where co.subjectArea.uniqueId = :subjectAreaId and oc.instructor.externalUniqueId = :externalId"
-						).setLong("subjectAreaId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("subjectAreaId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 						
 				for (CourseOffering course: courses) {
 					RelatedObjectInterface related = new RelatedObjectInterface();
@@ -149,7 +149,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					Set<Class_> classes = new HashSet<Class_>(hibSession.createQuery(
 							"select distinct ci.classInstructing from ClassInstructor ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co "+
 							"where co.uniqueId = :courseId and ci.instructor.externalUniqueId = :externalId"
-							).setLong("courseId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+							).setParameter("courseId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 					for (Class_ clazz: classes) {
 						if (classes.containsAll(clazz.getSchedulingSubpart().getClasses()))
 							configs.add(clazz.getSchedulingSubpart().getInstrOfferingConfig());
@@ -226,7 +226,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					subparts.addAll(hibSession.createQuery(
 						"select distinct ci.classInstructing.schedulingSubpart from ClassInstructor ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co "+
 						"where co.uniqueId = :courseId and ci.instructor.externalUniqueId = :externalId"
-						).setLong("courseId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("courseId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 				}
 
 				if (!subparts.isEmpty()) {
@@ -263,12 +263,12 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				Set<Class_> classes = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 				if (coordinator) {
 					classes.addAll(hibSession.createQuery("select c from Class_ c where c.schedulingSubpart.uniqueId = :subpartId"
-							).setLong("subpartId", request.getUniqueId()).setCacheable(true).list());
+							).setParameter("subpartId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 				} else {
 					classes.addAll(hibSession.createQuery(
 						"select distinct ci.classInstructing from ClassInstructor ci inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co "+
 						"where ci.classInstructing.schedulingSubpart.uniqueId = :subpartId and ci.instructor.externalUniqueId = :externalId"
-						).setLong("subpartId", request.getUniqueId()).setString("externalId", context.getUser().getExternalUserId()).setCacheable(true).list());
+						).setParameter("subpartId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", context.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 				}
 				
 				for (Class_ clazz: classes) {
@@ -313,7 +313,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					"select s.uniqueId, s.subjectAreaAbbreviation from SubjectArea s " +
 					"where s.session.uniqueId = :sessionId " +
 					"order by s.subjectAreaAbbreviation"
-					).setLong("sessionId", request.getUniqueId()).setCacheable(true).list()) {
+					).setParameter("sessionId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.SUBJECT,
 						(Long)object[0],
@@ -326,7 +326,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
                     "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false " +
                     "order by co.courseNbr"
-                    ).setLong("subjectAreaId", request.getUniqueId()).setCacheable(true).list()) {
+                    ).setParameter("subjectAreaId", request.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				RelatedObjectInterface related = new RelatedObjectInterface();
 				if (course.getIsControl()) {
 					related.setType(RelatedObjectInterface.RelatedObjectType.Offering);

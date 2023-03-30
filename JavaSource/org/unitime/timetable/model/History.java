@@ -21,9 +21,6 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseHistory;
 import org.unitime.timetable.model.dao.HistoryDAO;
 
@@ -56,15 +53,11 @@ public class History extends BaseHistory {
 	 * @param aClass history class
 	 * @return List of aClassHistory objects
 	 */
-	public static List getHistoryList(Long sessionId, Class aClass) 
-			throws HibernateException {
-	    
-	    HistoryDAO adao = new HistoryDAO();
-	    Session hSession = adao.getSession();
-	    List aaList = hSession.createCriteria(aClass)
-				    .add(Restrictions.eq("sessionId", sessionId))
-				    .list();
-		return aaList;
+	public static List<History> getHistoryList(Long sessionId, Class aClass) {
+		return HistoryDAO.getInstance().getSession()
+				.createQuery("from History where sessionId = :sessionId", History.class)
+				.setParameter("sessionId", sessionId)
+				.list();
 	}
 	
 

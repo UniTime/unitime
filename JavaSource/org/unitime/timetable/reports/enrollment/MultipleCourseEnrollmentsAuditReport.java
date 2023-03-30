@@ -82,8 +82,8 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
 				 .getQuery(query)
-				 .setLong("sessId", getSession().getUniqueId().longValue())
-				 .setLong("subjectId", sa.getUniqueId().longValue())
+				 .setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+				 .setParameter("subjectId", sa.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				 .list());
 		}
 		return(results);
@@ -164,14 +164,12 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			sb.append("select sce.clazz.schedulingSubpart.itype.abbv, sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache")
 			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.clazz.schedulingSubpart.uniqueId = :subpartId and sce.courseOffering.uniqueId = :courseId")
 			  .append(" order by sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache");
-			Iterator it = StudentClassEnrollmentDAO.getInstance()
-					.getQuery(sb.toString())
-					.setLong("studId", studentUniqueId)
-					.setLong("subpartId", subpartId)
-					.setLong("courseId", courseId)
-					.iterate();
-			while (it.hasNext()){
-				Object[] result = (Object[]) it.next();
+			for (Object[] result: StudentClassEnrollmentDAO.getInstance()
+					.getSession().createQuery(sb.toString(), Object[].class)
+					.setParameter("studId", studentUniqueId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("subpartId", subpartId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE)
+					.list()) {
 				String className = createClassString(result[0].toString(), result[1].toString(), result[2].toString());
 				classes.add(className);
 			}

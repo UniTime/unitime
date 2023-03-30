@@ -93,7 +93,7 @@ public class UserData extends BaseUserData {
 		}
 		q += ")";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setString("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
+		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;
@@ -102,7 +102,7 @@ public class UserData extends BaseUserData {
 	public static HashMap<String,String> getProperties(String externalUniqueId) {
 		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setString("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
+		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;

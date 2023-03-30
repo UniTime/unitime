@@ -77,7 +77,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 				"where co.instructionalOffering = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null"
-				).setLong("offeringId", io.getUniqueId())
+				).setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list();
 	}
 	
@@ -87,7 +87,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 				"where co.instructionalOffering = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null"
-				).setLong("offeringId", io.getUniqueId())
+				).setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 }

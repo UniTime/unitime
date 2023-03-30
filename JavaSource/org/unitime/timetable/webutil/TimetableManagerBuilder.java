@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.criterion.Order;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -93,12 +92,7 @@ public class TimetableManagerBuilder {
 	    TimetableManagerDAO empDao = new TimetableManagerDAO();
 		hibSession = empDao.getSession();
 
-		List empList = hibSession
-						.createCriteria(TimetableManager.class)
-						.addOrder(Order.asc("managerRoles"))
-						.addOrder(Order.asc("lastName"))
-						.addOrder(Order.asc("firstName"))
-						.list();
+		List<TimetableManager> empList = hibSession.createQuery("from TimetableManager order by lastName, firstName", TimetableManager.class).list();
 		Iterator iterEmp = empList.iterator();
 		
 		NameFormat nameFormat = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));

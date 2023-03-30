@@ -991,7 +991,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 			if (!courses.isEmpty()) {
 				String sql = getCreditSQL();
 				if (sql != null && !sql.isEmpty()) {
-					List<Object[]> credits = (List<Object[]>)helper.getHibSession().createSQLQuery(sql).setString("puid", studentId).list();
+					List<Object[]> credits = (List<Object[]>)helper.getHibSession().createNativeQuery(sql).setParameter("puid", studentId, org.hibernate.type.StringType.INSTANCE).list();
 					if (!credits.isEmpty()) {
 						action.addOptionBuilder().setKey("credits").setValue(getGson(helper).toJson(credits));
 						for (Object[] o: credits) {

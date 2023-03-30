@@ -55,8 +55,10 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     public ConflictsByCourseAndStudentReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, MSG.legacyReportConflictsByCourseAndStudent(), session, examType, subjectAreas, exams);
         sLog.debug(MSG.statusLoadingStudents());
-        for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o: StudentDAO.getInstance().getSession().createQuery(
+        		"select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId",
+        		Object[].class)
+        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             if (o[2]!=null)
                 iStudentNames.put((Long)o[0], (String)o[2]+(o[3]==null?"":" "+(String)o[3])+(o[4]==null?"":" "+(String)o[4]));
             else if (o[1]!=null)

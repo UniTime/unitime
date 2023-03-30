@@ -22,8 +22,6 @@ package org.unitime.timetable.model;
 import java.util.List;
 
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseStudentGroup;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 
@@ -59,14 +57,11 @@ public class StudentGroup extends BaseStudentGroup {
 	 * @param sessionId academic session
 	 * @return Vector of StudentGroup objects
 	 */
-    public static List getStudentGroupList(Long sessionId) {
-        StudentGroupDAO sdao = new StudentGroupDAO();
-	    Session hibSession = sdao.getSession();
-	    List l = hibSession.createCriteria(StudentGroup.class)
-				    .add(Restrictions.eq("sessionId", sessionId))
-				    .addOrder(Order.asc("groupName"))
-				    .list();
-		return l;
+    public static List<StudentGroup> getStudentGroupList(Long sessionId) {
+    	return StudentGroupDAO.getInstance().getSession()
+				.createQuery("from StudentGroup where sessionId = :sessionId order by groupName", StudentGroup.class)
+				.setParameter("sessionId", sessionId)
+				.list();
     }
 
     public static StudentGroup findByAbbv(Long sessionId, String abbv) {
@@ -76,8 +71,8 @@ public class StudentGroup extends BaseStudentGroup {
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.groupAbbreviation=:abbv").
-             setLong("sessionId", sessionId.longValue()).
-             setString("abbv", abbv).
+             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+             setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -89,15 +84,15 @@ public class StudentGroup extends BaseStudentGroup {
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId = :acadSessionId and "+
                     "externalUniqueId=:eId ").
-             setLong("acadSessionId", acadSessionId.longValue()).
-             setString("eId", externalId).
+             setParameter("acadSessionId", acadSessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+             setParameter("eId", externalId, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
              uniqueResult(); 
     }
     
     public static List<StudentGroup> findByType(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		if (typeId == null)
-			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null").setLong("sessionId", sessionId).list();
-		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId").setLong("sessionId", sessionId).setLong("typeId", typeId).list();
+			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
+		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("typeId", typeId, org.hibernate.type.LongType.INSTANCE).list();
 	}
 }

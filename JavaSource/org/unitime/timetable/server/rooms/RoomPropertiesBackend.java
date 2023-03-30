@@ -245,7 +245,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 					"select f from Session f, Session s where " +
 					"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
 					"order by f.sessionBeginDateTime")
-					.setLong("sessionId", response.getAcademicSessionId()).list()) {
+					.setParameter("sessionId", response.getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				AcademicSessionInterface s = new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear());
 				EventContext cx = new EventContext(context, context.getUser(), session.getUniqueId());
 				s.setCanAddRoom(cx.hasPermission(Right.AddRoom));

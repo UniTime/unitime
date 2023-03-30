@@ -77,7 +77,7 @@ public class AttachmentTypes implements AdminTable {
 			int used =
 					((Number)hibSession.createQuery(
 							"select count(p) from LocationPicture p where p.type.uniqueId = :uniqueId")
-							.setLong("uniqueId", atype.getUniqueId()).uniqueResult()).intValue();
+							.setParameter("uniqueId", atype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.AttachmentTypeEdit));

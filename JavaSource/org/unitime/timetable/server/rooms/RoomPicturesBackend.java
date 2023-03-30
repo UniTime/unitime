@@ -115,7 +115,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 
 			boolean samePast = true, sameFuture = true;
 			for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
-					.setLong("uniqueId", location.getUniqueId()).setLong("permanentId", location.getPermanentId()).list()) {
+					.setParameter("uniqueId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				if (!samePictures(location, other)) {
 					if (other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime())) {
 						samePast = false;
@@ -171,7 +171,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			hibSession.saveOrUpdate(location);
 			if (request.getApply() != Apply.THIS_SESSION_ONLY) {
 				for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
-						.setLong("uniqueId", location.getUniqueId()).setLong("permanentId", location.getPermanentId()).list()) {
+						.setParameter("uniqueId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					
 					if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))
 						continue;

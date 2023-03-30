@@ -295,7 +295,7 @@ public class UniTimeClusterDiscovery extends Discovery {
         Transaction tx = null;
         try {
         	tx = hibSession.beginTransaction();
-			for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", cluster_name).list()) {
+			for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setParameter("clusterName", cluster_name, org.hibernate.type.StringType.INSTANCE).list()) {
 				try {
 					PingData data = deserialize(cluster.getPingData());
 					if(data == null || (members != null && !members.contains(data.getAddress())))
@@ -382,7 +382,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 		Transaction tx = null;
         try {
         	tx = hibSession.beginTransaction();
-        	hibSession.createQuery("delete ClusterDiscovery where clusterName = :clusterName").setString("clusterName", cluster_name).executeUpdate();
+        	hibSession.createQuery("delete ClusterDiscovery where clusterName = :clusterName").setParameter("clusterName", cluster_name, org.hibernate.type.StringType.INSTANCE).executeUpdate();
         	if (tx != null) tx.commit();
         } catch (Exception e) {
 			if (tx!=null) tx.rollback();

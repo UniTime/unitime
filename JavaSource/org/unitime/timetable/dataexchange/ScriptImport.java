@@ -57,7 +57,7 @@ public class ScriptImport extends BaseImport {
 			error("String name is not provided.");
 			return;
 		}
-		Script script = (Script)getHibSession().createQuery("from Script where name = :name").setString("name", name).uniqueResult();
+		Script script = (Script)getHibSession().createQuery("from Script where name = :name").setParameter("name", name, org.hibernate.type.StringType.INSTANCE).uniqueResult();
 		if (script == null) {
 			script = new Script();
 			script.setParameters(new HashSet<ScriptParameter>());

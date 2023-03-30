@@ -29,7 +29,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -318,7 +318,7 @@ public class LookupTables {
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(5000);
 		q.setCacheable(true);
-		q.setLong("acadSessionId", acadSessionId);
+		q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
         
 		List<DepartmentalInstructor> result = q.list();
         Vector<ComboBoxLookup> v = new Vector<ComboBoxLookup>(result.size());

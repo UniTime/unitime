@@ -20,127 +20,37 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.hibernate.Criteria;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
-import org.hibernate.SessionFactory;
-
-import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Order;
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.service.spi.ServiceBinding;
-import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
-import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
+import org.hibernate.query.Query;
 import org.unitime.commons.hibernate.util.DatabaseUpdate;
+import org.unitime.commons.hibernate.util.HibernateContext;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
  */
 public abstract class _BaseRootDAO<T, K extends Serializable> {
-
-	protected static Map<String, SessionFactory> sSessionFactoryMap;
-	protected static SessionFactory sSessionFactory;
-	protected static ThreadLocal<HashMap<String,Session>> sMappedSessions;
+	protected static HibernateContext sContext;
 	protected static ThreadLocal<Session> sSessions;
-	protected static Configuration sConfiguration;
-	
 
 	/**
 	 * Configure the session factory by reading hibernate config file
 	 */
-	public static void initialize () {
-		initialize(null);
-	}
-	
-	/**
-	 * Configure the session factory by reading hibernate config file
-	 * @param configFileName the name of the configuration file
-	 */
-	public static void initialize (String configFileName) {
-		initialize(configFileName, getNewConfiguration(null));
-	}
-
-	public static void initialize (String configFileName, Configuration configuration) {
-		if (configFileName == null && sSessionFactory != null) return;
-        if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;
-        HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
-        sConfiguration = configuration;
-        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
-        if (ApplicationProperty.ConnectionLogging.isTrue()) {
-        	ConnectionProvider cp = serviceRegistry.getService(ConnectionProvider.class);
-        	if (cp != null && !(cp instanceof LoggingDBCPConnectionProvider)) {
-        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
-            	if (scp != null)
-            		scp.setService(new LoggingConnectionProvider(serviceRegistry.getService(ConnectionProvider.class)));
-        	}
-        }
-        setSessionFactory(configuration.buildSessionFactory(serviceRegistry));
-        
-        HibernateUtil.addBitwiseOperationsToDialect();
-        HibernateUtil.addAddDateToDialect();
-        HibernateUtil.addReplaceToDialect();
+	public static void initialize() throws ClassNotFoundException {
+		if (sContext != null) return;
+		sContext = HibernateUtil.configureHibernateFromRootDAO();
         DatabaseUpdate.update();
-	}
-
-	/**
-	 * Set the session factory
-	 */
-	protected static void setSessionFactory (SessionFactory sessionFactory) {
-		setSessionFactory(null, sessionFactory);
-	}
-
-	/**
-	 * Set the session factory
-	 */
-	protected static void setSessionFactory (String configFileName, SessionFactory sessionFactory) {
-		if (configFileName == null) {
-			sSessionFactory = sessionFactory;
-		} else {
-			if (sSessionFactoryMap == null)
-				sSessionFactoryMap = new HashMap<String, SessionFactory>();
-			sSessionFactoryMap.put(configFileName, sessionFactory);
-		}
-	}
-
-	/**
-	 * Return the SessionFactory that is to be used by these DAOs.  Change this
-	 * and implement your own strategy if you, for example, want to pull the SessionFactory
-	 * from the JNDI tree.
-	 */
-	protected SessionFactory getSessionFactory() {
-		return getSessionFactory(getConfigurationFileName());
-	}
-
-	protected SessionFactory getSessionFactory(String configFile) {
-		if (configFile == null) {
-			if (sSessionFactory == null)
-				throw new RuntimeException("The session factory has not been initialized (or an error occured during initialization)");
-			else
-				return sSessionFactory;
-		}
-		else {
-			if (sSessionFactoryMap == null)
-				throw new RuntimeException("The session factory for '" + configFile + "' has not been initialized (or an error occured during initialization)");
-			else {
-				SessionFactory sessionFactory = (SessionFactory) sSessionFactoryMap.get(configFile);
-				if (sessionFactory == null)
-					throw new RuntimeException("The session factory for '" + configFile + "' has not been initialized (or an error occured during initialization)");
-				else
-					return sessionFactory;
-			}
-		}
 	}
 
 	/**
@@ -148,7 +58,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * @return the active Session
 	 */
 	public Session getSession() {
-		return getSession(getConfigurationFileName(), false);
+		return getSession(false);
 	}
 
 	/**
@@ -156,44 +66,26 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * @return the active Session
 	 */
 	public Session createNewSession() {
-		return getSession(getConfigurationFileName(), true);
+		return getSession(true);
 	}
 
 	/**
 	 * Return a new Session object that must be closed when the work has been completed.
-	 * @param configFile the config file must match the meta attribute "config-file" in the hibernate mapping file
 	 * @return the active Session
 	 */
-	private Session getSession(String configFile, boolean createNew) {
+	private Session getSession(boolean createNew) {
 		if (createNew) {
-			return getSessionFactory(configFile).openSession();
+			return sContext.getSessionFactory().openSession();
 		} else {
-			if (configFile == null) {
-				if (sSessions == null)
-					sSessions = new ThreadLocal<Session>();
-				Session session = sSessions.get();
-				if (session == null || !session.isOpen()) {
-					session = getSessionFactory(null).openSession();
-					// session.beginTransaction();
-					sSessions.set(session);
-				}
-				return session;
+			if (sSessions == null)
+				sSessions = new ThreadLocal<Session>();
+			Session session = sSessions.get();
+			if (session == null || !session.isOpen()) {
+				session = sContext.getSessionFactory().openSession();
+				// session.beginTransaction();
+				sSessions.set(session);
 			}
-			else {
-				if (sMappedSessions == null) sMappedSessions = new ThreadLocal<HashMap<String,Session>>();
-				HashMap<String,Session> map = sMappedSessions.get();
-				if (map == null) {
-					map = new HashMap<String,Session>();
-					sMappedSessions.set(map);
-				}
-				Session session = map.get(configFile);
-				if (session == null || !session.isOpen()) {
-					session = getSessionFactory(configFile).openSession();
-					// session.beginTransaction();
-					map.put(configFile, session);
-				}
-				return session;
-			}
+			return session;
 		}
 	}
 	
@@ -201,23 +93,9 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Get current thread opened session, if there is any
 	 */
 	public Session getCurrentThreadSession() {
-		return getCurrentThreadSession(getConfigurationFileName());
-	}
-	
-	/**
-	 * Get current thread opened session, if there is any
-	 */
-	private Session getCurrentThreadSession(String configFile) {
-		if (configFile == null) {
-			if (sSessions != null) {
-				Session session = sSessions.get();
-				if (session != null) return session;
-			}
-		} else {
-			if (sMappedSessions != null) {
-				HashMap<String, Session> map = sMappedSessions.get();
-				if (map != null) return map.get(configFile);
-			}
+		if (sSessions != null) {
+			Session session = sSessions.get();
+			if (session != null) return session;
 		}
 		return null;
 	}
@@ -252,34 +130,8 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 			}
 			sSessions.remove();
 		}
-		if (sMappedSessions != null) {
-			HashMap<String,Session> map = sMappedSessions.get();
-			if (map != null) {
-				HibernateException thrownException = null;
-				for (Session session: map.values()) {
-					try {
-						if (null != session && session.isOpen()) {
-							if (session.getTransaction() != null && session.getTransaction().isActive()) {
-								if (commit)
-									session.getTransaction().commit();
-								else
-									session.getTransaction().rollback();
-							}
-							session.close();
-							ret = true;
-						}
-					} catch (HibernateException e) {
-						thrownException = e;
-					}
-				}
-				map.clear();
-				if (null != thrownException) throw thrownException;
-			}
-			sMappedSessions.remove();
-		}
 		return ret;
 	}
-
 
 	/**
 	 * Begin the transaction related to the session
@@ -299,33 +151,23 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	}
 
 	/**
-	 * Return a new Configuration to use
-	 */
-	 public static Configuration getNewConfiguration(String configFileName) {
-		 return new Configuration();
-	 }
-	
-	/**
 	 * @return Returns true if configured
 	 */
 	public static boolean isConfigured() {
-		return sConfiguration != null && sSessionFactory != null;
+		return sContext != null && sContext.getSessionFactory() != null;
 	}	 	 
 	 
 	/**
 	 * @return Returns the configuration.
 	 */
-	public static Configuration getConfiguration() {
-		return sConfiguration;
-	}	 
-	
-	/**
-	 * Return the name of the configuration file to be used with this DAO or null if default
-	 */
-	public String getConfigurationFileName() {
-		return null;
+	public static HibernateContext getHibernateContext() {
+		return sContext;
 	}
-
+	
+	public static HibernateContext getConfiguration() {
+		return sContext;
+	}
+	
 	/**
 	 * Return the specific Object class that will be used for class-specific
 	 * implementation of this DAO.
@@ -447,15 +289,20 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> findAll (Session s, Order... orders) {
-		Criteria crit = s.createCriteria(getReferenceClass());
-		if (orders != null) {
-			for (Order order: orders) {
-				if (order != null)
-					crit.addOrder(order);
-			}
+		CriteriaBuilder cb = s.getCriteriaBuilder();
+		CriteriaQuery<T> cr = cb.createQuery(getReferenceClass());
+		Root<T> root = cr.from(getReferenceClass());
+		cr.select(root);
+		if (orders != null && orders.length > 0) {
+			List<javax.persistence.criteria.Order> x = new ArrayList<javax.persistence.criteria.Order>();
+			for (Order o: orders)
+				if (o != null)
+					x.add(o.isAscending() ? cb.asc(root.get(o.getPropertyName())) : cb.desc(root.get(o.getPropertyName())));
+			if (!x.isEmpty())
+				cr.orderBy(x);
 		}
-		crit.setCacheable(true);
-		return (List<T>)crit.list();
+		Query<T> query = s.createQuery(cr);
+		return query.getResultList();
 	}
 
 	/**

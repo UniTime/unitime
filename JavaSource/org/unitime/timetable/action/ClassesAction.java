@@ -181,26 +181,26 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and (co.courseNbr like :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))").
-                            setLong("sessionId",form.getSession()).
-                            setLong("subjectAreaId",sa.getUniqueId()).
-                            setString("courseNbr",form.getCourseNumber().replaceAll("\\*", "%")).
+                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE).
                             setCacheable(true).list();
                 		} else if (form.getCourseNumber()!=null && form.getCourseNumber().length()>0) {
                             classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and co.courseNbr like :courseNbr").
-                            setLong("sessionId",form.getSession()).
-                            setLong("subjectAreaId",sa.getUniqueId()).
-                            setString("courseNbr",form.getCourseNumber().replaceAll("\\*", "%")).
+                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE).
                             setCacheable(true).list();
                         } else {
                             classes = Class_DAO.getInstance().getSession().createQuery(
                                     "select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co where " +
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId").
-                            setLong("sessionId",form.getSession()).
-                            setLong("subjectAreaId",sa.getUniqueId()).
+                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setCacheable(true).list();
                         }
                     }

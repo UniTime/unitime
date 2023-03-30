@@ -53,15 +53,15 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {
 	    return (EventContact)new EventContactDAO().getSession().
 	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId").
-	        setString("externalUniqueId", externalUniqueId).
-	        setFlushMode(FlushMode.MANUAL).
+	        setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).
+	        setHibernateFlushMode(FlushMode.MANUAL).
 	        uniqueResult();
 	}
 
 	public static EventContact findByEmail(String email) {
 	    List<EventContact> ec = (List<EventContact>)new EventContactDAO().getSession().
 	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress").
-	        setString("emailAddress", email).list();
+	        setParameter("emailAddress", email, org.hibernate.type.StringType.INSTANCE).list();
 	    if (ec.isEmpty()) return null; 
 	    else return ec.get(0);
 	}

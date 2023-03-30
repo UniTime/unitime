@@ -46,7 +46,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 		
 		for (final Long studentId: (List<Long>)hibSession.createQuery(
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			loadRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
@@ -60,7 +60,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 		
 		for (final Long offeringId: (List<Long>)hibSession.createQuery(
 				"select io.uniqueId from InstructionalOffering io where io.session.uniqueId = :sessionId and io.notOffered = false")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			loadRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
@@ -82,7 +82,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 
 		for (final String name: (List<String>)hibSession.createQuery(
 				"select co.subjectAreaAbbv || ' ' || co.courseNbr from CourseOffering co where co.instructionalOffering.session.uniqueId = :sessionId and co.instructionalOffering.notOffered = false")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			loadRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
@@ -97,7 +97,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 
 		for (final Long classId: (List<Long>)hibSession.createQuery(
 				"select c.uniqueId from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			loadRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
@@ -109,7 +109,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 		}
 		
 		for (final Long studentId: (List<Long>)hibSession.createQuery("select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			
 			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;

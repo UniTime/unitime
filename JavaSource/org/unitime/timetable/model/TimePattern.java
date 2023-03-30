@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.LazyInitializationException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -113,9 +113,9 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	org.hibernate.Session hibSession = new TimePatternDAO().getSession();
     	Query q = hibSession.createQuery(query);
     	q.setCacheable(true);
-    	q.setLong("sessionId", sessionId.longValue());
+    	q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
     	if (visible!=null) 
-    	    q.setBoolean("visible", visible.booleanValue());
+    	    q.setParameter("visible", visible.booleanValue(), org.hibernate.type.BooleanType.INSTANCE);
     	
         List<TimePattern> v = q.list();
         Collections.sort(v);
@@ -144,8 +144,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         					"(p.type="+TimePatternType.ExactTime.ordinal()+" or ( p.type!="+TimePatternType.ExactTime.ordinal()+" and "+
         					(!includeExtended?"p.type!="+TimePatternType.Extended.ordinal()+" and ":"")+
         					"p.minPerMtg * p.nrMeetings = :minPerWeek ))").
-        					setLong("sessionId",sessionId.longValue()).
-        					setInteger("minPerWeek",minPerWeek).
+        					setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+        					setParameter("minPerWeek", minPerWeek, org.hibernate.type.IntegerType.INSTANCE).
         					setCacheable(true).list();
     	} else {
     		list = (List<TimePattern>)(new TimePatternDAO()).getSession().
@@ -155,8 +155,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     					(!includeHidden?"p.visible=true and ":"")+
     					(!includeExtended?"p.type!="+TimePatternType.Extended.ordinal()+" and ":"")+
     					"p.minPerMtg * p.nrMeetings = :minPerWeek").
-    					setLong("sessionId",sessionId.longValue()).
-    					setInteger("minPerWeek",minPerWeek).
+    					setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+    					setParameter("minPerWeek", minPerWeek, org.hibernate.type.IntegerType.INSTANCE).
     					setCacheable(true).list();
     	}
     	
@@ -197,7 +197,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	List<TimePattern> list = new ArrayList<TimePattern>();
     	for (TimePattern pattern: (List<TimePattern>)TimePatternDAO.getInstance().getSession().createQuery(
     			"from TimePattern where session.uniqueId = :sessionId")
-    			.setLong("sessionId", sessionId).setCacheable(true).list()) {
+    			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (!includeHidden && !pattern.isVisible()) continue;
     		if (!includeExtended && pattern.isExactTime()) {
     			if (department != null) {
@@ -227,8 +227,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     		createQuery("select distinct p from TimePattern as p "+
     					"where p.session.uniqueId=:sessionId and "+
     					"p.name=:name").
-    					setLong("sessionId",sessionId.longValue()).
-    					setText("name",name).setCacheable(true).list();
+    					setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+    					setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     	if (list==null || list.isEmpty())
     		return null;
     	return (TimePattern)list.get(0);
@@ -239,7 +239,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         createQuery("select distinct p from TimePattern as p "+
                     "where p.session.uniqueId=:sessionId and " +
                     "p.type="+TimePatternType.ExactTime.ordinal()).
-                    setLong("sessionId",sessionId.longValue()).
+                    setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
                     setCacheable(true).list();
         if (list==null || list.isEmpty()) return null;
         return (TimePattern)list.get(0);        
@@ -300,12 +300,12 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     			(new TimePatternDAO()).
         		getSession().
         		createQuery("select distinct tp from TimePref as p inner join p.timePattern as tp where tp.session.uniqueId=:sessionId").
-				setLong("sessionId",sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).list());
     	ret.addAll((new TimePatternDAO()).
         		getSession().
         		createQuery("select distinct tp from Assignment as a inner join a.timePattern as tp where tp.session.uniqueId=:sessionId").
-				setLong("sessionId",sessionId.longValue()).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).list());
     	return ret;
     }
@@ -447,9 +447,9 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 	        createQuery("select distinct p from TimePattern as p "+
                         "where p.session.uniqueId=:sessionId and "+
                         "p.minPerMtg = :minPerMtg and p.nrMeetings = :nrMeetings").
-                        setLong("sessionId",sessionId.longValue()).
-                        setInteger("minPerMtg",pattern.getMinPerMtg().intValue()).
-                        setInteger("nrMeetings",pattern.getNrMeetings().intValue()).
+                        setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+                        setParameter("minPerMtg", pattern.getMinPerMtg(), org.hibernate.type.IntegerType.INSTANCE).
+                        setParameter("nrMeetings", pattern.getNrMeetings(), org.hibernate.type.IntegerType.INSTANCE).
                         setCacheable(true).list());
 	    
         //look for strongly matching pattern first (among visible patterns)

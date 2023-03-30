@@ -74,7 +74,7 @@ public abstract class BasePointInTimeDataReports {
 				for (StudentSectioningStatus ref: StudentSectioningStatus.findAll(user.getCurrentAcademicSessionId()))
 					ret.put(ref.getUniqueId(), ref.getLabel());
 			} else {
-				for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).list())
+				for (RefTableEntry ref: SessionDAO.getInstance().getSession().createQuery("from " + iReference.getSimpleName(), RefTableEntry.class).setCacheable(true).list())
 					ret.put(ref.getUniqueId(), ref.getLabel());
 			}
 			return ret;
@@ -522,8 +522,8 @@ public abstract class BasePointInTimeDataReports {
 		  .append(" and pco.subjectArea.department.uniqueId = :deptUid");
 
 		return((List<Long>)hibSession.createQuery(sb.toString())
-		          .setLong("pitdUid", pointInTimeData.getUniqueId().longValue())
-		          .setLong("deptUid", departmentId.longValue())
+		          .setParameter("pitdUid", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+		          .setParameter("deptUid", departmentId.longValue(), org.hibernate.type.LongType.INSTANCE)
 		          .setCacheable(true)
 		          .list());
 
@@ -548,7 +548,7 @@ public abstract class BasePointInTimeDataReports {
 	
 		ArrayList<PitClass> pitClasses = new ArrayList<PitClass>();
 			pitClasses.addAll((List<PitClass>)hibSession.createQuery(sb.toString())
-		          .setLong("offrId", pitOfferingId.longValue())
+		          .setParameter("offrId", pitOfferingId.longValue(), org.hibernate.type.LongType.INSTANCE)
 		          .setCacheable(true)
 		          .list());
 		return(pitClasses);

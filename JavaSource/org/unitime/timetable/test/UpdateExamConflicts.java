@@ -490,34 +490,34 @@ public class UpdateExamConflicts {
         Hashtable<Long, Exam> exams = new Hashtable();
         for (Iterator i=new ExamDAO().getSession().createQuery(
                 "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
-                ).setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
+                ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             exams.put(exam.getUniqueId(), exam);
         }
         info("  Fetching related objects (class)...");
         new ExamDAO().getSession().createQuery(
                 "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
-                .setLong("sessionId", sessionId)
-                .setLong("examTypeId", examTypeId)
-                .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
+                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         info("  Fetching related objects (config)...");
         new ExamDAO().getSession().createQuery(
                 "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
-                .setLong("sessionId", sessionId)
-                .setLong("examTypeId", examTypeId)
-                .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
+                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         info("  Fetching related objects (course)...");
         new ExamDAO().getSession().createQuery(
                 "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
-                .setLong("sessionId", sessionId)
-                .setLong("examTypeId", examTypeId)
-                .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
+                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         info("  Fetching related objects (offering)...");
         new ExamDAO().getSession().createQuery(
                 "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
-                .setLong("sessionId", sessionId)
-                .setLong("examTypeId", examTypeId)
-                .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
+                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         Hashtable<Long,Set<Long>> owner2students = new Hashtable();
         Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
@@ -529,7 +529,7 @@ public class UpdateExamConflicts {
             "StudentClassEnrollment e inner join e.clazz c "+
             "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-            "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
+            "o.ownerId=c.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
@@ -568,7 +568,7 @@ public class UpdateExamConflicts {
                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                    "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
+                    "o.ownerId=ioc.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long examId = (Long)o[0];
             Long ownerId = (Long)o[1];
@@ -606,7 +606,7 @@ public class UpdateExamConflicts {
                     "StudentClassEnrollment e inner join e.courseOffering co " +
                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                    "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
+                    "o.ownerId=co.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long examId = (Long)o[0];
             Long ownerId = (Long)o[1];
@@ -644,7 +644,7 @@ public class UpdateExamConflicts {
                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                    "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
+                    "o.ownerId=io.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long examId = (Long)o[0];
             Long ownerId = (Long)o[1];

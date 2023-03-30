@@ -84,8 +84,8 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
 				 .getQuery(query)
-				 .setLong("sessId", getSession().getUniqueId().longValue())
-				 .setLong("subjectId", sa.getUniqueId().longValue())
+				 .setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+				 .setParameter("subjectId", sa.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				 .list());
 		}
 		return(results);
@@ -161,13 +161,11 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			StringBuilder sb = new StringBuilder();
 			sb.append("select distinct sce.clazz.schedulingSubpart.instrOfferingConfig")
 			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.courseOffering.uniqueId = :courseId");
-			Iterator it = StudentClassEnrollmentDAO.getInstance()
-					.getQuery(sb.toString())
-					.setLong("studId", studentUniqueId)
-					.setLong("courseId", courseId)
-					.iterate();
-			while (it.hasNext()){
-				InstrOfferingConfig result = (InstrOfferingConfig) it.next();
+			for (InstrOfferingConfig result: StudentClassEnrollmentDAO.getInstance().getSession()
+					.createQuery(sb.toString(), InstrOfferingConfig.class)
+					.setParameter("studId", studentUniqueId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE)
+					.list()) {
 				configs.add(result.getName());
 			}
 			

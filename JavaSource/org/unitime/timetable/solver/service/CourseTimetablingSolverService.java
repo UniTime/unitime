@@ -158,7 +158,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		
 		// Load properties
 		for (SolverParameterDef def: (List<SolverParameterDef>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef where group.type = :type").setInteger("type", SolverParameterGroup.SolverType.COURSE.ordinal()).list()) {
+				"from SolverParameterDef where group.type = :type").setParameter("type", SolverParameterGroup.SolverType.COURSE.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list()) {
 			if (def.getDefault() != null) properties.put(def.getName(), def.getDefault());
 			if (options != null && options.containsKey(def.getUniqueId()))
 				properties.put(def.getName(), options.get(def.getUniqueId()));

@@ -64,9 +64,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 			query += "  and cc.permanentId = '" + courseOffering.getPermId() + "'";
 		}
 		List l = SubjectAreaDAO.getInstance().getQuery(query)
-					.setLong("sessionId", session.getUniqueId())
-					.setString("subjectAbbv", courseOffering.getSubjectAreaAbbv())
-					.setString("courseNbr", courseOffering.getCourseNbr())
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
 					.list();
 		if (l != null && l.size() == 1){
 			return((CourseCatalog) l.get(0));
@@ -98,9 +98,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 		query += "  and cc.subject=:subjectAbbv";
 		query += "  and cc.courseNumber=:courseNbr";
 		List l = SubjectAreaDAO.getInstance().getQuery(query)
-					.setLong("sessionId", session.getUniqueId())
-					.setString("subjectAbbv", courseOffering.getSubjectAreaAbbv())
-					.setString("courseNbr", courseOffering.getCourseNbr())
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
 					.list();
 		if (l != null && l.size() == 1){
 			return((CourseCatalog) l.get(0));

@@ -93,7 +93,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	 		for (Object[] o: (List<Object[]>)getHibSession().createQuery(
 	 				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
     				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-    				.setLong("sessionId", session.getUniqueId()).list()) {
+    				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 			Class_ clazz = (Class_)o[0];
 	 			CourseOffering course = (CourseOffering)o[1];
 				String extId = clazz.getExternalId(course);
@@ -139,7 +139,7 @@ public class StudentEnrollmentImport extends BaseImport {
                     "left join fetch cd.courseRequests as cr " +
                     "left join fetch s.classEnrollments as e " +
                     "where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
-                    setLong("sessionId",session.getUniqueId()).list()) { 
+                    setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) { 
 	        	students.put(student.getExternalUniqueId(), student);
 	        }
 	        

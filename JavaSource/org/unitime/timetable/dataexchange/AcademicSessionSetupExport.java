@@ -136,7 +136,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element managersEl = root.addElement("managers");
 		for (TimetableManager m: new TreeSet<TimetableManager>((List<TimetableManager>)getHibSession().createQuery(
 				"select distinct m from TimetableManager m inner join m.departments d where d.session.uniqueId = :sessionId"
-				).setLong("sessionId", session.getUniqueId()).list())) {
+				).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 			Element managerEl = managersEl.addElement("manager");
 			managerEl.addAttribute("externalId", m.getExternalUniqueId());
 			if (m.getFirstName() != null)
@@ -218,7 +218,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportSolverGroups(Element root, Session session) {
 		Element groupsEl = root.addElement("solverGroups");
 		for (SolverGroup g: new TreeSet<SolverGroup>((List<SolverGroup>)getHibSession().createQuery(
-				"from SolverGroup where session = :sessionId").setLong("sessionId", session.getUniqueId()).list())) {
+				"from SolverGroup where session = :sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 			Element groupEl = groupsEl.addElement("solverGroup");
 			groupEl.addAttribute("abbreviation", g.getAbbv());
 			if (g.getName() != null)
@@ -233,7 +233,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportDatePatterns(Element root, Session session) {
 		Element patternsEl = root.addElement("datePatterns");
 		for (DatePattern dp: new TreeSet<DatePattern>((List<DatePattern>)getHibSession().createQuery(
-				"from DatePattern where session = :sessionId").setLong("sessionId", session.getUniqueId()).list())) {
+				"from DatePattern where session = :sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 			Element patternEl = patternsEl.addElement("datePattern");			
 			patternEl.addAttribute("name", dp.getName());
 			patternEl.addAttribute("type", dp.getDatePatternType().name());
@@ -290,7 +290,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportTimePatterns(Element root, Session session) {
 		Element patternsEl = root.addElement("timePatterns");
 		for (TimePattern tp: new TreeSet<TimePattern>((List<TimePattern>)getHibSession().createQuery(
-				"from TimePattern where session = :sessionId").setLong("sessionId", session.getUniqueId()).list())) {
+				"from TimePattern where session = :sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 			Element patternEl = patternsEl.addElement("timePattern");
 			patternEl.addAttribute("name", tp.getName());
 			patternEl.addAttribute("nbrMeetings", tp.getNrMeetings().toString());
@@ -314,12 +314,12 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element examinationPeriodsEl = root.addElement("examinationPeriods");
 		for (ExamType type: new TreeSet<ExamType>(getHibSession().createQuery(
 				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId")
-				.setLong("sessionId", session.getUniqueId()).list())) {
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 			Element typeEl = examinationPeriodsEl.addElement("periods");
 			typeEl.addAttribute("type", type.getReference());
 			for (ExamPeriod period: new TreeSet<ExamPeriod>(getHibSession().createQuery(
 					"from ExamPeriod p where p.session.uniqueId = :sessionId and p.examType.uniqueId = :typeId")
-					.setLong("sessionId", session.getUniqueId()).setLong("typeId", type.getUniqueId()).list())) {
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("typeId", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())) {
 				Element periodEl = typeEl.addElement("period");
 				periodEl.addAttribute("date", sDateFormat.format(period.getStartDate()));
 				periodEl.addAttribute("startTime", startSlot2startTime(period.getStartSlot()));
@@ -337,7 +337,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportAcademicAreas(Element root, Session session) {
 		Element areasEl = root.addElement("academicAreas");
 		for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setLong("sessionId", session.getUniqueId()).list()) {
+				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			Element areaEl = areasEl.addElement("academicArea");
 			if (area.getExternalUniqueId() != null)
 				areaEl.addAttribute("externalId", area.getExternalUniqueId());
@@ -351,7 +351,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportAcademicClassifications(Element root, Session session) {
 		Element clasfsEl = root.addElement("academicClassifications");
 		for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
-				"from AcademicClassification where session = :sessionId order by code").setLong("sessionId", session.getUniqueId()).list()) {
+				"from AcademicClassification where session = :sessionId order by code").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			Element clasfEl = clasfsEl.addElement("academicClassification");
 			if (clasf.getExternalUniqueId() != null)
 				clasfEl.addAttribute("externalId", clasf.getExternalUniqueId());
@@ -365,7 +365,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportMajors(Element root, Session session) {
 		Element majorsEl = root.addElement("posMajors");
 		for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setLong("sessionId", session.getUniqueId()).list()) {
+				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			for (PosMajor major: area.getPosMajors()) {
 				Element majorEl = majorsEl.addElement("posMajor");
 				majorEl.addAttribute("code", major.getCode());
@@ -389,7 +389,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportMinors(Element root, Session session) {
 		Element minorsEl = root.addElement("posMinors");
 		for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setLong("sessionId", session.getUniqueId()).list()) {
+				"from AcademicArea where session = :sessionId order by academicAreaAbbreviation").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			for (PosMinor minor: area.getPosMinors()) {
 				Element minorEl = minorsEl.addElement("posMinor");
 				minorEl.addAttribute("code", minor.getCode());
@@ -405,7 +405,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportDegrees(Element root, Session session) {
 		Element degreesEl = root.addElement("degrees");
 		for (Degree degree: (List<Degree>)getHibSession().createQuery(
-				"from Degree where session = :sessionId order by reference").setLong("sessionId", session.getUniqueId()).list()) {
+				"from Degree where session = :sessionId order by reference").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			Element degreeEl = degreesEl.addElement("degree");
 			degreeEl.addAttribute("code", degree.getReference());
 			if (degree.getExternalUniqueId() != null)
@@ -418,7 +418,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportStudentGroups(Element root, Session session) {
 		Element groupsEl = root.addElement("studentGroups");
 		for (StudentGroup group: (List<StudentGroup>)getHibSession().createQuery(
-				"from StudentGroup where session = :sessionId order by groupAbbreviation").setLong("sessionId", session.getUniqueId()).list()) {
+				"from StudentGroup where session = :sessionId order by groupAbbreviation").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			Element groupEl = groupsEl.addElement("studentGroup");
 			if (group.getExternalUniqueId() != null)
 				groupEl.addAttribute("externalId", group.getExternalUniqueId());
@@ -434,7 +434,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportStudentAccomodations(Element root, Session session) {
 		Element accomodationsEl = root.addElement("studentAccomodations");
 		for (StudentAccomodation acc: (List<StudentAccomodation>)getHibSession().createQuery(
-				"from StudentAccomodation where session = :sessionId order by abbreviation").setLong("sessionId", session.getUniqueId()).list()) {
+				"from StudentAccomodation where session = :sessionId order by abbreviation").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			Element accomodationEl = accomodationsEl.addElement("studentAccomodation");
 			if (acc.getExternalUniqueId() != null)
 				accomodationEl.addAttribute("externalId", acc.getExternalUniqueId());

@@ -59,20 +59,17 @@ public class MakeEventsForAllCommitedAssignments {
                 try {
                     tx = hibSession.beginTransaction();
 
-                    for (Iterator j=hibSession.createQuery(
-                            "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
-                            .setLong("solutionId",s.getUniqueId())
-                            .iterate(); j.hasNext();) {
-                        ClassEvent e = (ClassEvent)j.next();
+                    for (ClassEvent e: hibSession.createQuery(
+                            "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
+                            .setParameter("solutionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                            .list()) {
                         hibSession.delete(e);
                     }
-                    for (Iterator j=hibSession.createQuery(
+                    for (Assignment a: hibSession.createQuery(
                             "select a from Assignment a "+
-                            "where a.solution.uniqueId = :solutionId")
-                            .setLong("solutionId", s.getUniqueId())
-                            .iterate();
-                        j.hasNext();) {
-                        Assignment a = (Assignment)j.next();
+                            "where a.solution.uniqueId = :solutionId", Assignment.class)
+                            .setParameter("solutionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                            .list()) {
                         ClassEvent event = a.generateCommittedEvent(null,true);
                         if (event != null && !event.getMeetings().isEmpty()) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName(true));

@@ -252,7 +252,7 @@ public class WSEByDayOfWeekAndPeriod extends BasePointInTimeDataReports {
 	protected void runReport(org.hibernate.Session hibSession) {
 		PointInTimeData pitd = (PointInTimeData)hibSession
 				.createQuery("from PointInTimeData pitd where pitd.uniqueId = :uid")
-				.setLong("uid", getPointInTimeDataUniqueId().longValue())
+				.setParameter("uid", getPointInTimeDataUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				.uniqueResult();
 		createRoomUtilizationReportFor(pitd, hibSession);
 		

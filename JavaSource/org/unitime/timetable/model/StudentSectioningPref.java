@@ -43,7 +43,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 		try {
 			boolean first = true;
 			for (CourseRequestOption option: (List<CourseRequestOption>)hibSession.createQuery("from CourseRequestOption where optionType = :type"
-					).setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber()).list()) {
+					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber(), org.hibernate.type.IntegerType.INSTANCE).list()) {
 				if (first) {
 					Debug.info(" - Updating student scheduling preferences ...");
 					first = false;
@@ -106,7 +106,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 			Debug.error("Failed to update student sectioning preferences: " + e.getMessage(), e);
 			tx.rollback();
 		} finally {
-			hibSession.getSessionFactory().getCache().evictCollectionRegion(CourseRequest.class.getName() + ".courseRequestOptions");
+			hibSession.getSessionFactory().getCache().evictCollectionData(CourseRequest.class.getName() + ".courseRequestOptions");
 			hibSession.close();
 		}
 	}

@@ -46,13 +46,13 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 	public static List<InstructorAttribute> getAllGlobalAttributes(Long sessionId) throws HibernateException {
 		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null order by name"
-				).setLong("sessionId", sessionId).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static List<InstructorAttribute> getAllDepartmentalAttributes(Long departmentId) throws HibernateException {
 		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute ia where ia.department.uniqueId = :departmentId order by name"
-				).setLong("departmentId", departmentId).setCacheable(true).list();
+				).setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
 	public InstructorAttribute findSameAttributeInSession(Session session) {
@@ -62,12 +62,12 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 			if (d == null) return null;
 			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
 					"from InstructorAttribute ia where ia.department.uniqueId = :departmentId and ia.code = :code")
-					.setLong("departmentId", d.getUniqueId()).setString("code", getCode()).setCacheable(true)
+					.setParameter("departmentId", d.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("code", getCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		} else {
 			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
 					"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null and ia.code = :code")
-					.setLong("sessionId", session.getUniqueId()).setString("code", getCode()).setCacheable(true)
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("code", getCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		}
 	}

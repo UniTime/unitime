@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -96,15 +96,15 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and " +
 						"m.locationPermanentId = x.permanentId and m.meetingDate in ("+dates+")");
 				
-				query.setInteger("startTime", request.getStartSlot());
-				query.setInteger("stopTime", request.getEndSlot());
-				query.setLong("sessionId", request.getSessionId());
+				query.setParameter("startTime", request.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE);
+				query.setParameter("stopTime", request.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE);
+				query.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE);
 				for (int i = 0; i < request.getDates().size(); i++) {
 					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
-					query.setDate("d" + i, date);
+					query.setParameter("d" + i, date, org.hibernate.type.DateType.INSTANCE);
 				}
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					query.setLong("l" + i, request.getLocations().get(idx + i));
+					query.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
 				
 				for (Object[] o: (List<Object[]>)query.list()) {
 					Meeting m = (Meeting)o[0];
@@ -220,9 +220,9 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				query = EventDAO.getInstance().getSession().createQuery(
 						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")");
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					query.setLong("l" + i, request.getLocations().get(idx + i));
+					query.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
 
-				for (Location location: (List<Location>)query.setLong("sessionId", request.getSessionId()).setCacheable(true).list()) {
+				for (Location location: (List<Location>)query.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					if (context.hasPermission(location, request.getEventType() == EventType.Unavailabile ? Right.EventLocationUnavailable : Right.EventLocation)) {
 						Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
 						if (conflicts != null && !conflicts.isEmpty())
@@ -337,11 +337,11 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
 							"m.locationPermanentId = x.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and "+
 							"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and l.ignoreRoomCheck = false")
-							.setInteger("startTime", meeting.getStartSlot())
-							.setInteger("stopTime", meeting.getEndSlot())
-							.setDate("meetingDate", meeting.getMeetingDate())
-							.setLong("locationdId", meeting.getLocation().getId())
-							.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
+							.setParameter("startTime", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+							.setParameter("stopTime", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+							.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+							.setParameter("locationdId", meeting.getLocation().getId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId(), org.hibernate.type.LongType.INSTANCE)
 							.list()) {
 						
 						MeetingConflictInterface conflict = new MeetingConflictInterface();

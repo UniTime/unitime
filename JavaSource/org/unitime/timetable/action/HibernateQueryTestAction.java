@@ -33,7 +33,7 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.dom4j.Document;
 import org.hibernate.MappingException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -329,7 +329,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         s.append("<tr align='left'>");
         SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
         boolean hasLink = false;
-    	if (alias != null && alias.length > 0 && alias[0].startsWith("__")) {
+    	if (alias != null && alias.length > 0 && alias[0] != null && alias[0].startsWith("__")) {
     		if ("__Class".equals(alias[0])) hasLink = true;
 			else if ("__Offering".equals(alias[0])) hasLink = true;
 			else if ("__Subpart".equals(alias[0])) hasLink = true;
@@ -349,7 +349,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
                 if (x[i]==null) {
                     header(s,idx++,a);
                 } else {
-                    ClassMetadata meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+    				ClassMetadata meta = null;
+            		try {
+            			meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+            		} catch (MappingException e) {}
                     if (meta==null) {
                         header(s,idx++,a);
                     } else {
@@ -362,7 +365,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
                 }
             }
         } else {
-            ClassMetadata meta = hibSessionFactory.getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = hibSessionFactory.getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
             if (meta==null) {
                 header(s,idx++,(alias != null && alias.length > 0 && alias[0] != null && !alias[0].isEmpty() ? alias[0] : null));
             } else {
@@ -391,7 +397,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
     
     public void printLine(StringBuffer s, Object o, SessionImplementor session, String[] alias) {
     	String link = null;
-    	if (alias != null && alias.length > 0 && alias[0].startsWith("__") && o != null && (o instanceof Object[])) {
+    	if (alias != null && alias.length > 0 && alias[0] != null && alias[0].startsWith("__") && o != null && (o instanceof Object[])) {
     		if ("__Class".equals(alias[0]))
     			link = "classDetail.action?cid=" + ((Object[])o)[0];
 			else if ("__Offering".equals(alias[0]))
@@ -418,7 +424,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
                 if (x[i]==null) {
                     line(s,null);
                 } else {
-                    ClassMetadata meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+    				ClassMetadata meta = null;
+            		try {
+            			meta = hibSessionFactory.getClassMetadata(x[i].getClass());
+            		} catch (MappingException e) {}
                     if (meta==null) {
                         line(s,x[i]);
                     } else {
@@ -430,7 +439,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
                 }
             }
         } else {
-            ClassMetadata meta = hibSessionFactory.getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = hibSessionFactory.getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
             if (meta==null) {
                 line(s,o);
             } else {

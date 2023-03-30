@@ -266,7 +266,7 @@ public class DegreeWorksPlanScraper extends OnlineSectioningTestFwk {
                 "left join fetch s.waitlists as w " +
                 "left join fetch s.groups as g " +
                 "where s.session.uniqueId=:sessionId").
-                setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list();
+                setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 		
 		for (final Student s: students) {
 			if (iFilter != null && !iFilter.contains(s.getExternalUniqueId())) continue;

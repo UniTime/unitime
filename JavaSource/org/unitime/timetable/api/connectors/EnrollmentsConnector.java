@@ -95,7 +95,7 @@ public class EnrollmentsConnector extends ApiConnector {
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId"
-					).setLong("courseId", course.getUniqueId()).list()));
+					).setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 		String offeringId = helper.getParameter("offeringId");
 		if (offeringId != null) {
@@ -107,7 +107,7 @@ public class EnrollmentsConnector extends ApiConnector {
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId"
-					).setLong("offeringId", offering.getUniqueId()).list()));
+					).setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 		String configurationId = helper.getParameter("configurationId");
 		if (configurationId != null) {
@@ -119,7 +119,7 @@ public class EnrollmentsConnector extends ApiConnector {
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId"
-					).setLong("configId", config.getUniqueId()).list()));
+					).setParameter("configId", config.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 	}
 	

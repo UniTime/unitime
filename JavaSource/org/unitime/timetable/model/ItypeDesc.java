@@ -71,7 +71,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     public static ItypeDesc findForReference(String reference, Session hibSession) {
     	return((ItypeDesc) hibSession
     			.createQuery("from ItypeDesc i where i.sis_ref = :ref")
-    			.setString("ref", reference)
+    			.setParameter("ref", reference, org.hibernate.type.StringType.INSTANCE)
     			.setCacheable(true)
     			.uniqueResult());
     }

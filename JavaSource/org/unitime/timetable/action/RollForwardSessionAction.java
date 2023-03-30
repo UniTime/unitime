@@ -533,7 +533,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 			pointInTimeDataSnapshots.addAll((List<PointInTimeData>)PointInTimeDataDAO.getInstance()
 					.getSession()
 					.createQuery(sb.toString())
-					.setLong("sessId", selectedSessionId.longValue())
+					.setParameter("sessId", selectedSessionId.longValue(), org.hibernate.type.LongType.INSTANCE)
 					.list());
 		}
 		

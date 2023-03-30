@@ -1551,7 +1551,7 @@ public abstract class RoomSummaryReportsHelper {
 		headerPlusResults.add(headerRow);
 		RoomDAO rdao = new RoomDAO();
 		org.hibernate.Session hibSession = rdao.getSession();
-		headerPlusResults.addAll((List<List<Object>>) hibSession.createSQLQuery(query).list());
+		headerPlusResults.addAll((List<List<Object>>) hibSession.createNativeQuery(query).list());
 		return headerPlusResults;
 	
 	}

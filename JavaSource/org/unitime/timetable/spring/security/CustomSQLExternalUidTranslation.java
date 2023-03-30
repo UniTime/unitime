@@ -42,7 +42,7 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 			String sql = ApplicationProperty.CustomSQLUidToExternalTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
 				sql = sql.replace("%SCHEMA%", _RootDAO.getConfiguration().getProperty("default_schema"));
-			Object ret = hibSession.createSQLQuery(sql).setParameter(0, username).setMaxResults(1).uniqueResult();
+			Object ret = hibSession.createNativeQuery(sql).setParameter(0, username).setMaxResults(1).uniqueResult();
 			return (ret == null ? username : ret.toString());
 		} finally {
 			hibSession.close();
@@ -55,7 +55,7 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 			String sql = ApplicationProperty.CustomSQLExternalToUidTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
 				sql = sql.replace("%SCHEMA%", _RootDAO.getConfiguration().getProperty("default_schema"));
-			Object ret = hibSession.createSQLQuery(sql).setParameter(0, externalUniqueId).setMaxResults(1).uniqueResult();
+			Object ret = hibSession.createNativeQuery(sql).setParameter(0, externalUniqueId).setMaxResults(1).uniqueResult();
 			return (ret == null ? externalUniqueId : ret.toString());
 		} finally {
 			hibSession.close();

@@ -91,7 +91,7 @@ public class FixCourseTimetablingInconsistencies {
 		List<Assignment> assignments = (List<Assignment>)hibSession.createQuery(
 				"select a from Assignment a " + 
 				"where a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId")
-				.setLong("sessionId", iSessionId).list();
+				.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
 		Hashtable<Location, List<Assignment>> roomAssignments = new Hashtable<Location, List<Assignment>>();
 		Hashtable<String, List<Assignment>> instructorAssignments = new Hashtable<String, List<Assignment>>();
 		for (Assignment a: assignments) {
@@ -148,7 +148,7 @@ public class FixCourseTimetablingInconsistencies {
 			if (location.isIgnoreRoomCheck()) continue;
 			List<Assignment> ax = entry.getValue();
 			DistributionType canShareRoomType = (DistributionType)iHibSession.createQuery(
-					"select d from DistributionType d where d.reference = :type").setString("type", "CAN_SHARE_ROOM").uniqueResult();
+					"select d from DistributionType d where d.reference = :type").setParameter("type", "CAN_SHARE_ROOM", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 			for (Assignment a: ax) {
 				b: for (Assignment b: ax) {
 					if (a.getUniqueId() >= b.getUniqueId()) continue;
@@ -560,7 +560,7 @@ public class FixCourseTimetablingInconsistencies {
 							}
 						}
 						DistributionType meetWithType = (DistributionType)iHibSession.createQuery(
-							"select d from DistributionType d where d.reference = :type").setString("type", "MEET_WITH").uniqueResult();
+							"select d from DistributionType d where d.reference = :type").setParameter("type", "MEET_WITH", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 						DistributionPref dp = new DistributionPref();
 						dp.setDistributionType(meetWithType);
 						dp.setOwner(a.getClazz().getManagingDept());

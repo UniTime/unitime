@@ -362,11 +362,11 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		HashSet<Class_> classes = new HashSet<Class_>((List<Class_>)
 				new DatePatternDAO().getSession().
 				createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId").
-				setInteger("uniqueId", uniqueId.intValue()).setCacheable(true).list());
+				setParameter("uniqueId", uniqueId.intValue(), org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list());
 		for (SchedulingSubpart s :  (List<SchedulingSubpart>)
 			new DatePatternDAO().getSession().
 			createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId").
-			setInteger("uniqueId", uniqueId.intValue()).setCacheable(true).list()) {
+			setParameter("uniqueId", uniqueId.intValue(), org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list()) {
 			for (Class_ c : s.getClasses()) {
 				if (c.getDatePattern()==null)
 					classes.add(c);
@@ -483,8 +483,8 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     	@SuppressWarnings("unchecked")
 		List<DatePattern> list = (List<DatePattern>)(new DatePatternDAO()).getSession().
     		createQuery("select distinct p from DatePattern as p where p.session.uniqueId=:sessionId and p.name=:name").
-    		setLong("sessionId",sessionId).
-			setText("name",name).setCacheable(true).list();
+    		setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
+    		setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     	if (list==null || list.isEmpty()) return null;
     	return (DatePattern)list.get(0);
 	}
@@ -502,7 +502,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     	@SuppressWarnings("unchecked")
 		List<DatePattern> list = (List<DatePattern>)DatePatternDAO.getInstance().getSession().createQuery(
     			"select distinct p from DatePattern as p where p.session.uniqueId=:sessionId" + (!includeExtended ? " and p.type!="+DatePatternType.Extended.ordinal() : ""))
-    			.setLong("sessionId",sessionId)
+    			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list();
     	
     	if (!includeExtended) {
@@ -533,17 +533,17 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     			(new DatePatternDAO()).
         		getSession().
         		createQuery("select distinct dp from Class_ as c inner join c.datePattern as dp where dp.session.uniqueId=:sessionId").
-        		setLong("sessionId", sessionId.longValue()).
+        		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
         		setCacheable(true).list());
     	ret.addAll((List<DatePattern>)(new DatePatternDAO()).
         		getSession().
         		createQuery("select distinct dp from SchedulingSubpart as s inner join s.datePattern as dp where dp.session.uniqueId=:sessionId").
-        		setLong("sessionId", sessionId.longValue()).
+        		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
         		setCacheable(true).list());
     	ret.addAll((List<DatePattern>)(new DatePatternDAO()).
         		getSession().
         		createQuery("select distinct dp from Assignment a inner join a.datePattern dp where dp.session.uniqueId=:sessionId").
-        		setLong("sessionId", sessionId.longValue()).
+        		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
         		setCacheable(true).list());
     	Session session = new SessionDAO().get(sessionId);
     	if (session.getDefaultDatePattern()!=null) ret.add(session.getDefaultDatePattern());
@@ -559,20 +559,20 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     	if (getType() != null && getType() != DatePatternType.PatternSet.ordinal()) return new ArrayList<DatePattern>();
     	return (List<DatePattern>)(hibSession != null ? hibSession : DatePatternDAO.getInstance().getSession()).
         		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId").
-        		setLong("parentId",getUniqueId()).setCacheable(true).list();
+        		setParameter("parentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
     
     @SuppressWarnings("unchecked")
 	public static List<DatePattern> findAllParents(Long sessionId) {    	
     	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
         		createQuery("from DatePattern where type = :parentType and session.uniqueId=:sessionId order by name").
-        		setInteger("parentType", DatePatternType.PatternSet.ordinal()).setLong("sessionId", sessionId).setCacheable(true).list();
+        		setParameter("parentType", DatePatternType.PatternSet.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
     
 	public static List<DatePattern> findAllChildren(Long sessionId) {    	
     	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
         		createQuery("from DatePattern where type != :parentType and session.uniqueId=:sessionId order by name").
-        		setInteger("parentType", DatePatternType.PatternSet.ordinal()).setLong("sessionId", sessionId).setCacheable(true).list();
+        		setParameter("parentType", DatePatternType.PatternSet.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
     public boolean isUsed() {

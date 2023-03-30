@@ -69,13 +69,13 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	public static List<EventDateMapping> findAll(Long sessionId) {
 		return (List<EventDateMapping>)EventDateMappingDAO.getInstance().getSession().createQuery(
 				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset")
-				.setLong("sessionId", sessionId).setCacheable(true).list();
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
 	public static boolean hasMapping(Long sessionId) {
 		return ((Number)EventDateMappingDAO.getInstance().getSession().createQuery(
 				"select count(m) from EventDateMapping m where m.session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Class2EventDateMap getMapping(Long sessionId) {

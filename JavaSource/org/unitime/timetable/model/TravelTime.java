@@ -39,7 +39,7 @@ public class TravelTime extends BaseTravelTime {
 	public static void populateTravelTimes(DistanceMetric metric, Long sessionId, org.hibernate.Session hibSession) {
 		for (TravelTime time: (List<TravelTime>)hibSession.createQuery(
 				"from TravelTime where session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).list())
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list())
 			metric.addTravelTime(time.getLocation1Id(), time.getLocation2Id(), time.getDistance());
 	}
 	

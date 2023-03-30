@@ -160,8 +160,8 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 						"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
 						"and ci.lead = true and c.schedulingSubpart.itype.organized = true"
 						)
-						.setString("id", survey.getExternalId())
-						.setLong("sessionId", sessionId)
+						.setParameter("id", survey.getExternalId(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).list()) {
 					if (courseIds.add(co.getUniqueId())) {
 						Course ci = new Course();

@@ -104,7 +104,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		
 		for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
 				"from CourseRequest where courseOffering.uniqueId = :courseId"
-				).setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
+				).setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 			if (classId() != null) {
 				boolean match = false;

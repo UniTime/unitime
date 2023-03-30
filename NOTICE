@@ -26,6 +26,10 @@ AntLR Parser Generator (antlr-2.7.7.jar)
 	under BSD or BSD-style License
 	http://www.antlr.org/
 
+ClassMate (classmate-1.5.1.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://github.com/FasterXML/java-classmate
+
 Jackson-annotations (jackson-annotations-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
@@ -37,6 +41,10 @@ Jackson-core (jackson-core-2.13.0.jar)
 jackson-databind (jackson-databind-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
+
+Caffeine cache (caffeine-2.8.4.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://github.com/ben-manes/caffeine
 
 vinnie (vinnie-2.0.2.jar)
 	under MIT License
@@ -54,6 +62,22 @@ iText, a Free Java-PDF library (itext-2.1.7.jar)
 	under GNU Lesser General Public License (LGPL), Version 2.1
 	http://www.lowagie.com/iText/
 
+c3p0 (c3p0-0.9.5.5.jar)
+	under Eclipse Public License, Version 1.0
+	https://github.com/swaldman/c3p0
+
+mchange-commons-java (mchange-commons-java-0.2.19.jar)
+	under Eclipse Public License, Version 1.0
+	https://github.com/swaldman/mchange-commons-java
+
+istack common utility code runtime (istack-commons-runtime-3.0.7.jar)
+	under CDDL 1.1
+	http://java.net/istack-commons/istack-commons-runtime/
+
+fastinfoset (FastInfoset-1.2.15.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://fi.java.net
+
 SparseBitSet (SparseBitSet-1.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/brettwooldridge/SparseBitSet
@@ -65,10 +89,6 @@ Commons BeanUtils (commons-beanutils-1.8.0.jar)
 Apache Commons Codec (commons-codec-1.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-codec/
-
-Commons DBCP (commons-dbcp-1.4.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/dbcp/
 
 Commons Digester (commons-digester-2.0.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -86,21 +106,37 @@ Apache Commons Logging (commons-logging-1.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-logging/
 
-Commons Pool (commons-pool-1.5.4.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/pool/
-
 Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.23.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/reactor/reactor-core
+
+RxJava (rxjava-3.0.4.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://github.com/ReactiveX/RxJava
+
+javax.transaction API (jakarta.transaction-api-1.3.3.jar)
+	under EPL 2.0
+	https://projects.eclipse.org/projects/ee4j.jta
 
 JavaBeans Activation Framework (JAF) (activation-1.1.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://java.sun.com/products/javabeans/jaf/index.jsp
 
+JavaBeans Activation Framework API jar (javax.activation-api-1.2.0.jar)
+	under CDDL/GPLv2+CE
+	http://java.net/all/javax.activation-api/
+
 JavaMail API (compat) (mail-1.4.7.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://kenai.com/projects/javamail/mail
+
+javax.persistence-api (javax.persistence-api-2.2.jar)
+	under Eclipse Distribution License v. 1.0
+	https://github.com/javaee/jpa-spec
+
+jaxb-api (jaxb-api-2.3.1.jar)
+	under CDDL 1.1
+	https://github.com/javaee/jaxb-spec/jaxb-api
 
 Joda-Time (joda-time-2.12.1.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -109,17 +145,13 @@ Joda-Time (joda-time-2.12.1.jar)
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
+Byte Buddy (without dependencies) (byte-buddy-1.12.18.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://bytebuddy.net/byte-buddy
+
 biweekly (biweekly-0.6.6.jar)
 	under BSD or BSD-style License
 	http://github.com/mangstadt/biweekly
-
-Ehcache Core (ehcache-core-2.6.11.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://ehcache.org
-
-JGroups Replication (ehcache-jgroupsreplication-1.7.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://ehcache.org/ehcache-jgroupsreplication
 
 OGNL - Object Graph Navigation Library (ognl-3.1.29.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -253,25 +285,61 @@ Apache FreeMarker (freemarker-2.3.31.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://freemarker.apache.org/
 
+JAXB Runtime (jaxb-runtime-2.3.1.jar)
+	under CDDL+GPL License
+	http://jaxb.java.net/jaxb-runtime-parent/jaxb-runtime
+
+TXW2 Runtime (txw2-2.3.1.jar)
+	under CDDL+GPL License
+	http://jaxb.java.net/jaxb-txw-parent/txw2
+
 gwt-servlet (gwt-servlet-2.10.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
-Core Hibernate O/RM functionality (hibernate-core-4.3.11.Final.jar)
-	under GNU Lesser General Public License (LGPL), Version 2.1
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-5.6.15.Final.jar)
+	under GNU Library General Public License v2.1 or later
+	https://hibernate.org/orm
+
+Hibernate ORM - hibernate-core (hibernate-core-5.6.15.Final.jar)
+	under GNU Library General Public License v2.1 or later
+	https://hibernate.org/orm
+
+Hibernate Commons Annotations (hibernate-commons-annotations-5.1.2.Final.jar)
+	under GNU Library General Public License v2.1 or later
 	http://hibernate.org
 
-Hibernate/Ehcache Integration (hibernate-ehcache-4.3.11.Final.jar)
-	under GNU Lesser General Public License (LGPL), Version 2.1
-	http://hibernate.org
+Infinispan Commons (infinispan-commons-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-commons-parent/infinispan-commons
 
-Hibernate Commons Annotations (hibernate-commons-annotations-4.0.5.Final.jar)
-	under GNU Lesser General Public License (LGPL), Version 2.1
-	http://hibernate.org
+Infinispan Core (infinispan-core-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-core
 
-Java Persistence API, Version 2.1 (hibernate-jpa-2.1-api-1.0.0.Final.jar)
-	under Eclipse Distribution License (EDL), Version 1.0
-	http://hibernate.org
+Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-commons
+
+Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-spi
+
+Infinispan Hibernate 5.3 Cache (infinispan-hibernate-cache-v53-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-v53
+
+Infinispan JBoss Marshalling (infinispan-jboss-marshalling-13.0.15.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.infinispan.org/infinispan-jboss-marshalling
+
+ProtoStream - core (protostream-4.4.4.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://github.com/infinispan/protostream
+
+ProtoStream - builtin types (protostream-types-4.4.4.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://infinispan.org/protostream-types
 
 Jasig CAS Client for Java - Core (cas-client-core-3.6.4.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -281,7 +349,7 @@ Javassist (javassist-3.29.2-GA.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.javassist.org/
 
-Java Annotation Indexer (jandex-1.1.0.Final.jar)
+Java Annotation Indexer (jandex-2.4.2.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jandex
 
@@ -297,13 +365,25 @@ JBoss Logging I18n Annotations (jboss-logging-annotations-1.2.1.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-logging-tools-parent/jboss-logging-annotations
 
-Java Transaction API (jboss-transaction-api_1.2_spec-1.0.0.Final.jar)
+JBoss Marshalling OSGi Bundle (jboss-marshalling-osgi-2.0.12.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling-osgi
+
+Java Transaction API (jboss-transaction-api_1.2_spec-1.1.1.Final.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 	http://www.jboss.org/jboss-transaction-api_1.2_spec
+
+JBoss Threads (jboss-threads-2.3.3.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.jboss.org/jboss-threads
 
 JGroups (jgroups-3.6.20.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
+
+Extended StAX API (stax-ex-1.8.jar)
+	under Dual license consisting of the CDDL v1.1 and GPL v2
+	http://stax-ex.java.net/
 
 asm (asm-9.4.jar)
 	under BSD-3-Clause
@@ -428,6 +508,10 @@ spring-security-web (spring-security-web-5.7.5.jar)
 CPSolver (cpsolver-1.4-SNAPSHOT.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
 	http://www.cpsolver.org
+
+wildfly-common (wildfly-common-1.3.0.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	http://www.jboss.org/wildfly-common
 
 Tomcat Migration Tool for Jakarta EE (jakartaee-migration-1.0.0.jar)
 	under the Apache Software License (ASL), Version 2.0

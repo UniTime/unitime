@@ -71,7 +71,7 @@ public class CurriculaImport extends BaseImport {
             
         	info("Deleting existing curricula...");
         	for (Iterator<Curriculum> i = getHibSession().createQuery("select c from Curriculum c where c.department.session=:sessionId").
-            	setLong("sessionId", session.getUniqueId()).list().iterator(); i.hasNext(); ) {
+            	setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator(); i.hasNext(); ) {
         		getHibSession().delete(i.next());
         	}
         	flush(false);
@@ -82,7 +82,7 @@ public class CurriculaImport extends BaseImport {
         	Hashtable<String, AcademicArea> areasByExtId = new Hashtable<String, AcademicArea>();
         	for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
         			"select a from AcademicArea a where a.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId()).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		areasByAbbv.put(area.getAcademicAreaAbbreviation(), area);
         		if (area.getExternalUniqueId() != null)
         			areasByExtId.put(area.getExternalUniqueId(), area);
@@ -92,7 +92,7 @@ public class CurriculaImport extends BaseImport {
         	Hashtable<String, Department> departmentsByExtId = new Hashtable<String, Department>();
         	for (Department dept: (List<Department>)getHibSession().createQuery(
         			"select a from Department a where a.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId()).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		departmentsByCode.put(dept.getDeptCode(), dept);
         		if (dept.getExternalUniqueId() != null)
         			departmentsByExtId.put(dept.getExternalUniqueId(), dept);
@@ -102,7 +102,7 @@ public class CurriculaImport extends BaseImport {
         	Hashtable<String, PosMajor> majorsByExtId = new Hashtable<String, PosMajor>();
         	for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
         			"select a from PosMajor a where a.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId()).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		for (AcademicArea area: major.getAcademicAreas()) {
             		majorsByCode.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
         		}
@@ -114,7 +114,7 @@ public class CurriculaImport extends BaseImport {
         	Hashtable<String, AcademicClassification> clasfsByExtId = new Hashtable<String, AcademicClassification>();
         	for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
         			"select a from AcademicClassification a where a.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId()).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		clasfsByCode.put(clasf.getCode(), clasf);
         		if (clasf.getExternalUniqueId() != null)
         			clasfsByExtId.put(clasf.getExternalUniqueId(), clasf);
@@ -125,7 +125,7 @@ public class CurriculaImport extends BaseImport {
         	Hashtable<String, CourseOffering> corusesBySubjectCourseNbr = new Hashtable<String, CourseOffering>();
         	for (CourseOffering course: (List<CourseOffering>)getHibSession().createQuery(
         			"select a from CourseOffering a where a.subjectArea.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId()).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		corusesBySubjectCourseNbr.put(course.getSubjectArea().getSubjectAreaAbbreviation() + "|" + course.getCourseNbr(), course);
         		if (course.getExternalUniqueId() != null)
         			corusesByExtId.put(course.getExternalUniqueId(), course);

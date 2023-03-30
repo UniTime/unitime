@@ -159,15 +159,15 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	protected void save(Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
 		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv").
-				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
-				setString("abbv", record.getField(1)).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("abbv", record.getField(1), org.hibernate.type.StringType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
 		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name").
-				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
-				setString("name", record.getField(2)).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("name", record.getField(2), org.hibernate.type.StringType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g2 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));
@@ -224,17 +224,17 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 		if (group == null) return;
 		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv and a.uniqueId!=:gid").
-				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
-				setString("abbv", record.getField(1)).
-				setLong("gid", group.getUniqueId()).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("abbv", record.getField(1), org.hibernate.type.StringType.INSTANCE).
+				setParameter("gid", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
 		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name and a.uniqueId!=:gid").
-				setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).
-				setString("name", record.getField(2)).
-				setLong("gid", group.getUniqueId()).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("name", record.getField(2), org.hibernate.type.StringType.INSTANCE).
+				setParameter("gid", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g2 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));		

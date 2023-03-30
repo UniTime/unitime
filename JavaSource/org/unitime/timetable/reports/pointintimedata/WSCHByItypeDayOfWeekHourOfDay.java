@@ -94,8 +94,8 @@ public class WSCHByItypeDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDay {
 		
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
 			for (Object[] result : (List<Object[]>) hibSession.createQuery(sb.toString())
-								.setLong("sessId", pointInTimeData.getUniqueId().longValue())
-								.setLong("saId", subjectArea.getUniqueId().longValue())
+								.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+								.setParameter("saId", subjectArea.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true)
 								.list()) {
 			

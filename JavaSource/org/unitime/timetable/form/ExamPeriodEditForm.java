@@ -412,11 +412,10 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				ExamPeriod period = (ExamPeriod)i.next();
 				slots.add(period.getStartSlot());
 				if (!iDays.contains(period.getDateOffset())) {
-				    for (Iterator j=hibSession.createQuery(
-                    "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
-                    .setLong("periodId", period.getUniqueId())
-                    .iterate();j.hasNext();) {
-				        Exam exam = (Exam)j.next();
+				    for (Exam exam: hibSession.createQuery(
+                    "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
+                    .setParameter("periodId", period.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
 					hibSession.delete(period);
@@ -471,11 +470,10 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				ExamPeriod period = (ExamPeriod)i.next();
 				Integer start = translate.get(period.getStartSlot());
 				if (start==null) {
-				    for (Iterator j=hibSession.createQuery(
-				            "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
-				            .setLong("periodId", period.getUniqueId())
-				            .iterate();j.hasNext();) {
-				        Exam exam = (Exam)j.next();
+				    for (Exam exam: hibSession.createQuery(
+				            "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
+				            .setParameter("periodId", period.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				            .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
 				    hibSession.delete(period);
@@ -520,11 +518,10 @@ public class ExamPeriodEditForm implements UniTimeForm {
 	public void delete(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().longValue()<0) return;
 		ExamPeriod ep = (new ExamPeriodDAO()).get(getUniqueId(), hibSession);
-		for (Iterator j=hibSession.createQuery(
-		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId")
-		        .setLong("periodId", ep.getUniqueId())
-		        .iterate();j.hasNext();) {
-		    Exam exam = (Exam)j.next();
+		for (Exam exam: hibSession.createQuery(
+		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
+		        .setParameter("periodId", ep.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+		        .list()) {
             exam.unassign(context.getUser().getExternalUserId(), hibSession);
 		}
 		hibSession.delete(ep);

@@ -38,7 +38,7 @@ public class InstructionalMethod extends BaseInstructionalMethod {
 	public static InstructionalMethod findByReference(String reference, org.hibernate.Session hibSession) {
 		return (InstructionalMethod) (hibSession == null ? InstructionalMethodDAO.getInstance().getSession() : hibSession).createQuery(
 				"from InstructionalMethod where reference = :reference")
-				.setString("reference", reference)
+				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).uniqueResult();
 	}
 }

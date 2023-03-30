@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -195,13 +195,13 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 		    	        	"from StudentEnrollment e, StudentEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.studentId = e.studentId and e.clazz != x.clazz and " + 
 		    	        	"e.solution.commited = true and x.solution.commited = true and x.solution.owner.session = e.solution.owner.session")
-		            .setLong("classId", classId);
+		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
 		} else {
 			q = LocationDAO.getInstance().getSession()
 		    	    .createQuery("select e.clazz.committedAssignment, e.student.uniqueId "+
 		    	        	"from StudentClassEnrollment e, StudentClassEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.student = e.student and e.clazz != x.clazz ")
-		            .setLong("classId", classId);
+		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
 		}
 		for (Object[] line:(List<Object[]>) q.setCacheable(true).list()) {
 			Assignment assignment = (Assignment) line[0];

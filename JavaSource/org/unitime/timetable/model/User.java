@@ -47,7 +47,7 @@ public class User extends BaseUser {
             new UserDAO().
             getSession().
             createQuery("select u from User u where u.externalUniqueId=:externalId").
-            setString("externalId", externalId).
+            setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();
@@ -58,7 +58,7 @@ public class User extends BaseUser {
             new UserDAO().
             getSession().
             createQuery("select u from User u where u.username=:userName").
-            setString("userName", userName).
+            setParameter("userName", userName, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();

@@ -181,31 +181,31 @@ public abstract class AbstractSolverServer implements SolverServer {
 	    			"select distinct c.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long classId: classIds) {
-	            hibSessionFactory.getCache().evictEntity(Class_.class, classId);
-	            hibSessionFactory.getCache().evictCollection(Class_.class.getName()+".classInstructors", classId);
+	            hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
+	            hibSessionFactory.getCache().evictCollectionData(Class_.class.getName()+".classInstructors", classId);
 	    	}
 	    	List<Long> instructorIds = (List<Long>)hibSession.createQuery(
 	    			"select i.uniqueId from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
 	    			"g.uniqueId in :solverGroupId and i.department = d"
 	    			).setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long instructorId: instructorIds) {
-	            hibSessionFactory.getCache().evictEntity(DepartmentalInstructor.class, instructorId);
-	            hibSessionFactory.getCache().evictCollection(DepartmentalInstructor.class.getName()+".classes", instructorId);
+	            hibSessionFactory.getCache().evictEntityData(DepartmentalInstructor.class, instructorId);
+	            hibSessionFactory.getCache().evictCollectionData(DepartmentalInstructor.class.getName()+".classes", instructorId);
 	    	}
 	    	List<Long> requestIds = (List<Long>)hibSession.createQuery(
 	    			"select distinct r.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long requestId: requestIds) {
-	            hibSessionFactory.getCache().evictEntity(TeachingRequest.class, requestId);
-	            hibSessionFactory.getCache().evictCollection(TeachingRequest.class.getName()+".assignedInstructors", requestId);
+	            hibSessionFactory.getCache().evictEntityData(TeachingRequest.class, requestId);
+	            hibSessionFactory.getCache().evictCollectionData(TeachingRequest.class.getName()+".assignedInstructors", requestId);
 	    	}
 	    	List<Long> offeringIds = (List<Long>)hibSession.createQuery(
 	    			"select distinct c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId from " +
 	    			"Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long offeringId: offeringIds) {
-	            hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, offeringId);
-	            hibSessionFactory.getCache().evictCollection(InstructionalOffering.class.getName()+".offeringCoordinators", offeringId);
+	            hibSessionFactory.getCache().evictEntityData(InstructionalOffering.class, offeringId);
+	            hibSessionFactory.getCache().evictCollectionData(InstructionalOffering.class.getName()+".offeringCoordinators", offeringId);
 	    	}
 		} finally {
 			hibSession.close();

@@ -441,7 +441,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         try {
             hibSession = SessionDAO.getInstance().getSession();
             hibSession.setCacheMode(CacheMode.IGNORE);
-            hibSession.setFlushMode(FlushMode.MANUAL);
+            hibSession.setHibernateFlushMode(FlushMode.MANUAL);
             
             tx = hibSession.beginTransaction(); 
 
@@ -2562,7 +2562,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch io.reservations as r "+
                 "where " +
                 "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true").
-                setLong("sessionId",session.getUniqueId().longValue()).
+                setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
                 setFetchSize(1000).list();
         setPhase("Loading course offerings...", offerings.size());
         for (InstructionalOffering io: offerings) {
@@ -2574,10 +2574,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         List<DistributionPref> distPrefs = hibSession.createQuery(
         		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
         		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-        		.setString("pref", PreferenceLevel.sRequired)
-        		.setLong("sessionId", iSessionId)
+        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), org.hibernate.type.StringType.INSTANCE)
+        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, org.hibernate.type.StringType.INSTANCE)
+        		.setParameter("pref", PreferenceLevel.sRequired, org.hibernate.type.StringType.INSTANCE)
+        		.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
         		.list();
         if (!distPrefs.isEmpty()) {
         	setPhase("Loading distribution preferences...", distPrefs.size());
@@ -2613,7 +2613,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.waitlists as w " +
                     (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +*/
                     "where s.session.uniqueId=:sessionId").
-                    setLong("sessionId",session.getUniqueId().longValue()).
+                    setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
                     setFetchSize(1000).list();
             if (iValidateOverrides && iValidationProvider != null) {
             	validateOverrides(hibSession, students);
@@ -2869,7 +2869,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 classAssignments = new Hashtable();
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
-                    setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).setFetchSize(1000).list();
                 setPhase("Loading projected class assignments...", enrollments.size());
                 for (Iterator i=enrollments.iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next(); incProgress();
@@ -2966,7 +2966,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 classAssignments = new Hashtable();
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
-                    setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).setFetchSize(1000).list();
                 setPhase("Loading last-like class assignments...", enrollments.size());
                 for (Iterator i=enrollments.iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next(); incProgress();
@@ -2990,7 +2990,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     " (cx.permId=null and d.subjectArea=cx.subjectArea and d.courseNbr=cx.courseNbr) or "+
                     " (cx.permId!=null and cx.permId=d.coursePermId)) "+
                     "order by s.uniqueId, d.priority, d.uniqueId").
-                    setLong("sessionId",session.getUniqueId().longValue()).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).setFetchSize(1000).list();
             setPhase("Loading last-like course requests...", enrollments.size());
             Hashtable lastLikeStudentTable = new Hashtable();
             for (Iterator i=enrollments.iterator();i.hasNext();) {
@@ -3013,7 +3013,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
 				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-				.setLong("sessionId", iSessionId)
+				.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
 				.list();
         	setPhase("Loading sectioning infos...", infos.size());
         	for (SectioningInfo info : infos) {

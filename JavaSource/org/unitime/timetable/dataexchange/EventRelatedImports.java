@@ -121,9 +121,9 @@ public abstract class EventRelatedImports extends BaseImport {
 		return(Session) this.
 		getHibSession().
 		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.academicYear = :academicYear  and s.academicTerm = :academicTerm").
-		setString("academicInititive", academicInitiative).
-		setString("academicYear", academicYear).
-		setString("academicTerm", academicTerm).
+		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
+		setParameter("academicYear", academicYear, org.hibernate.type.StringType.INSTANCE).
+		setParameter("academicTerm", academicTerm, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -133,8 +133,8 @@ public abstract class EventRelatedImports extends BaseImport {
 			return(this.
 			getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.externalUniqueId=:id and l.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("id", id).
+			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("id", id, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			list());
 		}
@@ -142,8 +142,8 @@ public abstract class EventRelatedImports extends BaseImport {
 			return(this.
 			getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("name", name).
+			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			list());
 		}
@@ -155,8 +155,8 @@ public abstract class EventRelatedImports extends BaseImport {
 			return(this.
 			getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("name", name).
+			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			list());
 		}

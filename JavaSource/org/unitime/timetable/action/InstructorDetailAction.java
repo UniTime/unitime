@@ -402,11 +402,11 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 				Map<Event, Set<Meeting>> unavailabilities = new HashMap<Event, Set<Meeting>>();
 				for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
 						"select distinct m from Event e inner join e.meetings m left outer join e.additionalContacts c, Session s " +
-						"where e.class in (CourseEvent, SpecialEvent, UnavailableEvent) and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate " +
+						"where type(e) in (CourseEvent, SpecialEvent, UnavailableEvent) and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate " +
 						"and s.uniqueId = :sessionId and (e.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and m.approvalStatus = 1"
 						)
-						.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
-						.setString("user", inst.getExternalUniqueId())
+						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("user", inst.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true).list()) {
 					Set<Meeting> meetings = unavailabilities.get(meeting.getEvent());
 					if (meetings == null) {
@@ -507,8 +507,8 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 				List<IdValue> departments = new ArrayList<IdValue>();
 				for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 						"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
-						"order by i.department.deptCode").setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
-						.setString("externalId", inst.getExternalUniqueId()).setCacheable(true).list()) {
+						"order by i.department.deptCode").setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("externalId", inst.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 					if (sessionContext.hasPermission(di, Right.InstructorDetail)) {
 						departments.add(new IdValue(di.getUniqueId(), di.getDepartment().getLabel()));
 					}

@@ -332,8 +332,8 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +
 				"c.classification.curriculum.abbv || ' ' || c.classification.academicClassification.code = :name and " + 
 				"c.classification.curriculum.department.session.uniqueId = :sessionId")
-				.setString("name", name)
-				.setLong("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null))
+				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			Long courseId = (Long)o[0];
 			String group = (String)o[1];
@@ -1023,13 +1023,13 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 							resp = (TeachingResponsibility) TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.uniqueId = :instructorId"
-									).setLong("classId", p.variable().getId()).setLong("instructorId", ic.getId())
+									).setParameter("classId", p.variable().getId(), org.hibernate.type.LongType.INSTANCE).setParameter("instructorId", ic.getId(), org.hibernate.type.LongType.INSTANCE)
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						else
 							resp = (TeachingResponsibility) TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.externalUniqueId = :extId"
-									).setLong("classId", p.variable().getId()).setString("extId", ic.getPuid())
+									).setParameter("classId", p.variable().getId(), org.hibernate.type.LongType.INSTANCE).setParameter("extId", ic.getPuid(), org.hibernate.type.StringType.INSTANCE)
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						if (term.equalsIgnoreCase("null") && resp == null) return true;
 						if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;

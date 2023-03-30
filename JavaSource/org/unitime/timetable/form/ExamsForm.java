@@ -91,7 +91,7 @@ public class ExamsForm implements UniTimeForm {
 		Boolean displayAll = Boolean.valueOf(false); 
 		if (iSession != null){
 			String queryStr = "select count(e) from Exam e where e.session.uniqueId = :sessionId";
-			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setLong("sessionId", iSession).setCacheable(true).uniqueResult()).intValue();
+			int count = ((Number)SessionDAO.getInstance().getQuery(queryStr).setParameter("sessionId", iSession, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
 			if (count <= 300){
 				displayAll = Boolean.valueOf(true);
 			}

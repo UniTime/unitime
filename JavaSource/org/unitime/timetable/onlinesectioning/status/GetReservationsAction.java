@@ -95,7 +95,7 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			for (Reservation reservation: (List<Reservation>)helper.getHibSession().createQuery(
 					"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId")
-					.setLong("offeringId", iOfferingId).setCacheable(true).list()) {
+					.setParameter("offeringId", iOfferingId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				ReservationInterface r = convert(reservation, helper);
 				if (r != null) results.add(r);
 			}
@@ -334,33 +334,33 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering = :courseId"
-					).setLong("courseId", ((CourseReservation) reservation).getCourse().getUniqueId()).setCacheable(true).list();
+					).setParameter("courseId", ((CourseReservation) reservation).getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof LearningCommunityReservation) {
 			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering = :courseId and s.uniqueId in " +
 					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)"
-					).setLong("courseId", ((LearningCommunityReservation) reservation).getCourse().getUniqueId())
-					.setLong("reservationId", reservation.getUniqueId()).setCacheable(true).list();
+					).setParameter("courseId", ((LearningCommunityReservation) reservation).getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof IndividualReservation) {
 			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering = :offeringId and s.uniqueId in " +
 					"(select s.uniqueId from IndividualReservation r inner join r.students s where r.uniqueId = :reservationId)"
-					).setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("reservationId", reservation.getUniqueId()).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof StudentGroupReservation) {
 			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering = :offeringId and s.uniqueId in " +
 					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)"
-					).setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("reservationId", reservation.getUniqueId()).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else {
 			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering = :offeringId"
-					).setLong("offeringId", reservation.getInstructionalOffering().getUniqueId()).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 		
 		int enrolled = 0;

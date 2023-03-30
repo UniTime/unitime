@@ -98,7 +98,7 @@ public abstract class AbstractApiHelper implements ApiHelper {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
-						setString("term", getParameter("term")).list();
+						setParameter("term", getParameter("term"), org.hibernate.type.StringType.INSTANCE).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
 			} finally {

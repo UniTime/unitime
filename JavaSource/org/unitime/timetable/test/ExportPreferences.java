@@ -354,8 +354,8 @@ public class ExportPreferences {
 		List ids = (new DepartmentDAO()).
 			getSession().
 			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId").
-			setString("deptCode", dept.getDeptCode()).
-			setLong("sessionId", dept.getSessionId().longValue()).
+			setParameter("deptCode", dept.getDeptCode(), org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", dept.getSessionId().longValue(), org.hibernate.type.LongType.INSTANCE).
 			list();
 		for (Iterator i=ids.iterator();i.hasNext();) {
 			DepartmentalInstructor id = (DepartmentalInstructor)i.next();

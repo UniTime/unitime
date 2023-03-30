@@ -61,7 +61,7 @@ public class BuildingRoomImport extends BaseImport {
              * Remove all buildings and rooms for the given session and reload them using the xml 
              */
             
-            getHibSession().createQuery("delete ExternalBuilding eb where eb.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).executeUpdate();
+            getHibSession().createQuery("delete ExternalBuilding eb where eb.session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
             
             flush(true);
             

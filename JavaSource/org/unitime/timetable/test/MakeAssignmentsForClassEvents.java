@@ -294,14 +294,13 @@ public class MakeAssignmentsForClassEvents {
                     
                     MakeAssignmentsForClassEvents m = new MakeAssignmentsForClassEvents(new SessionDAO().get(sa.getSession().getUniqueId()), hibSession);
                     
-                    for (Iterator j=hibSession.createQuery(
+                    for (ClassEvent e: hibSession.createQuery(
                             "select e from ClassEvent e inner join e.clazz c " +
                             "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
                             "where co.isControl=true and co.subjectArea.uniqueId=:subjectId "+
-                            (excludeCommittedAssignments?" and c.committedAssignment is null":""))
-                            .setLong("subjectId", sa.getUniqueId())
-                            .iterate();j.hasNext();) {
-                        ClassEvent e = (ClassEvent)j.next();
+                            (excludeCommittedAssignments?" and c.committedAssignment is null":""), ClassEvent.class)
+                            .setParameter("subjectId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                            .list()) {
                         Assignment a = m.createAssignment(e, null, null);
                         e.getClazz().setDatePattern(m.getDatePattern(e));
                         System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName(CONSTANTS.useAmPm())));

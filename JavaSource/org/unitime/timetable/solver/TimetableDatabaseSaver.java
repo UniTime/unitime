@@ -153,7 +153,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		TimetableManagerDAO dao = new TimetableManagerDAO();
     		hibSession = dao.getSession();
     		hibSession.setCacheMode(CacheMode.IGNORE);
-    		hibSession.setFlushMode(FlushMode.COMMIT);
+    		hibSession.setHibernateFlushMode(FlushMode.COMMIT);
 
     		tx = hibSession.beginTransaction(); 
     		

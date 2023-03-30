@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BasePositionType;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
 
@@ -57,16 +56,13 @@ public class PositionType extends BasePositionType implements Comparable{
 	 * 
 	 */
 	public static PositionType findById(Long uid) throws Exception {
-		if (uid == null){
-			return(null);
-		}
-		
-		PositionTypeDAO pdao = new PositionTypeDAO();
-		List types = pdao.getSession().createCriteria(PositionType.class).add(Restrictions.eq("uniqueId", uid)).list();
-		if(types != null && types.size() == 1){
-			return((PositionType) types.get(0));
-		} else
-			return (null);
+		if (uid == null) return null;
+		return PositionTypeDAO.getInstance().getSession()
+				.createQuery("from PositionType where uniqueId = :uid", PositionType.class)
+				.setParameter("uid", uid)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 	
 	/* (non-Javadoc)
@@ -100,16 +96,13 @@ public class PositionType extends BasePositionType implements Comparable{
 	 * 
 	 */
 	public static PositionType findByRef(String ref) throws Exception {
-		if (ref == null){
-			return(null);
-		}
-		
-		PositionTypeDAO pdao = new PositionTypeDAO();
-		List types = pdao.getSession().createCriteria(PositionType.class).add(Restrictions.eq("reference", ref)).list();
-		if(types != null && types.size() == 1){
-			return((PositionType) types.get(0));
-		} else
-			return (null);
+		if (ref == null) return null;
+		return PositionTypeDAO.getInstance().getSession()
+				.createQuery("from PositionType where reference = :ref", PositionType.class)
+				.setParameter("ref", ref)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 	/**

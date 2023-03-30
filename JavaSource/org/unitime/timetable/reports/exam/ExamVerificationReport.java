@@ -453,12 +453,12 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         	for (SubjectArea subject: getSubjectAreas()) {
         		allCourses.addAll(new SessionDAO().getSession().
         				createQuery("select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId").
-        				setLong("subjectAreaId", subject.getUniqueId()).list());
+        				setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
         	}
         } else {
             allCourses.addAll(new SessionDAO().getSession().
                     createQuery("select co from CourseOffering co where  co.subjectArea.session.uniqueId=:sessionId").
-                    setLong("sessionId", getSession().getUniqueId()).list());
+                    setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
         }
         if (allCourses.isEmpty()) return;
         sLog.info(MSG.statusLoadingClassEvents());
@@ -469,7 +469,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
                         "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
                         "co.subjectArea.uniqueId=:subjectAreaId").
-                        setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                        setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     class2event.put((Long)o[0], (ClassEvent)o[1]);
                 }        		
@@ -479,7 +479,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
                     "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
                     "co.subjectArea.session.uniqueId=:sessionId").
-                    setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                    setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 class2event.put((Long)o[0], (ClassEvent)o[1]);
             }
@@ -493,7 +493,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     for (Iterator i=new SessionDAO().getSession().createQuery(
                             "select co.uniqueId, count(distinct s.student.uniqueId) from "+
                             "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
-                            "group by co.uniqueId").setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                            "group by co.uniqueId").setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                         Object[] o = (Object[])i.next();
                         courseLimits.put((Long)o[0],((Number)o[1]).intValue());
                     }
@@ -502,7 +502,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 for (Iterator i=new SessionDAO().getSession().createQuery(
                         "select co.uniqueId, count(distinct s.student.uniqueId) from "+
                         "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
-                        "group by co.uniqueId").setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                        "group by co.uniqueId").setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     courseLimits.put((Long)o[0],((Number)o[1]).intValue());
                 }
@@ -513,7 +513,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     for (Iterator i=new SessionDAO().getSession().createQuery(
                             "select c.uniqueId, count(distinct s.student.uniqueId) from "+
                             "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
-                            "group by c.uniqueId").setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                            "group by c.uniqueId").setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                         Object[] o = (Object[])i.next();
                         classLimits.put((Long)o[0],((Number)o[1]).intValue());
                     }
@@ -522,7 +522,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 for (Iterator i=new SessionDAO().getSession().createQuery(
                         "select c.uniqueId, count(distinct s.student.uniqueId) from "+
                         "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
-                        "group by c.uniqueId").setLong("sessionId", getSession().getUniqueId()).list().iterator();i.hasNext();) {
+                        "group by c.uniqueId").setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     classLimits.put((Long)o[0],((Number)o[1]).intValue());
                 }

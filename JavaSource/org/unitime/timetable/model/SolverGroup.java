@@ -95,7 +95,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     			(new SolverGroupDAO()).
     			getSession().
     			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId").
-    			setLong("sessionId", sessionId.longValue()).
+    			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     			setCacheable(true).list());
     }
     
@@ -103,8 +103,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List groups = (new SolverGroupDAO()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.name=:name").
-			setLong("sessionId", sessionId.longValue()).
-			setString("name", name).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;
@@ -115,8 +115,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List groups = (new SolverGroupDAO()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.abbv=:abbv").
-			setLong("sessionId", sessionId.longValue()).
-			setString("abbv", abbv).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;

@@ -43,7 +43,7 @@ public class PermissionsImport extends BaseImport {
                 Element r = (Element) i.next();
                 String ref = r.attributeValue("reference");
                 
-                Roles role = (Roles)getHibSession().createQuery("from Roles where reference = :ref").setString("ref", ref).uniqueResult();
+                Roles role = (Roles)getHibSession().createQuery("from Roles where reference = :ref").setParameter("ref", ref, org.hibernate.type.StringType.INSTANCE).uniqueResult();
                 
                 if (role == null) {
                 	role = new Roles();

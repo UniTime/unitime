@@ -143,27 +143,27 @@ public class MasarykDefaultPreferences {
             if (!incremental) {
             	hibSession.createQuery(
             			"delete DistributionPref where owner in (from Department d where d.session.uniqueId = :sessionId)")
-            			.setLong("sessionId", session.getUniqueId()).executeUpdate();
+            			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
             	hibSession.createQuery(
             			"delete DistributionPref where owner in (from Session s where s.uniqueId = :sessionId)")
-            			.setLong("sessionId", session.getUniqueId()).executeUpdate();
+            			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
             }
             
             Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
             
 			DistributionType sameDaysType = (DistributionType)hibSession.createQuery(
-			"select d from DistributionType d where d.reference = :type").setString("type", "SAME_DAYS").uniqueResult();
+			"select d from DistributionType d where d.reference = :type").setParameter("type", "SAME_DAYS", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 
             
 			TimePattern tp2h = (TimePattern)hibSession.createQuery(
 					"select p from TimePattern as p where p.session.uniqueId=:sessionId and p.name=:name").
-					setLong("sessionId", session.getUniqueId()).
-					setText("name", "2h").uniqueResult();
+					setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+					setParameter("name", "2h", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 			
             for (SchedulingSubpart ss: (List<SchedulingSubpart>)hibSession.createQuery(
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
             		"co.subjectArea.department.session.uniqueId = :sessionId")
-            		.setLong("sessionId", session.getUniqueId()).list()) {
+            		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	
             	boolean hasPreferences = false;
             	if (!ss.getPreferences().isEmpty()) hasPreferences = true;
@@ -467,7 +467,7 @@ public class MasarykDefaultPreferences {
             
             if (addMeetWith) {
     			DistributionType meetWithType = (DistributionType)hibSession.createQuery(
-				"select d from DistributionType d where d.reference = :type").setString("type", "MEET_WITH").uniqueResult();
+				"select d from DistributionType d where d.reference = :type").setParameter("type", "MEET_WITH", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 
             for (Set<Class_> classes: meetWith.values()) {
             	if (classes.size() <= 1) continue;

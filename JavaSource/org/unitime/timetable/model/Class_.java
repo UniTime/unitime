@@ -37,7 +37,7 @@ import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.hibernate.type.StringType;
 import org.unitime.commons.Debug;
@@ -1006,7 +1006,7 @@ public class Class_ extends BaseClass_ {
     	return hibSession.
     		createQuery("select distinct c from Class_ c where " +
     				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId").
-    		setLong("sessionId",sessionId.longValue()).
+    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     		list();
     }
 
@@ -1018,9 +1018,9 @@ public class Class_ extends BaseClass_ {
     	return hibSession.
     		createQuery("select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where " +
     				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=true").
-    		setString("subjectAreaAbbv",subjectAreaAbbv).
-    		setLong("sessionId",sessionId.longValue()).
-			setFlushMode(FlushMode.MANUAL).
+    		setParameter("subjectAreaAbbv", subjectAreaAbbv, org.hibernate.type.StringType.INSTANCE).
+    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setHibernateFlushMode(FlushMode.MANUAL).
     		list();
     }
 
@@ -1264,8 +1264,8 @@ public class Class_ extends BaseClass_ {
         return (Class_)new Class_DAO().
             getSession().
             createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.externalUniqueId=:externalId").
-            setLong("sessionId", sessionId.longValue()).
-            setString("externalId", externalId).
+            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
             uniqueResult();
     }
@@ -1274,8 +1274,8 @@ public class Class_ extends BaseClass_ {
         return (Class_)new Class_DAO().
             getSession().
             createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
-            setLong("sessionId", sessionId.longValue()).
-            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
             uniqueResult();
     }
@@ -1285,7 +1285,7 @@ public class Class_ extends BaseClass_ {
         if (iEvent==null) 
             iEvent = (ClassEvent)new Class_DAO().getSession().createQuery(
                 "select e from ClassEvent e left join fetch e.meetings m where e.clazz.uniqueId=:classId").
-                setLong("classId", getUniqueId()).
+                setParameter("classId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 setCacheable(true).uniqueResult();
         return iEvent;
     }
@@ -1556,7 +1556,7 @@ public class Class_ extends BaseClass_ {
         return Class_DAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId from StudentClassEnrollment e where "+
                 "e.clazz.uniqueId=:classId")
-                .setLong("classId",getUniqueId())
+                .setParameter("classId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
 
     }
@@ -1672,7 +1672,7 @@ public class Class_ extends BaseClass_ {
 	public SectioningInfo getSectioningInfo() {
 		return (SectioningInfo) SectioningInfoDAO.getInstance().getSession().createQuery(
 				"select i from SectioningInfo i where i.clazz.uniqueId = :classId")
-				.setLong("classId", getUniqueId()).setCacheable(true).uniqueResult();
+				.setParameter("classId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 	}
 
 //	/* (non-Javadoc)
@@ -1699,18 +1699,18 @@ public class Class_ extends BaseClass_ {
 				);
 		Query q2 = Class_DAO.getInstance().getSession().createQuery(
 				"select p from ClassInstructor c1 inner join c1.instructor.preferences p, ClassInstructor c2 where " +
-				"c1.classInstructing = :c1 and c2.classInstructing = :c2 and c1.instructor = c2.instructor and p.class = DistributionPref" +
+				"c1.classInstructing = :c1 and c2.classInstructing = :c2 and c1.instructor = c2.instructor and type(p) = DistributionPref" +
 				(preferences == null || preferences.length == 0 ? "" : " and p.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
 				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
 				);
-		q1.setLong("c1", getUniqueId()).setLong("s1", getSchedulingSubpart().getUniqueId()).setLong("c2", classId);
-		q2.setLong("c1", getUniqueId()).setLong("c2", classId);
+		q1.setParameter("c1", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("s1", getSchedulingSubpart().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("c2", classId, org.hibernate.type.LongType.INSTANCE);
+		q2.setParameter("c1", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("c2", classId, org.hibernate.type.LongType.INSTANCE);
 		if (subpartId != null)
-			q1.setLong("s2", subpartId);
+			q1.setParameter("s2", subpartId, org.hibernate.type.LongType.INSTANCE);
 		if (preferences != null) {
 			if (preferences.length == 1) {
-				q1.setString("p", preferences[0]);
-				q2.setString("p", preferences[0]);
+				q1.setParameter("p", preferences[0], org.hibernate.type.StringType.INSTANCE);
+				q2.setParameter("p", preferences[0], org.hibernate.type.StringType.INSTANCE);
 			} else if (preferences.length > 1) {
 				q1.setParameterList("p", preferences, new StringType());
 				q2.setParameterList("p", preferences, new StringType());
@@ -1718,8 +1718,8 @@ public class Class_ extends BaseClass_ {
 		}
 		if (types != null) {
 			if (types.length == 1) {
-				q1.setString("t", types[0]);
-				q2.setString("t", types[0]);
+				q1.setParameter("t", types[0], org.hibernate.type.StringType.INSTANCE);
+				q2.setParameter("t", types[0], org.hibernate.type.StringType.INSTANCE);
 			} else if (types.length > 1) {
 				q1.setParameterList("t", types, new StringType());
 				q2.setParameterList("t", types, new StringType());

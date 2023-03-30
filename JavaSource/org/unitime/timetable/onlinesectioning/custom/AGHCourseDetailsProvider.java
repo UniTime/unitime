@@ -107,9 +107,9 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 				"where cu.course.subjectAreaAbbv = :subjArea " +
 				"and cu.course.courseNbr = :crsNbr " +
 				"and cu.course.instructionalOffering.session.uniqueId = :acadSessionId")
-				.setString("crsNbr", courseNbr)
-				.setString("subjArea", subject)
-				.setLong("acadSessionId", sessionId)
+				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("subjArea", subject, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("acadSessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setMaxResults(1).uniqueResult();
 	}
 

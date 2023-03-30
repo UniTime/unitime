@@ -187,8 +187,8 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 		HashSet<Long> processedClasses = new HashSet<Long>();
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
 			for (PitClass pc : (List<PitClass>) hibSession.createQuery(sb.toString())
-									.setLong("sessId", pointInTimeData.getUniqueId().longValue())
-									.setLong("saId", subjectArea.getUniqueId().longValue())
+									.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+									.setParameter("saId", subjectArea.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 									.setCacheable(true)
 									.list()) {
 	
@@ -216,7 +216,7 @@ public class WSCHByDayOfWeekAndHourOfDay extends BasePointInTimeDataReports {
 	protected void runReport(org.hibernate.Session hibSession) {
 		PointInTimeData pitd = (PointInTimeData)hibSession
 				.createQuery("from PointInTimeData pitd where pitd.uniqueId = :uid")
-				.setLong("uid", getPointInTimeDataUniqueId().longValue())
+				.setParameter("uid", getPointInTimeDataUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				.uniqueResult();
 		createRoomUtilizationReportFor(pitd, hibSession);
 		

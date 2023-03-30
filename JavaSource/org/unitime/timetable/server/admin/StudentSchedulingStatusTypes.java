@@ -285,9 +285,9 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			// session --> check other sessions with the same status, break it up if needed
 			Map<Long, StudentSectioningStatus> others = new HashMap<Long, StudentSectioningStatus>();
 			for (Session s: (List<Session>)hibSession.createQuery("select distinct s.session from Student s where s.sectioningStatus = :uniqueId and s.session != :sessionId"
-					).setLong("uniqueId", status.getUniqueId()).setLong("sessionId", status.getSession().getUniqueId()).list()) {
+					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", status.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				StudentSectioningStatus other = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference")
-						.setLong("sessionId", s.getUniqueId()).setString("reference", status.getReference()).uniqueResult();
+						.setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 				if (other == null) {
 					System.out.println("Creating " + status.getReference() + " for " + s.getLabel());
 					other = new StudentSectioningStatus();
@@ -307,14 +307,14 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 					hibSession.flush();
 				}
 				hibSession.createQuery("update Student set sectioningStatus = :newId where sectioningStatus = :oldId and session = :sessionId"
-						).setLong("newId", other.getUniqueId()).setLong("oldId", status.getUniqueId()).setLong("sessionId", s.getUniqueId()).executeUpdate();
+						).setParameter("newId", other.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("oldId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
 			}
 			for (Session s: (List<Session>)hibSession.createQuery("from Session where defaultSectioningStatus = :uniqueId and uniqueId != :sessionId"
-					).setLong("uniqueId", status.getUniqueId()).setLong("sessionId", status.getSession().getUniqueId()).list()) {
+					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", status.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				StudentSectioningStatus other = others.get(s.getUniqueId());
 				if (other == null)
 					other = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference")
-						.setLong("sessionId", s.getUniqueId()).setString("reference", status.getReference()).uniqueResult();
+						.setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 				if (other == null) {
 					System.out.println("Creating " + status.getReference() + " for " + s.getLabel());
 					other = new StudentSectioningStatus();
@@ -337,12 +337,12 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		} else {
 			// global -> there should be only one status with this reference (merge others if needed)
 			for (StudentSectioningStatus other: (List<StudentSectioningStatus>)hibSession.createQuery("from StudentSectioningStatus where uniqueId != :uniqueId and reference = :reference"
-					).setLong("uniqueId", status.getUniqueId()).setString("reference", status.getReference()).list()) {
+					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).list()) {
 				System.out.println("Removing " + other.getReference() + " from " + (other.getSession() == null ? "GLOBAL" : other.getSession().getLabel()));
 				hibSession.createQuery("update Student set sectioningStatus = :newId where sectioningStatus = :oldId"
-						).setLong("newId", status.getUniqueId()).setLong("oldId", other.getUniqueId()).executeUpdate();
+						).setParameter("newId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("oldId", other.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
 				hibSession.createQuery("update Session set defaultSectioningStatus = :newId where defaultSectioningStatus = :oldId"
-						).setLong("newId", status.getUniqueId()).setLong("oldId", other.getUniqueId()).executeUpdate();
+						).setParameter("newId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("oldId", other.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
 				hibSession.delete(other);
 			}
 		}
@@ -357,7 +357,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	protected void delete(StudentSectioningStatus status, SessionContext context, org.hibernate.Session hibSession) {
 		if (status == null) return;
 		for (StudentSectioningStatus s: (List<StudentSectioningStatus>)hibSession.createQuery(
-				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId").setLong("statusId", status.getUniqueId()).list()) {
+				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId").setParameter("statusId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			s.setFallBackStatus(null); hibSession.saveOrUpdate(s);
 		}
 		ChangeLog.addChange(hibSession,

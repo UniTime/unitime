@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.hibernate.Transaction;
+import org.hibernate.type.TimestampType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = (List<TaskExecution>)hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now"
-					).setTimestamp("now", new Date()).setInteger("status", ExecutionStatus.QUEUED.ordinal()).list();
+					).setParameter("now", new Date(), TimestampType.INSTANCE).setParameter("status", ExecutionStatus.QUEUED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
 			for (TaskExecution execution: executions) {
 				if (solverServerService.getQueueProcessor().getByExecutionId(execution.getUniqueId()) != null) continue;
 				try {
@@ -107,7 +108,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = (List<TaskExecution>)hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now"
-					).setTimestamp("now", new Date()).setInteger("status", ExecutionStatus.CREATED.ordinal()).list();
+					).setParameter("now", new Date(), TimestampType.INSTANCE).setParameter("status", ExecutionStatus.CREATED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
 			for (TaskExecution execution: executions) {
 				try {
 					TaskExecutionItem item = new TaskExecutionItem(execution, unitimePermissionCheck);

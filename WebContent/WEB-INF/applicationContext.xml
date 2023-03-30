@@ -40,12 +40,14 @@
                 <aop:scoped-proxy/>
         </bean>
         
+        <!-- 
         <bean class="com.arjuna.ats.jta.TransactionManager" factory-method="transactionManager" id="arjunaTransactionManager"/>
         <bean class="com.arjuna.ats.jta.UserTransaction" factory-method="userTransaction" id="arjunaUserTransaction"/>
         <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
         	<property name="transactionManager" ref="arjunaTransactionManager"/>
         	<property name="userTransaction" ref="arjunaUserTransaction"/>
         </bean>
+        -->
         
         <import resource="${unitime.spring.context.integration:no-integration.xml}"/>
 		<import resource="${unitime.spring.context.security:securityContext.xml}"/>

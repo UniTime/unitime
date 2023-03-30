@@ -127,7 +127,7 @@ public class ReservationServlet implements ReservationService {
 				List<ReservationInterface.IdName> classifications = new ArrayList<ReservationInterface.IdName>();
 				for (AcademicClassification classification: (List<AcademicClassification>)hibSession.createQuery(
 						"select c from AcademicClassification c where c.session.uniqueId = :sessionId order by c.code, c.name")
-						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
+						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.IdName clasf = new ReservationInterface.IdName();
 					clasf.setId(classification.getUniqueId());
 					clasf.setName(Constants.curriculaToInitialCase(classification.getName()));
@@ -136,7 +136,7 @@ public class ReservationServlet implements ReservationService {
 				}
 				for (AcademicArea area: (List<AcademicArea>)hibSession.createQuery(
 						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title")
-						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
+						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.Area curriculum = new ReservationInterface.Area();
 					curriculum.setAbbv(area.getAcademicAreaAbbreviation());
 					curriculum.setId(area.getUniqueId());
@@ -313,8 +313,8 @@ public class ReservationServlet implements ReservationService {
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
 				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
-				.setString("course", courseName.toLowerCase())
-				.setLong("sessionId", getAcademicSessionId())
+				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).setMaxResults(1).list()) {
 			return co;
 		}
@@ -346,7 +346,7 @@ public class ReservationServlet implements ReservationService {
 		Hashtable<String,HashMap<String, Float>> clasf2major2proj = new Hashtable<String, HashMap<String,Float>>();
 		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
 				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
-				.setLong("acadAreaId", acadAreaId).setCacheable(true).list()) {
+				.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
 			Float projection = rule.getProjection();
@@ -414,7 +414,7 @@ public class ReservationServlet implements ReservationService {
 						"from StudentClassEnrollment e where " +
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
 						"and e.student.uniqueId in (" + sId + ")")
-						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId()).setCacheable(true).uniqueResult();
+						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue());
 			}
@@ -550,7 +550,7 @@ public class ReservationServlet implements ReservationService {
 						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
 						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")") +
 						(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))"))
-						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue());
@@ -562,7 +562,7 @@ public class ReservationServlet implements ReservationService {
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId and m.uniqueId in (" + mnIds + ")" +
 						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
 						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")"))
-						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
+						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue() + (r.getEnrollment() == null ? 0 : r.getEnrollment().intValue()));
@@ -578,9 +578,9 @@ public class ReservationServlet implements ReservationService {
 					"and r.academicAreaAbbreviation = :areaAbbv" +
 					(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
 					(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")"))
-					.setLong("sessionId", getAcademicSessionId())
-					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setString("areaAbbv", cr.getArea().getAcademicAreaAbbreviation()).uniqueResult();
+					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("areaAbbv", cr.getArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 			r.setLastLike(lastLike.intValue());
 			*/
 			float projection = 0f;
@@ -602,9 +602,9 @@ public class ReservationServlet implements ReservationService {
 							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
 							(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))") +
 							" group by m.code, f.code")
-							.setLong("sessionId", getAcademicSessionId())
-							.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
+							.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("areaAbbv", area.getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 						int nrStudents = ((Number)o[0]).intValue();
 						lastLike += Math.round(nrStudents);
 						projection += getProjection(rules, (String)o[1], (String)o[2]) * nrStudents;
@@ -623,9 +623,9 @@ public class ReservationServlet implements ReservationService {
 							(mnCodes.isEmpty() ? "" : " and m.code in (" + mnCodes + ")") +
 							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
 							" group by m.code, f.code")
-							.setLong("sessionId", getAcademicSessionId())
-							.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-							.setString("areaAbbv", area.getAcademicAreaAbbreviation()).setCacheable(true).list()) {
+							.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("areaAbbv", area.getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 						int nrStudents = ((Number)o[0]).intValue();
 						lastLike += nrStudents;
 						projection += nrStudents;
@@ -661,8 +661,8 @@ public class ReservationServlet implements ReservationService {
 					"from StudentClassEnrollment e inner join e.student.groups g where " +
 					"e.courseOffering.uniqueId = :courseId " +
 					"and g.uniqueId = :groupId")
-					.setLong("courseId", course.getId())
-					.setLong("groupId", sg.getUniqueId()).setCacheable(true).uniqueResult();
+					.setParameter("courseId", course.getId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("groupId", sg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 
@@ -673,9 +673,9 @@ public class ReservationServlet implements ReservationService {
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
 					"and g.groupAbbreviation = :groupAbbv")
-					.setLong("sessionId", getAcademicSessionId())
-					.setLong("courseId", course.getId())
-					.setString("groupAbbv", sg.getGroupAbbreviation())
+					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("courseId", course.getId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("groupAbbv", sg.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true).uniqueResult();
 			if (lastLike.intValue() > 0)
 				r.setLastLike(lastLike.intValue());
@@ -693,8 +693,8 @@ public class ReservationServlet implements ReservationService {
 					"from StudentClassEnrollment e inner join e.student.groups g where " +
 					"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
 					"and g.uniqueId = :groupId")
-					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("groupId", sg.getUniqueId()).setCacheable(true).uniqueResult();
+					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("groupId", sg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 			Number lastLike = (Number)hibSession.createQuery(
@@ -704,9 +704,9 @@ public class ReservationServlet implements ReservationService {
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
 					"and g.groupAbbreviation = :groupAbbv")
-					.setLong("sessionId", getAcademicSessionId())
-					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setString("groupAbbv", sg.getGroupAbbreviation())
+					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("groupAbbv", sg.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true).uniqueResult();
 			if (lastLike.intValue() > 0)
 				r.setLastLike(lastLike.intValue());
@@ -774,7 +774,7 @@ public class ReservationServlet implements ReservationService {
 			try {
 				for (Reservation reservation: (List<Reservation>)hibSession.createQuery(
 						"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId")
-						.setLong("offeringId", offeringId).setCacheable(true).list()) {
+						.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface r = convert(reservation, nameFormat, hibSession);
 					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
 					if (r instanceof ReservationInterface.OverrideReservation) {
@@ -808,7 +808,7 @@ public class ReservationServlet implements ReservationService {
 			try {
 				for (StudentGroup sg: (List<StudentGroup>)hibSession.createQuery(
 						"select g from StudentGroup g where g.session.uniqueId = :sessionId order by g.groupName")
-						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
+						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.IdName group = new ReservationInterface.IdName();
 					group.setId(sg.getUniqueId());
 					group.setName(sg.getGroupAbbreviation());
@@ -1139,7 +1139,7 @@ public class ReservationServlet implements ReservationService {
 			try {
 				for (Curriculum c : (List<Curriculum>)hibSession.createQuery(
 						"select distinct c.classification.curriculum from CurriculumCourse c where c.course.instructionalOffering = :offeringId ")
-						.setLong("offeringId", offeringId).setCacheable(true).list()) {
+						.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 
 					ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();
 					curriculum.setAbbv(c.getAbbv());

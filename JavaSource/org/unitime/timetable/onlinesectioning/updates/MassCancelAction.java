@@ -118,7 +118,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 		};
 		
 		StudentSectioningStatus status = (changeStatus() && hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
-				"from StudentSectioningStatus where reference = :ref and (session is null or session = :sessionId)").setString("ref", getStatus()).setLong("sessionId", server.getAcademicSession().getUniqueId()).uniqueResult() : null);
+				"from StudentSectioningStatus where reference = :ref and (session is null or session = :sessionId)").setParameter("ref", getStatus(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult() : null);
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());
 			try {

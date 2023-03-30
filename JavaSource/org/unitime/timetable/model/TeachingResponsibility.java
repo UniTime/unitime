@@ -79,7 +79,7 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 		if (reference == null || reference.isEmpty()) return null;
 		return (TeachingResponsibility)hibSession.createQuery(
 				"from TeachingResponsibility where reference = :reference")
-				.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	public boolean hasOption(Option option) {
@@ -115,9 +115,9 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	
 	public boolean isUsed() {
 		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId")
-			.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return true;
+			.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
 		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId")
-				.setLong("responsibilityId", getUniqueId()).uniqueResult()).intValue() > 0) return true;
+				.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
 		return false;
 	}
 }

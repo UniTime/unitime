@@ -46,7 +46,7 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 		progress.setPhase("Loading curriculum projections", 1);
 		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
 				"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId")
-				.setLong("sessionId", session.getUniqueId()).setCacheable(true).list()) {
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();

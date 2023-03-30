@@ -194,16 +194,15 @@ public class ExamEditForm extends PreferencesForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {
-            for (Iterator i= new CourseOfferingDAO().
+            for (Object[] o: new CourseOfferingDAO().
                     getSession().
                     createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                             "where co.subjectArea.uniqueId = :subjectAreaId "+
                             "and co.instructionalOffering.notOffered = false "+
-                            "order by co.courseNbr ").
+                            "order by co.courseNbr ", Object[].class).
                     setFetchSize(200).
                     setCacheable(true).
-                    setLong("subjectAreaId", getSubjectArea(idx)).iterate();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    setParameter("subjectAreaId", getSubjectArea(idx), org.hibernate.type.LongType.INSTANCE).list()) {
                 ret.add(new IdValue((Long)o[0],((String)o[1] + " - " + (String)o[2])));
                 if (o[0].equals(getCourseNbr(idx))) contains = true;
             }
@@ -234,7 +233,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where co.uniqueId = :courseOfferingId").
                 setFetchSize(200).
                 setCacheable(true).
-                setLong("courseOfferingId", course.getUniqueId()).
+                setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list());
             if (!configs.isEmpty()) {
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Configurations --"));
@@ -252,7 +251,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where co.uniqueId = :courseOfferingId").
                 setFetchSize(200).
                 setCacheable(true).
-                setLong("courseOfferingId", course.getUniqueId()).
+                setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list());
             if (!configs.isEmpty() && !subparts.isEmpty())
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Subparts --"));
@@ -330,7 +329,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
                 setFetchSize(200).
                 setCacheable(true).
-                setLong("schedulingSubpartId", getItype(idx)).
+                setParameter("schedulingSubpartId", getItype(idx), org.hibernate.type.LongType.INSTANCE).
                 list());
             for (Iterator i=classes.iterator();i.hasNext();) {
                 Class_ c = (Class_)i.next();

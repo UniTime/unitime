@@ -50,7 +50,7 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (mgr == null) {
 			Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
 					"select s from Settings s where s.key = :key"
-					).setString("key", name).setCacheable(true).uniqueResult();
+					).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
 			return (s == null ? defaultValue : s.getDefaultValue());
 		}
 		return getValue(mgr.getUniqueId(), name, defaultValue);
@@ -64,11 +64,11 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (managerId == null) return defaultValue;
 		Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
 				"select s from Settings s where s.key = :key"
-				).setString("key", name).setCacheable(true).uniqueResult();
+				).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
 		if (s == null) return defaultValue;
 		ManagerSettings m = (ManagerSettings)ManagerSettingsDAO.getInstance().getSession().createQuery(
 				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId"
-				).setLong("managerId", managerId).setLong("settingsId", s.getUniqueId()).setCacheable(true).uniqueResult();
+				).setParameter("managerId", managerId, org.hibernate.type.LongType.INSTANCE).setParameter("settingsId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 		return (m == null? s.getDefaultValue() : m.getValue());
 	}
 

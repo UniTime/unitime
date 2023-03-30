@@ -22,16 +22,14 @@ package org.unitime.timetable.util;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.IdentifierGenerator;
-import org.hibernate.id.PersistentIdentifierGenerator;
-import org.hibernate.id.SequenceGenerator;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 /**
@@ -45,15 +43,19 @@ public class LocationPermIdGenerator {
     protected static String sSequence = "loc_perm_id_seq";
     
     public static IdentifierGenerator getGenerator() throws HibernateException {
-        try {
+    	try {
             if (sGenerator!=null) return sGenerator;
             UniqueIdGenerator idGen = new UniqueIdGenerator();
-            Dialect dialect = (Dialect)Class.forName(LocationDAO.getConfiguration().getProperty("hibernate.dialect")).getConstructor(new Class[]{}).newInstance(new Object[]{});
-            Type type = new LongType();
+            Type type = LongType.INSTANCE;
             Properties params = new Properties();
-            params.put(SequenceGenerator.SEQUENCE, sSequence);
-            params.put(PersistentIdentifierGenerator.SCHEMA, _RootDAO.getConfiguration().getProperty("default_schema"));
-            idGen.configure(type, params, dialect);
+            params.put(SequenceStyleGenerator.SEQUENCE_PARAM, sSequence);
+            idGen.configure(type, params, _RootDAO.getHibernateContext().getServiceRegistry());
+            idGen.registerExportables(
+            		_RootDAO.getHibernateContext().getMetadata().getDatabase()
+            		);
+            idGen.initialize(
+            		((SessionFactoryImpl)_RootDAO.getHibernateContext().getSessionFactory()).getSqlStringGenerationContext()
+            		);
             sGenerator = idGen;
             return sGenerator;
         } catch (HibernateException e) {

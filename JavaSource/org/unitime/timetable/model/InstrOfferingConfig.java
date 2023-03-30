@@ -277,8 +277,8 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
         return (InstrOfferingConfig)new InstrOfferingConfigDAO().
             getSession().
             createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
-            setLong("sessionId", sessionId.longValue()).
-            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
             uniqueResult();
     }
@@ -330,7 +330,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	public TreeSet<Department> findPossibleFundingDepts(org.hibernate.Session hibSession){
 		TreeSet<Department> deptSet = new TreeSet<>();
 		String query = "from Department d where d.externalFundingDept = true and d.session.uniqueId = :sessId";
-		deptSet.addAll((List<Department>)(hibSession.createQuery(query).setLong("sessId", this.getSessionId()).setCacheable(true).list()));
+		deptSet.addAll((List<Department>)(hibSession.createQuery(query).setParameter("sessId", this.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()));
 		for (CourseOffering co : this.getInstructionalOffering().getCourseOfferings()){
 			deptSet.add(co.getDepartment());
 			deptSet.add(co.getEffectiveFundingDept());

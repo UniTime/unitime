@@ -40,7 +40,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
-	private Integer iInstrOfferingPermId;
+	private Long iInstrOfferingPermId;
 	private Boolean iNotOffered;
 	private Integer iDemand;
 	private Integer iEnrollment;
@@ -91,8 +91,8 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-	public Integer getInstrOfferingPermId() { return iInstrOfferingPermId; }
-	public void setInstrOfferingPermId(Integer instrOfferingPermId) { iInstrOfferingPermId = instrOfferingPermId; }
+	public Long getInstrOfferingPermId() { return iInstrOfferingPermId; }
+	public void setInstrOfferingPermId(Long instrOfferingPermId) { iInstrOfferingPermId = instrOfferingPermId; }
 
 	public Boolean isNotOffered() { return iNotOffered; }
 	public Boolean getNotOffered() { return iNotOffered; }

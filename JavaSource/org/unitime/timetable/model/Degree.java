@@ -34,7 +34,7 @@ public class Degree extends BaseDegree {
 	public static List<Degree> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? DegreeDAO.getInstance().getSession() : hibSession).createQuery(
 				"from Degree x where x.session.uniqueId = :sessionId order by x.reference")
-				.setLong("sessionId", sessionId).list();
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
 	}
 	
     public Object clone() {

@@ -85,7 +85,7 @@ public class MakeCurriculaFromLastlikeDemands {
                 "d.subjectArea.session.uniqueId=:sessionId and c.subjectArea=d.subjectArea and "+
                 "((d.coursePermId=null and c.courseNbr=d.courseNbr) or "+
                 " (d.coursePermId!=null and d.coursePermId=c.permId))")
-                .setLong("sessionId", iSessionId)
+                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setFetchSize(1000)
                 .list();
         sLog.info("Processing "+demands.size()+" demands...");
@@ -127,7 +127,7 @@ public class MakeCurriculaFromLastlikeDemands {
         		"select distinct a, c, s.uniqueId from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a " +
                 "inner join r.courseOffering c where "+
                 "s.session.uniqueId=:sessionId")
-                .setLong("sessionId", iSessionId)
+                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setFetchSize(1000)
                 .list();
         sLog.info("Processing "+demands.size()+" demands...");
@@ -177,7 +177,7 @@ public class MakeCurriculaFromLastlikeDemands {
 		Hashtable<String,Hashtable<String, Float>> clasf2major2proj = new Hashtable<String, Hashtable<String,Float>>();
 		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
 				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
-				.setLong("acadAreaId", acadAreaId).setCacheable(true).list()) {
+				.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
 			Float projection = rule.getProjection();
@@ -204,7 +204,7 @@ public class MakeCurriculaFromLastlikeDemands {
 	public void update(org.hibernate.Session hibSession, boolean lastLike) {
     	sLog.info("Deleting existing curricula...");
     	for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
-        	setLong("sessionId", iSessionId).list().iterator(); i.hasNext(); ) {
+        	setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list().iterator(); i.hasNext(); ) {
     		hibSession.delete(i.next());
     	}
     	hibSession.flush();

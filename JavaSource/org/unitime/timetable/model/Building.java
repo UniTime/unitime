@@ -26,7 +26,6 @@ import java.util.TreeSet;
 
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
@@ -103,8 +102,8 @@ public class Building extends BaseBuilding implements Comparable {
 		List bldgs = (new BuildingDAO()).getQuery(
 				"SELECT distinct b FROM Building b "+ 
 				"WHERE b.session.uniqueId=:sessionId AND b.abbreviation=:bldgAbbv").
-				setLong("sessionId", sessionId.longValue()).
-				setString("bldgAbbv", bldgAbbv).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("bldgAbbv", bldgAbbv, org.hibernate.type.StringType.INSTANCE).
 				list();
 		
 		if (!bldgs.isEmpty()) return (Building)bldgs.get(0);
@@ -115,14 +114,14 @@ public class Building extends BaseBuilding implements Comparable {
 	public static Building findByBldgAbbv(org.hibernate.Session hibSession, Long sessionId, String bldgAbbv) {
 		return (Building)(hibSession == null ? BuildingDAO.getInstance().getSession() : hibSession).createQuery(
 				"from Building b where session.uniqueId=:sessionId and b.abbreviation=:bldgAbbv"
-				).setLong("sessionId", sessionId).setString("bldgAbbv", bldgAbbv).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("bldgAbbv", bldgAbbv, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 	}
 	
     public static Building findByName(String name, Long sessionId) {
         return (Building)(new BuildingDAO()).getSession().createQuery(
                 "select b from Building b where b.session.uniqueId=:sessionId and b.name=:name").
-                setLong("sessionId", sessionId.longValue()).
-                setString("name", name).
+                setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+                setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
                 uniqueResult();
     }
 
@@ -254,27 +253,20 @@ public class Building extends BaseBuilding implements Comparable {
 	}
 
     public static Building findByExternalIdAndSession(String externalId, Long sessionId){
-    	if (externalId == null) {
-    		return(null);
-    	}
-        BuildingDAO bDao = new BuildingDAO();
-        List bldgs = bDao.getSession().createCriteria(Building.class)
-            .add(Restrictions.eq("externalUniqueId", externalId))
-            .add(Restrictions.eq("session.uniqueId", sessionId))
-            .setCacheable(true).list();
-            
-        if (bldgs != null && bldgs.size() == 1){
-            return((Building) bldgs.get(0));
-        }
-
-        return(null);
-
+    	if (externalId == null) return null;
+    	return BuildingDAO.getInstance().getSession()
+				.createQuery("from Building where externalUniqueId = :externalId and session.uniqueId = :sessionId", Building.class)
+				.setParameter("externalId", externalId)
+				.setParameter("sessionId", sessionId)
+				.setCacheable(true)
+				.setMaxResults(1)
+                .uniqueResult();
     }
 
     public static List<Building> findAll(Long sessionId) {
 		return new BuildingDAO().getSession().createQuery(
 				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation").
-				setLong("sessionId", sessionId).setCacheable(true).list();
+				setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
     @Deprecated

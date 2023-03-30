@@ -61,13 +61,13 @@ public class ItypeDescEditForm implements UniTimeForm {
                     
                     itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
                     		"from ItypeDesc x where x.abbv = :abbv and x.id != :id")
-                    		.setString("abbv", iAbbreviation).setInteger("id", id).setMaxResults(1).uniqueResult();
+                    		.setParameter("abbv", iAbbreviation, org.hibernate.type.StringType.INSTANCE).setParameter("id", id, org.hibernate.type.IntegerType.INSTANCE).setMaxResults(1).uniqueResult();
                     if (itype != null)
                     	action.addFieldError("abbreviation", MSG.errorAlreadyExists(iAbbreviation));
                     		
                     itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
                     		"from ItypeDesc x where x.desc = :name and x.id != :id")
-                    		.setString("name", iName).setInteger("id", id).setMaxResults(1).uniqueResult();
+                    		.setParameter("name", iName, org.hibernate.type.StringType.INSTANCE).setParameter("id", id, org.hibernate.type.IntegerType.INSTANCE).setMaxResults(1).uniqueResult();
                     if (itype != null)
                     	action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
                 }

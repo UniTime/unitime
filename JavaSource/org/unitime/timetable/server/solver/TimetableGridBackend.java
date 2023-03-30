@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
@@ -154,7 +154,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         		if (ApplicationProperty.TimeGridShowAllCommitted.isTrue()) {
         			for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
             				"select s.uniqueId from Solution s where s.commited = true and s.owner.session = :sessionId")
-            				.setLong("sessionId", acadSession.getUniqueId()).setCacheable(true).list()) {
+            				.setParameter("sessionId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
             			if (solutionIdsStr == null)
             				solutionIdsStr = id.toString();
             			else
@@ -164,7 +164,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         			for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
                 		for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
                 				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId")
-                				.setLong("groupId", g.getUniqueId()).setCacheable(true).list()) {
+                				.setParameter("groupId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                 			if (solutionIdsStr == null)
                 				solutionIdsStr = id.toString();
                 			else
@@ -443,7 +443,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				"from ItypeDesc where " +
     				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session = :sessionId) " +
     				"and parent is null order by itype"
-    				).setLong("sessionId", acadSession.getUniqueId()).list()) {
+    				).setParameter("sessionId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				response.addAssignedLegend(cx.getInstructionalTypeColor(it.getItype()), it.getDesc());
 			}
         }

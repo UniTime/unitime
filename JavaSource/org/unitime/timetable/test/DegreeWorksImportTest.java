@@ -57,10 +57,10 @@ public class DegreeWorksImportTest {
 				"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 				"where d.subjectArea.session = :sessionId and " +
 				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
-				.setLong("sessionId", session.getUniqueId())
-				.setString("area", area)
-				.setString("major", major)
-				.setString("clasf", classification)
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
 				.uniqueResult()).intValue();
 	}
 	
@@ -69,10 +69,10 @@ public class DegreeWorksImportTest {
 				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
 				"where e.student.session = :sessionId and " +
 				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
-				.setLong("sessionId", session.getUniqueId())
-				.setString("area", area)
-				.setString("major", major)
-				.setString("clasf", classification)
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
 				.uniqueResult()).intValue();
 	}
 
@@ -82,22 +82,22 @@ public class DegreeWorksImportTest {
 					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 					"where d.subjectArea.uniqueId = :subjectId and d.courseNbr = :courseNbr and "+
 					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
-					.setLong("subjectId", co.getSubjectArea().getUniqueId())
-					.setString("courseNbr", co.getCourseNbr())
-					.setString("area", area)
-					.setString("major", major)
-					.setString("clasf", classification)
+					.setParameter("subjectId", co.getSubjectArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("courseNbr", co.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
 					.uniqueResult()).intValue();
 		else
 			return ((Number)hibSession.createQuery(
 					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 					"where d.subjectArea.session.uniqueId = :subjectId and d.coursePermId = :permId and " +
 					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
-					.setLong("sessionId", co.getSubjectArea().getSessionId())
-					.setString("permId", co.getPermId())
-					.setString("area", area)
-					.setString("major", major)
-					.setString("clasf", classification)
+					.setParameter("sessionId", co.getSubjectArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("permId", co.getPermId(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
 					.uniqueResult()).intValue();
 	}
 	
@@ -106,10 +106,10 @@ public class DegreeWorksImportTest {
 				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
 				"where e.courseOffering.uniqueId = :courseId and " +
 				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
-				.setLong("courseId", co.getUniqueId())
-				.setString("area", area)
-				.setString("major", major)
-				.setString("clasf", classification)
+				.setParameter("courseId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
 				.uniqueResult()).intValue();
 	}
 	
@@ -117,9 +117,9 @@ public class DegreeWorksImportTest {
 		List<CourseOffering> courses = (List<CourseOffering>)hibSession.createQuery(
 				"from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subject " +
 				"and co.courseNbr like :courseNbr || '%' order by co.courseNbr")
-				.setLong("sessionId", session.getUniqueId())
-				.setString("subject", subject)
-				.setString("courseNbr", courseNbr)
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("subject", subject, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.list();
 		
 		// filter out not offered courses, if possible

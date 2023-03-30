@@ -209,26 +209,26 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             return EventDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
         			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
-                    .setLong("classId", relatedObject.getUniqueId())
+                    .setParameter("classId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case Config : 
             return EventDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
             		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
-                    .setLong("configId", relatedObject.getUniqueId())
+                    .setParameter("configId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case Course : 
             return EventDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId")
-                    .setLong("courseId", relatedObject.getUniqueId())
+                    .setParameter("courseId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case Offering : 
             return EventDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId")
-                    .setLong("offeringId", relatedObject.getUniqueId())
+                    .setParameter("offeringId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         default : throw new GwtRpcException("Unsupported related object type " + relatedObject.getType());
@@ -247,10 +247,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.clazz.uniqueId = :classId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-        			.setDate("meetingDate", meeting.getMeetingDate())
-        			.setInteger("startPeriod", meeting.getStartSlot())
-        			.setInteger("stopPeriod", meeting.getEndSlot())
-        			.setLong("classId", relatedObject.getUniqueId()).list()) {
+        			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+        			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("classId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	    		Long studentId = (Long)o[0];
 	    		Meeting conflictingMeeting = (Meeting)o[1];
 	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -267,10 +267,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.clazz.uniqueId = :classId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("classId", relatedObject.getUniqueId()).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("classId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -288,11 +288,11 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, StudentClassEnrollment s2" +
             			" where s2.clazz.uniqueId = :classId and e1.uniqueId != :eventId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("classId", relatedObject.getUniqueId())
-            			.setLong("eventId", eventId == null ? -1 : eventId).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("classId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("eventId", eventId == null ? -1 : eventId, org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -312,10 +312,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-        			.setDate("meetingDate", meeting.getMeetingDate())
-        			.setInteger("startPeriod", meeting.getStartSlot())
-        			.setInteger("stopPeriod", meeting.getEndSlot())
-        			.setLong("configId", relatedObject.getUniqueId()).list()) {
+        			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+        			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("configId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	    		Long studentId = (Long)o[0];
 	    		Meeting conflictingMeeting = (Meeting)o[1];
 	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -332,10 +332,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("configId", relatedObject.getUniqueId()).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("configId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -353,11 +353,11 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, StudentClassEnrollment s2" +
             			" where s2.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId and e1.uniqueId != :eventId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("configId", relatedObject.getUniqueId())
-            			.setLong("eventId", eventId == null ? -1 : eventId).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("configId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("eventId", eventId == null ? -1 : eventId, org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -377,10 +377,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.courseOffering.uniqueId = :courseId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-        			.setDate("meetingDate", meeting.getMeetingDate())
-        			.setInteger("startPeriod", meeting.getStartSlot())
-        			.setInteger("stopPeriod", meeting.getEndSlot())
-        			.setLong("courseId", relatedObject.getUniqueId()).list()) {
+        			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+        			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("courseId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	    		Long studentId = (Long)o[0];
 	    		Meeting conflictingMeeting = (Meeting)o[1];
 	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -397,10 +397,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.uniqueId = :courseId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("courseId", relatedObject.getUniqueId()).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("courseId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -418,11 +418,11 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.uniqueId = :courseId and e1.uniqueId != :eventId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("courseId", relatedObject.getUniqueId())
-            			.setLong("eventId", eventId == null ? -1 : eventId).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("courseId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("eventId", eventId == null ? -1 : eventId, org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -442,10 +442,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, StudentClassEnrollment s2" +
         			" where s2.courseOffering.instructionalOffering.uniqueId = :offeringId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-        			.setDate("meetingDate", meeting.getMeetingDate())
-        			.setInteger("startPeriod", meeting.getStartSlot())
-        			.setInteger("stopPeriod", meeting.getEndSlot())
-        			.setLong("offeringId", relatedObject.getUniqueId()).list()) {
+        			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+        			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("offeringId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	    		Long studentId = (Long)o[0];
 	    		Meeting conflictingMeeting = (Meeting)o[1];
 	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -462,10 +462,10 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.instructionalOffering.uniqueId = :offeringId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("offeringId", relatedObject.getUniqueId()).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("offeringId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -483,11 +483,11 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, StudentClassEnrollment s2" +
             			" where s2.courseOffering.instructionalOffering.uniqueId = :offeringId and e1.uniqueId != :eventId and s1.student = s2.student" + where(t1, 1) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :stopPeriod and :startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
-            			.setDate("meetingDate", meeting.getMeetingDate())
-            			.setInteger("startPeriod", meeting.getStartSlot())
-            			.setInteger("stopPeriod", meeting.getEndSlot())
-            			.setLong("offeringId", relatedObject.getUniqueId())
-            			.setLong("eventId", eventId == null ? -1 : eventId).list()) {
+            			.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startPeriod", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("stopPeriod", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("offeringId", relatedObject.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("eventId", eventId == null ? -1 : eventId, org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
     	    		Meeting conflictingMeeting = (Meeting)o[1];
     	    		List<Meeting> meetings = conflicts.get(studentId);
@@ -599,15 +599,15 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     					if (name == null) {
     						TimetableManager mgr = (TimetableManager)EventDAO.getInstance().getSession().createQuery(
     								"from TimetableManager where externalUniqueId = :externalId")
-    								.setString("externalId", enrollment.getApprovedBy())
+    								.setParameter("externalId", enrollment.getApprovedBy(), org.hibernate.type.StringType.INSTANCE)
     								.setMaxResults(1).uniqueResult();
     						if (mgr != null) {
     							name = mgr.getName();
     						} else {
     							DepartmentalInstructor instr = (DepartmentalInstructor)EventDAO.getInstance().getSession().createQuery(
     									"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
-    									.setString("externalId", enrollment.getApprovedBy())
-    									.setLong("sessionId", enrollment.getStudent().getSession().getUniqueId())
+    									.setParameter("externalId", enrollment.getApprovedBy(), org.hibernate.type.StringType.INSTANCE)
+    									.setParameter("sessionId", enrollment.getStudent().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     									.setMaxResults(1).uniqueResult();
     							if (instr != null)
     								name = instr.nameLastNameFirst();
@@ -709,7 +709,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, ClassEvent e2 inner join e2.meetings m2, StudentClassEnrollment s2" +
     			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and e2.clazz = s2.clazz and s1.student = s2.student" +
     			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-    			.setLong("eventId", event.getUniqueId()).list()) {
+    			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
     		Long studentId = (Long)o[0];
     		Meeting meeting = (Meeting)o[1];
     		List<Meeting> meetings = conflicts.get(studentId);
@@ -727,7 +727,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
         			where(t1, 1) +
         			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-        			.setLong("eventId", event.getUniqueId()).list()) {
+        			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
         		List<Meeting> meetings = conflicts.get(studentId);
@@ -746,7 +746,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e2.clazz = s2.clazz and s1.student = s2.student" +
         			where(t1, 1) +
         			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-        			.setLong("eventId", event.getUniqueId()).list()) {
+        			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
         		List<Meeting> meetings = conflicts.get(studentId);
@@ -773,7 +773,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
         			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-        			.setLong("eventId", event.getUniqueId()).list()) {
+        			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
         		List<Meeting> meetings = conflicts.get(studentId);
@@ -793,7 +793,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student and e1.exam.examType != e2.exam.examType" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-            			.setLong("eventId", event.getUniqueId()).list()) {
+            			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
             		List<Meeting> meetings = conflicts.get(studentId);
@@ -814,7 +814,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1 and m2.approvalStatus = 1")
-            			.setLong("eventId", event.getUniqueId()).list()) {
+            			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
             		List<Meeting> meetings = conflicts.get(studentId);
@@ -842,7 +842,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
         			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
         			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1 and m1.approvalStatus = 1")
-        			.setLong("eventId", event.getUniqueId()).list()) {
+        			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
         		List<Meeting> meetings = conflicts.get(studentId);
@@ -862,7 +862,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and m2.approvalStatus <= 1 and m1.approvalStatus = 1")
-            			.setLong("eventId", event.getUniqueId()).list()) {
+            			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
             		List<Meeting> meetings = conflicts.get(studentId);
@@ -883,7 +883,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
             			" where e2.uniqueId = :eventId and e1.uniqueId != e2.uniqueId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = m2.meetingDate and m1.startPeriod < m2.stopPeriod and m2.startPeriod < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1 and m2.approvalStatus <= 1")
-            			.setLong("eventId", event.getUniqueId()).list()) {
+            			.setParameter("eventId", event.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
             		List<Meeting> meetings = conflicts.get(studentId);

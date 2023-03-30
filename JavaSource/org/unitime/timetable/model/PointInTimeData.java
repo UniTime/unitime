@@ -55,7 +55,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		}
 		return((ArrayList<PointInTimeData>) hibSess
 				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId")
-				.setLong("sessionId", acadSessionUniqueId.longValue())
+				.setParameter("sessionId", acadSessionUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE)
 				.list());
 	}
 
@@ -72,7 +72,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		
 		return((ArrayList<PointInTimeData>) hibSess
 				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId and savedSuccessfully = true")
-				.setLong("sessionId", acadSessionUniqueId.longValue())
+				.setParameter("sessionId", acadSessionUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE)
 				.list());
 	}
 

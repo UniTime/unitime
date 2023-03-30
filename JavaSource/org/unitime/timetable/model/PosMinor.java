@@ -51,8 +51,8 @@ public class PosMinor extends BasePosMinor {
                 "select a from PosMinor a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code").
-         setLong("sessionId", sessionId.longValue()).
-         setString("code", code).
+         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -65,9 +65,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.uniqueId=:areaId and p.code=:code").
-         setLong("sessionId", sessionId.longValue()).
-         setLong("areaId", areaId.longValue()).
-         setString("code", code).
+         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("areaId", areaId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -80,9 +80,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.academicAreaAbbreviation=:areaAbbv and p.code=:code").
-         setLong("sessionId", sessionId.longValue()).
-         setString("areaAbbv", areaAbbv).
-         setString("code", code).
+         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("areaAbbv", areaAbbv, org.hibernate.type.StringType.INSTANCE).
+         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
          uniqueResult(); 
     }

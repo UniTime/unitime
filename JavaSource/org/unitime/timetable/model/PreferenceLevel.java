@@ -177,7 +177,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     	} else {
     		return (List<PreferenceLevel>)PreferenceLevelDAO.getInstance().getSession().createQuery(
     				"from PreferenceLevel where prefProlog != :na order by prefId")
-    				.setString("na", sNotAvailable).setCacheable(true).list();
+    				.setParameter("na", sNotAvailable, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     	}
     }
 

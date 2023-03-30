@@ -134,8 +134,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			query += "  and cc.subject=:subjectAbbv";
 			query += "  and cc.courseNumber = co.courseNbr)";
 		    List l = coDao.getQuery(query)
-				.setString("subjectAbbv", subjectAreaAbbreviation)
-				.setLong("sessionId", toSession.getUniqueId())
+				.setParameter("subjectAbbv", subjectAreaAbbreviation, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.list();
 			if (l != null){
 				CourseCatalog cc = null;

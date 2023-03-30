@@ -22,10 +22,10 @@ package org.unitime.commons.hibernate.stats;
 import java.util.Date;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.stat.CacheRegionStatistics;
 import org.hibernate.stat.CollectionStatistics;
 import org.hibernate.stat.EntityStatistics;
 import org.hibernate.stat.QueryStatistics;
-import org.hibernate.stat.SecondLevelCacheStatistics;
 import org.hibernate.stat.Statistics;
 import org.unitime.commons.web.htmlgen.Table;
 import org.unitime.commons.web.htmlgen.TableCell;
@@ -458,7 +458,7 @@ public class StatsProvider {
 	
 	                for (int i=0; i<cRegionNames.length; i++) {
 	                    String cRegionName = cRegionNames[i];
-	                    SecondLevelCacheStatistics sStats = stats.getSecondLevelCacheStatistics(cRegionName);
+	                    CacheRegionStatistics sStats = stats.getDomainDataRegionStatistics(cRegionName);
 	                    
 	                    row = new TableRow();
 	                    if(i%2==0)

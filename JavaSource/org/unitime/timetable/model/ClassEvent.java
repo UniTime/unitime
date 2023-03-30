@@ -61,7 +61,7 @@ public class ClassEvent extends BaseClassEvent {
     public Collection<Long> getStudentIds() {
         return new RelatedCourseInfoDAO().getSession().createQuery(
                 "select distinct e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId")
-                .setLong("classId", getClazz().getUniqueId())
+                .setParameter("classId", getClazz().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true)
                 .list();
     }
@@ -86,7 +86,7 @@ public class ClassEvent extends BaseClassEvent {
 			ClassEventDAO.getInstance().getSession().createQuery(
 					"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
         			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
-				.setLong("classId", getClazz().getUniqueId())
+				.setParameter("classId", getClazz().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.list();
 	}
 

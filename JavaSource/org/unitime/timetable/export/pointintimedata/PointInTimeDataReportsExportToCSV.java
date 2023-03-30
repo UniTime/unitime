@@ -255,7 +255,10 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
     			if (x == null) {
     				len++;
     			} else {
-            		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+    				ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
             		if (meta == null) {
             			len++;
             		} else {
@@ -268,7 +271,10 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
     			}
     		}
     	} else {
-    		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
     		if (meta == null) {
     			len++;
     		} else {

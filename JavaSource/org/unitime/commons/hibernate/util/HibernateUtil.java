@@ -24,53 +24,44 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.spi.NamingManager;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataBuilder;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.cfgxml.spi.LoadedConfig;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.PostgreSQL9Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.internal.util.ConfigHelper;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
-import org.hibernate.type.StringType;
+import org.hibernate.type.StandardBasicTypes;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
-import org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
 
 /**
  * @author Tomas Muller
@@ -78,45 +69,6 @@ import org.xml.sax.InputSource;
 public class HibernateUtil {
     private static Log sLog = LogFactory.getLog(HibernateUtil.class);
     private static SessionFactory sSessionFactory = null;
-
-	private static void setProperty(org.w3c.dom.Document document, String name, String value) {
-        if (value==null) {
-            removeProperty(document, name);
-        } else {
-            org.w3c.dom.Element hibConfiguration = (org.w3c.dom.Element)document.getElementsByTagName("hibernate-configuration").item(0);
-            org.w3c.dom.Element sessionFactoryConfig = (org.w3c.dom.Element)hibConfiguration.getElementsByTagName("session-factory").item(0);
-            NodeList properties = sessionFactoryConfig.getElementsByTagName("property");
-            for (int i=0;i<properties.getLength();i++) {
-                org.w3c.dom.Element property = (org.w3c.dom.Element)properties.item(i);
-                if (name.equals(property.getAttribute("name"))) {
-                    Text text = (Text)property.getFirstChild();
-                    if (text==null) {
-                        property.appendChild(document.createTextNode(value));
-                    } else {
-                        text.setData(value);
-                    }
-                    return;
-                }
-            }
-            org.w3c.dom.Element property = document.createElement("property");
-            property.setAttribute("name",name);
-            property.appendChild(document.createTextNode(value));
-            sessionFactoryConfig.appendChild(property);
-        }
-	}
-	
-	private static void removeProperty(org.w3c.dom.Document document, String name) {
-		org.w3c.dom.Element hibConfiguration = (org.w3c.dom.Element)document.getElementsByTagName("hibernate-configuration").item(0);
-		org.w3c.dom.Element sessionFactoryConfig = (org.w3c.dom.Element)hibConfiguration.getElementsByTagName("session-factory").item(0);
-		org.w3c.dom.NodeList properties = sessionFactoryConfig.getElementsByTagName("property");
-        for (int i=0;i<properties.getLength();i++) {
-        	org.w3c.dom.Element property = (org.w3c.dom.Element)properties.item(i);
-        	if (name.equals(property.getAttribute("name"))) {
-        		sessionFactoryConfig.removeChild(property);
-        		return;
-        	}
-        }
-	}
     
     public static void configureHibernate(String connectionUrl) throws Exception {
         Properties properties = ApplicationProperties.getProperties();
@@ -124,7 +76,7 @@ public class HibernateUtil {
         configureHibernate(properties);
     }
     
-	public static String getProperty(Properties properties, String name) {
+    public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
         if (value!=null) {
             sLog.debug("   -- " + name + "=" + value);
@@ -136,13 +88,9 @@ public class HibernateUtil {
         return value;
     }
     
-    public static void fixSchemaInFormulas(Configuration cfg) throws ClassNotFoundException {
-    	cfg.buildMappings();
-    	Class dialect = Class.forName(cfg.getProperty("dialect"));
-    	String schema = cfg.getProperty("default_schema");
-    	for (Iterator i=cfg.getClassMappings();i.hasNext();) {
-            PersistentClass pc = (PersistentClass)i.next();
-            for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
+    public static void fixSchemaInFormulas(Metadata meta, String schema, Class dialect) throws ClassNotFoundException {
+    	for (PersistentClass pc: meta.getEntityBindings()) {
+    		for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
                 Property p = (Property)j.next();
                 for (Iterator k=p.getColumnIterator();k.hasNext();) {
                     Selectable c = (Selectable)k.next();
@@ -167,67 +115,163 @@ public class HibernateUtil {
             }
         }
     }
-
 	public static void configureHibernate(Properties properties) throws Exception {
-		if (sSessionFactory!=null) {
+		if (sSessionFactory != null) {
 			sSessionFactory.close();
-			sSessionFactory=null;
+			sSessionFactory = null;
 		}
 		
 		if (!NamingManager.hasInitialContextFactoryBuilder())
 			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
 		
-		sLog.info("Connecting to "+getProperty(properties,"connection.url"));
+		sLog.info("Connecting to "+getProperty(properties, "connection.url"));
 		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
 		sLog.debug("  -- class loader retrieved");
-
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		sLog.debug("  -- document factory created");
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        builder.setEntityResolver(new EntityResolver() {
-    	    public InputSource resolveEntity(String publicId, String systemId) {
-    	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
-        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-        	    }
-    	        return null;
-    	    }
-    	});
-        sLog.debug("  -- document builder created");
-        Document document = builder.parse(classLoader.getResource("hibernate.cfg.xml").openStream());
-        sLog.debug("  -- hibernate.cfg.xml parsed");
-        
-        String dialect = getProperty(properties, "dialect");
+		
+		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
+		LoadedConfig config = registryBuilder.getConfigLoader().loadConfigXmlUrl(classLoader.getResource("hibernate.cfg.xml"));
+		
+        String dialect = ApplicationProperty.DatabaseDialect.value();
         if (dialect!=null)
-        	setProperty(document, "dialect", dialect);
+        	config.getConfigurationValues().put("dialect", dialect);
 
         String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
         if (idgen!=null)
-            setProperty(document, "tmtbl.uniqueid.generator", idgen);
+        	config.getConfigurationValues().put("tmtbl.uniqueid.generator", idgen);
 
         if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
-        	setProperty(document, "net.sf.ehcache.configurationResourceName", ApplicationProperty.HibernateCacheConfiguration.value());
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", ApplicationProperty.HibernateCacheConfiguration.value());
+        else if (ApplicationProperty.HibernateClusterEnabled.isTrue())
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-cluster.xml");
         else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
-        	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-local.xml");
+        config.getConfigurationValues().put("hibernate.cache.infinispan.jgroups_cfg", ApplicationProperty.HibernateClusterConfiguration.value());
 
         // Remove second level cache
-        setProperty(document, "hibernate.cache.use_second_level_cache", "false");
-        setProperty(document, "hibernate.cache.use_query_cache", "false");
-        removeProperty(document, "hibernate.cache.region.factory_class");
+        config.getConfigurationValues().put("hibernate.cache.use_second_level_cache", "false");
+        config.getConfigurationValues().put("hibernate.cache.use_query_cache", "false");
+        config.getConfigurationValues().remove("hibernate.cache.region.factory_class");
 
         for (Enumeration e=properties.propertyNames();e.hasMoreElements();) {
-            String name = (String)e.nextElement();
-            if (name.startsWith("hibernate.") || name.startsWith("connection.") || name.startsWith("tmtbl.hibernate.")) {
-				String value = properties.getProperty(name);
+        	String name = (String)e.nextElement();
+            if (name.startsWith("hibernate.") || name.startsWith("tmtbl.hibernate.")) {
+				String value = ApplicationProperties.getProperty(name);
                 if ("NULL".equals(value))
-                    removeProperty(document, name);
+                	config.getConfigurationValues().remove(name);
                 else
-                    setProperty(document, name, value);
+                	config.getConfigurationValues().put(name, value);
+                if (!name.equals("connection.password"))
+                    sLog.debug("  -- set "+name+": "+value);
+                else
+                    sLog.debug("  -- set "+name+": *****");
+            }
+            if (name.startsWith("connection.")) {
+				String value = ApplicationProperties.getProperty(name);
+                if ("NULL".equals(value)) {
+                	config.getConfigurationValues().remove(name);
+                	config.getConfigurationValues().remove("hibernate." + name);
+                } else {
+                	config.getConfigurationValues().put(name, value);
+                	config.getConfigurationValues().put("hibernate." + name, value);
+                }
+                if (!name.equals("connection.password"))
+                    sLog.debug("  -- set "+name+": "+value);
+                else
+                    sLog.debug("  -- set "+name+": *****");
+            }
+        }
+        
+        String default_schema = getProperty(properties, "default_schema");
+        if (default_schema != null)
+        	config.getConfigurationValues().put("default_schema", default_schema);
+        
+        UniqueIdGenerator.configure(config);
+        
+        registryBuilder.configure(config);
+        
+        ServiceRegistry registry = registryBuilder.build();
+        
+        if (ApplicationProperty.ConnectionLogging.isTrue()) {
+        	ConnectionProvider cp = registry.getService(ConnectionProvider.class);
+        	if (cp != null) {
+        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)registry).locateServiceBinding(ConnectionProvider.class);
+            	if (scp != null)
+            		scp.setService(new LoggingConnectionProvider(registry.getService(ConnectionProvider.class)));
+        	}
+        }
+
+        MetadataBuilder metaBuild = new MetadataSources(registry).getMetadataBuilder();
+        Class d = Class.forName((String)config.getConfigurationValues().get("dialect"));
+        addOperations(metaBuild, d);
+        
+        Metadata meta = metaBuild.build();
+        
+        fixSchemaInFormulas(meta, default_schema, d);
+        
+        (new _BaseRootDAO() {
+    		void setContext(HibernateContext cx) {
+    			_BaseRootDAO.sContext = cx;
+    		}
+    		protected Class getReferenceClass() { return null; }
+    	}).setContext(new HibernateContext(config, registry, meta, meta.buildSessionFactory()));
+        
+        DatabaseUpdate.update();
+    }
+    
+    public static void closeHibernate() {
+		if (sSessionFactory != null) {
+			sSessionFactory.close();
+			sSessionFactory=null;
+		}
+	}
+    
+    public static HibernateContext configureHibernateFromRootDAO() throws ClassNotFoundException {
+    	sLog.info("Connecting to "+ApplicationProperty.ConnectionUrl.value());
+		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
+
+        StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
+        LoadedConfig config = registryBuilder.getConfigLoader().loadConfigXmlUrl(classLoader.getResource("hibernate.cfg.xml"));
+        
+        String dialect = ApplicationProperty.DatabaseDialect.value();
+        if (dialect!=null) {
+        	config.getConfigurationValues().put("dialect", dialect);
+        	config.getConfigurationValues().put("hibernate.dialect", dialect);
+        }
+
+        String idgen = ApplicationProperty.DatabaseUniqueIdGenerator.value();
+        if (idgen!=null)
+        	config.getConfigurationValues().put("tmtbl.uniqueid.generator", idgen);
+
+        if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", ApplicationProperty.HibernateCacheConfiguration.value());
+        else if (ApplicationProperty.HibernateClusterEnabled.isTrue())
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-cluster.xml");
+        else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
+        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-local.xml");
+        config.getConfigurationValues().put("hibernate.cache.infinispan.jgroups_cfg", ApplicationProperty.HibernateClusterConfiguration.value());
+
+        for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
+            String name = (String)e.nextElement();
+            if (name.startsWith("hibernate.") || name.startsWith("tmtbl.hibernate.")) {
+				String value = ApplicationProperties.getProperty(name);
+                if ("NULL".equals(value))
+                	config.getConfigurationValues().remove(name);
+                else
+                	config.getConfigurationValues().put(name, value);
+                if (!name.equals("connection.password"))
+                    sLog.debug("  -- set "+name+": "+value);
+                else
+                    sLog.debug("  -- set "+name+": *****");
+            }
+            if (name.startsWith("connection.")) {
+				String value = ApplicationProperties.getProperty(name);
+                if ("NULL".equals(value)) {
+                	config.getConfigurationValues().remove(name);
+                	config.getConfigurationValues().remove("hibernate." + name);
+                } else {
+                	config.getConfigurationValues().put(name, value);
+                	config.getConfigurationValues().put("hibernate." + name, value);
+                }
                 if (!name.equals("connection.password"))
                     sLog.debug("  -- set "+name+": "+value);
                 else
@@ -235,150 +279,35 @@ public class HibernateUtil {
             }
         }
 
-        String default_schema = getProperty(properties, "default_schema");
-        if (default_schema!=null)
-            setProperty(document, "default_schema", default_schema);
-
-        sLog.debug("  -- hibernate.cfg.xml altered");
+        String default_schema = ApplicationProperty.DatabaseSchema.value();
+        if (default_schema != null)
+        	config.getConfigurationValues().put("default_schema", default_schema);
         
-        Configuration cfg = new Configuration();
-        sLog.debug("  -- configuration object created");
+        UniqueIdGenerator.configure(config);
         
-    	cfg.setEntityResolver(new EntityResolver() {
-    	    public InputSource resolveEntity(String publicId, String systemId) {
-    	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
-        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-    	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
-    	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-        	    }
-    	        return null;
-    	    }
-    	});
-        sLog.debug("  -- added entity resolver");
+        registryBuilder.configure(config);
         
-        cfg.configure(document);
-        sLog.debug("  -- hibernate configured");
-
-        fixSchemaInFormulas(cfg);
+        ServiceRegistry registry = registryBuilder.build();
         
-        UniqueIdGenerator.configure(cfg);
-        
-        (new _BaseRootDAO() {
-    		void setConf(Configuration cfg) {
-    			_BaseRootDAO.sConfiguration = cfg;
-    		}
-    		protected Class getReferenceClass() { return null; }
-    	}).setConf(cfg);
-        sLog.debug("  -- configuration set to _BaseRootDAO");
-
-        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties()).build();
         if (ApplicationProperty.ConnectionLogging.isTrue()) {
-        	ConnectionProvider cp = serviceRegistry.getService(ConnectionProvider.class);
-        	if (cp != null && !(cp instanceof LoggingDBCPConnectionProvider)) {
-        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)serviceRegistry).locateServiceBinding(ConnectionProvider.class);
+        	ConnectionProvider cp = registry.getService(ConnectionProvider.class);
+        	if (cp != null) {
+        		ServiceBinding<ConnectionProvider> scp = ((StandardServiceRegistryImpl)registry).locateServiceBinding(ConnectionProvider.class);
             	if (scp != null)
-            		scp.setService(new LoggingConnectionProvider(serviceRegistry.getService(ConnectionProvider.class)));
+            		scp.setService(new LoggingConnectionProvider(registry.getService(ConnectionProvider.class)));
         	}
         }
-        sSessionFactory = cfg.buildSessionFactory(serviceRegistry);
-        sLog.debug("  -- session factory created");
-        
-        (new _BaseRootDAO() {
-    		void setSF(SessionFactory fact) {
-    			_BaseRootDAO.sSessionFactory = fact;
-    		}
-    		protected Class getReferenceClass() { return null; }
-    	}).setSF(sSessionFactory);
-        sLog.debug("  -- session factory set to _BaseRootDAO");
-        
-        addBitwiseOperationsToDialect();
-        sLog.debug("  -- bitwise operation added to the dialect if needed");
-        
-        addAddDateToDialect();
-        
-        addReplaceToDialect();
-        
-        DatabaseUpdate.update();
-    }
-    
-    public static void closeHibernate() {
-		if (sSessionFactory!=null) {
-			sSessionFactory.close();
-			sSessionFactory=null;
-		}
-	}
-    
-    public static void configureHibernateFromRootDAO(String cfgName, Configuration cfg) {
-        try {
-        	EntityResolver entityResolver = new EntityResolver() {
-        	    public InputSource resolveEntity(String publicId, String systemId) {
-        	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
-        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-        	        } else if (publicId.equals("-//Hibernate/Hibernate Mapping DTD//EN")) {
-            	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
-        	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
-        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-        	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD//EN")) {
-        	            return new InputSource(HibernateUtil.class.getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
-            	    }
-        	        return null;
-        	    }
-        	};
-        	
-        	cfg.setEntityResolver(entityResolver);
-            sLog.debug("  -- added entity resolver");
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            sLog.debug("  -- document factory created");
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(entityResolver);
-            sLog.debug("  -- document builder created");
-            Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"hibernate.cfg.xml":cfgName));
-            
-            String dialect = ApplicationProperty.DatabaseDialect.value();
-            if (dialect!=null) setProperty(document, "dialect", dialect);
-            
-            String default_schema = ApplicationProperty.DatabaseSchema.value();
-            if (default_schema!=null) setProperty(document, "default_schema", default_schema);
-            
-            String idgen = ApplicationProperty.DatabaseUniqueIdGenerator.value();
-            if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
-            
-            if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
-            	setProperty(document, "net.sf.ehcache.configurationResourceName", ApplicationProperty.HibernateCacheConfiguration.value());
-            else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
-            	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
-            
-            for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
-                String name = (String)e.nextElement();
-                if (name.startsWith("hibernate.") || name.startsWith("connection.") || name.startsWith("tmtbl.hibernate.")) {
-					String value = ApplicationProperties.getProperty(name);
-                    if ("NULL".equals(value))
-                        removeProperty(document, name);
-                    else
-                        setProperty(document, name, value);
-                    if (!name.equals("connection.password"))
-                        sLog.debug("  -- set "+name+": "+value);
-                    else
-                        sLog.debug("  -- set "+name+": *****");
-                }
-            }
-
-            cfg.configure(document);
-            sLog.debug("  -- hibernate configured");
-            
-            HibernateUtil.fixSchemaInFormulas(cfg);
-            sLog.debug("  -- %SCHEMA% in formulas changed to "+cfg.getProperty("default_schema"));
-            
-            UniqueIdGenerator.configure(cfg);
-            sLog.debug("  -- UniquId generator configured");
-        } catch (Exception e) {
-            sLog.error("Unable to configure hibernate, reason: "+e.getMessage(),e);
-        }
+        
+        MetadataBuilder metaBuild = new MetadataSources(registry).getMetadataBuilder();
+        Class d = Class.forName((String)config.getConfigurationValues().get("dialect"));
+        addOperations(metaBuild, d);
+        
+        Metadata meta = metaBuild.build();
+        
+        fixSchemaInFormulas(meta, default_schema, d);
+        
+        return new HibernateContext(config, registry, meta, meta.buildSessionFactory());
     }
     
     private static String sConnectionUrl = null;
@@ -398,7 +327,7 @@ public class HibernateUtil {
     }
 
     public static String getDatabaseName() {
-        String schema = _RootDAO.getConfiguration().getProperty("default_schema");
+    	String schema = (String)_RootDAO.getHibernateContext().getConfig().getConfigurationValues().get("default_schema");
         String url = getConnectionUrl();
         if (url==null) return "N/A";
         if (url.startsWith("jdbc:oracle:")) {
@@ -420,31 +349,19 @@ public class HibernateUtil {
         org.hibernate.Session hibSession = dao.getSession(); 
         SessionFactory hibSessionFactory = hibSession.getSessionFactory();
         if (persistentClass==null) {
-            for (Iterator i=hibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
-                Map.Entry entry = (Map.Entry)i.next();
-                String className = (String)entry.getKey();
-                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
-                try {
-                    hibSessionFactory.getCache().evictEntityRegion(Class.forName(className));
-                    for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
-                        if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
-                            try {
-                                hibSessionFactory.getCache().evictCollectionRegion(className+"."+classMetadata.getPropertyNames()[j]);
-                            } catch (MappingException e) {}
-                        }
-                    }
-                } catch (ClassNotFoundException e) {}
-            }
-            hibSessionFactory.getCache().evictEntityRegions();
-            hibSessionFactory.getCache().evictCollectionRegions();
+            hibSessionFactory.getCache().evictEntityData();
+            hibSessionFactory.getCache().evictCollectionData();
         } else {
-            ClassMetadata classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
-            hibSessionFactory.getCache().evictEntityRegion(persistentClass);
+            hibSessionFactory.getCache().evictEntityData(persistentClass);
+            ClassMetadata classMetadata = null;
+            try {
+            	classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
+            } catch (MappingException e) {}
             if (classMetadata!=null) {
                 for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
                     if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
                         try {
-                            hibSessionFactory.getCache().evictCollectionRegion(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
+                            hibSessionFactory.getCache().evictCollectionData(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
                         } catch (MappingException e) {}
                     }
                 }
@@ -458,7 +375,7 @@ public class HibernateUtil {
     
     public static Class<?> getDialect() {
     	try {
-    		return Class.forName(_RootDAO.getConfiguration().getProperty("dialect"));
+    		return Class.forName((String)_RootDAO.getHibernateContext().getConfig().getConfigurationValues().get("dialect"));
     	} catch (ClassNotFoundException e) {
     		return null;
     	}
@@ -503,34 +420,32 @@ public class HibernateUtil {
     		return "str_to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', '%Y-%m-%d')";
     }
     
-    public static void addBitwiseOperationsToDialect() {
-    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-    	Dialect dialect = hibSessionFactory.getDialect();
-    	if (!dialect.getFunctions().containsKey("bit_and")) {
-    		if (isOracle())
-    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", IntegerType.INSTANCE));
-    		else if (isPostgress())
-    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(IntegerType.INSTANCE, "cast(?1 as int) & cast(?2 as int)"));
-    		else
-    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 & ?2"));
-    	}
-    }
-    
-    public static void addAddDateToDialect() {
-    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-    	Dialect dialect = hibSessionFactory.getDialect();
-    	if (isPostgress() && !dialect.getFunctions().containsKey("adddate")) {
-    		dialect.getFunctions().put("adddate", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'"));
-    	}
-    }
-    
-    public static void addReplaceToDialect() {
-    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-    	Dialect dialect = hibSessionFactory.getDialect();
-    	if (!dialect.getFunctions().containsKey("replace")) {
-    		dialect.getFunctions().put("replace", new StandardSQLFunction("replace", StringType.INSTANCE));
-    	}
-    }
+    public static void addOperations(MetadataBuilder builder, Class dialect) {
+    	if (Oracle8iDialect.class.isAssignableFrom(dialect)) {
+    		builder.applySqlFunction(
+    				"bit_and",
+    				new StandardSQLFunction("bitand", StandardBasicTypes.INTEGER)
+    				);
+        } else if (PostgreSQL9Dialect.class.isAssignableFrom(dialect)) {
+    		builder.applySqlFunction(
+    				"bit_and",
+    				new SQLFunctionTemplate(IntegerType.INSTANCE, "cast(?1 as int) & cast(?2 as int)")
+    				);
+    		builder.applySqlFunction(
+    				"adddate",
+    				new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'")
+    				);	
+        } else {
+        	builder.applySqlFunction(
+    				"bit_and",
+    				new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 & ?2")
+    				);
+        }
+    	builder.applySqlFunction(
+				"replace",
+				new StandardSQLFunction("replace", StandardBasicTypes.STRING)
+				);
+    }    
     
     public static String escapeSql(String str) {
     	if (str == null) return null;

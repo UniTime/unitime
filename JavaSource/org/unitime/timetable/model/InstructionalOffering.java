@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
@@ -309,12 +309,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
-		q.setLong("subjectAreaId", subjectAreaId);
-		q.setLong("sessionId", acadSessionId.longValue());
+		q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("sessionId", acadSessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
 		if (courseNbr != null && courseNbr.length() > 0) {
 			if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
             	courseNbr = courseNbr.toUpperCase();
-			q.setString("courseNbr", courseNbr.replace('*', '%'));
+			q.setParameter("courseNbr", courseNbr.replace('*', '%'), org.hibernate.type.StringType.INSTANCE);
 		}
 		q.setCacheable(true);
 
@@ -489,7 +489,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		getSession().
     		createQuery("select distinct io from InstructionalOffering io where " +
     				"io.session.uniqueId=:sessionId").
-    		setLong("sessionId",sessionId.longValue()).
+    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     		list();
     }
 
@@ -575,7 +575,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	}
     
     public void generateInstrOfferingPermId() throws HibernateException {
-        setInstrOfferingPermId((Integer)InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new InstructionalOfferingDAO().getSession(), this));
+        setInstrOfferingPermId((Long)InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new InstructionalOfferingDAO().getSession(), this));
     }
 
 	/**
@@ -672,8 +672,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return (InstructionalOffering)new InstructionalOfferingDAO().
             getSession().
             createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
-            setLong("sessionId", sessionId.longValue()).
-            setLong("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
+            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
             uniqueResult();
     }

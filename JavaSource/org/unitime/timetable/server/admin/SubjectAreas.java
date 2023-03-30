@@ -166,7 +166,7 @@ public class SubjectAreas implements AdminTable {
 		String instrNameFormat = UserProperty.NameFormat.get(context.getUser());
 		
 		String query = "select d.uniqueId, tm from Department d inner join d.timetableManagers as tm where d.session.uniqueId = :sessionId";
-		for(Object[] result : (List<Object[]>)hibSession.createQuery(query).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
+		for(Object[] result : (List<Object[]>)hibSession.createQuery(query).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			long deptId = (long)result[0];
 			TimetableManager tm = (TimetableManager)result[1];
 			String tmName = subjToManagers.get(deptId);
@@ -185,7 +185,7 @@ public class SubjectAreas implements AdminTable {
 	private HashMap<Long, String> lastChangeForAllSubjects(SessionContext context, Session hibSession) {
 		HashMap<Long, String> subjToChanges = new HashMap<Long, String>();
 		String query = "select cl from ChangeLog cl where cl.uniqueId in (select max(cl2.uniqueId) from ChangeLog cl2 where cl2.session.uniqueId = :sessionId and cl2.subjectArea.session.uniqueId = :sessionId group by cl2.subjectArea.uniqueId)";
-		for (ChangeLog cl : (List<ChangeLog>)hibSession.createQuery(query).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
+		for (ChangeLog cl : (List<ChangeLog>)hibSession.createQuery(query).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			if (cl.getSubjectArea() == null) {
 				continue;
 			}

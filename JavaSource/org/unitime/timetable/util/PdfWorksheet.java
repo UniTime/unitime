@@ -38,7 +38,7 @@ import java.util.Vector;
 
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;

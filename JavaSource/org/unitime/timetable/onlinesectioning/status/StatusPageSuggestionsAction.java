@@ -128,7 +128,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from SubjectArea a where" +
 						" (lower(a.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.title) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.subjectAreaAbbreviation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (subject.getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + subject.getSubjectAreaAbbreviation() + "\"" : subject.getSubjectAreaAbbreviation()),
 							subject.getSubjectAreaAbbreviation() + " - " + (subject.getTitle())
@@ -141,7 +141,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from Department a where" +
 						" (lower(a.abbreviation) like :q || '%' or lower(a.deptCode) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(name) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.deptCode"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (dept.getDeptCode().indexOf(' ') >= 0 ? "\"" + dept.getDeptCode() + "\"" : dept.getDeptCode()),
 							dept.getDeptCode() + " - " + dept.getName()
@@ -154,7 +154,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from AcademicArea a where " +
 						" (lower(a.academicAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.title) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (area.getAcademicAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + area.getAcademicAreaAbbreviation() + "\"" : area.getAcademicAreaAbbreviation()),
 							area.getAcademicAreaAbbreviation() + " - " + area.getTitle()
@@ -167,7 +167,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from AcademicClassification a where " +
 						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.code"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (clasf.getCode().indexOf(' ') >= 0 ? "\"" + clasf.getCode() + "\"" : clasf.getCode()),
 							clasf.getCode() + " - " + clasf.getName()
@@ -180,7 +180,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from AcademicClassification a where " +
 						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.code"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (clasf.getCode().indexOf(' ') >= 0 ? "\"" + clasf.getCode() + "\"" : clasf.getCode()),
 							clasf.getCode() + " - " + clasf.getName()
@@ -197,7 +197,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						" (lower(a.code) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
 						(area == null ? "" : " and lower(x.academicAreaAbbreviation) = '" + area.toLowerCase() + "'") +
 						" and a.session.uniqueId = :sessionId order by a.code"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (major.getCode().indexOf(' ') >= 0 ? "\"" + major.getCode() + "\"" : major.getCode()),
 							major.getCode() + " - " + major.getName()
@@ -214,7 +214,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						" (lower(c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(c.title) like '%' || :q || '%'") + ")" +
 						(subject == null ? "" : " and lower(c.subjectArea.subjectAreaAbbreviation) = '" + subject.toLowerCase() + "'") +
 						" and c.subjectArea.session.uniqueId = :sessionId order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + "\"" + course.getCourseName() + "\"",
 							course.getCourseNameWithTitle()
@@ -231,7 +231,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						" (lower(c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(c.title) like '%' || :q || '%'") + ")" +
 						(subject == null ? "" : " and lower(c.subjectArea.subjectAreaAbbreviation) = '" + subject.toLowerCase() + "'") +
 						" and c.subjectArea.session.uniqueId = :sessionId order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (course.getCourseNbr().indexOf(' ') >= 0 ? "\"" + course.getCourseNbr() + "\"" : course.getCourseNbr()) +
 							(subject == null ? " subject: " + (course.getSubjectArea().getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + course.getSubjectArea().getSubjectAreaAbbreviation() + "\"" : course.getSubjectArea().getSubjectAreaAbbreviation()) : ""),
@@ -245,7 +245,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from StudentGroup a where " +
 						" (lower(a.groupAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.groupName) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.groupAbbreviation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (group.getGroupAbbreviation().indexOf(' ') >= 0 ? "\"" + group.getGroupAbbreviation() + "\"" : group.getGroupAbbreviation()),
 							group.getGroupAbbreviation() + " - " + group.getGroupName()
@@ -258,7 +258,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from StudentAccomodation a where " +
 						" (lower(a.abbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.abbreviation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (accommodation.getAbbreviation().indexOf(' ') >= 0 ? "\"" + accommodation.getAbbreviation() + "\"" : accommodation.getAbbreviation()),
 							accommodation.getAbbreviation() + " - " + accommodation.getName()
@@ -391,7 +391,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 							"select distinct m from TimetableManager m inner join m.managerRoles r inner join m.departments d where " +
 							" (lower(m.externalUniqueId) like :q || '%' or lower(m.emailAddress) like :q || '%' or lower(m.lastName) || ' ' || lower(m.firstName) like :q || '%')" +
 							" and r.role.reference in ('Administrator', 'Dept Sched Mgr') and d.session.uniqueId = :sessionId order by m.lastName, m.firstName, m.middleName"
-							).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+							).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 						ret.add(new String[] {
 								m.group(1) + (manager.getExternalUniqueId().indexOf(' ') >= 0 ? "\"" + manager.getExternalUniqueId() + "\"" : manager.getExternalUniqueId()),
 								manager.getLastName().toLowerCase() + " - Enrollments approved by " + manager.getName()
@@ -411,7 +411,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 							"select distinct m from TimetableManager m inner join m.managerRoles r inner join m.departments d where " +
 							" (lower(m.externalUniqueId) like :q || '%' or lower(m.emailAddress) like :q || '%' or lower(m.lastName) || ' ' || lower(m.firstName) like :q || '%')" +
 							" and r.role.reference in ('Administrator', 'Dept Sched Mgr') and d.session.uniqueId = :sessionId order by m.lastName, m.firstName, m.middleName"
-							).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+							).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 						ret.add(new String[] {
 								m.group(1) + (manager.getExternalUniqueId().indexOf(' ') >= 0 ? "\"" + manager.getExternalUniqueId() + "\"" : manager.getExternalUniqueId()),
 								manager.getLastName().toLowerCase() + " - Enrollments approved by " + manager.getName()
@@ -429,7 +429,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
 						"select distinct operation from OnlineSectioningLog where " +
 						"operation like :q || '%' and session.uniqueId = :sessionId order by operation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + op,
 							Constants.toInitialCase(op.replace('-', ' '))
@@ -441,7 +441,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				for (String op: (List<String>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
 						"select distinct operation from OnlineSectioningLog where " +
 						"operation like :q || '%' and session.uniqueId = :sessionId order by operation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + op,
 							Constants.toInitialCase(op.replace('-', ' '))
@@ -477,7 +477,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from StudentSectioningStatus a where (a.session is null or a.session = :sessionId) and " +
 						" (lower(a.reference) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.label) like '%' || :q || '%'") + ")" +
 						" order by a.reference"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(iLimit).list()) {
+						).setParameter("q", m.group(2).toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (status.getReference().indexOf(' ') >= 0 ? "\"" + status.getReference() + "\"" : status.getReference()),
 							status.getReference() + " - " + status.getLabel()

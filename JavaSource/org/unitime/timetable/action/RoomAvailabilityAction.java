@@ -302,8 +302,8 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
                     exams = new TreeSet();
                     for (Iterator j=new ExamDAO().getSession().createQuery(
                             "select x from Exam x inner join x.assignedRooms r where x.examType.uniqueId=:examTypeId and r.uniqueId=:locationId").
-                            setLong("examTypeId", form.getExamType()).
-                            setLong("locationId", location.getUniqueId()).
+                            setParameter("examTypeId", form.getExamType(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("locationId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setCacheable(true).
                             list().iterator();j.hasNext();) {
                         exams.add(new ExamAssignment((Exam)j.next()));

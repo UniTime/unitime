@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -114,12 +113,11 @@ public class OnlineSectioningReport implements Runnable {
 				filter += "and l.timeStamp < to_timestamp('" + iReport.getLastTimeStamp() + "', 'YYYY-MM-DD')";
 		}
 		List<OnlineSectioningLog.Action> actions = new ArrayList<OnlineSectioningLog.Action>();
-		for (Iterator<org.unitime.timetable.model.OnlineSectioningLog> i = hibSession.createQuery(
+		for (org.unitime.timetable.model.OnlineSectioningLog l: hibSession.createQuery(
 				"select l from OnlineSectioningLog l where " +
 				"l.session.uniqueId = :sessionId " + filter +
-				" order by l.student, l.timeStamp")
-				.setLong("sessionId", sessionId).iterate(); i.hasNext(); ) {
-			org.unitime.timetable.model.OnlineSectioningLog l = i.next();
+				" order by l.student, l.timeStamp", org.unitime.timetable.model.OnlineSectioningLog.class)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 			if (student == null) {
 				student = l.getStudent();
 			} else if (!student.equals(l.getStudent())) {

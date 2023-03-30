@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseApplicationConfig;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
@@ -62,17 +61,11 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	 * @return Object if found, null otherwise
 	 */
 	public static ApplicationConfig getConfig(String key) {
-        try {
-            return (ApplicationConfig)new ApplicationConfigDAO()
-                .getSession()
-                .createCriteria(ApplicationConfig.class)
-                .add(Restrictions.eq("key", key))
-                .setCacheable(true)
+		return ApplicationConfigDAO.getInstance().getSession()
+				.createQuery("from ApplicationConfig where key = :key", ApplicationConfig.class)
+				.setParameter("key", key)
+				.setCacheable(true)
                 .uniqueResult();
-	    } catch (Exception e) {
-			Debug.error(e);
-			return null;
-	    }
 	}
 	
 	/**
@@ -87,7 +80,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
         String value = (String)new ApplicationConfigDAO().
             getSession().
             createQuery("select c.value from ApplicationConfig c where c.key=:key").
-            setString("key", key).setCacheable(true).uniqueResult();
+            setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
         
         return (value==null?defaultValue:value);
 	}

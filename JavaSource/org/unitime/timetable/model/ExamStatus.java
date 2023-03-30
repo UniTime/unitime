@@ -38,8 +38,8 @@ public class ExamStatus extends BaseExamStatus {
 	public static ExamStatus findStatus(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		return (ExamStatus)(hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId")
-				.setLong("sessionId", sessionId)
-				.setLong("typeId", typeId)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("typeId", typeId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
 				.uniqueResult();
 	}
@@ -51,7 +51,7 @@ public class ExamStatus extends BaseExamStatus {
 	public static List<ExamStatus> findAll(org.hibernate.Session hibSession, Long sessionId) {
 		return (List<ExamStatus>)(hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId")
-				.setLong("sessionId", sessionId)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
 				.list();
 	}

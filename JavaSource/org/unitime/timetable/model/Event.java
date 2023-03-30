@@ -99,8 +99,8 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
         for (Iterator i=hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
                 "r.ownerType=:ownerType and r.ownerId=:ownerId")
-                .setInteger("ownerType", ownerType)
-                .setLong("ownerId", ownerId).list().iterator();i.hasNext();) {
+                .setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE)
+                .setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
             RelatedCourseInfo relatedCourse = (RelatedCourseInfo)i.next();
             CourseEvent event = relatedCourse.getEvent();
             event.getRelatedCourses().remove(relatedCourse);
@@ -281,9 +281,9 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "select e, s.student.uniqueId from "+
                         "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")")
-                        .setDate("meetingDate", meetingDate)
-                        .setInteger("startSlot", startSlot)
-                        .setInteger("endSlot", endSlot)
+                        .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                        .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
                         .setCacheable(true).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     Event event = (Event)o[0];
@@ -302,13 +302,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
-                        .setDate("meetingDate", meetingDate)
-                        .setInteger("startSlot", startSlot)
-                        .setInteger("endSlot", endSlot)
-                        .setInteger("classType", ExamOwner.sOwnerTypeClass)
-                        .setInteger("configType", ExamOwner.sOwnerTypeConfig)
-                        .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
-                        .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                        .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                         .setCacheable(true).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     Event event = (Event)o[0];
@@ -327,13 +327,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
-                        .setDate("meetingDate", meetingDate)
-                        .setInteger("startSlot", startSlot)
-                        .setInteger("endSlot", endSlot)
-                        .setInteger("classType", ExamOwner.sOwnerTypeClass)
-                        .setInteger("configType", ExamOwner.sOwnerTypeConfig)
-                        .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
-                        .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                        .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                        .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                         .setCacheable(true).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     Event event = (Event)o[0];
@@ -352,9 +352,9 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "select e, s.student.uniqueId from "+
                     "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")")
-                    .setDate("meetingDate", meetingDate)
-                    .setInteger("startSlot", startSlot)
-                    .setInteger("endSlot", endSlot)
+                    .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                    .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
                     .setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Event event = (Event)o[0];
@@ -373,13 +373,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
-                    .setDate("meetingDate", meetingDate)
-                    .setInteger("startSlot", startSlot)
-                    .setInteger("endSlot", endSlot)
-                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
-                    .setInteger("configType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                    .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Event event = (Event)o[0];
@@ -398,13 +398,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
-                    .setDate("meetingDate", meetingDate)
-                    .setInteger("startSlot", startSlot)
-                    .setInteger("endSlot", endSlot)
-                    .setInteger("classType", ExamOwner.sOwnerTypeClass)
-                    .setInteger("configType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("courseType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("offeringType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
+                    .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Event event = (Event)o[0];

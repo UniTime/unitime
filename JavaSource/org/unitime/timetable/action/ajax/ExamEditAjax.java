@@ -102,7 +102,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "order by co.courseNbr ").
             setFetchSize(200).
             setCacheable(true).
-            setLong("subjectAreaId", Long.parseLong(subjectAreaId)).
+            setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE).
             list();
         if (courseNumbers.isEmpty()) print(out, "-1", EXMSG.examOwnerNotApplicable());
         if (courseNumbers.size()>1) print(out, "-1", "-");
@@ -133,7 +133,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where co.uniqueId = :courseOfferingId").
             setFetchSize(200).
             setCacheable(true).
-            setLong("courseOfferingId", course.getUniqueId()).
+            setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
             list());
         TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
         subparts.addAll(new SchedulingSubpartDAO().
@@ -143,7 +143,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where co.uniqueId = :courseOfferingId").
             setFetchSize(200).
             setCacheable(true).
-            setLong("courseOfferingId", course.getUniqueId()).
+            setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
             list());
         if (!configs.isEmpty()) {
             print(out, String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeConfigurations());
@@ -190,7 +190,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
             setFetchSize(200).
             setCacheable(true).
-            setLong("schedulingSubpartId", Long.parseLong(schedulingSubpartId)).
+            setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), org.hibernate.type.LongType.INSTANCE).
             list());
         if (classes.size()>1)
             print(out, "-1", "-");

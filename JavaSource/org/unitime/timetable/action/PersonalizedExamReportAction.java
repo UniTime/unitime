@@ -137,7 +137,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         for (Iterator i=new DepartmentalInstructorDAO().
                 getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
-                setString("externalId",userId).
+                setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (!canDisplay(s.getDepartment().getSession())) continue;
@@ -149,7 +149,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         for (Iterator i=new StudentDAO().
                 getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId").
-                setString("externalId",userId).
+                setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
             if (!canDisplay(s.getSession())) continue;
@@ -231,7 +231,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         for (Iterator i=new DepartmentalInstructorDAO().
                 getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
-                setString("externalId",translate(externalId,Source.Staff)).
+                setParameter("externalId", translate(externalId,Source.Staff), org.hibernate.type.StringType.INSTANCE).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (!canDisplay(s.getDepartment().getSession())) continue;
@@ -247,7 +247,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         for (Iterator i=new StudentDAO().
                 getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId").
-                setString("externalId",translate(externalId,Source.Student)).
+                setParameter("externalId", translate(externalId,Source.Student), org.hibernate.type.StringType.INSTANCE).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
             if (!canDisplay(s.getSession())) continue;
@@ -310,7 +310,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
                             "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                             "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                             ")").
-                            setLong("studentId", student.getUniqueId()).setCacheable(true).list());
+                            setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
             for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
             	Exam exam = i.next().getExam();
             	DepartmentStatusType type = exam.effectiveStatusType();

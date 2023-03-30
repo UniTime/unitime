@@ -56,7 +56,7 @@ public class PosMinorImport extends BaseImport {
             Map<String, PosMinor> id2minor = new Hashtable<String, PosMinor>();
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
             for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
-            		"from PosMinor where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from PosMinor where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (minor.getExternalUniqueId() != null)
             		id2minor.put(minor.getExternalUniqueId(), minor);
             	for (AcademicArea area: minor.getAcademicAreas())
@@ -65,7 +65,7 @@ public class PosMinorImport extends BaseImport {
             
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
             for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-            		"from AcademicArea where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from AcademicArea where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
             }
             

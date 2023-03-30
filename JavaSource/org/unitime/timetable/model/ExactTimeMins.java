@@ -51,9 +51,9 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 			(new ExactTimeMinsDAO()).
 			getSession().
 			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax").
-			setInteger("minPerMtg", minPerMtg).
+			setParameter("minPerMtg", minPerMtg, org.hibernate.type.IntegerType.INSTANCE).
 			setCacheable(true).
-			setFlushMode(FlushMode.MANUAL).
+			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();
 	}
 	

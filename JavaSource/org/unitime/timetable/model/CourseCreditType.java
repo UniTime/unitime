@@ -59,7 +59,7 @@ public class CourseCreditType extends BaseCourseCreditType {
 		if (referenceString == null || referenceString.isEmpty()) return null;
 		return (CourseCreditType)CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
 				"from CourseCreditType where reference = :reference")
-				.setString("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
 	public static CourseCreditType getCourseCreditTypeForUniqueId(Long uniqueId){

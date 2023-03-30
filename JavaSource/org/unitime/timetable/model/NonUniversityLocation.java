@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseNonUniversityLocation;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
@@ -90,21 +89,22 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		if (newSession == null) {
 			return(null);
 		}
-		NonUniversityLocation newNonUniversityLocation = null;
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
-
-		newNonUniversityLocation = (NonUniversityLocation) nulDao.getSession().createCriteria(NonUniversityLocation.class)
-				.add(Restrictions.eq("permanentId", getPermanentId()))
-				.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
-				.setCacheable(true).uniqueResult();
+		NonUniversityLocation newNonUniversityLocation = NonUniversityLocationDAO.getInstance().getSession()
+				.createQuery("from NonUniversityLocation where permanentId = :permanentId and session.uniqueId = :sessionId", NonUniversityLocation.class)
+				.setParameter("permanentId", getPermanentId())
+				.setParameter("sessionId", newSession.getUniqueId())
+				.setCacheable(true)
+				.uniqueResult();
 		if (newNonUniversityLocation == null && getExternalUniqueId() != null) {
-			newNonUniversityLocation = (NonUniversityLocation) nulDao.getSession().createCriteria(NonUniversityLocation.class)
-					.add(Restrictions.eq("externalUniqueId", getExternalUniqueId()))
-					.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
-					.setCacheable(true).uniqueResult();
+			newNonUniversityLocation = NonUniversityLocationDAO.getInstance().getSession()
+					.createQuery("from NonUniversityLocation where externalUniqueId = :externalUniqueId and session.uniqueId = :sessionId", NonUniversityLocation.class)
+					.setParameter("externalUniqueId", getExternalUniqueId())
+					.setParameter("sessionId", newSession.getUniqueId())
+					.setCacheable(true)
+					.uniqueResult();
 		}
 
-		return(newNonUniversityLocation);
+		return newNonUniversityLocation;
 	}
 	
     public String getRoomTypeLabel() {
@@ -128,7 +128,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime"
-    			).setLong("uniqueId", getUniqueId()).setCacheable(true).list()) {
+    			).setParameter("uniqueId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);
     		else

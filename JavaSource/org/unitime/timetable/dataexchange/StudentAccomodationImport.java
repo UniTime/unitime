@@ -53,7 +53,7 @@ public class StudentAccomodationImport extends BaseImport {
             Map<String, StudentAccomodation> id2accomodation = new Hashtable<String, StudentAccomodation>();
             Map<String, StudentAccomodation> code2accomodation = new Hashtable<String, StudentAccomodation>();
             for (StudentAccomodation accomodation: (List<StudentAccomodation>)getHibSession().createQuery(
-            		"from StudentAccomodation where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from StudentAccomodation where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (accomodation.getExternalUniqueId() != null)
             		id2accomodation.put(accomodation.getExternalUniqueId(), accomodation);
             	code2accomodation.put(accomodation.getAbbreviation(), accomodation);

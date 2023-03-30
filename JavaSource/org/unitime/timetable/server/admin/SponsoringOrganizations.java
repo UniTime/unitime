@@ -130,7 +130,7 @@ public class SponsoringOrganizations implements AdminTable {
 	protected void delete(SponsoringOrganization sponsor, SessionContext context, Session hibSession) {
 		if (sponsor == null) return;
 		context.checkPermission(sponsor, Right.SponsoringOrganizationDelete);
-		for (Event event: (List<Event>)hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId").setLong("orgId", sponsor.getUniqueId()).list()) {
+		for (Event event: (List<Event>)hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId").setParameter("orgId", sponsor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
     		event.setSponsoringOrganization(null);
     		hibSession.update(event);
     	}

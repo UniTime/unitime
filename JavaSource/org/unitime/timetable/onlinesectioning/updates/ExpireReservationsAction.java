@@ -57,7 +57,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 					"select r from Reservation r where " +
 					"r.instructionalOffering.session.uniqueId = :sessionId and " +
 					"r.expirationDate is not null and r.expirationDate < current_timestamp()")
-					.setLong("sessionId", server.getAcademicSession().getUniqueId()).list()) {
+					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				XOffering offering = server.getOffering(expiredReservation.getInstructionalOffering().getUniqueId());
 				if (offering == null) continue;
 				XReservation reservation = null;

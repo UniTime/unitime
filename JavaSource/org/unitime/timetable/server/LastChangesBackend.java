@@ -21,7 +21,7 @@ package org.unitime.timetable.server;
 
 import java.util.List;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -119,19 +119,19 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 			q.setMaxResults(ApplicationProperty.LastChangesLimit.intValue());
 		
 		if (request.hasOption("operation")) {
-			q.setString("operation", request.getOption("operation").toUpperCase());
+			q.setParameter("operation", request.getOption("operation").toUpperCase(), org.hibernate.type.StringType.INSTANCE);
 		}
 		
 		if (request.hasOption("page")) {
-			q.setString("source", request.getOption("page").replace(' ', '_').toUpperCase());
+			q.setParameter("source", request.getOption("page").replace(' ', '_').toUpperCase(), org.hibernate.type.StringType.INSTANCE);
 		}
 		
 		if (Location.class.getName().equals(request.getObjectType())) {
-			q.setString("roomType", Room.class.getName());
-			q.setString("locType", NonUniversityLocation.class.getName());
+			q.setParameter("roomType", Room.class.getName(), org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("locType", NonUniversityLocation.class.getName(), org.hibernate.type.StringType.INSTANCE);
 		}
 
-		return q.setString("type", request.getObjectType()).setLong("id", request.getObjectId()).setCacheable(true).list();
+		return q.setParameter("type", request.getObjectType(), org.hibernate.type.StringType.INSTANCE).setParameter("id", request.getObjectId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 }

@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.QueryException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -149,7 +149,7 @@ public abstract class DatabaseUpdate {
                         sLog.debug("  -- HQL: "+query+" (con:"+condition+", act:"+action+", val:"+value+")");
                         Query q = null;
                         try {
-                        	q = (type.equals("hql")?hibSession.createQuery(query):hibSession.createSQLQuery(query));
+                        	q = (type.equals("hql")?hibSession.createQuery(query):hibSession.createNativeQuery(query));
                         } catch (QueryException e) {
                         	// Work-around Hibernate issue HHH-2697 (https://hibernate.onjira.com/browse/HHH-2697)
                         	if (!"hql".equals(type)) {

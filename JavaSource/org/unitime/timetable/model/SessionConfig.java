@@ -41,13 +41,13 @@ public class SessionConfig extends BaseSessionConfig {
 		if (sessionId == null) return null;
         return (SessionConfig)SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where key = :key and session.uniqueId = :sessionId"
-        		).setString("key", key).setLong("sessionId", sessionId).setCacheable(true).uniqueResult();
+        		).setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 	}
 	
 	public static List<SessionConfig> findAll(Long sessionId) {
         return (List<SessionConfig>)SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId order by key"
-        		).setLong("sessionId", sessionId).setCacheable(true).list();
+        		).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static String getConfigValue(String key, Long sessionId, String defaultValue) {
@@ -56,7 +56,7 @@ public class SessionConfig extends BaseSessionConfig {
         
         String value = (String)SessionConfigDAO.getInstance().getSession().createQuery(
         		"select value from SessionConfig where key = :key and session.uniqueId = :sessionId"
-        		).setString("key", key).setLong("sessionId", sessionId).setCacheable(true).uniqueResult();
+        		).setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 
         return (value == null ? defaultValue : value);
 	}
@@ -68,7 +68,7 @@ public class SessionConfig extends BaseSessionConfig {
         org.hibernate.Session hibSession = SessionConfigDAO.getInstance().createNewSession();
         try {
             for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
-            		"from SessionConfig where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+            		"from SessionConfig where session.uniqueId = :sessionId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
             	properties.setProperty(config.getKey(), config.getValue() == null ? "" : config.getValue());
             }
         } finally {

@@ -248,10 +248,10 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
         			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod")
-        			.setLong("examId", examId)
-        			.setDate("meetingDate", period.getStartDate())
-        			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent)
-        			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent)
+        			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
+        			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
+        			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent, org.hibernate.type.IntegerType.INSTANCE)
+        			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent, org.hibernate.type.IntegerType.INSTANCE)
         			.list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -272,10 +272,10 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
             			" where e2.uniqueId = :examId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
-            			.setLong("examId", examId)
-            			.setDate("meetingDate", period.getStartDate())
-            			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
-            			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+            			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)
             			.list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
@@ -296,11 +296,11 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
             			" where e2.uniqueId = :examId and s1.student = s2.student and e1.exam.examType.uniqueId != :examTypeId " +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and m1.approvalStatus = 1")
-            			.setLong("examId", examId)
-            			.setDate("meetingDate", period.getStartDate())
-            			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
-            			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
-            			.setLong("examTypeId", period.getExamType().getUniqueId())
+            			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
+            			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
+            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)
+            			.setParameter("examTypeId", period.getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             			.list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];

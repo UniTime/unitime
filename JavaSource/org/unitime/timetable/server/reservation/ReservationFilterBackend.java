@@ -33,6 +33,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.DateType;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.LongType;
+import org.hibernate.type.StringType;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -96,7 +101,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 		
 		Map<Integer, Integer> type2count = new HashMap<Integer, Integer>();
-		for (Object[] o: (List<Object[]>)query.select("r.class, count(distinct r)").group("r.class").exclude("type").exclude("override").query(hibSession).list()) {
+		for (Object[] o: (List<Object[]>)query.select("type(r), count(distinct r)").group("type(r)").exclude("type").exclude("override").query(hibSession).list()) {
 			Integer type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
@@ -185,7 +190,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		if (request.hasOptions("type") && request.getOptions("type").contains("Curriculum")) {
 			Map<Long, Entity> areas = new HashMap<Long, Entity>();
-			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("r.class in (CurriculumReservation, CurriculumOverrideReservation)").exclude("area").query(hibSession).list()) {
+			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where("type(r) in (CurriculumReservation, CurriculumOverrideReservation)").exclude("area").query(hibSession).list()) {
 				for (AcademicArea academicArea: ((CurriculumReservation)reservation).getAreas()) {
 					Entity area = areas.get(academicArea.getUniqueId());
 					if (area == null) {
@@ -201,7 +206,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		if (request.hasOptions("type") && request.getOptions("type").contains("Override")) {
 			List<Entity> types = new ArrayList<Entity>();
-			for (Object[] typeAndCount: (List<Object[]>)query.select("r.type, count(distinct r)").where("r.class = OverrideReservation").group("r.type").order("r.type").exclude("override").query(hibSession).list()) {
+			for (Object[] typeAndCount: (List<Object[]>)query.select("r.type, count(distinct r)").where("type(r) = OverrideReservation").group("r.type").order("r.type").exclude("override").query(hibSession).list()) {
 				OverrideType type = OverrideType.values()[((Number)typeAndCount[0]).intValue()];
 				Entity e = new Entity(Long.valueOf(type.ordinal()), type.getReference(), CONSTANTS.reservationOverrideTypeAbbv()[type.ordinal()]);
 				e.setCount(((Number)typeAndCount[1]).intValue());
@@ -214,7 +219,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			boolean gr = request.getOptions("type").contains("Group");
 			boolean lc = request.getOptions("type").contains("LC");
 			Map<Long, Entity> groups = new HashMap<Long, Entity>();
-			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where(lc ? (gr ? "r.class in (StudentGroupReservation, LearningCommunityReservation)" : "r.class = LearningCommunityReservation") : "r.class = StudentGroupReservation").exclude("group").query(hibSession).list()) {
+			for (Reservation reservation: (List<Reservation>)query.select("distinct r").where(lc ? (gr ? "type(r) in (StudentGroupReservation, LearningCommunityReservation)" : "type(r) = LearningCommunityReservation") : "type(r) = StudentGroupReservation").exclude("group").query(hibSession).list()) {
 				StudentGroup studentGroup = ((StudentGroupReservation)reservation).getGroup();
 				Entity group = groups.get(studentGroup.getUniqueId());
 				if (group == null) {
@@ -235,7 +240,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		if (request.hasText()) {
 			for (CourseOffering course: (List<CourseOffering>)query.select("distinct co")
-					//.where("r.class != CourseReservation or co = r.course")
+					//.where("type(r) != CourseReservation or co = r.course")
 					.where("lower(co.subjectAreaAbbv || ' ' || co.courseNbr) like :x")
 					.set("x", request.getText().toLowerCase() + "%")
 					.order("co.subjectAreaAbbv, co.courseNbr")
@@ -338,7 +343,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if ("lc".equalsIgnoreCase(t))
 					type += "LearningCommunityReservation";
 			}
-			query.addWhere("type", "r.class " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
+			query.addWhere("type", "type(r) " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
 		}
 		
 		if (request.hasOptions("override")) {
@@ -542,22 +547,30 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			return where;
 		}
 		
-		public org.hibernate.Query setParams(org.hibernate.Query query, Collection<String> excludeOption) {
+		public org.hibernate.query.Query setParams(org.hibernate.query.Query query, Collection<String> excludeOption) {
 			for (Map.Entry<String, Map<String, Object>> entry: iParams.entrySet()) {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 			}
@@ -604,21 +617,28 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					(iOrderBy == null ? "" : " order by " + iOrderBy);
 			}
 			
-			public org.hibernate.Query query(org.hibernate.Session hibSession) {
-				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
-				for (Map.Entry<String, Object> param: iParams.entrySet()) {
+			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
+				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true);				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setInteger(param.getKey(), (Integer)param.getValue());
+						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setLong(param.getKey(), (Long)param.getValue());
+						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setString(param.getKey(), (String)param.getValue());
+						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setDate(param.getKey(), (Date)param.getValue());
+						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+					} else if (param.getValue() instanceof List) {
+						List<?> list = (List<?>)param.getValue();
+						if (!list.isEmpty() && list.get(0) instanceof Long)
+							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+						else if (!list.isEmpty() && list.get(0) instanceof String)
+							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+						else
+							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setString(param.getKey(), param.getValue().toString());
+						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
 					}
 				}
 				if (iLimit != null)

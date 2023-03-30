@@ -135,7 +135,7 @@ public class SchedulinAssistantReport implements OnlineSectioningReport.Report {
 		Set<Long> enrollment = new HashSet<Long>();
 		for (Number classId: (List<Number>)StudentDAO.getInstance().getSession().createQuery(
 				"select e.clazz.uniqueId from StudentClassEnrollment e where e.student.uniqueId = :studentId")
-				.setLong("studentId", actions.get(0).getStudent().getUniqueId()).list())
+				.setParameter("studentId", actions.get(0).getStudent().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
 			enrollment.add(classId.longValue());
 		
 		List<Enrollment> last = new ArrayList<Enrollment>();

@@ -22,8 +22,6 @@ package org.unitime.timetable.model;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.rights.HasRights;
@@ -67,7 +65,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public static Roles getRole(String roleRef, org.hibernate.Session hibSession) {
     	return (Roles)hibSession.createQuery(
     			"from Roles where reference = :reference")
-    			.setString("reference", roleRef).setCacheable(true).uniqueResult();
+    			.setParameter("reference", roleRef, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
     }
 
     @Override
@@ -80,7 +78,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public boolean isUsed() {
     	return ((Number)RolesDAO.getInstance().getSession().createQuery(
     			"select count(m) from ManagerRole m where m.role.roleId = :roleId")
-    			.setLong("roleId", getRoleId()).uniqueResult()).intValue() > 0;
+    			.setParameter("roleId", getRoleId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0;
     }
     
     public static Set<Roles> findAll(boolean managerOnly) {
@@ -88,10 +86,15 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     }
     
     public static Set<Roles> findAll(boolean managerOnly, org.hibernate.Session hibSession) {
-    	Criteria criteria = hibSession.createCriteria(Roles.class);
     	if (managerOnly)
-    		criteria = criteria.add(Restrictions.eq("manager", Boolean.TRUE));
-    	return new TreeSet<Roles>(criteria.setCacheable(true).list());
+    		return new TreeSet<Roles>(hibSession
+    				.createQuery("from Roles where manager = true", Roles.class)
+    				.setCacheable(true)
+    				.list());
+    	return new TreeSet<Roles>(hibSession
+				.createQuery("from Roles", Roles.class)
+				.setCacheable(true)
+				.list());
     }
 
     public static Set<Roles> findAllInstructorRoles() {
@@ -99,7 +102,10 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     }
     
     public static Set<Roles> findAllInstructorRoles(org.hibernate.Session hibSession) {
-    	return new TreeSet<Roles>(hibSession.createCriteria(Roles.class).add(Restrictions.eq("instructor", Boolean.TRUE)).setCacheable(true).list());
+    	return new TreeSet<Roles>(hibSession
+				.createQuery("from Roles where instructor = true", Roles.class)
+				.setCacheable(true)
+				.list());
     }
 
     @Override

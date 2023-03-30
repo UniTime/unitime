@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE hibernate-configuration
     PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN"
-    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
+    "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd" >
 
 <!-- 
  * Licensed to The Apereo Foundation under one or more contributor license
@@ -24,7 +24,7 @@
  -->
 
 <hibernate-configuration>
-<session-factory name="unitime:hibernate/SessionFactory">
+<session-factory> <!-- name="unitime:hibernate/SessionFactory" -->
 
 	<!-- MySQL Configuration -->
 	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
@@ -33,7 +33,7 @@
 	<property name="connection.password">unitime</property>
 	<property name="connection.autocommit">true</property>
 	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
-	<property name="tmtbl.uniqueid.generator">org.hibernate.id.TableHiLoGenerator</property>
+	<property name="tmtbl.uniqueid.generator">org.hibernate.id.enhanced.TableGenerator</property>
 	<property name="hibernate.connection.useUnicode">true</property>
 	<property name="hibernate.connection.characterEncoding">utf8</property>
 	<!-- End of MySQL Configuration -->
@@ -49,16 +49,15 @@
 	-->
 	<!-- End of Oracle Configuration -->
 	
-	<!-- Connect database using Apache DBCP -->
-	<property name="hibernate.connection.provider_class">org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider</property>
-	<property name="hibernate.dbcp.maxIdle">5</property>
-	<property name="hibernate.dbcp.maxActive">20</property>
-	<property name="hibernate.dbcp.whenExhaustedAction">1</property>
-	<property name="hibernate.dbcp.maxWait">180000</property>
-	<property name="hibernate.dbcp.testOnBorrow">true</property>
-	<property name="hibernate.dbcp.testOnReturn">false</property>
-	<property name="hibernate.dbcp.validationQuery">select 1 from dual</property>
-	<!-- End of connect database using Apache DBCP -->
+	<!-- Connect database using the C3P0 database connection pool -->
+	<property name="hibernate.connection.release_mode">auto</property><!-- Release mode database connection- auto the default value -->
+	<property name="hibernate.c3p0.max_statements">0</property> <!--  Number of prepared statements will be cached. 0 no caching -->
+	<property name="hibernate.c3p0.max_size">200</property> <!-- Max connection pool size -->
+	<property name="hibernate.c3p0.min_size">10</property> <!-- Min connection pool size -->
+	<property name="hibernate.c3p0.timeout">0</property> <!-- Time in seconds before free a connection. 0 no expiration --> 
+	<property name="hibernate.c3p0.idleConnectionTestPeriod">1800</property> <!--  idle time in seconds before testing if a connection is valid - Setting a fairly long idleConnectionTestPeriod, and not testing on checkout and check-in at all is an excellent, high-performance approach. -->
+	<property name="hibernate.c3p0.preferredTestQuery">SELECT 1;</property>
+	<!-- End of connect database using C3P0 DBCP -->
 
 	<!-- If true, class LobCleanUpInterceptor will print some audit information -->
 	<property name="tmtbl.hibernate.audit">false</property>
@@ -80,17 +79,23 @@
 
 	<property name="hibernate.jdbc.batch_size">20</property>
 
-	<property name="hibernate.connection.release_mode">after_transaction</property>
+	<!-- See https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/resource/jdbc/spi/PhysicalConnectionHandlingMode.html -->
+	<property name="hibernate.connection.handling_mode">DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION</property>
 
 	<property name="hibernate.default_batch_fetch_size">100</property>
 
 	<property name="hibernate.current_session_context_class">managed</property>
+	
+	<property name="hibernate.allow_update_outside_transaction">true</property>
+	<property name="hibernate.transform_hbm_xml.enabled">false</property>
 
 	<!-- Use Second Level Cache -->
 	<property name="hibernate.cache.use_second_level_cache">true</property>
 	
 	<!-- Cache Provider - EhCache -->
-	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+	<property name="hibernate.cache.region.factory_class">infinispan</property>
+	<property name="hibernate.cache.infinispan.cfg">infinispan-cluster.xml</property>
+	<property name="hibernate.cache.infinispan.jgroups_cfg">hibernate-jgroups-tcp.xml</property>
 	
 	<!-- Keep the cache entries in a more human-understandable format -->
 	<property name="hibernate.cache.use_structured_entries">true</property>

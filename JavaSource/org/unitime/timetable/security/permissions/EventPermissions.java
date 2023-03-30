@@ -179,7 +179,7 @@ public class EventPermissions {
 							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment)) and l.eventDepartment.uniqueId in (" + mgrDept + "))"
 					) +
 					")")
-					.setLong("sessionId", session.getUniqueId()).setCacheable(true).list();
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 	}
 	

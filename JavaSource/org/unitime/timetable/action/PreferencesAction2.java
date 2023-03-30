@@ -950,7 +950,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	Map<Long, InstructorCoursePref> prefs = new HashMap<Long, InstructorCoursePref>();
     	for (InstructorCoursePref pref: (List<InstructorCoursePref>)hibSession.createQuery(
 				"from InstructorCoursePref where course.uniqueId = :courseId")
-    			.setLong("courseId", course.getUniqueId()).setCacheable(true).list()) {
+    			.setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		prefs.put(pref.getOwner().getUniqueId(), pref);
     	}
     	

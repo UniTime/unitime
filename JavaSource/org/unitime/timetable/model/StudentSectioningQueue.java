@@ -64,11 +64,12 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			if (lastTimeStamp == null) {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId")
-						.setLong("sessionId", sessionId).list());
+						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list());
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId and q.timeStamp > :timeStamp")
-						.setLong("sessionId", sessionId).setTimestamp("timeStamp", lastTimeStamp).list());
+						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.TimestampType.INSTANCE).list());
 			}
 		} else {
 			if (lastTimeStamp == null) {
@@ -77,7 +78,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.timeStamp > :timeStamp")
-						.setTimestamp("timeStamp", lastTimeStamp).list());
+						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.TimestampType.INSTANCE).list());
 			}
 		}
 	}
@@ -86,7 +87,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		if (sessionId != null)
 			return (Date) hibSession.createQuery(
 						"select max(q.timeStamp) from StudentSectioningQueue q where q.sessionId = :sessionId"
-					).setLong("sessionId", sessionId).uniqueResult();
+					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).uniqueResult();
 		else
 			return (Date) hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q").uniqueResult();
 			

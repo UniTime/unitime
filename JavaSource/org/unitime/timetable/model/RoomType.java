@@ -22,7 +22,6 @@ package org.unitime.timetable.model;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoomType;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
@@ -58,15 +57,24 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 	public static TreeSet<RoomType> findAll(Long sessionId) {
 		return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from Location l inner join l.roomType t where l.session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).list());
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 
 	public static TreeSet<RoomType> findAll(boolean isRoom) {
-        return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createCriteria(RoomType.class).add(Restrictions.eq("room", isRoom)).setCacheable(true).list());
+        return new TreeSet<RoomType>(
+        		RoomTypeDAO.getInstance().getSession()
+				.createQuery("from RoomType where room = :isRoom", RoomType.class)
+				.setParameter("isRoom", isRoom)
+				.setCacheable(true)
+				.list());
     }
 
     public static RoomType findByReference(String ref) {
-        return (RoomType)RoomTypeDAO.getInstance().getSession().createCriteria(RoomType.class).add(Restrictions.eq("reference", ref)).setCacheable(true).uniqueResult();
+    	return RoomTypeDAO.getInstance().getSession()
+				.createQuery("from RoomType where reference = :ref", RoomType.class)
+				.setParameter("ref", ref)
+				.setCacheable(true)
+				.uniqueResult();
     }
     
     public int compareTo(RoomType t) {
@@ -86,8 +94,8 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     	}
         RoomTypeOption opt = (RoomTypeOption)RoomTypeOptionDAO.getInstance().getSession().createQuery(
     			"from RoomTypeOption where department.uniqueId = :departmentId and roomType.uniqueId = :roomTypeId")
-    			.setLong("departmentId", department.getUniqueId())
-    			.setLong("roomTypeId", getUniqueId())
+    			.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true)
     			.uniqueResult();
         if (opt==null) opt = new RoomTypeOption(this, department);
@@ -103,8 +111,8 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select distinct o from " + (isRoom() ? "Room" : "NonUniversityLocation") + " r, RoomTypeOption o " +
                 "where r.roomType.uniqueId = :roomTypeId and r.session.uniqueId = :sessionId and "+
                 "r.eventDepartment.allowEvents = true and r.eventDepartment = o.department and r.roomType = o.roomType")
-                .setLong("roomTypeId", getUniqueId())
-                .setLong("sessionId", sessionId)
+                .setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).uniqueResult()) {
     		if (option.canScheduleEvents()) return true;
     	}
@@ -115,13 +123,13 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     public int countRooms() {
         return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
-        ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
     }
 
     public int countRooms(Long sessionId) {
         return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId"
-        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setCacheable(true).uniqueResult()).intValue();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
     }
 
     public int countManagableRooms() {
@@ -129,7 +137,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and "+
                 "r.eventDepartment.allowEvents = true"
-        ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
     }
     
     public List<Location> getManagableRooms(Long sessionId) {
@@ -137,7 +145,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select r from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
                 "r.eventDepartment.allowEvents = true"
-        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setCacheable(true).uniqueResult();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
     }
 
 
@@ -146,7 +154,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
                 "r.eventDepartment.allowEvents = true"
-        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setCacheable(true).uniqueResult()).intValue();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
     }
 
     public int countManagableRoomsOfBuilding(Long buildingId) {
@@ -154,6 +162,6 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(r) from Room r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.building.uniqueId=:buildingId and "+
                 "r.eventDepartment.allowEvents = true"
-        ).setLong("roomTypeId", getUniqueId()).setLong("buildingId",buildingId).setCacheable(true).uniqueResult()).intValue();
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("buildingId", buildingId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
     }
 }

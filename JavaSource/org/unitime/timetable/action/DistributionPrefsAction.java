@@ -35,7 +35,7 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesDefinitions;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -442,7 +442,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	        		Query q = hibSession.createQuery(query.toString());
 	        		q.setFetchSize(200);
 	        		q.setCacheable(true);
-	        		q.setLong("subjectAreaId", Long.parseLong(subjectAreaId));
+	        		q.setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE);
 	                
 	        		List result = q.list();
 	                crsNumList = new Vector();
@@ -482,7 +482,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 		        		q = hibSession.createQuery(query.toString());
 		        		q.setFetchSize(200);
 		        		q.setCacheable(true);
-		        		q.setLong("courseNbr", Long.parseLong(courseNbr));
+		        		q.setParameter("courseNbr", Long.parseLong(courseNbr), org.hibernate.type.LongType.INSTANCE);
 		                
 		        		result = new Vector(q.list());
 		        		if(result!=null && result.size()>0) {
@@ -531,7 +531,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 			        		q = hibSession.createQuery(query.toString());
 			        		q.setFetchSize(200);
 			        		q.setCacheable(true);
-			        		q.setLong("itype", Long.parseLong(subpart));
+			        		q.setParameter("itype", Long.parseLong(subpart), org.hibernate.type.LongType.INSTANCE);
 			        		
 			        		result = q.list();
 			        		if(result!=null && result.size()>0) {
@@ -786,7 +786,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         String query = "delete DistributionPref dp where dp.uniqueId=:distPrefId";
 
         Query q = hibSession.createQuery(query);
-        q.setLong("distPrefId", Long.parseLong(distPrefId));
+        q.setParameter("distPrefId", Long.parseLong(distPrefId, org.hibernate.type.LongType.INSTANCE));
         q.executeUpdate();
         */
         

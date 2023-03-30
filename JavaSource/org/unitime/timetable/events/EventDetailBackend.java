@@ -615,7 +615,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
     				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and m.approvalStatus <= 1 and o.approvalStatus <= 1 and " +
     				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
-    				.setLong("eventId", e.getUniqueId())
+    				.setParameter("eventId", e.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     				.list()) {
     			Long meetingId = (Long)o[0];
 	    		Meeting overlap = (Meeting)o[1];
@@ -632,8 +632,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and m.approvalStatus <= 1 and o.approvalStatus <= 1 and " +
     				"m.locationPermanentId = r1.permanentId and o.locationPermanentId = r2.permanentId and m.meetingDate = o.meetingDate and " +
     				"r1.session = :sessionId and (r1.parentRoom = r2 or r2.parentRoom = r1)")
-    				.setLong("eventId", e.getUniqueId())
-    				.setLong("sessionId", session.getUniqueId())
+    				.setParameter("eventId", e.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+    				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     				.list()) {
     			Long meetingId = (Long)o[0];
 	    		Meeting overlap = (Meeting)o[1];

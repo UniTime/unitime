@@ -22,7 +22,7 @@ package org.unitime.timetable.action;
 import java.util.HashSet;
 import java.util.List;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -275,10 +275,10 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 		String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
        
         Query q = hibSession.createQuery(query);
-        q.setString("puid", form.getPuId().trim());
-        q.setLong("deptId", Long.parseLong(deptId));
+        q.setParameter("puid", form.getPuId().trim(), org.hibernate.type.StringType.INSTANCE);
+        q.setParameter("deptId", Long.parseLong(deptId), org.hibernate.type.LongType.INSTANCE);
         if (form.getInstructorId()!=null && form.getInstructorId().trim().length()>0) {
-            q.setLong("uniqueId", Long.parseLong(form.getInstructorId().trim()));
+            q.setParameter("uniqueId", Long.parseLong(form.getInstructorId().trim()), org.hibernate.type.LongType.INSTANCE);
         }
         
         return (q.list().size()==0);

@@ -54,7 +54,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where x.subjectArea.session.uniqueId = :sessionId " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
-				.setLong("sessionId", session.getUniqueId())
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			String area = (String)o[0];
 			String major = (String)o[1];
@@ -78,7 +78,7 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where s.session.uniqueId = :sessionId " +
 				"group by a.academicAreaAbbreviation, m.code, f.code")
-				.setLong("sessionId", session.getUniqueId())
+				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			String area = (String)o[0];
 			String major = (String)o[1];

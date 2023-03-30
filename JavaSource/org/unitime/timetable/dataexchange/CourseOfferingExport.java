@@ -121,12 +121,12 @@ public class CourseOfferingExport extends BaseExport {
             if (iExportAssignments && ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
             	iClassEvents = new HashMap<Long, ClassEvent>();
             	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-            			.setLong("sessionId", session.getUniqueId()).list()) {
+            			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		iClassEvents.put(e.getClazz().getUniqueId(), e);
             	}
             	iMeetingLocations = new HashMap<Long, Location>();
                 for (Location l: (List<Location>)getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId")
-                		.setLong("sessionId", session.getUniqueId()).list()) {
+                		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 	iMeetingLocations.put(l.getPermanentId(), l);
             	}
             }
@@ -157,7 +157,7 @@ public class CourseOfferingExport extends BaseExport {
                             "where " +
                             "io.session.uniqueId=:sessionId "+
                             "order by sa.subjectAreaAbbreviation, co.courseNbr").
-                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setFetchSize(1000).list();
                 } else {
                 	List<Long> subjectIds = new ArrayList<Long>();
@@ -173,7 +173,7 @@ public class CourseOfferingExport extends BaseExport {
                             "io.session.uniqueId=:sessionId "+
                             "and io.uniqueId in (select x.instructionalOffering.uniqueId from CourseOffering x where x.isControl = true and x.subjectArea.uniqueId in (:subjects)) " +
                             "order by sa.subjectAreaAbbreviation, co.courseNbr").
-                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setParameterList("subjects", subjectIds, LongType.INSTANCE).
                             setFetchSize(1000).list();
                 }
@@ -186,7 +186,7 @@ public class CourseOfferingExport extends BaseExport {
                             ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeMidterm:"")+
                             ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeFinal:"")
                             ).
-                            setLong("sessionId",session.getUniqueId().longValue()).
+                            setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setFetchSize(1000).list();
                     
                     iExams = new Hashtable<Long, TreeSet<Exam>>();

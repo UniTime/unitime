@@ -174,8 +174,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
 								for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
 									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
-									.setLong("sessionId", instructor.getInstructor().getDepartment().getSessionId())
-									.setString("externalId", instructor.getInstructor().getExternalUniqueId())
+									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 									.setCacheable(true).list()) {
 									Assignment a = getAssignment(c);
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
@@ -293,8 +293,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
 					for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
 						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
-						.setLong("sessionId", instructor.getInstructor().getDepartment().getSessionId())
-						.setString("externalId", instructor.getInstructor().getExternalUniqueId())
+						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true).list()) {
 						Assignment a = getAssignment(c);
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))

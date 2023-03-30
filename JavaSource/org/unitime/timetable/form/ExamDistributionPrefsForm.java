@@ -161,16 +161,15 @@ public class ExamDistributionPrefsForm implements UniTimeForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {
-            for (Iterator i= new CourseOfferingDAO().
+            for (Object[] o: new CourseOfferingDAO().
                     getSession().
                     createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                             "where co.subjectArea.uniqueId = :subjectAreaId "+
                             "and co.instructionalOffering.notOffered = false "+
-                            "order by co.courseNbr ").
+                            "order by co.courseNbr ", Object[].class).
                     setFetchSize(200).
                     setCacheable(true).
-                    setLong("subjectAreaId", getSubjectArea(idx)).iterate();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    setParameter("subjectAreaId", getSubjectArea(idx), org.hibernate.type.LongType.INSTANCE).list()) {
                 ret.add(new IdValue((Long)o[0],((String)o[1]) + " - " + (String) o[2]));
                 if (o[0].equals(getCourseNbr(idx))) contains = true;
             }

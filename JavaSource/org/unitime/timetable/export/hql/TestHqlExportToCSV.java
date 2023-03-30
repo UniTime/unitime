@@ -114,7 +114,7 @@ public class TestHqlExportToCSV implements Exporter {
 	public static void execute(UserContext user, Printer out, String hql, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
-			org.hibernate.Query q = hibSession.createQuery(hql);
+			org.hibernate.query.Query q = hibSession.createQuery(hql);
 			if (maxRows > 0)
 				q.setMaxResults(maxRows);
 			if (fromRow > 0)
@@ -174,7 +174,10 @@ public class TestHqlExportToCSV implements Exporter {
     			if (x == null) {
     				len++;
     			} else {
-            		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+    				ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
             		if (meta == null) {
             			len++;
             		} else {
@@ -187,7 +190,10 @@ public class TestHqlExportToCSV implements Exporter {
     			}
     		}
     	} else {
-    		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
     		if (meta == null) {
     			len++;
     		} else {
@@ -221,7 +227,10 @@ public class TestHqlExportToCSV implements Exporter {
 					else
 						ret[idx++] = "Column" + (a + 1);
 				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+					ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
 					if (meta == null) {
 						if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
 							ret[idx++] = alias[a];
@@ -239,8 +248,11 @@ public class TestHqlExportToCSV implements Exporter {
 				a++;					
 			}
 		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-			if (meta == null) {
+			ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
+    		if (meta == null) {
 				if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
 					ret[0] = alias[0];
 				else
@@ -271,7 +283,10 @@ public class TestHqlExportToCSV implements Exporter {
 				if (x == null) {
 					ret[idx++] = "";
 				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+    				ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
 					if (meta == null) {
 						ret[idx++] = toString(x);
 					} else {
@@ -285,7 +300,10 @@ public class TestHqlExportToCSV implements Exporter {
 				}
 			}
 		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
 			if (meta == null) {
 				ret[0] = toString(o);
 			} else {

@@ -280,10 +280,9 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
 	public void delete(org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().intValue()<0) return;
         DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(getUniqueId());
-        for (Iterator i=hibSession.createQuery(
-                "select s from Session s where s.statusType.uniqueId=:id").
-                setLong("id", s.getUniqueId()).iterate();i.hasNext();) {
-            Session session = (Session)i.next();
+        for (Session session: hibSession.createQuery(
+                "select s from Session s where s.statusType.uniqueId=:id", Session.class).
+                setParameter("id", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             DepartmentStatusType other = null;
             for (Iterator j=DepartmentStatusType.findAll().iterator();j.hasNext();) {
                 DepartmentStatusType x = (DepartmentStatusType)j.next();
@@ -296,10 +295,9 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
             session.setStatusType(other);
             hibSession.saveOrUpdate(session);
         }
-        for (Iterator i=hibSession.createQuery(
-                "select d from Department d where d.statusType.uniqueId=:id").
-                setLong("id", s.getUniqueId()).iterate();i.hasNext();) {
-            Department dept = (Department)i.next();
+        for (Department dept: hibSession.createQuery(
+                "select d from Department d where d.statusType.uniqueId=:id",Department.class).
+                setParameter("id", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             dept.setStatusType(null);
             hibSession.saveOrUpdate(dept);
         }        

@@ -68,10 +68,10 @@ public class PositionTypes implements AdminTable {
 			int used =
 				((Number)hibSession.createQuery(
 						"select count(f) from Staff f where f.positionType.uniqueId = :uniqueId")
-						.setLong("uniqueId", position.getUniqueId()).uniqueResult()).intValue() +
+						.setParameter("uniqueId", position.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() +
 				((Number)hibSession.createQuery(
 						"select count(f) from DepartmentalInstructor f where f.positionType.uniqueId = :uniqueId")
-						.setLong("uniqueId", position.getUniqueId()).uniqueResult()).intValue();
+						.setParameter("uniqueId", position.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			Record r = data.addRecord(position.getUniqueId(), used == 0);
 			r.setField(0, position.getReference());
 			r.setField(1, position.getLabel());

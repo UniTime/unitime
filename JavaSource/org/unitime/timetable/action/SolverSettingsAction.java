@@ -280,8 +280,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                     pw.println("## Appearance: " + SolverPredefinedSetting.Appearance.values()[setting.getAppearance()].getLabel());
                     pw.println("## Date: " + new Date());
                     pw.println("######################################");
-                    for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
-                        SolverParameterGroup g = (SolverParameterGroup)i.next();
+                    for (SolverParameterGroup g: hibSession.createQuery("select g from SolverParameterGroup g order by g.order", SolverParameterGroup.class).list()) {
                         if (setting.getAppearanceType() == SolverPredefinedSetting.Appearance.STUDENT_SOLVER) {
                             if (g.getSolverType() != SolverParameterGroup.SolverType.STUDENT) continue;
                         } else if (setting.getAppearanceType() == SolverPredefinedSetting.Appearance.EXAM_SOLVER) {
@@ -369,7 +368,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             	tx = hibSession.beginTransaction();
             
-			List list = hibSession.createCriteria(SolverPredefinedSetting.class).list();
+			List<SolverPredefinedSetting> list = hibSession.createQuery("from SolverPredefinedSetting", SolverPredefinedSetting.class).list();
 			
 			if(list.isEmpty()) {
 			    webTable.addLine(null, new String[] {MSG.infoNoSolverConfigs()}, null, null );			    

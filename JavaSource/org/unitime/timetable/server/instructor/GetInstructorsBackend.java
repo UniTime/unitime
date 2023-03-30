@@ -56,7 +56,7 @@ public class GetInstructorsBackend implements GwtRpcImplementation<GetInstructor
 		boolean sortByLastName = CommonValues.SortByLastName.eq(UserProperty.SortNames.get(context.getUser()));
 
 		for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId").setLong("departmentId", request.getDepartmentId()).setCacheable(true).list()) {
+				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId").setParameter("departmentId", request.getDepartmentId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			InstructorInterface i = new InstructorInterface();
 			i.setId(instructor.getUniqueId());
 			i.setFirstName(instructor.getFirstName());

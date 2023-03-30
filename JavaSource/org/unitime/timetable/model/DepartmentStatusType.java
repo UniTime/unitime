@@ -22,7 +22,6 @@ package org.unitime.timetable.model;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseDepartmentStatusType;
 import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
 
@@ -88,14 +87,12 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	/**
 	 * 
 	 */
-	public static DepartmentStatusType findById(Integer uid) throws Exception {
+	public static DepartmentStatusType findById(Long uid) throws Exception {
 		if (uid==null) return null;
-		return (DepartmentStatusType)
-			(new DepartmentStatusTypeDAO()).
-			getSession().
-			createCriteria(DepartmentStatusType.class).
-			add(Restrictions.eq("uniqueId", uid)).
-			uniqueResult();
+		return DepartmentStatusTypeDAO.getInstance().getSession()
+				.createQuery("from DepartmentStatusType where uniqueId = :uid", DepartmentStatusType.class)
+				.setParameter("uid", uid)
+                .uniqueResult();
 	}
 	
 	public static TreeSet findAll() {
@@ -125,12 +122,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 
 	public static DepartmentStatusType findByRef(String ref) {
 		if (ref==null) return null;
-		return (DepartmentStatusType)
-			(new DepartmentStatusTypeDAO()).
-			getSession().
-			createCriteria(DepartmentStatusType.class).
-			add(Restrictions.eq("reference", ref)).
-			uniqueResult();
+		return DepartmentStatusTypeDAO.getInstance().getSession()
+				.createQuery("from DepartmentStatusType where reference = :ref", DepartmentStatusType.class)
+				.setParameter("ref", ref)
+                .uniqueResult();
 	}
 
 	public int compareTo(Object o) {

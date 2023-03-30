@@ -529,7 +529,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
+                "o.ownerId=c.uniqueId").setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE).list(),
                 "class");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
@@ -539,7 +539,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
+                "o.ownerId=ioc.uniqueId").setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE).list(),
                 "config");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
@@ -548,7 +548,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "StudentClassEnrollment e inner join e.courseOffering co " +
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
+                "o.ownerId=co.uniqueId").setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE).list(),
                 "course");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
@@ -557,7 +557,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
+                "o.ownerId=io.uniqueId").setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE).list(),
                 "offering");
     }
     
@@ -596,7 +596,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
         List committedAssignments = new ExamDAO().getSession().createQuery(
                 "select a from Assignment a where a.solution.commited=true and " +
                 "a.solution.owner.session.uniqueId=:sessionId").
-                setLong("sessionId",iSessionId).list();
+                setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
         Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
         iProgress.setPhase("Loading availabilities...", committedAssignments.size());
         for (Iterator i=committedAssignments.iterator();i.hasNext();) {
@@ -616,7 +616,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                         studentIds = new ExamDAO().getSession().createQuery(
                                 "select e.student.uniqueId from "+
                                 "StudentClassEnrollment e where e.clazz.uniqueId=:classId").
-                                setLong("classId", a.getClassId()).list(); 
+                                setParameter("classId", a.getClassId(), org.hibernate.type.LongType.INSTANCE).list(); 
                     for (Iterator k=studentIds.iterator();k.hasNext();) {
                         Long studentId = (Long)k.next();
                         ExamStudent student = (ExamStudent)iStudents.get(studentId);
@@ -650,9 +650,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and "+
                         "(exists elements(e.clazz.studentEnrollments) or exists elements(e.clazz.classInstructors))"
                         )
-                        .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
-                        .setLong("examTypeId", iExamTypeId)
-                        .setLong("sessionId", iSessionId)
+                        .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                         .setCacheable(true)
                         .list();
         List overlappingCourseEvents =
@@ -661,9 +661,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                         "e.reqAttendance=true and m.approvalStatus = 1 and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                        .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
-                        .setLong("examTypeId", iExamTypeId)
-                        .setLong("sessionId", iSessionId)
+                        .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                         .setCacheable(true)
                         .list();
         List overlappingExamEvents =
@@ -672,9 +672,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                         "m.approvalStatus = 1 and e.exam.examType.uniqueId != :examTypeId and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                        .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
-                        .setLong("examTypeId", iExamTypeId)
-                        .setLong("sessionId", iSessionId)
+                        .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                         .setCacheable(true)
                         .list();
         iProgress.setPhase("Loading availabilities...", overlappingClassEvents.size()+overlappingCourseEvents.size()+overlappingExamEvents.size());
@@ -685,9 +685,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and m.approvalStatus = 1 and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
-                .setLong("examTypeId", iExamTypeId)
-                .setLong("sessionId", iSessionId)
+                .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
+                .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long eventId = (Long)o[0];
@@ -705,9 +705,9 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and m.approvalStatus = 1 and i.lead=true and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
-                .setLong("examTypeId", iExamTypeId)
-                .setLong("sessionId", iSessionId)
+                .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
+                .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
             Long eventId = (Long)o[0];
@@ -924,8 +924,8 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 "d.distributionType.examPref=true and "+
                 "o.prefGroup=x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "d.owner.uniqueId=:sessionId").
-                setLong("sessionId", iSessionId).
-                setLong("examTypeId", iExamTypeId).list();
+                setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE).list();
         iProgress.setPhase("Loading distributions...", distPrefs.size());
         for (Iterator i=distPrefs.iterator();i.hasNext();) {
             iProgress.incProgress();

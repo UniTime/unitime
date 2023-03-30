@@ -495,9 +495,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		patterns = this.
 			getHibSession().
 			createQuery("select distinct tp from TimePattern as tp where tp.session.uniqueId=:sessionId and ( tp.type = :standard or tp.type = :evening )").
-			setLong("sessionId", sessionId.longValue()).
-			setInteger("standard", TimePatternType.Standard.ordinal()).
-			setInteger("evening", TimePatternType.Evening.ordinal()).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("standard", TimePatternType.Standard.ordinal(), org.hibernate.type.IntegerType.INSTANCE).
+			setParameter("evening", TimePatternType.Evening.ordinal(), org.hibernate.type.IntegerType.INSTANCE).
 			setCacheable(true).
 			list();
 		for (Iterator<?> tpIt = patterns.iterator(); tpIt.hasNext();) {
@@ -647,8 +647,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(DepartmentalInstructor) this.
 		getHibSession().
 		createQuery("select distinct di from DepartmentalInstructor di where di.externalUniqueId=:externalId and di.department.uniqueId=:departmentId").
-		setString("externalId", externalId).
-		setLong("departmentId", department.getUniqueId()).
+		setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
+		setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -708,9 +708,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		List patterns = this.
 		getHibSession().
 		createQuery("from DatePattern as d where d.session.uniqueId = :sessionId and d.pattern = :pattern and d.offset = :offset and d.type = (select min(dd.type) from DatePattern as dd where dd.session.uniqueId = :sessionId and dd.pattern = :pattern and dd.offset = :offset)").
-		setLong("sessionId", session.getUniqueId().longValue()).
-		setString("pattern", pattern).
-		setInteger("offset", offset).
+		setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("pattern", pattern, org.hibernate.type.StringType.INSTANCE).
+		setParameter("offset", offset, org.hibernate.type.IntegerType.INSTANCE).
 		setCacheable(true).
 		list();
 		
@@ -1147,15 +1147,15 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if (department != null) {
 			Staff staff = (Staff)getHibSession().
 					createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId and s.dept=:dept").
-					setString("externalId", id).
-					setString("dept", department.getDeptCode()).
+					setParameter("externalId", id, org.hibernate.type.StringType.INSTANCE).
+					setParameter("dept", department.getDeptCode(), org.hibernate.type.StringType.INSTANCE).
 					setCacheable(true).
 					uniqueResult();
 			if (staff != null) return staff;
 		}
 		List<Staff> staffs = getHibSession().
 				createQuery("select distinct s from Staff s where s.externalUniqueId=:externalId").
-				setString("externalId", id).
+				setParameter("externalId", id, org.hibernate.type.StringType.INSTANCE).
 				setCacheable(true).
 				list();
 		if (!staffs.isEmpty()) return staffs.get(0);
@@ -2613,8 +2613,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(CourseOffering) this.
 		getHibSession().
 		createQuery("select distinct co from CourseOffering as co where co.externalUniqueId=:externalId and co.subjectArea.session.uniqueId=:sessionId").
-		setLong("sessionId", sessionId.longValue()).
-		setString("externalId", externalId).
+		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2623,10 +2623,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(CourseOffering) this.
 		getHibSession().
 		createQuery("select distinct co from CourseOffering as co where co.subjectArea.session.uniqueId=:sessionId and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv and co.courseNbr=:courseNbr and co.title=:title").
-		setLong("sessionId", sessionId.longValue()).
-		setString("subjectAbbv", subjectAbbv).
-		setString("courseNbr", crsNbr).
-		setString("title", title).
+		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("subjectAbbv", subjectAbbv, org.hibernate.type.StringType.INSTANCE).
+		setParameter("courseNbr", crsNbr, org.hibernate.type.StringType.INSTANCE).
+		setParameter("title", title, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2635,9 +2635,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(CourseOffering) this.
 		getHibSession().
 		createQuery("select distinct co from CourseOffering as co where co.subjectArea.session.uniqueId=:sessionId and co.subjectArea.subjectAreaAbbreviation=:subjectAbbv and co.courseNbr=:courseNbr").
-		setLong("sessionId", sessionId.longValue()).
-		setString("subjectAbbv", subjectAbbv).
-		setString("courseNbr", crsNbr).
+		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("subjectAbbv", subjectAbbv, org.hibernate.type.StringType.INSTANCE).
+		setParameter("courseNbr", crsNbr, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2646,10 +2646,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return (InstructionalOffering) this.
 		getHibSession().
 		createQuery("select distinct io from InstructionalOffering as io where io.externalUniqueId=:externalId and io.session.uniqueId=:sessionId").
-		setLong("sessionId", sessionId.longValue()).
-		setString("externalId", externalId).
+		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+		setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
-		setFlushMode(FlushMode.MANUAL).
+		setHibernateFlushMode(FlushMode.MANUAL).
 		uniqueResult();
 	}
 	
@@ -2657,7 +2657,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return (InstructionalOffering) this.
 		getHibSession().
 		createQuery("select distinct io from InstructionalOffering as io where io.uniqueId=:uniqueId").
-		setLong("uniqueId", uniqueId.longValue()).
+		setParameter("uniqueId", uniqueId.longValue(), org.hibernate.type.LongType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2666,7 +2666,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return (CourseOffering) this.
 		getHibSession().
 		createQuery("select distinct co from CourseOffering as co where co.uniqueId=:uniqueId").
-		setLong("uniqueId", uniqueId.longValue()).
+		setParameter("uniqueId", uniqueId.longValue(), org.hibernate.type.LongType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2675,7 +2675,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return (Class_) this.
 		getHibSession().
 		createQuery("select distinct c from Class_ as c where c.uniqueId=:uniqueId").
-		setLong("uniqueId", uniqueId.longValue()).
+		setParameter("uniqueId", uniqueId.longValue(), org.hibernate.type.LongType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2684,8 +2684,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return (Class_) this.
 		getHibSession().
 		createQuery("select distinct c from Class_ as c where c.externalUniqueId=:externalUniqueId and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId" ).
-		setString("externalUniqueId", externalUniqueId).
-		setLong("sessionId", session.getUniqueId().longValue()).
+		setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).
+		setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -2696,8 +2696,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			room = (Room) this.
 			getHibSession().
 			createQuery("select distinct r from Room as r where r.externalUniqueId=:externalId and r.building.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("externalId", id).
+			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("externalId", id, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 		} 
@@ -2705,9 +2705,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			room = (Room) this.
 			getHibSession().
 			createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session.uniqueId=:sessionId").
-			setLong("sessionId", session.getUniqueId().longValue()).
-			setString("building", building).
-			setString("roomNbr", roomNbr).
+			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("building", building, org.hibernate.type.StringType.INSTANCE).
+			setParameter("roomNbr", roomNbr, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 			if (id != null && room != null && room.getExternalUniqueId() != null && !room.getExternalUniqueId().equals(id)){
@@ -2745,7 +2745,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		subjects = this.
 			getHibSession().
 			createQuery("select distinct sa from SubjectArea as sa where sa.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setCacheable(true).
 			list();
 		for (Iterator<?> it = subjects.iterator(); it.hasNext();) {
@@ -2793,7 +2793,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		canShareRoomType = (DistributionType) this.getHibSession().createQuery("from DistributionType dt where dt.reference = 'CAN_SHARE_ROOM'").uniqueResult();
 	}
 	private void loadRequiredPrefLevel() {
-		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefProlog = :pref").setString("pref", PreferenceLevel.sRequired).uniqueResult();
+		requiredPrefLevel = (PreferenceLevel) this.getHibSession().createQuery("from PreferenceLevel pl where pl.prefProlog = :pref").setParameter("pref", PreferenceLevel.sRequired, org.hibernate.type.StringType.INSTANCE).uniqueResult();
 	}
 	
 	private void loadExistingClasses(Long sessionId) throws Exception {
@@ -2857,7 +2857,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                 "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                 "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                 ") order by x.uniqueId").
-                setLong("instructionalOfferingId", io.getUniqueId()).setCacheable(true).list());
+                setParameter("instructionalOfferingId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		
 		String elementName = "exam";
 		if(element.element(elementName) != null) {
@@ -3296,8 +3296,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	private Department findByDeptCode(String deptCode, Long sessionId) {
 		return (Department) getHibSession().
 			createQuery("select distinct a from Department as a where a.deptCode=:deptCode and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("deptCode", deptCode).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 	}

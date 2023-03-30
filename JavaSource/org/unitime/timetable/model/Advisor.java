@@ -49,7 +49,7 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
 	public static Advisor findByExternalId(String externalId, Long sessionId) {
 		return (Advisor) AdvisorDAO.getInstance().getSession().createQuery(
 				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId"
-				).setString("externalId", externalId).setLong("sessionId", sessionId).setCacheable(true).setMaxResults(1).uniqueResult();
+				).setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
     
     public int compareTo(Advisor advisor) {

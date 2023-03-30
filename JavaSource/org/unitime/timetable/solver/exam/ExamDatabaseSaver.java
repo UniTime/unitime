@@ -109,12 +109,11 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
         TimetableManager owner = TimetableManager.findByExternalId(getModel().getProperties().getProperty("General.OwnerPuid"));
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
         Hashtable<Long,ExamEvent> examEvents = new Hashtable();
-        for (Iterator i=hibSession.createQuery(
-                "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType.uniqueId=:examTypeId")
-                .setLong("sessionId",iSessionId)
-                .setLong("examTypeId", iExamTypeId)
-                .iterate(); i.hasNext();) {
-            ExamEvent e = (ExamEvent)i.next();
+        for (ExamEvent e: hibSession.createQuery(
+                "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType.uniqueId=:examTypeId", ExamEvent.class)
+                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                .list()) {
             examEvents.put(e.getExam().getUniqueId(),e);
         }
         iProgress.setPhase("Saving assignments...", exams.size());

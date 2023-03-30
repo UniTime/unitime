@@ -35,8 +35,7 @@ import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
-import org.hibernate.Query;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseAssignment;
 import org.unitime.timetable.model.dao.AssignmentDAO;
@@ -103,7 +102,11 @@ public class Assignment extends BaseAssignment {
 				org.hibernate.Session session = (new AssignmentInfoDAO()).getSession();
 				SolverInfoDef def = SolverInfoDef.findByName(session,name);
 				if (def==null) return null;
-				AssignmentInfo info = (AssignmentInfo)session.createCriteria(AssignmentInfo.class).add(Restrictions.eq("definition",def)).add(Restrictions.eq("assignment",this)).uniqueResult();
+				AssignmentInfo info = session.createQuery(
+						"from AssignmentInfo where definition.uniqueId = :def and assignment.uniqueId = :assignment", AssignmentInfo.class)
+						.setParameter("def", def.getUniqueId())
+						.setParameter("assignment", getUniqueId())
+						.uniqueResult();
 				if (info==null) return null;
 				tInfo = info.getInfo();
 			}
@@ -139,8 +142,8 @@ public class Assignment extends BaseAssignment {
 				org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
 				Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 						"c.definition.name=:name and a.uniqueId=:assignmentId");
-				q.setLong("assignmentId",getUniqueId());
-				q.setString("name",name);
+				q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter("name", name, org.hibernate.type.StringType.INSTANCE);
 				tInfos = new Vector();
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					ConstraintInfo info = (ConstraintInfo)i.next();
@@ -169,8 +172,8 @@ public class Assignment extends BaseAssignment {
 			org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
 			Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 					"c.definition.name=:name and a.uniqueId=:assignmentId");
-			q.setLong("assignmentId",getUniqueId());
-			q.setString("name",name);
+			q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+			q.setParameter("name", name, org.hibernate.type.StringType.INSTANCE);
 			for (Iterator i=q.list().iterator();i.hasNext();) {
 				ConstraintInfo info = (ConstraintInfo)i.next();
 				TimetableInfo tInfo = info.getInfo();

@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,8 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.CacheMode;
+import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -125,6 +126,7 @@ public class SessionBackup implements SessionBackupInterface {
 		iDebug = pw;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void backup(OutputStream out, BackupProgress progress, Long sessionId) throws IOException {
         iOut = CodedOutputStream.newInstance(out);
@@ -142,7 +144,10 @@ public class SessionBackup implements SessionBackupInterface {
     				return m1.getEntityName().compareTo(m2.getEntityName());
     			}
     		});
-    		allMeta.addAll(iHibSessionFactory.getAllClassMetadata().values());
+    		for (javax.persistence.metamodel.EntityType t: iHibSession.getMetamodel().getEntities()) {
+    			allMeta.add(iHibSessionFactory.getClassMetadata(t.getJavaType()));
+    		}
+
     		iProgress.incProgress();
     		
     		Queue<QueueItem> queue = new LinkedList<QueueItem>();
@@ -254,7 +259,10 @@ public class SessionBackup implements SessionBackupInterface {
                 	if (type instanceof CollectionType) {
                 		if (avoid.contains(item.name() + "." + property)) continue;
                 		
-                		ClassMetadata meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+                		ClassMetadata meta = null;
+                		try {
+                			meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+                		} catch (MappingException e) {}
                 		if (meta == null || item.contains(meta.getEntityName())) continue;
 
                 		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
@@ -287,16 +295,18 @@ public class SessionBackup implements SessionBackupInterface {
             			iProgress.incProgress();
             			
             			// Get meta data (check for sub-classes)
-            			ClassMetadata meta = iHibSessionFactory.getClassMetadata(object.getClass());
+            			ClassMetadata meta = null;
+            			try {
+            				meta = iHibSessionFactory.getClassMetadata(object.getClass());
+            			} catch (MappingException e) {}
             			if (meta == null) meta = current.meta();
             			if (meta.hasSubclasses()) {
-            	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
-            	                Map.Entry entry = (Map.Entry)i.next();
-            	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
-            	                if (classMetadata.getMappedClass().isInstance(object) && !classMetadata.hasSubclasses()) {
+            				for (javax.persistence.metamodel.EntityType t: iHibSession.getMetamodel().getEntities()) {
+            					ClassMetadata classMetadata = iHibSessionFactory.getClassMetadata(t.getJavaType());
+            					if (classMetadata.getMappedClass().isInstance(object) && !classMetadata.hasSubclasses()) {
             	                	meta = classMetadata; break;
             	                }
-            	            }
+            	    		}
             			}
             			
             			// Get unique identifier
@@ -365,7 +375,7 @@ public class SessionBackup implements SessionBackupInterface {
             				} else if (type instanceof DateType) {
             					element.addValue(((DateType)type).toString((Date)value));
             				} else if (type instanceof EntityType) {
-    							List<Object> ids = current.relation(property, id, false);
+    							List<Object> ids = current.relation(property, meta, id, false);
     							if (ids != null)
     								for (Object i: ids)
     									element.addValue(i.toString());
@@ -378,7 +388,7 @@ public class SessionBackup implements SessionBackupInterface {
             					x.flush(); x.close();
             					element.addValue(w.toString());
             				} else if (type instanceof CollectionType) {
-    							List<Object> ids = current.relation(property, id, false);
+    							List<Object> ids = current.relation(property, meta, id, false);
     							if (ids != null)
     								for (Object i: ids)
     									element.addValue(i.toString());
@@ -465,6 +475,7 @@ public class SessionBackup implements SessionBackupInterface {
 	private int iQueueItemCoutner = 0;
 	private Map<String, Set<Serializable>> iExclude = new HashMap<String, Set<Serializable>>();
 
+	@SuppressWarnings("deprecation")
 	class QueueItem {
 		QueueItem iParent;
 		ClassMetadata iMeta;
@@ -565,7 +576,10 @@ public class SessionBackup implements SessionBackupInterface {
 					ComponentType type = (ComponentType)meta().getIdentifierType();
 					String select = "";
 					for (int i = 0; i < type.getPropertyNames().length; i++) {
-						ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getSubtypes()[i].getReturnedClass());
+						ClassMetadata meta = null;
+						try {
+							meta = iHibSessionFactory.getClassMetadata(type.getSubtypes()[i].getReturnedClass());
+						} catch (MappingException e) {}
 						if (meta == null)
 							select += (i > 0 ? ", " : "") + hqlName() + "." + type.getPropertyNames()[i];
 						else
@@ -573,13 +587,13 @@ public class SessionBackup implements SessionBackupInterface {
 					}
 					for (Object[] id: (List<Object[]>)iHibSession.createQuery(
 							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere()
-							).setLong("sessionId", iSessionId).list()) {
+							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						if (ids.add(new CompositeId(id))) size++;
 					}
 				} else {
 					for (Serializable id: (List<Serializable>)iHibSession.createQuery(
 							"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + " from " + hqlFrom() + " where " + hqlWhere()
-							).setLong("sessionId", iSessionId).list()) {
+							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						if (ids.add(id)) size++;
 					}
 				}
@@ -614,30 +628,42 @@ public class SessionBackup implements SessionBackupInterface {
 			if (ChangeLog.class.getName().equals(name())) return null;
 			return iHibSession.createQuery(
 					"select " + (distinct() ? "" : "distinct ") + hqlName() + " from " + hqlFrom() + " where " + hqlWhere()
-					).setLong("sessionId", iSessionId).list();
+					).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
 		}
 		
 		Map<String, Map<Serializable, List<Object>>> iRelationCache = new HashMap<String, Map<Serializable,List<Object>>>();
 		
-		List<Object> relation(String property, Serializable id, boolean data) {
+		List<Object> relation(String property, ClassMetadata m, Serializable id, boolean data) {
 			Map<Serializable, List<Object>> relation = iRelationCache.get(property);
 			if (relation == null) {
-				Type type = meta().getPropertyType(property);
 				String idProperty = null;
+				boolean join = false;
+				Type type = null;
+				try {
+					type = meta().getPropertyType(property);
+				} catch (HibernateException e) {
+					type = m.getPropertyType(property);
+					join = true;
+				}
 				int composite = 0;
 				if (!data) {
 					ClassMetadata meta = null;
-					if (type instanceof CollectionType)
-						meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-					else
-						meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+					try {
+						if (type instanceof CollectionType)
+							meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+						else
+							meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+					} catch (MappingException e) {}
 					if (meta == null) {
 						data = true;
 					} else if (meta.getIdentifierType().isComponentType()) {
 						ComponentType idtype = (ComponentType)meta.getIdentifierType();
 						idProperty = "";
 						for (int i = 0; i < idtype.getPropertyNames().length; i++) {
-							ClassMetadata idmeta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+							ClassMetadata idmeta = null;
+							try {
+								idmeta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+							} catch (MappingException e) {}
 							if (idmeta == null)
 								idProperty += (i > 0 ? ", p." : "") + idtype.getPropertyNames()[i];
 							else
@@ -655,15 +681,30 @@ public class SessionBackup implements SessionBackupInterface {
 					ComponentType idtype = (ComponentType)meta().getIdentifierType();
 					String select = "";
 					for (int i = 0; i < idtype.getPropertyNames().length; i++) {
-						ClassMetadata meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+						ClassMetadata meta = null;
+						try {
+							meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+						} catch (MappingException e) {}
 						if (meta == null)
 							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i];
 						else
 							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
 					}
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(
-							"select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
-							).setLong("sessionId", iSessionId).list()) {
+					String q = "select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere();
+					if (join) {
+						q = "select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + ", " + m.getEntityName() + " x inner join x." + property + " p where " + hqlWhere();
+						for (int i = 0; i < idtype.getPropertyNames().length; i++) {
+							ClassMetadata meta = null;
+							try {
+								meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
+							} catch (MappingException e) {}
+							if (meta == null)
+								q += " and " + hqlName() + "." + idtype.getPropertyNames()[i] + " = x." + idtype.getPropertyNames()[i];
+							else
+								q += " and " + hqlName() + "." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName() + " = x." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
+						}	
+					}
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						Object[] cid = new Object[idtype.getPropertyNames().length];
 						for (int i = 0; i < idtype.getPropertyNames().length; i++)
 							cid[i] = o[i];
@@ -682,10 +723,14 @@ public class SessionBackup implements SessionBackupInterface {
 						}
 					}
 				} else {
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(
-							"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
-							" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
-							).setLong("sessionId", iSessionId).list()) {
+					String q = "select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
+							" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere();
+					if (join) {
+							q = "select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
+								" from " + hqlFrom() + ", " + m.getEntityName() + " x inner join x." + property + " p where " + hqlWhere() + 
+								" and " + hqlName() + "." + meta().getIdentifierPropertyName() + " = x." + meta().getIdentifierPropertyName();
+					}
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						List<Object> list = relation.get((Serializable)o[0]);
 						if (list == null) {
 							list = new ArrayList<Object>();

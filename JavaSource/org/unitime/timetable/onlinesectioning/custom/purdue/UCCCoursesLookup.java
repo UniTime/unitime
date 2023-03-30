@@ -144,9 +144,9 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		if (cache == null || !cache.isActive(getCourseAttributesTTL())) {
 			Map<String, CourseAttribute> attributes = new HashMap<String, CourseAttribute>();
 			String term = getBannerTerm(session);
-			for (Object[] data: (List<Object[]>)(hibSession == null ? new _RootDAO().getSession() : hibSession).createSQLQuery(getListAttributesSQL())
-					.setLong("sessionId", session.getUniqueId())
-					.setString("term", term)
+			for (Object[] data: (List<Object[]>)(hibSession == null ? new _RootDAO().getSession() : hibSession).createNativeQuery(getListAttributesSQL())
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("term", term, org.hibernate.type.StringType.INSTANCE)
 					.list()) {
 				String course_attribute = (String)data[0];
 				String attribute_description = (String)data[1];
@@ -213,19 +213,19 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		} else {
-			for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupFullSQL())
-					.setLong("sessionId", server.getAcademicSession().getUniqueId())
-					.setString("term", getBannerTerm(server.getAcademicSession()))
-					.setString("query", q).list()) {
+			for (Object courseId: helper.getHibSession().createNativeQuery(getCourseLookupFullSQL())
+					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
 				XCourse course = server.getCourse(((Number)courseId).longValue());
 				if (course != null)
 					ret.add(course);
 			}
 			if (allowPartialMatch && ret.isEmpty()) {
-				for (Object courseId: helper.getHibSession().createSQLQuery(getCourseLookupPartialSQL())
-						.setLong("sessionId", server.getAcademicSession().getUniqueId())
-						.setString("term", getBannerTerm(server.getAcademicSession()))
-						.setString("query", q).list()) {
+				for (Object courseId: helper.getHibSession().createNativeQuery(getCourseLookupPartialSQL())
+						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
 					XCourse course = server.getCourse(((Number)courseId).longValue());
 					if (course != null)
 						ret.add(course);
@@ -259,15 +259,15 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
 					.setParameterList("courseIds", courseIds, LongType.INSTANCE).setCacheable(true).list();
 		} else {
-			List courseIds = hibSession.createSQLQuery(getCourseLookupFullSQL())
-					.setLong("sessionId", session.getUniqueId())
-					.setString("term", getBannerTerm(session))
-					.setString("query", q).list();
+			List courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL())
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
-				courseIds = hibSession.createSQLQuery(getCourseLookupPartialSQL())
-						.setLong("sessionId", session.getUniqueId())
-						.setString("term", getBannerTerm(session))
-						.setString("query", q).list();
+				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL())
+						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
 			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
@@ -294,15 +294,15 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		} else {
 			if (hibSession == null)
 				hibSession = new _RootDAO().getSession();
-			List courseIds = hibSession.createSQLQuery(getCourseLookupFullSQL())
-					.setLong("sessionId", session.getUniqueId())
-					.setString("term", getBannerTerm(session))
-					.setString("query", q).list();
+			List courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL())
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
-				courseIds = hibSession.createSQLQuery(getCourseLookupPartialSQL())
-						.setLong("sessionId", session.getUniqueId())
-						.setString("term", getBannerTerm(session))
-						.setString("query", q).list();
+				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL())
+						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
 			Set<Long> ret = new HashSet<Long>();
@@ -389,9 +389,9 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		} else {
-			for (Object[] data: (List<Object[]>)helper.getHibSession().createSQLQuery(getSuggestionSQL())
-					.setString("term", getBannerTerm(server.getAcademicSession()))
-					.setString("query", q).list()) {
+			for (Object[] data: (List<Object[]>)helper.getHibSession().createNativeQuery(getSuggestionSQL())
+					.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
 				String course_attribute = (String)data[0];
 				String attribute_description = (String)data[1];
 				filter.addSuggestion(attribute_description, course_attribute, "UCC Attribute", "lookup", true);

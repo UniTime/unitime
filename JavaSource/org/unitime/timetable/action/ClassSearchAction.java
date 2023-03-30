@@ -37,7 +37,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -488,7 +488,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 			if (courseNbr != null && courseNbr.length() > 0) {
 				if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
 	            	courseNbr = courseNbr.toUpperCase();
-				q.setString("courseNbr", courseNbr.replace('*', '%'));
+				q.setParameter("courseNbr", courseNbr.replace('*', '%'), org.hibernate.type.StringType.INSTANCE);
 			}
 			q.setCacheable(true);
 	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));

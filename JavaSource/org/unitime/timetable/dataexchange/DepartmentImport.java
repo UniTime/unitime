@@ -108,8 +108,8 @@ public class DepartmentImport extends BaseImport {
 		return (Department) this.
 			getHibSession().
 			createQuery("select distinct a from Department as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("externalId", externalId).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 	}

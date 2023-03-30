@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.AcademicSessionLookup;
@@ -65,16 +62,11 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	 * @param sessionId academic session
 	 * @return List of SubjectArea objects
 	 */
-	public static List<SubjectArea> getSubjectAreaList(Long sessionId) 
-			throws HibernateException {
-	    
-	    SubjectAreaDAO subjDAO = new SubjectAreaDAO();
-	    Session hibSession = subjDAO.getSession();
-	    @SuppressWarnings("unchecked")
-		List<SubjectArea> subjs = (List<SubjectArea>)hibSession.createCriteria(SubjectArea.class)
-				    .add(Restrictions.eq("session.uniqueId", sessionId))
-				    .list();
-		return subjs;
+	public static List<SubjectArea> getSubjectAreaList(Long sessionId) {
+		return SubjectAreaDAO.getInstance().getSession()
+				.createQuery("from SubjectArea where session.uniqueId = :sessionId", SubjectArea.class)
+				.setParameter("sessionId", sessionId)
+				.list();
 	}
 	
 	/**
@@ -90,17 +82,17 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	public static SubjectArea findByAbbv(org.hibernate.Session hibSession, Long sessionId, String subjectAreaAbbr) {
 		return (SubjectArea)(hibSession == null ? SubjectAreaDAO.getInstance().getSession() : hibSession).createQuery(
 				"from SubjectArea where session.uniqueId = :sessionId and subjectAreaAbbreviation = :subjectAreaAbbr"
-				).setLong("sessionId", sessionId).setString("subjectAreaAbbr", subjectAreaAbbr).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("subjectAreaAbbr", subjectAreaAbbr, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 	}
 	
 	public static SubjectArea findUsingInitiativeYearTermSubjectAbbreviation(String academicInitiative, String academicYear, String term, String subjectAreaAbbreviation,
 	org.hibernate.Session hibSession) {
 		
 		return (SubjectArea) hibSession.createQuery("from SubjectArea sa where sa.session.academicInitiative = :campus and sa.session.academicYear = :year and sa.session.academicTerm = :term and sa.subjectAreaAbbreviation = :subj")
-         .setString("campus", academicInitiative)
-         .setString("year", academicYear)
-         .setString("term", term)
-         .setString("subj", subjectAreaAbbreviation)
+         .setParameter("campus", academicInitiative, org.hibernate.type.StringType.INSTANCE)
+         .setParameter("year", academicYear, org.hibernate.type.StringType.INSTANCE)
+         .setParameter("term", term, org.hibernate.type.StringType.INSTANCE)
+         .setParameter("subj", subjectAreaAbbreviation, org.hibernate.type.StringType.INSTANCE)
          .setCacheable(true)
          .setMaxResults(1)
          .uniqueResult();	
@@ -183,7 +175,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
 		return new TreeSet<SubjectArea>(
 				SubjectAreaDAO.getInstance().getQuery("from SubjectArea where session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).list());
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 	
 	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user) {

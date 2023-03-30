@@ -92,7 +92,7 @@ public class AllWSCHForDepartmentByClass extends WSCHByDepartment {
 	@Override
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
 		HashSet<Long> processedClasses = new HashSet<Long>();
-		Department d = (Department) hibSession.createQuery("from Department d where d.uniqueId = :id").setLong("id", getDepartmentId()).setCacheable(true).uniqueResult();
+		Department d = (Department) hibSession.createQuery("from Department d where d.uniqueId = :id").setParameter("id", getDepartmentId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 		for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, getDepartmentId(), hibSession)) {
 			for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {
 				if (processedClasses.contains(pc.getUniqueId())){

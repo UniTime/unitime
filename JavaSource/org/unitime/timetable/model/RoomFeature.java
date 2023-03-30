@@ -54,18 +54,18 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId) throws HibernateException {
 		return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label"
-				).setLong("sessionId", sessionId).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId, Long featureTypeId) throws HibernateException {
 		if (featureTypeId == null || featureTypeId < 0) {
 			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
 					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType is null order by label"
-					).setLong("sessionId", sessionId).setCacheable(true).list();
+					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else {
 			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
 					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label"
-					).setLong("sessionId", sessionId).setLong("featureTypeId", featureTypeId).setCacheable(true).list();
+					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("featureTypeId", featureTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 	}
 
@@ -77,13 +77,13 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		if (dept==null) return null;
 		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label"
-				).setLong("deptId", dept.getUniqueId()).setCacheable(true).list();
+				).setParameter("deptId", dept.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
 	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeaturesInSession(Long sessionId) throws HibernateException {
 		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from DepartmentRoomFeature rf where rf.department.session.uniqueId = :sessionId order by label"
-				).setLong("sessionId", sessionId).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 
@@ -168,15 +168,15 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		if (this instanceof DepartmentRoomFeature) {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
 				"select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode")
-				.setLong("sessionId", session.getUniqueId().longValue())
-				.setString("deptCode", ((DepartmentRoomFeature)this).getDeptCode())
-				.setString("label", getLabel())
+				.setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("deptCode", ((DepartmentRoomFeature)this).getDeptCode(), org.hibernate.type.StringType.INSTANCE)
+				.setParameter("label", getLabel(), org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).list();
 		} else {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
 			"select g from GlobalRoomFeature g where g.session.uniqueId=:sessionId and g.label=:label")
-			.setLong("sessionId", session.getUniqueId().longValue())
-			.setString("label", getLabel())
+			.setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+			.setParameter("label", getLabel(), org.hibernate.type.StringType.INSTANCE)
 			.setCacheable(true).list();
 		}
 		return (matchingFeatures.size() == 1 ? (RoomFeature)matchingFeatures.get(0) : null);

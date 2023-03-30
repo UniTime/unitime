@@ -49,22 +49,22 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 		
 		if (((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct featureType) from GlobalRoomFeature where session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
 		return ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct featureType) from DepartmentRoomFeature where department.session.uniqueId = :sessionId")
-				.setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, boolean includeDepartmental) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select distinct f.featureType from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is not null")
-				.setLong("sessionId", sessionId).setCacheable(true).list());
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		if (includeDepartmental) {
 			types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 					"select distinct f.featureType from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is not null")
-					.setLong("sessionId", sessionId).setCacheable(true).list());
+					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		}
 		return types;
 	}
@@ -72,24 +72,24 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, boolean includeDepartmental) {
 		if (((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(f) from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is null")
-				.setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0)
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
 		return includeDepartmental && ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(f) from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is null")
-				.setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, Long examTypeId) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select distinct f.featureType from GlobalRoomFeature f inner join f.rooms l, ExamType t where f.session.uniqueId = :sessionId and f.featureType is not null and t.uniqueId = :examTypeId and t in elements(l.examTypes)")
-				.setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list());
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		return types;
 	}
 
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, Long examTypeId) {
 		return ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct f) from GlobalRoomFeature f inner join f.rooms l, ExamType t where l.session.uniqueId = :sessionId and f.featureType is null and t.uniqueId = :examTypeId and t in elements(l.examTypes)")
-				.setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 }

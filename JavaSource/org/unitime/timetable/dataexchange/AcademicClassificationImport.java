@@ -55,7 +55,7 @@ public class AcademicClassificationImport extends BaseImport {
             Map<String, AcademicClassification> id2clasf = new Hashtable<String, AcademicClassification>();
             Map<String, AcademicClassification> code2clasf = new Hashtable<String, AcademicClassification>();
             for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
-            		"from AcademicClassification where session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).list()) {
+            		"from AcademicClassification where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (clasf.getExternalUniqueId() != null)
             		id2clasf.put(clasf.getExternalUniqueId(), clasf);
             	code2clasf.put(clasf.getCode(), clasf);

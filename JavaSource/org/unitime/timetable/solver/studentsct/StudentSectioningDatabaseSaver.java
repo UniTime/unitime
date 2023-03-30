@@ -105,7 +105,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         try {
             hibSession = SessionDAO.getInstance().getSession();
             hibSession.setCacheMode(CacheMode.IGNORE);
-            hibSession.setFlushMode(FlushMode.MANUAL);
+            hibSession.setHibernateFlushMode(FlushMode.MANUAL);
             
             tx = hibSession.beginTransaction(); 
 
@@ -317,7 +317,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Class_ clazz: (List<Class_>)hibSession.createQuery(
         		"select distinct c from Class_ c where " +
         		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-        		.setLong("sessionId", session.getUniqueId()).list()) {
+        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
         incProgress();
@@ -327,7 +327,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             setPhase("Loading courses...", 1);
             for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
             		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
-            		.setLong("sessionId", session.getUniqueId()).list()) {
+            		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 iCourses.put(course.getUniqueId(), course);
             }
             incProgress();
@@ -341,7 +341,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
             		"where s.session.uniqueId = :sessionId")
-            		.setLong("sessionId", session.getUniqueId()).list()) {
+            		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	iStudents.put(student.getUniqueId(), student);
             }
             incProgress();
@@ -355,7 +355,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             		"left join fetch r.courseOffering as co " +
             		"left join fetch co.instructionalOffering as io " +
             		"where c.student.session.uniqueId=:sessionId")
-            		.setLong("sessionId", session.getUniqueId()).list()) {
+            		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 for (org.unitime.timetable.model.CourseRequest request: demand.getCourseRequests()) {
                     iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
                 }
@@ -392,7 +392,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
         	List<SectioningInfo> infos = hibSession.createQuery(
         			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-        			.setLong("sessionId", session.getUniqueId())
+        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
         			.list();
         	for (SectioningInfo info : infos)
         		infoTable.put(info.getClazz().getUniqueId(), info);

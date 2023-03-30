@@ -108,7 +108,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	try {
     		hibSession = TimetableManagerDAO.getInstance().createNewSession();
     		hibSession.setCacheMode(CacheMode.IGNORE);
-    		hibSession.setFlushMode(FlushMode.COMMIT);
+    		hibSession.setHibernateFlushMode(FlushMode.COMMIT);
     		
     		tx = hibSession.beginTransaction(); 
     		
@@ -248,7 +248,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	if (di.getExternalUniqueId() != null) {
     		List<StudentClassEnrollment> enrollments = (List<StudentClassEnrollment>)hibSession.createQuery(
     				"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId and e.clazz.cancelled = false"
-    				).setLong("sessionId", di.getDepartment().getSessionId()).setString("externalId", di.getExternalUniqueId()).setCacheable(true).list();
+    				).setParameter("sessionId", di.getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", di.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     		for (StudentClassEnrollment enrollment: enrollments) {
     			org.unitime.timetable.model.Assignment assignment = enrollment.getClazz().getCommittedAssignment();
     			if (assignment != null) {
@@ -280,7 +280,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		List<ClassInstructor> classInstructors = (List<ClassInstructor>)hibSession.createQuery(
     				"from ClassInstructor ci where ci.instructor.externalUniqueId = :externalId and ci.instructor.department.session.uniqueId = :sessionId and " +
     				"ci.instructor.department.uniqueId != :departmentId and ci.lead = true and ci.classInstructing.cancelled = false"
-    				).setLong("sessionId", di.getDepartment().getSessionId()).setString("externalId", di.getExternalUniqueId()).setLong("departmentId", di.getDepartment().getUniqueId()).setCacheable(true).list();
+    				).setParameter("sessionId", di.getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", di.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setParameter("departmentId", di.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
         		if (assignment != null) {
@@ -354,7 +354,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	List<DepartmentalInstructor> list = (List<DepartmentalInstructor>)hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
     			"g.uniqueId in :solverGroupId and i.department = d and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
-    			).setParameterList("solverGroupId", iSolverGroupId).setString("prohibited", PreferenceLevel.sProhibited).list();
+    			).setParameterList("solverGroupId", iSolverGroupId).setParameter("prohibited", PreferenceLevel.sProhibited, org.hibernate.type.StringType.INSTANCE).list();
     	iProgress.setPhase("Loading instructors...", list.size());
     	for (DepartmentalInstructor i: list) {
     		Instructor instructor = new Instructor(i.getUniqueId(), i.getExternalUniqueId(), i.getName(iInstructorFormat),

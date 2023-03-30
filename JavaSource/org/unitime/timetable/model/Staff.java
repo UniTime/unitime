@@ -19,13 +19,9 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.criterion.Conjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
 import org.unitime.timetable.model.base.BaseStaff;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
@@ -70,8 +66,8 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 				"(s.campus is null or s.campus=(select x.academicInitiative from Session x where x.uniqueId = :sessionId)) and " +
 				"(select di.externalUniqueId from DepartmentalInstructor di " +
 				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
-		q.setString("deptCode", deptCode);
-		q.setLong("sessionId", acadSessionId);
+		q.setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE);
+		q.setParameter("sessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
 		q.setCacheable(true);
 		return (q.list());
 	}
@@ -83,28 +79,14 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 	 * @param lname Last Name
 	 * @return
 	 */
-	public static List findMatchingName(String fname, String lname) {
-		List list = null;
-	    
-		if ( (fname==null || fname.trim().length()==0) 
-		        && (lname==null || lname.trim().length()==0) )
-		    return list;
-		
-		Conjunction and = Restrictions.conjunction();
-		if (fname!=null && fname.trim().length()>0)
-		    and.add(Restrictions.ilike("firstName", fname, MatchMode.START));
-		if (lname!=null && lname.trim().length()>0)
-		    and.add(Restrictions.ilike("lastName", lname, MatchMode.START));
-		
-		StaffDAO sdao = new StaffDAO();
-		list = sdao.getSession()
-					.createCriteria(Staff.class)	
-					.add(and)	
-					.list();
-
-		Collections.sort(list);
-		
-		return list;
+	public static List<Staff> findMatchingName(String fname, String lname) {
+		if ((fname==null || fname.trim().length()==0) && (lname==null || lname.trim().length()==0))
+			return null;
+		return StaffDAO.getInstance().getSession()
+				.createQuery("from Staff where firstName like :fname and lastName like :lname", Staff.class)
+				.setParameter("fname", fname == null ? "%" : fname + "%")
+				.setParameter("lname", lname == null ? "%" : lname + "%")
+				.list();
 	}
 	
 	/**

@@ -62,7 +62,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 				if (getQuery().hasAttribute(t))
 					join += "left outer join s.groups G_" + t + " ";
 			
-			org.hibernate.Query q = helper.getHibSession().createQuery(
+			org.hibernate.query.Query q = helper.getHibSession().createQuery(
 					"select l, s from OnlineSectioningLog l, Student s " +
 					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration", "campus", "program") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
@@ -78,7 +78,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 						"and (l.result != 3 or l.operation not in ('validate-overrides', 'critical-courses', 'banner-update')) "
 					) + "order by l.uniqueId desc");
 
-			q.setLong("sessionId", session.getUniqueId());
+			q.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE);
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			

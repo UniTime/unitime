@@ -174,7 +174,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		List<Session> sessions = hibSession.createQuery("select s from Session s where " +
 				"s.academicTerm || s.academicYear = :term or " +
 				"s.academicTerm || s.academicYear || s.academicInitiative = :term").
-				setString("term", term).list();
+				setParameter("term", term, org.hibernate.type.StringType.INSTANCE).list();
 		if (!sessions.isEmpty()) {
 			for (Session session: sessions) {
 				if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
@@ -184,7 +184,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		if ("current".equalsIgnoreCase(term)) {
 			sessions = hibSession.createQuery("select s from Session s where " +
 					"s.eventBeginDate <= :today and s.eventEndDate >= :today").
-					setDate("today",new Date()).list();
+					setParameter("today", new Date(), org.hibernate.type.DateType.INSTANCE).list();
 			if (!sessions.isEmpty()) {
 				for (Session session: sessions) {
 					if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;

@@ -28,8 +28,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.DistributionTypeEditForm;
@@ -81,9 +79,8 @@ public class DistributionTypeEditAction extends UniTimeAction<DistributionTypeEd
 		}
 		
         List<Department> list = DistributionTypeDAO.getInstance().getSession()
-        		.createCriteria(Department.class)
-        		.add(Restrictions.eq("session.uniqueId", sessionId))
-        		.addOrder(Order.asc("deptCode"))
+        		.createQuery("from Department session.uniqueId = :sessionId order by deptCode", Department.class)
+        		.setParameter("sessionId", sessionId)
         		.list();
         List<ComboBoxLookup> availableDepts = new ArrayList<ComboBoxLookup>();
     	for (Department d: list) {

@@ -45,7 +45,7 @@ public class SuggestionsTest extends OnlineSectioningTestFwk {
 		
 		for (final Long studentId: (List<Long>)hibSession.createQuery(
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			
 			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;

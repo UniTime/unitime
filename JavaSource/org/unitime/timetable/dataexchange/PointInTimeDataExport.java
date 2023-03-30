@@ -367,8 +367,8 @@ public class PointInTimeDataExport extends BaseExport {
 			info("Fetching Instructional Offerings for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			for (Object[] objects : (List<Object[]>) getHibSession()
 					.createQuery(querySb.toString())
-					.setLong("sessId", acadSession.getUniqueId().longValue())
-					.setLong("saId", sa.getUniqueId().longValue())
+					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
 					.list()) {
 				offerings.add((InstructionalOffering) objects[0]);				
@@ -393,7 +393,7 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching AcademicArea");
 		academicAreas.addAll((List<AcademicArea>) getHibSession()
 			.createQuery(querySb.toString())
-			.setLong("sessId", acadSession.getUniqueId().longValue())
+			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
 		return(academicAreas);
@@ -415,7 +415,7 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching Time Patterns");
 		timePatterns.addAll((List<TimePattern>) getHibSession()
 			.createQuery(querySb.toString())
-			.setLong("sessId", acadSession.getUniqueId().longValue())
+			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
 		return(timePatterns);
@@ -449,13 +449,13 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching Rooms");
 		locations.addAll((List<Location>) getHibSession()
 			.createQuery(querySb1.toString())
-			.setLong("sessId", acadSession.getUniqueId().longValue())
+			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
 		info("Fetching Non Unversity Locations");
 		locations.addAll((List<Location>) getHibSession()
 			.createQuery(querySb2.toString())
-			.setLong("sessId", acadSession.getUniqueId().longValue())
+			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
 		return(locations);
@@ -492,8 +492,8 @@ public class PointInTimeDataExport extends BaseExport {
 				info("Fetching Student Class Enrollments for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 				students.addAll((List<StudentClassEnrollment>) getHibSession()
 					.createQuery(querySb.toString())
-					.setLong("sessId", acadSession.getUniqueId().longValue())
-					.setLong("saId", sa.getUniqueId().longValue())
+					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
 					.list());
 		}
@@ -548,14 +548,14 @@ public class PointInTimeDataExport extends BaseExport {
 			info("Fetching Class Events for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			events.addAll((List<Object[]>) getHibSession()
 					.createQuery(querySb1.toString())
-					.setLong("sessId", acadSession.getUniqueId().longValue())
-					.setLong("saId", sa.getUniqueId().longValue())
+					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
 					.list());
 			events.addAll((List<Object[]>) getHibSession()
 					.createQuery(querySb2.toString())
-					.setLong("sessId", acadSession.getUniqueId().longValue())
-					.setLong("saId", sa.getUniqueId().longValue())
+					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
 					.list());
 			}

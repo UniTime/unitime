@@ -28,7 +28,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cpsolver.ifs.util.CSVFile;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.DistributionObject;
@@ -71,12 +71,12 @@ public class ExamDistributionPrefsTableBuilder {
 	            "dp.distributionType.examPref = true and "+
 	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
 	    Query q = new DistributionPrefDAO().getSession().createQuery(query)
-	            .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-	    		.setLong("examTypeId", examTypeId);
+	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+	    		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
 	    if (subjectAreaId!=null)
-	        q.setLong("subjectAreaId", subjectAreaId);
+	        q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
 	    if (courseNbr!=null && !courseNbr.trim().isEmpty())
-	        q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
+	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
 	    List distPrefs = q.setCacheable(true).list();
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
@@ -95,12 +95,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query q = new DistributionPrefDAO().getSession().createQuery(query)
-                .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-                .setLong("examTypeId", examTypeId);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null)
-            q.setLong("subjectAreaId", subjectAreaId);
+            q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
         List distPrefs = q.setCacheable(true).list();
 
         toPdfTable(out, request, context, distPrefs, examTypeId); 
@@ -120,12 +120,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query q = new DistributionPrefDAO().getSession().createQuery(query)
-                .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-                .setLong("examTypeId", examTypeId);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null)
-            q.setLong("subjectAreaId", subjectAreaId);
+            q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
         List distPrefs = q.setCacheable(true).list();
 
         toCsvTable(out, request, context, distPrefs, examTypeId); 

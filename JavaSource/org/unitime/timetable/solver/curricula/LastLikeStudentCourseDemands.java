@@ -81,7 +81,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 				"select distinct d.courseNbr, d.coursePermId, s, d.priority " +
 				"from LastLikeCourseDemand d inner join d.student s left join fetch s.areaClasfMajors where " +
 				"d.subjectArea.uniqueId = :subjectAreaId")
-				.setLong("subjectAreaId", subject.getUniqueId()).setCacheable(true).list()) {
+				.setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String courseNbr = (String)d[0];
 			String coursePermId = (String)d[1];
 			Student student = (Student)d[2];
@@ -164,7 +164,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 				for (Object[] o : (List<Object[]>)iHibSession.createQuery(
 						"select distinct s, co " +
 						"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " + where)
-						.setLong("sessionId", iSessionId)
+						.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).list()) {
 					Student student = (Student)o[0];
 					CourseOffering co = (CourseOffering)o[1];

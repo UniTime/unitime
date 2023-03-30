@@ -30,7 +30,7 @@ import java.util.TreeSet;
 
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -387,15 +387,15 @@ public class DistributionPref extends BaseDistributionPref {
     	Query q = (new DistributionPrefDAO()).
 			getSession().
 			createQuery(sb.toString());
-    	q.setLong("sessionId", sessionId.longValue());
+    	q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
     	if (ownerId!=null)
-    		q.setLong("ownerId", ownerId.longValue());
+    		q.setParameter("ownerId", ownerId.longValue(), org.hibernate.type.LongType.INSTANCE);
     	if (uniqueId!=null)
-    		q.setLong("uniqueId", uniqueId.longValue());
+    		q.setParameter("uniqueId", uniqueId.longValue(), org.hibernate.type.LongType.INSTANCE);
     	if (subjectAreaId!=null) 
-    		q.setLong("subjectAreaId", subjectAreaId.longValue());
+    		q.setParameter("subjectAreaId", subjectAreaId.longValue(), org.hibernate.type.LongType.INSTANCE);
 		if (courseNbr!=null && !courseNbr.trim().isEmpty())
-		    q.setString("courseNbr", courseNbr);
+		    q.setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE);
     	return q.list();
     }
     
@@ -448,15 +448,15 @@ public class DistributionPref extends BaseDistributionPref {
         Query q = (new DistributionPrefDAO()).
             getSession().
             createQuery(sb.toString());
-        q.setLong("sessionId", sessionId.longValue());
+        q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null) {
-            q.setLong("subjectAreaId", subjectAreaId.longValue());
+            q.setParameter("subjectAreaId", subjectAreaId.longValue(), org.hibernate.type.LongType.INSTANCE);
         }
         if (ownerId!=null) {
-            q.setLong("ownerId", ownerId.longValue());
+            q.setParameter("ownerId", ownerId.longValue(), org.hibernate.type.LongType.INSTANCE);
         }
         if (courseNbr!=null && !courseNbr.isEmpty())
-            q.setString("courseNbr", courseNbr);
+            q.setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE);
         return q.list();
     }
     
@@ -482,8 +482,8 @@ public class DistributionPref extends BaseDistributionPref {
             createQuery(
                 "select dp from DistributionPref dp, Department d where "+
                 "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId").
-            setLong("uidRolledFrom", uidRolledForwardFrom).
-            setLong("sessionId", sessionId).
+            setParameter("uidRolledFrom", uidRolledForwardFrom, org.hibernate.type.LongType.INSTANCE).
+            setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
             uniqueResult(); 
     }

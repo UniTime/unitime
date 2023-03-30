@@ -231,7 +231,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
         InstructionalOffering io = idao.get(form.getInstrOfferingId());
         Session hibSession = idao.getSession();
-        hibSession.setFlushMode(FlushMode.MANUAL);
+        hibSession.setHibernateFlushMode(FlushMode.MANUAL);
         Transaction tx = null;
         HashMap saList = new HashMap();
         List<CurriculumCourse> cc = new ArrayList<CurriculumCourse>();
@@ -266,7 +266,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     
                     for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
                     		"from CurriculumCourse where course.uniqueId = :courseId")
-                    		.setLong("courseId", co1.getUniqueId()).list()) {
+                    		.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                     	cc.add(x.clone(co2));
                     	x.getClassification().getCourses().remove(x);
                     	hibSession.delete(x);
@@ -274,7 +274,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
                     	for (CourseRequest oldReq: (List<CourseRequest>)hibSession.createQuery(
                     			"from CourseRequest where courseOffering.uniqueId = :courseId")
-                    			.setLong("courseId", co1.getUniqueId()).list()) {
+                    			.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                     		CourseRequest newReq = new CourseRequest();
                     		newReq.setAllowOverlap(oldReq.getAllowOverlap());
                     		newReq.setOrder(oldReq.getOrder());
@@ -288,7 +288,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     
                     advCourseReqs.put(co2.getCourseName(), (List<AdvisorCourseRequest>)hibSession.createQuery(
                 			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId")
-                			.setLong("courseId", co1.getUniqueId()).list());
+                			.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
                     
                     deletedOfferings.add(co2);
 /*	                
@@ -401,7 +401,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    
 	                    for (CurriculumCourse x: (List<CurriculumCourse>)hibSession.createQuery(
 	                    		"from CurriculumCourse where course.uniqueId = :courseId")
-	                    		.setLong("courseId", co2.getUniqueId()).list()) {
+	                    		.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	                    	cc.add(x.clone(co3));
 	                    	x.getClassification().getCourses().remove(x);
 	                    	hibSession.delete(x);
@@ -409,7 +409,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
 	                    	for (CourseRequest oldReq: (List<CourseRequest>)hibSession.createQuery(
 	                    			"from CourseRequest where courseOffering.uniqueId = :courseId")
-	                    			.setLong("courseId", co2.getUniqueId()).list()) {
+	                    			.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	                    		CourseRequest newReq = new CourseRequest();
 	                    		newReq.setAllowOverlap(oldReq.getAllowOverlap());
 	                    		newReq.setOrder(oldReq.getOrder());
@@ -423,7 +423,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 
 	                    advCourseReqs.put(co3.getCourseName(), (List<AdvisorCourseRequest>)hibSession.createQuery(
 	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId")
-	                			.setLong("courseId", co2.getUniqueId()).list());
+	                			.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 	                    addedOfferings.add(co3);
 
     	                int indx = form.getIndex(course);

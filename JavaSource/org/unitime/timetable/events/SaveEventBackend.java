@@ -184,7 +184,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						if (contact == null) {
 							contact = (EventContact)hibSession.createQuery(
 									"from EventContact where externalUniqueId = :externalId")
-									.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
+									.setParameter("externalId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 						}
 						if (contact == null) {
 							contact = new EventContact();
@@ -235,7 +235,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			if (main == null || main.getExternalUniqueId() == null || !main.getExternalUniqueId().equals(request.getEvent().getContact().getExternalId())) {
 				main = (EventContact)hibSession.createQuery(
 						"from EventContact where externalUniqueId = :externalId")
-						.setString("externalId", request.getEvent().getContact().getExternalId()).setMaxResults(1).uniqueResult();
+						.setParameter("externalId", request.getEvent().getContact().getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 				if (main == null) {
 					main = new EventContact();
 					main.setExternalUniqueId(request.getEvent().getContact().getExternalId());
@@ -385,7 +385,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							if (contact == null) {
 								contact = (EventContact)hibSession.createQuery(
 										"from EventContact where externalUniqueId = :externalId")
-										.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
+										.setParameter("externalId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 							}
 							if (contact == null) {
 								contact = new EventContact();
@@ -678,12 +678,12 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				"select m from Meeting m, Location l "+
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and l.ignoreRoomCheck = false and " +
 				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1")
-				.setInteger("startTime", meeting.getStartSlot())
-				.setInteger("stopTime", meeting.getEndSlot())
-				.setDate("meetingDate", meeting.getMeetingDate())
-				.setLong("locationdId", meeting.getLocation().getId())
-				.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
-				.setLong("eventId", eventId == null ? -1 : eventId)
+				.setParameter("startTime", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+				.setParameter("stopTime", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
+				.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
+				.setParameter("locationdId", meeting.getLocation().getId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("eventId", eventId == null ? -1 : eventId, org.hibernate.type.LongType.INSTANCE)
 				.list()) {
 			
 			MeetingConflictInterface conflict = new MeetingConflictInterface();

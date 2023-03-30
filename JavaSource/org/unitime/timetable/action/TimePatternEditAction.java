@@ -37,8 +37,6 @@ import org.apache.struts2.tiles.annotation.TilesDefinitions;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.CSVFile;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
@@ -114,11 +112,10 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
         
     	Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 
-    	List<Department> list = (new DepartmentDAO()).getSession()
-					.createCriteria(Department.class)
-					.add(Restrictions.eq("session.uniqueId", sessionId))
-					.addOrder(Order.asc("deptCode"))
-					.list();
+    	List<Department> list = DepartmentDAO.getInstance().getSession()
+    			.createQuery("from Department where session.uniqueId = :sessionId order by deptCode", Department.class)
+    			.setParameter("sessionId", sessionId)
+    			.list();
     	List<IdValue> availableDepts = new ArrayList<IdValue>();
     	for (Department d: list) {
     		availableDepts.add(new IdValue(d.getUniqueId(), d.getLabel()));
@@ -254,7 +251,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	List timePrefs = 
             			hibSession.
                 		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
-        				setLong("uniqueid",tp.getUniqueId().longValue()).
+        				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 		list();
             	
             	CSVFile csv = new CSVFile();
@@ -448,7 +445,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                 	List timePrefs = 
             			hibSession.
                 		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
-        				setInteger("uniqueid",tp.getUniqueId().intValue()).
+        				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.IntegerType.INSTANCE).
                 		list();
             		
             		HashSet depts = new HashSet();
@@ -559,7 +556,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                     	List timePrefs = 
                 			hibSession.
                     		createQuery("select distinct p.owner from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
-            				setInteger("uniqueid",tp.getUniqueId().intValue()).
+            				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.IntegerType.INSTANCE).
                     		list();
 	            		
 	            		TreeSet allOwners = new TreeSet();

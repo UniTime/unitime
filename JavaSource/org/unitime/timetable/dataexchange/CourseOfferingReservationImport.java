@@ -73,8 +73,8 @@ public class CourseOfferingReservationImport extends BaseImport {
 	SubjectArea fetchSubjectArea(String subject, Long sessionId) {
 		return (SubjectArea)getHibSession().
 			createQuery("select distinct a from SUBJECT_AREA as a where a.subjectAreaAbbreviation=:subject and a.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
-			setString("subject", subject).
+			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("subject", subject, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 	}
@@ -82,8 +82,8 @@ public class CourseOfferingReservationImport extends BaseImport {
 	CourseOffering fetchCourseOffering(String courseNumber, Long subjectAreaId) {
 		return (CourseOffering) getHibSession().
 			createQuery("select distinct a from COURSE_OFFERING as a where a.courseNumber=:courseNumber and a.subjectArea=:subjectArea").
-			setLong("subjectArea", subjectAreaId.longValue()).
-			setString("courseNumber", courseNumber).
+			setParameter("subjectArea", subjectAreaId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("courseNumber", courseNumber, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			uniqueResult();
 	}

@@ -81,7 +81,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		return((new DepartmentRoomFeatureDAO()).
 				getSession().
 				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId order by label").
-				setLong("sessionId", session.getUniqueId().longValue()).
+				setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
 				list());
 	}

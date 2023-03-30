@@ -29,7 +29,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseTimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -58,19 +57,13 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static TimetableManager findByExternalId(String externalId){
-		if (externalId == null || externalId.length() == 0){
-			return(null);
-		}
-		TimetableManagerDAO tmDao = new TimetableManagerDAO();
-
-		List mgrs = tmDao.getSession().createCriteria(TimetableManager.class)
-			.add(Restrictions.eq("externalUniqueId", externalId))
-			.setCacheable(true).list();
-		if(mgrs != null && mgrs.size() == 1){
-			return((TimetableManager) mgrs.get(0));
-		} else
-			return (null);		
-	
+		if (externalId == null || externalId.length() == 0) return null;
+		return TimetableManagerDAO.getInstance().getSession()
+				.createQuery("from TimetableManager where externalUniqueId = :externalId", TimetableManager.class)
+				.setParameter("externalId", externalId)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 	
 	public static TimetableManager getWithUniqueId(Long uniqueId){

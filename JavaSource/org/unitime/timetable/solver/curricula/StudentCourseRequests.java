@@ -73,7 +73,7 @@ public class StudentCourseRequests implements StudentCourseDemands {
 						"(select x.courseOffering.instructionalOffering.uniqueId from CourseRequest x where x.courseDemand = r.courseDemand and x.order = 0)" : "") +
 					" from CourseRequest r inner join r.courseDemand.student s left join fetch s.areaClasfMajors where " +
 					"r.courseOffering.subjectArea.uniqueId = :subjectId" + (iIncludeAlternatives ? "" : " and r.order = 0"))
-					.setLong("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
+					.setParameter("subjectId", subjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Student s = (Student)o[0];
 			Long courseId = (Long)o[1];
 			Integer priority = (Integer)o[2];
@@ -112,7 +112,7 @@ public class StudentCourseRequests implements StudentCourseDemands {
 							"(select x.courseOffering.instructionalOffering.uniqueId from CourseRequest x where x.courseDemand = r.courseDemand and x.order = 0)" : "") +
 					" from CourseRequest r inner join r.courseOffering c inner join r.courseDemand d where d.student.session.uniqueId = :sessionId" +
 					(iIncludeAlternatives ? "" : " and r.order = 0"))
-					.setLong("sessionId", iSessionId).setCacheable(true).list()) {
+					.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Long sid = (Long)o[0];
 				CourseOffering co = (CourseOffering)o[1];
 				Integer priority = (Integer)o[2];

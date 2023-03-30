@@ -123,7 +123,7 @@ public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRp
 		
 		Set<String> nameOrAbbv = (options == null || "curriculum".equals(ignoreCommand) ? null : options.get("curriculum"));
 		
-		List<Curriculum> curricula = hibSession.createQuery("select distinct c from Curriculum c where c.department.session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list();
+		List<Curriculum> curricula = hibSession.createQuery("select distinct c from Curriculum c where c.department.session.uniqueId = :sessionId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		
 		List<Curriculum> ret = new ArrayList<Curriculum>();
 		curricula: for (Curriculum curriculum: curricula) {

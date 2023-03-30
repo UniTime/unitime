@@ -59,9 +59,9 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
         try {
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
             		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.type = :type and dp.name like :name order by dp.offset desc")
-            		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
-            		.setInteger("type", DatePatternType.Extended.ordinal())
-            		.setString("name", "T%den %")
+            		.setParameter("sessionId", properties.getPropertyLong("General.SessionId", -1), org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("type", DatePatternType.Extended.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
+            		.setParameter("name", "T%den %", org.hibernate.type.StringType.INSTANCE)
             		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
             	int nrWeeks = weekCode.cardinality() / 7;
@@ -74,8 +74,8 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
             }
             for (org.unitime.timetable.model.DatePattern dp: (List<org.unitime.timetable.model.DatePattern>)hibSession.createQuery(
             		"from DatePattern dp where dp.session.uniqueId = :sessionId and dp.name like :name order by dp.offset desc")
-            		.setLong("sessionId", properties.getPropertyLong("General.SessionId", -1))
-            		.setString("name", "T%den %")
+            		.setParameter("sessionId", properties.getPropertyLong("General.SessionId", -1), org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("name", "T%den %", org.hibernate.type.StringType.INSTANCE)
             		.list()) {
             	BitSet weekCode = dp.getPatternBitSet();
             	int nrWeeks = weekCode.cardinality() / 7;

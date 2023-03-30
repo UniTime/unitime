@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseSolverParameterGroup;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 
@@ -71,13 +70,12 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	 * @return Default value if found, null otherwise
 	 */
 	public static SolverParameterGroup findByName(String name) {
-		List list = (new SolverParameterGroupDAO()).getSession().
-			createCriteria(SolverParameterGroup.class).add(Restrictions.eq("name", name)).list();
-
-		if (!list.isEmpty())
-			return (SolverParameterGroup)list.get(0);
-		
-		return null;
+		return SolverParameterGroupDAO.getInstance().getSession()
+				.createQuery("from SolverParameterGroup where name = :name", SolverParameterGroup.class)
+				.setParameter("name", name)
+				.setCacheable(true)
+				.setMaxResults(1)
+                .uniqueResult();
 	}
 	
 	/**

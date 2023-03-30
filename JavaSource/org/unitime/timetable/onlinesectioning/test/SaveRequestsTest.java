@@ -41,7 +41,7 @@ public class SaveRequestsTest extends OnlineSectioningTestFwk {
 		
 		for (final Long studentId: (List<Long>)hibSession.createQuery(
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
-				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
+				.setParameter("sessionId", getServer().getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			saveRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {

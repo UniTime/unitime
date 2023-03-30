@@ -20,10 +20,8 @@
 package org.unitime.timetable.model;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
-import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseSettings;
 import org.unitime.timetable.model.dao.SettingsDAO;
@@ -98,31 +96,12 @@ public class Settings extends BaseSettings {
 	 * @return Default value if found, null otherwise
 	 */
 	public static Settings getSetting(String key) {
-	    Settings settings = null;
-		org.hibernate.Session hibSession = null;
-	    
-        try {
-            SettingsDAO sDao = new SettingsDAO();
-			hibSession = sDao.getSession();
-            
-			List settingsList = hibSession.createCriteria(Settings.class)
-			.add(Restrictions.eq("key", key))
-			.setCacheable(true)
-			.list();
-			
-			if(settingsList.size()!=0) 
-			    settings = (Settings) settingsList.get(0);
-			    
-	    }
-	    catch (Exception e) {
-			Debug.error(e);
-			settings = null;
-	    }
-	    finally {
-	    	//if (hibSession!=null && hibSession.isOpen()) hibSession.close();
-	    }
-	    
-	    return settings;
+		return SettingsDAO.getInstance().getSession()
+				.createQuery("from Settings where key = :key", Settings.class)
+				.setParameter("key", key)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 	
 }

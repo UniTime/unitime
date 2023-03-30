@@ -54,7 +54,7 @@ public class TravelTimesExport extends BaseExport {
 	        Map<Long, Map<Long, Integer>> matrix = new HashMap<Long, Map<Long,Integer>>();
 	        for (TravelTime travel: (List<TravelTime>)getHibSession().createQuery(
     			"from TravelTime where session.uniqueId = :sessionId")
-    			.setLong("sessionId", session.getUniqueId()).list()) {
+    			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Map<Long, Integer> m = matrix.get(travel.getLocation1Id());
 	        	if (m == null) {
 	        		m = new HashMap<Long, Integer>();

@@ -37,7 +37,16 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.type.BooleanType;
+import org.hibernate.type.ByteType;
 import org.hibernate.type.CollectionType;
+import org.hibernate.type.DateType;
+import org.hibernate.type.DoubleType;
+import org.hibernate.type.FloatType;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.LongType;
+import org.hibernate.type.ShortType;
+import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -98,7 +107,7 @@ public class SavedHqlExportToCSV implements Exporter {
 			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
 		} catch (NumberFormatException e) {}
 		if (hql == null)
-			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setString("name", report).setMaxResults(1).uniqueResult();
+			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setParameter("name", report, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();
@@ -228,7 +237,7 @@ public class SavedHqlExportToCSV implements Exporter {
 			if (hql.indexOf("%USER%") >= 0)
 				hql = hql.replace("%USER%", HibernateUtil.escapeSql(user.getExternalUserId()));
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
-			org.hibernate.Query q = hibSession.createQuery(hql);
+			org.hibernate.query.Query q = hibSession.createQuery(hql);
 			if (maxRows > 0)
 				q.setMaxResults(maxRows);
 			if (fromRow > 0)
@@ -240,25 +249,25 @@ public class SavedHqlExportToCSV implements Exporter {
 					for (SavedHQLInterface.IdValue v: options)
 						if (parameter.getName().equals(v.getValue())) { value = v.getText(); break; }
 					if (parameter.getType().equalsIgnoreCase("boolean")) {
-						q.setBoolean(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)));
+						q.setParameter(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)), BooleanType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("long")) {
-						q.setLong(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value), LongType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("slot") || parameter.getType().equalsIgnoreCase("time")) {
-						q.setInteger(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value), IntegerType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("double")) {
-						q.setDouble(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value), DoubleType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("float")) {
-						q.setFloat(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value), FloatType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("short")) {
-						q.setShort(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value), ShortType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("byte")) {
-						q.setByte(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value), ByteType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("date")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
-						q.setDate(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), DateType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("datetime") || parameter.getType().equalsIgnoreCase("timestamp")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
-						q.setDate(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), DateType.INSTANCE);
 					} else {
 						for (SavedHQL.Option option: SavedHQL.Option.values()) {
 							if (parameter.getType().equalsIgnoreCase(option.name())) {
@@ -286,12 +295,12 @@ public class SavedHqlExportToCSV implements Exporter {
 									} catch (NumberFormatException e) {
 										id  =  option.lookupValue(user, value);
 									}
-									q.setLong(parameter.getName(), id == null ? -1l : id);
+									q.setParameter(parameter.getName(), id == null ? -1l : id, LongType.INSTANCE);
 								}
 								continue parameters;
 							}
 						}
-						q.setString(parameter.getName(), value);
+						q.setParameter(parameter.getName(), value, StringType.INSTANCE);
 					}
 				}
 			}
@@ -349,7 +358,10 @@ public class SavedHqlExportToCSV implements Exporter {
     			if (x == null) {
     				len++;
     			} else {
-            		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
             		if (meta == null) {
             			len++;
             		} else {
@@ -362,7 +374,10 @@ public class SavedHqlExportToCSV implements Exporter {
     			}
     		}
     	} else {
-    		ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
     		if (meta == null) {
     			len++;
     		} else {
@@ -396,7 +411,10 @@ public class SavedHqlExportToCSV implements Exporter {
 					else
 						ret[idx++] = "Column" + (a + 1);
 				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+					ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
 					if (meta == null) {
 						if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
 							ret[idx++] = alias[a];
@@ -414,7 +432,10 @@ public class SavedHqlExportToCSV implements Exporter {
 				a++;					
 			}
 		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
 			if (meta == null) {
 				if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
 					ret[0] = alias[0];
@@ -446,8 +467,11 @@ public class SavedHqlExportToCSV implements Exporter {
 				if (x == null) {
 					ret[idx++] = "";
 				} else {
-					ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-					if (meta == null) {
+					ClassMetadata meta = null;
+            		try {
+            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
+            		} catch (MappingException e) {}
+            		if (meta == null) {
 						ret[idx++] = toString(x);
 					} else {
 						if (meta.getIdentifierPropertyName() != null)
@@ -460,7 +484,10 @@ public class SavedHqlExportToCSV implements Exporter {
 				}
 			}
 		} else {
-			ClassMetadata meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+			ClassMetadata meta = null;
+    		try {
+    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
+    		} catch (MappingException e) {}
 			if (meta == null) {
 				ret[0] = toString(o);
 			} else {

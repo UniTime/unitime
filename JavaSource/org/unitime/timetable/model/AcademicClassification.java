@@ -69,7 +69,7 @@ public class AcademicClassification extends BaseAcademicClassification {
 	    List l = hibSession.createQuery(
 	    		"select c from AcademicClassification as c where c.session.uniqueId=:sessionId " +
 	    		"order by c.name").
-	    	setLong("sessionId",sessionId.longValue()).setCacheable(true).list();
+	    	setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		return l;
 	}
 
@@ -133,8 +133,8 @@ public class AcademicClassification extends BaseAcademicClassification {
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code").
-         setLong("sessionId", sessionId.longValue()).
-         setString("code", code).
+         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -149,8 +149,8 @@ public class AcademicClassification extends BaseAcademicClassification {
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.externalUniqueId=:externalUniqueId").
-         setLong("sessionId", sessionId.longValue()).
-         setString("externalUniqueId", externalId).
+         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+         setParameter("externalUniqueId", externalId, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -166,7 +166,7 @@ public class AcademicClassification extends BaseAcademicClassification {
     public boolean isUsed(org.hibernate.Session hibSession) {
     	return ((Number)(hibSession == null ? AcademicClassificationDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from CurriculumClassification c inner join c.academicClassification f where f.uniqueId = :clasfId")
-    			.setLong("clasfId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("clasfId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
 }

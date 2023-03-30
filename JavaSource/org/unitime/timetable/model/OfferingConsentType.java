@@ -64,7 +64,7 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 		if (referenceString == null || referenceString.isEmpty()) return null;
 		return (OfferingConsentType)OfferingConsentTypeDAO.getInstance().getSession().createQuery(
 				"from OfferingConsentType where reference = :reference")
-				.setString("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 }

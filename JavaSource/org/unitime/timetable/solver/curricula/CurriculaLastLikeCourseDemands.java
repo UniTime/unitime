@@ -121,7 +121,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 				Set<Curriculum> curriculaSet = new HashSet<Curriculum>(hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
 						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-						.setLong("sessionId", session.getUniqueId()).list());
+						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				// include children curricula
 				curriculaSet.addAll(
 						hibSession.createQuery(
@@ -129,7 +129,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 							"where c.academicArea = d.academicArea and d.multipleMajors = true and size(c.majors) <= 1 and size(c.majors) < size(d.majors) and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = c.uniqueId and m not in elements(d.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-							.setLong("sessionId", session.getUniqueId()).list()
+							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()
 						);
 				// include parent curricula
 				curriculaSet.addAll(
@@ -138,7 +138,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 							"where c.multipleMajors = true and size(c.majors) >= 1 and size(c.majors) > size(d.majors) and c.academicArea = d.academicArea and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = d.uniqueId and m not in elements(c.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
-							.setLong("sessionId", session.getUniqueId()).list());
+							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				curricula = new ArrayList<Curriculum>(curriculaSet);
 			}
 		}
@@ -146,7 +146,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 		if (curricula == null) {
 			curricula = hibSession.createQuery(
 					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
-					.setLong("sessionId", session.getUniqueId()).list();
+					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 		}
 
 		List<Initialization> inits = new ArrayList<Initialization>();
@@ -188,9 +188,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 				// students with no major
 				if (!cc.getCurriculum().isMultipleMajors())
 					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
-						.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-						.setString("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation())
-						.setString("clasfCode", cc.getAcademicClassification().getCode())
+						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true).list();
 			} else if (!cc.getCurriculum().isMultipleMajors() || cc.getCurriculum().getMajors().size() == 1) {
 				List<String> codes = new ArrayList<String>();
@@ -198,9 +198,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 					codes.add(major.getCode());
 				// students with one major
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.code in :majorCodes")
-						.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-						.setString("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation())
-						.setString("clasfCode", cc.getAcademicClassification().getCode())
+						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE)
 						.setParameterList("majorCodes", codes)
 						.setCacheable(true).list();
 			} else {
@@ -217,12 +217,12 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 					params.put("m" + idx, major.getCode());
 					idx ++;
 				}
-				org.hibernate.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
-						.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
-						.setString("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation())
-						.setString("clasfCode", cc.getAcademicClassification().getCode());
+				org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE);
 				for (Map.Entry<String, String> e: params.entrySet())
-					q.setString(e.getKey(), e.getValue());
+					q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
 				lines = q.setCacheable(true).list();
 			}
 			if (lines != null)

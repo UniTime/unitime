@@ -80,7 +80,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 			Lock lock = server.lockOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId(),
 					(List<Long>)helper.getHibSession().createQuery(
 							"select e.student.uniqueId from StudentClassEnrollment e where "+
-			                "e.clazz.uniqueId = :classId").setLong("classId", classId).list(),
+			                "e.clazz.uniqueId = :classId").setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE).list(),
 			                name());
 			try {
 				helper.beginTransaction();
