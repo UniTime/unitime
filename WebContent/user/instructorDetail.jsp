@@ -134,7 +134,7 @@
 			<TD>
 				<s:iterator value="#request.prefLevelsList" var="prLevel">
 					<s:if test="form.teachingPreference == #prLevel.prefProlog">
-						<s:if test="#prLevel.prefProlog == 0">
+						<s:if test="#prLevel.prefProlog.equalsIgnoreCase('0')">
 							<b><s:property value="#prLevel.prefName"/></b>
 						</s:if>
 						<s:else>
