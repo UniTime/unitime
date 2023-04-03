@@ -889,27 +889,29 @@ public class ExamGridTable {
 	        iId = id;
 	        iName = name;
 	        iSize = size;
-	        for (Iterator i=assignments.iterator();i.hasNext();) {
-	            ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
-	            Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
-	            if (a==null) {
-	                a = new Vector<ExamAssignmentInfo>();
-	                iAssignments.put(exam.getPeriod(), a);
-	            }
-	            a.add(exam); iNrAssignments++;
-	        }
+	        if (assignments != null)
+		        for (Iterator i=assignments.iterator();i.hasNext();) {
+		            ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
+		            Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
+		            if (a==null) {
+		                a = new Vector<ExamAssignmentInfo>();
+		                iAssignments.put(exam.getPeriod(), a);
+		            }
+		            a.add(exam); iNrAssignments++;
+		        }
 	    }
 	    
 	    public void addAssignments(Collection<ExamAssignmentInfo> assignments) {
-            for (Iterator i=assignments.iterator();i.hasNext();) {
-                ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
-                Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
-                if (a==null) {
-                    a = new Vector<ExamAssignmentInfo>();
-                    iAssignments.put(exam.getPeriod(), a);
-                }
-                a.add(exam); iNrAssignments++;
-            }
+	    	if (assignments != null)
+	            for (Iterator i=assignments.iterator();i.hasNext();) {
+	                ExamAssignmentInfo exam = (ExamAssignmentInfo)i.next();
+	                Vector<ExamAssignmentInfo> a = iAssignments.get(exam.getPeriod());
+	                if (a==null) {
+	                    a = new Vector<ExamAssignmentInfo>();
+	                    iAssignments.put(exam.getPeriod(), a);
+	                }
+	                a.add(exam); iNrAssignments++;
+	            }
 	    }
 	    
 	    public Long getId() {
