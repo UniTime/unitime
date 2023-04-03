@@ -67,6 +67,28 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Examination Timetable: Instructor Timetable</name>
+			<description>
+				<line>Fixed a NullPointerException thrown when there is an instructor that is assigned only to an exam (or exams) that is not loaded in the solver.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Detail: Teaching Preference</name>
+			<description>
+				<line>Corrected the teaching preference permission check on the Instructor Detail page.</line>
+				<line>This fixes the NumberFormatException when the instructor's teaching prefrence is Prohibited but the maximal teaching load is set.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solver Parameters: Visible</name>
+			<description>
+				<line>Make sure that a new parameter is created as visible when the Visible toggle is not changed (which returns null).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>	
 	<version>4.7.81</version>
