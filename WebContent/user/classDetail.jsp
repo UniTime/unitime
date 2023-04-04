@@ -107,7 +107,7 @@
 						<s:property value="form.parentClassName"/>
 					</s:if>
 					<s:else>
-						<A href="classDetail.action?cid=${form.parentClassId}/>"><s:property value="form.parentClassName"/></A>
+						<A href="classDetail.action?cid=${form.parentClassId}"><s:property value="form.parentClassName"/></A>
 					</s:else>
 				</TD>
 			</TR>

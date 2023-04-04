@@ -88,6 +88,12 @@
 				<line>Make sure that a new parameter is created as visible when the Visible toggle is not changed (which returns null).</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Detail: Parent Class</name>
+			<description>
+				<line>Corrected Parent Class link.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>	
