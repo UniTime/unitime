@@ -79,7 +79,7 @@
 			<name>Instructor Detail: Teaching Preference</name>
 			<description>
 				<line>Corrected the teaching preference permission check on the Instructor Detail page.</line>
-				<line>This fixes the NumberFormatException when the instructor's teaching prefrence is Prohibited but the maximal teaching load is set.</line>
+				<line>This fixes the NumberFormatException when the instructor's teaching preference is Prohibited but the maximal teaching load is set.</line>
 			</description>
 		</item>
 		<item>
@@ -92,6 +92,12 @@
 			<name>Class Detail: Parent Class</name>
 			<description>
 				<line>Corrected Parent Class link.</line>
+			</description>
+		</item>
+		<item>
+			<name>Academic Session Import: Curriculum Reservations</name>
+			<description>
+				<line>Fix CurriculumReservation.area -&gt; CurriculumReservation.areas when importing session from an older instance of UniTime (before the change of the relation to academic areas from one-to-many to many-to-many).</line>
 			</description>
 		</item>
 	</category>
