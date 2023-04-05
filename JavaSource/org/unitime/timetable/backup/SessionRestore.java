@@ -87,6 +87,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionType;
@@ -814,7 +815,7 @@ public class SessionRestore implements SessionRestoreInterface {
 						}
 					}
 				}
-			}			
+			}
 		}
 		
 		public void fixRelations() {
@@ -967,6 +968,14 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof StudentAreaClassificationMajor) {
 				StudentAreaClassificationMajor m = (StudentAreaClassificationMajor)getObject();
 				if (m.getWeight() == null) m.setWeight(1.0);
+			}
+			if (getObject() instanceof CurriculumReservation) {
+				TableData.Element a = getElement("area");
+				if (a != null) {
+					AcademicArea area = (AcademicArea)get(AcademicArea.class, a.getValue(0));	
+					CurriculumReservation cr = (CurriculumReservation)getObject();
+					cr.addToareas(area);
+				}
 			}
 		}
 	}
