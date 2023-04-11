@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomPrefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomPrefDAO extends BaseRoomPrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.RoomPref;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RoomPrefDAO () {}
+public class RoomPrefDAO extends _RootDAO<RoomPref,Long> {
+	private static RoomPrefDAO sInstance;
 
+	public RoomPrefDAO() {}
 
+	public static RoomPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomPrefDAO();
+		return sInstance;
+	}
+
+	public Class<RoomPref> getReferenceClass() {
+		return RoomPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RoomPref> findByRoom(org.hibernate.Session hibSession, Long roomId) {
+		return hibSession.createQuery("from RoomPref x where x.room.uniqueId = :roomId").setParameter("roomId", roomId).list();
+	}
 }

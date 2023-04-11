@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseOverrideReservationDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.OverrideReservation;
 
-public class OverrideReservationDAO extends BaseOverrideReservationDAO {
+public class OverrideReservationDAO extends _RootDAO<OverrideReservation,Long> {
+	private static OverrideReservationDAO sInstance;
 
 	public OverrideReservationDAO() {}
 
+	public static OverrideReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new OverrideReservationDAO();
+		return sInstance;
+	}
+
+	public Class<OverrideReservation> getReferenceClass() {
+		return OverrideReservation.class;
+	}
 }

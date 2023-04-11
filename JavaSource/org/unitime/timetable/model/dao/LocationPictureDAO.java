@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseLocationPictureDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.LocationPicture;
 
-public class LocationPictureDAO extends BaseLocationPictureDAO {
+public class LocationPictureDAO extends _RootDAO<LocationPicture,Long> {
+	private static LocationPictureDAO sInstance;
 
 	public LocationPictureDAO() {}
 
+	public static LocationPictureDAO getInstance() {
+		if (sInstance == null) sInstance = new LocationPictureDAO();
+		return sInstance;
+	}
+
+	public Class<LocationPicture> getReferenceClass() {
+		return LocationPicture.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LocationPicture> findByType(org.hibernate.Session hibSession, Long typeId) {
+		return hibSession.createQuery("from LocationPicture x where x.type.uniqueId = :typeId").setParameter("typeId", typeId).list();
+	}
 }

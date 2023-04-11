@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseCatalogDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseCatalogDAO extends BaseCourseCatalogDAO {
+import java.util.List;
+import org.unitime.timetable.model.CourseCatalog;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseCatalogDAO () {}
+public class CourseCatalogDAO extends _RootDAO<CourseCatalog,Long> {
+	private static CourseCatalogDAO sInstance;
 
+	public CourseCatalogDAO() {}
 
+	public static CourseCatalogDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseCatalogDAO();
+		return sInstance;
+	}
+
+	public Class<CourseCatalog> getReferenceClass() {
+		return CourseCatalog.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCatalog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from CourseCatalog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

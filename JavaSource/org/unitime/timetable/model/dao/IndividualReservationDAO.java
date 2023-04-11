@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseIndividualReservationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class IndividualReservationDAO extends BaseIndividualReservationDAO {
+import org.unitime.timetable.model.IndividualReservation;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public IndividualReservationDAO () {}
+public class IndividualReservationDAO extends _RootDAO<IndividualReservation,Long> {
+	private static IndividualReservationDAO sInstance;
 
+	public IndividualReservationDAO() {}
 
+	public static IndividualReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new IndividualReservationDAO();
+		return sInstance;
+	}
+
+	public Class<IndividualReservation> getReferenceClass() {
+		return IndividualReservation.class;
+	}
 }

@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseClassDurationTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.ClassDurationType;
 
-public class ClassDurationTypeDAO extends BaseClassDurationTypeDAO {
+public class ClassDurationTypeDAO extends _RootDAO<ClassDurationType,Long> {
+	private static ClassDurationTypeDAO sInstance;
 
 	public ClassDurationTypeDAO() {}
 
+	public static ClassDurationTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new ClassDurationTypeDAO();
+		return sInstance;
+	}
+
+	public Class<ClassDurationType> getReferenceClass() {
+		return ClassDurationType.class;
+	}
 }

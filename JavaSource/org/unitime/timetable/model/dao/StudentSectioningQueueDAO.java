@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentSectioningQueueDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentSectioningQueueDAO extends BaseStudentSectioningQueueDAO {
+import org.unitime.timetable.model.StudentSectioningQueue;
+
+public class StudentSectioningQueueDAO extends _RootDAO<StudentSectioningQueue,Long> {
+	private static StudentSectioningQueueDAO sInstance;
 
 	public StudentSectioningQueueDAO() {}
 
+	public static StudentSectioningQueueDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentSectioningQueueDAO();
+		return sInstance;
+	}
+
+	public Class<StudentSectioningQueue> getReferenceClass() {
+		return StudentSectioningQueue.class;
+	}
 }

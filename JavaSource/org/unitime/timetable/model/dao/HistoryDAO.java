@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseHistoryDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class HistoryDAO extends BaseHistoryDAO {
+import java.util.List;
+import org.unitime.timetable.model.History;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public HistoryDAO () {}
+public class HistoryDAO extends _RootDAO<History,Long> {
+	private static HistoryDAO sInstance;
 
+	public HistoryDAO() {}
 
+	public static HistoryDAO getInstance() {
+		if (sInstance == null) sInstance = new HistoryDAO();
+		return sInstance;
+	}
+
+	public Class<History> getReferenceClass() {
+		return History.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<History> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from History x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

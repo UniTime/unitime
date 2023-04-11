@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorAttributeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.InstructorAttribute;
 
-public class InstructorAttributeDAO extends BaseInstructorAttributeDAO {
+public class InstructorAttributeDAO extends _RootDAO<InstructorAttribute,Long> {
+	private static InstructorAttributeDAO sInstance;
 
 	public InstructorAttributeDAO() {}
 
+	public static InstructorAttributeDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorAttributeDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorAttribute> getReferenceClass() {
+		return InstructorAttribute.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorAttribute> findByType(org.hibernate.Session hibSession, Long typeId) {
+		return hibSession.createQuery("from InstructorAttribute x where x.type.uniqueId = :typeId").setParameter("typeId", typeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorAttribute> findByParentAttribute(org.hibernate.Session hibSession, Long parentAttributeId) {
+		return hibSession.createQuery("from InstructorAttribute x where x.parentAttribute.uniqueId = :parentAttributeId").setParameter("parentAttributeId", parentAttributeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorAttribute> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from InstructorAttribute x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorAttribute> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from InstructorAttribute x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
 }

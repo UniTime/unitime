@@ -19,18 +19,49 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseWaitListDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class WaitListDAO extends BaseWaitListDAO {
+import java.util.List;
+import org.unitime.timetable.model.WaitList;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public WaitListDAO () {}
+public class WaitListDAO extends _RootDAO<WaitList,Long> {
+	private static WaitListDAO sInstance;
 
+	public WaitListDAO() {}
 
+	public static WaitListDAO getInstance() {
+		if (sInstance == null) sInstance = new WaitListDAO();
+		return sInstance;
+	}
+
+	public Class<WaitList> getReferenceClass() {
+		return WaitList.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from WaitList x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
+		return hibSession.createQuery("from WaitList x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByEnrolledCourse(org.hibernate.Session hibSession, Long enrolledCourseId) {
+		return hibSession.createQuery("from WaitList x where x.enrolledCourse.uniqueId = :enrolledCourseId").setParameter("enrolledCourseId", enrolledCourseId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
+		return hibSession.createQuery("from WaitList x where x.courseDemand.uniqueId = :courseDemandId").setParameter("courseDemandId", courseDemandId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<WaitList> findBySwapCourseOffering(org.hibernate.Session hibSession, Long swapCourseOfferingId) {
+		return hibSession.createQuery("from WaitList x where x.swapCourseOffering.uniqueId = :swapCourseOfferingId").setParameter("swapCourseOfferingId", swapCourseOfferingId).list();
+	}
 }

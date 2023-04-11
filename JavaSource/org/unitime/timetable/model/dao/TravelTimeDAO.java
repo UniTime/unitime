@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTravelTimeDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class TravelTimeDAO extends BaseTravelTimeDAO {
+import java.util.List;
+import org.unitime.timetable.model.TravelTime;
+
+public class TravelTimeDAO extends _RootDAO<TravelTime,Long> {
+	private static TravelTimeDAO sInstance;
 
 	public TravelTimeDAO() {}
 
+	public static TravelTimeDAO getInstance() {
+		if (sInstance == null) sInstance = new TravelTimeDAO();
+		return sInstance;
+	}
+
+	public Class<TravelTime> getReferenceClass() {
+		return TravelTime.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TravelTime> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from TravelTime x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

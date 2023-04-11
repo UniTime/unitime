@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolverInfoDefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolverInfoDefDAO extends BaseSolverInfoDefDAO {
+import org.unitime.timetable.model.SolverInfoDef;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolverInfoDefDAO () {}
+public class SolverInfoDefDAO extends _RootDAO<SolverInfoDef,Long> {
+	private static SolverInfoDefDAO sInstance;
 
+	public SolverInfoDefDAO() {}
 
+	public static SolverInfoDefDAO getInstance() {
+		if (sInstance == null) sInstance = new SolverInfoDefDAO();
+		return sInstance;
+	}
+
+	public Class<SolverInfoDef> getReferenceClass() {
+		return SolverInfoDef.class;
+	}
 }

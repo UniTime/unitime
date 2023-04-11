@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseLearningManagementSystemInfoDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 
-public class LearningManagementSystemInfoDAO extends BaseLearningManagementSystemInfoDAO {
+public class LearningManagementSystemInfoDAO extends _RootDAO<LearningManagementSystemInfo,Long> {
+	private static LearningManagementSystemInfoDAO sInstance;
 
 	public LearningManagementSystemInfoDAO() {}
 
+	public static LearningManagementSystemInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new LearningManagementSystemInfoDAO();
+		return sInstance;
+	}
+
+	public Class<LearningManagementSystemInfo> getReferenceClass() {
+		return LearningManagementSystemInfo.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LearningManagementSystemInfo> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from LearningManagementSystemInfo x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

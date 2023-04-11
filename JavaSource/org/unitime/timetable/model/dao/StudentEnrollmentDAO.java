@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentEnrollmentDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentEnrollmentDAO extends BaseStudentEnrollmentDAO {
+import java.util.List;
+import org.unitime.timetable.model.StudentEnrollment;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StudentEnrollmentDAO () {}
+public class StudentEnrollmentDAO extends _RootDAO<StudentEnrollment,Long> {
+	private static StudentEnrollmentDAO sInstance;
 
+	public StudentEnrollmentDAO() {}
 
+	public static StudentEnrollmentDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentEnrollmentDAO();
+		return sInstance;
+	}
+
+	public Class<StudentEnrollment> getReferenceClass() {
+		return StudentEnrollment.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
+		return hibSession.createQuery("from StudentEnrollment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentEnrollment> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from StudentEnrollment x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

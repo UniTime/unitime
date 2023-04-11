@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomFeatureTypeDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomFeatureTypeDAO extends BaseRoomFeatureTypeDAO {
+import org.unitime.timetable.model.RoomFeatureType;
+
+public class RoomFeatureTypeDAO extends _RootDAO<RoomFeatureType,Long> {
+	private static RoomFeatureTypeDAO sInstance;
 
 	public RoomFeatureTypeDAO() {}
 
+	public static RoomFeatureTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomFeatureTypeDAO();
+		return sInstance;
+	}
+
+	public Class<RoomFeatureType> getReferenceClass() {
+		return RoomFeatureType.class;
+	}
 }

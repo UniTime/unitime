@@ -19,18 +19,49 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseCreditUnitConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseCreditUnitConfigDAO extends BaseCourseCreditUnitConfigDAO {
+import java.util.List;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseCreditUnitConfigDAO () {}
+public class CourseCreditUnitConfigDAO extends _RootDAO<CourseCreditUnitConfig,Long> {
+	private static CourseCreditUnitConfigDAO sInstance;
 
+	public CourseCreditUnitConfigDAO() {}
 
+	public static CourseCreditUnitConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseCreditUnitConfigDAO();
+		return sInstance;
+	}
+
+	public Class<CourseCreditUnitConfig> getReferenceClass() {
+		return CourseCreditUnitConfig.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findByCourseCreditFormat(org.hibernate.Session hibSession, Long courseCreditFormatId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseCreditFormat.uniqueId = :courseCreditFormatId").setParameter("courseCreditFormatId", courseCreditFormatId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findByCreditUnitType(org.hibernate.Session hibSession, Long creditUnitTypeId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditUnitType.uniqueId = :creditUnitTypeId").setParameter("creditUnitTypeId", creditUnitTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findBySubpartOwner(org.hibernate.Session hibSession, Long subpartOwnerId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.subpartOwner.uniqueId = :subpartOwnerId").setParameter("subpartOwnerId", subpartOwnerId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findByCourseOwner(org.hibernate.Session hibSession, Long courseOwnerId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId").setParameter("courseOwnerId", courseOwnerId).list();
+	}
 }

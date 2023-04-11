@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorCourseRequirementDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.InstructorCourseRequirement;
 
-public class InstructorCourseRequirementDAO extends BaseInstructorCourseRequirementDAO {
+public class InstructorCourseRequirementDAO extends _RootDAO<InstructorCourseRequirement,Long> {
+	private static InstructorCourseRequirementDAO sInstance;
 
 	public InstructorCourseRequirementDAO() {}
 
+	public static InstructorCourseRequirementDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorCourseRequirementDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorCourseRequirement> getReferenceClass() {
+		return InstructorCourseRequirement.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorCourseRequirement> findByInstructorSurvey(org.hibernate.Session hibSession, Long instructorSurveyId) {
+		return hibSession.createQuery("from InstructorCourseRequirement x where x.instructorSurvey.uniqueId = :instructorSurveyId").setParameter("instructorSurveyId", instructorSurveyId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorCourseRequirement> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
+		return hibSession.createQuery("from InstructorCourseRequirement x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
+	}
 }

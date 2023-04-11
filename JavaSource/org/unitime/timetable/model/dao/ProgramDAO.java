@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseProgramDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.Program;
 
-public class ProgramDAO extends BaseProgramDAO {
+public class ProgramDAO extends _RootDAO<Program,Long> {
+	private static ProgramDAO sInstance;
 
 	public ProgramDAO() {}
 
+	public static ProgramDAO getInstance() {
+		if (sInstance == null) sInstance = new ProgramDAO();
+		return sInstance;
+	}
+
+	public Class<Program> getReferenceClass() {
+		return Program.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Program> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Program x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

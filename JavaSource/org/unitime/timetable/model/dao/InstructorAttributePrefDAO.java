@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorAttributePrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.InstructorAttributePref;
 
-public class InstructorAttributePrefDAO extends BaseInstructorAttributePrefDAO {
+public class InstructorAttributePrefDAO extends _RootDAO<InstructorAttributePref,Long> {
+	private static InstructorAttributePrefDAO sInstance;
 
 	public InstructorAttributePrefDAO() {}
 
+	public static InstructorAttributePrefDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorAttributePrefDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorAttributePref> getReferenceClass() {
+		return InstructorAttributePref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorAttributePref> findByAttribute(org.hibernate.Session hibSession, Long attributeId) {
+		return hibSession.createQuery("from InstructorAttributePref x where x.attribute.uniqueId = :attributeId").setParameter("attributeId", attributeId).list();
+	}
 }

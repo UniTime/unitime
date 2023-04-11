@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSectioningSolutionLogDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.SectioningSolutionLog;
 
-public class SectioningSolutionLogDAO extends BaseSectioningSolutionLogDAO {
+public class SectioningSolutionLogDAO extends _RootDAO<SectioningSolutionLog,Long> {
+	private static SectioningSolutionLogDAO sInstance;
 
 	public SectioningSolutionLogDAO() {}
 
+	public static SectioningSolutionLogDAO getInstance() {
+		if (sInstance == null) sInstance = new SectioningSolutionLogDAO();
+		return sInstance;
+	}
+
+	public Class<SectioningSolutionLog> getReferenceClass() {
+		return SectioningSolutionLog.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SectioningSolutionLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from SectioningSolutionLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SectioningSolutionLog> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
+		return hibSession.createQuery("from SectioningSolutionLog x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
+	}
 }

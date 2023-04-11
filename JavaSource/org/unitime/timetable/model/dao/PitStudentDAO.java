@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitStudentDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitStudent;
 
-public class PitStudentDAO extends BasePitStudentDAO {
+public class PitStudentDAO extends _RootDAO<PitStudent,Long> {
+	private static PitStudentDAO sInstance;
 
 	public PitStudentDAO() {}
 
+	public static PitStudentDAO getInstance() {
+		if (sInstance == null) sInstance = new PitStudentDAO();
+		return sInstance;
+	}
+
+	public Class<PitStudent> getReferenceClass() {
+		return PitStudent.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudent> findByPointInTimeData(org.hibernate.Session hibSession, Long pointInTimeDataId) {
+		return hibSession.createQuery("from PitStudent x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setParameter("pointInTimeDataId", pointInTimeDataId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudent> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from PitStudent x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
 }

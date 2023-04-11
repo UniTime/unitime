@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolutionDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolutionDAO extends BaseSolutionDAO {
+import java.util.List;
+import org.unitime.timetable.model.Solution;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolutionDAO () {}
+public class SolutionDAO extends _RootDAO<Solution,Long> {
+	private static SolutionDAO sInstance;
 
+	public SolutionDAO() {}
 
+	public static SolutionDAO getInstance() {
+		if (sInstance == null) sInstance = new SolutionDAO();
+		return sInstance;
+	}
+
+	public Class<Solution> getReferenceClass() {
+		return Solution.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Solution> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
+		return hibSession.createQuery("from Solution x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
+	}
 }

@@ -19,41 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import java.util.List;
-
-import org.hibernate.criterion.Order;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.base.BaseSubjectAreaDAO;
-
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SubjectAreaDAO extends BaseSubjectAreaDAO {
+import java.util.List;
+import org.unitime.timetable.model.SubjectArea;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SubjectAreaDAO () {}
+public class SubjectAreaDAO extends _RootDAO<SubjectArea,Long> {
+	private static SubjectAreaDAO sInstance;
 
-	public Order getDefaultOrder() {
-		return Order.asc(SubjectArea.PROP_SUBJECT_AREA_ABBREVIATION);
+	public SubjectAreaDAO() {}
+
+	public static SubjectAreaDAO getInstance() {
+		if (sInstance == null) sInstance = new SubjectAreaDAO();
+		return sInstance;
 	}
-	
-	public SubjectArea getSubjectAreaForSession(String subjectAreaAbbreviation, Session session){
-	     StringBuffer sb = new StringBuffer();
-	     sb.append("select sa.* from SubjectArea as sa ");
-	     sb.append(" where sa.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "' ");
-	     sb.append(" and sa.session.getUniqueId = " + session.getUniqueId());
-	     
-	     List results = getSession().createQuery(sb.toString()).list();
-	     if (results.size() != 1){
-	    	 return(null);
-	     } else {
-	    	 return((SubjectArea) results.get(0));
-	     }
+
+	public Class<SubjectArea> getReferenceClass() {
+		return SubjectArea.class;
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public List<SubjectArea> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from SubjectArea x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SubjectArea> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from SubjectArea x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SubjectArea> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
+		return hibSession.createQuery("from SubjectArea x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
+	}
 }

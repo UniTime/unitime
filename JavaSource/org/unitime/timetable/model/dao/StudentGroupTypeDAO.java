@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentGroupTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.StudentGroupType;
 
-public class StudentGroupTypeDAO extends BaseStudentGroupTypeDAO {
+public class StudentGroupTypeDAO extends _RootDAO<StudentGroupType,Long> {
+	private static StudentGroupTypeDAO sInstance;
 
 	public StudentGroupTypeDAO() {}
 
+	public static StudentGroupTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentGroupTypeDAO();
+		return sInstance;
+	}
+
+	public Class<StudentGroupType> getReferenceClass() {
+		return StudentGroupType.class;
+	}
 }

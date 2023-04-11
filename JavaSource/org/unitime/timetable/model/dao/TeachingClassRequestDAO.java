@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTeachingClassRequestDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.TeachingClassRequest;
 
-public class TeachingClassRequestDAO extends BaseTeachingClassRequestDAO {
+public class TeachingClassRequestDAO extends _RootDAO<TeachingClassRequest,Long> {
+	private static TeachingClassRequestDAO sInstance;
 
 	public TeachingClassRequestDAO() {}
 
+	public static TeachingClassRequestDAO getInstance() {
+		if (sInstance == null) sInstance = new TeachingClassRequestDAO();
+		return sInstance;
+	}
+
+	public Class<TeachingClassRequest> getReferenceClass() {
+		return TeachingClassRequest.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingClassRequest> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
+		return hibSession.createQuery("from TeachingClassRequest x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingClassRequest> findByTeachingClass(org.hibernate.Session hibSession, Long teachingClassId) {
+		return hibSession.createQuery("from TeachingClassRequest x where x.teachingClass.uniqueId = :teachingClassId").setParameter("teachingClassId", teachingClassId).list();
+	}
 }

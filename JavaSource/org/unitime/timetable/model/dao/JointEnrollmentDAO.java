@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseJointEnrollmentDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class JointEnrollmentDAO extends BaseJointEnrollmentDAO {
+import java.util.List;
+import org.unitime.timetable.model.JointEnrollment;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public JointEnrollmentDAO () {}
+public class JointEnrollmentDAO extends _RootDAO<JointEnrollment,Long> {
+	private static JointEnrollmentDAO sInstance;
 
+	public JointEnrollmentDAO() {}
 
+	public static JointEnrollmentDAO getInstance() {
+		if (sInstance == null) sInstance = new JointEnrollmentDAO();
+		return sInstance;
+	}
+
+	public Class<JointEnrollment> getReferenceClass() {
+		return JointEnrollment.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<JointEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
+		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<JointEnrollment> findByClass1(org.hibernate.Session hibSession, Long class1Id) {
+		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id").setParameter("class1Id", class1Id).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<JointEnrollment> findByClass2(org.hibernate.Session hibSession, Long class2Id) {
+		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id").setParameter("class2Id", class2Id).list();
+	}
 }

@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomDAO extends BaseRoomDAO {
+import java.util.List;
+import org.unitime.timetable.model.Room;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RoomDAO () {}
+public class RoomDAO extends _RootDAO<Room,Long> {
+	private static RoomDAO sInstance;
 
+	public RoomDAO() {}
 
+	public static RoomDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomDAO();
+		return sInstance;
+	}
+
+	public Class<Room> getReferenceClass() {
+		return Room.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Room> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
+		return hibSession.createQuery("from Room x where x.roomType.uniqueId = :roomTypeId").setParameter("roomTypeId", roomTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Room> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
+		return hibSession.createQuery("from Room x where x.building.uniqueId = :buildingId").setParameter("buildingId", buildingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Room> findByParentRoom(org.hibernate.Session hibSession, Long parentRoomId) {
+		return hibSession.createQuery("from Room x where x.parentRoom.uniqueId = :parentRoomId").setParameter("parentRoomId", parentRoomId).list();
+	}
 }

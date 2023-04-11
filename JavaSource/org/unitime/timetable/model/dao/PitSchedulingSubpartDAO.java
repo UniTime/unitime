@@ -19,10 +19,54 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitSchedulingSubpartDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitSchedulingSubpart;
 
-public class PitSchedulingSubpartDAO extends BasePitSchedulingSubpartDAO {
+public class PitSchedulingSubpartDAO extends _RootDAO<PitSchedulingSubpart,Long> {
+	private static PitSchedulingSubpartDAO sInstance;
 
 	public PitSchedulingSubpartDAO() {}
 
+	public static PitSchedulingSubpartDAO getInstance() {
+		if (sInstance == null) sInstance = new PitSchedulingSubpartDAO();
+		return sInstance;
+	}
+
+	public Class<PitSchedulingSubpart> getReferenceClass() {
+		return PitSchedulingSubpart.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findByCreditUnitType(org.hibernate.Session hibSession, Long creditUnitTypeId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditUnitType.uniqueId = :creditUnitTypeId").setParameter("creditUnitTypeId", creditUnitTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.itype.itype = :itypeId").setParameter("itypeId", itypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findBySchedulingSubpart(org.hibernate.Session hibSession, Long schedulingSubpartId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.schedulingSubpart.uniqueId = :schedulingSubpartId").setParameter("schedulingSubpartId", schedulingSubpartId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findByPitParentSubpart(org.hibernate.Session hibSession, Long pitParentSubpartId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitParentSubpart.uniqueId = :pitParentSubpartId").setParameter("pitParentSubpartId", pitParentSubpartId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitSchedulingSubpart> findByPitInstrOfferingConfig(org.hibernate.Session hibSession, Long pitInstrOfferingConfigId) {
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitInstrOfferingConfig.uniqueId = :pitInstrOfferingConfigId").setParameter("pitInstrOfferingConfigId", pitInstrOfferingConfigId).list();
+	}
 }

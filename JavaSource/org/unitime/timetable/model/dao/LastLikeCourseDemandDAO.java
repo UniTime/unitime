@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseLastLikeCourseDemandDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class LastLikeCourseDemandDAO extends BaseLastLikeCourseDemandDAO {
+import java.util.List;
+import org.unitime.timetable.model.LastLikeCourseDemand;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public LastLikeCourseDemandDAO () {}
+public class LastLikeCourseDemandDAO extends _RootDAO<LastLikeCourseDemand,Long> {
+	private static LastLikeCourseDemandDAO sInstance;
 
+	public LastLikeCourseDemandDAO() {}
 
+	public static LastLikeCourseDemandDAO getInstance() {
+		if (sInstance == null) sInstance = new LastLikeCourseDemandDAO();
+		return sInstance;
+	}
+
+	public Class<LastLikeCourseDemand> getReferenceClass() {
+		return LastLikeCourseDemand.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LastLikeCourseDemand> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from LastLikeCourseDemand x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LastLikeCourseDemand> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
+		return hibSession.createQuery("from LastLikeCourseDemand x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
+	}
 }

@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSponsoringOrganizationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SponsoringOrganizationDAO extends BaseSponsoringOrganizationDAO {
+import org.unitime.timetable.model.SponsoringOrganization;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SponsoringOrganizationDAO () {}
+public class SponsoringOrganizationDAO extends _RootDAO<SponsoringOrganization,Long> {
+	private static SponsoringOrganizationDAO sInstance;
 
+	public SponsoringOrganizationDAO() {}
 
+	public static SponsoringOrganizationDAO getInstance() {
+		if (sInstance == null) sInstance = new SponsoringOrganizationDAO();
+		return sInstance;
+	}
+
+	public Class<SponsoringOrganization> getReferenceClass() {
+		return SponsoringOrganization.class;
+	}
 }

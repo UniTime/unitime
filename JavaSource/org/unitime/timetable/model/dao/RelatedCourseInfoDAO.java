@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRelatedCourseInfoDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RelatedCourseInfoDAO extends BaseRelatedCourseInfoDAO {
+import java.util.List;
+import org.unitime.timetable.model.RelatedCourseInfo;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RelatedCourseInfoDAO () {}
+public class RelatedCourseInfoDAO extends _RootDAO<RelatedCourseInfo,Long> {
+	private static RelatedCourseInfoDAO sInstance;
 
+	public RelatedCourseInfoDAO() {}
 
+	public static RelatedCourseInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new RelatedCourseInfoDAO();
+		return sInstance;
+	}
+
+	public Class<RelatedCourseInfo> getReferenceClass() {
+		return RelatedCourseInfo.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RelatedCourseInfo> findByEvent(org.hibernate.Session hibSession, Long eventId) {
+		return hibSession.createQuery("from RelatedCourseInfo x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RelatedCourseInfo> findByCourse(org.hibernate.Session hibSession, Long courseId) {
+		return hibSession.createQuery("from RelatedCourseInfo x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
+	}
 }

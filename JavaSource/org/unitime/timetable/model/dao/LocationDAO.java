@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseLocationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class LocationDAO extends BaseLocationDAO {
+import java.util.List;
+import org.unitime.timetable.model.Location;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public LocationDAO () {}
+public class LocationDAO extends _RootDAO<Location,Long> {
+	private static LocationDAO sInstance;
 
+	public LocationDAO() {}
 
+	public static LocationDAO getInstance() {
+		if (sInstance == null) sInstance = new LocationDAO();
+		return sInstance;
+	}
+
+	public Class<Location> getReferenceClass() {
+		return Location.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Location> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Location x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Location> findByEventDepartment(org.hibernate.Session hibSession, Long eventDepartmentId) {
+		return hibSession.createQuery("from Location x where x.eventDepartment.uniqueId = :eventDepartmentId").setParameter("eventDepartmentId", eventDepartmentId).list();
+	}
 }

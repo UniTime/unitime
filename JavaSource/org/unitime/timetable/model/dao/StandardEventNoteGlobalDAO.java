@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStandardEventNoteGlobalDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StandardEventNoteGlobalDAO extends BaseStandardEventNoteGlobalDAO {
+import org.unitime.timetable.model.StandardEventNoteGlobal;
+
+public class StandardEventNoteGlobalDAO extends _RootDAO<StandardEventNoteGlobal,Long> {
+	private static StandardEventNoteGlobalDAO sInstance;
 
 	public StandardEventNoteGlobalDAO() {}
 
+	public static StandardEventNoteGlobalDAO getInstance() {
+		if (sInstance == null) sInstance = new StandardEventNoteGlobalDAO();
+		return sInstance;
+	}
+
+	public Class<StandardEventNoteGlobal> getReferenceClass() {
+		return StandardEventNoteGlobal.class;
+	}
 }

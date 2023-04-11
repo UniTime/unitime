@@ -19,18 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSchedulingSubpartDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SchedulingSubpartDAO extends BaseSchedulingSubpartDAO {
+import java.util.List;
+import org.unitime.timetable.model.SchedulingSubpart;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SchedulingSubpartDAO () {}
+public class SchedulingSubpartDAO extends _RootDAO<SchedulingSubpart,Long> {
+	private static SchedulingSubpartDAO sInstance;
 
+	public SchedulingSubpartDAO() {}
 
+	public static SchedulingSubpartDAO getInstance() {
+		if (sInstance == null) sInstance = new SchedulingSubpartDAO();
+		return sInstance;
+	}
+
+	public Class<SchedulingSubpart> getReferenceClass() {
+		return SchedulingSubpart.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setParameter("itypeId", itypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SchedulingSubpart> findByParentSubpart(org.hibernate.Session hibSession, Long parentSubpartId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setParameter("parentSubpartId", parentSubpartId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SchedulingSubpart> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SchedulingSubpart> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
+		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+	}
 }

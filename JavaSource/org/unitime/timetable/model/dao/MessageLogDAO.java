@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseMessageLogDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class MessageLogDAO extends BaseMessageLogDAO {
+import org.unitime.timetable.model.MessageLog;
+
+public class MessageLogDAO extends _RootDAO<MessageLog,Long> {
+	private static MessageLogDAO sInstance;
 
 	public MessageLogDAO() {}
 
+	public static MessageLogDAO getInstance() {
+		if (sInstance == null) sInstance = new MessageLogDAO();
+		return sInstance;
+	}
+
+	public Class<MessageLog> getReferenceClass() {
+		return MessageLog.class;
+	}
 }

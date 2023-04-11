@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseVariableFixedCreditUnitConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class VariableFixedCreditUnitConfigDAO extends BaseVariableFixedCreditUnitConfigDAO {
+import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public VariableFixedCreditUnitConfigDAO () {}
+public class VariableFixedCreditUnitConfigDAO extends _RootDAO<VariableFixedCreditUnitConfig,Long> {
+	private static VariableFixedCreditUnitConfigDAO sInstance;
 
+	public VariableFixedCreditUnitConfigDAO() {}
 
+	public static VariableFixedCreditUnitConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new VariableFixedCreditUnitConfigDAO();
+		return sInstance;
+	}
+
+	public Class<VariableFixedCreditUnitConfig> getReferenceClass() {
+		return VariableFixedCreditUnitConfig.class;
+	}
 }

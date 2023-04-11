@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseScriptDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ScriptDAO extends BaseScriptDAO {
+import org.unitime.timetable.model.Script;
+
+public class ScriptDAO extends _RootDAO<Script,Long> {
+	private static ScriptDAO sInstance;
 
 	public ScriptDAO() {}
 
+	public static ScriptDAO getInstance() {
+		if (sInstance == null) sInstance = new ScriptDAO();
+		return sInstance;
+	}
+
+	public Class<Script> getReferenceClass() {
+		return Script.class;
+	}
 }

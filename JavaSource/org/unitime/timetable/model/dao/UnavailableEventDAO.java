@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseUnavailableEventDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class UnavailableEventDAO extends BaseUnavailableEventDAO {
+import org.unitime.timetable.model.UnavailableEvent;
+
+public class UnavailableEventDAO extends _RootDAO<UnavailableEvent,Long> {
+	private static UnavailableEventDAO sInstance;
 
 	public UnavailableEventDAO() {}
 
+	public static UnavailableEventDAO getInstance() {
+		if (sInstance == null) sInstance = new UnavailableEventDAO();
+		return sInstance;
+	}
+
+	public Class<UnavailableEvent> getReferenceClass() {
+		return UnavailableEvent.class;
+	}
 }

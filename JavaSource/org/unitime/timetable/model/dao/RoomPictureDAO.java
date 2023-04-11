@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomPictureDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.RoomPicture;
 
-public class RoomPictureDAO extends BaseRoomPictureDAO {
+public class RoomPictureDAO extends _RootDAO<RoomPicture,Long> {
+	private static RoomPictureDAO sInstance;
 
 	public RoomPictureDAO() {}
 
+	public static RoomPictureDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomPictureDAO();
+		return sInstance;
+	}
+
+	public Class<RoomPicture> getReferenceClass() {
+		return RoomPicture.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RoomPicture> findByLocation(org.hibernate.Session hibSession, Long locationId) {
+		return hibSession.createQuery("from RoomPicture x where x.location.uniqueId = :locationId").setParameter("locationId", locationId).list();
+	}
 }

@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAdvisorSectioningPrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.AdvisorSectioningPref;
 
-public class AdvisorSectioningPrefDAO extends BaseAdvisorSectioningPrefDAO {
+public class AdvisorSectioningPrefDAO extends _RootDAO<AdvisorSectioningPref,Long> {
+	private static AdvisorSectioningPrefDAO sInstance;
 
 	public AdvisorSectioningPrefDAO() {}
 
+	public static AdvisorSectioningPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new AdvisorSectioningPrefDAO();
+		return sInstance;
+	}
+
+	public Class<AdvisorSectioningPref> getReferenceClass() {
+		return AdvisorSectioningPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorSectioningPref> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
+		return hibSession.createQuery("from AdvisorSectioningPref x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
+	}
 }

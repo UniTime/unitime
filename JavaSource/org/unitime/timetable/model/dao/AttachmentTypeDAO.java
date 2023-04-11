@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAttachmentTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.AttachmentType;
 
-public class AttachmentTypeDAO extends BaseAttachmentTypeDAO {
+public class AttachmentTypeDAO extends _RootDAO<AttachmentType,Long> {
+	private static AttachmentTypeDAO sInstance;
 
 	public AttachmentTypeDAO() {}
 
+	public static AttachmentTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new AttachmentTypeDAO();
+		return sInstance;
+	}
+
+	public Class<AttachmentType> getReferenceClass() {
+		return AttachmentType.class;
+	}
 }

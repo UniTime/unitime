@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTimetableManagerDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class TimetableManagerDAO extends BaseTimetableManagerDAO {
+import org.unitime.timetable.model.TimetableManager;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public TimetableManagerDAO () {}
+public class TimetableManagerDAO extends _RootDAO<TimetableManager,Long> {
+	private static TimetableManagerDAO sInstance;
 
+	public TimetableManagerDAO() {}
 
+	public static TimetableManagerDAO getInstance() {
+		if (sInstance == null) sInstance = new TimetableManagerDAO();
+		return sInstance;
+	}
+
+	public Class<TimetableManager> getReferenceClass() {
+		return TimetableManager.class;
+	}
 }

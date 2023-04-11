@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseOnlineSectioningLogDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class OnlineSectioningLogDAO extends BaseOnlineSectioningLogDAO {
+import java.util.List;
+import org.unitime.timetable.model.OnlineSectioningLog;
+
+public class OnlineSectioningLogDAO extends _RootDAO<OnlineSectioningLog,Long> {
+	private static OnlineSectioningLogDAO sInstance;
 
 	public OnlineSectioningLogDAO() {}
 
+	public static OnlineSectioningLogDAO getInstance() {
+		if (sInstance == null) sInstance = new OnlineSectioningLogDAO();
+		return sInstance;
+	}
+
+	public Class<OnlineSectioningLog> getReferenceClass() {
+		return OnlineSectioningLog.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<OnlineSectioningLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from OnlineSectioningLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

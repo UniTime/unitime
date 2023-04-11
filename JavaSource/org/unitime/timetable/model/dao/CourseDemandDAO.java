@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseDemandDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseDemandDAO extends BaseCourseDemandDAO {
+import java.util.List;
+import org.unitime.timetable.model.CourseDemand;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseDemandDAO () {}
+public class CourseDemandDAO extends _RootDAO<CourseDemand,Long> {
+	private static CourseDemandDAO sInstance;
 
+	public CourseDemandDAO() {}
 
+	public static CourseDemandDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseDemandDAO();
+		return sInstance;
+	}
+
+	public Class<CourseDemand> getReferenceClass() {
+		return CourseDemand.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseDemand> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from CourseDemand x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseDemand> findByWaitListSwapWithCourseOffering(org.hibernate.Session hibSession, Long waitListSwapWithCourseOfferingId) {
+		return hibSession.createQuery("from CourseDemand x where x.waitListSwapWithCourseOffering.uniqueId = :waitListSwapWithCourseOfferingId").setParameter("waitListSwapWithCourseOfferingId", waitListSwapWithCourseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseDemand> findByFreeTime(org.hibernate.Session hibSession, Long freeTimeId) {
+		return hibSession.createQuery("from CourseDemand x where x.freeTime.uniqueId = :freeTimeId").setParameter("freeTimeId", freeTimeId).list();
+	}
 }

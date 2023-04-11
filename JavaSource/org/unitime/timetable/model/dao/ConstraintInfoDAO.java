@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseConstraintInfoDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ConstraintInfoDAO extends BaseConstraintInfoDAO {
+import org.unitime.timetable.model.ConstraintInfo;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ConstraintInfoDAO () {}
+public class ConstraintInfoDAO extends _RootDAO<ConstraintInfo,Long> {
+	private static ConstraintInfoDAO sInstance;
 
+	public ConstraintInfoDAO() {}
 
+	public static ConstraintInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new ConstraintInfoDAO();
+		return sInstance;
+	}
+
+	public Class<ConstraintInfo> getReferenceClass() {
+		return ConstraintInfo.class;
+	}
 }

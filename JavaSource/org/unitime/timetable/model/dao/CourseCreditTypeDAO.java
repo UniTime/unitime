@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseCreditTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseCreditTypeDAO extends BaseCourseCreditTypeDAO {
+import org.unitime.timetable.model.CourseCreditType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseCreditTypeDAO () {}
+public class CourseCreditTypeDAO extends _RootDAO<CourseCreditType,Long> {
+	private static CourseCreditTypeDAO sInstance;
 
+	public CourseCreditTypeDAO() {}
 
+	public static CourseCreditTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseCreditTypeDAO();
+		return sInstance;
+	}
+
+	public Class<CourseCreditType> getReferenceClass() {
+		return CourseCreditType.class;
+	}
 }

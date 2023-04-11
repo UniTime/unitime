@@ -19,10 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAdvisorCourseRequestDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.AdvisorCourseRequest;
 
-public class AdvisorCourseRequestDAO extends BaseAdvisorCourseRequestDAO {
+public class AdvisorCourseRequestDAO extends _RootDAO<AdvisorCourseRequest,Long> {
+	private static AdvisorCourseRequestDAO sInstance;
 
 	public AdvisorCourseRequestDAO() {}
 
+	public static AdvisorCourseRequestDAO getInstance() {
+		if (sInstance == null) sInstance = new AdvisorCourseRequestDAO();
+		return sInstance;
+	}
+
+	public Class<AdvisorCourseRequest> getReferenceClass() {
+		return AdvisorCourseRequest.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorCourseRequest> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorCourseRequest> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorCourseRequest> findByFreeTime(org.hibernate.Session hibSession, Long freeTimeId) {
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.freeTime.uniqueId = :freeTimeId").setParameter("freeTimeId", freeTimeId).list();
+	}
 }

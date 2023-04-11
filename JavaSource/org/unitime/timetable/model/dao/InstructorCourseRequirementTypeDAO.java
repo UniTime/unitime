@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorCourseRequirementTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.InstructorCourseRequirementType;
 
-public class InstructorCourseRequirementTypeDAO extends BaseInstructorCourseRequirementTypeDAO {
+public class InstructorCourseRequirementTypeDAO extends _RootDAO<InstructorCourseRequirementType,Long> {
+	private static InstructorCourseRequirementTypeDAO sInstance;
 
 	public InstructorCourseRequirementTypeDAO() {}
 
+	public static InstructorCourseRequirementTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorCourseRequirementTypeDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorCourseRequirementType> getReferenceClass() {
+		return InstructorCourseRequirementType.class;
+	}
 }

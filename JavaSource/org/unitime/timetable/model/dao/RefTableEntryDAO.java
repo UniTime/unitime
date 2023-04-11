@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRefTableEntryDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RefTableEntryDAO extends BaseRefTableEntryDAO {
+import org.unitime.timetable.model.RefTableEntry;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RefTableEntryDAO () {}
+public class RefTableEntryDAO extends _RootDAO<RefTableEntry,Long> {
+	private static RefTableEntryDAO sInstance;
 
+	public RefTableEntryDAO() {}
 
+	public static RefTableEntryDAO getInstance() {
+		if (sInstance == null) sInstance = new RefTableEntryDAO();
+		return sInstance;
+	}
+
+	public Class<RefTableEntry> getReferenceClass() {
+		return RefTableEntry.class;
+	}
 }

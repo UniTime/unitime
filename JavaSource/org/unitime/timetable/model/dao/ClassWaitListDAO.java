@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseClassWaitListDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ClassWaitListDAO extends BaseClassWaitListDAO {
+import java.util.List;
+import org.unitime.timetable.model.ClassWaitList;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ClassWaitListDAO () {}
+public class ClassWaitListDAO extends _RootDAO<ClassWaitList,Long> {
+	private static ClassWaitListDAO sInstance;
 
+	public ClassWaitListDAO() {}
 
+	public static ClassWaitListDAO getInstance() {
+		if (sInstance == null) sInstance = new ClassWaitListDAO();
+		return sInstance;
+	}
+
+	public Class<ClassWaitList> getReferenceClass() {
+		return ClassWaitList.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassWaitList> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from ClassWaitList x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassWaitList> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
+		return hibSession.createQuery("from ClassWaitList x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassWaitList> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from ClassWaitList x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

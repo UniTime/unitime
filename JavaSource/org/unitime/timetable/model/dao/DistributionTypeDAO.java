@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDistributionTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DistributionTypeDAO extends BaseDistributionTypeDAO {
+import org.unitime.timetable.model.DistributionType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DistributionTypeDAO () {}
+public class DistributionTypeDAO extends _RootDAO<DistributionType,Long> {
+	private static DistributionTypeDAO sInstance;
 
+	public DistributionTypeDAO() {}
 
+	public static DistributionTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new DistributionTypeDAO();
+		return sInstance;
+	}
+
+	public Class<DistributionType> getReferenceClass() {
+		return DistributionType.class;
+	}
 }

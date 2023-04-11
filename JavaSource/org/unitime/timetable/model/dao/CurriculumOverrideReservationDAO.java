@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCurriculumOverrideReservationDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 
-public class CurriculumOverrideReservationDAO extends BaseCurriculumOverrideReservationDAO {
+public class CurriculumOverrideReservationDAO extends _RootDAO<CurriculumOverrideReservation,Long> {
+	private static CurriculumOverrideReservationDAO sInstance;
 
 	public CurriculumOverrideReservationDAO() {}
 
+	public static CurriculumOverrideReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new CurriculumOverrideReservationDAO();
+		return sInstance;
+	}
+
+	public Class<CurriculumOverrideReservation> getReferenceClass() {
+		return CurriculumOverrideReservation.class;
+	}
 }

@@ -19,10 +19,30 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamStatusDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.io.Serializable;
+import java.util.List;
+import org.unitime.timetable.model.ExamStatus;
 
-public class ExamStatusDAO extends BaseExamStatusDAO {
+public class ExamStatusDAO extends _RootDAO<ExamStatus,Serializable> {
+	private static ExamStatusDAO sInstance;
 
 	public ExamStatusDAO() {}
 
+	public static ExamStatusDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamStatusDAO();
+		return sInstance;
+	}
+
+	public Class<ExamStatus> getReferenceClass() {
+		return ExamStatus.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamStatus> findByStatus(org.hibernate.Session hibSession, Long statusId) {
+		return hibSession.createQuery("from ExamStatus x where x.status.uniqueId = :statusId").setParameter("statusId", statusId).list();
+	}
 }

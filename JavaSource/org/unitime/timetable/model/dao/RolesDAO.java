@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRolesDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RolesDAO extends BaseRolesDAO {
+import org.unitime.timetable.model.Roles;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RolesDAO () {}
+public class RolesDAO extends _RootDAO<Roles,Long> {
+	private static RolesDAO sInstance;
 
+	public RolesDAO() {}
 
+	public static RolesDAO getInstance() {
+		if (sInstance == null) sInstance = new RolesDAO();
+		return sInstance;
+	}
+
+	public Class<Roles> getReferenceClass() {
+		return Roles.class;
+	}
 }

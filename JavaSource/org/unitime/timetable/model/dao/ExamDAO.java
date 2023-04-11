@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamDAO extends BaseExamDAO {
+import java.util.List;
+import org.unitime.timetable.model.Exam;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamDAO () {}
+public class ExamDAO extends _RootDAO<Exam,Long> {
+	private static ExamDAO sInstance;
 
+	public ExamDAO() {}
 
+	public static ExamDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamDAO();
+		return sInstance;
+	}
+
+	public Class<Exam> getReferenceClass() {
+		return Exam.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Exam> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Exam x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Exam> findByAssignedPeriod(org.hibernate.Session hibSession, Long assignedPeriodId) {
+		return hibSession.createQuery("from Exam x where x.assignedPeriod.uniqueId = :assignedPeriodId").setParameter("assignedPeriodId", assignedPeriodId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Exam> findByExamType(org.hibernate.Session hibSession, Long examTypeId) {
+		return hibSession.createQuery("from Exam x where x.examType.uniqueId = :examTypeId").setParameter("examTypeId", examTypeId).list();
+	}
 }

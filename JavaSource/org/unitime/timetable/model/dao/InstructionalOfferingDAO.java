@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructionalOfferingDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class InstructionalOfferingDAO extends BaseInstructionalOfferingDAO {
+import java.util.List;
+import org.unitime.timetable.model.InstructionalOffering;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public InstructionalOfferingDAO () {}
+public class InstructionalOfferingDAO extends _RootDAO<InstructionalOffering,Long> {
+	private static InstructionalOfferingDAO sInstance;
 
+	public InstructionalOfferingDAO() {}
 
+	public static InstructionalOfferingDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructionalOfferingDAO();
+		return sInstance;
+	}
+
+	public Class<InstructionalOffering> getReferenceClass() {
+		return InstructionalOffering.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructionalOffering> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from InstructionalOffering x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

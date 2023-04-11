@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSpecialEventDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SpecialEventDAO extends BaseSpecialEventDAO {
+import org.unitime.timetable.model.SpecialEvent;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SpecialEventDAO () {}
+public class SpecialEventDAO extends _RootDAO<SpecialEvent,Long> {
+	private static SpecialEventDAO sInstance;
 
+	public SpecialEventDAO() {}
 
+	public static SpecialEventDAO getInstance() {
+		if (sInstance == null) sInstance = new SpecialEventDAO();
+		return sInstance;
+	}
+
+	public Class<SpecialEvent> getReferenceClass() {
+		return SpecialEvent.class;
+	}
 }

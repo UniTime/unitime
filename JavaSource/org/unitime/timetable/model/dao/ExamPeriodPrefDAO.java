@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamPeriodPrefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamPeriodPrefDAO extends BaseExamPeriodPrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExamPeriodPref;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamPeriodPrefDAO () {}
+public class ExamPeriodPrefDAO extends _RootDAO<ExamPeriodPref,Long> {
+	private static ExamPeriodPrefDAO sInstance;
 
+	public ExamPeriodPrefDAO() {}
 
+	public static ExamPeriodPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamPeriodPrefDAO();
+		return sInstance;
+	}
+
+	public Class<ExamPeriodPref> getReferenceClass() {
+		return ExamPeriodPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamPeriodPref> findByExamPeriod(org.hibernate.Session hibSession, Long examPeriodId) {
+		return hibSession.createQuery("from ExamPeriodPref x where x.examPeriod.uniqueId = :examPeriodId").setParameter("examPeriodId", examPeriodId).list();
+	}
 }

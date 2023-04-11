@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstrOfferingConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class InstrOfferingConfigDAO extends BaseInstrOfferingConfigDAO {
+import java.util.List;
+import org.unitime.timetable.model.InstrOfferingConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public InstrOfferingConfigDAO () {}
+public class InstrOfferingConfigDAO extends _RootDAO<InstrOfferingConfig,Long> {
+	private static InstrOfferingConfigDAO sInstance;
 
+	public InstrOfferingConfigDAO() {}
 
+	public static InstrOfferingConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new InstrOfferingConfigDAO();
+		return sInstance;
+	}
+
+	public Class<InstrOfferingConfig> getReferenceClass() {
+		return InstrOfferingConfig.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstrOfferingConfig> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
+		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstrOfferingConfig> findByClassDurationType(org.hibernate.Session hibSession, Long classDurationTypeId) {
+		return hibSession.createQuery("from InstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setParameter("classDurationTypeId", classDurationTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstrOfferingConfig> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
+		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
+	}
 }

@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCurriculumCourseGroupDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CurriculumCourseGroupDAO extends BaseCurriculumCourseGroupDAO {
+import java.util.List;
+import org.unitime.timetable.model.CurriculumCourseGroup;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CurriculumCourseGroupDAO () {}
+public class CurriculumCourseGroupDAO extends _RootDAO<CurriculumCourseGroup,Long> {
+	private static CurriculumCourseGroupDAO sInstance;
 
+	public CurriculumCourseGroupDAO() {}
 
+	public static CurriculumCourseGroupDAO getInstance() {
+		if (sInstance == null) sInstance = new CurriculumCourseGroupDAO();
+		return sInstance;
+	}
+
+	public Class<CurriculumCourseGroup> getReferenceClass() {
+		return CurriculumCourseGroup.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CurriculumCourseGroup> findByCurriculum(org.hibernate.Session hibSession, Long curriculumId) {
+		return hibSession.createQuery("from CurriculumCourseGroup x where x.curriculum.uniqueId = :curriculumId").setParameter("curriculumId", curriculumId).list();
+	}
 }

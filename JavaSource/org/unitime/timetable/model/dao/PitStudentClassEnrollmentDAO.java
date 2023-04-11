@@ -19,10 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitStudentClassEnrollmentDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitStudentClassEnrollment;
 
-public class PitStudentClassEnrollmentDAO extends BasePitStudentClassEnrollmentDAO {
+public class PitStudentClassEnrollmentDAO extends _RootDAO<PitStudentClassEnrollment,Long> {
+	private static PitStudentClassEnrollmentDAO sInstance;
 
 	public PitStudentClassEnrollmentDAO() {}
 
+	public static PitStudentClassEnrollmentDAO getInstance() {
+		if (sInstance == null) sInstance = new PitStudentClassEnrollmentDAO();
+		return sInstance;
+	}
+
+	public Class<PitStudentClassEnrollment> getReferenceClass() {
+		return PitStudentClassEnrollment.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentClassEnrollment> findByPitStudent(org.hibernate.Session hibSession, Long pitStudentId) {
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitStudent.uniqueId = :pitStudentId").setParameter("pitStudentId", pitStudentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentClassEnrollment> findByPitCourseOffering(org.hibernate.Session hibSession, Long pitCourseOfferingId) {
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitCourseOffering.uniqueId = :pitCourseOfferingId").setParameter("pitCourseOfferingId", pitCourseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentClassEnrollment> findByPitClass(org.hibernate.Session hibSession, Long pitClassId) {
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitClass.uniqueId = :pitClassId").setParameter("pitClassId", pitClassId).list();
+	}
 }

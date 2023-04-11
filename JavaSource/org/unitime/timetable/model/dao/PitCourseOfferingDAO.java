@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitCourseOfferingDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitCourseOffering;
 
-public class PitCourseOfferingDAO extends BasePitCourseOfferingDAO {
+public class PitCourseOfferingDAO extends _RootDAO<PitCourseOffering,Long> {
+	private static PitCourseOfferingDAO sInstance;
 
 	public PitCourseOfferingDAO() {}
 
+	public static PitCourseOfferingDAO getInstance() {
+		if (sInstance == null) sInstance = new PitCourseOfferingDAO();
+		return sInstance;
+	}
+
+	public Class<PitCourseOffering> getReferenceClass() {
+		return PitCourseOffering.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitCourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
+		return hibSession.createQuery("from PitCourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitCourseOffering> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
+		return hibSession.createQuery("from PitCourseOffering x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitCourseOffering> findByPitInstructionalOffering(org.hibernate.Session hibSession, Long pitInstructionalOfferingId) {
+		return hibSession.createQuery("from PitCourseOffering x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitCourseOffering> findByCourseType(org.hibernate.Session hibSession, Long courseTypeId) {
+		return hibSession.createQuery("from PitCourseOffering x where x.courseType.uniqueId = :courseTypeId").setParameter("courseTypeId", courseTypeId).list();
+	}
 }

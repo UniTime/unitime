@@ -19,18 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseClassInstructorDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ClassInstructorDAO extends BaseClassInstructorDAO {
+import java.util.List;
+import org.unitime.timetable.model.ClassInstructor;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ClassInstructorDAO () {}
+public class ClassInstructorDAO extends _RootDAO<ClassInstructor,Long> {
+	private static ClassInstructorDAO sInstance;
 
+	public ClassInstructorDAO() {}
 
+	public static ClassInstructorDAO getInstance() {
+		if (sInstance == null) sInstance = new ClassInstructorDAO();
+		return sInstance;
+	}
+
+	public Class<ClassInstructor> getReferenceClass() {
+		return ClassInstructor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassInstructor> findByClassInstructing(org.hibernate.Session hibSession, Long classInstructingId) {
+		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId").setParameter("classInstructingId", classInstructingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassInstructor> findByInstructor(org.hibernate.Session hibSession, Long instructorId) {
+		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId").setParameter("instructorId", instructorId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
+		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassInstructor> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
+		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
+	}
 }

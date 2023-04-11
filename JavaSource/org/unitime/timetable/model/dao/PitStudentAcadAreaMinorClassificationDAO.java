@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitStudentAcadAreaMinorClassificationDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitStudentAcadAreaMinorClassification;
 
-public class PitStudentAcadAreaMinorClassificationDAO extends BasePitStudentAcadAreaMinorClassificationDAO {
+public class PitStudentAcadAreaMinorClassificationDAO extends _RootDAO<PitStudentAcadAreaMinorClassification,Long> {
+	private static PitStudentAcadAreaMinorClassificationDAO sInstance;
 
 	public PitStudentAcadAreaMinorClassificationDAO() {}
 
+	public static PitStudentAcadAreaMinorClassificationDAO getInstance() {
+		if (sInstance == null) sInstance = new PitStudentAcadAreaMinorClassificationDAO();
+		return sInstance;
+	}
+
+	public Class<PitStudentAcadAreaMinorClassification> getReferenceClass() {
+		return PitStudentAcadAreaMinorClassification.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentAcadAreaMinorClassification> findByPitStudent(org.hibernate.Session hibSession, Long pitStudentId) {
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.pitStudent.uniqueId = :pitStudentId").setParameter("pitStudentId", pitStudentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentAcadAreaMinorClassification> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentAcadAreaMinorClassification> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitStudentAcadAreaMinorClassification> findByMinor(org.hibernate.Session hibSession, Long minorId) {
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.minor.uniqueId = :minorId").setParameter("minorId", minorId).list();
+	}
 }

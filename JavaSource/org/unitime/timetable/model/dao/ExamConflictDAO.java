@@ -19,17 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamConflictDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamConflictDAO extends BaseExamConflictDAO {
+import org.unitime.timetable.model.ExamConflict;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamConflictDAO () {}
-	
+public class ExamConflictDAO extends _RootDAO<ExamConflict,Long> {
+	private static ExamConflictDAO sInstance;
+
+	public ExamConflictDAO() {}
+
+	public static ExamConflictDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamConflictDAO();
+		return sInstance;
+	}
+
+	public Class<ExamConflict> getReferenceClass() {
+		return ExamConflict.class;
+	}
 }

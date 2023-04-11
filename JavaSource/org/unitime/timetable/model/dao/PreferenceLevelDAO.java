@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePreferenceLevelDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PreferenceLevelDAO extends BasePreferenceLevelDAO {
+import org.unitime.timetable.model.PreferenceLevel;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PreferenceLevelDAO () {}
+public class PreferenceLevelDAO extends _RootDAO<PreferenceLevel,Long> {
+	private static PreferenceLevelDAO sInstance;
 
+	public PreferenceLevelDAO() {}
 
+	public static PreferenceLevelDAO getInstance() {
+		if (sInstance == null) sInstance = new PreferenceLevelDAO();
+		return sInstance;
+	}
+
+	public Class<PreferenceLevel> getReferenceClass() {
+		return PreferenceLevel.class;
+	}
 }

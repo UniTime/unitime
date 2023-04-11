@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructionalMethodDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.InstructionalMethod;
 
-public class InstructionalMethodDAO extends BaseInstructionalMethodDAO {
+public class InstructionalMethodDAO extends _RootDAO<InstructionalMethod,Long> {
+	private static InstructionalMethodDAO sInstance;
 
 	public InstructionalMethodDAO() {}
 
+	public static InstructionalMethodDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructionalMethodDAO();
+		return sInstance;
+	}
+
+	public Class<InstructionalMethod> getReferenceClass() {
+		return InstructionalMethod.class;
+	}
 }

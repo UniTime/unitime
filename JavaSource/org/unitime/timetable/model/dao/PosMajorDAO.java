@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePosMajorDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PosMajorDAO extends BasePosMajorDAO {
+import java.util.List;
+import org.unitime.timetable.model.PosMajor;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PosMajorDAO () {}
+public class PosMajorDAO extends _RootDAO<PosMajor,Long> {
+	private static PosMajorDAO sInstance;
 
+	public PosMajorDAO() {}
 
+	public static PosMajorDAO getInstance() {
+		if (sInstance == null) sInstance = new PosMajorDAO();
+		return sInstance;
+	}
+
+	public Class<PosMajor> getReferenceClass() {
+		return PosMajor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PosMajor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from PosMajor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

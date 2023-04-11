@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentSectioningPrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.StudentSectioningPref;
 
-public class StudentSectioningPrefDAO extends BaseStudentSectioningPrefDAO {
+public class StudentSectioningPrefDAO extends _RootDAO<StudentSectioningPref,Long> {
+	private static StudentSectioningPrefDAO sInstance;
 
 	public StudentSectioningPrefDAO() {}
 
+	public static StudentSectioningPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentSectioningPrefDAO();
+		return sInstance;
+	}
+
+	public Class<StudentSectioningPref> getReferenceClass() {
+		return StudentSectioningPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentSectioningPref> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
+		return hibSession.createQuery("from StudentSectioningPref x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
+	}
 }

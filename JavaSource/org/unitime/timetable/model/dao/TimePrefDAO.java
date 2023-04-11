@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTimePrefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class TimePrefDAO extends BaseTimePrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.TimePref;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public TimePrefDAO () {}
+public class TimePrefDAO extends _RootDAO<TimePref,Long> {
+	private static TimePrefDAO sInstance;
 
+	public TimePrefDAO() {}
 
+	public static TimePrefDAO getInstance() {
+		if (sInstance == null) sInstance = new TimePrefDAO();
+		return sInstance;
+	}
+
+	public Class<TimePref> getReferenceClass() {
+		return TimePref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TimePref> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
+		return hibSession.createQuery("from TimePref x where x.timePattern.uniqueId = :timePatternId").setParameter("timePatternId", timePatternId).list();
+	}
 }

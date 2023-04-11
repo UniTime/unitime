@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDistributionObjectDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DistributionObjectDAO extends BaseDistributionObjectDAO {
+import java.util.List;
+import org.unitime.timetable.model.DistributionObject;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DistributionObjectDAO () {}
+public class DistributionObjectDAO extends _RootDAO<DistributionObject,Long> {
+	private static DistributionObjectDAO sInstance;
 
+	public DistributionObjectDAO() {}
 
+	public static DistributionObjectDAO getInstance() {
+		if (sInstance == null) sInstance = new DistributionObjectDAO();
+		return sInstance;
+	}
+
+	public Class<DistributionObject> getReferenceClass() {
+		return DistributionObject.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DistributionObject> findByDistributionPref(org.hibernate.Session hibSession, Long distributionPrefId) {
+		return hibSession.createQuery("from DistributionObject x where x.distributionPref.uniqueId = :distributionPrefId").setParameter("distributionPrefId", distributionPrefId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DistributionObject> findByPrefGroup(org.hibernate.Session hibSession, Long prefGroupId) {
+		return hibSession.createQuery("from DistributionObject x where x.prefGroup.uniqueId = :prefGroupId").setParameter("prefGroupId", prefGroupId).list();
+	}
 }

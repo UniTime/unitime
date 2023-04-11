@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorSurveyDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.InstructorSurvey;
 
-public class InstructorSurveyDAO extends BaseInstructorSurveyDAO {
+public class InstructorSurveyDAO extends _RootDAO<InstructorSurvey,Long> {
+	private static InstructorSurveyDAO sInstance;
 
 	public InstructorSurveyDAO() {}
 
+	public static InstructorSurveyDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorSurveyDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorSurvey> getReferenceClass() {
+		return InstructorSurvey.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstructorSurvey> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from InstructorSurvey x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

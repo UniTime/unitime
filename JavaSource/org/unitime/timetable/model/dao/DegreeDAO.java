@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDegreeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.Degree;
 
-public class DegreeDAO extends BaseDegreeDAO {
+public class DegreeDAO extends _RootDAO<Degree,Long> {
+	private static DegreeDAO sInstance;
 
 	public DegreeDAO() {}
 
+	public static DegreeDAO getInstance() {
+		if (sInstance == null) sInstance = new DegreeDAO();
+		return sInstance;
+	}
+
+	public Class<Degree> getReferenceClass() {
+		return Degree.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Degree> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Degree x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

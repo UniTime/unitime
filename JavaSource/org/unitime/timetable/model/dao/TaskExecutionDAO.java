@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTaskExecutionDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.TaskExecution;
 
-public class TaskExecutionDAO extends BaseTaskExecutionDAO {
+public class TaskExecutionDAO extends _RootDAO<TaskExecution,Long> {
+	private static TaskExecutionDAO sInstance;
 
 	public TaskExecutionDAO() {}
 
+	public static TaskExecutionDAO getInstance() {
+		if (sInstance == null) sInstance = new TaskExecutionDAO();
+		return sInstance;
+	}
+
+	public Class<TaskExecution> getReferenceClass() {
+		return TaskExecution.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TaskExecution> findByTask(org.hibernate.Session hibSession, Long taskId) {
+		return hibSession.createQuery("from TaskExecution x where x.task.uniqueId = :taskId").setParameter("taskId", taskId).list();
+	}
 }

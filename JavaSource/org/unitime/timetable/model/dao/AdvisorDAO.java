@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAdvisorDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.Advisor;
 
-public class AdvisorDAO extends BaseAdvisorDAO {
+public class AdvisorDAO extends _RootDAO<Advisor,Long> {
+	private static AdvisorDAO sInstance;
 
 	public AdvisorDAO() {}
 
+	public static AdvisorDAO getInstance() {
+		if (sInstance == null) sInstance = new AdvisorDAO();
+		return sInstance;
+	}
+
+	public Class<Advisor> getReferenceClass() {
+		return Advisor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Advisor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Advisor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Advisor> findByRole(org.hibernate.Session hibSession, Long roleId) {
+		return hibSession.createQuery("from Advisor x where x.role.roleId = :roleId").setParameter("roleId", roleId).list();
+	}
 }

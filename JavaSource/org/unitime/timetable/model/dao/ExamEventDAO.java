@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamEventDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamEventDAO extends BaseExamEventDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExamEvent;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamEventDAO () {}
+public class ExamEventDAO extends _RootDAO<ExamEvent,Long> {
+	private static ExamEventDAO sInstance;
 
+	public ExamEventDAO() {}
 
+	public static ExamEventDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamEventDAO();
+		return sInstance;
+	}
+
+	public Class<ExamEvent> getReferenceClass() {
+		return ExamEvent.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamEvent> findByExam(org.hibernate.Session hibSession, Long examId) {
+		return hibSession.createQuery("from ExamEvent x where x.exam.uniqueId = :examId").setParameter("examId", examId).list();
+	}
 }

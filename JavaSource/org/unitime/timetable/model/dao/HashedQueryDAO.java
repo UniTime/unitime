@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseHashedQueryDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.HashedQuery;
 
-public class HashedQueryDAO extends BaseHashedQueryDAO {
+public class HashedQueryDAO extends _RootDAO<HashedQuery,String> {
+	private static HashedQueryDAO sInstance;
 
 	public HashedQueryDAO() {}
 
+	public static HashedQueryDAO getInstance() {
+		if (sInstance == null) sInstance = new HashedQueryDAO();
+		return sInstance;
+	}
+
+	public Class<HashedQuery> getReferenceClass() {
+		return HashedQuery.class;
+	}
 }

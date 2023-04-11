@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePositionTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PositionTypeDAO extends BasePositionTypeDAO {
+import org.unitime.timetable.model.PositionType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PositionTypeDAO () {}
+public class PositionTypeDAO extends _RootDAO<PositionType,Long> {
+	private static PositionTypeDAO sInstance;
 
+	public PositionTypeDAO() {}
 
+	public static PositionTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new PositionTypeDAO();
+		return sInstance;
+	}
+
+	public Class<PositionType> getReferenceClass() {
+		return PositionType.class;
+	}
 }

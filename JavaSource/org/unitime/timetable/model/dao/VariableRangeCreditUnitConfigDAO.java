@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseVariableRangeCreditUnitConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class VariableRangeCreditUnitConfigDAO extends BaseVariableRangeCreditUnitConfigDAO {
+import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public VariableRangeCreditUnitConfigDAO () {}
+public class VariableRangeCreditUnitConfigDAO extends _RootDAO<VariableRangeCreditUnitConfig,Long> {
+	private static VariableRangeCreditUnitConfigDAO sInstance;
 
+	public VariableRangeCreditUnitConfigDAO() {}
 
+	public static VariableRangeCreditUnitConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new VariableRangeCreditUnitConfigDAO();
+		return sInstance;
+	}
+
+	public Class<VariableRangeCreditUnitConfig> getReferenceClass() {
+		return VariableRangeCreditUnitConfig.class;
+	}
 }

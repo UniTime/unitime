@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAssignmentInfoDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class AssignmentInfoDAO extends BaseAssignmentInfoDAO {
+import java.util.List;
+import org.unitime.timetable.model.AssignmentInfo;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public AssignmentInfoDAO () {}
+public class AssignmentInfoDAO extends _RootDAO<AssignmentInfo,Long> {
+	private static AssignmentInfoDAO sInstance;
 
+	public AssignmentInfoDAO() {}
 
+	public static AssignmentInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new AssignmentInfoDAO();
+		return sInstance;
+	}
+
+	public Class<AssignmentInfo> getReferenceClass() {
+		return AssignmentInfo.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AssignmentInfo> findByAssignment(org.hibernate.Session hibSession, Long assignmentId) {
+		return hibSession.createQuery("from AssignmentInfo x where x.assignment.uniqueId = :assignmentId").setParameter("assignmentId", assignmentId).list();
+	}
 }

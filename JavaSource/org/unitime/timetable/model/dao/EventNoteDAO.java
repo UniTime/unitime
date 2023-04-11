@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseEventNoteDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class EventNoteDAO extends BaseEventNoteDAO {
+import java.util.List;
+import org.unitime.timetable.model.EventNote;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public EventNoteDAO () {}
+public class EventNoteDAO extends _RootDAO<EventNote,Long> {
+	private static EventNoteDAO sInstance;
 
+	public EventNoteDAO() {}
 
+	public static EventNoteDAO getInstance() {
+		if (sInstance == null) sInstance = new EventNoteDAO();
+		return sInstance;
+	}
+
+	public Class<EventNote> getReferenceClass() {
+		return EventNote.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventNote> findByEvent(org.hibernate.Session hibSession, Long eventId) {
+		return hibSession.createQuery("from EventNote x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
+	}
 }

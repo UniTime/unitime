@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseNonUniversityLocationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class NonUniversityLocationDAO extends BaseNonUniversityLocationDAO {
+import java.util.List;
+import org.unitime.timetable.model.NonUniversityLocation;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public NonUniversityLocationDAO () {}
+public class NonUniversityLocationDAO extends _RootDAO<NonUniversityLocation,Long> {
+	private static NonUniversityLocationDAO sInstance;
 
+	public NonUniversityLocationDAO() {}
 
+	public static NonUniversityLocationDAO getInstance() {
+		if (sInstance == null) sInstance = new NonUniversityLocationDAO();
+		return sInstance;
+	}
+
+	public Class<NonUniversityLocation> getReferenceClass() {
+		return NonUniversityLocation.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<NonUniversityLocation> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
+		return hibSession.createQuery("from NonUniversityLocation x where x.roomType.uniqueId = :roomTypeId").setParameter("roomTypeId", roomTypeId).list();
+	}
 }

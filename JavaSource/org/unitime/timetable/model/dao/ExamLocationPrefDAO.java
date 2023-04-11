@@ -19,17 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamLocationPrefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamLocationPrefDAO extends BaseExamLocationPrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExamLocationPref;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamLocationPrefDAO () {}
-	
+public class ExamLocationPrefDAO extends _RootDAO<ExamLocationPref,Long> {
+	private static ExamLocationPrefDAO sInstance;
+
+	public ExamLocationPrefDAO() {}
+
+	public static ExamLocationPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamLocationPrefDAO();
+		return sInstance;
+	}
+
+	public Class<ExamLocationPref> getReferenceClass() {
+		return ExamLocationPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamLocationPref> findByLocation(org.hibernate.Session hibSession, Long locationId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.location.uniqueId = :locationId").setParameter("locationId", locationId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamLocationPref> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamLocationPref> findByExamPeriod(org.hibernate.Session hibSession, Long examPeriodId) {
+		return hibSession.createQuery("from ExamLocationPref x where x.examPeriod.uniqueId = :examPeriodId").setParameter("examPeriodId", examPeriodId).list();
+	}
 }

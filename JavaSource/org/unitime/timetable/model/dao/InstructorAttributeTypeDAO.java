@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseInstructorAttributeTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.InstructorAttributeType;
 
-public class InstructorAttributeTypeDAO extends BaseInstructorAttributeTypeDAO {
+public class InstructorAttributeTypeDAO extends _RootDAO<InstructorAttributeType,Long> {
+	private static InstructorAttributeTypeDAO sInstance;
 
 	public InstructorAttributeTypeDAO() {}
 
+	public static InstructorAttributeTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new InstructorAttributeTypeDAO();
+		return sInstance;
+	}
+
+	public Class<InstructorAttributeType> getReferenceClass() {
+		return InstructorAttributeType.class;
+	}
 }

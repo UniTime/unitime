@@ -19,10 +19,64 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentAreaClassificationMajorDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.StudentAreaClassificationMajor;
 
-public class StudentAreaClassificationMajorDAO extends BaseStudentAreaClassificationMajorDAO {
+public class StudentAreaClassificationMajorDAO extends _RootDAO<StudentAreaClassificationMajor,Long> {
+	private static StudentAreaClassificationMajorDAO sInstance;
 
 	public StudentAreaClassificationMajorDAO() {}
 
+	public static StudentAreaClassificationMajorDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentAreaClassificationMajorDAO();
+		return sInstance;
+	}
+
+	public Class<StudentAreaClassificationMajor> getReferenceClass() {
+		return StudentAreaClassificationMajor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByMajor(org.hibernate.Session hibSession, Long majorId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByConcentration(org.hibernate.Session hibSession, Long concentrationId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.concentration.uniqueId = :concentrationId").setParameter("concentrationId", concentrationId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByDegree(org.hibernate.Session hibSession, Long degreeId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.degree.uniqueId = :degreeId").setParameter("degreeId", degreeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByProgram(org.hibernate.Session hibSession, Long programId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.program.uniqueId = :programId").setParameter("programId", programId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentAreaClassificationMajor> findByCampus(org.hibernate.Session hibSession, Long campusId) {
+		return hibSession.createQuery("from StudentAreaClassificationMajor x where x.campus.uniqueId = :campusId").setParameter("campusId", campusId).list();
+	}
 }

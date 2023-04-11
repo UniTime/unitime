@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitDepartmentalInstructorDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitDepartmentalInstructor;
 
-public class PitDepartmentalInstructorDAO extends BasePitDepartmentalInstructorDAO {
+public class PitDepartmentalInstructorDAO extends _RootDAO<PitDepartmentalInstructor,Long> {
+	private static PitDepartmentalInstructorDAO sInstance;
 
 	public PitDepartmentalInstructorDAO() {}
 
+	public static PitDepartmentalInstructorDAO getInstance() {
+		if (sInstance == null) sInstance = new PitDepartmentalInstructorDAO();
+		return sInstance;
+	}
+
+	public Class<PitDepartmentalInstructor> getReferenceClass() {
+		return PitDepartmentalInstructor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitDepartmentalInstructor> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId").setParameter("positionTypeId", positionTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitDepartmentalInstructor> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitDepartmentalInstructor> findByPointInTimeData(org.hibernate.Session hibSession, Long pointInTimeDataId) {
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setParameter("pointInTimeDataId", pointInTimeDataId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitDepartmentalInstructor> findByDepartmentalInstructor(org.hibernate.Session hibSession, Long departmentalInstructorId) {
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.departmentalInstructor.uniqueId = :departmentalInstructorId").setParameter("departmentalInstructorId", departmentalInstructorId).list();
+	}
 }

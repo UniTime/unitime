@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseUserDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class UserDAO extends BaseUserDAO {
+import org.unitime.timetable.model.User;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public UserDAO () {}
+public class UserDAO extends _RootDAO<User,String> {
+	private static UserDAO sInstance;
 
+	public UserDAO() {}
 
+	public static UserDAO getInstance() {
+		if (sInstance == null) sInstance = new UserDAO();
+		return sInstance;
+	}
+
+	public Class<User> getReferenceClass() {
+		return User.class;
+	}
 }

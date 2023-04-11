@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseMidtermExamEventDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class MidtermExamEventDAO extends BaseMidtermExamEventDAO {
+import org.unitime.timetable.model.MidtermExamEvent;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public MidtermExamEventDAO () {}
+public class MidtermExamEventDAO extends _RootDAO<MidtermExamEvent,Long> {
+	private static MidtermExamEventDAO sInstance;
 
+	public MidtermExamEventDAO() {}
 
+	public static MidtermExamEventDAO getInstance() {
+		if (sInstance == null) sInstance = new MidtermExamEventDAO();
+		return sInstance;
+	}
+
+	public Class<MidtermExamEvent> getReferenceClass() {
+		return MidtermExamEvent.class;
+	}
 }

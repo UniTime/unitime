@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseBuildingDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class BuildingDAO extends BaseBuildingDAO {
+import java.util.List;
+import org.unitime.timetable.model.Building;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public BuildingDAO () {}
+public class BuildingDAO extends _RootDAO<Building,Long> {
+	private static BuildingDAO sInstance;
 
+	public BuildingDAO() {}
 
+	public static BuildingDAO getInstance() {
+		if (sInstance == null) sInstance = new BuildingDAO();
+		return sInstance;
+	}
+
+	public Class<Building> getReferenceClass() {
+		return Building.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Building> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Building x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

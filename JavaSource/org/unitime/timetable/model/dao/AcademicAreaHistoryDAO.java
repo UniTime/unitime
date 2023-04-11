@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAcademicAreaHistoryDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class AcademicAreaHistoryDAO extends BaseAcademicAreaHistoryDAO {
+import org.unitime.timetable.model.AcademicAreaHistory;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public AcademicAreaHistoryDAO () {}
+public class AcademicAreaHistoryDAO extends _RootDAO<AcademicAreaHistory,Long> {
+	private static AcademicAreaHistoryDAO sInstance;
 
+	public AcademicAreaHistoryDAO() {}
 
+	public static AcademicAreaHistoryDAO getInstance() {
+		if (sInstance == null) sInstance = new AcademicAreaHistoryDAO();
+		return sInstance;
+	}
+
+	public Class<AcademicAreaHistory> getReferenceClass() {
+		return AcademicAreaHistory.class;
+	}
 }

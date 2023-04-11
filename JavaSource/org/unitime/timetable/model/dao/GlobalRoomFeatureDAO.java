@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseGlobalRoomFeatureDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class GlobalRoomFeatureDAO extends BaseGlobalRoomFeatureDAO {
+import java.util.List;
+import org.unitime.timetable.model.GlobalRoomFeature;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public GlobalRoomFeatureDAO () {}
+public class GlobalRoomFeatureDAO extends _RootDAO<GlobalRoomFeature,Long> {
+	private static GlobalRoomFeatureDAO sInstance;
 
+	public GlobalRoomFeatureDAO() {}
 
+	public static GlobalRoomFeatureDAO getInstance() {
+		if (sInstance == null) sInstance = new GlobalRoomFeatureDAO();
+		return sInstance;
+	}
+
+	public Class<GlobalRoomFeature> getReferenceClass() {
+		return GlobalRoomFeature.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<GlobalRoomFeature> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from GlobalRoomFeature x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

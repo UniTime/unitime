@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseFreeTimeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class FreeTimeDAO extends BaseFreeTimeDAO {
+import java.util.List;
+import org.unitime.timetable.model.FreeTime;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public FreeTimeDAO () {}
+public class FreeTimeDAO extends _RootDAO<FreeTime,Long> {
+	private static FreeTimeDAO sInstance;
 
+	public FreeTimeDAO() {}
 
+	public static FreeTimeDAO getInstance() {
+		if (sInstance == null) sInstance = new FreeTimeDAO();
+		return sInstance;
+	}
+
+	public Class<FreeTime> getReferenceClass() {
+		return FreeTime.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<FreeTime> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from FreeTime x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

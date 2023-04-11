@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseArrangeCreditUnitConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ArrangeCreditUnitConfigDAO extends BaseArrangeCreditUnitConfigDAO {
+import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ArrangeCreditUnitConfigDAO () {}
+public class ArrangeCreditUnitConfigDAO extends _RootDAO<ArrangeCreditUnitConfig,Long> {
+	private static ArrangeCreditUnitConfigDAO sInstance;
 
+	public ArrangeCreditUnitConfigDAO() {}
 
+	public static ArrangeCreditUnitConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new ArrangeCreditUnitConfigDAO();
+		return sInstance;
+	}
+
+	public Class<ArrangeCreditUnitConfig> getReferenceClass() {
+		return ArrangeCreditUnitConfig.class;
+	}
 }

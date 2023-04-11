@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSavedHQLDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SavedHQLDAO extends BaseSavedHQLDAO {
+import org.unitime.timetable.model.SavedHQL;
+
+public class SavedHQLDAO extends _RootDAO<SavedHQL,Long> {
+	private static SavedHQLDAO sInstance;
 
 	public SavedHQLDAO() {}
 
+	public static SavedHQLDAO getInstance() {
+		if (sInstance == null) sInstance = new SavedHQLDAO();
+		return sInstance;
+	}
+
+	public Class<SavedHQL> getReferenceClass() {
+		return SavedHQL.class;
+	}
 }

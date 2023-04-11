@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePreferenceDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PreferenceDAO extends BasePreferenceDAO {
+import java.util.List;
+import org.unitime.timetable.model.Preference;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PreferenceDAO () {}
+public class PreferenceDAO extends _RootDAO<Preference,Long> {
+	private static PreferenceDAO sInstance;
 
+	public PreferenceDAO() {}
 
+	public static PreferenceDAO getInstance() {
+		if (sInstance == null) sInstance = new PreferenceDAO();
+		return sInstance;
+	}
+
+	public Class<Preference> getReferenceClass() {
+		return Preference.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Preference> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
+		return hibSession.createQuery("from Preference x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Preference> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
+		return hibSession.createQuery("from Preference x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
+	}
 }

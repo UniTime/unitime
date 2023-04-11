@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCurriculumReservationDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CurriculumReservationDAO extends BaseCurriculumReservationDAO {
+import org.unitime.timetable.model.CurriculumReservation;
+
+public class CurriculumReservationDAO extends _RootDAO<CurriculumReservation,Long> {
+	private static CurriculumReservationDAO sInstance;
 
 	public CurriculumReservationDAO() {}
 
+	public static CurriculumReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new CurriculumReservationDAO();
+		return sInstance;
+	}
+
+	public Class<CurriculumReservation> getReferenceClass() {
+		return CurriculumReservation.class;
+	}
 }

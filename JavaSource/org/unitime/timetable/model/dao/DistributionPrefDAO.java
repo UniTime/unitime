@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDistributionPrefDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DistributionPrefDAO extends BaseDistributionPrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.DistributionPref;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DistributionPrefDAO () {}
+public class DistributionPrefDAO extends _RootDAO<DistributionPref,Long> {
+	private static DistributionPrefDAO sInstance;
 
+	public DistributionPrefDAO() {}
 
+	public static DistributionPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new DistributionPrefDAO();
+		return sInstance;
+	}
+
+	public Class<DistributionPref> getReferenceClass() {
+		return DistributionPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DistributionPref> findByDistributionType(org.hibernate.Session hibSession, Long distributionTypeId) {
+		return hibSession.createQuery("from DistributionPref x where x.distributionType.uniqueId = :distributionTypeId").setParameter("distributionTypeId", distributionTypeId).list();
+	}
 }

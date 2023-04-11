@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSettingsDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SettingsDAO extends BaseSettingsDAO {
+import org.unitime.timetable.model.Settings;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SettingsDAO () {}
+public class SettingsDAO extends _RootDAO<Settings,Long> {
+	private static SettingsDAO sInstance;
 
+	public SettingsDAO() {}
 
+	public static SettingsDAO getInstance() {
+		if (sInstance == null) sInstance = new SettingsDAO();
+		return sInstance;
+	}
+
+	public Class<Settings> getReferenceClass() {
+		return Settings.class;
+	}
 }

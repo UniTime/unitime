@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseEventServiceProviderDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.EventServiceProvider;
 
-public class EventServiceProviderDAO extends BaseEventServiceProviderDAO {
+public class EventServiceProviderDAO extends _RootDAO<EventServiceProvider,Long> {
+	private static EventServiceProviderDAO sInstance;
 
 	public EventServiceProviderDAO() {}
 
+	public static EventServiceProviderDAO getInstance() {
+		if (sInstance == null) sInstance = new EventServiceProviderDAO();
+		return sInstance;
+	}
+
+	public Class<EventServiceProvider> getReferenceClass() {
+		return EventServiceProvider.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventServiceProvider> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from EventServiceProvider x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventServiceProvider> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from EventServiceProvider x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
 }

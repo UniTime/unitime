@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseMeetingDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class MeetingDAO extends BaseMeetingDAO {
+import java.util.List;
+import org.unitime.timetable.model.Meeting;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public MeetingDAO () {}
+public class MeetingDAO extends _RootDAO<Meeting,Long> {
+	private static MeetingDAO sInstance;
 
+	public MeetingDAO() {}
 
+	public static MeetingDAO getInstance() {
+		if (sInstance == null) sInstance = new MeetingDAO();
+		return sInstance;
+	}
+
+	public Class<Meeting> getReferenceClass() {
+		return Meeting.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Meeting> findByEvent(org.hibernate.Session hibSession, Long eventId) {
+		return hibSession.createQuery("from Meeting x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
+	}
 }

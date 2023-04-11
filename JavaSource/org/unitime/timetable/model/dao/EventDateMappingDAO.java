@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseEventDateMappingDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class EventDateMappingDAO extends BaseEventDateMappingDAO {
+import java.util.List;
+import org.unitime.timetable.model.EventDateMapping;
+
+public class EventDateMappingDAO extends _RootDAO<EventDateMapping,Long> {
+	private static EventDateMappingDAO sInstance;
 
 	public EventDateMappingDAO() {}
 
+	public static EventDateMappingDAO getInstance() {
+		if (sInstance == null) sInstance = new EventDateMappingDAO();
+		return sInstance;
+	}
+
+	public Class<EventDateMapping> getReferenceClass() {
+		return EventDateMapping.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<EventDateMapping> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from EventDateMapping x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

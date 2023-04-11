@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseHistoryDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseHistoryDAO extends BaseCourseHistoryDAO {
+import org.unitime.timetable.model.CourseHistory;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseHistoryDAO () {}
+public class CourseHistoryDAO extends _RootDAO<CourseHistory,Long> {
+	private static CourseHistoryDAO sInstance;
 
+	public CourseHistoryDAO() {}
 
+	public static CourseHistoryDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseHistoryDAO();
+		return sInstance;
+	}
+
+	public Class<CourseHistory> getReferenceClass() {
+		return CourseHistory.class;
+	}
 }

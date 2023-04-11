@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseManagerSettingsDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ManagerSettingsDAO extends BaseManagerSettingsDAO {
+import java.util.List;
+import org.unitime.timetable.model.ManagerSettings;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ManagerSettingsDAO () {}
+public class ManagerSettingsDAO extends _RootDAO<ManagerSettings,Long> {
+	private static ManagerSettingsDAO sInstance;
 
+	public ManagerSettingsDAO() {}
 
+	public static ManagerSettingsDAO getInstance() {
+		if (sInstance == null) sInstance = new ManagerSettingsDAO();
+		return sInstance;
+	}
+
+	public Class<ManagerSettings> getReferenceClass() {
+		return ManagerSettings.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ManagerSettings> findByKey(org.hibernate.Session hibSession, Long keyId) {
+		return hibSession.createQuery("from ManagerSettings x where x.key.uniqueId = :keyId").setParameter("keyId", keyId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ManagerSettings> findByManager(org.hibernate.Session hibSession, Long managerId) {
+		return hibSession.createQuery("from ManagerSettings x where x.manager.uniqueId = :managerId").setParameter("managerId", managerId).list();
+	}
 }

@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStandardEventNoteSessionDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StandardEventNoteSessionDAO extends BaseStandardEventNoteSessionDAO {
+import java.util.List;
+import org.unitime.timetable.model.StandardEventNoteSession;
+
+public class StandardEventNoteSessionDAO extends _RootDAO<StandardEventNoteSession,Long> {
+	private static StandardEventNoteSessionDAO sInstance;
 
 	public StandardEventNoteSessionDAO() {}
 
+	public static StandardEventNoteSessionDAO getInstance() {
+		if (sInstance == null) sInstance = new StandardEventNoteSessionDAO();
+		return sInstance;
+	}
+
+	public Class<StandardEventNoteSession> getReferenceClass() {
+		return StandardEventNoteSession.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StandardEventNoteSession> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from StandardEventNoteSession x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

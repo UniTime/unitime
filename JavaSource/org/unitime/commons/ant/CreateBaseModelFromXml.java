@@ -584,30 +584,30 @@ public class CreateBaseModelFromXml extends Task {
 		}
 		
 		// BASE DAO class
-		pw = new PrintWriter(new FileWriter(new File(fileFromPackage(outputFolder, pkg + ".base"), "Base" + className + "DAO.java")));
+		File f = new File(fileFromPackage(outputFolder, pkg + ".base"), "Base" + className + "DAO.java");
+		if (f.exists()) f.delete();
+		
+		// DAO class
+		File daoFile = new File(fileFromPackage(outputFolder, pkg+".dao"), className + "DAO.java");
+		//if (!daoFile.exists()) {
+		pw = new PrintWriter(new FileWriter(daoFile));
 		license(pw);
-		pw.println("package "+pkg+".base;");
-		pw.println();
-		if (idType == null)
-			pw.println("import java.io.Serializable;");
-		if (!manyToOnes.isEmpty())
-			pw.println("import java.util.List;");
-		if (idType == null || !manyToOnes.isEmpty())
-			pw.println();
-		// pw.println("import org.hibernate.Hibernate;");
-		// pw.println("import org.hibernate.criterion.Order;");
-		// pw.println();
-		pw.println("import "+pkg+"."+className+";");
-		pw.println("import "+pkg+".dao._RootDAO;");
-		pw.println("import "+pkg+".dao."+className+"DAO;");
+		pw.println("package "+pkg+".dao;");
 		pw.println();
 		pw.println("/**");
 		pw.println(" * Do not change this class. It has been automatically generated using ant create-model.");
 		pw.println(" * @see org.unitime.commons.ant.CreateBaseModelFromXml");
 		pw.println(" */");
-		pw.println("public abstract class Base"+className+"DAO"+" extends _RootDAO<"+className+","+(idType==null?"Serializable":idType)+"> {");
+		if (idType == null)
+			pw.println("import java.io.Serializable;");
+		if (!manyToOnes.isEmpty())
+			pw.println("import java.util.List;");
+		pw.println("import "+pkg+"."+className+";");
 		pw.println();
+		pw.println("public class "+className+"DAO extends _RootDAO<"+className+","+(idType==null?"Serializable":idType)+"> {");
 		pw.println("	private static "+className+"DAO sInstance;");
+		pw.println();
+		pw.println("	public " + className + "DAO() {}");
 		pw.println();
 		pw.println("	public static "+className+"DAO getInstance() {");
 		pw.println("		if (sInstance == null) sInstance = new "+className+"DAO();");
@@ -617,148 +617,6 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println("	public Class<"+className+"> getReferenceClass() {");
 		pw.println("		return "+className+".class;");
 		pw.println("	}");
-		/*
-		pw.println();
-		pw.println("	public Order getDefaultOrder () {");
-		pw.println("		return null;");
-		pw.println("	}");
-		String y = className.substring(0,1).toLowerCase()+className.substring(1);
-		if (idName!=null) {
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			pw.println();
-			pw.println("	public "+className+" get("+idType+" "+x+") {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" get("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idType+" "+x+") {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" loadInitialize("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		"+className+" "+y+" = load("+x+", hibSession);");
-			pw.println("		if (!Hibernate.isInitialized("+y+")) Hibernate.initialize("+y+");");
-			pw.println("		return "+y+";");
-			pw.println("	}");
-		} else {
-			if (idClass==null) idClass = className;
-			String x = "key";
-			pw.println();
-			pw.println("	public "+className+" get("+idClass+" "+x+") {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" get("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idClass+" "+x+") {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" loadInitialize("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		"+className+" "+y+" = load("+x+", hibSession);");
-			pw.println("		if (!Hibernate.isInitialized("+y+")) Hibernate.initialize("+y+");");
-			pw.println("		return "+y+";");
-			pw.println("	}");
-		}
-		pw.println();
-		pw.println("	public void save("+className+" "+y+") {");
-		pw.println("		save((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void save("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		save((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void saveOrUpdate("+className+" "+y+") {");
-		pw.println("		saveOrUpdate((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void saveOrUpdate("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		saveOrUpdate((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println();
-		pw.println("	public void update("+className+" "+y+") {");
-		pw.println("		update((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void update("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		update((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		if (idName!=null) {
-			if (idClass==null) idClass = className;
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			if (idType.equals("String")) {
-				pw.println("	public void delete(Object "+x+") {");
-				pw.println("		if ("+x+" instanceof String)");
-				pw.println("			delete((Object) load((String)"+x+"));");
-				pw.println("		else");
-				pw.println("		super.delete("+x+");");
-				pw.println("	}");
-				pw.println();
-				pw.println("	public void delete(Object "+x+", org.hibernate.Session hibSession) {");
-				pw.println("		if ("+x+" instanceof String)");
-				pw.println("			delete((Object) load((String)"+x+", hibSession), hibSession);");
-				pw.println("		else");
-				pw.println("			super.delete("+x+", hibSession);");
-				pw.println("	}");
-			} else {
-				pw.println("	public void delete("+idType+" "+x+") {");
-				pw.println("		delete(load("+x+"));");
-				pw.println("	}");
-				pw.println();
-				pw.println("	public void delete("+idType+" "+x+", org.hibernate.Session hibSession) {");
-				pw.println("		delete(load("+x+", hibSession), hibSession);");
-				pw.println("	}");
-			}
-		}
-		pw.println();
-		pw.println("	public void delete("+className+" "+y+") {");
-		pw.println("		delete((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void delete("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		delete((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void refresh("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		refresh((Object) "+y+", hibSession);");
-		pw.println("	}");
-		if (!abs) {
-			pw.println();
-			pw.println("	@SuppressWarnings(\"unchecked\")");
-			pw.println("	public List<"+className+"> findAll(org.hibernate.Session hibSession) {");
-			pw.println("		return hibSession.createQuery(\"from "+className+"\").list();");
-			pw.println("	}");
-		}
-		*/
-		/*
-		if (idType != null && idName != null) {
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			pw.println();
-			pw.println("	public void delete("+idType+" "+x+") {");
-			pw.println("		delete(load("+x+"));");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public void delete("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		delete(load("+x+", hibSession), hibSession);");
-			pw.println("	}");
-		}
-		*/
 		for (String[] attr: manyToOnes) {
 			String type = attr[0];
 			String name = attr[1];
@@ -770,38 +628,15 @@ public class CreateBaseModelFromXml extends Task {
 				iType = id[0];
 				iName = id[1];
 			}
-			/*
-			pw.println();
-			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+type+" "+x+") {");
-			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").set"+iType+"(\""+x+"Id\", "+x+".get"+iName+"()).list();");
-			pw.println("	}");
-			*/
 			pw.println();
 			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+iType+" "+x+"Id) {");
 			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").setParameter(\""+x+"Id\", "+x+"Id).list();");
 			pw.println("	}");
 		}
-
 		pw.println("}");
 		pw.flush(); pw.close();
-		
-		// DAO class
-		File daoFile = new File(fileFromPackage(outputFolder, pkg+".dao"), className + "DAO.java");
-		if (!daoFile.exists()) {
-			pw = new PrintWriter(new FileWriter(daoFile));
-			license(pw);
-			pw.println("package "+pkg+".dao;");
-			pw.println();
-			pw.println("import "+pkg+".base.Base"+className+"DAO;");
-			pw.println();
-			pw.println("public"+(abs?" abstract":"")+" class "+className+"DAO extends Base"+className+"DAO {");
-			pw.println();
-			pw.println("	public " + className + "DAO() {}");
-			pw.println();
-			pw.println("}");
-			pw.flush(); pw.close();
-		}
+		//}
 	}
 	
 	public void execute() throws BuildException {

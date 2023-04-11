@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseFinalExamEventDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class FinalExamEventDAO extends BaseFinalExamEventDAO {
+import org.unitime.timetable.model.FinalExamEvent;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public FinalExamEventDAO () {}
+public class FinalExamEventDAO extends _RootDAO<FinalExamEvent,Long> {
+	private static FinalExamEventDAO sInstance;
 
+	public FinalExamEventDAO() {}
 
+	public static FinalExamEventDAO getInstance() {
+		if (sInstance == null) sInstance = new FinalExamEventDAO();
+		return sInstance;
+	}
+
+	public Class<FinalExamEvent> getReferenceClass() {
+		return FinalExamEvent.class;
+	}
 }

@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDatePatternPrefDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DatePatternPrefDAO extends BaseDatePatternPrefDAO {
+import java.util.List;
+import org.unitime.timetable.model.DatePatternPref;
+
+public class DatePatternPrefDAO extends _RootDAO<DatePatternPref,Long> {
+	private static DatePatternPrefDAO sInstance;
 
 	public DatePatternPrefDAO() {}
 
+	public static DatePatternPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new DatePatternPrefDAO();
+		return sInstance;
+	}
+
+	public Class<DatePatternPref> getReferenceClass() {
+		return DatePatternPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DatePatternPref> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
+		return hibSession.createQuery("from DatePatternPref x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+	}
 }

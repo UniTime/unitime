@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePointInTimeDataDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PointInTimeData;
 
-public class PointInTimeDataDAO extends BasePointInTimeDataDAO {
+public class PointInTimeDataDAO extends _RootDAO<PointInTimeData,Long> {
+	private static PointInTimeDataDAO sInstance;
 
 	public PointInTimeDataDAO() {}
 
+	public static PointInTimeDataDAO getInstance() {
+		if (sInstance == null) sInstance = new PointInTimeDataDAO();
+		return sInstance;
+	}
+
+	public Class<PointInTimeData> getReferenceClass() {
+		return PointInTimeData.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PointInTimeData> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from PointInTimeData x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

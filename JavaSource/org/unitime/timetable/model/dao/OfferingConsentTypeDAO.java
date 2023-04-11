@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseOfferingConsentTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class OfferingConsentTypeDAO extends BaseOfferingConsentTypeDAO {
+import org.unitime.timetable.model.OfferingConsentType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public OfferingConsentTypeDAO () {}
+public class OfferingConsentTypeDAO extends _RootDAO<OfferingConsentType,Long> {
+	private static OfferingConsentTypeDAO sInstance;
 
+	public OfferingConsentTypeDAO() {}
 
+	public static OfferingConsentTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new OfferingConsentTypeDAO();
+		return sInstance;
+	}
+
+	public Class<OfferingConsentType> getReferenceClass() {
+		return OfferingConsentType.class;
+	}
 }

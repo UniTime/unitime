@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePreferenceGroupDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PreferenceGroupDAO extends BasePreferenceGroupDAO {
+import org.unitime.timetable.model.PreferenceGroup;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PreferenceGroupDAO () {}
+public class PreferenceGroupDAO extends _RootDAO<PreferenceGroup,Long> {
+	private static PreferenceGroupDAO sInstance;
 
+	public PreferenceGroupDAO() {}
 
+	public static PreferenceGroupDAO getInstance() {
+		if (sInstance == null) sInstance = new PreferenceGroupDAO();
+		return sInstance;
+	}
+
+	public Class<PreferenceGroup> getReferenceClass() {
+		return PreferenceGroup.class;
+	}
 }

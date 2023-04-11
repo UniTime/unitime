@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAdvisorClassPrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.AdvisorClassPref;
 
-public class AdvisorClassPrefDAO extends BaseAdvisorClassPrefDAO {
+public class AdvisorClassPrefDAO extends _RootDAO<AdvisorClassPref,Long> {
+	private static AdvisorClassPrefDAO sInstance;
 
 	public AdvisorClassPrefDAO() {}
 
+	public static AdvisorClassPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new AdvisorClassPrefDAO();
+		return sInstance;
+	}
+
+	public Class<AdvisorClassPref> getReferenceClass() {
+		return AdvisorClassPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorClassPref> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from AdvisorClassPref x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

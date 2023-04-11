@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseEventDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class EventDAO extends BaseEventDAO {
+import java.util.List;
+import org.unitime.timetable.model.Event;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public EventDAO () {}
+public class EventDAO extends _RootDAO<Event,Long> {
+	private static EventDAO sInstance;
 
+	public EventDAO() {}
 
+	public static EventDAO getInstance() {
+		if (sInstance == null) sInstance = new EventDAO();
+		return sInstance;
+	}
+
+	public Class<Event> getReferenceClass() {
+		return Event.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Event> findByMainContact(org.hibernate.Session hibSession, Long mainContactId) {
+		return hibSession.createQuery("from Event x where x.mainContact.uniqueId = :mainContactId").setParameter("mainContactId", mainContactId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Event> findBySponsoringOrganization(org.hibernate.Session hibSession, Long sponsoringOrganizationId) {
+		return hibSession.createQuery("from Event x where x.sponsoringOrganization.uniqueId = :sponsoringOrganizationId").setParameter("sponsoringOrganizationId", sponsoringOrganizationId).list();
+	}
 }

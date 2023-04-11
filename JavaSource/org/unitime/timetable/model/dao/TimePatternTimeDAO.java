@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTimePatternTimeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class TimePatternTimeDAO extends BaseTimePatternTimeDAO {
+import org.unitime.timetable.model.TimePatternTime;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public TimePatternTimeDAO () {}
+public class TimePatternTimeDAO extends _RootDAO<TimePatternTime,Long> {
+	private static TimePatternTimeDAO sInstance;
 
+	public TimePatternTimeDAO() {}
 
+	public static TimePatternTimeDAO getInstance() {
+		if (sInstance == null) sInstance = new TimePatternTimeDAO();
+		return sInstance;
+	}
+
+	public Class<TimePatternTime> getReferenceClass() {
+		return TimePatternTime.class;
+	}
 }

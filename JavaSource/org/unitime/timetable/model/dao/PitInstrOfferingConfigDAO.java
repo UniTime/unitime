@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitInstrOfferingConfigDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitInstrOfferingConfig;
 
-public class PitInstrOfferingConfigDAO extends BasePitInstrOfferingConfigDAO {
+public class PitInstrOfferingConfigDAO extends _RootDAO<PitInstrOfferingConfig,Long> {
+	private static PitInstrOfferingConfigDAO sInstance;
 
 	public PitInstrOfferingConfigDAO() {}
 
+	public static PitInstrOfferingConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new PitInstrOfferingConfigDAO();
+		return sInstance;
+	}
+
+	public Class<PitInstrOfferingConfig> getReferenceClass() {
+		return PitInstrOfferingConfig.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstrOfferingConfig> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstrOfferingConfig> findByPitInstructionalOffering(org.hibernate.Session hibSession, Long pitInstructionalOfferingId) {
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstrOfferingConfig> findByClassDurationType(org.hibernate.Session hibSession, Long classDurationTypeId) {
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setParameter("classDurationTypeId", classDurationTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstrOfferingConfig> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
+	}
 }

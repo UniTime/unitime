@@ -19,24 +19,49 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.hibernate.criterion.Order;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.base.BaseSessionDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SessionDAO extends BaseSessionDAO {
+import java.util.List;
+import org.unitime.timetable.model.Session;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SessionDAO () {}
-	
-	public Order getDefaultOrder() {
-		return Order.desc(Session.PROP_SESSION_BEGIN_DATE_TIME);
+public class SessionDAO extends _RootDAO<Session,Long> {
+	private static SessionDAO sInstance;
+
+	public SessionDAO() {}
+
+	public static SessionDAO getInstance() {
+		if (sInstance == null) sInstance = new SessionDAO();
+		return sInstance;
 	}
 
+	public Class<Session> getReferenceClass() {
+		return Session.class;
+	}
 
+	@SuppressWarnings("unchecked")
+	public List<Session> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
+		return hibSession.createQuery("from Session x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultDatePattern(org.hibernate.Session hibSession, Long defaultDatePatternId) {
+		return hibSession.createQuery("from Session x where x.defaultDatePattern.uniqueId = :defaultDatePatternId").setParameter("defaultDatePatternId", defaultDatePatternId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultSectioningStatus(org.hibernate.Session hibSession, Long defaultSectioningStatusId) {
+		return hibSession.createQuery("from Session x where x.defaultSectioningStatus.uniqueId = :defaultSectioningStatusId").setParameter("defaultSectioningStatusId", defaultSectioningStatusId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultClassDurationType(org.hibernate.Session hibSession, Long defaultClassDurationTypeId) {
+		return hibSession.createQuery("from Session x where x.defaultClassDurationType.uniqueId = :defaultClassDurationTypeId").setParameter("defaultClassDurationTypeId", defaultClassDurationTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultInstructionalMethod(org.hibernate.Session hibSession, Long defaultInstructionalMethodId) {
+		return hibSession.createQuery("from Session x where x.defaultInstructionalMethod.uniqueId = :defaultInstructionalMethodId").setParameter("defaultInstructionalMethodId", defaultInstructionalMethodId).list();
+	}
 }

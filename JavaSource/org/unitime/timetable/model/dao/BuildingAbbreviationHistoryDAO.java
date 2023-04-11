@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseBuildingAbbreviationHistoryDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class BuildingAbbreviationHistoryDAO extends BaseBuildingAbbreviationHistoryDAO {
+import org.unitime.timetable.model.BuildingAbbreviationHistory;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public BuildingAbbreviationHistoryDAO () {}
+public class BuildingAbbreviationHistoryDAO extends _RootDAO<BuildingAbbreviationHistory,Long> {
+	private static BuildingAbbreviationHistoryDAO sInstance;
 
+	public BuildingAbbreviationHistoryDAO() {}
 
+	public static BuildingAbbreviationHistoryDAO getInstance() {
+		if (sInstance == null) sInstance = new BuildingAbbreviationHistoryDAO();
+		return sInstance;
+	}
+
+	public Class<BuildingAbbreviationHistory> getReferenceClass() {
+		return BuildingAbbreviationHistory.class;
+	}
 }

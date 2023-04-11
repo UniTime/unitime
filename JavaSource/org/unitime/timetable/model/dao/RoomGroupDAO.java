@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomGroupDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomGroupDAO extends BaseRoomGroupDAO {
+import java.util.List;
+import org.unitime.timetable.model.RoomGroup;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RoomGroupDAO () {}
+public class RoomGroupDAO extends _RootDAO<RoomGroup,Long> {
+	private static RoomGroupDAO sInstance;
 
+	public RoomGroupDAO() {}
 
+	public static RoomGroupDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomGroupDAO();
+		return sInstance;
+	}
+
+	public Class<RoomGroup> getReferenceClass() {
+		return RoomGroup.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RoomGroup> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from RoomGroup x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RoomGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from RoomGroup x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

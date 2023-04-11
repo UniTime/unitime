@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentNoteDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.StudentNote;
 
-public class StudentNoteDAO extends BaseStudentNoteDAO {
+public class StudentNoteDAO extends _RootDAO<StudentNote,Long> {
+	private static StudentNoteDAO sInstance;
 
 	public StudentNoteDAO() {}
 
+	public static StudentNoteDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentNoteDAO();
+		return sInstance;
+	}
+
+	public Class<StudentNote> getReferenceClass() {
+		return StudentNote.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentNote> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from StudentNote x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
 }

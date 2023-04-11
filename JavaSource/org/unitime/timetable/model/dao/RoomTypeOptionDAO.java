@@ -19,18 +19,24 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomTypeOptionDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomTypeOptionDAO extends BaseRoomTypeOptionDAO {
+import java.io.Serializable;
+import org.unitime.timetable.model.RoomTypeOption;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public RoomTypeOptionDAO () {}
+public class RoomTypeOptionDAO extends _RootDAO<RoomTypeOption,Serializable> {
+	private static RoomTypeOptionDAO sInstance;
 
+	public RoomTypeOptionDAO() {}
 
+	public static RoomTypeOptionDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomTypeOptionDAO();
+		return sInstance;
+	}
+
+	public Class<RoomTypeOption> getReferenceClass() {
+		return RoomTypeOption.class;
+	}
 }

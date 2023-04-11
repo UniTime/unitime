@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExternalBuildingDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExternalBuildingDAO extends BaseExternalBuildingDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExternalBuilding;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExternalBuildingDAO () {}
+public class ExternalBuildingDAO extends _RootDAO<ExternalBuilding,Long> {
+	private static ExternalBuildingDAO sInstance;
 
+	public ExternalBuildingDAO() {}
 
+	public static ExternalBuildingDAO getInstance() {
+		if (sInstance == null) sInstance = new ExternalBuildingDAO();
+		return sInstance;
+	}
+
+	public Class<ExternalBuilding> getReferenceClass() {
+		return ExternalBuilding.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExternalBuilding> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from ExternalBuilding x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

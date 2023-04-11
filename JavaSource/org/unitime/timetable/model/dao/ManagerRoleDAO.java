@@ -19,18 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseManagerRoleDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ManagerRoleDAO extends BaseManagerRoleDAO {
+import java.util.List;
+import org.unitime.timetable.model.ManagerRole;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ManagerRoleDAO () {}
+public class ManagerRoleDAO extends _RootDAO<ManagerRole,Long> {
+	private static ManagerRoleDAO sInstance;
 
+	public ManagerRoleDAO() {}
 
+	public static ManagerRoleDAO getInstance() {
+		if (sInstance == null) sInstance = new ManagerRoleDAO();
+		return sInstance;
+	}
+
+	public Class<ManagerRole> getReferenceClass() {
+		return ManagerRole.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ManagerRole> findByRole(org.hibernate.Session hibSession, Long roleId) {
+		return hibSession.createQuery("from ManagerRole x where x.role.roleId = :roleId").setParameter("roleId", roleId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ManagerRole> findByTimetableManager(org.hibernate.Session hibSession, Long timetableManagerId) {
+		return hibSession.createQuery("from ManagerRole x where x.timetableManager.uniqueId = :timetableManagerId").setParameter("timetableManagerId", timetableManagerId).list();
+	}
 }

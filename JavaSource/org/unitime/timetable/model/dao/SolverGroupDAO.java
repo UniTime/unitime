@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolverGroupDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolverGroupDAO extends BaseSolverGroupDAO {
+import java.util.List;
+import org.unitime.timetable.model.SolverGroup;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolverGroupDAO () {}
+public class SolverGroupDAO extends _RootDAO<SolverGroup,Long> {
+	private static SolverGroupDAO sInstance;
 
+	public SolverGroupDAO() {}
 
+	public static SolverGroupDAO getInstance() {
+		if (sInstance == null) sInstance = new SolverGroupDAO();
+		return sInstance;
+	}
+
+	public Class<SolverGroup> getReferenceClass() {
+		return SolverGroup.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SolverGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from SolverGroup x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

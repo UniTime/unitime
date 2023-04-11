@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseClassEventDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ClassEventDAO extends BaseClassEventDAO {
+import java.util.List;
+import org.unitime.timetable.model.ClassEvent;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ClassEventDAO () {}
+public class ClassEventDAO extends _RootDAO<ClassEvent,Long> {
+	private static ClassEventDAO sInstance;
 
+	public ClassEventDAO() {}
 
+	public static ClassEventDAO getInstance() {
+		if (sInstance == null) sInstance = new ClassEventDAO();
+		return sInstance;
+	}
+
+	public Class<ClassEvent> getReferenceClass() {
+		return ClassEvent.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ClassEvent> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from ClassEvent x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

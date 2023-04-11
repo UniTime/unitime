@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseItypeDescDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ItypeDescDAO extends BaseItypeDescDAO {
+import java.util.List;
+import org.unitime.timetable.model.ItypeDesc;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ItypeDescDAO () {}
+public class ItypeDescDAO extends _RootDAO<ItypeDesc,Integer> {
+	private static ItypeDescDAO sInstance;
 
+	public ItypeDescDAO() {}
 
+	public static ItypeDescDAO getInstance() {
+		if (sInstance == null) sInstance = new ItypeDescDAO();
+		return sInstance;
+	}
+
+	public Class<ItypeDesc> getReferenceClass() {
+		return ItypeDesc.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ItypeDesc> findByParent(org.hibernate.Session hibSession, Integer parentId) {
+		return hibSession.createQuery("from ItypeDesc x where x.parent.itype = :parentId").setParameter("parentId", parentId).list();
+	}
 }

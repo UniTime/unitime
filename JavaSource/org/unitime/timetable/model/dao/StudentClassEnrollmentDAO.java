@@ -19,18 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentClassEnrollmentDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentClassEnrollmentDAO extends BaseStudentClassEnrollmentDAO {
+import java.util.List;
+import org.unitime.timetable.model.StudentClassEnrollment;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StudentClassEnrollmentDAO () {}
+public class StudentClassEnrollmentDAO extends _RootDAO<StudentClassEnrollment,Long> {
+	private static StudentClassEnrollmentDAO sInstance;
 
+	public StudentClassEnrollmentDAO() {}
 
+	public static StudentClassEnrollmentDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentClassEnrollmentDAO();
+		return sInstance;
+	}
+
+	public Class<StudentClassEnrollment> getReferenceClass() {
+		return StudentClassEnrollment.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentClassEnrollment> findByStudent(org.hibernate.Session hibSession, Long studentId) {
+		return hibSession.createQuery("from StudentClassEnrollment x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentClassEnrollment> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
+		return hibSession.createQuery("from StudentClassEnrollment x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentClassEnrollment> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
+		return hibSession.createQuery("from StudentClassEnrollment x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentClassEnrollment> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from StudentClassEnrollment x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

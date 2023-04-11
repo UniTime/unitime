@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDepartmentStatusTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DepartmentStatusTypeDAO extends BaseDepartmentStatusTypeDAO {
+import org.unitime.timetable.model.DepartmentStatusType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DepartmentStatusTypeDAO () {}
+public class DepartmentStatusTypeDAO extends _RootDAO<DepartmentStatusType,Long> {
+	private static DepartmentStatusTypeDAO sInstance;
 
+	public DepartmentStatusTypeDAO() {}
 
+	public static DepartmentStatusTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new DepartmentStatusTypeDAO();
+		return sInstance;
+	}
+
+	public Class<DepartmentStatusType> getReferenceClass() {
+		return DepartmentStatusType.class;
+	}
 }

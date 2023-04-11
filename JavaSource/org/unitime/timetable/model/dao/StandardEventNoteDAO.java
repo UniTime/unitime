@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStandardEventNoteDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StandardEventNoteDAO extends BaseStandardEventNoteDAO {
+import org.unitime.timetable.model.StandardEventNote;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StandardEventNoteDAO () {}
+public class StandardEventNoteDAO extends _RootDAO<StandardEventNote,Long> {
+	private static StandardEventNoteDAO sInstance;
 
+	public StandardEventNoteDAO() {}
 
+	public static StandardEventNoteDAO getInstance() {
+		if (sInstance == null) sInstance = new StandardEventNoteDAO();
+		return sInstance;
+	}
+
+	public Class<StandardEventNote> getReferenceClass() {
+		return StandardEventNote.class;
+	}
 }

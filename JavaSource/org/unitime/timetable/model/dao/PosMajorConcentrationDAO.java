@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePosMajorConcentrationDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PosMajorConcentration;
 
-public class PosMajorConcentrationDAO extends BasePosMajorConcentrationDAO {
+public class PosMajorConcentrationDAO extends _RootDAO<PosMajorConcentration,Long> {
+	private static PosMajorConcentrationDAO sInstance;
 
 	public PosMajorConcentrationDAO() {}
 
+	public static PosMajorConcentrationDAO getInstance() {
+		if (sInstance == null) sInstance = new PosMajorConcentrationDAO();
+		return sInstance;
+	}
+
+	public Class<PosMajorConcentration> getReferenceClass() {
+		return PosMajorConcentration.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PosMajorConcentration> findByMajor(org.hibernate.Session hibSession, Long majorId) {
+		return hibSession.createQuery("from PosMajorConcentration x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
+	}
 }

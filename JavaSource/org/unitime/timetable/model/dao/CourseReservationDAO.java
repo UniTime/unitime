@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseReservationDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseReservationDAO extends BaseCourseReservationDAO {
+import java.util.List;
+import org.unitime.timetable.model.CourseReservation;
+
+public class CourseReservationDAO extends _RootDAO<CourseReservation,Long> {
+	private static CourseReservationDAO sInstance;
 
 	public CourseReservationDAO() {}
 
+	public static CourseReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseReservationDAO();
+		return sInstance;
+	}
+
+	public Class<CourseReservation> getReferenceClass() {
+		return CourseReservation.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseReservation> findByCourse(org.hibernate.Session hibSession, Long courseId) {
+		return hibSession.createQuery("from CourseReservation x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
+	}
 }

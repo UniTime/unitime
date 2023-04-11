@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentEnrollmentMessageDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentEnrollmentMessageDAO extends BaseStudentEnrollmentMessageDAO {
+import java.util.List;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StudentEnrollmentMessageDAO () {}
+public class StudentEnrollmentMessageDAO extends _RootDAO<StudentEnrollmentMessage,Long> {
+	private static StudentEnrollmentMessageDAO sInstance;
 
+	public StudentEnrollmentMessageDAO() {}
 
+	public static StudentEnrollmentMessageDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentEnrollmentMessageDAO();
+		return sInstance;
+	}
+
+	public Class<StudentEnrollmentMessage> getReferenceClass() {
+		return StudentEnrollmentMessage.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentEnrollmentMessage> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
+		return hibSession.createQuery("from StudentEnrollmentMessage x where x.courseDemand.uniqueId = :courseDemandId").setParameter("courseDemandId", courseDemandId).list();
+	}
 }

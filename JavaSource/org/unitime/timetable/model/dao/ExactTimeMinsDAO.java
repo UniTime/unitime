@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExactTimeMinsDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExactTimeMinsDAO extends BaseExactTimeMinsDAO {
+import org.unitime.timetable.model.ExactTimeMins;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExactTimeMinsDAO () {}
+public class ExactTimeMinsDAO extends _RootDAO<ExactTimeMins,Long> {
+	private static ExactTimeMinsDAO sInstance;
 
+	public ExactTimeMinsDAO() {}
 
+	public static ExactTimeMinsDAO getInstance() {
+		if (sInstance == null) sInstance = new ExactTimeMinsDAO();
+		return sInstance;
+	}
+
+	public Class<ExactTimeMins> getReferenceClass() {
+		return ExactTimeMins.class;
+	}
 }

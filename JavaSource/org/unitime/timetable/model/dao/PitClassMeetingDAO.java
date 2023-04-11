@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitClassMeetingDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitClassMeeting;
 
-public class PitClassMeetingDAO extends BasePitClassMeetingDAO {
+public class PitClassMeetingDAO extends _RootDAO<PitClassMeeting,Long> {
+	private static PitClassMeetingDAO sInstance;
 
 	public PitClassMeetingDAO() {}
 
+	public static PitClassMeetingDAO getInstance() {
+		if (sInstance == null) sInstance = new PitClassMeetingDAO();
+		return sInstance;
+	}
+
+	public Class<PitClassMeeting> getReferenceClass() {
+		return PitClassMeeting.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClassMeeting> findByPitClassEvent(org.hibernate.Session hibSession, Long pitClassEventId) {
+		return hibSession.createQuery("from PitClassMeeting x where x.pitClassEvent.uniqueId = :pitClassEventId").setParameter("pitClassEventId", pitClassEventId).list();
+	}
 }

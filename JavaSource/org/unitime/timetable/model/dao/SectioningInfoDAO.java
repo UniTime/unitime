@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSectioningInfoDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SectioningInfoDAO extends BaseSectioningInfoDAO {
+import java.util.List;
+import org.unitime.timetable.model.SectioningInfo;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SectioningInfoDAO () {}
+public class SectioningInfoDAO extends _RootDAO<SectioningInfo,Long> {
+	private static SectioningInfoDAO sInstance;
 
+	public SectioningInfoDAO() {}
 
+	public static SectioningInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new SectioningInfoDAO();
+		return sInstance;
+	}
+
+	public Class<SectioningInfo> getReferenceClass() {
+		return SectioningInfo.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SectioningInfo> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from SectioningInfo x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

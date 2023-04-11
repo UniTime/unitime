@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,22 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- */ 
- 
+*/
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseEventContactDAO;
-
-
 /**
- * @author Stephanie Schluttenhofer, Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class EventContactDAO extends BaseEventContactDAO {
+import org.unitime.timetable.model.EventContact;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public EventContactDAO () {}
+public class EventContactDAO extends _RootDAO<EventContact,Long> {
+	private static EventContactDAO sInstance;
 
+	public EventContactDAO() {}
 
+	public static EventContactDAO getInstance() {
+		if (sInstance == null) sInstance = new EventContactDAO();
+		return sInstance;
+	}
+
+	public Class<EventContact> getReferenceClass() {
+		return EventContact.class;
+	}
 }

@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseApplicationConfigDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ApplicationConfigDAO extends BaseApplicationConfigDAO {
+import org.unitime.timetable.model.ApplicationConfig;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ApplicationConfigDAO () {}
+public class ApplicationConfigDAO extends _RootDAO<ApplicationConfig,String> {
+	private static ApplicationConfigDAO sInstance;
 
+	public ApplicationConfigDAO() {}
 
+	public static ApplicationConfigDAO getInstance() {
+		if (sInstance == null) sInstance = new ApplicationConfigDAO();
+		return sInstance;
+	}
+
+	public Class<ApplicationConfig> getReferenceClass() {
+		return ApplicationConfig.class;
+	}
 }

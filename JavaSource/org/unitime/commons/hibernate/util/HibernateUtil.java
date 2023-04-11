@@ -74,12 +74,11 @@ public class HibernateUtil {
 	protected static HibernateContext sContext;
 	protected static ThreadLocal<Session> sSessions;
     
-	/*
     public static void configureHibernate(String connectionUrl) throws Exception {
         Properties properties = ApplicationProperties.getProperties();
         properties.setProperty("connection.url", connectionUrl);
         configureHibernate(properties);
-    }*/
+    }
 	
     public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);

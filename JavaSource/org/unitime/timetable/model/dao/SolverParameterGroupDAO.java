@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolverParameterGroupDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolverParameterGroupDAO extends BaseSolverParameterGroupDAO {
+import org.unitime.timetable.model.SolverParameterGroup;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolverParameterGroupDAO () {}
+public class SolverParameterGroupDAO extends _RootDAO<SolverParameterGroup,Long> {
+	private static SolverParameterGroupDAO sInstance;
 
+	public SolverParameterGroupDAO() {}
 
+	public static SolverParameterGroupDAO getInstance() {
+		if (sInstance == null) sInstance = new SolverParameterGroupDAO();
+		return sInstance;
+	}
+
+	public Class<SolverParameterGroup> getReferenceClass() {
+		return SolverParameterGroup.class;
+	}
 }

@@ -19,17 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamPeriodDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamPeriodDAO extends BaseExamPeriodDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExamPeriod;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamPeriodDAO () {}
-	
+public class ExamPeriodDAO extends _RootDAO<ExamPeriod,Long> {
+	private static ExamPeriodDAO sInstance;
+
+	public ExamPeriodDAO() {}
+
+	public static ExamPeriodDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamPeriodDAO();
+		return sInstance;
+	}
+
+	public Class<ExamPeriod> getReferenceClass() {
+		return ExamPeriod.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamPeriod> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from ExamPeriod x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamPeriod> findByExamType(org.hibernate.Session hibSession, Long examTypeId) {
+		return hibSession.createQuery("from ExamPeriod x where x.examType.uniqueId = :examTypeId").setParameter("examTypeId", examTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamPeriod> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
+		return hibSession.createQuery("from ExamPeriod x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
+	}
 }

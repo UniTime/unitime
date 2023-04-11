@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDemandOfferingTypeDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DemandOfferingTypeDAO extends BaseDemandOfferingTypeDAO {
+import org.unitime.timetable.model.DemandOfferingType;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DemandOfferingTypeDAO () {}
+public class DemandOfferingTypeDAO extends _RootDAO<DemandOfferingType,Long> {
+	private static DemandOfferingTypeDAO sInstance;
 
+	public DemandOfferingTypeDAO() {}
 
+	public static DemandOfferingTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new DemandOfferingTypeDAO();
+		return sInstance;
+	}
+
+	public Class<DemandOfferingType> getReferenceClass() {
+		return DemandOfferingType.class;
+	}
 }

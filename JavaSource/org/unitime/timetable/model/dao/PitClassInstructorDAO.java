@@ -19,10 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitClassInstructorDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitClassInstructor;
 
-public class PitClassInstructorDAO extends BasePitClassInstructorDAO {
+public class PitClassInstructorDAO extends _RootDAO<PitClassInstructor,Long> {
+	private static PitClassInstructorDAO sInstance;
 
 	public PitClassInstructorDAO() {}
 
+	public static PitClassInstructorDAO getInstance() {
+		if (sInstance == null) sInstance = new PitClassInstructorDAO();
+		return sInstance;
+	}
+
+	public Class<PitClassInstructor> getReferenceClass() {
+		return PitClassInstructor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClassInstructor> findByPitClassInstructing(org.hibernate.Session hibSession, Long pitClassInstructingId) {
+		return hibSession.createQuery("from PitClassInstructor x where x.pitClassInstructing.uniqueId = :pitClassInstructingId").setParameter("pitClassInstructingId", pitClassInstructingId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClassInstructor> findByPitDepartmentalInstructor(org.hibernate.Session hibSession, Long pitDepartmentalInstructorId) {
+		return hibSession.createQuery("from PitClassInstructor x where x.pitDepartmentalInstructor.uniqueId = :pitDepartmentalInstructorId").setParameter("pitDepartmentalInstructorId", pitDepartmentalInstructorId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
+		return hibSession.createQuery("from PitClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+	}
 }

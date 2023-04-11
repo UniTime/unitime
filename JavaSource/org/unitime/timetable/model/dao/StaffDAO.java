@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStaffDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StaffDAO extends BaseStaffDAO {
+import java.util.List;
+import org.unitime.timetable.model.Staff;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StaffDAO () {}
+public class StaffDAO extends _RootDAO<Staff,Long> {
+	private static StaffDAO sInstance;
 
+	public StaffDAO() {}
 
+	public static StaffDAO getInstance() {
+		if (sInstance == null) sInstance = new StaffDAO();
+		return sInstance;
+	}
+
+	public Class<Staff> getReferenceClass() {
+		return Staff.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Staff> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
+		return hibSession.createQuery("from Staff x where x.positionType.uniqueId = :positionTypeId").setParameter("positionTypeId", positionTypeId).list();
+	}
 }

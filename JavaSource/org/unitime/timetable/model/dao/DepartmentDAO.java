@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseDepartmentDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class DepartmentDAO extends BaseDepartmentDAO {
+import java.util.List;
+import org.unitime.timetable.model.Department;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public DepartmentDAO () {}
+public class DepartmentDAO extends _RootDAO<Department,Long> {
+	private static DepartmentDAO sInstance;
 
+	public DepartmentDAO() {}
 
+	public static DepartmentDAO getInstance() {
+		if (sInstance == null) sInstance = new DepartmentDAO();
+		return sInstance;
+	}
+
+	public Class<Department> getReferenceClass() {
+		return Department.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Department> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from Department x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Department> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
+		return hibSession.createQuery("from Department x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Department> findBySolverGroup(org.hibernate.Session hibSession, Long solverGroupId) {
+		return hibSession.createQuery("from Department x where x.solverGroup.uniqueId = :solverGroupId").setParameter("solverGroupId", solverGroupId).list();
+	}
 }

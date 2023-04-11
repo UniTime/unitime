@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentClassPrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.StudentClassPref;
 
-public class StudentClassPrefDAO extends BaseStudentClassPrefDAO {
+public class StudentClassPrefDAO extends _RootDAO<StudentClassPref,Long> {
+	private static StudentClassPrefDAO sInstance;
 
 	public StudentClassPrefDAO() {}
 
+	public static StudentClassPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentClassPrefDAO();
+		return sInstance;
+	}
+
+	public Class<StudentClassPref> getReferenceClass() {
+		return StudentClassPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentClassPref> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
+		return hibSession.createQuery("from StudentClassPref x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+	}
 }

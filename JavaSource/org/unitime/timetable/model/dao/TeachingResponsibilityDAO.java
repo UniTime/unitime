@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTeachingResponsibilityDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.TeachingResponsibility;
 
-public class TeachingResponsibilityDAO extends BaseTeachingResponsibilityDAO {
+public class TeachingResponsibilityDAO extends _RootDAO<TeachingResponsibility,Long> {
+	private static TeachingResponsibilityDAO sInstance;
 
 	public TeachingResponsibilityDAO() {}
 
+	public static TeachingResponsibilityDAO getInstance() {
+		if (sInstance == null) sInstance = new TeachingResponsibilityDAO();
+		return sInstance;
+	}
+
+	public Class<TeachingResponsibility> getReferenceClass() {
+		return TeachingResponsibility.class;
+	}
 }

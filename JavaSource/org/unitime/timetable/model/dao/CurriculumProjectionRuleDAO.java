@@ -19,18 +19,39 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCurriculumProjectionRuleDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CurriculumProjectionRuleDAO extends BaseCurriculumProjectionRuleDAO {
+import java.util.List;
+import org.unitime.timetable.model.CurriculumProjectionRule;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CurriculumProjectionRuleDAO () {}
+public class CurriculumProjectionRuleDAO extends _RootDAO<CurriculumProjectionRule,Long> {
+	private static CurriculumProjectionRuleDAO sInstance;
 
+	public CurriculumProjectionRuleDAO() {}
 
+	public static CurriculumProjectionRuleDAO getInstance() {
+		if (sInstance == null) sInstance = new CurriculumProjectionRuleDAO();
+		return sInstance;
+	}
+
+	public Class<CurriculumProjectionRule> getReferenceClass() {
+		return CurriculumProjectionRule.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CurriculumProjectionRule> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CurriculumProjectionRule> findByMajor(org.hibernate.Session hibSession, Long majorId) {
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CurriculumProjectionRule> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
+	}
 }

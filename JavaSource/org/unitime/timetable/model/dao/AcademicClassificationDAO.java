@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAcademicClassificationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class AcademicClassificationDAO extends BaseAcademicClassificationDAO {
+import java.util.List;
+import org.unitime.timetable.model.AcademicClassification;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public AcademicClassificationDAO () {}
+public class AcademicClassificationDAO extends _RootDAO<AcademicClassification,Long> {
+	private static AcademicClassificationDAO sInstance;
 
+	public AcademicClassificationDAO() {}
 
+	public static AcademicClassificationDAO getInstance() {
+		if (sInstance == null) sInstance = new AcademicClassificationDAO();
+		return sInstance;
+	}
+
+	public Class<AcademicClassification> getReferenceClass() {
+		return AcademicClassification.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AcademicClassification> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from AcademicClassification x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

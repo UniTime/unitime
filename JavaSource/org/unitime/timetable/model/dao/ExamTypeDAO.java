@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamTypeDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamTypeDAO extends BaseExamTypeDAO {
+import org.unitime.timetable.model.ExamType;
+
+public class ExamTypeDAO extends _RootDAO<ExamType,Long> {
+	private static ExamTypeDAO sInstance;
 
 	public ExamTypeDAO() {}
 
+	public static ExamTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamTypeDAO();
+		return sInstance;
+	}
+
+	public Class<ExamType> getReferenceClass() {
+		return ExamType.class;
+	}
 }

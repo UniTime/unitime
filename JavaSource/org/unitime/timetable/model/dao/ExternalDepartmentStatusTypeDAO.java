@@ -19,10 +19,30 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExternalDepartmentStatusTypeDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.io.Serializable;
+import java.util.List;
+import org.unitime.timetable.model.ExternalDepartmentStatusType;
 
-public class ExternalDepartmentStatusTypeDAO extends BaseExternalDepartmentStatusTypeDAO {
+public class ExternalDepartmentStatusTypeDAO extends _RootDAO<ExternalDepartmentStatusType,Serializable> {
+	private static ExternalDepartmentStatusTypeDAO sInstance;
 
 	public ExternalDepartmentStatusTypeDAO() {}
 
+	public static ExternalDepartmentStatusTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new ExternalDepartmentStatusTypeDAO();
+		return sInstance;
+	}
+
+	public Class<ExternalDepartmentStatusType> getReferenceClass() {
+		return ExternalDepartmentStatusType.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExternalDepartmentStatusType> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
+		return hibSession.createQuery("from ExternalDepartmentStatusType x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
+	}
 }

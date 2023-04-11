@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseQueryLogDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class QueryLogDAO extends BaseQueryLogDAO {
+import org.unitime.timetable.model.QueryLog;
+
+public class QueryLogDAO extends _RootDAO<QueryLog,Long> {
+	private static QueryLogDAO sInstance;
 
 	public QueryLogDAO() {}
 
+	public static QueryLogDAO getInstance() {
+		if (sInstance == null) sInstance = new QueryLogDAO();
+		return sInstance;
+	}
+
+	public Class<QueryLog> getReferenceClass() {
+		return QueryLog.class;
+	}
 }

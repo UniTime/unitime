@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseContactCategoryDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import org.unitime.timetable.model.ContactCategory;
 
-public class ContactCategoryDAO extends BaseContactCategoryDAO {
+public class ContactCategoryDAO extends _RootDAO<ContactCategory,Long> {
+	private static ContactCategoryDAO sInstance;
 
 	public ContactCategoryDAO() {}
 
+	public static ContactCategoryDAO getInstance() {
+		if (sInstance == null) sInstance = new ContactCategoryDAO();
+		return sInstance;
+	}
+
+	public Class<ContactCategory> getReferenceClass() {
+		return ContactCategory.class;
+	}
 }

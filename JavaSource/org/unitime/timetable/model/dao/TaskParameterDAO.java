@@ -19,10 +19,24 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTaskParameterDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.io.Serializable;
+import org.unitime.timetable.model.TaskParameter;
 
-public class TaskParameterDAO extends BaseTaskParameterDAO {
+public class TaskParameterDAO extends _RootDAO<TaskParameter,Serializable> {
+	private static TaskParameterDAO sInstance;
 
 	public TaskParameterDAO() {}
 
+	public static TaskParameterDAO getInstance() {
+		if (sInstance == null) sInstance = new TaskParameterDAO();
+		return sInstance;
+	}
+
+	public Class<TaskParameter> getReferenceClass() {
+		return TaskParameter.class;
+	}
 }

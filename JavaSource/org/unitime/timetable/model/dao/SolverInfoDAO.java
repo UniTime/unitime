@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolverInfoDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolverInfoDAO extends BaseSolverInfoDAO {
+import java.util.List;
+import org.unitime.timetable.model.SolverInfo;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolverInfoDAO () {}
+public class SolverInfoDAO extends _RootDAO<SolverInfo,Long> {
+	private static SolverInfoDAO sInstance;
 
+	public SolverInfoDAO() {}
 
+	public static SolverInfoDAO getInstance() {
+		if (sInstance == null) sInstance = new SolverInfoDAO();
+		return sInstance;
+	}
+
+	public Class<SolverInfo> getReferenceClass() {
+		return SolverInfo.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<SolverInfo> findByDefinition(org.hibernate.Session hibSession, Long definitionId) {
+		return hibSession.createQuery("from SolverInfo x where x.definition.uniqueId = :definitionId").setParameter("definitionId", definitionId).list();
+	}
 }

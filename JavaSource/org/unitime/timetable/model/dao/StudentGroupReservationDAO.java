@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStudentGroupReservationDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentGroupReservationDAO extends BaseStudentGroupReservationDAO {
+import java.util.List;
+import org.unitime.timetable.model.StudentGroupReservation;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public StudentGroupReservationDAO () {}
+public class StudentGroupReservationDAO extends _RootDAO<StudentGroupReservation,Long> {
+	private static StudentGroupReservationDAO sInstance;
 
+	public StudentGroupReservationDAO() {}
 
+	public static StudentGroupReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentGroupReservationDAO();
+		return sInstance;
+	}
+
+	public Class<StudentGroupReservation> getReferenceClass() {
+		return StudentGroupReservation.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentGroupReservation> findByGroup(org.hibernate.Session hibSession, Long groupId) {
+		return hibSession.createQuery("from StudentGroupReservation x where x.group.uniqueId = :groupId").setParameter("groupId", groupId).list();
+	}
 }

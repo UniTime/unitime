@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePosMinorDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class PosMinorDAO extends BasePosMinorDAO {
+import java.util.List;
+import org.unitime.timetable.model.PosMinor;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public PosMinorDAO () {}
+public class PosMinorDAO extends _RootDAO<PosMinor,Long> {
+	private static PosMinorDAO sInstance;
 
+	public PosMinorDAO() {}
 
+	public static PosMinorDAO getInstance() {
+		if (sInstance == null) sInstance = new PosMinorDAO();
+		return sInstance;
+	}
+
+	public Class<PosMinor> getReferenceClass() {
+		return PosMinor.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PosMinor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from PosMinor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

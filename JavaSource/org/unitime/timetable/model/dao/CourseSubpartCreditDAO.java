@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseCourseSubpartCreditDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class CourseSubpartCreditDAO extends BaseCourseSubpartCreditDAO {
+import java.util.List;
+import org.unitime.timetable.model.CourseSubpartCredit;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public CourseSubpartCreditDAO () {}
+public class CourseSubpartCreditDAO extends _RootDAO<CourseSubpartCredit,Long> {
+	private static CourseSubpartCreditDAO sInstance;
 
+	public CourseSubpartCreditDAO() {}
 
+	public static CourseSubpartCreditDAO getInstance() {
+		if (sInstance == null) sInstance = new CourseSubpartCreditDAO();
+		return sInstance;
+	}
+
+	public Class<CourseSubpartCredit> getReferenceClass() {
+		return CourseSubpartCredit.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseSubpartCredit> findByCourseCatalog(org.hibernate.Session hibSession, Long courseCatalogId) {
+		return hibSession.createQuery("from CourseSubpartCredit x where x.courseCatalog.uniqueId = :courseCatalogId").setParameter("courseCatalogId", courseCatalogId).list();
+	}
 }

@@ -19,10 +19,44 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseTeachingRequestDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.TeachingRequest;
 
-public class TeachingRequestDAO extends BaseTeachingRequestDAO {
+public class TeachingRequestDAO extends _RootDAO<TeachingRequest,Long> {
+	private static TeachingRequestDAO sInstance;
 
 	public TeachingRequestDAO() {}
 
+	public static TeachingRequestDAO getInstance() {
+		if (sInstance == null) sInstance = new TeachingRequestDAO();
+		return sInstance;
+	}
+
+	public Class<TeachingRequest> getReferenceClass() {
+		return TeachingRequest.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingRequest> findByOffering(org.hibernate.Session hibSession, Long offeringId) {
+		return hibSession.createQuery("from TeachingRequest x where x.offering.uniqueId = :offeringId").setParameter("offeringId", offeringId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingRequest> findBySameCoursePreference(org.hibernate.Session hibSession, Long sameCoursePreferenceId) {
+		return hibSession.createQuery("from TeachingRequest x where x.sameCoursePreference.uniqueId = :sameCoursePreferenceId").setParameter("sameCoursePreferenceId", sameCoursePreferenceId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingRequest> findBySameCommonPart(org.hibernate.Session hibSession, Long sameCommonPartId) {
+		return hibSession.createQuery("from TeachingRequest x where x.sameCommonPart.uniqueId = :sameCommonPartId").setParameter("sameCommonPartId", sameCommonPartId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TeachingRequest> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
+		return hibSession.createQuery("from TeachingRequest x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+	}
 }

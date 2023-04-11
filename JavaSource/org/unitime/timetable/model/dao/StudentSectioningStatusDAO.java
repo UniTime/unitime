@@ -19,21 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import java.util.List;
-
-import org.unitime.timetable.model.StudentSectioningStatus;
-import org.unitime.timetable.model.base.BaseStudentSectioningStatusDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StudentSectioningStatusDAO extends BaseStudentSectioningStatusDAO {
+import java.util.List;
+import org.unitime.timetable.model.StudentSectioningStatus;
+
+public class StudentSectioningStatusDAO extends _RootDAO<StudentSectioningStatus,Long> {
+	private static StudentSectioningStatusDAO sInstance;
 
 	public StudentSectioningStatusDAO() {}
-	
-	@Override
-	public List<StudentSectioningStatus> findAll () {
-		return super.findAll();
+
+	public static StudentSectioningStatusDAO getInstance() {
+		if (sInstance == null) sInstance = new StudentSectioningStatusDAO();
+		return sInstance;
 	}
 
+	public Class<StudentSectioningStatus> getReferenceClass() {
+		return StudentSectioningStatus.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentSectioningStatus> findByFallBackStatus(org.hibernate.Session hibSession, Long fallBackStatusId) {
+		return hibSession.createQuery("from StudentSectioningStatus x where x.fallBackStatus.uniqueId = :fallBackStatusId").setParameter("fallBackStatusId", fallBackStatusId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StudentSectioningStatus> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from StudentSectioningStatus x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

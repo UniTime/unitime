@@ -19,18 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAcademicAreaDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class AcademicAreaDAO extends BaseAcademicAreaDAO {
+import java.util.List;
+import org.unitime.timetable.model.AcademicArea;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public AcademicAreaDAO () {}
+public class AcademicAreaDAO extends _RootDAO<AcademicArea,Long> {
+	private static AcademicAreaDAO sInstance;
 
+	public AcademicAreaDAO() {}
 
+	public static AcademicAreaDAO getInstance() {
+		if (sInstance == null) sInstance = new AcademicAreaDAO();
+		return sInstance;
+	}
+
+	public Class<AcademicArea> getReferenceClass() {
+		return AcademicArea.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AcademicArea> findBySession(org.hibernate.Session hibSession, Long sessionId) {
+		return hibSession.createQuery("from AcademicArea x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+	}
 }

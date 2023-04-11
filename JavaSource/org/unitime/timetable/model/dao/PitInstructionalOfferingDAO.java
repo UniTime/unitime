@@ -19,10 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitInstructionalOfferingDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitInstructionalOffering;
 
-public class PitInstructionalOfferingDAO extends BasePitInstructionalOfferingDAO {
+public class PitInstructionalOfferingDAO extends _RootDAO<PitInstructionalOffering,Long> {
+	private static PitInstructionalOfferingDAO sInstance;
 
 	public PitInstructionalOfferingDAO() {}
 
+	public static PitInstructionalOfferingDAO getInstance() {
+		if (sInstance == null) sInstance = new PitInstructionalOfferingDAO();
+		return sInstance;
+	}
+
+	public Class<PitInstructionalOffering> getReferenceClass() {
+		return PitInstructionalOffering.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstructionalOffering> findByPointInTimeData(org.hibernate.Session hibSession, Long pointInTimeDataId) {
+		return hibSession.createQuery("from PitInstructionalOffering x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setParameter("pointInTimeDataId", pointInTimeDataId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitInstructionalOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
+		return hibSession.createQuery("from PitInstructionalOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
+	}
 }

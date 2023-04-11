@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseAdvisorInstrMthPrefDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.AdvisorInstrMthPref;
 
-public class AdvisorInstrMthPrefDAO extends BaseAdvisorInstrMthPrefDAO {
+public class AdvisorInstrMthPrefDAO extends _RootDAO<AdvisorInstrMthPref,Long> {
+	private static AdvisorInstrMthPrefDAO sInstance;
 
 	public AdvisorInstrMthPrefDAO() {}
 
+	public static AdvisorInstrMthPrefDAO getInstance() {
+		if (sInstance == null) sInstance = new AdvisorInstrMthPrefDAO();
+		return sInstance;
+	}
+
+	public Class<AdvisorInstrMthPref> getReferenceClass() {
+		return AdvisorInstrMthPref.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AdvisorInstrMthPref> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
+		return hibSession.createQuery("from AdvisorInstrMthPref x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
+	}
 }

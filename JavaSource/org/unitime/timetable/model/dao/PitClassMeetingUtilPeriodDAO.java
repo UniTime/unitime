@@ -19,10 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BasePitClassMeetingUtilPeriodDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.util.List;
+import org.unitime.timetable.model.PitClassMeetingUtilPeriod;
 
-public class PitClassMeetingUtilPeriodDAO extends BasePitClassMeetingUtilPeriodDAO {
+public class PitClassMeetingUtilPeriodDAO extends _RootDAO<PitClassMeetingUtilPeriod,Long> {
+	private static PitClassMeetingUtilPeriodDAO sInstance;
 
 	public PitClassMeetingUtilPeriodDAO() {}
 
+	public static PitClassMeetingUtilPeriodDAO getInstance() {
+		if (sInstance == null) sInstance = new PitClassMeetingUtilPeriodDAO();
+		return sInstance;
+	}
+
+	public Class<PitClassMeetingUtilPeriod> getReferenceClass() {
+		return PitClassMeetingUtilPeriod.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<PitClassMeetingUtilPeriod> findByPitClassMeeting(org.hibernate.Session hibSession, Long pitClassMeetingId) {
+		return hibSession.createQuery("from PitClassMeetingUtilPeriod x where x.pitClassMeeting.uniqueId = :pitClassMeetingId").setParameter("pitClassMeetingId", pitClassMeetingId).list();
+	}
 }

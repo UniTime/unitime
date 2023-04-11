@@ -19,10 +19,24 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseMapTileCacheDAO;
+/**
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
+ */
+import java.io.Serializable;
+import org.unitime.timetable.model.MapTileCache;
 
-public class MapTileCacheDAO extends BaseMapTileCacheDAO {
+public class MapTileCacheDAO extends _RootDAO<MapTileCache,Serializable> {
+	private static MapTileCacheDAO sInstance;
 
 	public MapTileCacheDAO() {}
 
+	public static MapTileCacheDAO getInstance() {
+		if (sInstance == null) sInstance = new MapTileCacheDAO();
+		return sInstance;
+	}
+
+	public Class<MapTileCache> getReferenceClass() {
+		return MapTileCache.class;
+	}
 }

@@ -19,13 +19,29 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseStandardEventNoteDepartmentDAO;
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class StandardEventNoteDepartmentDAO extends BaseStandardEventNoteDepartmentDAO {
+import java.util.List;
+import org.unitime.timetable.model.StandardEventNoteDepartment;
+
+public class StandardEventNoteDepartmentDAO extends _RootDAO<StandardEventNoteDepartment,Long> {
+	private static StandardEventNoteDepartmentDAO sInstance;
 
 	public StandardEventNoteDepartmentDAO() {}
 
+	public static StandardEventNoteDepartmentDAO getInstance() {
+		if (sInstance == null) sInstance = new StandardEventNoteDepartmentDAO();
+		return sInstance;
+	}
+
+	public Class<StandardEventNoteDepartment> getReferenceClass() {
+		return StandardEventNoteDepartment.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<StandardEventNoteDepartment> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
+		return hibSession.createQuery("from StandardEventNoteDepartment x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+	}
 }

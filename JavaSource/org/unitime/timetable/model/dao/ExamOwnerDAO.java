@@ -19,17 +19,34 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseExamOwnerDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class ExamOwnerDAO extends BaseExamOwnerDAO {
+import java.util.List;
+import org.unitime.timetable.model.ExamOwner;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public ExamOwnerDAO () {}
-	
+public class ExamOwnerDAO extends _RootDAO<ExamOwner,Long> {
+	private static ExamOwnerDAO sInstance;
+
+	public ExamOwnerDAO() {}
+
+	public static ExamOwnerDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamOwnerDAO();
+		return sInstance;
+	}
+
+	public Class<ExamOwner> getReferenceClass() {
+		return ExamOwner.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamOwner> findByExam(org.hibernate.Session hibSession, Long examId) {
+		return hibSession.createQuery("from ExamOwner x where x.exam.uniqueId = :examId").setParameter("examId", examId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExamOwner> findByCourse(org.hibernate.Session hibSession, Long courseId) {
+		return hibSession.createQuery("from ExamOwner x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
+	}
 }

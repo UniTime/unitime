@@ -19,18 +19,23 @@
 */
 package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseSolverPredefinedSettingDAO;
-
-
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class SolverPredefinedSettingDAO extends BaseSolverPredefinedSettingDAO {
+import org.unitime.timetable.model.SolverPredefinedSetting;
 
-	/**
-	 * Default constructor.  Can be used in place of getInstance()
-	 */
-	public SolverPredefinedSettingDAO () {}
+public class SolverPredefinedSettingDAO extends _RootDAO<SolverPredefinedSetting,Long> {
+	private static SolverPredefinedSettingDAO sInstance;
 
+	public SolverPredefinedSettingDAO() {}
 
+	public static SolverPredefinedSettingDAO getInstance() {
+		if (sInstance == null) sInstance = new SolverPredefinedSettingDAO();
+		return sInstance;
+	}
+
+	public Class<SolverPredefinedSetting> getReferenceClass() {
+		return SolverPredefinedSetting.class;
+	}
 }
