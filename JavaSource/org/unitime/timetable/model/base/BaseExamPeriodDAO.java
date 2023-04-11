@@ -44,16 +44,16 @@ public abstract class BaseExamPeriodDAO extends _RootDAO<ExamPeriod,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExamPeriod> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from ExamPeriod x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from ExamPeriod x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExamPeriod> findByExamType(org.hibernate.Session hibSession, Long examTypeId) {
-		return hibSession.createQuery("from ExamPeriod x where x.examType.uniqueId = :examTypeId").setLong("examTypeId", examTypeId).list();
+		return hibSession.createQuery("from ExamPeriod x where x.examType.uniqueId = :examTypeId").setParameter("examTypeId", examTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExamPeriod> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
-		return hibSession.createQuery("from ExamPeriod x where x.prefLevel.uniqueId = :prefLevelId").setLong("prefLevelId", prefLevelId).list();
+		return hibSession.createQuery("from ExamPeriod x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
 	}
 }

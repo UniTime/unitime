@@ -44,21 +44,21 @@ public abstract class BaseStudentClassEnrollmentDAO extends _RootDAO<StudentClas
 
 	@SuppressWarnings("unchecked")
 	public List<StudentClassEnrollment> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from StudentClassEnrollment x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from StudentClassEnrollment x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentClassEnrollment> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
-		return hibSession.createQuery("from StudentClassEnrollment x where x.courseRequest.uniqueId = :courseRequestId").setLong("courseRequestId", courseRequestId).list();
+		return hibSession.createQuery("from StudentClassEnrollment x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentClassEnrollment> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from StudentClassEnrollment x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from StudentClassEnrollment x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentClassEnrollment> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from StudentClassEnrollment x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
+		return hibSession.createQuery("from StudentClassEnrollment x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
 	}
 }

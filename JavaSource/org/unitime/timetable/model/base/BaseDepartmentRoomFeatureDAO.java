@@ -44,6 +44,6 @@ public abstract class BaseDepartmentRoomFeatureDAO extends _RootDAO<DepartmentRo
 
 	@SuppressWarnings("unchecked")
 	public List<DepartmentRoomFeature> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from DepartmentRoomFeature x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from DepartmentRoomFeature x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 }

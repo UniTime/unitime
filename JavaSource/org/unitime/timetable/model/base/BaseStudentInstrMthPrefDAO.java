@@ -44,6 +44,6 @@ public abstract class BaseStudentInstrMthPrefDAO extends _RootDAO<StudentInstrMt
 
 	@SuppressWarnings("unchecked")
 	public List<StudentInstrMthPref> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
-		return hibSession.createQuery("from StudentInstrMthPref x where x.instructionalMethod.uniqueId = :instructionalMethodId").setLong("instructionalMethodId", instructionalMethodId).list();
+		return hibSession.createQuery("from StudentInstrMthPref x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
 	}
 }

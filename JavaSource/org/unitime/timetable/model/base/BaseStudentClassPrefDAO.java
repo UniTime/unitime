@@ -44,6 +44,6 @@ public abstract class BaseStudentClassPrefDAO extends _RootDAO<StudentClassPref,
 
 	@SuppressWarnings("unchecked")
 	public List<StudentClassPref> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from StudentClassPref x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
+		return hibSession.createQuery("from StudentClassPref x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
 	}
 }

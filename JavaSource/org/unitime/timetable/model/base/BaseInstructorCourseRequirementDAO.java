@@ -44,11 +44,11 @@ public abstract class BaseInstructorCourseRequirementDAO extends _RootDAO<Instru
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorCourseRequirement> findByInstructorSurvey(org.hibernate.Session hibSession, Long instructorSurveyId) {
-		return hibSession.createQuery("from InstructorCourseRequirement x where x.instructorSurvey.uniqueId = :instructorSurveyId").setLong("instructorSurveyId", instructorSurveyId).list();
+		return hibSession.createQuery("from InstructorCourseRequirement x where x.instructorSurvey.uniqueId = :instructorSurveyId").setParameter("instructorSurveyId", instructorSurveyId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorCourseRequirement> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from InstructorCourseRequirement x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from InstructorCourseRequirement x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 }

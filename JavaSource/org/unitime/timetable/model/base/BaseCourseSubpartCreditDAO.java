@@ -44,6 +44,6 @@ public abstract class BaseCourseSubpartCreditDAO extends _RootDAO<CourseSubpartC
 
 	@SuppressWarnings("unchecked")
 	public List<CourseSubpartCredit> findByCourseCatalog(org.hibernate.Session hibSession, Long courseCatalogId) {
-		return hibSession.createQuery("from CourseSubpartCredit x where x.courseCatalog.uniqueId = :courseCatalogId").setLong("courseCatalogId", courseCatalogId).list();
+		return hibSession.createQuery("from CourseSubpartCredit x where x.courseCatalog.uniqueId = :courseCatalogId").setParameter("courseCatalogId", courseCatalogId).list();
 	}
 }

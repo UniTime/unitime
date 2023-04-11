@@ -44,6 +44,6 @@ public abstract class BaseFreeTimeDAO extends _RootDAO<FreeTime,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<FreeTime> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from FreeTime x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from FreeTime x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

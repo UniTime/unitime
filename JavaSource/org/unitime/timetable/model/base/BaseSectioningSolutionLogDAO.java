@@ -44,11 +44,11 @@ public abstract class BaseSectioningSolutionLogDAO extends _RootDAO<SectioningSo
 
 	@SuppressWarnings("unchecked")
 	public List<SectioningSolutionLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from SectioningSolutionLog x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from SectioningSolutionLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SectioningSolutionLog> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
-		return hibSession.createQuery("from SectioningSolutionLog x where x.owner.uniqueId = :ownerId").setLong("ownerId", ownerId).list();
+		return hibSession.createQuery("from SectioningSolutionLog x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
 	}
 }

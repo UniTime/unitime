@@ -44,6 +44,6 @@ public abstract class BaseExternalRoomFeatureDAO extends _RootDAO<ExternalRoomFe
 
 	@SuppressWarnings("unchecked")
 	public List<ExternalRoomFeature> findByRoom(org.hibernate.Session hibSession, Long roomId) {
-		return hibSession.createQuery("from ExternalRoomFeature x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
+		return hibSession.createQuery("from ExternalRoomFeature x where x.room.uniqueId = :roomId").setParameter("roomId", roomId).list();
 	}
 }

@@ -44,21 +44,21 @@ public abstract class BasePitInstrOfferingConfigDAO extends _RootDAO<PitInstrOff
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstrOfferingConfig> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
-		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setLong("instrOfferingConfigId", instrOfferingConfigId).list();
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstrOfferingConfig> findByPitInstructionalOffering(org.hibernate.Session hibSession, Long pitInstructionalOfferingId) {
-		return hibSession.createQuery("from PitInstrOfferingConfig x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setLong("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstrOfferingConfig> findByClassDurationType(org.hibernate.Session hibSession, Long classDurationTypeId) {
-		return hibSession.createQuery("from PitInstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setLong("classDurationTypeId", classDurationTypeId).list();
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setParameter("classDurationTypeId", classDurationTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstrOfferingConfig> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
-		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId").setLong("instructionalMethodId", instructionalMethodId).list();
+		return hibSession.createQuery("from PitInstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
 	}
 }

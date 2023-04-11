@@ -44,6 +44,6 @@ public abstract class BaseStudentSectioningPrefDAO extends _RootDAO<StudentSecti
 
 	@SuppressWarnings("unchecked")
 	public List<StudentSectioningPref> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
-		return hibSession.createQuery("from StudentSectioningPref x where x.courseRequest.uniqueId = :courseRequestId").setLong("courseRequestId", courseRequestId).list();
+		return hibSession.createQuery("from StudentSectioningPref x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
 	}
 }

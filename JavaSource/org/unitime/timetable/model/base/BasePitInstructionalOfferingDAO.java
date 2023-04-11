@@ -44,11 +44,11 @@ public abstract class BasePitInstructionalOfferingDAO extends _RootDAO<PitInstru
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstructionalOffering> findByPointInTimeData(org.hibernate.Session hibSession, Long pointInTimeDataId) {
-		return hibSession.createQuery("from PitInstructionalOffering x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setLong("pointInTimeDataId", pointInTimeDataId).list();
+		return hibSession.createQuery("from PitInstructionalOffering x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setParameter("pointInTimeDataId", pointInTimeDataId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitInstructionalOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
-		return hibSession.createQuery("from PitInstructionalOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
+		return hibSession.createQuery("from PitInstructionalOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
 	}
 }

@@ -44,21 +44,21 @@ public abstract class BaseInstructorAttributeDAO extends _RootDAO<InstructorAttr
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorAttribute> findByType(org.hibernate.Session hibSession, Long typeId) {
-		return hibSession.createQuery("from InstructorAttribute x where x.type.uniqueId = :typeId").setLong("typeId", typeId).list();
+		return hibSession.createQuery("from InstructorAttribute x where x.type.uniqueId = :typeId").setParameter("typeId", typeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorAttribute> findByParentAttribute(org.hibernate.Session hibSession, Long parentAttributeId) {
-		return hibSession.createQuery("from InstructorAttribute x where x.parentAttribute.uniqueId = :parentAttributeId").setLong("parentAttributeId", parentAttributeId).list();
+		return hibSession.createQuery("from InstructorAttribute x where x.parentAttribute.uniqueId = :parentAttributeId").setParameter("parentAttributeId", parentAttributeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorAttribute> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from InstructorAttribute x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from InstructorAttribute x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorAttribute> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from InstructorAttribute x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from InstructorAttribute x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 }

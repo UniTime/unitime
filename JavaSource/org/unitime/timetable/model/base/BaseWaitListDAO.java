@@ -44,26 +44,26 @@ public abstract class BaseWaitListDAO extends _RootDAO<WaitList,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<WaitList> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from WaitList x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from WaitList x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<WaitList> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from WaitList x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from WaitList x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<WaitList> findByEnrolledCourse(org.hibernate.Session hibSession, Long enrolledCourseId) {
-		return hibSession.createQuery("from WaitList x where x.enrolledCourse.uniqueId = :enrolledCourseId").setLong("enrolledCourseId", enrolledCourseId).list();
+		return hibSession.createQuery("from WaitList x where x.enrolledCourse.uniqueId = :enrolledCourseId").setParameter("enrolledCourseId", enrolledCourseId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<WaitList> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
-		return hibSession.createQuery("from WaitList x where x.courseDemand.uniqueId = :courseDemandId").setLong("courseDemandId", courseDemandId).list();
+		return hibSession.createQuery("from WaitList x where x.courseDemand.uniqueId = :courseDemandId").setParameter("courseDemandId", courseDemandId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<WaitList> findBySwapCourseOffering(org.hibernate.Session hibSession, Long swapCourseOfferingId) {
-		return hibSession.createQuery("from WaitList x where x.swapCourseOffering.uniqueId = :swapCourseOfferingId").setLong("swapCourseOfferingId", swapCourseOfferingId).list();
+		return hibSession.createQuery("from WaitList x where x.swapCourseOffering.uniqueId = :swapCourseOfferingId").setParameter("swapCourseOfferingId", swapCourseOfferingId).list();
 	}
 }

@@ -779,7 +779,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println();
 			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+iType+" "+x+"Id) {");
-			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").set"+iType+"(\""+x+"Id\", "+x+"Id).list();");
+			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").setParameter(\""+x+"Id\", "+x+"Id).list();");
 			pw.println("	}");
 		}
 

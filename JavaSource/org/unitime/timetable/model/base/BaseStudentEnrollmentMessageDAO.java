@@ -44,6 +44,6 @@ public abstract class BaseStudentEnrollmentMessageDAO extends _RootDAO<StudentEn
 
 	@SuppressWarnings("unchecked")
 	public List<StudentEnrollmentMessage> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
-		return hibSession.createQuery("from StudentEnrollmentMessage x where x.courseDemand.uniqueId = :courseDemandId").setLong("courseDemandId", courseDemandId).list();
+		return hibSession.createQuery("from StudentEnrollmentMessage x where x.courseDemand.uniqueId = :courseDemandId").setParameter("courseDemandId", courseDemandId).list();
 	}
 }

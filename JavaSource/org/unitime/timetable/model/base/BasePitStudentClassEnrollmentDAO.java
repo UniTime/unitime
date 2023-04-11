@@ -44,16 +44,16 @@ public abstract class BasePitStudentClassEnrollmentDAO extends _RootDAO<PitStude
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentClassEnrollment> findByPitStudent(org.hibernate.Session hibSession, Long pitStudentId) {
-		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitStudent.uniqueId = :pitStudentId").setLong("pitStudentId", pitStudentId).list();
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitStudent.uniqueId = :pitStudentId").setParameter("pitStudentId", pitStudentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentClassEnrollment> findByPitCourseOffering(org.hibernate.Session hibSession, Long pitCourseOfferingId) {
-		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitCourseOffering.uniqueId = :pitCourseOfferingId").setLong("pitCourseOfferingId", pitCourseOfferingId).list();
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitCourseOffering.uniqueId = :pitCourseOfferingId").setParameter("pitCourseOfferingId", pitCourseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentClassEnrollment> findByPitClass(org.hibernate.Session hibSession, Long pitClassId) {
-		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitClass.uniqueId = :pitClassId").setLong("pitClassId", pitClassId).list();
+		return hibSession.createQuery("from PitStudentClassEnrollment x where x.pitClass.uniqueId = :pitClassId").setParameter("pitClassId", pitClassId).list();
 	}
 }

@@ -44,11 +44,11 @@ public abstract class BaseCurriculumDAO extends _RootDAO<Curriculum,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Curriculum> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
-		return hibSession.createQuery("from Curriculum x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
+		return hibSession.createQuery("from Curriculum x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Curriculum> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from Curriculum x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from Curriculum x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 }

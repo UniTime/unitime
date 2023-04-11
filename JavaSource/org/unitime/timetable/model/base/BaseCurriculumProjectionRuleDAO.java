@@ -44,16 +44,16 @@ public abstract class BaseCurriculumProjectionRuleDAO extends _RootDAO<Curriculu
 
 	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
-		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByMajor(org.hibernate.Session hibSession, Long majorId) {
-		return hibSession.createQuery("from CurriculumProjectionRule x where x.major.uniqueId = :majorId").setLong("majorId", majorId).list();
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CurriculumProjectionRule> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
-		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicClassification.uniqueId = :academicClassificationId").setLong("academicClassificationId", academicClassificationId).list();
+		return hibSession.createQuery("from CurriculumProjectionRule x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
 	}
 }

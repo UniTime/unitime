@@ -44,6 +44,6 @@ public abstract class BaseReservationDAO extends _RootDAO<Reservation,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Reservation> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
-		return hibSession.createQuery("from Reservation x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
+		return hibSession.createQuery("from Reservation x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
 	}
 }

@@ -44,6 +44,6 @@ public abstract class BaseTaskExecutionDAO extends _RootDAO<TaskExecution,Long> 
 
 	@SuppressWarnings("unchecked")
 	public List<TaskExecution> findByTask(org.hibernate.Session hibSession, Long taskId) {
-		return hibSession.createQuery("from TaskExecution x where x.task.uniqueId = :taskId").setLong("taskId", taskId).list();
+		return hibSession.createQuery("from TaskExecution x where x.task.uniqueId = :taskId").setParameter("taskId", taskId).list();
 	}
 }

@@ -44,6 +44,6 @@ public abstract class BaseStudentSectHistoryDAO extends _RootDAO<StudentSectHist
 
 	@SuppressWarnings("unchecked")
 	public List<StudentSectHistory> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from StudentSectHistory x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from StudentSectHistory x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 }

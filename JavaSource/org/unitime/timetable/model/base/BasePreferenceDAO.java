@@ -44,11 +44,11 @@ public abstract class BasePreferenceDAO extends _RootDAO<Preference,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Preference> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
-		return hibSession.createQuery("from Preference x where x.owner.uniqueId = :ownerId").setLong("ownerId", ownerId).list();
+		return hibSession.createQuery("from Preference x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Preference> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
-		return hibSession.createQuery("from Preference x where x.prefLevel.uniqueId = :prefLevelId").setLong("prefLevelId", prefLevelId).list();
+		return hibSession.createQuery("from Preference x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
 	}
 }

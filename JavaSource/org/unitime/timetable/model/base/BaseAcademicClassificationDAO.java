@@ -44,6 +44,6 @@ public abstract class BaseAcademicClassificationDAO extends _RootDAO<AcademicCla
 
 	@SuppressWarnings("unchecked")
 	public List<AcademicClassification> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from AcademicClassification x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from AcademicClassification x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

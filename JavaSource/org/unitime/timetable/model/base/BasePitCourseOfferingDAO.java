@@ -44,21 +44,21 @@ public abstract class BasePitCourseOfferingDAO extends _RootDAO<PitCourseOfferin
 
 	@SuppressWarnings("unchecked")
 	public List<PitCourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
-		return hibSession.createQuery("from PitCourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
+		return hibSession.createQuery("from PitCourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitCourseOffering> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from PitCourseOffering x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from PitCourseOffering x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitCourseOffering> findByPitInstructionalOffering(org.hibernate.Session hibSession, Long pitInstructionalOfferingId) {
-		return hibSession.createQuery("from PitCourseOffering x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setLong("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
+		return hibSession.createQuery("from PitCourseOffering x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitCourseOffering> findByCourseType(org.hibernate.Session hibSession, Long courseTypeId) {
-		return hibSession.createQuery("from PitCourseOffering x where x.courseType.uniqueId = :courseTypeId").setLong("courseTypeId", courseTypeId).list();
+		return hibSession.createQuery("from PitCourseOffering x where x.courseType.uniqueId = :courseTypeId").setParameter("courseTypeId", courseTypeId).list();
 	}
 }

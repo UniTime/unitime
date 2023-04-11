@@ -44,16 +44,16 @@ public abstract class BaseDepartmentDAO extends _RootDAO<Department,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Department> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Department x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from Department x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Department> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
-		return hibSession.createQuery("from Department x where x.statusType.uniqueId = :statusTypeId").setLong("statusTypeId", statusTypeId).list();
+		return hibSession.createQuery("from Department x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Department> findBySolverGroup(org.hibernate.Session hibSession, Long solverGroupId) {
-		return hibSession.createQuery("from Department x where x.solverGroup.uniqueId = :solverGroupId").setLong("solverGroupId", solverGroupId).list();
+		return hibSession.createQuery("from Department x where x.solverGroup.uniqueId = :solverGroupId").setParameter("solverGroupId", solverGroupId).list();
 	}
 }

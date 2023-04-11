@@ -44,6 +44,6 @@ public abstract class BaseRoomFeatureDAO extends _RootDAO<RoomFeature,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<RoomFeature> findByFeatureType(org.hibernate.Session hibSession, Long featureTypeId) {
-		return hibSession.createQuery("from RoomFeature x where x.featureType.uniqueId = :featureTypeId").setLong("featureTypeId", featureTypeId).list();
+		return hibSession.createQuery("from RoomFeature x where x.featureType.uniqueId = :featureTypeId").setParameter("featureTypeId", featureTypeId).list();
 	}
 }

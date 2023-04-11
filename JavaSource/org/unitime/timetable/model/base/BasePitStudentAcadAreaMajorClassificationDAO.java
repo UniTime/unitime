@@ -44,26 +44,26 @@ public abstract class BasePitStudentAcadAreaMajorClassificationDAO extends _Root
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMajorClassification> findByPitStudent(org.hibernate.Session hibSession, Long pitStudentId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.pitStudent.uniqueId = :pitStudentId").setLong("pitStudentId", pitStudentId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.pitStudent.uniqueId = :pitStudentId").setParameter("pitStudentId", pitStudentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMajorClassification> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.academicArea.uniqueId = :academicAreaId").setLong("academicAreaId", academicAreaId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMajorClassification> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.academicClassification.uniqueId = :academicClassificationId").setLong("academicClassificationId", academicClassificationId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMajorClassification> findByMajor(org.hibernate.Session hibSession, Long majorId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.major.uniqueId = :majorId").setLong("majorId", majorId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMajorClassification> findByConcentration(org.hibernate.Session hibSession, Long concentrationId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.concentration.uniqueId = :concentrationId").setLong("concentrationId", concentrationId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMajorClassification x where x.concentration.uniqueId = :concentrationId").setParameter("concentrationId", concentrationId).list();
 	}
 }

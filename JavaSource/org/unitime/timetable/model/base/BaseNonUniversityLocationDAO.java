@@ -44,6 +44,6 @@ public abstract class BaseNonUniversityLocationDAO extends _RootDAO<NonUniversit
 
 	@SuppressWarnings("unchecked")
 	public List<NonUniversityLocation> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
-		return hibSession.createQuery("from NonUniversityLocation x where x.roomType.uniqueId = :roomTypeId").setLong("roomTypeId", roomTypeId).list();
+		return hibSession.createQuery("from NonUniversityLocation x where x.roomType.uniqueId = :roomTypeId").setParameter("roomTypeId", roomTypeId).list();
 	}
 }

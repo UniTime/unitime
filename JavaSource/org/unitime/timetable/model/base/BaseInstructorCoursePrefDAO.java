@@ -44,6 +44,6 @@ public abstract class BaseInstructorCoursePrefDAO extends _RootDAO<InstructorCou
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorCoursePref> findByCourse(org.hibernate.Session hibSession, Long courseId) {
-		return hibSession.createQuery("from InstructorCoursePref x where x.course.uniqueId = :courseId").setLong("courseId", courseId).list();
+		return hibSession.createQuery("from InstructorCoursePref x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
 	}
 }

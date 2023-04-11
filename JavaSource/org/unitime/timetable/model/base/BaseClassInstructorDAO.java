@@ -44,21 +44,21 @@ public abstract class BaseClassInstructorDAO extends _RootDAO<ClassInstructor,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByClassInstructing(org.hibernate.Session hibSession, Long classInstructingId) {
-		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId").setLong("classInstructingId", classInstructingId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId").setParameter("classInstructingId", classInstructingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByInstructor(org.hibernate.Session hibSession, Long instructorId) {
-		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId").setLong("instructorId", instructorId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId").setParameter("instructorId", instructorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setLong("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
-		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId").setLong("teachingRequestId", teachingRequestId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
 	}
 }

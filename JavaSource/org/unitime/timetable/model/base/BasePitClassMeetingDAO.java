@@ -44,6 +44,6 @@ public abstract class BasePitClassMeetingDAO extends _RootDAO<PitClassMeeting,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<PitClassMeeting> findByPitClassEvent(org.hibernate.Session hibSession, Long pitClassEventId) {
-		return hibSession.createQuery("from PitClassMeeting x where x.pitClassEvent.uniqueId = :pitClassEventId").setLong("pitClassEventId", pitClassEventId).list();
+		return hibSession.createQuery("from PitClassMeeting x where x.pitClassEvent.uniqueId = :pitClassEventId").setParameter("pitClassEventId", pitClassEventId).list();
 	}
 }

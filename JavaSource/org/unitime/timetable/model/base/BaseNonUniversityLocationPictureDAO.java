@@ -44,6 +44,6 @@ public abstract class BaseNonUniversityLocationPictureDAO extends _RootDAO<NonUn
 
 	@SuppressWarnings("unchecked")
 	public List<NonUniversityLocationPicture> findByLocation(org.hibernate.Session hibSession, Long locationId) {
-		return hibSession.createQuery("from NonUniversityLocationPicture x where x.location.uniqueId = :locationId").setLong("locationId", locationId).list();
+		return hibSession.createQuery("from NonUniversityLocationPicture x where x.location.uniqueId = :locationId").setParameter("locationId", locationId).list();
 	}
 }

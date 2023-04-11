@@ -44,6 +44,6 @@ public abstract class BaseTimePrefDAO extends _RootDAO<TimePref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<TimePref> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
-		return hibSession.createQuery("from TimePref x where x.timePattern.uniqueId = :timePatternId").setLong("timePatternId", timePatternId).list();
+		return hibSession.createQuery("from TimePref x where x.timePattern.uniqueId = :timePatternId").setParameter("timePatternId", timePatternId).list();
 	}
 }

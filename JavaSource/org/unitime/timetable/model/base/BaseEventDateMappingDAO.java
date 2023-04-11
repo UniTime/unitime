@@ -44,6 +44,6 @@ public abstract class BaseEventDateMappingDAO extends _RootDAO<EventDateMapping,
 
 	@SuppressWarnings("unchecked")
 	public List<EventDateMapping> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from EventDateMapping x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from EventDateMapping x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

@@ -44,6 +44,6 @@ public abstract class BasePosMajorConcentrationDAO extends _RootDAO<PosMajorConc
 
 	@SuppressWarnings("unchecked")
 	public List<PosMajorConcentration> findByMajor(org.hibernate.Session hibSession, Long majorId) {
-		return hibSession.createQuery("from PosMajorConcentration x where x.major.uniqueId = :majorId").setLong("majorId", majorId).list();
+		return hibSession.createQuery("from PosMajorConcentration x where x.major.uniqueId = :majorId").setParameter("majorId", majorId).list();
 	}
 }

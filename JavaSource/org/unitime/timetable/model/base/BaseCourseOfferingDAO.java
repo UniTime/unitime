@@ -44,41 +44,41 @@ public abstract class BaseCourseOfferingDAO extends _RootDAO<CourseOffering,Long
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
-		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
+		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOffering(org.hibernate.Session hibSession, Long demandOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId").setLong("demandOfferingId", demandOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId").setParameter("demandOfferingId", demandOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOfferingType(org.hibernate.Session hibSession, Long demandOfferingTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId").setLong("demandOfferingTypeId", demandOfferingTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId").setParameter("demandOfferingTypeId", demandOfferingTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByCourseType(org.hibernate.Session hibSession, Long courseTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.courseType.uniqueId = :courseTypeId").setLong("courseTypeId", courseTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.courseType.uniqueId = :courseTypeId").setParameter("courseTypeId", courseTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByConsentType(org.hibernate.Session hibSession, Long consentTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.consentType.uniqueId = :consentTypeId").setLong("consentTypeId", consentTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.consentType.uniqueId = :consentTypeId").setParameter("consentTypeId", consentTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByAlternativeOffering(org.hibernate.Session hibSession, Long alternativeOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId").setLong("alternativeOfferingId", alternativeOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId").setParameter("alternativeOfferingId", alternativeOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
-		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId").setLong("fundingDeptId", fundingDeptId).list();
+		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
 	}
 }

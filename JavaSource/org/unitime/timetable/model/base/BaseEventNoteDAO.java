@@ -44,6 +44,6 @@ public abstract class BaseEventNoteDAO extends _RootDAO<EventNote,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<EventNote> findByEvent(org.hibernate.Session hibSession, Long eventId) {
-		return hibSession.createQuery("from EventNote x where x.event.uniqueId = :eventId").setLong("eventId", eventId).list();
+		return hibSession.createQuery("from EventNote x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
 	}
 }

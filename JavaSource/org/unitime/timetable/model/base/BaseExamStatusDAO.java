@@ -45,6 +45,6 @@ public abstract class BaseExamStatusDAO extends _RootDAO<ExamStatus,Serializable
 
 	@SuppressWarnings("unchecked")
 	public List<ExamStatus> findByStatus(org.hibernate.Session hibSession, Long statusId) {
-		return hibSession.createQuery("from ExamStatus x where x.status.uniqueId = :statusId").setLong("statusId", statusId).list();
+		return hibSession.createQuery("from ExamStatus x where x.status.uniqueId = :statusId").setParameter("statusId", statusId).list();
 	}
 }

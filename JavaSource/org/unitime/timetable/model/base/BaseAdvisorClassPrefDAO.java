@@ -44,6 +44,6 @@ public abstract class BaseAdvisorClassPrefDAO extends _RootDAO<AdvisorClassPref,
 
 	@SuppressWarnings("unchecked")
 	public List<AdvisorClassPref> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from AdvisorClassPref x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
+		return hibSession.createQuery("from AdvisorClassPref x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
 	}
 }

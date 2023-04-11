@@ -44,16 +44,16 @@ public abstract class BaseCourseDemandDAO extends _RootDAO<CourseDemand,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<CourseDemand> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from CourseDemand x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from CourseDemand x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseDemand> findByWaitListSwapWithCourseOffering(org.hibernate.Session hibSession, Long waitListSwapWithCourseOfferingId) {
-		return hibSession.createQuery("from CourseDemand x where x.waitListSwapWithCourseOffering.uniqueId = :waitListSwapWithCourseOfferingId").setLong("waitListSwapWithCourseOfferingId", waitListSwapWithCourseOfferingId).list();
+		return hibSession.createQuery("from CourseDemand x where x.waitListSwapWithCourseOffering.uniqueId = :waitListSwapWithCourseOfferingId").setParameter("waitListSwapWithCourseOfferingId", waitListSwapWithCourseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseDemand> findByFreeTime(org.hibernate.Session hibSession, Long freeTimeId) {
-		return hibSession.createQuery("from CourseDemand x where x.freeTime.uniqueId = :freeTimeId").setLong("freeTimeId", freeTimeId).list();
+		return hibSession.createQuery("from CourseDemand x where x.freeTime.uniqueId = :freeTimeId").setParameter("freeTimeId", freeTimeId).list();
 	}
 }

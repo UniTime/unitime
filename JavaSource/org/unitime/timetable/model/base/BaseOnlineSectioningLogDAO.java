@@ -44,6 +44,6 @@ public abstract class BaseOnlineSectioningLogDAO extends _RootDAO<OnlineSectioni
 
 	@SuppressWarnings("unchecked")
 	public List<OnlineSectioningLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from OnlineSectioningLog x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from OnlineSectioningLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

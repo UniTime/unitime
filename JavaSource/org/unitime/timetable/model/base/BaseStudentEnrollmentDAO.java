@@ -44,11 +44,11 @@ public abstract class BaseStudentEnrollmentDAO extends _RootDAO<StudentEnrollmen
 
 	@SuppressWarnings("unchecked")
 	public List<StudentEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
-		return hibSession.createQuery("from StudentEnrollment x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
+		return hibSession.createQuery("from StudentEnrollment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentEnrollment> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from StudentEnrollment x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
+		return hibSession.createQuery("from StudentEnrollment x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
 	}
 }

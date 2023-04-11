@@ -44,11 +44,11 @@ public abstract class BaseExamOwnerDAO extends _RootDAO<ExamOwner,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExamOwner> findByExam(org.hibernate.Session hibSession, Long examId) {
-		return hibSession.createQuery("from ExamOwner x where x.exam.uniqueId = :examId").setLong("examId", examId).list();
+		return hibSession.createQuery("from ExamOwner x where x.exam.uniqueId = :examId").setParameter("examId", examId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExamOwner> findByCourse(org.hibernate.Session hibSession, Long courseId) {
-		return hibSession.createQuery("from ExamOwner x where x.course.uniqueId = :courseId").setLong("courseId", courseId).list();
+		return hibSession.createQuery("from ExamOwner x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
 	}
 }

@@ -44,26 +44,26 @@ public abstract class BaseSessionDAO extends _RootDAO<Session,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Session> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
-		return hibSession.createQuery("from Session x where x.statusType.uniqueId = :statusTypeId").setLong("statusTypeId", statusTypeId).list();
+		return hibSession.createQuery("from Session x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Session> findByDefaultDatePattern(org.hibernate.Session hibSession, Long defaultDatePatternId) {
-		return hibSession.createQuery("from Session x where x.defaultDatePattern.uniqueId = :defaultDatePatternId").setLong("defaultDatePatternId", defaultDatePatternId).list();
+		return hibSession.createQuery("from Session x where x.defaultDatePattern.uniqueId = :defaultDatePatternId").setParameter("defaultDatePatternId", defaultDatePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Session> findByDefaultSectioningStatus(org.hibernate.Session hibSession, Long defaultSectioningStatusId) {
-		return hibSession.createQuery("from Session x where x.defaultSectioningStatus.uniqueId = :defaultSectioningStatusId").setLong("defaultSectioningStatusId", defaultSectioningStatusId).list();
+		return hibSession.createQuery("from Session x where x.defaultSectioningStatus.uniqueId = :defaultSectioningStatusId").setParameter("defaultSectioningStatusId", defaultSectioningStatusId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Session> findByDefaultClassDurationType(org.hibernate.Session hibSession, Long defaultClassDurationTypeId) {
-		return hibSession.createQuery("from Session x where x.defaultClassDurationType.uniqueId = :defaultClassDurationTypeId").setLong("defaultClassDurationTypeId", defaultClassDurationTypeId).list();
+		return hibSession.createQuery("from Session x where x.defaultClassDurationType.uniqueId = :defaultClassDurationTypeId").setParameter("defaultClassDurationTypeId", defaultClassDurationTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Session> findByDefaultInstructionalMethod(org.hibernate.Session hibSession, Long defaultInstructionalMethodId) {
-		return hibSession.createQuery("from Session x where x.defaultInstructionalMethod.uniqueId = :defaultInstructionalMethodId").setLong("defaultInstructionalMethodId", defaultInstructionalMethodId).list();
+		return hibSession.createQuery("from Session x where x.defaultInstructionalMethod.uniqueId = :defaultInstructionalMethodId").setParameter("defaultInstructionalMethodId", defaultInstructionalMethodId).list();
 	}
 }

@@ -44,6 +44,6 @@ public abstract class BasePointInTimeDataDAO extends _RootDAO<PointInTimeData,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<PointInTimeData> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from PointInTimeData x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from PointInTimeData x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

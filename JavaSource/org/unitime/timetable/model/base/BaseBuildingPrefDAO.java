@@ -44,6 +44,6 @@ public abstract class BaseBuildingPrefDAO extends _RootDAO<BuildingPref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<BuildingPref> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
-		return hibSession.createQuery("from BuildingPref x where x.building.uniqueId = :buildingId").setLong("buildingId", buildingId).list();
+		return hibSession.createQuery("from BuildingPref x where x.building.uniqueId = :buildingId").setParameter("buildingId", buildingId).list();
 	}
 }

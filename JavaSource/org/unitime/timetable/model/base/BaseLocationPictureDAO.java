@@ -44,6 +44,6 @@ public abstract class BaseLocationPictureDAO extends _RootDAO<LocationPicture,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<LocationPicture> findByType(org.hibernate.Session hibSession, Long typeId) {
-		return hibSession.createQuery("from LocationPicture x where x.type.uniqueId = :typeId").setLong("typeId", typeId).list();
+		return hibSession.createQuery("from LocationPicture x where x.type.uniqueId = :typeId").setParameter("typeId", typeId).list();
 	}
 }

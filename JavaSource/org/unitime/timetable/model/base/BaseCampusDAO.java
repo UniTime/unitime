@@ -44,6 +44,6 @@ public abstract class BaseCampusDAO extends _RootDAO<Campus,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Campus> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Campus x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from Campus x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

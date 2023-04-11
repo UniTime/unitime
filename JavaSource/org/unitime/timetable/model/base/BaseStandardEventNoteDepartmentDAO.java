@@ -44,6 +44,6 @@ public abstract class BaseStandardEventNoteDepartmentDAO extends _RootDAO<Standa
 
 	@SuppressWarnings("unchecked")
 	public List<StandardEventNoteDepartment> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from StandardEventNoteDepartment x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from StandardEventNoteDepartment x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 }

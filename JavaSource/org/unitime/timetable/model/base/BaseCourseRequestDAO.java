@@ -44,11 +44,11 @@ public abstract class BaseCourseRequestDAO extends _RootDAO<CourseRequest,Long> 
 
 	@SuppressWarnings("unchecked")
 	public List<CourseRequest> findByCourseDemand(org.hibernate.Session hibSession, Long courseDemandId) {
-		return hibSession.createQuery("from CourseRequest x where x.courseDemand.uniqueId = :courseDemandId").setLong("courseDemandId", courseDemandId).list();
+		return hibSession.createQuery("from CourseRequest x where x.courseDemand.uniqueId = :courseDemandId").setParameter("courseDemandId", courseDemandId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseRequest> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from CourseRequest x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from CourseRequest x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 }

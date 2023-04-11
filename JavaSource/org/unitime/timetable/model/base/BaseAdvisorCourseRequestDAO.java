@@ -44,16 +44,16 @@ public abstract class BaseAdvisorCourseRequestDAO extends _RootDAO<AdvisorCourse
 
 	@SuppressWarnings("unchecked")
 	public List<AdvisorCourseRequest> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from AdvisorCourseRequest x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<AdvisorCourseRequest> findByCourseOffering(org.hibernate.Session hibSession, Long courseOfferingId) {
-		return hibSession.createQuery("from AdvisorCourseRequest x where x.courseOffering.uniqueId = :courseOfferingId").setLong("courseOfferingId", courseOfferingId).list();
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.courseOffering.uniqueId = :courseOfferingId").setParameter("courseOfferingId", courseOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<AdvisorCourseRequest> findByFreeTime(org.hibernate.Session hibSession, Long freeTimeId) {
-		return hibSession.createQuery("from AdvisorCourseRequest x where x.freeTime.uniqueId = :freeTimeId").setLong("freeTimeId", freeTimeId).list();
+		return hibSession.createQuery("from AdvisorCourseRequest x where x.freeTime.uniqueId = :freeTimeId").setParameter("freeTimeId", freeTimeId).list();
 	}
 }

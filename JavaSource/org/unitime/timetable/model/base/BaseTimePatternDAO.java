@@ -44,6 +44,6 @@ public abstract class BaseTimePatternDAO extends _RootDAO<TimePattern,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<TimePattern> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from TimePattern x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from TimePattern x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

@@ -44,16 +44,16 @@ public abstract class BasePeriodicTaskDAO extends _RootDAO<PeriodicTask,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<PeriodicTask> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from PeriodicTask x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from PeriodicTask x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PeriodicTask> findByScript(org.hibernate.Session hibSession, Long scriptId) {
-		return hibSession.createQuery("from PeriodicTask x where x.script.uniqueId = :scriptId").setLong("scriptId", scriptId).list();
+		return hibSession.createQuery("from PeriodicTask x where x.script.uniqueId = :scriptId").setParameter("scriptId", scriptId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PeriodicTask> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
-		return hibSession.createQuery("from PeriodicTask x where x.owner.uniqueId = :ownerId").setLong("ownerId", ownerId).list();
+		return hibSession.createQuery("from PeriodicTask x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
 	}
 }

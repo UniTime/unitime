@@ -44,11 +44,11 @@ public abstract class BaseRoomDeptDAO extends _RootDAO<RoomDept,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<RoomDept> findByRoom(org.hibernate.Session hibSession, Long roomId) {
-		return hibSession.createQuery("from RoomDept x where x.room.uniqueId = :roomId").setLong("roomId", roomId).list();
+		return hibSession.createQuery("from RoomDept x where x.room.uniqueId = :roomId").setParameter("roomId", roomId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<RoomDept> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from RoomDept x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from RoomDept x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 }

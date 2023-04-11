@@ -44,6 +44,6 @@ public abstract class BaseSolverParameterDAO extends _RootDAO<SolverParameter,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<SolverParameter> findByDefinition(org.hibernate.Session hibSession, Long definitionId) {
-		return hibSession.createQuery("from SolverParameter x where x.definition.uniqueId = :definitionId").setLong("definitionId", definitionId).list();
+		return hibSession.createQuery("from SolverParameter x where x.definition.uniqueId = :definitionId").setParameter("definitionId", definitionId).list();
 	}
 }

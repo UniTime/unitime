@@ -44,6 +44,6 @@ public abstract class BaseLearningCommunityReservationDAO extends _RootDAO<Learn
 
 	@SuppressWarnings("unchecked")
 	public List<LearningCommunityReservation> findByCourse(org.hibernate.Session hibSession, Long courseId) {
-		return hibSession.createQuery("from LearningCommunityReservation x where x.course.uniqueId = :courseId").setLong("courseId", courseId).list();
+		return hibSession.createQuery("from LearningCommunityReservation x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
 	}
 }

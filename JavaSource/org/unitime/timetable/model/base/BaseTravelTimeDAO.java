@@ -44,6 +44,6 @@ public abstract class BaseTravelTimeDAO extends _RootDAO<TravelTime,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<TravelTime> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from TravelTime x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from TravelTime x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

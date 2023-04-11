@@ -44,6 +44,6 @@ public abstract class BaseDegreeDAO extends _RootDAO<Degree,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Degree> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Degree x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from Degree x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

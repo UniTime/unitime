@@ -44,6 +44,6 @@ public abstract class BaseExamPeriodPrefDAO extends _RootDAO<ExamPeriodPref,Long
 
 	@SuppressWarnings("unchecked")
 	public List<ExamPeriodPref> findByExamPeriod(org.hibernate.Session hibSession, Long examPeriodId) {
-		return hibSession.createQuery("from ExamPeriodPref x where x.examPeriod.uniqueId = :examPeriodId").setLong("examPeriodId", examPeriodId).list();
+		return hibSession.createQuery("from ExamPeriodPref x where x.examPeriod.uniqueId = :examPeriodId").setParameter("examPeriodId", examPeriodId).list();
 	}
 }

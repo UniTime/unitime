@@ -44,11 +44,11 @@ public abstract class BaseLastLikeCourseDemandDAO extends _RootDAO<LastLikeCours
 
 	@SuppressWarnings("unchecked")
 	public List<LastLikeCourseDemand> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from LastLikeCourseDemand x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from LastLikeCourseDemand x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<LastLikeCourseDemand> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
-		return hibSession.createQuery("from LastLikeCourseDemand x where x.subjectArea.uniqueId = :subjectAreaId").setLong("subjectAreaId", subjectAreaId).list();
+		return hibSession.createQuery("from LastLikeCourseDemand x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
 	}
 }

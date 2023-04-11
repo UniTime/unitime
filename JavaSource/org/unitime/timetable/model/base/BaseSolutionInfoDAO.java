@@ -44,6 +44,6 @@ public abstract class BaseSolutionInfoDAO extends _RootDAO<SolutionInfo,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SolutionInfo> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
-		return hibSession.createQuery("from SolutionInfo x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
+		return hibSession.createQuery("from SolutionInfo x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
 	}
 }

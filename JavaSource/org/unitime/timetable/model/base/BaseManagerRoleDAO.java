@@ -44,11 +44,11 @@ public abstract class BaseManagerRoleDAO extends _RootDAO<ManagerRole,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ManagerRole> findByRole(org.hibernate.Session hibSession, Long roleId) {
-		return hibSession.createQuery("from ManagerRole x where x.role.roleId = :roleId").setLong("roleId", roleId).list();
+		return hibSession.createQuery("from ManagerRole x where x.role.roleId = :roleId").setParameter("roleId", roleId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ManagerRole> findByTimetableManager(org.hibernate.Session hibSession, Long timetableManagerId) {
-		return hibSession.createQuery("from ManagerRole x where x.timetableManager.uniqueId = :timetableManagerId").setLong("timetableManagerId", timetableManagerId).list();
+		return hibSession.createQuery("from ManagerRole x where x.timetableManager.uniqueId = :timetableManagerId").setParameter("timetableManagerId", timetableManagerId).list();
 	}
 }

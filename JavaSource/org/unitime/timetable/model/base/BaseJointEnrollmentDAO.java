@@ -44,16 +44,16 @@ public abstract class BaseJointEnrollmentDAO extends _RootDAO<JointEnrollment,Lo
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
-		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId").setLong("solutionId", solutionId).list();
+		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass1(org.hibernate.Session hibSession, Long class1Id) {
-		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id").setLong("class1Id", class1Id).list();
+		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id").setParameter("class1Id", class1Id).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass2(org.hibernate.Session hibSession, Long class2Id) {
-		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id").setLong("class2Id", class2Id).list();
+		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id").setParameter("class2Id", class2Id).list();
 	}
 }

@@ -44,21 +44,21 @@ public abstract class BasePitDepartmentalInstructorDAO extends _RootDAO<PitDepar
 
 	@SuppressWarnings("unchecked")
 	public List<PitDepartmentalInstructor> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
-		return hibSession.createQuery("from PitDepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId").setLong("positionTypeId", positionTypeId).list();
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId").setParameter("positionTypeId", positionTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitDepartmentalInstructor> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from PitDepartmentalInstructor x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitDepartmentalInstructor> findByPointInTimeData(org.hibernate.Session hibSession, Long pointInTimeDataId) {
-		return hibSession.createQuery("from PitDepartmentalInstructor x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setLong("pointInTimeDataId", pointInTimeDataId).list();
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.pointInTimeData.uniqueId = :pointInTimeDataId").setParameter("pointInTimeDataId", pointInTimeDataId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitDepartmentalInstructor> findByDepartmentalInstructor(org.hibernate.Session hibSession, Long departmentalInstructorId) {
-		return hibSession.createQuery("from PitDepartmentalInstructor x where x.departmentalInstructor.uniqueId = :departmentalInstructorId").setLong("departmentalInstructorId", departmentalInstructorId).list();
+		return hibSession.createQuery("from PitDepartmentalInstructor x where x.departmentalInstructor.uniqueId = :departmentalInstructorId").setParameter("departmentalInstructorId", departmentalInstructorId).list();
 	}
 }

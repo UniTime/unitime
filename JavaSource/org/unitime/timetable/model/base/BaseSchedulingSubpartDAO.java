@@ -44,21 +44,21 @@ public abstract class BaseSchedulingSubpartDAO extends _RootDAO<SchedulingSubpar
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setInteger("itypeId", itypeId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setParameter("itypeId", itypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByParentSubpart(org.hibernate.Session hibSession, Long parentSubpartId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setLong("parentSubpartId", parentSubpartId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setParameter("parentSubpartId", parentSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setLong("instrOfferingConfigId", instrOfferingConfigId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setLong("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
 	}
 }

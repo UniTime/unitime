@@ -44,6 +44,6 @@ public abstract class BaseItypeDescDAO extends _RootDAO<ItypeDesc,Integer> {
 
 	@SuppressWarnings("unchecked")
 	public List<ItypeDesc> findByParent(org.hibernate.Session hibSession, Integer parentId) {
-		return hibSession.createQuery("from ItypeDesc x where x.parent.itype = :parentId").setInteger("parentId", parentId).list();
+		return hibSession.createQuery("from ItypeDesc x where x.parent.itype = :parentId").setParameter("parentId", parentId).list();
 	}
 }

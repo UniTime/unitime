@@ -44,26 +44,26 @@ public abstract class BaseCourseCreditUnitConfigDAO extends _RootDAO<CourseCredi
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCourseCreditFormat(org.hibernate.Session hibSession, Long courseCreditFormatId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseCreditFormat.uniqueId = :courseCreditFormatId").setLong("courseCreditFormatId", courseCreditFormatId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseCreditFormat.uniqueId = :courseCreditFormatId").setParameter("courseCreditFormatId", courseCreditFormatId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId").setLong("creditTypeId", creditTypeId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCreditUnitType(org.hibernate.Session hibSession, Long creditUnitTypeId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditUnitType.uniqueId = :creditUnitTypeId").setLong("creditUnitTypeId", creditUnitTypeId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditUnitType.uniqueId = :creditUnitTypeId").setParameter("creditUnitTypeId", creditUnitTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findBySubpartOwner(org.hibernate.Session hibSession, Long subpartOwnerId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.subpartOwner.uniqueId = :subpartOwnerId").setLong("subpartOwnerId", subpartOwnerId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.subpartOwner.uniqueId = :subpartOwnerId").setParameter("subpartOwnerId", subpartOwnerId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCourseOwner(org.hibernate.Session hibSession, Long courseOwnerId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId").setLong("courseOwnerId", courseOwnerId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId").setParameter("courseOwnerId", courseOwnerId).list();
 	}
 }

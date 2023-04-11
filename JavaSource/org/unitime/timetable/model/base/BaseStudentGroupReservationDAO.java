@@ -44,6 +44,6 @@ public abstract class BaseStudentGroupReservationDAO extends _RootDAO<StudentGro
 
 	@SuppressWarnings("unchecked")
 	public List<StudentGroupReservation> findByGroup(org.hibernate.Session hibSession, Long groupId) {
-		return hibSession.createQuery("from StudentGroupReservation x where x.group.uniqueId = :groupId").setLong("groupId", groupId).list();
+		return hibSession.createQuery("from StudentGroupReservation x where x.group.uniqueId = :groupId").setParameter("groupId", groupId).list();
 	}
 }

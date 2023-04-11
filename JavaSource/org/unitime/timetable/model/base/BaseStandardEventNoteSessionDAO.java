@@ -44,6 +44,6 @@ public abstract class BaseStandardEventNoteSessionDAO extends _RootDAO<StandardE
 
 	@SuppressWarnings("unchecked")
 	public List<StandardEventNoteSession> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from StandardEventNoteSession x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
+		return hibSession.createQuery("from StandardEventNoteSession x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
 	}
 }

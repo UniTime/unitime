@@ -44,16 +44,16 @@ public abstract class BaseClassWaitListDAO extends _RootDAO<ClassWaitList,Long> 
 
 	@SuppressWarnings("unchecked")
 	public List<ClassWaitList> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from ClassWaitList x where x.student.uniqueId = :studentId").setLong("studentId", studentId).list();
+		return hibSession.createQuery("from ClassWaitList x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassWaitList> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
-		return hibSession.createQuery("from ClassWaitList x where x.courseRequest.uniqueId = :courseRequestId").setLong("courseRequestId", courseRequestId).list();
+		return hibSession.createQuery("from ClassWaitList x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassWaitList> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from ClassWaitList x where x.clazz.uniqueId = :clazzId").setLong("clazzId", clazzId).list();
+		return hibSession.createQuery("from ClassWaitList x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
 	}
 }
