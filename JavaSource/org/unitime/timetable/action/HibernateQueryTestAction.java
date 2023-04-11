@@ -19,12 +19,21 @@
 */
 package org.unitime.timetable.action;
 
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
@@ -32,20 +41,14 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.dom4j.Document;
-import org.hibernate.MappingException;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.exception.SQLGrammarException;
-import org.hibernate.hql.internal.QueryExecutionRequestException;
 import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.hibernate.hql.spi.QueryTranslator;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.CollectionType;
-import org.hibernate.type.Type;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -176,7 +179,15 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
-		        Query q = hibSession.createQuery(query);
+		        Query q = null;
+		        boolean update = false;
+		        try {
+		        	q = hibSession.createQuery(query, Tuple.class);
+		        } catch (IllegalArgumentException e) {
+		        	// update query
+		        	update = true;
+		        	q = hibSession.createQuery(query);
+		        }
 		        
 		        try {
 		        	String hqlQueryString = q.getQueryString();
@@ -190,22 +201,22 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        
 		        q.setFirstResult(form.getStart());
 		        if (limit > 0) q.setMaxResults(limit + 1);
-		        try {
-	                List l = q.list();
-	                String[] alias = q.getReturnAliases();
+		        String idAlias = null;
+		        if (!update) {
+	                List<Tuple> l = q.list();
 			        List<Long> ids = new ArrayList<Long>();
 	                StringBuffer s = new StringBuffer();
 	                int line = 0;
-	                for (Iterator i=l.iterator();i.hasNext();line++) {
+	                for (Iterator<Tuple> i=l.iterator();i.hasNext();line++) {
 	                    if (limit > 0 && line >= limit) {
 	                        // s.append("<tr><td>...</td></tr>");
 	                        break;
 	                    }
-	                    Object o = i.next();
-	                    if (s.length()==0) printHeader(s, o, alias);
-	                    printLine(s, o, (SessionImplementor)hibSession, alias);
-	                    if (o != null && o instanceof Object[] && ((Object[])o).length > 0 && ((Object[])o)[0] != null && ((Object[])o)[0] instanceof Long)
-	                    	ids.add((Long)((Object[])o)[0]);
+	                    Tuple o = i.next();
+	                    if (s.length()==0) {
+	                    	idAlias = printHeader(s, o);
+	                    }
+	                    printLine(s, o, ids, (SessionImplementor)hibSession);
 	                }
 	                if (s.length()>0) {
 	                    printFooter(s);
@@ -226,23 +237,23 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 	                }
 	                form.setExport(!l.isEmpty());
 	                form.setNext(limit > 0 && l.size() > limit);
-			        if (!ids.isEmpty() && alias != null && alias.length > 0 && alias[0].startsWith("__")) {
-			        	if ("__Class".equals(alias[0]))
+			        if (idAlias != null) {
+			        	if ("__Class".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sClassLevel, ids);
-			    		else if ("__Offering".equals(alias[0]))
+			    		else if ("__Offering".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
-			    		else if ("__Subpart".equals(alias[0]))
+			    		else if ("__Subpart".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sSchedulingSubpartLevel, ids);
-			    		else if ("__Room".equals(alias[0]))
+			    		else if ("__Room".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
-			    		else if ("__Instructor".equals(alias[0]))
+			    		else if ("__Instructor".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
-			    		else if ("__Exam".equals(alias[0]))
+			    		else if ("__Exam".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
-			    		else if ("__Event".equals(alias[0]))
+			    		else if ("__Event".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
 			        }
-		        } catch (QueryExecutionRequestException e) {
+		        } else {
 		            Transaction tx = null;
 		            try {
 		                tx = hibSession.beginTransaction();
@@ -302,84 +313,56 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         s.append("</i></td>");
     }
     
-    private boolean skip(Type t, boolean lazy) {
+    private boolean skip(Attribute t) {
         try {
-            if (t.isCollectionType()) {
-                if (!lazy) return true;
-                SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
-                Type w = ((CollectionType)t).getElementType((SessionFactoryImplementor)hibSessionFactory);
-                Class ts = w.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
-                return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
-            }
-        } catch (MappingException e) {
-            return true;
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-        try {
-            Class ts = t.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
+            Class ts = t.getJavaType().getMethod("toString", new Class[]{}).getDeclaringClass();
             return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
         } catch (NoSuchMethodException e) {
             return true;
         }
     }
     
-    public void printHeader(StringBuffer s, Object o, String[] alias) {
+    public String printHeader(StringBuffer s, Tuple o) {
         s.append("<table width='100%' border='0' cellspacing='0' cellpadding='3' class='unitime-HQLTable'>");
         s.append("<tr align='left'>");
-        SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
         boolean hasLink = false;
-    	if (alias != null && alias.length > 0 && alias[0] != null && alias[0].startsWith("__")) {
-    		if ("__Class".equals(alias[0])) hasLink = true;
-			else if ("__Offering".equals(alias[0])) hasLink = true;
-			else if ("__Subpart".equals(alias[0])) hasLink = true;
-			else if ("__Room".equals(alias[0])) hasLink = true;
-			else if ("__Instructor".equals(alias[0])) hasLink = true;
-			else if ("__Exam".equals(alias[0])) hasLink = true;
-			else if ("__Event".equals(alias[0])) hasLink = true;
+        TupleElement first = null;
+        if (!o.getElements().isEmpty() && o.getElements().get(0).getAlias() != null && o.getElements().get(0).getAlias().startsWith("__") && o.get(0) != null) {
+    		first = o.getElements().get(0);
+    		String alias = first.getAlias();
+    		if ("__Class".equals(alias)) hasLink = true;
+			else if ("__Offering".equals(alias)) hasLink = true;
+			else if ("__Subpart".equals(alias)) hasLink = true;
+			else if ("__Room".equals(alias)) hasLink = true;
+			else if ("__Instructor".equals(alias)) hasLink = true;
+			else if ("__Exam".equals(alias)) hasLink = true;
+			else if ("__Event".equals(alias)) hasLink = true;
     	}
-        int idx=1;
-        if (o==null) {
-            header(s, idx++, (alias != null && alias.length > 0 && alias[0] != null && !alias[0].isEmpty() ? alias[0] : null));
-        } else if (o instanceof Object[]) {
-            Object[] x = (Object[])o;
-            for (int i=0;i<x.length;i++) {
-            	if (hasLink && i == 0) continue;
-            	String a = (alias != null && alias.length > i && alias[i] != null && !alias[i].isEmpty() ? alias[i] : null);
-                if (x[i]==null) {
-                    header(s,idx++,a);
-                } else {
-    				ClassMetadata meta = null;
-            		try {
-            			meta = hibSessionFactory.getClassMetadata(x[i].getClass());
-            		} catch (MappingException e) {}
-                    if (meta==null) {
-                        header(s,idx++,a);
-                    } else {
-                        header(s,idx++,meta.getIdentifierPropertyName());
-                        for (int j=0;j<meta.getPropertyNames().length;j++) {
-                            if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
-                                header(s,idx++,meta.getPropertyNames()[j]);
-                        }
-                    }
-                }
-            }
-        } else {
-			ClassMetadata meta = null;
-    		try {
-    			meta = hibSessionFactory.getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-            if (meta==null) {
-                header(s,idx++,(alias != null && alias.length > 0 && alias[0] != null && !alias[0].isEmpty() ? alias[0] : null));
-            } else {
-                header(s,idx++,meta.getIdentifierPropertyName());
-                for (int i=0;i<meta.getPropertyNames().length;i++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                        header(s,idx++,meta.getPropertyNames()[i]);
-                }
-            }
+        int idx = 1;
+        for (TupleElement te: o.getElements()) {
+        	if (hasLink && first != null && first.equals(te)) continue;
+        	Object x = o.get(te);
+        	if (x == null) {
+        		header(s, idx++, te.getAlias());
+        	} else {
+        		EntityType et = null;
+            	try {
+            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
+            	} catch (IllegalArgumentException e) {}
+            	if (et == null) {
+            		header(s, idx++, te.getAlias());
+            	} else {
+            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+            		attributes.addAll(et.getSingularAttributes());
+            		for (Attribute sa: attributes) {
+            			if (!skip(sa))
+            				header(s, idx++, sa.getName());
+            		}
+            	}
+        	}
         }
         s.append("</tr>");
+        return (hasLink && first != null ? first.getAlias() : null);
     }
     
     private void line(StringBuffer s, Object text) {
@@ -395,62 +378,62 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
     }
     
     
-    public void printLine(StringBuffer s, Object o, SessionImplementor session, String[] alias) {
+    public void printLine(StringBuffer s, Tuple o, List<Long> ids, SessionImplementor session) {
     	String link = null;
-    	if (alias != null && alias.length > 0 && alias[0] != null && alias[0].startsWith("__") && o != null && (o instanceof Object[])) {
-    		if ("__Class".equals(alias[0]))
-    			link = "classDetail.action?cid=" + ((Object[])o)[0];
-			else if ("__Offering".equals(alias[0]))
-				link = "instructionalOfferingDetail.action?op=view&io=" + ((Object[])o)[0];
-			else if ("__Subpart".equals(alias[0]))
-				link = "schedulingSubpartDetail.action?ssuid=" + ((Object[])o)[0];
-			else if ("__Room".equals(alias[0]))
-				link = "gwt.jsp?page=rooms&back=1&id=" + ((Object[])o)[0];
-			else if ("__Instructor".equals(alias[0]))
-				link = "instructorDetail.action?instructorId=" + ((Object[])o)[0];
-			else if ("__Exam".equals(alias[0]))
-				link = "examDetail.action?examId=" + ((Object[])o)[0];
-			else if ("__Event".equals(alias[0]))
-				link = "gwt.jsp?page=events#event=" + ((Object[])o)[0];
+    	TupleElement first = null;
+    	if (!o.getElements().isEmpty() && o.getElements().get(0).getAlias() != null && o.getElements().get(0).getAlias().startsWith("__") && o.get(0) != null) {
+    		first = o.getElements().get(0);
+    		Object x = o.get(0);
+    		String alias = first.getAlias();
+    		if ("__Class".equals(alias)) {
+    			link = "classDetail.action?cid=" + x;
+    			ids.add((Long)x);
+    		} else if ("__Offering".equals(alias)) {
+				link = "instructionalOfferingDetail.action?op=view&io=" + x;
+				ids.add((Long)x);
+    		} else if ("__Subpart".equals(alias)) {
+				link = "schedulingSubpartDetail.action?ssuid=" + x;
+				ids.add((Long)x);
+    		} else if ("__Room".equals(alias)) {
+				link = "gwt.jsp?page=rooms&back=1&id=" + x;
+				ids.add((Long)x);
+    		} else if ("__Instructor".equals(alias)) {
+				link = "instructorDetail.action?instructorId=" + x;
+				ids.add((Long)x);
+    		} else if ("__Exam".equals(alias)) {
+				link = "examDetail.action?examId=" + x;
+				ids.add((Long)x);
+    		} else if ("__Event".equals(alias)) {
+				link = "gwt.jsp?page=events#event=" + x;
+    			ids.add((Long)x);
+    		}
     	}
         s.append("<tr align='left' onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\" " + (link == null ? "" : "onClick=\"document.location='" + link + "';\"") + ">");
-        SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
-        if (o==null) {
-            line(s,null);
-        } else if (o instanceof Object[]) {
-            Object[] x = (Object[])o;
-            for (int i=0;i<x.length;i++) {
-            	if (link != null && i == 0) continue;
-                if (x[i]==null) {
-                    line(s,null);
-                } else {
-    				ClassMetadata meta = null;
-            		try {
-            			meta = hibSessionFactory.getClassMetadata(x[i].getClass());
-            		} catch (MappingException e) {}
-                    if (meta==null) {
-                        line(s,x[i]);
-                    } else {
-                        line(s,meta.getIdentifier(x[i], session));
-                        for (int j=0;j<meta.getPropertyNames().length;j++) 
-                            if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
-                                line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j]));
-                    }
-                }
-            }
-        } else {
-			ClassMetadata meta = null;
-    		try {
-    			meta = hibSessionFactory.getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-            if (meta==null) {
-                line(s,o);
-            } else {
-                line(s,meta.getIdentifier(o, session));
-                for (int i=0;i<meta.getPropertyNames().length;i++) 
-                    if (!skip(meta.getPropertyTypes()[i],meta.getPropertyLaziness()[i]))
-                        line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i]));
-            }
+        for (TupleElement te: o.getElements()) {
+        	if (link != null && first != null && first.equals(te)) continue;
+        	Object x = o.get(te);
+        	if (x == null) {
+                line(s,null);
+        	} else {
+            	EntityType et = null;
+            	try {
+            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
+            	} catch (IllegalArgumentException e) {}
+            	if (et == null) {
+            		line(s, x);
+            	} else {
+            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+            		attributes.addAll(et.getSingularAttributes());
+            		for (Attribute sa: attributes) {
+            			if (!skip(sa))
+                			try {
+                				line(s, ((Method)sa.getJavaMember()).invoke(x));
+                			} catch (Exception e) {
+                				line(s, null);
+                			}
+            		}
+            	}
+        	}
         }
         s.append("</tr>");
     }
@@ -458,5 +441,15 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
     public void printFooter(StringBuffer s) {
         s.append("</table>");
     }
+    
+    static class AttributeComparator implements Comparator<Attribute> {
+		@Override
+		public int compare(Attribute a1, Attribute a2) {
+			boolean id1 = (a1 instanceof SingularAttribute && ((SingularAttribute)a1).isId());
+			boolean id2 = (a2 instanceof SingularAttribute && ((SingularAttribute)a2).isId());
+			if (id1 != id2) return (id1 ? -1 : 1);
+			return a1.getName().compareTo(a2.getName());
+		}
+	}
 
 }

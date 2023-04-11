@@ -25,8 +25,11 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.naming.spi.NamingManager;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -353,18 +356,17 @@ public class HibernateUtil {
             hibSessionFactory.getCache().evictCollectionData();
         } else {
             hibSessionFactory.getCache().evictEntityData(persistentClass);
-            ClassMetadata classMetadata = null;
+            EntityType et = null;
             try {
-            	classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
-            } catch (MappingException e) {}
-            if (classMetadata!=null) {
-                for (int j=0;j<classMetadata.getPropertyNames().length;j++) {
-                    if (classMetadata.getPropertyTypes()[j].isCollectionType()) {
-                        try {
-                            hibSessionFactory.getCache().evictCollectionData(persistentClass.getClass().getName()+"."+classMetadata.getPropertyNames()[j]);
+            	et = hibSession.getMetamodel().entity(persistentClass);
+            } catch (IllegalArgumentException e) {}
+            if (et != null) {
+            	for (Attribute a: (Set<Attribute>)et.getAttributes()) {
+            		if (a.isCollection())
+            			try {
+                            hibSessionFactory.getCache().evictCollectionData(persistentClass.getClass().getName()+"."+a.getName());
                         } catch (MappingException e) {}
-                    }
-                }
+            	}
             }
         }
         if (evictQueries) {

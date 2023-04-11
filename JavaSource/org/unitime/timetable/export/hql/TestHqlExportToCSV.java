@@ -20,19 +20,21 @@
 package org.unitime.timetable.export.hql;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeSet;
+
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.dom4j.Document;
-import org.hibernate.MappingException;
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.CollectionType;
-import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -114,23 +116,23 @@ public class TestHqlExportToCSV implements Exporter {
 	public static void execute(UserContext user, Printer out, String hql, int fromRow, int maxRows) throws SavedHQLException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
-			org.hibernate.query.Query q = hibSession.createQuery(hql);
+			org.hibernate.query.Query<Tuple> q = hibSession.createQuery(hql, Tuple.class);
 			if (maxRows > 0)
 				q.setMaxResults(maxRows);
 			if (fromRow > 0)
 				q.setFirstResult(fromRow);
 			q.setCacheable(true);
 			int len = -1;
-			for (Object o: q.list()) {
+			for (Tuple o: q.list()) {
 				if (len < 0) {
 					len = length(o);
 					String[] line = new String[len];
-					header(line, o, q.getReturnAliases());
+					header(line, o);
 					if (line.length > 0 && line[0].startsWith("__")) out.hideColumn(0);
 					out.printHeader(line);
 				}
 				String[] line = new String[len];
-				line(line, o, (SessionImplementor)hibSession);
+				line(line, o);
 				out.printLine(line);
 				out.flush();
 			}
@@ -144,64 +146,37 @@ public class TestHqlExportToCSV implements Exporter {
 		}
 	}
 	
-	private static boolean skip(Type t, boolean lazy) {
+	private static boolean skip(Attribute t) {
         try {
-            if (t.isCollectionType()) {
-                if (!lazy) return true;
-                SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
-                Type w = ((CollectionType)t).getElementType((SessionFactoryImplementor)hibSessionFactory);
-                Class ts = w.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
-                return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
-            }
-        } catch (MappingException e) {
-            return true;
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-        try {
-            Class ts = t.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
+            Class ts = t.getJavaType().getMethod("toString", new Class[]{}).getDeclaringClass();
             return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
         } catch (NoSuchMethodException e) {
             return true;
         }
     }
 	
-    private static int length(Object o) {
+    private static int length(Tuple o) {
     	if (o == null) return 1;
     	int len = 0;
-    	if (o instanceof Object[]) {
-    		for (Object x: (Object[])o) {
-    			if (x == null) {
-    				len++;
-    			} else {
-    				ClassMetadata meta = null;
-            		try {
-            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-            		} catch (MappingException e) {}
-            		if (meta == null) {
-            			len++;
-            		} else {
-            			if (meta.getIdentifierPropertyName() != null) len++;
-            			for (int i=0;i<meta.getPropertyNames().length;i++) {
-                            if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                            	len++;
-            			}
-            		}
-    			}
-    		}
-    	} else {
-    		ClassMetadata meta = null;
-    		try {
-    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-    		if (meta == null) {
-    			len++;
+    	for (TupleElement te: o.getElements()) {
+    		Object x = o.get(te);
+    		if (x == null) {
+    			len ++;
     		} else {
-    			if (meta.getIdentifierPropertyName() != null) len++;
-    			for (int i=0;i<meta.getPropertyNames().length;i++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	len++;
-    			}
+            	EntityType et = null;
+            	try {
+            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
+            	} catch (IllegalArgumentException e) {}
+            	if (et == null) {
+            		len++;
+            	} else {
+            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+            		attributes.addAll(et.getSingularAttributes());
+            		for (Attribute sa: attributes) {
+            			if (!skip(sa))
+            				len++;
+            		}
+            	}
     		}
     	}
     	return len;
@@ -212,61 +187,41 @@ public class TestHqlExportToCSV implements Exporter {
     	return column.substring(0, 1).toUpperCase() + column.substring(1);
     }
 	
-	private static void header(String[] ret, Object o, String[] alias) {
-		if (o == null) {
-			if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
-				ret[0] = alias[0];
-			else
-				ret[0] = "Result";
-		} else if (o instanceof Object[]) {
-			int a = 0, idx = 0;
-			for (Object x: (Object[])o) {
-				if (x == null) {
-					if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
-						ret[idx++] = alias[a];
-					else
-						ret[idx++] = "Column" + (a + 1);
-				} else {
-					ClassMetadata meta = null;
-            		try {
-            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-            		} catch (MappingException e) {}
-					if (meta == null) {
-						if (alias != null && alias.length > a && alias[a] != null && !alias[a].isEmpty())
-							ret[idx++] = alias[a];
-						else
-							ret[idx++] = "Column" + (a + 1);
-					} else {
-						if (meta.getIdentifierPropertyName() != null)
-							ret[idx++] = meta.getIdentifierPropertyName();
-		                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-		                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-		                    	ret[idx++] = format(meta.getPropertyNames()[i]);
-		                }
-					}
-				}
-				a++;					
-			}
-		} else {
-			ClassMetadata meta = null;
-    		try {
-    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-    		if (meta == null) {
-				if (alias != null && alias.length >= 1 && alias[0] != null && !alias[0].isEmpty())
-					ret[0] = alias[0];
-				else
-					ret[0] = "Result";
-			} else {
-				int idx = 0;
-				if (meta.getIdentifierPropertyName() != null)
-					ret[idx++] = meta.getIdentifierPropertyName();
-                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	ret[idx++] = format(meta.getPropertyNames()[i]);
-                }
-			}
-		}
+    private static void header(String[] ret, Tuple o) {
+		int idx = 0;
+		for (TupleElement te: o.getElements()) {
+        	Object x = o.get(te);
+        	if (x == null) {
+        		if (te.getAlias() == null || te.getAlias().isEmpty()) {
+        			if (o.getElements().size() == 1)
+        				ret[idx++] = "Result";
+        			else
+        				ret[idx++] = "Column" + (idx ++);
+        		} else
+        			ret[idx++] = te.getAlias();
+    		} else {
+            	EntityType et = null;
+            	try {
+            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
+            	} catch (IllegalArgumentException e) {}
+            	if (et == null) {
+            		if (te.getAlias() == null || te.getAlias().isEmpty()) {
+            			if (o.getElements().size() == 1)
+            				ret[idx++] = "Result";
+            			else
+            				ret[idx++] = "Column" + (idx ++);
+            		} else
+            			ret[idx++] = te.getAlias();
+            	} else {
+            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+            		attributes.addAll(et.getSingularAttributes());
+            		for (Attribute sa: attributes) {
+            			if (!skip(sa))
+            				ret[idx++] = format(sa.getName());
+            		}
+            	}
+    		}
+        }
 	}
 	
 	private static String toString(Object o) {
@@ -274,48 +229,42 @@ public class TestHqlExportToCSV implements Exporter {
 		return (o == null ? "" : o.toString());
 	}
 	
-	private static void line(String[] ret, Object o, SessionImplementor session) {
-		if (o == null) {
-			ret[0] = "";
-		} else if (o instanceof Object[]) {
-			int idx = 0;
-			for (Object x: (Object[])o) {
-				if (x == null) {
-					ret[idx++] = "";
-				} else {
-    				ClassMetadata meta = null;
-            		try {
-            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-            		} catch (MappingException e) {}
-					if (meta == null) {
-						ret[idx++] = toString(x);
-					} else {
-						if (meta.getIdentifierPropertyName() != null)
-							ret[idx++] = toString(meta.getIdentifier(x, session));
-		                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-		                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-		                    	ret[idx++] = toString(meta.getPropertyValue(x, meta.getPropertyNames()[i]));
-		                }
-					}
-				}
-			}
-		} else {
-			ClassMetadata meta = null;
-    		try {
-    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-			if (meta == null) {
-				ret[0] = toString(o);
-			} else {
-				int idx = 0;
-				if (meta.getIdentifierPropertyName() != null)
-					ret[idx++] = toString(meta.getIdentifier(o, session));
-                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	ret[idx++] = toString(meta.getPropertyValue(o, meta.getPropertyNames()[i]));
-                }
-			}
-		}
+	private static void line(String[] ret, Tuple o) {
+		int idx = 0;
+		for (TupleElement te: o.getElements()) {
+        	Object x = o.get(te);
+        	if (x == null) {
+        		ret[idx++] = "";
+        	} else {
+            	EntityType et = null;
+            	try {
+            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
+            	} catch (IllegalArgumentException e) {}
+            	if (et == null) {
+            		ret[idx++] = toString(x);
+            	} else {
+            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+            		attributes.addAll(et.getSingularAttributes());
+            		for (Attribute sa: attributes) {
+            			if (!skip(sa))
+                			try {
+                				ret[idx++] = toString(((Method)sa.getJavaMember()).invoke(x));
+                			} catch (Exception e) {
+                				ret[idx++] = "";
+                			}
+            		}
+            	}
+        	}
+        }
 	}
 
+	static class AttributeComparator implements Comparator<Attribute> {
+		@Override
+		public int compare(Attribute a1, Attribute a2) {
+			boolean id1 = (a1 instanceof SingularAttribute && ((SingularAttribute)a1).isId());
+			boolean id2 = (a2 instanceof SingularAttribute && ((SingularAttribute)a2).isId());
+			if (id1 != id2) return (id1 ? -1 : 1);
+			return a1.getName().compareTo(a2.getName());
+		}
+	}
 }

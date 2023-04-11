@@ -31,12 +31,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.hibernate.MappingException;
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.CollectionType;
-import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.events.EventAction.EventContext;
@@ -49,7 +43,6 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.PointInTimeDataReportsException;
 import org.unitime.timetable.gwt.shared.PointInTimeDataReportsInterface;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.pointintimedata.BasePointInTimeDataReports;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -207,7 +200,7 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
 			int len = -1;
 			for (String[] line: reportOutput) {
 				if (len < 0) {
-					len = length(line);
+					len = line.length;
 					if (line.length > 0 && line[0].startsWith("__")) out.hideColumn(0);
 					out.printHeader(line);
 				} else {
@@ -224,67 +217,4 @@ public class PointInTimeDataReportsExportToCSV implements Exporter {
 			throw new PointInTimeDataReportsException(MESSAGES.failedExecution(e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")")));
 		}
 	}
-	
-	private static boolean skip(Type t, boolean lazy) {
-        try {
-            if (t.isCollectionType()) {
-                if (!lazy) return true;
-                SessionFactory hibSessionFactory = new _RootDAO().getSession().getSessionFactory();
-                Type w = ((CollectionType)t).getElementType((SessionFactoryImplementor)hibSessionFactory);
-                Class ts = w.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
-                return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
-            }
-        } catch (MappingException e) {
-            return true;
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-        try {
-            Class ts = t.getReturnedClass().getMethod("toString", new Class[]{}).getDeclaringClass();
-            return (ts.equals(Object.class) || ts.getName().startsWith("org.unitime.timetable.model.base.Base"));
-        } catch (NoSuchMethodException e) {
-            return true;
-        }
-    }
-	
-    private static int length(Object o) {
-    	if (o == null) return 1;
-    	int len = 0;
-    	if (o instanceof Object[]) {
-    		for (Object x: (Object[])o) {
-    			if (x == null) {
-    				len++;
-    			} else {
-    				ClassMetadata meta = null;
-            		try {
-            			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(x.getClass());
-            		} catch (MappingException e) {}
-            		if (meta == null) {
-            			len++;
-            		} else {
-            			if (meta.getIdentifierPropertyName() != null) len++;
-            			for (int i=0;i<meta.getPropertyNames().length;i++) {
-                            if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                            	len++;
-            			}
-            		}
-    			}
-    		}
-    	} else {
-			ClassMetadata meta = null;
-    		try {
-    			meta = SavedHQLDAO.getInstance().getSession().getSessionFactory().getClassMetadata(o.getClass());
-    		} catch (MappingException e) {}
-    		if (meta == null) {
-    			len++;
-    		} else {
-    			if (meta.getIdentifierPropertyName() != null) len++;
-    			for (int i=0;i<meta.getPropertyNames().length;i++) {
-                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	len++;
-    			}
-    		}
-    	}
-    	return len;
-    }
 }
