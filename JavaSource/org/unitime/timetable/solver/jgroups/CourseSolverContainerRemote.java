@@ -39,11 +39,11 @@ import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -88,7 +88,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 			else
 				throw e;
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	

@@ -48,6 +48,7 @@ import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights;
 import org.hibernate.CacheMode;
 import org.jgroups.blocks.locking.LockService;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -62,7 +63,6 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CacheElement;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
@@ -510,7 +510,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						}		
 					}
 					job.run();
-					if (_RootDAO.closeCurrentThreadSessions())
+					if (HibernateUtil.closeCurrentThreadSessions())
 						iLog.debug("Job " + job + " did not close current-thread hibernate session.");
 				}
 				iLog.info("Executor " + iId + " stopped.");

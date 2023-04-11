@@ -356,7 +356,7 @@ public class SessionRollForward {
 			if (sessionHasExternalRoomFeatureList(toSession)){
 				GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
 				GlobalRoomFeature grf = null;
-				List newGlobalFeatures = grfDao.getQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
+				List newGlobalFeatures = grfDao.getSession().createQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
 					" where erf.room.building.session.uniqueId=:sessionId")
 					.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.list();
@@ -898,7 +898,7 @@ public class SessionRollForward {
 
 					dDao.saveOrUpdate(toDepartment);
 					DistributionTypeDAO dtDao = new DistributionTypeDAO();
-					List l = dtDao.getQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
+					List l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
 					if (l != null && !l.isEmpty()){
 						DistributionType distributionType = null;
 						for (Iterator dtIt = l.iterator(); dtIt.hasNext();){
@@ -1001,7 +1001,7 @@ public class SessionRollForward {
 		try {
 			if (sessionHasCourseCatalog(toSession)) {
 				CourseCatalogDAO ccDao = new CourseCatalogDAO();
-				List subjects = ccDao.getQuery("select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null")
+				List subjects = ccDao.getSession().createQuery("select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null")
 					.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.list();
 				if (subjects != null){
@@ -1070,7 +1070,7 @@ public class SessionRollForward {
 					}
 				}
 				*/
-				List newSubjects = ccDao.getQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)")
+				List newSubjects = ccDao.getSession().createQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)")
 					.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.list();
 				toDepartment = Department.findByDeptCode("TEMP", toSession.getUniqueId());
@@ -1924,7 +1924,7 @@ public class SessionRollForward {
 	}
 	
 	private void rollForwardExamLocationPrefs(Session toSession, Session fromSession) throws Exception{
-		List rooms = (new RoomDAO()).getQuery("select distinct r from Room r inner join r.examPreferences as ep where r.session.uniqueId = :sessionId").setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
+		List rooms = (new RoomDAO()).getSession().createQuery("select distinct r from Room r inner join r.examPreferences as ep where r.session.uniqueId = :sessionId").setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
 		Room fromRoom = null;
 		Room toRoom = null;
 		ExamLocationPref fromPref = null;
@@ -1942,7 +1942,7 @@ public class SessionRollForward {
 				}
 			}
 		}
-		List nonUniversityLocations = (new NonUniversityLocationDAO()).getQuery("select distinct nul from NonUniversityLocation nul inner join nul.examPreferences as ep where nul.session.uniqueId = :sessionId").setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
+		List nonUniversityLocations = (new NonUniversityLocationDAO()).getSession().createQuery("select distinct nul from NonUniversityLocation nul inner join nul.examPreferences as ep where nul.session.uniqueId = :sessionId").setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
 		NonUniversityLocation fromNonUniversityLocation = null;	
 		NonUniversityLocation toNonUniversityLocation = null;
 		for (Iterator nulIt = nonUniversityLocations.iterator(); nulIt.hasNext();){
@@ -2059,7 +2059,7 @@ public class SessionRollForward {
 	
 	private List findExamToRollForward(Session toSession, int examType){
 		ExamDAO eDao = new ExamDAO();
-		return(eDao.getQuery("select distinct e from ExamOwner as eo inner join eo.exam as e where e.examType.type = :examType " +
+		return(eDao.getSession().createQuery("select distinct e from ExamOwner as eo inner join eo.exam as e where e.examType.type = :examType " +
 				" and ((eo.ownerType=:ownerTypeClass and eo.ownerId in (select c.uniqueIdRolledForwardFrom from Class_ as c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :toSessionId)) " +
 				" or (eo.ownerType=:ownerTypeCourse and eo.ownerId in (select co.uniqueIdRolledForwardFrom from CourseOffering as co where co.subjectArea.session.uniqueId = :toSessionId)) " +
 				" or (eo.ownerType=:ownerTypeOffering and eo.ownerId in (select io.uniqueIdRolledForwardFrom from InstructionalOffering as io where io.session.uniqueId = :toSessionId)) " +
@@ -2324,7 +2324,7 @@ public class SessionRollForward {
 		}
 		if (!getSessionHasCourseCatalogList().containsKey(session)){
 			CourseCatalogDAO ccDao = new CourseCatalogDAO();
-			List l = ccDao.getQuery("select count(cc) from CourseCatalog cc where cc.session.uniqueId =" + session.getUniqueId().toString()).list();
+			List l = ccDao.getSession().createQuery("select count(cc) from CourseCatalog cc where cc.session.uniqueId =" + session.getUniqueId().toString()).list();
 			int cnt = 0;
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
@@ -2344,7 +2344,7 @@ public class SessionRollForward {
 	public boolean sessionHasExternalBuildingList(Session session){
 		if (!getSessionHasExternalBuildingList().containsKey(session)){
 			ExternalBuildingDAO ebDao = new ExternalBuildingDAO();
-			List l = ebDao.getQuery("select count(eb) from ExternalBuilding eb where eb.session.uniqueId =" + session.getUniqueId().toString()).list();
+			List l = ebDao.getSession().createQuery("select count(eb) from ExternalBuilding eb where eb.session.uniqueId =" + session.getUniqueId().toString()).list();
 			int cnt = 0;
 			if (l != null && ! l.isEmpty()){	
 				cnt = ((Long)l.get(0)).intValue();
@@ -2364,7 +2364,7 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomList(Session session){
 		if (!getSessionHasExternalRoomList().containsKey(session)){
 			ExternalRoomDAO erDao = new ExternalRoomDAO();
-			List l = erDao.getQuery("select count(er) from ExternalRoom er where er.building.session.uniqueId =" + session.getUniqueId().toString()).list();
+			List l = erDao.getSession().createQuery("select count(er) from ExternalRoom er where er.building.session.uniqueId =" + session.getUniqueId().toString()).list();
 			int cnt = 0;
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
@@ -2384,7 +2384,7 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomDeptList(Session session){
 		if (!getSessionHasExternalRoomDeptList().containsKey(session)){
 			ExternalRoomDepartmentDAO erdDao = new ExternalRoomDepartmentDAO();
-			List l = erdDao.getQuery("select count(erd) from ExternalRoomDepartment erd where erd.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
+			List l = erdDao.getSession().createQuery("select count(erd) from ExternalRoomDepartment erd where erd.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
 			int cnt = 0;
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
@@ -2404,7 +2404,7 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomFeatureList(Session session){
 		if (!getSessionHasExternalRoomFeatureList().containsKey(session)){
 			ExternalRoomFeatureDAO erfDao = new ExternalRoomFeatureDAO();
-			List l = erfDao.getQuery("select count(erf) from ExternalRoomFeature erf where erf.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
+			List l = erfDao.getSession().createQuery("select count(erf) from ExternalRoomFeature erf where erf.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
 			int cnt = 0;
 			if (l != null && ! l.isEmpty()){
 				cnt = ((Long)l.get(0)).intValue();
@@ -2555,7 +2555,7 @@ public class SessionRollForward {
 	
 	private void rollForwardOfferingCoordinatorsForASubjectArea(SubjectArea subjectArea, Session toSession) {
 		iLog.info("Rolling forward offering coordinators for:  " + subjectArea.getSubjectAreaAbbreviation());
-		for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getQuery(
+		for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getSession().createQuery(
 				"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null")
 				.setParameter("subjectAreaId", subjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
@@ -3483,7 +3483,7 @@ public class SessionRollForward {
 			SubjectArea toSubjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(rollForwardSessionForm.getRollForwardTeachingRequestsSubjectIds()[i]));
 			if (toSubjectArea == null) continue;
 			iLog.info("Rolling forward teaching requests for:  " + toSubjectArea.getSubjectAreaAbbreviation());
-			for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getQuery(
+			for (InstructionalOffering toInstructionalOffering: (List<InstructionalOffering>)OfferingCoordinatorDAO.getInstance().getSession().createQuery(
 					"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null")
 					.setParameter("subjectAreaId", toSubjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());

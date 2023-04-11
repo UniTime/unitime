@@ -174,7 +174,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	@SuppressWarnings("unchecked")
 	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
 		return new TreeSet<SubjectArea>(
-				SubjectAreaDAO.getInstance().getQuery("from SubjectArea where session.uniqueId = :sessionId")
+				SubjectAreaDAO.getInstance().getSession().createQuery("from SubjectArea where session.uniqueId = :sessionId")
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 	

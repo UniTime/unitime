@@ -36,7 +36,7 @@ import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 
 /**
@@ -97,7 +97,7 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 		try {
 			return getClass().getMethod(method, types).invoke(this, args);
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	
@@ -135,7 +135,7 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 			sLog.error("Excution of queue processor method " + method + " failed: " + e.getMessage(), e);
 			return null;
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 }

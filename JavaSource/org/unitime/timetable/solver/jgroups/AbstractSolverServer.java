@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.hibernate.SessionFactory;
 import org.jgroups.Address;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -159,7 +160,7 @@ public abstract class AbstractSolverServer implements SolverServer {
 			for (Long solutionId: solutionIds)
 				Solution.refreshSolution(solutionId);
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	
@@ -168,7 +169,7 @@ public abstract class AbstractSolverServer implements SolverServer {
 		try {
 			ExamType.refreshSolution(sessionId, examTypeId);
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	

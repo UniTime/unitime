@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataBuilder;
@@ -53,7 +55,6 @@ import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
-import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
@@ -63,7 +64,6 @@ import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 /**
@@ -71,14 +71,16 @@ import org.unitime.timetable.model.dao._RootDAO;
  */
 public class HibernateUtil {
     private static Log sLog = LogFactory.getLog(HibernateUtil.class);
-    private static SessionFactory sSessionFactory = null;
+	protected static HibernateContext sContext;
+	protected static ThreadLocal<Session> sSessions;
     
+	/*
     public static void configureHibernate(String connectionUrl) throws Exception {
         Properties properties = ApplicationProperties.getProperties();
         properties.setProperty("connection.url", connectionUrl);
         configureHibernate(properties);
-    }
-    
+    }*/
+	
     public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
         if (value!=null) {
@@ -118,14 +120,17 @@ public class HibernateUtil {
             }
         }
     }
-	public static void configureHibernate(Properties properties) throws Exception {
-		if (sSessionFactory != null) {
-			sSessionFactory.close();
-			sSessionFactory = null;
+	public static void configureHibernate(Properties properties) throws NamingException, ClassNotFoundException {
+		if (sContext != null) {
+			sContext.close();
+			sContext = null;
 		}
 		
 		if (!NamingManager.hasInitialContextFactoryBuilder())
 			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
+		
+		if (properties == null)
+			properties = ApplicationProperties.getProperties();
 		
 		sLog.info("Connecting to "+getProperty(properties, "connection.url"));
 		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
@@ -211,20 +216,15 @@ public class HibernateUtil {
         
         fixSchemaInFormulas(meta, default_schema, d);
         
-        (new _BaseRootDAO() {
-    		void setContext(HibernateContext cx) {
-    			_BaseRootDAO.sContext = cx;
-    		}
-    		protected Class getReferenceClass() { return null; }
-    	}).setContext(new HibernateContext(config, registry, meta, meta.buildSessionFactory()));
+    	sContext = new HibernateContext(config, registry, meta, meta.buildSessionFactory());
         
         DatabaseUpdate.update();
     }
     
     public static void closeHibernate() {
-		if (sSessionFactory != null) {
-			sSessionFactory.close();
-			sSessionFactory=null;
+		if (sContext != null) {
+			sContext.close();
+			sContext=null;
 		}
 	}
     
@@ -330,7 +330,7 @@ public class HibernateUtil {
     }
 
     public static String getDatabaseName() {
-    	String schema = (String)_RootDAO.getHibernateContext().getConfig().getConfigurationValues().get("default_schema");
+    	String schema = (String)getHibernateContext().getConfig().getConfigurationValues().get("default_schema");
         String url = getConnectionUrl();
         if (url==null) return "N/A";
         if (url.startsWith("jdbc:oracle:")) {
@@ -377,7 +377,7 @@ public class HibernateUtil {
     
     public static Class<?> getDialect() {
     	try {
-    		return Class.forName((String)_RootDAO.getHibernateContext().getConfig().getConfigurationValues().get("dialect"));
+    		return Class.forName((String)getHibernateContext().getConfig().getConfigurationValues().get("dialect"));
     	} catch (ClassNotFoundException e) {
     		return null;
     	}
@@ -453,4 +453,111 @@ public class HibernateUtil {
     	if (str == null) return null;
     	return StringUtils.replace(str, "'", "''");
     }
+    
+    /**
+	 * Configure the session factory by reading hibernate config file
+	 */
+	public static void initialize() throws ClassNotFoundException {
+		if (sContext != null) return;
+		sContext = configureHibernateFromRootDAO();
+		DatabaseUpdate.update();
+	}
+	
+	/**
+	 * Return a new Session object that must be closed when the work has been completed.
+	 * @return the active Session
+	 */
+	public static Session getSession() {
+		return getSession(false);
+	}
+
+	/**
+	 * Return a new Session object that must be closed when the work has been completed.
+	 * @return the active Session
+	 */
+	public static Session createNewSession() {
+		return getSession(true);
+	}
+
+	/**
+	 * Return a new Session object that must be closed when the work has been completed.
+	 * @return the active Session
+	 */
+	private static Session getSession(boolean createNew) {
+		if (createNew) {
+			return sContext.getSessionFactory().openSession();
+		} else {
+			if (sSessions == null)
+				sSessions = new ThreadLocal<Session>();
+			Session session = sSessions.get();
+			if (session == null || !session.isOpen()) {
+				session = sContext.getSessionFactory().openSession();
+				// session.beginTransaction();
+				sSessions.set(session);
+			}
+			return session;
+		}
+	}
+	
+	/**
+	 * Get current thread opened session, if there is any
+	 */
+	public static Session getCurrentThreadSession() {
+		if (sSessions != null) {
+			Session session = sSessions.get();
+			if (session != null) return session;
+		}
+		return null;
+	}
+
+	/**
+	 * Close all sessions for the current thread
+	 */
+	public static boolean closeCurrentThreadSessions() {
+		return closeCurrentThreadSessions(true);
+	}
+	
+	/**
+	 * Rollback all sessions for the current thread
+	 */
+	public static boolean rollbackCurrentThreadSessions() {
+		return closeCurrentThreadSessions(false);
+	}
+	
+	private static boolean closeCurrentThreadSessions(boolean commit) {
+		boolean ret = false;
+		if (sSessions != null) {
+			Session session = sSessions.get();
+			if (session != null && session.isOpen()) {
+				if (session.getTransaction() != null && session.getTransaction().isActive()) {
+					if (commit)
+						session.getTransaction().commit();
+					else
+						session.getTransaction().rollback();
+				}
+				session.close();
+				ret = true;
+			}
+			sSessions.remove();
+		}
+		return ret;
+	}
+	
+	/**
+	 * @return Returns true if configured
+	 */
+	public static boolean isConfigured() {
+		return sContext != null && sContext.getSessionFactory() != null;
+	}	 	 
+	 
+	/**
+	 * @return Returns the configuration.
+	 */
+	public static HibernateContext getHibernateContext() {
+		return sContext;
+	}
+	
+	public static HibernateContext getConfiguration() {
+		return sContext;
+	}
 }

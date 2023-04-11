@@ -48,7 +48,7 @@ public class SubjectAreaDAO extends BaseSubjectAreaDAO {
 	     sb.append(" where sa.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "' ");
 	     sb.append(" and sa.session.getUniqueId = " + session.getUniqueId());
 	     
-	     List results = getQuery(sb.toString()).list();
+	     List results = getSession().createQuery(sb.toString()).list();
 	     if (results.size() != 1){
 	    	 return(null);
 	     } else {

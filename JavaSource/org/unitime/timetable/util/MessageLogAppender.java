@@ -33,10 +33,10 @@ import org.apache.logging.log4j.core.config.Property;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.MessageLog;
 import org.unitime.timetable.model.dao.MessageLogDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -186,7 +186,7 @@ public class MessageLogAppender extends AbstractAppender {
 				} catch (Exception e) {
 					System.err.println("Failed to persist log entries:" + e.getMessage());
 				} finally {
-					_RootDAO.closeCurrentThreadSessions();
+					HibernateUtil.closeCurrentThreadSessions();
 				}
 			}
 		}

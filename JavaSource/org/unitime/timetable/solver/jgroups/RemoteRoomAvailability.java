@@ -27,8 +27,8 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -54,7 +54,7 @@ public class RemoteRoomAvailability {
 				throw new Exception("There is no room availability.");
 			return availability.getClass().getMethod(method, types).invoke(availability, args);
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	

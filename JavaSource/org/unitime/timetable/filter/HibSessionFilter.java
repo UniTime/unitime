@@ -30,7 +30,7 @@ import javax.servlet.ServletResponse;
 
 import org.cpsolver.ifs.util.JProf;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.model.base._BaseRootDAO;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 
 
 /**
@@ -69,9 +69,9 @@ public class HibSessionFilter implements Filter {
 			// Process request
 			chain.doFilter(request,response);
 
-        	_BaseRootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		} catch (Throwable ex) {
-			_BaseRootDAO.rollbackCurrentThreadSessions();
+			HibernateUtil.rollbackCurrentThreadSessions();
 
             if (ex instanceof ServletException) throw (ServletException)ex;
             if (ex instanceof IOException) throw (IOException)ex;

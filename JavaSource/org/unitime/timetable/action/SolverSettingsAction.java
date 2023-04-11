@@ -44,7 +44,6 @@ import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.dao.SolverParameterDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
@@ -134,7 +133,6 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             	Transaction tx = null;
             	try {
             		SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
-            		SolverParameterDAO pDao = new SolverParameterDAO();
             		org.hibernate.Session hibSession = dao.getSession();
                     if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     	tx = hibSession.beginTransaction();
@@ -165,7 +163,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             			if (!def.isVisible().booleanValue()) {
             				if (param!=null) {
             					params.remove(param);
-            					pDao.delete(param, hibSession);
+            					hibSession.delete(param);
             				}
             			} else {
                 			String value = form.getParameter(def.getUniqueId());
@@ -173,7 +171,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                 			if (useDefault) {
                 				if (param!=null) {
                 					params.remove(param);
-                					pDao.delete(param, hibSession);
+                					hibSession.delete(param);
                 				}
                 			} else {
                 				if (param==null) {
@@ -181,7 +179,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                 					param.setDefinition(def);
                 				}
                 				param.setValue(value==null?def.getDefault():value);
-                    			pDao.saveOrUpdate(param, hibSession);
+                				hibSession.saveOrUpdate(param);
                     			params.add(param);
                 			}
             			}
@@ -332,7 +330,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
     			
     			SolverPredefinedSetting setting = dao.get(form.getUniqueId(), hibSession);
 
-    			dao.delete(setting, hibSession);
+    			hibSession.delete(setting);
     			
     			if (tx!=null) tx.commit();
     	    } catch (Exception e) {

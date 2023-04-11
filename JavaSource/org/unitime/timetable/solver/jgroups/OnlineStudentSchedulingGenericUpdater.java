@@ -36,9 +36,9 @@ import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 /**
@@ -101,7 +101,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	public synchronized void checkForNewServers() {
 		if (!isCoordinator()) return;
-		if (!ClusterDiscoveryDAO.isConfigured()) {
+		if (!HibernateUtil.isConfigured()) {
 			iLog.info("Hibernate is not configured yet, will check for new servers later...");
 			return;
 		}

@@ -155,7 +155,7 @@ protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
 protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 	String query = createQueryString(subjectAreas);
-	return(StudentClassEnrollmentDAO.getInstance().getQuery(query).setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list());
+	return(StudentClassEnrollmentDAO.getInstance().getSession().createQuery(query).setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list());
 
 }
 

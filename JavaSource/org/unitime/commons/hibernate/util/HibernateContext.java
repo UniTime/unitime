@@ -61,4 +61,9 @@ public class HibernateContext {
 	public PersistentClass getClassMapping(String entityName) {
 		return getMetadata().getEntityBinding(entityName);
 	}
+	
+	public void close() {
+		if (iSessionFactory != null)
+			iSessionFactory.close();
+	}
 }

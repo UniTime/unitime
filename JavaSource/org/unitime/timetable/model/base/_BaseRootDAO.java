@@ -33,32 +33,18 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.query.Query;
-import org.unitime.commons.hibernate.util.DatabaseUpdate;
-import org.unitime.commons.hibernate.util.HibernateContext;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
 /**
  * @author Tomas Muller
  */
 public abstract class _BaseRootDAO<T, K extends Serializable> {
-	protected static HibernateContext sContext;
-	protected static ThreadLocal<Session> sSessions;
-
-	/**
-	 * Configure the session factory by reading hibernate config file
-	 */
-	public static void initialize() throws ClassNotFoundException {
-		if (sContext != null) return;
-		sContext = HibernateUtil.configureHibernateFromRootDAO();
-        DatabaseUpdate.update();
-	}
-
 	/**
 	 * Return a new Session object that must be closed when the work has been completed.
 	 * @return the active Session
 	 */
 	public Session getSession() {
-		return getSession(false);
+		return HibernateUtil.getSession();
 	}
 
 	/**
@@ -66,77 +52,13 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * @return the active Session
 	 */
 	public Session createNewSession() {
-		return getSession(true);
-	}
-
-	/**
-	 * Return a new Session object that must be closed when the work has been completed.
-	 * @return the active Session
-	 */
-	private Session getSession(boolean createNew) {
-		if (createNew) {
-			return sContext.getSessionFactory().openSession();
-		} else {
-			if (sSessions == null)
-				sSessions = new ThreadLocal<Session>();
-			Session session = sSessions.get();
-			if (session == null || !session.isOpen()) {
-				session = sContext.getSessionFactory().openSession();
-				// session.beginTransaction();
-				sSessions.set(session);
-			}
-			return session;
-		}
+		return HibernateUtil.createNewSession();
 	}
 	
-	/**
-	 * Get current thread opened session, if there is any
-	 */
-	public Session getCurrentThreadSession() {
-		if (sSessions != null) {
-			Session session = sSessions.get();
-			if (session != null) return session;
-		}
-		return null;
-	}
-
-	/**
-	 * Close all sessions for the current thread
-	 */
-	public static boolean closeCurrentThreadSessions() {
-		return closeCurrentThreadSessions(true);
-	}
-	
-	/**
-	 * Rollback all sessions for the current thread
-	 */
-	public static boolean rollbackCurrentThreadSessions() {
-		return closeCurrentThreadSessions(false);
-	}
-	
-	private static boolean closeCurrentThreadSessions(boolean commit) {
-		boolean ret = false;
-		if (sSessions != null) {
-			Session session = sSessions.get();
-			if (session != null && session.isOpen()) {
-				if (session.getTransaction() != null && session.getTransaction().isActive()) {
-					if (commit)
-						session.getTransaction().commit();
-					else
-						session.getTransaction().rollback();
-				}
-				session.close();
-				ret = true;
-			}
-			sSessions.remove();
-		}
-		return ret;
-	}
-
 	/**
 	 * Begin the transaction related to the session
 	 */
-	public Transaction beginTransaction(Session s) {
+	protected Transaction beginTransaction(Session s) {
 		// already in a transaction, do not create a new one
 		if (s.getTransaction() != null && s.getTransaction().isActive()) return null;
 		
@@ -146,28 +68,10 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	/**
 	 * Commit the given transaction
 	 */
-	public void commitTransaction(Transaction t) {
+	protected void commitTransaction(Transaction t) {
 		if (t != null) t.commit();
 	}
 
-	/**
-	 * @return Returns true if configured
-	 */
-	public static boolean isConfigured() {
-		return sContext != null && sContext.getSessionFactory() != null;
-	}	 	 
-	 
-	/**
-	 * @return Returns the configuration.
-	 */
-	public static HibernateContext getHibernateContext() {
-		return sContext;
-	}
-	
-	public static HibernateContext getConfiguration() {
-		return sContext;
-	}
-	
 	/**
 	 * Return the specific Object class that will be used for class-specific
 	 * implementation of this DAO.
@@ -305,24 +209,6 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		return query.getResultList();
 	}
 
-	/**
-	 * Execute a query. 
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @return a distinct list of instances (or arrays of instances)
-	 */
-	public Query getQuery(String queryStr) {
-		return getQuery(queryStr, getSession());
-	}
-
-	/**
-	 * Execute a query but use the session given instead of creating a new one.
-	 * @param queryStr a query expressed in Hibernate's query language
-	 * @param s the Session to use
-	 */
-	public Query getQuery(String queryStr, Session s) {
-		return s.createQuery(queryStr);
-	}
-
 	protected Order getDefaultOrder () {
 		return null;
 	}
@@ -437,29 +323,5 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 */
 	public void delete(T obj, Session s) {
 		s.delete(obj);
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 */
-	public void delete(K key) {
-		delete(load(key));
-	}
-
-	/**
-	 * Remove a persistent instance from the datastore. The argument may be an instance associated with the receiving
-	 * Session or a transient instance with an identifier associated with existing persistent state. 
-	 */
-	public void delete(K key, Session s) {
-		s.delete(load(key, s));
-	}
-
-	/**
-	 * Re-read the state of the given instance from the underlying database. It is inadvisable to use this to implement
-	 * long-running sessions that span many business tasks. This method is, however, useful in certain special circumstances.
-	 */
-	public void refresh(T obj, Session s) {
-		s.refresh(obj);
 	}
 }

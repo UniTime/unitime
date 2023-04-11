@@ -29,6 +29,7 @@ import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -49,12 +50,12 @@ public class LocationPermIdGenerator {
             Type type = LongType.INSTANCE;
             Properties params = new Properties();
             params.put(SequenceStyleGenerator.SEQUENCE_PARAM, sSequence);
-            idGen.configure(type, params, _RootDAO.getHibernateContext().getServiceRegistry());
+            idGen.configure(type, params, HibernateUtil.getHibernateContext().getServiceRegistry());
             idGen.registerExportables(
-            		_RootDAO.getHibernateContext().getMetadata().getDatabase()
+            		HibernateUtil.getHibernateContext().getMetadata().getDatabase()
             		);
             idGen.initialize(
-            		((SessionFactoryImpl)_RootDAO.getHibernateContext().getSessionFactory()).getSqlStringGenerationContext()
+            		((SessionFactoryImpl)HibernateUtil.getHibernateContext().getSessionFactory()).getSqlStringGenerationContext()
             		);
             sGenerator = idGen;
             return sGenerator;

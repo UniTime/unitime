@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -43,7 +44,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.dao.CurriculumCourseDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 import com.google.gson.Gson;
@@ -306,7 +306,7 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 	public static void main(String[] args) {
 		try {
 			Debug.info(" - Initializing Hibernate ... ");
-			_RootDAO.initialize();
+			HibernateUtil.initialize();
 
 			ApplicationProperties.getConfigProperties().setProperty(
 					ApplicationProperty.CustomizationDefaultCourseUrl.key(),

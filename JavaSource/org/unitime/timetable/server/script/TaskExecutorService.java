@@ -33,11 +33,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.TaskInterface.ExecutionStatus;
 import org.unitime.timetable.model.TaskExecution;
 import org.unitime.timetable.model.dao.PeriodicTaskDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.solver.service.SolverServerService;
 
@@ -95,7 +95,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 			throw e;
 		} finally {
 			hibSession.close();
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 		for (TaskExecutionItem item: items)
 			solverServerService.getQueueProcessor().add(item);
@@ -130,7 +130,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 			throw e;
 		} finally {
 			hibSession.close();
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 		for (TaskExecutionItem item: items)
 			solverServerService.getQueueProcessor().add(item);

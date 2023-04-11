@@ -32,7 +32,7 @@ import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
-import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
 
@@ -72,7 +72,7 @@ public class InstructorSchedulingContainerRemote extends InstructorSchedulingCon
 			else
 				throw e;
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	

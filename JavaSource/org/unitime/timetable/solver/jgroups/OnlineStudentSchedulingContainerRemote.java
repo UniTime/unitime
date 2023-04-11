@@ -39,7 +39,7 @@ import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
@@ -96,7 +96,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 			else
 				throw e;
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}
 	}
 	

@@ -55,6 +55,7 @@ import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
@@ -64,7 +65,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -700,7 +700,7 @@ public class PurdueBatchSolverValidator extends StudentSectioningSaver {
 				iProgress.error(getName() + " has failed: " + e.getMessage(), e);
 			} finally {
 				ApplicationProperties.setSessionId(null);
-				_RootDAO.closeCurrentThreadSessions();
+				HibernateUtil.closeCurrentThreadSessions();
 			}
 		}
 	}

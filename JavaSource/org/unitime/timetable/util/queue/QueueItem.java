@@ -28,13 +28,13 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.LogManager;
 import org.jgroups.Address;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.UserContext;
 
 /**
@@ -108,7 +108,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 			fatal(GWT_MSG.scriptLogExecutionFailed(), e);
 		} finally {
 			ApplicationProperties.setSessionId(null);
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 			Localization.removeLocale();
 		}
 		iFinished = new Date();

@@ -19,10 +19,10 @@
 */
 package org.unitime.timetable.spring.security;
 
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.model.dao.UserDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -41,7 +41,7 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 		try {
 			String sql = ApplicationProperty.CustomSQLUidToExternalTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
-				sql = sql.replace("%SCHEMA%", _RootDAO.getConfiguration().getProperty("default_schema"));
+				sql = sql.replace("%SCHEMA%", HibernateUtil.getConfiguration().getProperty("default_schema"));
 			Object ret = hibSession.createNativeQuery(sql).setParameter(0, username).setMaxResults(1).uniqueResult();
 			return (ret == null ? username : ret.toString());
 		} finally {
@@ -54,7 +54,7 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 		try {
 			String sql = ApplicationProperty.CustomSQLExternalToUidTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
-				sql = sql.replace("%SCHEMA%", _RootDAO.getConfiguration().getProperty("default_schema"));
+				sql = sql.replace("%SCHEMA%", HibernateUtil.getConfiguration().getProperty("default_schema"));
 			Object ret = hibSession.createNativeQuery(sql).setParameter(0, externalUniqueId).setMaxResults(1).uniqueResult();
 			return (ret == null ? externalUniqueId : ret.toString());
 		} finally {

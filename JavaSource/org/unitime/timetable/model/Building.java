@@ -19,17 +19,12 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 
-import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
-import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 
 
@@ -99,7 +94,7 @@ public class Building extends BaseBuilding implements Comparable {
      * @throws Exception
      */
 	public static Building findByBldgAbbv(String bldgAbbv, Long sessionId) {
-		List bldgs = (new BuildingDAO()).getQuery(
+		List bldgs = (new BuildingDAO()).getSession().createQuery(
 				"SELECT distinct b FROM Building b "+ 
 				"WHERE b.session.uniqueId=:sessionId AND b.abbreviation=:bldgAbbv").
 				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
@@ -125,105 +120,6 @@ public class Building extends BaseBuilding implements Comparable {
                 uniqueResult();
     }
 
-    /*
-	 * Update building information using External Building
-	 * @param sessionId
-	 */
-    public static void updateBuildings(Long sessionId) {
-        
-        Session currentSession = Session.getSessionById(sessionId);
-        TreeSet currentBuildings = new TreeSet(currentSession.getBuildings());
-        Hashtable updateBuildings = ExternalBuilding.getBuildings(sessionId);
-        
-        Iterator b = currentBuildings.iterator();
-        BuildingDAO bldgDAO = new BuildingDAO();
-        
-        while(b.hasNext()) {
-            Building bldg = (Building)b.next();
-            String externalUniqueId = bldg.getExternalUniqueId();
-            if(externalUniqueId != null) {
-            	ExternalBuilding extBldg = 
-            		(ExternalBuilding)updateBuildings.get(externalUniqueId);
-            	if(extBldg != null) {
-	                if(updateBldgInfo(bldg, extBldg)) {
-	                	bldgDAO.update(bldg);
-	                }
-	                updateBuildings.remove(extBldg.getExternalUniqueId());
-            	} else {
-            		if(checkBuildingDelete(bldg)) {
-            			currentSession.getBuildings().remove(bldg);
-            			bldgDAO.delete(bldg);
-            		}
-            	}
-            }
-        }
-        
-        Iterator eb = (updateBuildings.values()).iterator();
-        while(eb.hasNext()) {
-            ExternalBuilding extBldg = (ExternalBuilding)eb.next();
-            Building newBldg = new Building();
-            newBldg.setAbbreviation(extBldg.getAbbreviation());
-            newBldg.setCoordinateX(extBldg.getCoordinateX());
-            newBldg.setCoordinateY(extBldg.getCoordinateY());
-            newBldg.setName(extBldg.getDisplayName());
-            newBldg.setSession(currentSession);
-            newBldg.setExternalUniqueId(extBldg.getExternalUniqueId());
-            bldgDAO.save(newBldg);
-        }
-        
-        return;
-    }
-    
-	/*
-	 * Update building information
-	 * @param bldg (Building)
-	 * @param extBldg (ExternalBuilding)
-	 * @return update  (True if updates are made)
-	 */
-	private static boolean updateBldgInfo(Building bldg, ExternalBuilding extBldg) {
-		
-		boolean updated = false;
-		
-		if(!bldg.getAbbreviation().equals(extBldg.getAbbreviation())) {
-			bldg.setAbbreviation(extBldg.getAbbreviation());
-			updated = true;
-		}
-		if(!bldg.getName().equals(extBldg.getDisplayName())) {
-			bldg.setName(extBldg.getDisplayName());
-			updated = true;
-		}
-		if (!ToolBox.equals(bldg.getCoordinateX(), extBldg.getCoordinateX())) {
-			bldg.setCoordinateX(extBldg.getCoordinateX());
-			updated = true;
-		}
-		if (!ToolBox.equals(bldg.getCoordinateY(), extBldg.getCoordinateY())) {
-			bldg.setCoordinateY(extBldg.getCoordinateY());
-			updated = true;
-		}
-		
-		return updated;
-	}
-	
-	/*
-	 * Check if building can be deleted
-	 * @param bldg
-	 * @return boolean  (True if building can be deleted)
-	 */
-	private static boolean checkBuildingDelete(Building bldg) {
-		
-		boolean result = false;;
-		
-		List rooms = (new RoomDAO()).getQuery(
-				"from Room as rm " + 
-				"where rm.building.uniqueId = " + (bldg.getUniqueId()).longValue()).
-				list();
-		
-		if(rooms.isEmpty()) {
-			result = true;
-		}
-		return result;
-	}
-	
 	public Object clone() {
 		Building b = new Building();
 		b.setAbbreviation(getAbbreviation());

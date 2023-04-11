@@ -33,9 +33,9 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -50,7 +50,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             StringWriter writer = new StringWriter();
             (new XMLWriter(writer,OutputFormat.createPrettyPrint())).write(request);
             writer.flush(); writer.close();
-            SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+            SessionImplementor session = (SessionImplementor)HibernateUtil.getSession();
             Connection connection = session.getJdbcConnectionAccess().obtainConnection();
             try {
                 CallableStatement call = connection.prepareCall(iRequestSql);
@@ -63,13 +63,13 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
         } catch (Exception e) {
             sLog.error("Unable to send request: "+e.getMessage(),e);
         } finally {
-            _RootDAO.closeCurrentThreadSessions();
+        	HibernateUtil.closeCurrentThreadSessions();
         }
     }
     
     protected Document receiveResponse() throws IOException, DocumentException {
         try {
-            SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+            SessionImplementor session = (SessionImplementor)HibernateUtil.getSession();
             Connection connection = session.getJdbcConnectionAccess().obtainConnection();
             String response = null;
             try {
@@ -90,7 +90,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             sLog.error("Unable to receive response: "+e.getMessage(),e);
             return null;
         } finally {
-            _RootDAO.closeCurrentThreadSessions();
+        	HibernateUtil.closeCurrentThreadSessions();
         }
     }
 }

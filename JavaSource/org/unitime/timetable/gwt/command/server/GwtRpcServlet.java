@@ -38,6 +38,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -49,7 +50,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.QueryLog;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
@@ -391,7 +391,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				Localization.removeLocale();
 				Formats.removeFormats();
 				ApplicationProperties.setSessionId(null);
-				_RootDAO.closeCurrentThreadSessions();
+				HibernateUtil.closeCurrentThreadSessions();
 			}
 			synchronized (this) {
 				iWaitingThread = null;

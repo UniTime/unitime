@@ -639,7 +639,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 		if (session == null) {
 			return(null);
 		}
-    	return((ExamPeriod)(new ExamPeriodDAO()).getQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
+    	return((ExamPeriod)(new ExamPeriodDAO()).getSession().createQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
     			" and ep.examType.uniqueId = :examTypeId" +
     			" and ep.dateOffset = :dateOffset" +
     			" and ep.length = :length" +
@@ -695,7 +695,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public static Date[] getBounds(Long sessionId, Date examBeginDate, Long examTypeId) {
-        Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
+        Object[] bounds = (Object[])new ExamPeriodDAO().getSession().createQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
         		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType.uniqueId = :examTypeId")
         		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)

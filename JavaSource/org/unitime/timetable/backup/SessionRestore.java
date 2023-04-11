@@ -290,7 +290,7 @@ public class SessionRestore implements SessionRestoreInterface {
 			iSkippedTables.put(table.getName(), table);
 			return;
 		}
-		PersistentClass mapping = _RootDAO.getConfiguration().getClassMapping(table.getName());
+		PersistentClass mapping = HibernateUtil.getConfiguration().getClassMapping(table.getName());
 		Map<String, Integer> lengths = new HashMap<String, Integer>();
 		for (String property: metadata.getPropertyNames()) {
 			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(metadata.getEntityName() + "." + property)) continue;

@@ -25,13 +25,11 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.hibernate.util.HibernateContext;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.StudentSectioningPref;
-import org.unitime.timetable.model.base._BaseRootDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.MessageLogAppender;
@@ -54,7 +52,7 @@ public class StartupService implements InitializingBean, DisposableBean {
 		try {
 			
 			Debug.info(" - Initializing Hibernate ... ");							
-			_RootDAO.initialize();
+			HibernateUtil.initialize();
 			
 			// Update logging according to the changes recorded in the application config
 			ApplicationConfig.configureLogging();
@@ -88,7 +86,7 @@ public class StartupService implements InitializingBean, DisposableBean {
 			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
 			iInitializationException = e;
 		} finally {
-			_RootDAO.closeCurrentThreadSessions();
+			HibernateUtil.closeCurrentThreadSessions();
 		}		
 	}
 	
@@ -125,17 +123,7 @@ public class StartupService implements InitializingBean, DisposableBean {
 	         iMessageLogAppender.stop();
 	         
 	         Debug.info(" - Closing Hibernate ... ");
-	         (new _BaseRootDAO() {
-		    		void closeHibernate() {
-		    			HibernateContext cx = sContext;
-		    			if (cx != null) {
-		    				sContext = null;
-		    				cx.getSessionFactory().close();
-		    			}
-		    		}
-		    		protected Class getReferenceClass() { return null; }
-		    	}).closeHibernate();
-	         // CacheManager.getInstance().shutdown();
+	         HibernateUtil.closeHibernate();
 	         
 	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");

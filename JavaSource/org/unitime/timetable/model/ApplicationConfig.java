@@ -27,9 +27,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.base.BaseApplicationConfig;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 
 
@@ -75,7 +75,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	 */
 	public static String getConfigValue(String key, String defaultValue) {
 	    //return defaultValue if hibernate is not yet initialized
-        if (!_RootDAO.isConfigured()) return defaultValue;
+        if (!HibernateUtil.isConfigured()) return defaultValue;
         
         String value = (String)new ApplicationConfigDAO().
             getSession().
@@ -87,7 +87,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
     
     public static Properties toProperties() {
         Properties properties = new Properties();
-        if (!_RootDAO.isConfigured()) return properties;
+        if (!HibernateUtil.isConfigured()) return properties;
         
         org.hibernate.Session hibSession = ApplicationConfigDAO.getInstance().createNewSession();
         try {
@@ -102,7 +102,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
     }
     
     public static boolean configureLogging() {
-    	if (!_RootDAO.isConfigured()) return false;
+    	if (!HibernateUtil.isConfigured()) return false;
     	
         org.hibernate.Session hibSession = ApplicationConfigDAO.getInstance().createNewSession();
         try {

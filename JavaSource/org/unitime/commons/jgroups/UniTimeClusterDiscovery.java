@@ -47,6 +47,7 @@ import org.jgroups.util.TimeScheduler;
 import org.jgroups.util.Tuple;
 import org.jgroups.util.UUID;
 import org.jgroups.util.Util;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.ClusterDiscovery;
 import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
 
@@ -290,7 +291,7 @@ public class UniTimeClusterDiscovery extends Discovery {
     }
     
     protected void readAll(List<Address> members, Responses responses) {
-    	if (!ClusterDiscoveryDAO.isConfigured()) return;
+    	if (!HibernateUtil.isConfigured()) return;
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
         Transaction tx = null;
         try {
@@ -319,7 +320,7 @@ public class UniTimeClusterDiscovery extends Discovery {
     }
     
     protected boolean contains(Address addr) {
-    	if (!ClusterDiscoveryDAO.isConfigured()) return false;
+    	if (!HibernateUtil.isConfigured()) return false;
     	org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		String own_address = addressAsString(addr);
         try {
@@ -334,7 +335,7 @@ public class UniTimeClusterDiscovery extends Discovery {
     }
     
     protected void remove(Address addr) {
-    	if (!ClusterDiscoveryDAO.isConfigured()) return;
+    	if (!HibernateUtil.isConfigured()) return;
     	org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		String own_address = addressAsString(addr);
 		Transaction tx = null;
@@ -354,7 +355,7 @@ public class UniTimeClusterDiscovery extends Discovery {
     }
     
 	protected void update(PingData data) {
-		if (!ClusterDiscoveryDAO.isConfigured()) return;
+		if (!HibernateUtil.isConfigured()) return;
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		String own_address = addressAsString(data.getAddress());
         Transaction tx = null;
@@ -377,7 +378,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 	}
 	
 	protected void clearTable() {
-		if (!ClusterDiscoveryDAO.isConfigured()) return;
+		if (!HibernateUtil.isConfigured()) return;
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		Transaction tx = null;
         try {

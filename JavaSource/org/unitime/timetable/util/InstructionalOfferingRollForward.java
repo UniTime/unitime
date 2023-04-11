@@ -70,7 +70,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
 			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List l = coDao.getQuery(query).list();
+		List l = coDao.getSession().createQuery(query).list();
 		if (l != null){
 			CourseOffering co = null;
 			for (Iterator it = l.iterator(); it.hasNext();){
@@ -94,7 +94,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
                 + "  where co2.subjectArea.session.uniqueId = " + toSession.getUniqueId().longValue()
                 + "   and co2.subjectArea.subjectAreaAbbreviation = co.subjectArea.subjectAreaAbbreviation"
                 + "   and co2.courseNbr = co.courseNbr)";
-		List l = coDao.getQuery(query).list();
+		List l = coDao.getSession().createQuery(query).list();
 		if (l != null){
 			CourseOffering co = null;
 			for (Iterator it = l.iterator(); it.hasNext();){
@@ -133,7 +133,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			query += "  and cc.session.uniqueId=:sessionId";
 			query += "  and cc.subject=:subjectAbbv";
 			query += "  and cc.courseNumber = co.courseNbr)";
-		    List l = coDao.getQuery(query)
+		    List l = coDao.getSession().createQuery(query)
 				.setParameter("subjectAbbv", subjectAreaAbbreviation, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.list();
@@ -177,7 +177,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		+ "' and co.getCourseNbr = '" + courseNumber
 		+ "' and co.isControl = true"
 		+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List l = coDao.getQuery(query).list();
+		List l = coDao.getSession().createQuery(query).list();
 		if (l != null && l.size() > 0){
 			CourseOffering co = null;
 			for (Iterator it = l.iterator(); it.hasNext();){

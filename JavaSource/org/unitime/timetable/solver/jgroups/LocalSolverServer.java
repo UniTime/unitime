@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.jgroups.Address;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
@@ -192,7 +193,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 		}
 		
 		public synchronized void checkForNewServers() {
-			if (!SessionDAO.isConfigured()) {
+			if (!HibernateUtil.isConfigured()) {
 				iLog.info("Hibernate is not yet configured, waiting...");
 				return;
 			}

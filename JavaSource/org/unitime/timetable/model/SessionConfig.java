@@ -22,9 +22,9 @@ package org.unitime.timetable.model;
 import java.util.List;
 import java.util.Properties;
 
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.base.BaseSessionConfig;
 import org.unitime.timetable.model.dao.SessionConfigDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 /**
  * @author Tomas Muller
@@ -52,7 +52,7 @@ public class SessionConfig extends BaseSessionConfig {
 
 	public static String getConfigValue(String key, Long sessionId, String defaultValue) {
 	    //return defaultValue if hibernate is not yet initialized or no session is given
-        if (!_RootDAO.isConfigured() || sessionId == null) return defaultValue;
+        if (!HibernateUtil.isConfigured() || sessionId == null) return defaultValue;
         
         String value = (String)SessionConfigDAO.getInstance().getSession().createQuery(
         		"select value from SessionConfig where key = :key and session.uniqueId = :sessionId"
@@ -63,7 +63,7 @@ public class SessionConfig extends BaseSessionConfig {
     
     public static Properties toProperties(Long sessionId) {
         Properties properties = new Properties();
-        if (!_RootDAO.isConfigured() || sessionId == null) return properties;
+        if (!HibernateUtil.isConfigured() || sessionId == null) return properties;
         
         org.hibernate.Session hibSession = SessionConfigDAO.getInstance().createNewSession();
         try {

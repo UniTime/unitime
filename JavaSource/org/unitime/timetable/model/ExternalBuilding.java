@@ -57,7 +57,7 @@ public class ExternalBuilding extends BaseExternalBuilding {
 	 */
 	public static Hashtable getBuildings(Long sessionId) {
 		
-		List bldgs = (new ExternalBuildingDAO()).getQuery(
+		List bldgs = (new ExternalBuildingDAO()).getSession().createQuery(
 				"from ExternalBuilding as b " + 
 				"where b.session.uniqueId = " + sessionId.longValue()).
 				list();

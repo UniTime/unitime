@@ -96,18 +96,6 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		return (RoomFeature) (new RoomFeatureDAO()).get(id);
 	}
 	
-	/**
-	 * @param id
-	 * @throws HibernateException
-	 */
-	public static void deleteRoomFeatureById(Long id) throws HibernateException {
-		RoomFeature rf = RoomFeature.getRoomFeatureById(id);
-		if (rf != null) {
-			(new RoomFeatureDAO()).delete(rf);
-		}
-		
-	}
-		
 	public void saveOrUpdate() throws HibernateException {
 		(new RoomFeatureDAO()).saveOrUpdate(this);
 	}

@@ -36,10 +36,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SessionConfig;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
 
@@ -181,7 +181,7 @@ public class ApplicationProperties {
 	}
 	
 	public static Properties getConfigProperties() {
-	    if (configProps==null && _RootDAO.isConfigured())
+	    if (configProps==null && HibernateUtil.isConfigured())
 	        configProps = ApplicationConfig.toProperties();
 	    return (configProps==null?new Properties():configProps);
 	}
@@ -191,7 +191,7 @@ public class ApplicationProperties {
 	}
 	
 	public static Properties getSessionProperties(Long sessionId) {
-		if (!_RootDAO.isConfigured() || sessionId == null)
+		if (!HibernateUtil.isConfigured() || sessionId == null)
 			return new Properties();
 		
 		Properties properties = sSessionProperties.get(sessionId);

@@ -68,18 +68,6 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	
 	/**
 	 * 
-	 * @param id
-	 * @throws HibernateException
-	 */
-	public static void deleteSolverParameterDefById(Long id) throws HibernateException {
-		SolverParameterDef solverParameterDef = SolverParameterDef.getSolverParameterDefById(id);
-		if (solverParameterDef != null) {
-			(new SolverParameterDefDAO()).delete(solverParameterDef);
-		}
-	}
-	
-	/**
-	 * 
 	 * @throws HibernateException
 	 */
 	public void saveOrUpdate() throws HibernateException {
