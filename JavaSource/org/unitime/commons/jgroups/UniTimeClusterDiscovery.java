@@ -49,6 +49,7 @@ import org.jgroups.util.UUID;
 import org.jgroups.util.Util;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.ClusterDiscovery;
+import org.unitime.timetable.model.base.ClusterDiscoveryId;
 import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
 
 /**
@@ -324,7 +325,7 @@ public class UniTimeClusterDiscovery extends Discovery {
     	org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		String own_address = addressAsString(addr);
         try {
-        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(own_address, cluster_name), hibSession);
+        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(own_address, cluster_name), hibSession);
         	return cluster != null;
         } catch (Exception e) {
 			log.info("Failed to read data for cluster " + cluster_name + ": " + e.getMessage());
@@ -341,7 +342,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 		Transaction tx = null;
         try {
         	tx = hibSession.beginTransaction();
-        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(own_address, cluster_name), hibSession);
+        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(own_address, cluster_name), hibSession);
         	if (cluster != null)
         		hibSession.delete(cluster);
         	hibSession.flush();
@@ -361,7 +362,7 @@ public class UniTimeClusterDiscovery extends Discovery {
         Transaction tx = null;
         try {
         	tx = hibSession.beginTransaction();
-			ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(own_address, cluster_name), hibSession);
+			ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(own_address, cluster_name), hibSession);
 			if (cluster == null)
 				cluster = new ClusterDiscovery(own_address, cluster_name);
 			cluster.setPingData(serializeWithoutView(data));

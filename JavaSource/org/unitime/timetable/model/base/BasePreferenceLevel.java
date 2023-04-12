@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PreferenceLevel;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePreferenceLevel implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,49 +45,53 @@ public abstract class BasePreferenceLevel implements Serializable {
 	private String iPrefAbbv;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PREF_ID = "prefId";
-	public static String PROP_PREF_PROLOG = "prefProlog";
-	public static String PROP_PREF_NAME = "prefName";
-	public static String PROP_PREF_ABBV = "prefAbbv";
-
 	public BasePreferenceLevel() {
-		initialize();
 	}
 
 	public BasePreferenceLevel(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "preference_level_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_level_seq")
+	})
+	@GeneratedValue(generator = "preference_level_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "pref_id", nullable = false, length = 2)
 	public Integer getPrefId() { return iPrefId; }
 	public void setPrefId(Integer prefId) { iPrefId = prefId; }
 
+	@Column(name = "pref_prolog", nullable = true, length = 2)
 	public String getPrefProlog() { return iPrefProlog; }
 	public void setPrefProlog(String prefProlog) { iPrefProlog = prefProlog; }
 
+	@Column(name = "pref_name", nullable = true, length = 20)
 	public String getPrefName() { return iPrefName; }
 	public void setPrefName(String prefName) { iPrefName = prefName; }
 
+	@Column(name = "pref_abbv", nullable = true, length = 10)
 	public String getPrefAbbv() { return iPrefAbbv; }
 	public void setPrefAbbv(String prefAbbv) { iPrefAbbv = prefAbbv; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PreferenceLevel)) return false;
 		if (getUniqueId() == null || ((PreferenceLevel)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PreferenceLevel)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PreferenceLevel["+getUniqueId()+"]";
 	}

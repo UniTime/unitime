@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.StandardEventNoteGlobal;
 
@@ -28,33 +30,33 @@ import org.unitime.timetable.model.StandardEventNoteGlobal;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStandardEventNoteGlobal extends StandardEventNote implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public BaseStandardEventNoteGlobal() {
-		initialize();
 	}
 
 	public BaseStandardEventNoteGlobal(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StandardEventNoteGlobal)) return false;
 		if (getUniqueId() == null || ((StandardEventNoteGlobal)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StandardEventNoteGlobal)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StandardEventNoteGlobal["+getUniqueId()+"]";
 	}

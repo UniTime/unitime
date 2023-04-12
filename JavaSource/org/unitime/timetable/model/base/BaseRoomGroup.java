@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomGroup;
@@ -32,6 +46,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoomGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -46,50 +61,60 @@ public abstract class BaseRoomGroup implements Serializable {
 	private Session iSession;
 	private Set<Location> iRooms;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_ABBV = "abbv";
-	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_GLOBAL = "global";
-	public static String PROP_DEFAULT_GROUP = "defaultGroup";
-
 	public BaseRoomGroup() {
-		initialize();
 	}
 
 	public BaseRoomGroup(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "room_group_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "room_group_seq")
+	})
+	@GeneratedValue(generator = "room_group_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 60)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "abbv", nullable = false, length = 60)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	@Column(name = "description", nullable = true, length = 1000)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Column(name = "global", nullable = false)
 	public Boolean isGlobal() { return iGlobal; }
+	@Transient
 	public Boolean getGlobal() { return iGlobal; }
 	public void setGlobal(Boolean global) { iGlobal = global; }
 
+	@Column(name = "default_group", nullable = false)
 	public Boolean isDefaultGroup() { return iDefaultGroup; }
+	@Transient
 	public Boolean getDefaultGroup() { return iDefaultGroup; }
 	public void setDefaultGroup(Boolean defaultGroup) { iDefaultGroup = defaultGroup; }
 
+	@ManyToOne(optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "department_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(mappedBy = "roomGroups")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
@@ -97,17 +122,20 @@ public abstract class BaseRoomGroup implements Serializable {
 		iRooms.add(location);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomGroup)) return false;
 		if (getUniqueId() == null || ((RoomGroup)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RoomGroup)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RoomGroup["+getUniqueId()+" "+getName()+"]";
 	}

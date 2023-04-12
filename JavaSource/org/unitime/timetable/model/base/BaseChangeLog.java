@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
@@ -32,6 +41,7 @@ import org.unitime.timetable.model.TimetableManager;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseChangeLog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -49,73 +59,85 @@ public abstract class BaseChangeLog implements Serializable {
 	private SubjectArea iSubjectArea;
 	private Department iDepartment;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_TIME_STAMP = "timeStamp";
-	public static String PROP_OBJ_TYPE = "objectType";
-	public static String PROP_OBJ_TITLE = "objectTitle";
-	public static String PROP_OBJ_UID = "objectUniqueId";
-	public static String PROP_SOURCE = "sourceString";
-	public static String PROP_OPERATION = "operationString";
-	public static String PROP_DETAIL = "detail";
-
 	public BaseChangeLog() {
-		initialize();
 	}
 
 	public BaseChangeLog(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "change_log_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "change_log_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Column(name = "obj_type", nullable = false, length = 255)
 	public String getObjectType() { return iObjectType; }
 	public void setObjectType(String objectType) { iObjectType = objectType; }
 
+	@Column(name = "obj_title", nullable = false, length = 255)
 	public String getObjectTitle() { return iObjectTitle; }
 	public void setObjectTitle(String objectTitle) { iObjectTitle = objectTitle; }
 
+	@Column(name = "obj_uid", nullable = false)
 	public Long getObjectUniqueId() { return iObjectUniqueId; }
 	public void setObjectUniqueId(Long objectUniqueId) { iObjectUniqueId = objectUniqueId; }
 
+	@Column(name = "source", nullable = false, length = 50)
 	public String getSourceString() { return iSourceString; }
 	public void setSourceString(String sourceString) { iSourceString = sourceString; }
 
+	@Column(name = "operation", nullable = false, length = 50)
 	public String getOperationString() { return iOperationString; }
 	public void setOperationString(String operationString) { iOperationString = operationString; }
 
+	@Column(name = "detail", nullable = true)
 	public byte[] getDetail() { return iDetail; }
 	public void setDetail(byte[] detail) { iDetail = detail; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "manager_id", nullable = false)
 	public TimetableManager getManager() { return iManager; }
 	public void setManager(TimetableManager manager) { iManager = manager; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "subj_area_id", nullable = true)
 	public SubjectArea getSubjectArea() { return iSubjectArea; }
 	public void setSubjectArea(SubjectArea subjectArea) { iSubjectArea = subjectArea; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "department_id", nullable = true)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ChangeLog)) return false;
 		if (getUniqueId() == null || ((ChangeLog)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ChangeLog)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ChangeLog["+getUniqueId()+"]";
 	}

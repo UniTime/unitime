@@ -39,6 +39,7 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.base.UserDataId;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.UserDataDAO;
@@ -417,7 +418,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				else
 					hibSession.saveOrUpdate(managerData);
 			} else {
-				UserData userData = UserDataDAO.getInstance().get(new UserData(getExternalUserId(), key), hibSession);
+				UserData userData = UserDataDAO.getInstance().get(new UserDataId(getExternalUserId(), key), hibSession);
 				if (userData == null && value == null) return;
 				if (userData != null && value != null && value.equals(userData.getValue())) return;
 				

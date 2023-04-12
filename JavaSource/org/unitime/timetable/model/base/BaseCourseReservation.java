@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.Reservation;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.Reservation;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseReservation extends Reservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private CourseOffering iCourse;
 
-
 	public BaseCourseReservation() {
-		initialize();
 	}
 
 	public BaseCourseReservation(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "course_id", nullable = false)
 	public CourseOffering getCourse() { return iCourse; }
 	public void setCourse(CourseOffering course) { iCourse = course; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseReservation)) return false;
 		if (getUniqueId() == null || ((CourseReservation)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseReservation)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseReservation["+getUniqueId()+"]";
 	}

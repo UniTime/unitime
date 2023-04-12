@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.TreeSet;
 
 import org.hibernate.Session;
@@ -31,6 +41,9 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "itype_desc")
 public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
 	private static final long serialVersionUID = 1L;
 
@@ -59,6 +72,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
                 list());
     }
 
+	@Transient
     public String getBasicType() {
     	return sBasicTypes[getBasic() ? 1 : 0];
     }

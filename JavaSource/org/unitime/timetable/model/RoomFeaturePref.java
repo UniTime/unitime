@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseRoomFeaturePref;
 
@@ -26,6 +32,8 @@ import org.unitime.timetable.model.base.BaseRoomFeaturePref;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "room_feature_pref")
 public class RoomFeaturePref extends BaseRoomFeaturePref {
 	private static final long serialVersionUID = 1L;
 
@@ -79,6 +87,7 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
 		return MSG.prefTitleRoomFeature(getPrefLevel().getPrefName(), getRoomFeature().getLabelWithType());
 	}
 	
+	@Transient
 	public Type getType() { return Type.ROOM_FEATURE; }
 	
 	@Override

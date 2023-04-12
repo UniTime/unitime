@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -29,6 +35,8 @@ import org.unitime.timetable.model.base.BaseExamEvent;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("-2")
 public abstract class ExamEvent extends BaseExamEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -46,22 +54,27 @@ public abstract class ExamEvent extends BaseExamEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
     public Set<Student> getStudents() {
         return getExam().getStudents();
   
     }
     
+	@Transient
     public Set<DepartmentalInstructor> getInstructors() {
         return getExam().getInstructors();
     }
     
+	@Transient
     public Session getSession() { return getExam().getSession(); }
     
+	@Transient
     public Collection<Long> getStudentIds() {
         return getExam().getStudentIds();
     }
     
 	@Override
+	@Transient
 	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
 		return getExam().getStudentClassEnrollments();
 	}

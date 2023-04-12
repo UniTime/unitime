@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -75,6 +85,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solution")
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	private static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -1019,6 +1032,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		*/
 	}
 	
+	@Transient
 	public Session getSession() {
 		return getOwner().getSession();
 	}
@@ -1442,6 +1456,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
 
 	private transient DataProperties iPropertiesCache = null;
+	@Transient
 	public synchronized DataProperties getProperties() {
 		if (iPropertiesCache==null) {
 			iPropertiesCache = new DataProperties();

@@ -19,9 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseLearningCommunityReservation;
 
+@Entity
+@DiscriminatorValue("7")
 public class LearningCommunityReservation extends BaseLearningCommunityReservation {
 	private static final long serialVersionUID = 3497200985759281820L;
 
@@ -35,21 +43,25 @@ public class LearningCommunityReservation extends BaseLearningCommunityReservati
 	}
 
 	@Override
+	@Transient
 	public int getPriority() {
 		return ApplicationProperty.ReservationPriorityLearningCommunity.intValue();
 	}
 
 	@Override
+	@Transient
 	public boolean isCanAssignOverLimit() {
 		return ApplicationProperty.ReservationCanOverLimitLearningCommunity.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isMustBeUsed() {
 		return ApplicationProperty.ReservationMustBeUsedLearningCommunity.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isAllowOverlap() {
 		return ApplicationProperty.ReservationAllowOverlapLearningCommunity.isTrue();
 	}

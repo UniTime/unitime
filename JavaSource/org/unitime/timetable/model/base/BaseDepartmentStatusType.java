@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDepartmentStatusType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,41 +40,40 @@ public abstract class BaseDepartmentStatusType extends RefTableEntry implements 
 	private Integer iOrd;
 
 
-	public static String PROP_STATUS = "status";
-	public static String PROP_APPLY = "apply";
-	public static String PROP_ORD = "ord";
-
 	public BaseDepartmentStatusType() {
-		initialize();
 	}
 
 	public BaseDepartmentStatusType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "status", nullable = false)
 	public Integer getStatus() { return iStatus; }
 	public void setStatus(Integer status) { iStatus = status; }
 
+	@Column(name = "apply", nullable = false)
 	public Integer getApply() { return iApply; }
 	public void setApply(Integer apply) { iApply = apply; }
 
+	@Column(name = "ord", nullable = false)
 	public Integer getOrd() { return iOrd; }
 	public void setOrd(Integer ord) { iOrd = ord; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DepartmentStatusType)) return false;
 		if (getUniqueId() == null || ((DepartmentStatusType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DepartmentStatusType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DepartmentStatusType["+getUniqueId()+" "+getLabel()+"]";
 	}

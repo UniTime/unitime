@@ -24,6 +24,24 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
@@ -38,6 +56,7 @@ import org.unitime.timetable.model.SubjectArea;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseOffering implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -69,105 +88,128 @@ public abstract class BaseCourseOffering implements Serializable {
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 	private Set<OverrideType> iDisabledOverrides;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_IS_CONTROL = "isControl";
-	public static String PROP_PERM_ID = "permId";
-	public static String PROP_PROJ_DEMAND = "projectedDemand";
-	public static String PROP_NBR_EXPECTED_STDENTS = "nbrExpectedStudents";
-	public static String PROP_LASTLIKE_DEMAND = "demand";
-	public static String PROP_RESERVATION = "reservation";
-	public static String PROP_COURSE_NBR = "courseNbr";
-	public static String PROP_TITLE = "title";
-	public static String PROP_SCHEDULE_BOOK_NOTE = "scheduleBookNote";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-	public static String PROP_SNAPSHOT_PROJ_DEMAND = "snapshotProjectedDemand";
-	public static String PROP_SNAPSHOT_PRJ_DMD_DATE = "snapshotProjectedDemandDate";
-
 	public BaseCourseOffering() {
-		initialize();
 	}
 
 	public BaseCourseOffering(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "course_offering_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "crs_offr_seq")
+	})
+	@GeneratedValue(generator = "course_offering_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "is_control", nullable = false)
 	public Boolean isIsControl() { return iIsControl; }
+	@Transient
 	public Boolean getIsControl() { return iIsControl; }
 	public void setIsControl(Boolean isControl) { iIsControl = isControl; }
 
+	@Column(name = "perm_id", nullable = true, length = 20)
 	public String getPermId() { return iPermId; }
 	public void setPermId(String permId) { iPermId = permId; }
 
+	@Column(name = "proj_demand", nullable = true, length = 5)
 	public Integer getProjectedDemand() { return iProjectedDemand; }
 	public void setProjectedDemand(Integer projectedDemand) { iProjectedDemand = projectedDemand; }
 
+	@Column(name = "nbr_expected_stdents", nullable = false, length = 10)
 	public Integer getNbrExpectedStudents() { return iNbrExpectedStudents; }
 	public void setNbrExpectedStudents(Integer nbrExpectedStudents) { iNbrExpectedStudents = nbrExpectedStudents; }
 
+	@Column(name = "lastlike_demand", nullable = false, length = 10)
 	public Integer getDemand() { return iDemand; }
 	public void setDemand(Integer demand) { iDemand = demand; }
 
+	@Formula("(select count(distinct e.student_id) from %SCHEMA%.student_class_enrl e where e.course_offering_id = uniqueid)")
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
+	@Column(name = "reservation", nullable = true, length = 10)
 	public Integer getReservation() { return iReservation; }
 	public void setReservation(Integer reservation) { iReservation = reservation; }
 
+	@Formula(" ( select sa.subject_area_abbreviation from %SCHEMA%.subject_area sa where sa.uniqueid = subject_area_id ) ")
 	public String getSubjectAreaAbbv() { return iSubjectAreaAbbv; }
 	public void setSubjectAreaAbbv(String subjectAreaAbbv) { iSubjectAreaAbbv = subjectAreaAbbv; }
 
+	@Column(name = "course_nbr", nullable = false, length = 40)
 	public String getCourseNbr() { return iCourseNbr; }
 	public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
 
+	@Column(name = "title", nullable = true, length = 200)
 	public String getTitle() { return iTitle; }
 	public void setTitle(String title) { iTitle = title; }
 
+	@Column(name = "schedule_book_note", nullable = true, length = 1000)
 	public String getScheduleBookNote() { return iScheduleBookNote; }
 	public void setScheduleBookNote(String scheduleBookNote) { iScheduleBookNote = scheduleBookNote; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@Column(name = "snapshot_proj_demand", nullable = true, length = 5)
 	public Integer getSnapshotProjectedDemand() { return iSnapshotProjectedDemand; }
 	public void setSnapshotProjectedDemand(Integer snapshotProjectedDemand) { iSnapshotProjectedDemand = snapshotProjectedDemand; }
 
+	@Column(name = "snapshot_prj_dmd_date", nullable = true)
 	public Date getSnapshotProjectedDemandDate() { return iSnapshotProjectedDemandDate; }
 	public void setSnapshotProjectedDemandDate(Date snapshotProjectedDemandDate) { iSnapshotProjectedDemandDate = snapshotProjectedDemandDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "subject_area_id", nullable = false)
 	public SubjectArea getSubjectArea() { return iSubjectArea; }
 	public void setSubjectArea(SubjectArea subjectArea) { iSubjectArea = subjectArea; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "instr_offr_id", nullable = false)
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "demand_offering_id", nullable = true)
 	public CourseOffering getDemandOffering() { return iDemandOffering; }
 	public void setDemandOffering(CourseOffering demandOffering) { iDemandOffering = demandOffering; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "demand_offering_type", nullable = true)
 	public DemandOfferingType getDemandOfferingType() { return iDemandOfferingType; }
 	public void setDemandOfferingType(DemandOfferingType demandOfferingType) { iDemandOfferingType = demandOfferingType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "course_type_id", nullable = true)
 	public CourseType getCourseType() { return iCourseType; }
 	public void setCourseType(CourseType courseType) { iCourseType = courseType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "consent_type", nullable = true)
 	public OfferingConsentType getConsentType() { return iConsentType; }
 	public void setConsentType(OfferingConsentType consentType) { iConsentType = consentType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "alternative_offering_id", nullable = true)
 	public CourseOffering getAlternativeOffering() { return iAlternativeOffering; }
 	public void setAlternativeOffering(CourseOffering alternativeOffering) { iAlternativeOffering = alternativeOffering; }
 
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "funding_dept_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "courseOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
@@ -175,6 +217,11 @@ public abstract class BaseCourseOffering implements Serializable {
 		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "disabled_override",
+		joinColumns = { @JoinColumn(name = "course_id") },
+		inverseJoinColumns = { @JoinColumn(name = "type_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<OverrideType> getDisabledOverrides() { return iDisabledOverrides; }
 	public void setDisabledOverrides(Set<OverrideType> disabledOverrides) { iDisabledOverrides = disabledOverrides; }
 	public void addTodisabledOverrides(OverrideType overrideType) {
@@ -182,17 +229,20 @@ public abstract class BaseCourseOffering implements Serializable {
 		iDisabledOverrides.add(overrideType);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseOffering)) return false;
 		if (getUniqueId() == null || ((CourseOffering)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseOffering)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseOffering["+getUniqueId()+"]";
 	}

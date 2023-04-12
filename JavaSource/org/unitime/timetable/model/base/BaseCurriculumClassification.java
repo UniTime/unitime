@@ -24,6 +24,20 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -33,6 +47,7 @@ import org.unitime.timetable.model.CurriculumCourse;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCurriculumClassification implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,52 +63,59 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	private AcademicClassification iAcademicClassification;
 	private Set<CurriculumCourse> iCourses;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_NR_STUDENTS = "nrStudents";
-	public static String PROP_ORD = "ord";
-	public static String PROP_STUDENTS = "students";
-	public static String PROP_SNAPSHOT_NR_STUDENTS = "snapshotNrStudents";
-	public static String PROP_SNAPSHOT_NR_STU_DATE = "snapshotNrStudentsDate";
-
 	public BaseCurriculumClassification() {
-		initialize();
 	}
 
 	public BaseCurriculumClassification(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "curriculum_clasf_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "curriculum_clasf_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 20)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "nr_students", nullable = false)
 	public Integer getNrStudents() { return iNrStudents; }
 	public void setNrStudents(Integer nrStudents) { iNrStudents = nrStudents; }
 
+	@Column(name = "ord", nullable = false)
 	public Integer getOrd() { return iOrd; }
 	public void setOrd(Integer ord) { iOrd = ord; }
 
+	@Column(name = "students", nullable = true)
 	public String getStudents() { return iStudents; }
 	public void setStudents(String students) { iStudents = students; }
 
+	@Column(name = "snapshot_nr_students", nullable = true)
 	public Integer getSnapshotNrStudents() { return iSnapshotNrStudents; }
 	public void setSnapshotNrStudents(Integer snapshotNrStudents) { iSnapshotNrStudents = snapshotNrStudents; }
 
+	@Column(name = "snapshot_nr_stu_date", nullable = true)
 	public Date getSnapshotNrStudentsDate() { return iSnapshotNrStudentsDate; }
 	public void setSnapshotNrStudentsDate(Date snapshotNrStudentsDate) { iSnapshotNrStudentsDate = snapshotNrStudentsDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "curriculum_id", nullable = false)
 	public Curriculum getCurriculum() { return iCurriculum; }
 	public void setCurriculum(Curriculum curriculum) { iCurriculum = curriculum; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_clasf_id", nullable = false)
 	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
 	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classification", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CurriculumCourse> getCourses() { return iCourses; }
 	public void setCourses(Set<CurriculumCourse> courses) { iCourses = courses; }
 	public void addTocourses(CurriculumCourse curriculumCourse) {
@@ -101,17 +123,20 @@ public abstract class BaseCurriculumClassification implements Serializable {
 		iCourses.add(curriculumCourse);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CurriculumClassification)) return false;
 		if (getUniqueId() == null || ((CurriculumClassification)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CurriculumClassification)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CurriculumClassification["+getUniqueId()+" "+getName()+"]";
 	}

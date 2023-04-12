@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -31,6 +40,9 @@ import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "advisor")
 public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Advisor> {
 	private static final long serialVersionUID = 1L;
 

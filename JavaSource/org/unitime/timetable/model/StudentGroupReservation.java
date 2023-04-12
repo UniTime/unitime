@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseStudentGroupReservation;
 
@@ -27,6 +33,8 @@ import org.unitime.timetable.model.base.BaseStudentGroupReservation;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("1")
 public class StudentGroupReservation extends BaseStudentGroupReservation {
 	private static final long serialVersionUID = 1L;
 
@@ -50,21 +58,25 @@ public class StudentGroupReservation extends BaseStudentGroupReservation {
 	}
 
 	@Override
+	@Transient
 	public int getPriority() {
 		return ApplicationProperty.ReservationPriorityGroup.intValue();
 	}
 
 	@Override
+	@Transient
 	public boolean isCanAssignOverLimit() {
 		return ApplicationProperty.ReservationCanOverLimitGroup.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isMustBeUsed() {
 		return ApplicationProperty.ReservationMustBeUsedGroup.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isAllowOverlap() {
 		return ApplicationProperty.ReservationAllowOverlapGroup.isTrue();
 	}

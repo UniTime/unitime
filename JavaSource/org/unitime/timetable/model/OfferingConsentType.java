@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 
 import org.hibernate.criterion.Order;
@@ -31,6 +37,8 @@ import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "offr_consent_type")
 public class OfferingConsentType extends BaseOfferingConsentType {
 	private static final long serialVersionUID = 1L;
 
@@ -56,6 +64,7 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 	 * ordered by column label
 	 * @return List of ConsentType objects
 	 */
+	@Transient
     public static List<OfferingConsentType> getConsentTypeList() {
     	return OfferingConsentTypeDAO.getInstance().findAll(Order.asc("label"));
     }

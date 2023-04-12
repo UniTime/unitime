@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
 import org.unitime.timetable.model.ClusterDiscovery;
 
@@ -28,36 +31,25 @@ import org.unitime.timetable.model.ClusterDiscovery;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseClusterDiscovery implements Serializable {
+@MappedSuperclass
+@IdClass(ClusterDiscoveryId.class)
+public abstract class BaseClusterDiscovery extends ClusterDiscoveryId {
 	private static final long serialVersionUID = 1L;
 
-	private String iOwnAddress;
-	private String iClusterName;
 	private byte[] iPingData;
 	private Date iTimeStamp;
 
 
-	public static String PROP_PING_DATA = "pingData";
-	public static String PROP_TIME_STAMP = "timeStamp";
 
-	public BaseClusterDiscovery() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public String getOwnAddress() { return iOwnAddress; }
-	public void setOwnAddress(String ownAddress) { iOwnAddress = ownAddress; }
-
-	public String getClusterName() { return iClusterName; }
-	public void setClusterName(String clusterName) { iClusterName = clusterName; }
-
+	@Column(name = "ping_data", nullable = true, length = 5000)
 	public byte[] getPingData() { return iPingData; }
 	public void setPingData(byte[] pingData) { iPingData = pingData; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ClusterDiscovery)) return false;
 		ClusterDiscovery clusterDiscovery = (ClusterDiscovery)o;
@@ -66,6 +58,7 @@ public abstract class BaseClusterDiscovery implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getOwnAddress() == null || getClusterName() == null) return super.hashCode();
 		return getOwnAddress().hashCode() ^ getClusterName().hashCode();

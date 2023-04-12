@@ -20,6 +20,16 @@
  
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.hibernate.FlushMode;
@@ -33,6 +43,9 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "event_contact")
 public class EventContact extends BaseEventContact implements NameInterface {
 	private static final long serialVersionUID = 1L;
 
@@ -66,6 +79,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	    else return ec.get(0);
 	}
 	
+	@Transient
     public String getShortName() {
         StringBuffer sb = new StringBuffer();
         if (getFirstName()!=null && getFirstName().length()>0) {
@@ -79,6 +93,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
         return sb.toString();
     }
 
+	@Transient
     public String getName() {
         return ((getLastName() == null ? "" : getLastName().trim()) + ", "+ 
                 (getFirstName() == null ? "" : getFirstName().trim()) + " "+

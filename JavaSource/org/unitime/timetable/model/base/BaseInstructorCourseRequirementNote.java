@@ -19,41 +19,30 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
-import org.unitime.timetable.model.InstructorCourseRequirementType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseInstructorCourseRequirementNote implements Serializable {
+@MappedSuperclass
+@IdClass(InstructorCourseRequirementNoteId.class)
+public abstract class BaseInstructorCourseRequirementNote extends InstructorCourseRequirementNoteId {
 	private static final long serialVersionUID = 1L;
 
-	private InstructorCourseRequirement iRequirement;
-	private InstructorCourseRequirementType iType;
 	private String iNote;
 
 
-	public static String PROP_NOTE = "note";
 
-	public BaseInstructorCourseRequirementNote() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public InstructorCourseRequirement getRequirement() { return iRequirement; }
-	public void setRequirement(InstructorCourseRequirement requirement) { iRequirement = requirement; }
-
-	public InstructorCourseRequirementType getType() { return iType; }
-	public void setType(InstructorCourseRequirementType type) { iType = type; }
-
+	@Column(name = "note", nullable = true, length = 2048)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructorCourseRequirementNote)) return false;
 		InstructorCourseRequirementNote instructorCourseRequirementNote = (InstructorCourseRequirementNote)o;
@@ -62,6 +51,7 @@ public abstract class BaseInstructorCourseRequirementNote implements Serializabl
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getRequirement() == null || getType() == null) return super.hashCode();
 		return getRequirement().hashCode() ^ getType().hashCode();

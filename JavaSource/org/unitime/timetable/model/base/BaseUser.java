@@ -21,12 +21,17 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.User;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseUser implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,41 +40,41 @@ public abstract class BaseUser implements Serializable {
 	private String iExternalUniqueId;
 
 
-	public static String PROP_USERNAME = "username";
-	public static String PROP_PASSWORD = "password";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-
 	public BaseUser() {
-		initialize();
 	}
 
 	public BaseUser(String username) {
 		setUsername(username);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@Column(name="username")
 	public String getUsername() { return iUsername; }
 	public void setUsername(String username) { iUsername = username; }
 
+	@Column(name = "password", nullable = false, length = 25)
 	public String getPassword() { return iPassword; }
 	public void setPassword(String password) { iPassword = password; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof User)) return false;
 		if (getUsername() == null || ((User)o).getUsername() == null) return false;
 		return getUsername().equals(((User)o).getUsername());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUsername() == null) return super.hashCode();
 		return getUsername().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "User["+getUsername()+"]";
 	}

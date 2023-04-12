@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +33,8 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.unitime.timetable.model.base.BaseInstructorSurvey;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 
+@Entity
+@Table(name = "instructor_survey")
 public class InstructorSurvey extends BaseInstructorSurvey {
 	private static final long serialVersionUID = 6737724550632383507L;
 
@@ -40,6 +48,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	}
 
 	@Override
+	@Transient
 	public Department getDepartment() {
 		return null;
 	}

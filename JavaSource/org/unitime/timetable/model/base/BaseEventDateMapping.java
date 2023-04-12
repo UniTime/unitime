@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Session;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseEventDateMapping implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,48 +48,54 @@ public abstract class BaseEventDateMapping implements Serializable {
 
 	private Session iSession;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CLASS_DATE = "classDateOffset";
-	public static String PROP_EVENT_DATE = "eventDateOffset";
-	public static String PROP_NOTE = "note";
-
 	public BaseEventDateMapping() {
-		initialize();
 	}
 
 	public BaseEventDateMapping(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "date_mapping_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "date_mapping_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "class_date", nullable = true)
 	public Integer getClassDateOffset() { return iClassDateOffset; }
 	public void setClassDateOffset(Integer classDateOffset) { iClassDateOffset = classDateOffset; }
 
+	@Column(name = "event_date", nullable = true)
 	public Integer getEventDateOffset() { return iEventDateOffset; }
 	public void setEventDateOffset(Integer eventDateOffset) { iEventDateOffset = eventDateOffset; }
 
+	@Column(name = "note", nullable = true, length = 1000)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventDateMapping)) return false;
 		if (getUniqueId() == null || ((EventDateMapping)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((EventDateMapping)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "EventDateMapping["+getUniqueId()+"]";
 	}

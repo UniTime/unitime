@@ -20,12 +20,20 @@
 package org.unitime.timetable.model;
 
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseDatePatternPref;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "date_pattern_pref")
 public class DatePatternPref extends BaseDatePatternPref {
 	private static final long serialVersionUID = 1L;
 
@@ -67,5 +75,6 @@ public class DatePatternPref extends BaseDatePatternPref {
 		return super.compareTo(o);
 	}
 
+	@Transient
 	public Type getType() { return Type.DATE; }
 }

@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseNonUniversityLocationPicture;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "location_picture")
 public class NonUniversityLocationPicture extends BaseNonUniversityLocationPicture {
 	private static final long serialVersionUID = 1L;
 

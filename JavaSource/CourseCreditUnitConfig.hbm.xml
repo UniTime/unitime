@@ -42,6 +42,7 @@
             not-null="true"
             length="20"/>
 
+		<!-- 
         <many-to-one
             name="courseCreditFormat"
             class="CourseCreditFormat"
@@ -50,6 +51,14 @@
             insert="false"
             update="false"
             not-null="true"/>
+         -->
+            
+		<many-to-one
+        	name="courseCreditFormat"
+        	class="CourseCreditFormat"
+            lazy="proxy"
+            formula="(select f.uniqueid from %SCHEMA%.crse_credit_format f where f.reference = credit_format)"
+        	/>
 
         <many-to-one
             name="creditType"

@@ -21,6 +21,14 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -29,6 +37,7 @@ import org.unitime.timetable.model.TimePref;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTimePref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,36 +45,38 @@ public abstract class BaseTimePref extends Preference implements Serializable {
 
 	private TimePattern iTimePattern;
 
-	public static String PROP_PREFERENCE = "preference";
-
 	public BaseTimePref() {
-		initialize();
 	}
 
 	public BaseTimePref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "preference", nullable = true, length = 2048)
 	public String getPreference() { return iPreference; }
 	public void setPreference(String preference) { iPreference = preference; }
 
+	@ManyToOne(optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "time_pattern_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public TimePattern getTimePattern() { return iTimePattern; }
 	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TimePref)) return false;
 		if (getUniqueId() == null || ((TimePref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TimePref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TimePref["+getUniqueId()+"]";
 	}

@@ -21,6 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JoinFormula;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -30,6 +44,7 @@ import org.unitime.timetable.model.RoomDept;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoomDept implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,47 +55,60 @@ public abstract class BaseRoomDept implements Serializable {
 	private Location iRoom;
 	private Department iDepartment;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_IS_CONTROL = "control";
-
 	public BaseRoomDept() {
-		initialize();
 	}
 
 	public BaseRoomDept(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "room_dept_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "room_sharing_group_seq")
+	})
+	@GeneratedValue(generator = "room_dept_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "is_control", nullable = false)
 	public Boolean isControl() { return iControl; }
+	@Transient
 	public Boolean getControl() { return iControl; }
 	public void setControl(Boolean control) { iControl = control; }
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinFormula("(select p.pref_level_id from %SCHEMA%.room_pref p where p.owner_id = department_id and p.room_id = room_id)")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public PreferenceLevel getPreference() { return iPreference; }
 	public void setPreference(PreferenceLevel preference) { iPreference = preference; }
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "room_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Location getRoom() { return iRoom; }
 	public void setRoom(Location room) { iRoom = room; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "department_id", nullable = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomDept)) return false;
 		if (getUniqueId() == null || ((RoomDept)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RoomDept)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RoomDept["+getUniqueId()+"]";
 	}

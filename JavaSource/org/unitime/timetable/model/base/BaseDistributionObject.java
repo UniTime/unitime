@@ -21,6 +21,18 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -29,6 +41,7 @@ import org.unitime.timetable.model.PreferenceGroup;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDistributionObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,43 +51,52 @@ public abstract class BaseDistributionObject implements Serializable {
 	private DistributionPref iDistributionPref;
 	private PreferenceGroup iPrefGroup;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_SEQUENCE_NUMBER = "sequenceNumber";
-
 	public BaseDistributionObject() {
-		initialize();
 	}
 
 	public BaseDistributionObject(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "distribution_object_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "dist_obj_seq")
+	})
+	@GeneratedValue(generator = "distribution_object_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "sequence_number", nullable = true, length = 2)
 	public Integer getSequenceNumber() { return iSequenceNumber; }
 	public void setSequenceNumber(Integer sequenceNumber) { iSequenceNumber = sequenceNumber; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "dist_pref_id", nullable = false)
 	public DistributionPref getDistributionPref() { return iDistributionPref; }
 	public void setDistributionPref(DistributionPref distributionPref) { iDistributionPref = distributionPref; }
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "pref_group_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public PreferenceGroup getPrefGroup() { return iPrefGroup; }
 	public void setPrefGroup(PreferenceGroup prefGroup) { iPrefGroup = prefGroup; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DistributionObject)) return false;
 		if (getUniqueId() == null || ((DistributionObject)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DistributionObject)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DistributionObject["+getUniqueId()+"]";
 	}

@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumProjectionRule;
@@ -31,6 +40,7 @@ import org.unitime.timetable.model.PosMajor;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCurriculumProjectionRule implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -43,54 +53,64 @@ public abstract class BaseCurriculumProjectionRule implements Serializable {
 	private PosMajor iMajor;
 	private AcademicClassification iAcademicClassification;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PROJECTION = "projection";
-	public static String PROP_SNAPSHOT_PROJ = "snapshotProjection";
-	public static String PROP_SNAPSHOT_PROJ_DATE = "snapshotProjectedDate";
-
 	public BaseCurriculumProjectionRule() {
-		initialize();
 	}
 
 	public BaseCurriculumProjectionRule(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "curriculum_rule_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "curriculum_rule_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "projection", nullable = false)
 	public Float getProjection() { return iProjection; }
 	public void setProjection(Float projection) { iProjection = projection; }
 
+	@Column(name = "snapshot_proj", nullable = true)
 	public Float getSnapshotProjection() { return iSnapshotProjection; }
 	public void setSnapshotProjection(Float snapshotProjection) { iSnapshotProjection = snapshotProjection; }
 
+	@Column(name = "snapshot_proj_date", nullable = true)
 	public Date getSnapshotProjectedDate() { return iSnapshotProjectedDate; }
 	public void setSnapshotProjectedDate(Date snapshotProjectedDate) { iSnapshotProjectedDate = snapshotProjectedDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_area_id", nullable = false)
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "major_id", nullable = true)
 	public PosMajor getMajor() { return iMajor; }
 	public void setMajor(PosMajor major) { iMajor = major; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_clasf_id", nullable = false)
 	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
 	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CurriculumProjectionRule)) return false;
 		if (getUniqueId() == null || ((CurriculumProjectionRule)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CurriculumProjectionRule)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CurriculumProjectionRule["+getUniqueId()+"]";
 	}

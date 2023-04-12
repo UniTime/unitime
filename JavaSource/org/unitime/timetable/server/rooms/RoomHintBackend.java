@@ -127,7 +127,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	
 	    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 	    	
-	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures())) {
+	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getRoomPictures())) {
 	    		if (picture.getType() != null && (
 	    				!AttachmentType.VisibilityFlag.IS_IMAGE.in(picture.getType().getVisibility()) ||
 	    				!AttachmentType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(picture.getType().getVisibility())

@@ -24,6 +24,20 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
@@ -33,6 +47,7 @@ import org.unitime.timetable.model.CurriculumCourseGroup;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCurriculumCourse implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -46,44 +61,54 @@ public abstract class BaseCurriculumCourse implements Serializable {
 	private CourseOffering iCourse;
 	private Set<CurriculumCourseGroup> iGroups;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PR_SHARE = "percShare";
-	public static String PROP_ORD = "ord";
-	public static String PROP_SNAPSHOT_PR_SHARE = "snapshotPercShare";
-	public static String PROP_SNAPSHOT_PR_SHR_DATE = "snapshotPercShareDate";
-
 	public BaseCurriculumCourse() {
-		initialize();
 	}
 
 	public BaseCurriculumCourse(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "curriculum_course_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "curriculum_course_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "pr_share", nullable = false)
 	public Float getPercShare() { return iPercShare; }
 	public void setPercShare(Float percShare) { iPercShare = percShare; }
 
+	@Column(name = "ord", nullable = false)
 	public Integer getOrd() { return iOrd; }
 	public void setOrd(Integer ord) { iOrd = ord; }
 
+	@Column(name = "snapshot_pr_share", nullable = true)
 	public Float getSnapshotPercShare() { return iSnapshotPercShare; }
 	public void setSnapshotPercShare(Float snapshotPercShare) { iSnapshotPercShare = snapshotPercShare; }
 
+	@Column(name = "snapshot_pr_shr_date", nullable = true)
 	public Date getSnapshotPercShareDate() { return iSnapshotPercShareDate; }
 	public void setSnapshotPercShareDate(Date snapshotPercShareDate) { iSnapshotPercShareDate = snapshotPercShareDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "cur_clasf_id", nullable = false)
 	public CurriculumClassification getClassification() { return iClassification; }
 	public void setClassification(CurriculumClassification classification) { iClassification = classification; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "course_id", nullable = false)
 	public CourseOffering getCourse() { return iCourse; }
 	public void setCourse(CourseOffering course) { iCourse = course; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "curriculum_course_group",
+		joinColumns = { @JoinColumn(name = "cur_course_id") },
+		inverseJoinColumns = { @JoinColumn(name = "group_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CurriculumCourseGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<CurriculumCourseGroup> groups) { iGroups = groups; }
 	public void addTogroups(CurriculumCourseGroup curriculumCourseGroup) {
@@ -91,17 +116,20 @@ public abstract class BaseCurriculumCourse implements Serializable {
 		iGroups.add(curriculumCourseGroup);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CurriculumCourse)) return false;
 		if (getUniqueId() == null || ((CurriculumCourse)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CurriculumCourse)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CurriculumCourse["+getUniqueId()+"]";
 	}

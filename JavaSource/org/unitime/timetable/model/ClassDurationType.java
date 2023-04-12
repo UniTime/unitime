@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,6 +35,8 @@ import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.util.duration.MinutesPerWeek;
 
+@Entity
+@Table(name = "duration_type")
 public class ClassDurationType extends BaseClassDurationType implements Comparable<ClassDurationType> {
 	private static final long serialVersionUID = 1L;
 
@@ -36,6 +44,7 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 		super();
 	}
 	
+	@Transient
 	public DurationModel getModel() {
 		try {
 			return (DurationModel)Class.forName(getImplementation()).getConstructor(String.class).newInstance(getParameter());

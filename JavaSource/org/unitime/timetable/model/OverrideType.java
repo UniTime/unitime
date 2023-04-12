@@ -19,9 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseOverrideType;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
 
+@Entity
+@Table(name = "override_type")
 public class OverrideType extends BaseOverrideType implements Comparable<OverrideType> {
 	private static final long serialVersionUID = 1L;
 

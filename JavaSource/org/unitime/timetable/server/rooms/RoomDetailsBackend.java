@@ -400,7 +400,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     		}
     	}
     	
-    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
+    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getRoomPictures()))
     		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
     	
     	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {

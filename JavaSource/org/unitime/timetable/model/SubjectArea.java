@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -33,6 +43,9 @@ import org.unitime.timetable.security.UserContext;
 /**
  * @author Tomas Muller, Heston Fernandes
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "subject_area")
 public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectArea> {
 
     /**
@@ -111,6 +124,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 		return academicSessionLookup.findSubjectAreaForCampusYearTerm(campus, year, term, externalSubjectAreaAbbreviation, hibSession);
 	}
 	
+	@Transient
 	public ArrayList<TimetableManager> getManagers() {
 		if (getDepartment() != null){
 			ArrayList<TimetableManager> al = new ArrayList<TimetableManager>();
@@ -133,10 +147,12 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	    return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
 	}
 	
+	@Transient
 	public String getLabel() {
 		return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
 	}
 	
+	@Transient
 	public Long getSessionId(){
 		if (this.getSession() != null) {
 			return(this.getSession().getUniqueId());
@@ -196,6 +212,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 		return subjectAreas;
 	}
 	
+	@Transient
 	public Department getEffectiveFundingDept() {
 		if (getFundingDept() == null) {
 			return getDepartment();

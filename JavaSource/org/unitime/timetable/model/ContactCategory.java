@@ -19,8 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseContactCategory;
 
+@Entity
+@Table(name = "contact_category")
 public class ContactCategory extends BaseContactCategory {
 	private static final long serialVersionUID = 1L;
 

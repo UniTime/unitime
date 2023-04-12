@@ -19,15 +19,24 @@
 */
 package org.unitime.commons.ant;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -47,6 +56,7 @@ import org.xml.sax.InputSource;
 public class CreateBaseModelFromXml extends Task {
 	private Hashtable<String, String> iParent = new Hashtable<String, String>();
 	private Hashtable<String, String[]> iIds = new Hashtable<String, String[]>();
+	private Hashtable<String, String> iRelations = new Hashtable<String, String>();
 	private Hashtable<String, TreeSet<String>> iClassProperties = new Hashtable<String, TreeSet<String>>();
 	
 	private SAXReader iSAXReader = null;
@@ -99,14 +109,13 @@ public class CreateBaseModelFromXml extends Task {
 			workDir = new File(iSource);
 		}
 		info("Working directory: " + workDir);
-		info("Reading hibernate.cfg.xml ...");
-		Document document = read(iConfig);
-		Element root = document.getRootElement();
-		Element sessionFactoryElement = root.element("session-factory");
-		for (Iterator<Element> i = sessionFactoryElement.elementIterator("mapping"); i.hasNext(); ) {
-			Element m = i.next();
-			String resource = m.attributeValue("resource");
-			if (resource == null) continue;
+		info("Reading *.hbm.xml ...");
+		for (String resource: workDir.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".hbm.xml");
+			}
+		})) {
 			info("Pre-processing " + resource + " ...");
 			Document resDoc = read(resource);
 			Element resRoot = resDoc.getRootElement();
@@ -116,10 +125,12 @@ public class CreateBaseModelFromXml extends Task {
 				preprocess(classEl, null, pkg);
 			}
 		}
-		for (Iterator<Element> i = sessionFactoryElement.elementIterator("mapping"); i.hasNext(); ) {
-			Element m = i.next();
-			String resource = m.attributeValue("resource");
-			if (resource == null) continue;
+		for (String resource: workDir.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".hbm.xml");
+			}
+		})) {
 			info("Processing " + resource + " ...");
 			Document resDoc = read(resource);
 			Element resRoot = resDoc.getRootElement();
@@ -143,6 +154,34 @@ public class CreateBaseModelFromXml extends Task {
 			String name = fixName(idEl.attributeValue("name"));
 			iIds.put(className, new String[] {type, name});
 		}
+		for (Iterator<Element> i=classEl.elementIterator("set");i.hasNext();) {
+			Element setEl = i.next();
+			if (setEl.element("many-to-many") != null) {
+				String name = setEl.attributeValue("name");
+				String column = setEl.element("key").attributeValue("column");
+				String clazz = fixType(setEl.element("many-to-many").attributeValue("class"), pkg);
+				clazz = clazz.substring(clazz.lastIndexOf('.')+1);
+				info("  set: " + clazz + "." + column + ":" + name);
+				iRelations.put(clazz + "." + column, name);
+			}
+		}
+		for (Iterator<Element> i=classEl.elementIterator("many-to-one");i.hasNext();) {
+			Element setEl = i.next();
+			String name = setEl.attributeValue("name");
+			String column = setEl.attributeValue("column");
+			info("  many-to-one: " + className + "." + column + ":" + name);
+			iRelations.put(className + "." + column, name);
+		}
+		for (Iterator<Element> i=classEl.elementIterator("composite-id");i.hasNext();) {
+			Element cidEl = i.next();
+			for (Iterator<Element> j=cidEl.elementIterator("key-many-to-one");j.hasNext();) {
+				Element setEl = j.next();
+				String name = setEl.attributeValue("name");
+				String column = setEl.attributeValue("column");
+				info("  many-to-one: " + className + "." + column + ":" + name);
+				iRelations.put(className + "." + column, name);
+			}
+		}
 		for (Iterator<Element> i=classEl.elementIterator("union-subclass");i.hasNext();) {
 			preprocess(i.next(), className, pkg);
 		}
@@ -150,18 +189,6 @@ public class CreateBaseModelFromXml extends Task {
 			preprocess(i.next(), className, pkg);
 		}
 	}	
-
-	/*
-	@SuppressWarnings("unchecked")
-	private String param(Element el, String name) {
-		if (el==null) return null;
-		for (Iterator<Element> i = el.elementIterator("param"); i.hasNext();) {
-			Element p = i.next();
-			if (name.equals(p.attributeValue("name"))) return p.getText();
-		}
-		return null;
-	}
-	*/
 	
 	private String fixType(String type, String pkg) {
 		if (type == null) return null;
@@ -231,19 +258,35 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println(" * ");
 		pw.println("*/");
 	}
+	
+	private String annotation(String name, String... args) {
+		String ret = "	@" + name;
+		int i = 0;
+		for (String arg: args) {
+			if (arg == null || arg.isEmpty()) continue;
+			ret += (i == 0 ? "(" : ", ");
+			ret += arg;
+			i++;
+		}
+		if (i > 0) ret += ")";
+		return ret;
+	}
 
 	@SuppressWarnings("unchecked")
 	private void importClass(Element classEl, String pkg, File outputFolder, String ext, String idClass, String idName, String idType) throws IOException {
 		String className = fixType(classEl.attributeValue("name"), pkg);
-		@SuppressWarnings("unused")
 		String table = classEl.attributeValue("table");
 		StringWriter attributes = new StringWriter();
 		PrintWriter pwa = new PrintWriter(attributes);
-		StringWriter props = new StringWriter();
-		PrintWriter pwp = new PrintWriter(props);
 		StringWriter body = new StringWriter();
 		PrintWriter pwb = new PrintWriter(body);
+		StringWriter header = new StringWriter();
+		PrintWriter pwh = new PrintWriter(header);
 		TreeSet<String> imports = new TreeSet<String>();
+		StringWriter mainHeader = new StringWriter();
+		PrintWriter pwmh = new PrintWriter(mainHeader);
+		TreeSet<String> mainImports = new TreeSet<String>();
+
 		if (className.indexOf('.') >= 0) {
 			//imports.add(className);
 			className = className.substring(className.lastIndexOf('.')+1);
@@ -254,14 +297,46 @@ public class CreateBaseModelFromXml extends Task {
 		TreeSet<String> properties = new TreeSet<String>();
 		Vector<String[]> compositeId = new Vector<String[]>();
 		
-		/*
-		Element discriminator = classEl.element("discriminator");
-		String discriminatorColumn = null;
-		if (discriminator!=null) {
-			discriminatorColumn = discriminator.attributeValue("column").toLowerCase();
+		imports.add("javax.persistence.MappedSuperclass");
+		pwh.println("@MappedSuperclass");
+		mainImports.add("javax.persistence.Entity");
+		pwmh.println("@Entity");
+		if (ext == null) {
+			mainImports.add("org.hibernate.annotations.Cache");
+			mainImports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+			pwmh.println("@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
 		}
-		*/
+		if (table != null) {
+			mainImports.add("javax.persistence.Table");
+			pwmh.println("@Table(name = \"" + table + "\")");	
+		}
 		
+		Element discriminator = classEl.element("discriminator");
+		if (discriminator != null) {
+			String column = discriminator.attributeValue("column").toLowerCase();
+			String type = fixType(discriminator.attributeValue("type"), pkg);
+			if (type.indexOf('.')>=0) {
+				imports.add(type);
+				type = type.substring(type.lastIndexOf('.')+1);
+			}
+			mainImports.add("javax.persistence.Inheritance");
+			mainImports.add("javax.persistence.InheritanceType");
+			mainImports.add("javax.persistence.DiscriminatorColumn");
+			mainImports.add("javax.persistence.DiscriminatorType");
+			pwmh.println("@Inheritance(strategy = InheritanceType.SINGLE_TABLE)");
+			pwmh.println("@DiscriminatorColumn(name=\"" + column + "\", discriminatorType = DiscriminatorType." + type.toUpperCase() + ")");
+		} else {
+			String discriminatorValue = classEl.attributeValue("discriminator-value");
+			if (discriminatorValue != null) {
+				mainImports.add("javax.persistence.DiscriminatorValue");
+				pwmh.println("@DiscriminatorValue(\"" + discriminatorValue + "\")");
+			}
+		}
+			
+		boolean constructor = true;
+		boolean hashCode = true;
+		boolean equals = true;
+		boolean serializable = true;
 		boolean hasProperty = false;
 		for (Iterator<Element> i = classEl.elementIterator("id"); i.hasNext();) {
 			Element el = i.next();
@@ -274,57 +349,208 @@ public class CreateBaseModelFromXml extends Task {
 			String column = el.attributeValue("column").toLowerCase();
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 			if ("default".equals(attribute)) attribute = "defaultValue";
+			String sequence = null;
+			try {
+				sequence = el.element("generator").element("param").getTextTrim();
+			} catch (NullPointerException e) {
+			}
 			idName = name; idType = type;
 			pwa.println("	private "+type+" i"+name+";");
-			pwp.println("	public static String PROP_"+column.toUpperCase()+" = \""+name.substring(0, 1).toLowerCase()+name.substring(1)+"\";");
 			properties.add(name);
 			pwb.println();
+			imports.add("javax.persistence.Id");
+			pwb.println("	@Id");
+			String tableid = table + "_id";
+			if ("Location".equals(className)) tableid = "room_id";
+			if ("LocationPicture".equals(className)) tableid = "room_pict_id";
+			if ("Preference".equals(className)) tableid = "pref_id";
+			if ("PreferenceGroup".equals(className)) tableid = "pref_group_id";
+			if ("RefTableEntry".equals(className)) tableid = "ref_table_id";
+			if (sequence != null) {
+				imports.add("org.hibernate.annotations.GenericGenerator");
+				imports.add("org.hibernate.annotations.Parameter");
+				pwb.println("	@GenericGenerator(name = \"" + tableid + "\", strategy = \"org.unitime.commons.hibernate.id.UniqueIdGenerator\", parameters = {");
+				pwb.println("		@Parameter(name = \"sequence\", value = \"" + sequence + "\")");
+				pwb.println("	})");
+				imports.add("javax.persistence.GeneratedValue");
+				pwb.println("	@GeneratedValue(generator = \"" + tableid + "\")");
+			}
+			imports.add("javax.persistence.Column");
+			pwb.println("	@Column(name=\"" + column + "\")");
 			pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 			pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 			hasProperty = true;
 		}
 		for (Iterator<Element> i = classEl.elementIterator("composite-id"); i.hasNext();) {
+			StringWriter id1 = new StringWriter();
+			PrintWriter pwi1 = new PrintWriter(id1);
+			StringWriter id2 = new StringWriter();
+			PrintWriter pwi2 = new PrintWriter(id2);
+			TreeSet<String> idImports = new TreeSet<String>();
+			List<String[]> cargs = new ArrayList<String[]>();
+			idImports.add("java.io.Serializable");
+			constructor = false; hashCode = false; equals = false; serializable = false;
+			
+			imports.add("javax.persistence.IdClass");
+			ext = pkg + ".base." + className + "Id";
+			pwh.println("@IdClass(" + className + "Id.class)");
+			
 			Element cidEl = i.next();
 			for (Iterator<Element> j = cidEl.elementIterator("key-many-to-one"); j.hasNext();) {
 				Element el = j.next();
 				String type = fixType(el.attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
-					imports.add(type);
+					idImports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				// String column = el.attributeValue("column").toLowerCase();
+				String column = el.attributeValue("column").toLowerCase();
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
+				
+				boolean lazy = "true".equals(el.attributeValue("lazy")) || "proxy".equals(el.attributeValue("lazy"));
+				boolean eager = "false".equals(el.attributeValue("lazy"));
+				boolean join = "join".equals(el.attributeValue("fetch"));
+				String cascade = el.attributeValue("cascade");
+				boolean notNul = "true".equals(el.attributeValue("not-null", "true"));
+
+				if (lazy || join || eager) idImports.add("javax.persistence.FetchType");
+				if ("all".equals(cascade)) idImports.add("javax.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) {}
+				else if ("all-delete-orphan".equals(cascade)) idImports.add("javax.persistence.CascadeType");
+				else if ("delete-orphan".equals(cascade)) {}
+				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
+				
 				if ("default".equals(attribute)) attribute = "defaultValue";
-				pwa.println("	private "+type+" i"+name+";");
+				cargs.add(new String[] { type, "i" + name, attribute });
+				pwi1.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				compositeId.add(new String[] {type, name});
-				pwb.println();
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+				pwi2.println();
+				idImports.add("javax.persistence.Id");
+				pwi2.println("	@Id");
+				idImports.add("javax.persistence.ManyToOne");
+				pwi2.println(annotation("ManyToOne",
+						"optional = " +  (notNul ? "false" : "true"),
+						(lazy ? "fetch = FetchType.LAZY" : join || eager ? "fetch = FetchType.EAGER" : null),
+						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						));
+				idImports.add("javax.persistence.JoinColumn");
+				pwi2.println("	@JoinColumn(name = \"" + column + "\")");
+				if (lazy || join || eager || el.element("cache") != null) {
+					idImports.add("org.hibernate.annotations.Cache");
+					idImports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+					pwi2.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+				}
+				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
+					idImports.add("org.hibernate.annotations.Cascade");
+					pwi2.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
+				}
+				if ("save-update".equals(cascade)) {
+					idImports.add("org.hibernate.annotations.Cascade");
+					pwi2.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+				}
+				pwi2.println("	public "+type+" get"+name+"() { return i"+name+"; }");
+				pwi2.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 				hasProperty = true;
 			}
 			for (Iterator<Element> j = cidEl.elementIterator("key-property"); j.hasNext();) {
 				Element el = j.next();
 				String type = fixType(el.attributeValue("type"), pkg);
 				if (type.indexOf('.')>=0) {
-					imports.add(type);
+					idImports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				// boolean notNul = "true".equals(el.attributeValue("not-null"));
-				// int length = Integer.parseInt(el.attributeValue("length","0"));
-				// String column = el.attributeValue("column");
+				String length = el.attributeValue("length");
+				String column = el.attributeValue("column");
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 				if ("default".equals(attribute)) attribute = "defaultValue";
 				compositeId.add(new String[] {type, name});
-				pwa.println("	private "+type+" i"+name+";");
+				cargs.add(new String[] { type, "i" + name, attribute });
+				pwi1.println("	private "+type+" i"+name+";");
 				properties.add(name);
-				pwb.println();
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+				pwi2.println();
+				idImports.add("javax.persistence.Id");
+				pwi2.println("	@Id");
+				idImports.add("javax.persistence.Column");
+				pwi2.println("	@Column(name=\"" + column + "\"" + (length != null && !length.isEmpty() ? ", length = " + length : "") + ")");
+				pwi2.println("	public "+type+" get"+name+"() { return i"+name+"; }");
+				pwi2.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 				hasProperty = true;
 			}
+			
+			pwi1.flush(); pwi1.close();
+			pwi2.flush(); pwi2.close();
+			idType = className + "Id";
+			PrintWriter pwc = new PrintWriter(new FileWriter(new File(fileFromPackage(outputFolder, pkg + ".base"), className + "Id.java")));
+			license(pwc);
+			pwc.println("package "+pkg+".base;");
+			pwc.println();
+			String last = null;
+			idImports.add("javax.persistence.MappedSuperclass");
+			for (String imp: idImports) {
+				String top = imp.substring(0, imp.indexOf('.'));
+				if (last!=null && !last.equals(top)) pwc.println();
+				pwc.println("import "+imp+";");
+				last = top;
+			}
+			pwc.println("import "+pkg+"." + className + ";");
+			pwc.println();
+			pwc.println("/**");
+			pwc.println(" * Do not change this class. It has been automatically generated using ant create-model.");
+			pwc.println(" * @see org.unitime.commons.ant.CreateBaseModelFromXml");
+			pwc.println(" */");
+			pwc.println("@MappedSuperclass");
+			pwc.println("public class "+className+"Id implements Serializable {");
+			pwc.println("	private static final long serialVersionUID = 1L;");
+			pwc.println();
+			pwc.print(id1.getBuffer());
+			pwc.println();
+			pwc.println("	public " + className + "Id() {}");
+			pwc.println();
+			pwc.print("	public " + className + "Id(");
+			for (Iterator<String[]> j = cargs.iterator(); j.hasNext(); ) {
+				String[] carg = j.next();
+				pwc.print(carg[0] + " " + carg[2]);
+				if (j.hasNext()) pwc.print(", ");
+			}
+			pwc.println(") {");
+			for (Iterator<String[]> j = cargs.iterator(); j.hasNext(); ) {
+				String[] carg = j.next();
+				pwc.println("		" + carg[1] + " = " + carg[2] + ";");  
+			}
+			pwc.println("	}");
+			pwc.print(id2.getBuffer());
+			pwc.println();
+			pwc.println();
+			String x = className.substring(0,1).toLowerCase()+className.substring(1);
+			pwc.println("	@Override");
+			pwc.println("	public boolean equals(Object o) {");
+			pwc.println("		if (o == null || !(o instanceof "+className+")) return false;");
+			pwc.println("		"+className+" "+x+" = ("+className+")o;");
+			for (String[] typeName: compositeId) {
+				String name = typeName[1];
+				pwc.println("		if (get"+name+"() == null || "+x+".get"+name+"() == null || !get"+name+"().equals("+x+".get"+name+"())) return false;");
+			}
+			pwc.println("		return true;");
+			pwc.println("	}");
+			pwc.println();
+			pwc.println("	@Override");
+			pwc.println("	public int hashCode() {");
+			String xor = "", isNull = "";
+			for (String[] typeName: compositeId) {
+				String name = typeName[1];
+				if (!xor.isEmpty()) { xor += " ^ "; isNull += " || "; }
+				xor += "get"+name+"().hashCode()";
+				isNull += "get"+name+"() == null";
+			}
+			pwc.println("		if ("+isNull+") return super.hashCode();");
+			pwc.println("		return "+xor+";");
+			pwc.println("	}");
+			pwc.println();			
+			pwc.println("}");
+			pwc.flush(); pwc.close();
 		}
 		for (Iterator<Element> i = classEl.elementIterator("property"); i.hasNext();) {
 			Element el = i.next();
@@ -334,8 +560,8 @@ public class CreateBaseModelFromXml extends Task {
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
 			String name = fixName(el.attributeValue("name"));
-			// boolean notNul = "true".equals(el.attributeValue("not-null"));
-			// int length = Integer.parseInt(el.attributeValue("length","0"));
+			boolean notNul = "true".equals(el.attributeValue("not-null"));
+			String length = el.attributeValue("length");
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
@@ -344,14 +570,20 @@ public class CreateBaseModelFromXml extends Task {
 				pwa.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
-				pwp.println("	public static String PROP_"+column.toUpperCase()+" = \""+name.substring(0, 1).toLowerCase()+name.substring(1)+"\";");
-				if (type.equals("Boolean"))
+				imports.add("javax.persistence.Column");
+				pwb.println("	@Column(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + (length != null && !length.isEmpty() ? ", length = " + length : "") + ")");
+				if (type.equals("Boolean")) {
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
+					imports.add("javax.persistence.Transient");
+					pwb.println("	@Transient");
+				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 			} else if (formula!=null) {
 				pwa.println("	private "+type+" i"+name+";");
 				pwb.println();
+				imports.add("org.hibernate.annotations.Formula");
+				pwb.println("	@Formula(\"" + formula + "\")");
 				if (type.equals("Boolean"))
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
@@ -369,22 +601,74 @@ public class CreateBaseModelFromXml extends Task {
 				imports.add(type);
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
-			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
+			boolean lazy = "true".equals(el.attributeValue("lazy")) || "proxy".equals(el.attributeValue("lazy"));
+			boolean eager = "false".equals(el.attributeValue("lazy"));
+			boolean join = "join".equals(el.attributeValue("fetch"));
+			String cascade = el.attributeValue("cascade");
 			String name = fixName(el.attributeValue("name"));
-			// boolean notNul = "true".equals(el.attributeValue("not-null"));
+			boolean notNul = "true".equals(el.attributeValue("not-null"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
+			if (lazy || join || eager) imports.add("javax.persistence.FetchType");
+			if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
+			else if ("save-update".equals(cascade)) {}
+			else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+			else if ("delete-orphan".equals(cascade)) {}
+			else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
 			if (column!=null) {
 				pwa.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
 				manyToOnes.add(new String[] {type, name});
+				imports.add("javax.persistence.ManyToOne");
+				
+				pwb.println(annotation("ManyToOne",
+						"optional = " +  (notNul ? "false" : "true"),
+						(lazy ? "fetch = FetchType.LAZY" : join || eager ? "fetch = FetchType.EAGER" : null),
+						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						));
+				imports.add("javax.persistence.JoinColumn");
+				pwb.println("	@JoinColumn(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + ")");
+				if (lazy || eager || join || el.element("cache") != null) {
+					imports.add("org.hibernate.annotations.Cache");
+					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+				}
+				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
+				}
+				if ("save-update".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else if (formula!=null) {
 				pwa.println("	private "+type+" i"+name+";");
 				pwb.println();
+				imports.add("javax.persistence.ManyToOne");
+				pwb.println(annotation("ManyToOne",
+						(lazy ? "fetch = FetchType.LAZY" : join ? "fetch = FetchType.EAGER" : null),
+						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						));
+				imports.add("org.hibernate.annotations.JoinFormula");
+				pwb.println("	@JoinFormula(\"" + formula + "\")");
+				if (lazy || eager || join || el.element("cache") != null) {
+					imports.add("org.hibernate.annotations.Cache");
+					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+				}
+				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
+				}
+				if ("save-update".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else {
@@ -395,32 +679,143 @@ public class CreateBaseModelFromXml extends Task {
 			Element el = i.next();
 			String type = null;
 			String name = fixName(el.attributeValue("name"));
-			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
-			// String cascade = el.attributeValue("cascade");
+			boolean lazy = "true".equals(el.attributeValue("lazy")) || "proxy".equals(el.attributeValue("lazy"));
+			boolean eager = "false".equals(el.attributeValue("lazy"));
+			boolean inverse = "true".equals(el.attributeValue("inverse","false"));
+			boolean notNul = "true".equals(el.attributeValue("not-null"));
+			String cascade = el.attributeValue("cascade");
 			pwb.println();
 			if (el.element("many-to-many")!=null) {
-				// String column = el.element("key").attributeValue("column").toLowerCase();
-				// String icolumn = el.element("many-to-many").attributeValue("column").toLowerCase();
-				// String m2mtable = el.attributeValue("table").toLowerCase();
+				String column = null;
+				try {
+					column = el.element("key").attributeValue("column").toLowerCase();
+				} catch (NullPointerException e) {}
+				String icolumn = el.element("many-to-many").attributeValue("column").toLowerCase();
+				String m2mtable = el.attributeValue("table").toLowerCase();
 				type = fixType(el.element("many-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
+				imports.add("javax.persistence.ManyToMany");
+				if (lazy || eager) imports.add("javax.persistence.FetchType");
+				if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) {}
+				else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				else if ("delete-orphan".equals(cascade)) {}
+				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
+				if (inverse) {
+					pwb.println(annotation("ManyToMany",
+							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
+							"mappedBy = \"" + iRelations.get(className + "." + icolumn) + "\"",
+							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+							));
+				} else {
+					pwb.println(annotation("ManyToMany",
+							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
+							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+							));
+					imports.add("javax.persistence.JoinTable");
+					imports.add("javax.persistence.JoinColumn");
+					pwb.println("	@JoinTable(name = \"" + m2mtable + "\",");
+					if (column == null) {
+						pwb.println("		joinColumns = {");
+						for (Iterator<Element> j = el.element("key").elementIterator("column"); j.hasNext();) {
+							Element colEl = j.next();
+							String col = colEl.attributeValue("name").toLowerCase();
+							pwb.println("			@JoinColumn(name = \"" + col + "\")" + (j.hasNext() ? "," : ""));
+						}
+						pwb.println("		},");
+					} else {
+						pwb.println("		joinColumns = { @JoinColumn(name = \"" + column + "\") },");
+					}
+					pwb.println("		inverseJoinColumns = { @JoinColumn(name = \"" + icolumn + "\") })");
+				}
+				if (lazy || eager || el.element("cache") != null) {
+					imports.add("org.hibernate.annotations.Cache");
+					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
+				}
+				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
+				}
+				if ("save-update".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+				}
 			} else if (el.element("one-to-many")!=null) {
-				// String column = el.element("key").attributeValue("column").toLowerCase();
+				String column = el.element("key").attributeValue("column").toLowerCase();
 				type = fixType(el.element("one-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
+				imports.add("javax.persistence.OneToMany");
+				if (lazy || eager) imports.add("javax.persistence.FetchType");
+				if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) {}
+				else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				else if ("delete-orphan".equals(cascade)) {}
+				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
+				if (inverse) {
+					pwb.println(annotation("OneToMany",
+							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
+							"mappedBy = \"" + iRelations.get(type + "." + column) + "\"",
+							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}, orphanRemoval = true" : null),
+							("delete-orphan".equals(cascade) ? "orphanRemoval = true" : null)
+							));
+				} else {
+					pwb.println(annotation("OneToMany",
+							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
+							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}, orphanRemoval = true" : null),
+							("delete-orphan".equals(cascade) ? "orphanRemoval = true" : null)
+							));
+					imports.add("javax.persistence.JoinColumn");
+					if (column == null)  {
+						imports.add("javax.persistence.JoinColumns");
+						pwb.println("	@JoinColumns({");
+						for (Iterator<Element> j = el.element("key").elementIterator("column"); j.hasNext();) {
+							Element colEl = j.next();
+							String col = colEl.attributeValue("name").toLowerCase();
+							pwb.println("		@JoinColumn(name = \"" + col + "\")" + (j.hasNext() ? "," : ""));
+						}
+						pwb.println("	})");
+					} else {
+						pwb.println("	@JoinColumn(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + ")");
+					}
+				}
+				if (lazy || eager || el.element("cache") != null) {
+					imports.add("org.hibernate.annotations.Cache");
+					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
+				}
+				if ("save-update".equals(cascade)) {
+					imports.add("org.hibernate.annotations.Cascade");
+					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+				}
 			} else if (el.element("element")!=null) {
+				String m2mtable = el.attributeValue("table").toLowerCase();
+				String keyColumn = el.element("key").attributeValue("column").toLowerCase();
+				String elColumn = el.element("element").attributeValue("column").toLowerCase();
 				type = fixType(el.element("element").attributeValue("type"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
+				imports.add("javax.persistence.ElementCollection");
+				pwb.println("	@ElementCollection");
+				imports.add("javax.persistence.CollectionTable");
+				imports.add("javax.persistence.JoinColumn");
+				pwb.println("	@CollectionTable(name = \"" + m2mtable + "\",");
+				pwb.println("		joinColumns = @JoinColumn(name = \"" + keyColumn + "\")");
+				pwb.println("	)");
+				imports.add("javax.persistence.Column");
+				pwb.println("	@Column(name = \"" + elColumn + "\")");
 			} else {
 				System.err.println("Unknown type of set");
 			}
@@ -435,20 +830,28 @@ public class CreateBaseModelFromXml extends Task {
 			pwb.println("		i"+name+".add("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
 			pwb.println("	}");
 		}
-		pwa.flush(); pwa.close();
-		pwb.flush(); pwb.close();
-		pwp.flush(); pwp.close();
 		
-		imports.add("java.io.Serializable");
+		if (serializable)
+			imports.add("java.io.Serializable");
 		boolean abs = "true".equals(classEl.attributeValue("abstract","false"));
 		ext = fixType(ext, pkg);
 		if (ext != null && ext.indexOf('.')>=0) {
-			imports.add(ext);
+			if (!ext.startsWith(pkg + ".base.")) imports.add(ext);
 			ext = ext.substring(ext.lastIndexOf('.')+1);
 		}
 		if (idName != null || !compositeId.isEmpty())
 			imports.add(fixType(classEl.attributeValue("name"), pkg));
+		if (abs && discriminator == null && "class".equals(classEl.getName())) {
+			mainImports.add("javax.persistence.Inheritance");
+			mainImports.add("javax.persistence.InheritanceType");
+			pwmh.println("@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)");
+		}
 		
+		pwa.flush(); pwa.close();
+		pwb.flush(); pwb.close();
+		pwh.flush(); pwh.close();
+		pwmh.flush(); pwmh.close();
+
 		// Base class
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(fileFromPackage(outputFolder, pkg + ".base"), "Base" + className + ".java")));
 		license(pw);
@@ -466,26 +869,24 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println(" * Do not change this class. It has been automatically generated using ant create-model.");
 		pw.println(" * @see org.unitime.commons.ant.CreateBaseModelFromXml");
 		pw.println(" */");
-		pw.println("public abstract class Base"+className+(ext==null?"":" extends "+ext)+" implements Serializable {");
+		pw.print(header.getBuffer());
+		pw.println("public abstract class Base"+className+(ext==null?"":" extends "+ext)+(serializable ? " implements Serializable":"") + " {");
 		pw.println("	private static final long serialVersionUID = 1L;");
 		pw.println();
 		pw.print(attributes.getBuffer());
-		pw.println();
-		pw.print(props.getBuffer());
-		pw.println();
-		pw.println("	public Base"+className+"() {");
-		pw.println("		initialize();");
-		pw.println("	}");
+		if (constructor) {
+			pw.println();
+			pw.println("	public Base"+className+"() {");
+			pw.println("	}");
+		}
 		if (idName != null) {
 			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
 			pw.println();
 			pw.println("	public Base"+className+"("+idType+" "+x+") {");
 			pw.println("		set"+idName+"(" + x + ");");
-			pw.println("		initialize();");
 			pw.println("	}");
 		}
 		pw.println();
-		pw.println("	protected void initialize() {}");
 		pw.print(body.getBuffer());
 		iClassProperties.put(className, properties);
 		if (ext!=null && iClassProperties.containsKey(ext)) {
@@ -493,18 +894,25 @@ public class CreateBaseModelFromXml extends Task {
 		}
 		if (idName!=null) {
 			if (idClass==null) idClass = className;
+			if (equals) {
+				pw.println();
+				pw.println("	@Override");
+				pw.println("	public boolean equals(Object o) {");
+				pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
+				pw.println("		if (get"+idName+"() == null || (("+className+")o).get"+idName+"() == null) return false;");
+				pw.println("		return get"+idName+"().equals((("+className+")o).get"+idName+"());");
+				pw.println("	}");
+			}
+			if (hashCode) {
+				pw.println();
+				pw.println("	@Override");
+				pw.println("	public int hashCode() {");
+				pw.println("		if (get"+idName+"() == null) return super.hashCode();");
+				pw.println("		return get"+idName+"().hashCode();");
+				pw.println("	}");
+			}
 			pw.println();
-			pw.println("	public boolean equals(Object o) {");
-			pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
-			pw.println("		if (get"+idName+"() == null || (("+className+")o).get"+idName+"() == null) return false;");
-			pw.println("		return get"+idName+"().equals((("+className+")o).get"+idName+"());");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public int hashCode() {");
-			pw.println("		if (get"+idName+"() == null) return super.hashCode();");
-			pw.println("		return get"+idName+"().hashCode();");
-			pw.println("	}");
-			pw.println();
+			pw.println("	@Override");
 			pw.println("	public String toString() {");
 			if (properties.contains("Name"))
 				pw.println("		return \""+className+"[\"+get"+idName+"()+\" \"+getName()+\"]\";");
@@ -516,6 +924,7 @@ public class CreateBaseModelFromXml extends Task {
 		} else if (!compositeId.isEmpty()) {
 			String x = className.substring(0,1).toLowerCase()+className.substring(1);
 			pw.println();
+			pw.println("	@Override");
 			pw.println("	public boolean equals(Object o) {");
 			pw.println("		if (o == null || !(o instanceof "+className+")) return false;");
 			pw.println("		"+className+" "+x+" = ("+className+")o;");
@@ -526,6 +935,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("		return true;");
 			pw.println("	}");
 			pw.println();
+			pw.println("	@Override");
 			pw.println("	public int hashCode() {");
 			String xor = "", isNull = "";
 			for (String[] typeName: compositeId) {
@@ -571,15 +981,79 @@ public class CreateBaseModelFromXml extends Task {
 			license(pw);
 			pw.println("package "+pkg+";");
 			pw.println();
+			last = null;
+			for (String imp: mainImports) {
+				String top = imp.substring(0, imp.indexOf('.'));
+				if (last!=null && !last.equals(top)) pw.println();
+				pw.println("import "+imp+";");
+				last = top;
+			}
 			pw.println("import "+pkg+".base.Base"+className+";");
 			pw.println();
+			pw.print(mainHeader.getBuffer());
 			pw.println("public"+(abs?" abstract":"")+" class "+className+" extends Base"+className+" {");
 			pw.println();
-			pw.println("	public " + className + "() {");
-			pw.println("		super();");
-			pw.println("	}");
-			pw.println();
 			pw.println("}");
+			pw.flush(); pw.close();
+		} else {
+			List<String> file = new ArrayList<String>();
+			BufferedReader br = new BufferedReader(new FileReader(mainFile));
+			String readLine = null;
+			Pattern importPattern = Pattern.compile("import ([^;]*);");
+			
+			Set<String> existingImports = new HashSet<String>();
+			boolean needTransient = false;
+			while ((readLine = br.readLine()) != null) {
+				Matcher importMatcher = importPattern.matcher(readLine);
+				if (importMatcher.matches()) {
+					String imp = importMatcher.group(1);
+					existingImports.add(imp);
+				}
+				if (readLine.matches("[\t ]*(public|private|protected)[\t ]*[a-zA-Z<>\\., _\\[\\]\\?]+[\t ]+(get|is)[A-Za-z0-9_]+\\(\\).*")) {
+					mainImports.add("javax.persistence.Transient");
+					needTransient = true;
+				}
+				file.add(readLine);
+			}
+			br.close();
+			
+			pw = new PrintWriter(new FileWriter(mainFile));
+			boolean printedImports = false;
+			boolean classLine = false;
+			String prev = null;
+			for (String line: file) {
+				if (!printedImports && importPattern.matcher(line).matches()) {
+					boolean printedAtLeastOne = false;
+					for (String imp: mainImports) {
+						if (!existingImports.contains(imp)) {
+							pw.println("import "+imp+";");
+							printedAtLeastOne = true;
+						}
+					}
+					if (printedAtLeastOne) pw.println();
+					printedImports = true;
+				}
+				Matcher importMatcher = importPattern.matcher(line);
+				if (importMatcher.matches()) {
+					String imp = importMatcher.group(1);
+					if ("javax.persistence.Transient".equals(imp) && !needTransient) continue;
+				}
+				if (!classLine && line.startsWith("@Entity")) continue;
+				if (!classLine && line.startsWith("@Cache")) continue;
+				if (!classLine && line.startsWith("@Table")) continue;
+				if (!classLine && line.startsWith("@Inheritance")) continue;
+				if (!classLine && line.startsWith("@Discriminator")) continue;
+				if (line.equals("	@Transient")) continue;
+				if (!classLine && (line.startsWith("public class ") || line.startsWith("public abstract class "))) {
+					pw.print(mainHeader.toString());
+					classLine = true;
+				}
+				if (line.matches("[\t ]*(public|private|protected)[\t ]*[a-zA-Z<>\\., _\\[\\]\\?]+[\t ]+(get|is)[A-Za-z0-9_]+\\(\\).*") && !"	@Transient".equals(prev)) {
+					pw.println("	@Transient");
+				}
+				pw.println(line);
+				prev = line;
+			}
 			pw.flush(); pw.close();
 		}
 		
@@ -600,6 +1074,8 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println(" */");
 		if (idType == null)
 			pw.println("import java.io.Serializable;");
+		else if (idType.endsWith("Id"))
+			pw.println("import " + pkg + ".base." + idType + ";");
 		if (!manyToOnes.isEmpty())
 			pw.println("import java.util.List;");
 		pw.println("import "+pkg+"."+className+";");

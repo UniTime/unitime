@@ -21,6 +21,13 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.Preference;
@@ -29,37 +36,40 @@ import org.unitime.timetable.model.Preference;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExamPeriodPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private ExamPeriod iExamPeriod;
 
-
 	public BaseExamPeriodPref() {
-		initialize();
 	}
 
 	public BaseExamPeriodPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "period_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public ExamPeriod getExamPeriod() { return iExamPeriod; }
 	public void setExamPeriod(ExamPeriod examPeriod) { iExamPeriod = examPeriod; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamPeriodPref)) return false;
 		if (getUniqueId() == null || ((ExamPeriodPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExamPeriodPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExamPeriodPref["+getUniqueId()+"]";
 	}

@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -37,6 +47,9 @@ import org.unitime.timetable.model.dao.ApplicationConfigDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "application_config")
 public class ApplicationConfig extends BaseApplicationConfig {
 	private static final long serialVersionUID = 1L;
 	public static final String APP_CFG_ATTR_NAME = "appConfig";

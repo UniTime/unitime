@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -44,6 +50,8 @@ import org.unitime.timetable.model.dao._RootDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "distribution_pref")
 public class DistributionPref extends BaseDistributionPref {
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 1L;
@@ -62,6 +70,7 @@ public class DistributionPref extends BaseDistributionPref {
 		OneOfEach,
 		;
 		
+	@Transient
 		public String getDescription() {
 			switch (this) {
 			case AllClasses: return MSG.distributionStructureDescriptionAllClasses();
@@ -76,6 +85,7 @@ public class DistributionPref extends BaseDistributionPref {
 			}
 		}
 		
+	@Transient
 		public String getName() {
 			switch (this) {
 			case AllClasses: return MSG.distributionStructureNameAllClasses();
@@ -304,6 +314,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return equals(other);
     }
     /** Ordered set of distribution objects */
+	@Transient
     public Set<DistributionObject> getOrderedSetOfDistributionObjects() {
     	try {
     		return new TreeSet<DistributionObject>(getDistributionObjects());
@@ -313,10 +324,12 @@ public class DistributionPref extends BaseDistributionPref {
     	}
     }
     
+	@Transient
     public String getStructureName() {
     	return (getStructure() == null ? null : getStructure().getName());
     }
     
+	@Transient
     public String getStructureDescription() {
     	return (getStructure() == null ? null : getStructure().getDescription());
     }
@@ -534,6 +547,7 @@ public class DistributionPref extends BaseDistributionPref {
         };
     }
     
+	@Transient
     public Structure getStructure() {
     	if (getGrouping() == null || getGrouping() < 0) return null;
     	return Structure.values()[getGrouping()];
@@ -543,15 +557,18 @@ public class DistributionPref extends BaseDistributionPref {
     	setGrouping(structure.ordinal());
     }
     
+	@Transient
     public String getLabel() {
     	String label = getDistributionType().getLabel();
     	return getStructure() == null ? label : getStructure().getLabel(label);
     }
     
+	@Transient
     public String getAbbreviation() {
     	String abbv = getDistributionType().getAbbreviation();
     	return getStructure() == null ? abbv : getStructure().getAbbreviation(abbv);
     }
     
+	@Transient
     public Type getType() { return Type.DISTRIBUTION; }
 }

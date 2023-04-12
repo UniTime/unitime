@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Staff;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.Staff;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStaff implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -43,68 +53,74 @@ public abstract class BaseStaff implements Serializable {
 
 	private PositionType iPositionType;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_FNAME = "firstName";
-	public static String PROP_MNAME = "middleName";
-	public static String PROP_LNAME = "lastName";
-	public static String PROP_DEPT = "dept";
-	public static String PROP_EMAIL = "email";
-	public static String PROP_ACAD_TITLE = "academicTitle";
-	public static String PROP_CAMPUS = "campus";
-
 	public BaseStaff() {
-		initialize();
 	}
 
 	public BaseStaff(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "staff_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "staff_seq")
+	})
+	@GeneratedValue(generator = "staff_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "fname", nullable = true, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "mname", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "lname", nullable = false, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "dept", nullable = true, length = 50)
 	public String getDept() { return iDept; }
 	public void setDept(String dept) { iDept = dept; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Column(name = "acad_title", nullable = true, length = 50)
 	public String getAcademicTitle() { return iAcademicTitle; }
 	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
+	@Column(name = "campus", nullable = true, length = 20)
 	public String getCampus() { return iCampus; }
 	public void setCampus(String campus) { iCampus = campus; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "pos_type", nullable = true)
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Staff)) return false;
 		if (getUniqueId() == null || ((Staff)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Staff)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Staff["+getUniqueId()+"]";
 	}

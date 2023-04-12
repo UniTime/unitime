@@ -19,8 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseExternalDepartmentStatusType;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "ext_dept_status")
 public class ExternalDepartmentStatusType extends BaseExternalDepartmentStatusType {
 	private static final long serialVersionUID = 1L;
 

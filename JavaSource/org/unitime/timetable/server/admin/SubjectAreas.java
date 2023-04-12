@@ -432,7 +432,9 @@ public class SubjectAreas implements AdminTable {
 			}
     	}
 
-		for (InstructionalOffering io: new ArrayList<InstructionalOffering>(area.getInstructionalOfferings())) {
+		for (CourseOffering co: area.getCourseOfferings()) {
+			if (!co.isIsControl()) continue; 
+			InstructionalOffering io = co.getInstructionalOffering();
 			io.deleteAllDistributionPreferences(hibSession);
 			io.deleteAllClasses(hibSession);
 			io.deleteAllCourses(hibSession);

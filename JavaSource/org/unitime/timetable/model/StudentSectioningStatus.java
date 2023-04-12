@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,6 +42,8 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "sectioning_status")
 public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	private static final long serialVersionUID = -33276457852954947L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -68,6 +76,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 			iName = name;
 		}
 		
+	@Transient
 		public String getName() { return iName; }
 		
 		public int toggle() { return 1 << ordinal(); }
@@ -134,6 +143,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		}
 	}
 	
+	@Transient
 	public boolean isEffectiveNow() {
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 		int slot = 12 * cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 5;
@@ -149,6 +159,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		return true;
 	}
 	
+	@Transient
 	public boolean isPast() {
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 		int slot = 12 * cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 5;
@@ -191,6 +202,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		return true;
 	}
 	
+	@Transient
 	public String getEffectivePeriod() {
 		String start = null, stop = null;
 		if (getEffectiveStartDate() != null || getEffectiveStartPeriod() != null) {

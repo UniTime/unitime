@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -44,6 +54,9 @@ import org.unitime.timetable.security.UserContext;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "sectioning_queue")
 public class StudentSectioningQueue extends BaseStudentSectioningQueue implements Comparable<StudentSectioningQueue> {
 	private static final long serialVersionUID = 8492171207847794888L;
 
@@ -93,6 +106,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			
 	}
 	
+	@Transient
 	public Document getMessage() {
 		try {
 			return new SAXReader().read(new StringReader(getData()));
@@ -162,6 +176,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		hibSession.save(q);
 	}
 	
+	@Transient
 	public List<Long> getIds() {
 		if (getMessage() == null) return null;
 		Element root = getMessage().getRootElement();
@@ -172,6 +187,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		return ids;
 	}
 	
+	@Transient
 	public OnlineSectioningLog.Entity getUser() {
 		if (getMessage() == null) return null;
 		Element root = getMessage().getRootElement();

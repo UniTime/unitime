@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -29,6 +35,8 @@ import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "dept_status_type")
 public class DepartmentStatusType extends BaseDepartmentStatusType implements Comparable{
 	private static final long serialVersionUID = 1L;
 	
@@ -216,10 +224,12 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
     	return can(Status.StudentsOnline);
     }
     
+	@Transient
     public boolean isTestSession() {
     	return can(Status.TestSession);
     }
     
+	@Transient
     public boolean isInstructorSurveyEnabled() {
 		return can(Status.InstructorSurvey);
 	}
@@ -248,19 +258,23 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		return apply(Apply.ExamStatus.toInt());
 	}
 	
+	@Transient
 	public boolean isAllowNoRole() {
 		return can(Status.AllowNoRole);
 	}
 	
+	@Transient
 	public boolean isAllowRollForward() {
 		return can(Status.AllowRollForward);
 	}
 	
+	@Transient
 	public boolean isEventManagement() {
 		return can(Status.EventManagement);
 	}
 	
 	/** Status is active when someone can edit, timetable or commit*/
+	@Transient
 	public boolean isActive() {
 	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit() || canExamEdit() || canExamTimetable() || canNoRoleReport();
 	}

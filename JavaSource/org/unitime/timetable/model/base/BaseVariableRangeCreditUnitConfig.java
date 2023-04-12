@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 
@@ -28,47 +32,47 @@ import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseVariableRangeCreditUnitConfig extends VariableFixedCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Boolean iFractionalIncrementsAllowed;
 
 
-	public static String PROP_FRACTIONAL_INCR_ALLOWED = "fractionalIncrementsAllowed";
-
 	public BaseVariableRangeCreditUnitConfig() {
-		initialize();
 	}
 
 	public BaseVariableRangeCreditUnitConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "fractional_incr_allowed", nullable = true)
 	public Boolean isFractionalIncrementsAllowed() { return iFractionalIncrementsAllowed; }
+	@Transient
 	public Boolean getFractionalIncrementsAllowed() { return iFractionalIncrementsAllowed; }
 	public void setFractionalIncrementsAllowed(Boolean fractionalIncrementsAllowed) { iFractionalIncrementsAllowed = fractionalIncrementsAllowed; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof VariableRangeCreditUnitConfig)) return false;
 		if (getUniqueId() == null || ((VariableRangeCreditUnitConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((VariableRangeCreditUnitConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "VariableRangeCreditUnitConfig["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "VariableRangeCreditUnitConfig[" +
-			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
 			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +

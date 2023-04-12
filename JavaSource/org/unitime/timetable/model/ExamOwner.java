@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -41,6 +51,9 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "exam_owner")
 public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	private static final long serialVersionUID = 1L;
 
@@ -76,6 +89,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	
 	
 	private Object iOwnerObject = null;
+	@Transient
 	public Object getOwnerObject() {
 	    if (iOwnerObject!=null) return iOwnerObject;
 	    switch (getOwnerType()) {
@@ -156,6 +170,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         return getOwnerId().compareTo(owner.getOwnerId());
     }
     
+	@Transient
     public List getStudents() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
@@ -194,6 +209,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+	@Transient
     public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
@@ -226,6 +242,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+	@Transient
     public List getStudentIds() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
@@ -781,6 +798,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+	@Transient
     public int getLimit() {
         Object owner = getOwnerObject();
         switch (getOwnerType()) {
@@ -799,6 +817,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+	@Transient
     public int getSize() {
         boolean considerLimit = ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(getExam().getExamType().getReference(), getExam().getExamType().getType() != ExamType.sExamTypeFinal);
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents());
@@ -809,18 +828,22 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents(co));
     }
 
+	@Transient
     public String getLabel() {
         return genName(ApplicationProperties.getProperty("tmtbl.exam.name."+ExamOwner.sOwnerTypes[getOwnerType()]));
     }
 
+	@Transient
     public String getSubject() {
         return getCourse().getSubjectAreaAbbv();
     }
     
+	@Transient
     public String getCourseNbr() {
         return getCourse().getCourseNbr();
     }
     
+	@Transient
     public String getItype() {
         switch (getOwnerType()) {
             case sOwnerTypeClass : 
@@ -838,6 +861,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
+	@Transient
     public String getSection() {
         switch (getOwnerType()) {
             case sOwnerTypeClass :

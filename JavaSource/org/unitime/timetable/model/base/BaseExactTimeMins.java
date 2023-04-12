@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ExactTimeMins;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExactTimeMins implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,49 +45,53 @@ public abstract class BaseExactTimeMins implements Serializable {
 	private Integer iBreakTime;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_MINS_MIN = "minsPerMtgMin";
-	public static String PROP_MINS_MAX = "minsPerMtgMax";
-	public static String PROP_NR_SLOTS = "nrSlots";
-	public static String PROP_BREAK_TIME = "breakTime";
-
 	public BaseExactTimeMins() {
-		initialize();
 	}
 
 	public BaseExactTimeMins(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "exact_time_mins_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "exact_time_mins_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "mins_min", nullable = false, length = 4)
 	public Integer getMinsPerMtgMin() { return iMinsPerMtgMin; }
 	public void setMinsPerMtgMin(Integer minsPerMtgMin) { iMinsPerMtgMin = minsPerMtgMin; }
 
+	@Column(name = "mins_max", nullable = false, length = 4)
 	public Integer getMinsPerMtgMax() { return iMinsPerMtgMax; }
 	public void setMinsPerMtgMax(Integer minsPerMtgMax) { iMinsPerMtgMax = minsPerMtgMax; }
 
+	@Column(name = "nr_slots", nullable = false, length = 4)
 	public Integer getNrSlots() { return iNrSlots; }
 	public void setNrSlots(Integer nrSlots) { iNrSlots = nrSlots; }
 
+	@Column(name = "break_time", nullable = false, length = 3)
 	public Integer getBreakTime() { return iBreakTime; }
 	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExactTimeMins)) return false;
 		if (getUniqueId() == null || ((ExactTimeMins)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExactTimeMins)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExactTimeMins["+getUniqueId()+"]";
 	}

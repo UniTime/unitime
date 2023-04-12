@@ -23,10 +23,10 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.SessionConfigId;
 import org.unitime.timetable.model.SessionConfig;
 
-public class SessionConfigDAO extends _RootDAO<SessionConfig,Serializable> {
+public class SessionConfigDAO extends _RootDAO<SessionConfig,SessionConfigId> {
 	private static SessionConfigDAO sInstance;
 
 	public SessionConfigDAO() {}

@@ -24,6 +24,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.Session;
@@ -33,6 +43,7 @@ import org.unitime.timetable.model.StudentSectioningStatus;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentSectioningStatus extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -47,48 +58,54 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	private Session iSession;
 	private Set<CourseType> iTypes;
 
-	public static String PROP_STATUS = "status";
-	public static String PROP_MESSAGE = "message";
-	public static String PROP_START_DATE = "effectiveStartDate";
-	public static String PROP_STOP_DATE = "effectiveStopDate";
-	public static String PROP_START_SLOT = "effectiveStartPeriod";
-	public static String PROP_STOP_SLOT = "effectiveStopPeriod";
-
 	public BaseStudentSectioningStatus() {
-		initialize();
 	}
 
 	public BaseStudentSectioningStatus(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "status", nullable = false)
 	public Integer getStatus() { return iStatus; }
 	public void setStatus(Integer status) { iStatus = status; }
 
+	@Column(name = "message", nullable = true, length = 500)
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
 
+	@Column(name = "start_date", nullable = true)
 	public Date getEffectiveStartDate() { return iEffectiveStartDate; }
 	public void setEffectiveStartDate(Date effectiveStartDate) { iEffectiveStartDate = effectiveStartDate; }
 
+	@Column(name = "stop_date", nullable = true)
 	public Date getEffectiveStopDate() { return iEffectiveStopDate; }
 	public void setEffectiveStopDate(Date effectiveStopDate) { iEffectiveStopDate = effectiveStopDate; }
 
+	@Column(name = "start_slot", nullable = true)
 	public Integer getEffectiveStartPeriod() { return iEffectiveStartPeriod; }
 	public void setEffectiveStartPeriod(Integer effectiveStartPeriod) { iEffectiveStartPeriod = effectiveStartPeriod; }
 
+	@Column(name = "stop_slot", nullable = true)
 	public Integer getEffectiveStopPeriod() { return iEffectiveStopPeriod; }
 	public void setEffectiveStopPeriod(Integer effectiveStopPeriod) { iEffectiveStopPeriod = effectiveStopPeriod; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "fallback_id", nullable = true)
 	public StudentSectioningStatus getFallBackStatus() { return iFallBackStatus; }
 	public void setFallBackStatus(StudentSectioningStatus fallBackStatus) { iFallBackStatus = fallBackStatus; }
 
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "session_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "sectioning_course_types",
+		joinColumns = { @JoinColumn(name = "sectioning_status_id") },
+		inverseJoinColumns = { @JoinColumn(name = "course_type_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CourseType> getTypes() { return iTypes; }
 	public void setTypes(Set<CourseType> types) { iTypes = types; }
 	public void addTotypes(CourseType courseType) {
@@ -96,17 +113,20 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 		iTypes.add(courseType);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentSectioningStatus)) return false;
 		if (getUniqueId() == null || ((StudentSectioningStatus)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentSectioningStatus)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentSectioningStatus["+getUniqueId()+" "+getLabel()+"]";
 	}

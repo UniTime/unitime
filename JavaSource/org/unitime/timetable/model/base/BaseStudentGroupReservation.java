@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.StudentGroupReservation;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentGroupReservation extends Reservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private StudentGroup iGroup;
 
-
 	public BaseStudentGroupReservation() {
-		initialize();
 	}
 
 	public BaseStudentGroupReservation(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "group_id", nullable = false)
 	public StudentGroup getGroup() { return iGroup; }
 	public void setGroup(StudentGroup group) { iGroup = group; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentGroupReservation)) return false;
 		if (getUniqueId() == null || ((StudentGroupReservation)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentGroupReservation)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentGroupReservation["+getUniqueId()+"]";
 	}

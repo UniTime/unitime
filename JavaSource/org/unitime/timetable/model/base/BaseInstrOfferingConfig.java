@@ -23,6 +23,21 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -33,6 +48,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstrOfferingConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -47,48 +63,58 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	private InstructionalMethod iInstructionalMethod;
 	private Set<SchedulingSubpart> iSchedulingSubparts;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CONFIG_LIMIT = "limit";
-	public static String PROP_UNLIMITED_ENROLLMENT = "unlimitedEnrollment";
-	public static String PROP_NAME = "name";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-
 	public BaseInstrOfferingConfig() {
-		initialize();
 	}
 
 	public BaseInstrOfferingConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "instr_offering_config_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "instr_offr_config_seq")
+	})
+	@GeneratedValue(generator = "instr_offering_config_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "config_limit", nullable = false, length = 4)
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }
 
+	@Column(name = "unlimited_enrollment", nullable = false)
 	public Boolean isUnlimitedEnrollment() { return iUnlimitedEnrollment; }
+	@Transient
 	public Boolean getUnlimitedEnrollment() { return iUnlimitedEnrollment; }
 	public void setUnlimitedEnrollment(Boolean unlimitedEnrollment) { iUnlimitedEnrollment = unlimitedEnrollment; }
 
+	@Column(name = "name", nullable = true, length = 20)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "instr_offr_id", nullable = false)
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "duration_type_id", nullable = true)
 	public ClassDurationType getClassDurationType() { return iClassDurationType; }
 	public void setClassDurationType(ClassDurationType classDurationType) { iClassDurationType = classDurationType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "instr_method_id", nullable = true)
 	public InstructionalMethod getInstructionalMethod() { return iInstructionalMethod; }
 	public void setInstructionalMethod(InstructionalMethod instructionalMethod) { iInstructionalMethod = instructionalMethod; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instrOfferingConfig", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<SchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
 	public void addToschedulingSubparts(SchedulingSubpart schedulingSubpart) {
@@ -96,17 +122,20 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 		iSchedulingSubparts.add(schedulingSubpart);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstrOfferingConfig)) return false;
 		if (getUniqueId() == null || ((InstrOfferingConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstrOfferingConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstrOfferingConfig["+getUniqueId()+" "+getName()+"]";
 	}

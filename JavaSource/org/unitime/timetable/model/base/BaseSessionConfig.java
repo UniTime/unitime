@@ -19,45 +19,35 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SessionConfig;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseSessionConfig implements Serializable {
+@MappedSuperclass
+@IdClass(SessionConfigId.class)
+public abstract class BaseSessionConfig extends SessionConfigId {
 	private static final long serialVersionUID = 1L;
 
-	private Session iSession;
-	private String iKey;
 	private String iValue;
 	private String iDescription;
 
 
-	public static String PROP_VALUE = "value";
-	public static String PROP_DESCRIPTION = "description";
 
-	public BaseSessionConfig() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public Session getSession() { return iSession; }
-	public void setSession(Session session) { iSession = session; }
-
-	public String getKey() { return iKey; }
-	public void setKey(String key) { iKey = key; }
-
+	@Column(name = "value", nullable = true, length = 4000)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@Column(name = "description", nullable = true, length = 500)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SessionConfig)) return false;
 		SessionConfig sessionConfig = (SessionConfig)o;
@@ -66,6 +56,7 @@ public abstract class BaseSessionConfig implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getSession() == null || getKey() == null) return super.hashCode();
 		return getSession().hashCode() ^ getKey().hashCode();

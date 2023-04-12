@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PitStudent;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
 import org.unitime.timetable.model.PitStudentAcadAreaMinorClassification;
@@ -34,6 +48,7 @@ import org.unitime.timetable.model.Student;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitStudent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -50,48 +65,55 @@ public abstract class BasePitStudent implements Serializable {
 	private Set<PitStudentAcadAreaMinorClassification> iPitAcadAreaMinorClassifications;
 	private Set<PitStudentClassEnrollment> iPitClassEnrollments;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_FIRST_NAME = "firstName";
-	public static String PROP_MIDDLE_NAME = "middleName";
-	public static String PROP_LAST_NAME = "lastName";
-	public static String PROP_EMAIL = "email";
-
 	public BasePitStudent() {
-		initialize();
 	}
 
 	public BasePitStudent(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_student_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_student_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "first_name", nullable = false, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "middle_name", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "last_name", nullable = false, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "point_in_time_data_id", nullable = false)
 	public PointInTimeData getPointInTimeData() { return iPointInTimeData; }
 	public void setPointInTimeData(PointInTimeData pointInTimeData) { iPointInTimeData = pointInTimeData; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "student_id", nullable = true)
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitStudentAcadAreaMajorClassification> getPitAcadAreaMajorClassifications() { return iPitAcadAreaMajorClassifications; }
 	public void setPitAcadAreaMajorClassifications(Set<PitStudentAcadAreaMajorClassification> pitAcadAreaMajorClassifications) { iPitAcadAreaMajorClassifications = pitAcadAreaMajorClassifications; }
 	public void addTopitAcadAreaMajorClassifications(PitStudentAcadAreaMajorClassification pitStudentAcadAreaMajorClassification) {
@@ -99,6 +121,8 @@ public abstract class BasePitStudent implements Serializable {
 		iPitAcadAreaMajorClassifications.add(pitStudentAcadAreaMajorClassification);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitStudentAcadAreaMinorClassification> getPitAcadAreaMinorClassifications() { return iPitAcadAreaMinorClassifications; }
 	public void setPitAcadAreaMinorClassifications(Set<PitStudentAcadAreaMinorClassification> pitAcadAreaMinorClassifications) { iPitAcadAreaMinorClassifications = pitAcadAreaMinorClassifications; }
 	public void addTopitAcadAreaMinorClassifications(PitStudentAcadAreaMinorClassification pitStudentAcadAreaMinorClassification) {
@@ -106,6 +130,8 @@ public abstract class BasePitStudent implements Serializable {
 		iPitAcadAreaMinorClassifications.add(pitStudentAcadAreaMinorClassification);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitStudentClassEnrollment> getPitClassEnrollments() { return iPitClassEnrollments; }
 	public void setPitClassEnrollments(Set<PitStudentClassEnrollment> pitClassEnrollments) { iPitClassEnrollments = pitClassEnrollments; }
 	public void addTopitClassEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
@@ -113,17 +139,20 @@ public abstract class BasePitStudent implements Serializable {
 		iPitClassEnrollments.add(pitStudentClassEnrollment);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitStudent)) return false;
 		if (getUniqueId() == null || ((PitStudent)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitStudent)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitStudent["+getUniqueId()+"]";
 	}

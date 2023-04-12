@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseStandardEventNoteSession;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("session")
 public class StandardEventNoteSession extends BaseStandardEventNoteSession {
 	private static final long serialVersionUID = 1L;
 

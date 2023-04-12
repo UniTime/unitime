@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.InstructorAttributeType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstructorAttributeType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,39 +40,40 @@ public abstract class BaseInstructorAttributeType extends RefTableEntry implemen
 	private Boolean iRequired;
 
 
-	public static String PROP_CONJUNCTIVE = "conjunctive";
-	public static String PROP_REQUIRED = "required";
-
 	public BaseInstructorAttributeType() {
-		initialize();
 	}
 
 	public BaseInstructorAttributeType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "conjunctive", nullable = false)
 	public Boolean isConjunctive() { return iConjunctive; }
+	@Transient
 	public Boolean getConjunctive() { return iConjunctive; }
 	public void setConjunctive(Boolean conjunctive) { iConjunctive = conjunctive; }
 
+	@Column(name = "required", nullable = false)
 	public Boolean isRequired() { return iRequired; }
+	@Transient
 	public Boolean getRequired() { return iRequired; }
 	public void setRequired(Boolean required) { iRequired = required; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructorAttributeType)) return false;
 		if (getUniqueId() == null || ((InstructorAttributeType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstructorAttributeType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstructorAttributeType["+getUniqueId()+" "+getLabel()+"]";
 	}

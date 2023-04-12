@@ -21,6 +21,16 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingRequest;
@@ -29,6 +39,7 @@ import org.unitime.timetable.model.TeachingRequest;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTeachingClassRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,63 +53,75 @@ public abstract class BaseTeachingClassRequest implements Serializable {
 	private TeachingRequest iTeachingRequest;
 	private Class_ iTeachingClass;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PERCENT_SHARE = "percentShare";
-	public static String PROP_IS_LEAD = "lead";
-	public static String PROP_CAN_OVERLAP = "canOverlap";
-	public static String PROP_ASSIGN_INSTRUCTOR = "assignInstructor";
-	public static String PROP_COMMON = "common";
-
 	public BaseTeachingClassRequest() {
-		initialize();
 	}
 
 	public BaseTeachingClassRequest(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "teachreq_class_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "teachreq_class_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "percent_share", nullable = false)
 	public Integer getPercentShare() { return iPercentShare; }
 	public void setPercentShare(Integer percentShare) { iPercentShare = percentShare; }
 
+	@Column(name = "is_lead", nullable = false)
 	public Boolean isLead() { return iLead; }
+	@Transient
 	public Boolean getLead() { return iLead; }
 	public void setLead(Boolean lead) { iLead = lead; }
 
+	@Column(name = "can_overlap", nullable = false)
 	public Boolean isCanOverlap() { return iCanOverlap; }
+	@Transient
 	public Boolean getCanOverlap() { return iCanOverlap; }
 	public void setCanOverlap(Boolean canOverlap) { iCanOverlap = canOverlap; }
 
+	@Column(name = "assign_instructor", nullable = false)
 	public Boolean isAssignInstructor() { return iAssignInstructor; }
+	@Transient
 	public Boolean getAssignInstructor() { return iAssignInstructor; }
 	public void setAssignInstructor(Boolean assignInstructor) { iAssignInstructor = assignInstructor; }
 
+	@Column(name = "common", nullable = false)
 	public Boolean isCommon() { return iCommon; }
+	@Transient
 	public Boolean getCommon() { return iCommon; }
 	public void setCommon(Boolean common) { iCommon = common; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "request_id", nullable = false)
 	public TeachingRequest getTeachingRequest() { return iTeachingRequest; }
 	public void setTeachingRequest(TeachingRequest teachingRequest) { iTeachingRequest = teachingRequest; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "class_id", nullable = false)
 	public Class_ getTeachingClass() { return iTeachingClass; }
 	public void setTeachingClass(Class_ teachingClass) { iTeachingClass = teachingClass; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TeachingClassRequest)) return false;
 		if (getUniqueId() == null || ((TeachingClassRequest)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TeachingClassRequest)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TeachingClassRequest["+getUniqueId()+"]";
 	}

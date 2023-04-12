@@ -24,6 +24,23 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JoinFormula;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.Solution;
@@ -36,6 +53,7 @@ import org.unitime.timetable.model.StudentEnrollment;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSolution implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -57,60 +75,74 @@ public abstract class BaseSolution implements Serializable {
 	private Set<Assignment> iAssignments;
 	private Set<JointEnrollment> iJointEnrollments;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CREATED = "created";
-	public static String PROP_VALID = "valid";
-	public static String PROP_COMMITED = "commited";
-	public static String PROP_COMMIT_DATE = "commitDate";
-	public static String PROP_NOTE = "note";
-	public static String PROP_CREATOR = "creator";
-
 	public BaseSolution() {
-		initialize();
 	}
 
 	public BaseSolution(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "solution_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "solution_seq")
+	})
+	@GeneratedValue(generator = "solution_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "created", nullable = false)
 	public Date getCreated() { return iCreated; }
 	public void setCreated(Date created) { iCreated = created; }
 
+	@Column(name = "valid", nullable = false)
 	public Boolean isValid() { return iValid; }
+	@Transient
 	public Boolean getValid() { return iValid; }
 	public void setValid(Boolean valid) { iValid = valid; }
 
+	@Column(name = "commited", nullable = false)
 	public Boolean isCommited() { return iCommited; }
+	@Transient
 	public Boolean getCommited() { return iCommited; }
 	public void setCommited(Boolean commited) { iCommited = commited; }
 
+	@Column(name = "commit_date", nullable = true)
 	public Date getCommitDate() { return iCommitDate; }
 	public void setCommitDate(Date commitDate) { iCommitDate = commitDate; }
 
+	@Column(name = "note", nullable = true, length = 1000)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@Column(name = "creator", nullable = true, length = 250)
 	public String getCreator() { return iCreator; }
 	public void setCreator(String creator) { iCreator = creator; }
 
+	@Formula("(select p.value from %SCHEMA%.solver_parameter p, %SCHEMA%.solver_parameter_def d where p.solution_id = uniqueid and d.uniqueid = p.solver_param_def_id and d.name='Basic.Mode')")
 	public String getSolverMode() { return iSolverMode; }
 	public void setSolverMode(String solverMode) { iSolverMode = solverMode; }
 
+	@Formula("(select s.description from %SCHEMA%.solver_parameter p, %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_predef_setting s where p.solution_id = uniqueId and d.uniqueid = p.solver_param_def_id and d.name='General.SettingsId' and concat(s.uniqueid,'') = p.value)")
 	public String getSolverConfiguration() { return iSolverConfiguration; }
 	public void setSolverConfiguration(String solverConfiguration) { iSolverConfiguration = solverConfiguration; }
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "owner_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public SolverGroup getOwner() { return iOwner; }
 	public void setOwner(SolverGroup owner) { iOwner = owner; }
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinFormula(" ( select si.uniqueid from %SCHEMA%.solver_info si, %SCHEMA%.solver_info_def d where si.type=1 and si.solver_info_def_id=d.uniqueid and d.name='GlobalInfo' and si.solution_id=uniqueid ) ")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public SolutionInfo getGlobalInfo() { return iGlobalInfo; }
 	public void setGlobalInfo(SolutionInfo globalInfo) { iGlobalInfo = globalInfo; }
 
+	@OneToMany(cascade = {CascadeType.ALL})
+	@JoinColumn(name = "solution_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(SolverParameter solverParameter) {
@@ -118,6 +150,8 @@ public abstract class BaseSolution implements Serializable {
 		iParameters.add(solverParameter);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solution", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SolutionInfo> getSolutionInfo() { return iSolutionInfo; }
 	public void setSolutionInfo(Set<SolutionInfo> solutionInfo) { iSolutionInfo = solutionInfo; }
 	public void addTosolutionInfo(SolutionInfo solutionInfo) {
@@ -125,6 +159,8 @@ public abstract class BaseSolution implements Serializable {
 		iSolutionInfo.add(solutionInfo);
 	}
 
+	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addTostudentEnrollments(StudentEnrollment studentEnrollment) {
@@ -132,6 +168,8 @@ public abstract class BaseSolution implements Serializable {
 		iStudentEnrollments.add(studentEnrollment);
 	}
 
+	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
@@ -139,6 +177,8 @@ public abstract class BaseSolution implements Serializable {
 		iAssignments.add(assignment);
 	}
 
+	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<JointEnrollment> getJointEnrollments() { return iJointEnrollments; }
 	public void setJointEnrollments(Set<JointEnrollment> jointEnrollments) { iJointEnrollments = jointEnrollments; }
 	public void addTojointEnrollments(JointEnrollment jointEnrollment) {
@@ -146,17 +186,20 @@ public abstract class BaseSolution implements Serializable {
 		iJointEnrollments.add(jointEnrollment);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Solution)) return false;
 		if (getUniqueId() == null || ((Solution)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Solution)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Solution["+getUniqueId()+"]";
 	}

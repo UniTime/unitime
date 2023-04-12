@@ -19,51 +19,40 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseRoomTypeOption implements Serializable {
+@MappedSuperclass
+@IdClass(RoomTypeOptionId.class)
+public abstract class BaseRoomTypeOption extends RoomTypeOptionId {
 	private static final long serialVersionUID = 1L;
 
-	private RoomType iRoomType;
-	private Department iDepartment;
 	private Integer iStatus;
 	private String iMessage;
 	private Integer iBreakTime;
 
 
-	public static String PROP_STATUS = "status";
-	public static String PROP_MESSAGE = "message";
-	public static String PROP_BREAK_TIME = "breakTime";
 
-	public BaseRoomTypeOption() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public RoomType getRoomType() { return iRoomType; }
-	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
-
-	public Department getDepartment() { return iDepartment; }
-	public void setDepartment(Department department) { iDepartment = department; }
-
+	@Column(name = "status", nullable = false, length = 10)
 	public Integer getStatus() { return iStatus; }
 	public void setStatus(Integer status) { iStatus = status; }
 
+	@Column(name = "message", nullable = true, length = 2048)
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
 
+	@Column(name = "break_time", nullable = false)
 	public Integer getBreakTime() { return iBreakTime; }
 	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomTypeOption)) return false;
 		RoomTypeOption roomTypeOption = (RoomTypeOption)o;
@@ -72,6 +61,7 @@ public abstract class BaseRoomTypeOption implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getRoomType() == null || getDepartment() == null) return super.hashCode();
 		return getRoomType().hashCode() ^ getDepartment().hashCode();

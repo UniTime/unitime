@@ -22,12 +22,17 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.HashedQuery;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseHashedQuery implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,49 +43,49 @@ public abstract class BaseHashedQuery implements Serializable {
 	private Date iLastUsed;
 
 
-	public static String PROP_QUERY_HASH = "queryHash";
-	public static String PROP_QUERY_TEXT = "queryText";
-	public static String PROP_TS_CREATE = "created";
-	public static String PROP_NBR_USE = "nbrUsed";
-	public static String PROP_TS_USE = "lastUsed";
-
 	public BaseHashedQuery() {
-		initialize();
 	}
 
 	public BaseHashedQuery(String queryHash) {
 		setQueryHash(queryHash);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@Column(name="query_hash")
 	public String getQueryHash() { return iQueryHash; }
 	public void setQueryHash(String queryHash) { iQueryHash = queryHash; }
 
+	@Column(name = "query_text", nullable = false, length = 2048)
 	public String getQueryText() { return iQueryText; }
 	public void setQueryText(String queryText) { iQueryText = queryText; }
 
+	@Column(name = "ts_create", nullable = false)
 	public Date getCreated() { return iCreated; }
 	public void setCreated(Date created) { iCreated = created; }
 
+	@Column(name = "nbr_use", nullable = false)
 	public Long getNbrUsed() { return iNbrUsed; }
 	public void setNbrUsed(Long nbrUsed) { iNbrUsed = nbrUsed; }
 
+	@Column(name = "ts_use", nullable = true)
 	public Date getLastUsed() { return iLastUsed; }
 	public void setLastUsed(Date lastUsed) { iLastUsed = lastUsed; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof HashedQuery)) return false;
 		if (getQueryHash() == null || ((HashedQuery)o).getQueryHash() == null) return false;
 		return getQueryHash().equals(((HashedQuery)o).getQueryHash());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getQueryHash() == null) return super.hashCode();
 		return getQueryHash().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "HashedQuery["+getQueryHash()+"]";
 	}

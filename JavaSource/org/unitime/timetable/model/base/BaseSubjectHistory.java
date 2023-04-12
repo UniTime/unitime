@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.History;
 import org.unitime.timetable.model.SubjectHistory;
 
@@ -28,33 +30,33 @@ import org.unitime.timetable.model.SubjectHistory;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSubjectHistory extends History implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public BaseSubjectHistory() {
-		initialize();
 	}
 
 	public BaseSubjectHistory(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SubjectHistory)) return false;
 		if (getUniqueId() == null || ((SubjectHistory)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SubjectHistory)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SubjectHistory["+getUniqueId()+"]";
 	}
@@ -64,7 +66,6 @@ public abstract class BaseSubjectHistory extends History implements Serializable
 			"\n	NewValue: " + getNewValue() +
 			"\n	OldValue: " + getOldValue() +
 			"\n	Session: " + getSession() +
-			"\n	SessionId: " + getSessionId() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

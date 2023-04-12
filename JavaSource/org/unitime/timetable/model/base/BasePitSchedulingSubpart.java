@@ -23,6 +23,22 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.ItypeDesc;
@@ -35,6 +51,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitSchedulingSubpart implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -55,64 +72,82 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 	private Set<PitSchedulingSubpart> iPitChildSubparts;
 	private Set<PitClass> iPitClasses;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_MIN_PER_WK = "minutesPerWk";
-	public static String PROP_STUDENT_ALLOW_OVERLAP = "studentAllowOverlap";
-	public static String PROP_SUBPART_SUFFIX = "schedulingSubpartSuffixCache";
-	public static String PROP_CREDIT = "credit";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-
 	public BasePitSchedulingSubpart() {
-		initialize();
 	}
 
 	public BasePitSchedulingSubpart(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_sched_subpart_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_sched_subpart_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "min_per_wk", nullable = false, length = 4)
 	public Integer getMinutesPerWk() { return iMinutesPerWk; }
 	public void setMinutesPerWk(Integer minutesPerWk) { iMinutesPerWk = minutesPerWk; }
 
+	@Column(name = "student_allow_overlap", nullable = false)
 	public Boolean isStudentAllowOverlap() { return iStudentAllowOverlap; }
+	@Transient
 	public Boolean getStudentAllowOverlap() { return iStudentAllowOverlap; }
 	public void setStudentAllowOverlap(Boolean studentAllowOverlap) { iStudentAllowOverlap = studentAllowOverlap; }
 
+	@Column(name = "subpart_suffix", nullable = true, length = 5)
 	public String getSchedulingSubpartSuffixCache() { return iSchedulingSubpartSuffixCache; }
 	public void setSchedulingSubpartSuffixCache(String schedulingSubpartSuffixCache) { iSchedulingSubpartSuffixCache = schedulingSubpartSuffixCache; }
 
+	@Column(name = "credit", nullable = true)
 	public Float getCredit() { return iCredit; }
 	public void setCredit(Float credit) { iCredit = credit; }
 
+	@Formula("(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.pit_sched_subpart s, %SCHEMA%.pit_instr_offer_config c, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.pit_config_id=c.uniqueid and c.pit_instr_offr_id=io.uniqueid and co.is_control = %TRUE% and co.pit_instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)")
 	public String getCourseName() { return iCourseName; }
 	public void setCourseName(String courseName) { iCourseName = courseName; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "credit_type", nullable = true)
 	public CourseCreditType getCreditType() { return iCreditType; }
 	public void setCreditType(CourseCreditType creditType) { iCreditType = creditType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "credit_unit_type", nullable = true)
 	public CourseCreditUnitType getCreditUnitType() { return iCreditUnitType; }
 	public void setCreditUnitType(CourseCreditUnitType creditUnitType) { iCreditUnitType = creditUnitType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "itype", nullable = false)
 	public ItypeDesc getItype() { return iItype; }
 	public void setItype(ItypeDesc itype) { iItype = itype; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "scheduling_subpart_id", nullable = true)
 	public SchedulingSubpart getSchedulingSubpart() { return iSchedulingSubpart; }
 	public void setSchedulingSubpart(SchedulingSubpart schedulingSubpart) { iSchedulingSubpart = schedulingSubpart; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "pit_parent_id", nullable = true)
 	public PitSchedulingSubpart getPitParentSubpart() { return iPitParentSubpart; }
 	public void setPitParentSubpart(PitSchedulingSubpart pitParentSubpart) { iPitParentSubpart = pitParentSubpart; }
 
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "pit_config_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public PitInstrOfferingConfig getPitInstrOfferingConfig() { return iPitInstrOfferingConfig; }
 	public void setPitInstrOfferingConfig(PitInstrOfferingConfig pitInstrOfferingConfig) { iPitInstrOfferingConfig = pitInstrOfferingConfig; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitSchedulingSubpart> getPitChildSubparts() { return iPitChildSubparts; }
 	public void setPitChildSubparts(Set<PitSchedulingSubpart> pitChildSubparts) { iPitChildSubparts = pitChildSubparts; }
 	public void addTopitChildSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
@@ -120,6 +155,8 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 		iPitChildSubparts.add(pitSchedulingSubpart);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitSchedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitClass> getPitClasses() { return iPitClasses; }
 	public void setPitClasses(Set<PitClass> pitClasses) { iPitClasses = pitClasses; }
 	public void addTopitClasses(PitClass pitClass) {
@@ -127,17 +164,20 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 		iPitClasses.add(pitClass);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitSchedulingSubpart)) return false;
 		if (getUniqueId() == null || ((PitSchedulingSubpart)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitSchedulingSubpart)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitSchedulingSubpart["+getUniqueId()+"]";
 	}

@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +36,7 @@ import java.util.List;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseUserData;
+import org.unitime.timetable.model.base.UserDataId;
 import org.unitime.timetable.model.dao.UserDataDAO;
 
 
@@ -34,6 +45,9 @@ import org.unitime.timetable.model.dao.UserDataDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "user_data")
 public class UserData extends BaseUserData {
 	private static final long serialVersionUID = 1L;
 
@@ -47,13 +61,12 @@ public class UserData extends BaseUserData {
 	public UserData(String externalUniqueId, String name) {
 		setExternalUniqueId(externalUniqueId);
 		setName(name);
-		initialize();
 	}
 
 	public static void setProperty(String externalUniqueId, String name, String value) {
 		try {
 			UserDataDAO dao = new UserDataDAO();
-			UserData userData = dao.get(new UserData(externalUniqueId, name));
+			UserData userData = dao.get(new UserDataId(externalUniqueId, name));
 			if (value!=null && value.length()==0) value=null;
 			if (userData==null && value==null) return;
 			if (userData!=null && value!=null && value.equals(userData.getValue())) return;
@@ -72,7 +85,7 @@ public class UserData extends BaseUserData {
 	
 	public static String getProperty(String externalUniqueId, String name) {
 		UserDataDAO dao = new UserDataDAO();
-		UserData userData = dao.get(new UserData(externalUniqueId, name));
+		UserData userData = dao.get(new UserDataId(externalUniqueId, name));
 		return (userData==null?null:userData.getValue());
 	}
 	

@@ -23,6 +23,18 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.Session;
@@ -31,6 +43,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExternalBuilding implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -44,45 +57,51 @@ public abstract class BaseExternalBuilding implements Serializable {
 	private Session iSession;
 	private Set<ExternalRoom> iRooms;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_COORDINATE_X = "coordinateX";
-	public static String PROP_COORDINATE_Y = "coordinateY";
-	public static String PROP_DISPLAY_NAME = "displayName";
-
 	public BaseExternalBuilding() {
-		initialize();
 	}
 
 	public BaseExternalBuilding(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "external_building_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "external_building_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "abbreviation", nullable = false, length = 20)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "coordinate_x", nullable = true)
 	public Double getCoordinateX() { return iCoordinateX; }
 	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
+	@Column(name = "coordinate_y", nullable = true)
 	public Double getCoordinateY() { return iCoordinateY; }
 	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
+	@Column(name = "display_name", nullable = true, length = 100)
 	public String getDisplayName() { return iDisplayName; }
 	public void setDisplayName(String displayName) { iDisplayName = displayName; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@OneToMany
+	@JoinColumn(name = "external_bldg_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ExternalRoom> getRooms() { return iRooms; }
 	public void setRooms(Set<ExternalRoom> rooms) { iRooms = rooms; }
 	public void addTorooms(ExternalRoom externalRoom) {
@@ -90,17 +109,20 @@ public abstract class BaseExternalBuilding implements Serializable {
 		iRooms.add(externalRoom);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExternalBuilding)) return false;
 		if (getUniqueId() == null || ((ExternalBuilding)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExternalBuilding)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExternalBuilding["+getUniqueId()+"]";
 	}

@@ -23,6 +23,21 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -34,6 +49,7 @@ import org.unitime.timetable.model.PitSchedulingSubpart;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitInstrOfferingConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,47 +64,59 @@ public abstract class BasePitInstrOfferingConfig implements Serializable {
 	private InstructionalMethod iInstructionalMethod;
 	private Set<PitSchedulingSubpart> iSchedulingSubparts;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_UNLIMITED_ENROLLMENT = "unlimitedEnrollment";
-	public static String PROP_NAME = "name";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-
 	public BasePitInstrOfferingConfig() {
-		initialize();
 	}
 
 	public BasePitInstrOfferingConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_instr_offer_config_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_instr_offer_config_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "unlimited_enrollment", nullable = false)
 	public Boolean isUnlimitedEnrollment() { return iUnlimitedEnrollment; }
+	@Transient
 	public Boolean getUnlimitedEnrollment() { return iUnlimitedEnrollment; }
 	public void setUnlimitedEnrollment(Boolean unlimitedEnrollment) { iUnlimitedEnrollment = unlimitedEnrollment; }
 
+	@Column(name = "name", nullable = true, length = 10)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "instr_offering_config_id", nullable = true)
 	public InstrOfferingConfig getInstrOfferingConfig() { return iInstrOfferingConfig; }
 	public void setInstrOfferingConfig(InstrOfferingConfig instrOfferingConfig) { iInstrOfferingConfig = instrOfferingConfig; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_instr_offr_id", nullable = false)
 	public PitInstructionalOffering getPitInstructionalOffering() { return iPitInstructionalOffering; }
 	public void setPitInstructionalOffering(PitInstructionalOffering pitInstructionalOffering) { iPitInstructionalOffering = pitInstructionalOffering; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "duration_type_id", nullable = true)
 	public ClassDurationType getClassDurationType() { return iClassDurationType; }
 	public void setClassDurationType(ClassDurationType classDurationType) { iClassDurationType = classDurationType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "instr_method_id", nullable = true)
 	public InstructionalMethod getInstructionalMethod() { return iInstructionalMethod; }
 	public void setInstructionalMethod(InstructionalMethod instructionalMethod) { iInstructionalMethod = instructionalMethod; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstrOfferingConfig", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitSchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<PitSchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
 	public void addToschedulingSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
@@ -96,17 +124,20 @@ public abstract class BasePitInstrOfferingConfig implements Serializable {
 		iSchedulingSubparts.add(pitSchedulingSubpart);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitInstrOfferingConfig)) return false;
 		if (getUniqueId() == null || ((PitInstrOfferingConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitInstrOfferingConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitInstrOfferingConfig["+getUniqueId()+" "+getName()+"]";
 	}

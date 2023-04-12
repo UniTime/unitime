@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -48,6 +58,9 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "query_log")
 public class QueryLog extends BaseQueryLog {
 	private static final long serialVersionUID = 7073111443207707716L;
 	protected static Log sLog = LogFactory.getLog(QueryLog.class);
@@ -185,7 +198,9 @@ public class QueryLog extends BaseQueryLog {
 			iOracleFormat = oracleFormat; iOracleCondition = oracleCondition;
 			iMySqlFormat = mySqlFormat; iMySqlCondition = mySqlCondition;
 		}
+	@Transient
 		public String getName() { return iName; }
+	@Transient
 		public String getBase() { return iBase; }
 		public String format(DateTime date) { return iFormat.format(date.getMillis()); }
 		public DateTime getFirst(DateTime now) { return now.minus(iStart); }
@@ -193,6 +208,7 @@ public class QueryLog extends BaseQueryLog {
 			DateTime ret = date.plus(iIncrement);
 			return (ret.isAfter(now) ? null : ret);
 		}
+	@Transient
 		public int getMinutes() { return iMinutes; }
 		
 		public Map<String, int[]> getUsersAndSessions(org.hibernate.Session hibSession) {

@@ -20,6 +20,16 @@
  
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +47,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "meeting")
 public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
 	private Location location = null;
@@ -97,6 +110,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		}
 	}
 	
+	@Transient
 	public Location getLocation(){
 		if (location != null){
 			return(location);
@@ -153,6 +167,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return(location);
 	}
 	
+	@Transient
 	public List<Meeting> getTimeRoomOverlaps(){
 	    if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
 		return (MeetingDAO.getInstance()).getSession().createQuery(
@@ -166,6 +181,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		        .list();
 	}
 
+	@Transient
     public List<Meeting> getApprovedTimeRoomOverlaps(){
         if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
         return (MeetingDAO.getInstance()).getSession().createQuery(
@@ -208,10 +224,12 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		        (getLocation()==null?"":", "+getLocation().getLabel()));
 	}
 	
+	@Transient
 	public String getTimeLabel() {
         return dateStr() + " " + startTime() + " - " + stopTime();
     }
 	
+	@Transient
 	public String getRoomLabel() {
         return getLocation() == null?"":getLocation().getLabel();
     }
@@ -243,6 +261,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	    return Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD).format(getMeetingDate());
 	}
 	
+	@Transient
 	public Date getStartTime() {
 		Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
@@ -252,6 +271,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
 	}
 
+	@Transient
 	public Date getTrueStartTime() {
 		Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
@@ -261,6 +281,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
 	}
 
+	@Transient
 	public Date getStopTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
@@ -270,6 +291,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
     }
     
+	@Transient
 	public Date getTrueStopTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
@@ -301,12 +323,14 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
     }
 	
+	@Transient
 	public int getDayOfWeek() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
         return c.get(Calendar.DAY_OF_WEEK);
     }
     
+	@Transient
     public boolean isApproved() { return getApprovalStatus() != null && getApprovalStatus().equals(Status.APPROVED.ordinal()); }
     
     public boolean overlaps(Meeting meeting) {
@@ -314,6 +338,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return getStartPeriod()<meeting.getStopPeriod() && meeting.getStartPeriod()<getStopPeriod();
     }
     
+	@Transient
     public boolean isAllDay() {
         return getStartPeriod()==0 && getStopPeriod()==Constants.SLOTS_PER_DAY;
     }
@@ -322,6 +347,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     	setApprovalStatus(status.ordinal());
     }
     
+	@Transient
     public Status getStatus() {
     	return (getApprovalStatus() == null ? Status.PENDING : Status.values()[getApprovalStatus()]);
     }

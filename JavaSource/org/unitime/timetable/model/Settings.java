@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
+
 import java.util.Iterator;
 import java.util.Set;
 
@@ -31,6 +41,9 @@ import org.unitime.timetable.model.dao._RootDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "settings")
 public class Settings extends BaseSettings {
 	private static final long serialVersionUID = 1L;
 

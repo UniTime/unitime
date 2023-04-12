@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseCourseRequestOption;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
@@ -29,6 +39,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_request_option")
 public class CourseRequestOption extends BaseCourseRequestOption {
 	private static final long serialVersionUID = 1L;
 
@@ -47,10 +60,12 @@ public class CourseRequestOption extends BaseCourseRequestOption {
 /*[CONSTRUCTOR MARKER END]*/
 
 	
+	@Transient
     public OnlineSectioningLog.CourseRequestOption.OptionType getType() {
     	return (getOptionType() == null ? null : OnlineSectioningLog.CourseRequestOption.OptionType.forNumber(getOptionType()));
     }
         
+	@Transient
     public OnlineSectioningLog.CourseRequestOption getOption() throws InvalidProtocolBufferException {
     	return OnlineSectioningLog.CourseRequestOption.parseFrom(getValue());
     }

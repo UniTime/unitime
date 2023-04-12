@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.hibernate.FlushMode;
 import org.unitime.timetable.model.base.BaseExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
@@ -29,6 +38,9 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "exact_time_mins")
 public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 	private static final long serialVersionUID = 1L;
 

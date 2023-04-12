@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseFixedCreditUnitConfig;
 
 
@@ -26,6 +32,8 @@ import org.unitime.timetable.model.base.BaseFixedCreditUnitConfig;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("fixedUnit")
 public class FixedCreditUnitConfig extends BaseFixedCreditUnitConfig {
 	private static final long serialVersionUID = 1L;
 	public static String CREDIT_FORMAT = "fixedUnit";
@@ -66,11 +74,13 @@ public class FixedCreditUnitConfig extends BaseFixedCreditUnitConfig {
 	}
 
 	@Override
+	@Transient
 	public float getMinCredit() {
 		return (getFixedUnits() == null ? 0f : getFixedUnits());
 	}
 
 	@Override
+	@Transient
 	public float getMaxCredit() {
 		return (getFixedUnits() == null ? 0f : getFixedUnits());
 	}

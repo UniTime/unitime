@@ -20,6 +20,19 @@
  
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseStandardEventNote;
@@ -30,6 +43,11 @@ import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 /**
  * @author Stephanie Schluttenhofer, Zuzana Mullerova, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "standard_event_note")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="discriminator", discriminatorType = DiscriminatorType.STRING)
 public class StandardEventNote extends BaseStandardEventNote {
 	private static final long serialVersionUID = 1L;
 
@@ -53,6 +71,7 @@ public class StandardEventNote extends BaseStandardEventNote {
                 ).setCacheable(true).list();
     }	
    
+	@Transient
    public String getLabel() {
        return getReference()+": "+getNote();
    }

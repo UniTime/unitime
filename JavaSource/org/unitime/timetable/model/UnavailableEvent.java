@@ -19,11 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseUnavailableEvent;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("5")
 public class UnavailableEvent extends BaseUnavailableEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -32,5 +40,6 @@ public class UnavailableEvent extends BaseUnavailableEvent {
 	}
 
     @Override
+	@Transient
     public int getEventType() { return sEventTypeUnavailable; }
 }

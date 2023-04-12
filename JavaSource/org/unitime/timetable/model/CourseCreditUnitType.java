@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 
 import org.hibernate.criterion.Order;
@@ -31,6 +37,8 @@ import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "course_credit_unit_type")
 public class CourseCreditUnitType extends BaseCourseCreditUnitType {
 	private static final long serialVersionUID = 1L;
 
@@ -50,6 +58,7 @@ public class CourseCreditUnitType extends BaseCourseCreditUnitType {
 
 	public static String COURSE_CREDIT_UNIT_TYPE_ATTR_NAME = "courseCreditUnitTypeList";
 	
+	@Transient
 	public static synchronized List<CourseCreditUnitType> getCourseCreditUnitTypeList() {
 		return CourseCreditUnitTypeDAO.getInstance().findAll(Order.asc("label"));
 	}
@@ -65,6 +74,7 @@ public class CourseCreditUnitType extends BaseCourseCreditUnitType {
 		return (uniqueId == null ? null : CourseCreditUnitTypeDAO.getInstance().get(uniqueId));
 	}
 	
+	@Transient
 	public String getAbbv() {
 		if (getAbbreviation()==null) return "";
 		return getAbbreviation();

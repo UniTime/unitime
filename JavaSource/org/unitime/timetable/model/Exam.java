@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -54,6 +60,8 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "exam")
 public class Exam extends BaseExam implements Comparable<Exam> {
 	private static final long serialVersionUID = 1L;
 	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
@@ -142,6 +150,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return (sb.toString().length()<=limit?sb.toString():sb.toString().substring(0,limit-3)+"...")+suffix;
 	}
 	
+	@Transient
 	public String getLabel() {
 	    String name = getName();
 	    if (name!=null) return name;
@@ -152,6 +161,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return getLabel();
 	}
 	
+	@Transient
 	public Vector getOwnerObjects() {
 	    Vector ret = new Vector();
 	    for (Iterator i=new TreeSet(getOwners()).iterator();i.hasNext();) {
@@ -260,6 +270,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 .list();
     }
     
+	@Transient
     public Set<Student> getStudents() {
         HashSet<Student> students = new HashSet();
         for (Iterator i=getOwners().iterator();i.hasNext();)
@@ -267,6 +278,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return students;
     }
     
+	@Transient
     public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
         HashSet<StudentClassEnrollment> enrollments = new HashSet();
         for (ExamOwner owner: getOwners())
@@ -274,6 +286,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return enrollments;
     }
     
+	@Transient
     public Set<Long> getStudentIds() {
         HashSet<Long> studentIds = new HashSet();
         for (Iterator i=getOwners().iterator();i.hasNext();)
@@ -281,6 +294,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return studentIds;
     }
 
+	@Transient
     public Hashtable<Long, Set<Exam>> getStudentExams() {
         Hashtable<Long, Set<Exam>> studentExams = new Hashtable<Long, Set<Exam>>();
         for (Iterator i=getOwners().iterator();i.hasNext();) {
@@ -290,6 +304,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return studentExams;
     }
     
+	@Transient
     public Hashtable<Assignment, Set<Long>> getStudentAssignments() {
         Hashtable<Assignment, Set<Long>> studentAssignments = new Hashtable<Assignment, Set<Long>>();
         for (Iterator i=getOwners().iterator();i.hasNext();) {
@@ -315,6 +330,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return nrStudents;
     }
     
+	@Transient
     public int getLimit() {
         int limit = 0;
         for (Iterator i=getOwners().iterator();i.hasNext();)
@@ -322,6 +338,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return limit;
     }
 
+	@Transient
     public int getSize() {
         if (getExamSize()!=null) return getExamSize().intValue();
         int size = 0;
@@ -350,6 +367,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         } else return super.effectivePreferences(type);
     }
     
+	@Transient
     public Set getAvailableRooms() {
         return Location.findAllExamLocations(getSession().getUniqueId(), getExamType());
     }
@@ -1014,6 +1032,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return event;
     }
     
+	@Transient
     public ExamPeriod getAveragePeriod() {
         return ExamPeriod.findByIndex(getSession().getUniqueId(), getExamType(), getAvgPeriod());
     }
@@ -1157,6 +1176,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     private ExamEvent iEvent = null;
+	@Transient
     public ExamEvent getEvent() {
         if (getUniqueId()==null) return null;
         if (iEvent==null) 
@@ -1304,6 +1324,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
 
 	@Override
+	@Transient
 	public Department getDepartment() { return null; }
 	
 	public DepartmentStatusType effectiveStatusType() {

@@ -19,6 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,6 +60,11 @@ import org.unitime.timetable.solver.ui.TimetableInfoUtil;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solver_info")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.INTEGER)
 public class SolverInfo extends BaseSolverInfo {
 	private static final long serialVersionUID = 1L;
 	
@@ -70,6 +88,7 @@ public class SolverInfo extends BaseSolverInfo {
 		setValue(value);
 	}
 
+	@Transient
 	public TimetableInfo getInfo() {
 		return getInfo(TimetableInfoUtil.getInstance());
 	}
@@ -231,9 +250,11 @@ public class SolverInfo extends BaseSolverInfo {
     	public CachedTimetableInfo(TimetableInfo info) {
     		iInfo = info;
     	}
+	@Transient
     	public TimetableInfo getInfo() {
     		return iInfo;
     	}
+	@Transient
     	public long getAge() {
     		return System.currentTimeMillis()-iTimeStamp;
     	}
@@ -242,6 +263,7 @@ public class SolverInfo extends BaseSolverInfo {
     	}
     }
 	
+	@Transient
 	public Document getValue() {
 		try {
 			SAXReader reader = new SAXReader();

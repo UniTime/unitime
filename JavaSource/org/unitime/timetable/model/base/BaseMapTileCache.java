@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
 import org.unitime.timetable.model.MapTileCache;
 
@@ -28,40 +31,25 @@ import org.unitime.timetable.model.MapTileCache;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseMapTileCache implements Serializable {
+@MappedSuperclass
+@IdClass(MapTileCacheId.class)
+public abstract class BaseMapTileCache extends MapTileCacheId {
 	private static final long serialVersionUID = 1L;
 
-	private Integer iZ;
-	private Integer iX;
-	private Integer iY;
 	private byte[] iData;
 	private Date iTimeStamp;
 
 
-	public static String PROP_DATA = "data";
-	public static String PROP_TIME_STAMP = "timeStamp";
 
-	public BaseMapTileCache() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public Integer getZ() { return iZ; }
-	public void setZ(Integer z) { iZ = z; }
-
-	public Integer getX() { return iX; }
-	public void setX(Integer x) { iX = x; }
-
-	public Integer getY() { return iY; }
-	public void setY(Integer y) { iY = y; }
-
+	@Column(name = "data", nullable = false)
 	public byte[] getData() { return iData; }
 	public void setData(byte[] data) { iData = data; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof MapTileCache)) return false;
 		MapTileCache mapTileCache = (MapTileCache)o;
@@ -71,6 +59,7 @@ public abstract class BaseMapTileCache implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getZ() == null || getX() == null || getY() == null) return super.hashCode();
 		return getZ().hashCode() ^ getX().hashCode() ^ getY().hashCode();

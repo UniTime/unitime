@@ -19,11 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseAttachmentType;
 import org.unitime.timetable.model.dao.AttachmentTypeDAO;
 
+@Entity
+@Table(name = "attachment_type")
 public class AttachmentType extends BaseAttachmentType implements Comparable<AttachmentType> {
 	private static final long serialVersionUID = 1L;
 	

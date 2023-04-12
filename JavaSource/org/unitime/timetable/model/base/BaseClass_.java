@@ -24,6 +24,20 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.JoinFormula;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -39,6 +53,7 @@ import org.unitime.timetable.model.TeachingClassRequest;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseClass_ extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -73,108 +88,131 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Set<StudentClassEnrollment> iStudentEnrollments;
 	private Set<TeachingClassRequest> iTeachingRequests;
 
-	public static String PROP_EXPECTED_CAPACITY = "expectedCapacity";
-	public static String PROP_NOTES = "notes";
-	public static String PROP_NBR_ROOMS = "nbrRooms";
-	public static String PROP_SECTION_NUMBER = "sectionNumberCache";
-	public static String PROP_DISPLAY_INSTRUCTOR = "displayInstructor";
-	public static String PROP_SCHED_PRINT_NOTE = "schedulePrintNote";
-	public static String PROP_CLASS_SUFFIX = "classSuffix";
-	public static String PROP_DISPLAY_IN_SCHED_BOOK = "enabledForStudentScheduling";
-	public static String PROP_MAX_EXPECTED_CAPACITY = "maxExpectedCapacity";
-	public static String PROP_ROOM_RATIO = "roomRatio";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CANCELLED = "cancelled";
-	public static String PROP_SNAPSHOT_LIMIT = "snapshotLimit";
-	public static String PROP_SNAPSHOT_LIMIT_DATE = "snapshotLimitDate";
-
 	public BaseClass_() {
-		initialize();
 	}
 
 	public BaseClass_(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "expected_capacity", nullable = false, length = 4)
 	public Integer getExpectedCapacity() { return iExpectedCapacity; }
 	public void setExpectedCapacity(Integer expectedCapacity) { iExpectedCapacity = expectedCapacity; }
 
+	@Column(name = "notes", nullable = true, length = 1000)
 	public String getNotes() { return iNotes; }
 	public void setNotes(String notes) { iNotes = notes; }
 
+	@Column(name = "nbr_rooms", nullable = true, length = 4)
 	public Integer getNbrRooms() { return iNbrRooms; }
 	public void setNbrRooms(Integer nbrRooms) { iNbrRooms = nbrRooms; }
 
+	@Column(name = "section_number", nullable = true, length = 5)
 	public Integer getSectionNumberCache() { return iSectionNumberCache; }
 	public void setSectionNumberCache(Integer sectionNumberCache) { iSectionNumberCache = sectionNumberCache; }
 
+	@Column(name = "display_instructor", nullable = false)
 	public Boolean isDisplayInstructor() { return iDisplayInstructor; }
+	@Transient
 	public Boolean getDisplayInstructor() { return iDisplayInstructor; }
 	public void setDisplayInstructor(Boolean displayInstructor) { iDisplayInstructor = displayInstructor; }
 
+	@Column(name = "sched_print_note", nullable = true, length = 2000)
 	public String getSchedulePrintNote() { return iSchedulePrintNote; }
 	public void setSchedulePrintNote(String schedulePrintNote) { iSchedulePrintNote = schedulePrintNote; }
 
+	@Column(name = "class_suffix", nullable = true, length = 40)
 	public String getClassSuffix() { return iClassSuffix; }
 	public void setClassSuffix(String classSuffix) { iClassSuffix = classSuffix; }
 
+	@Column(name = "display_in_sched_book", nullable = false)
 	public Boolean isEnabledForStudentScheduling() { return iEnabledForStudentScheduling; }
+	@Transient
 	public Boolean getEnabledForStudentScheduling() { return iEnabledForStudentScheduling; }
 	public void setEnabledForStudentScheduling(Boolean enabledForStudentScheduling) { iEnabledForStudentScheduling = enabledForStudentScheduling; }
 
+	@Column(name = "max_expected_capacity", nullable = false, length = 4)
 	public Integer getMaxExpectedCapacity() { return iMaxExpectedCapacity; }
 	public void setMaxExpectedCapacity(Integer maxExpectedCapacity) { iMaxExpectedCapacity = maxExpectedCapacity; }
 
+	@Column(name = "room_ratio", nullable = false)
 	public Float getRoomRatio() { return iRoomRatio; }
 	public void setRoomRatio(Float roomRatio) { iRoomRatio = roomRatio; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Formula("(select count(e.student_id) from %SCHEMA%.student_class_enrl e where e.class_id = uniqueid)")
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
+	@Column(name = "cancelled", nullable = false)
 	public Boolean isCancelled() { return iCancelled; }
+	@Transient
 	public Boolean getCancelled() { return iCancelled; }
 	public void setCancelled(Boolean cancelled) { iCancelled = cancelled; }
 
+	@Column(name = "snapshot_limit", nullable = true, length = 10)
 	public Integer getSnapshotLimit() { return iSnapshotLimit; }
 	public void setSnapshotLimit(Integer snapshotLimit) { iSnapshotLimit = snapshotLimit; }
 
+	@Column(name = "snapshot_limit_date", nullable = true)
 	public Date getSnapshotLimitDate() { return iSnapshotLimitDate; }
 	public void setSnapshotLimitDate(Date snapshotLimitDate) { iSnapshotLimitDate = snapshotLimitDate; }
 
+	@ManyToOne
+	@JoinFormula(" ( select sa.department_uniqueid from %SCHEMA%.scheduling_subpart ss, %SCHEMA%.instr_offering_config ioc, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = subpart_id and ioc.uniqueid = ss.config_id and io.uniqueid = ioc.instr_offr_id and co.instr_offr_id = io.uniqueid and co.is_control = %TRUE% and sa.uniqueid = co.subject_area_id ) ")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
 
+	@ManyToOne(optional = true, fetch = FetchType.EAGER)
+	@JoinColumn(name = "managing_dept", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getManagingDept() { return iManagingDept; }
 	public void setManagingDept(Department managingDept) { iManagingDept = managingDept; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "subpart_id", nullable = false)
 	public SchedulingSubpart getSchedulingSubpart() { return iSchedulingSubpart; }
 	public void setSchedulingSubpart(SchedulingSubpart schedulingSubpart) { iSchedulingSubpart = schedulingSubpart; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent_class_id", nullable = true)
 	public Class_ getParentClass() { return iParentClass; }
 	public void setParentClass(Class_ parentClass) { iParentClass = parentClass; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "date_pattern_id", nullable = true)
 	public DatePattern getDatePattern() { return iDatePattern; }
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinFormula(" (       select a.uniqueid from        %SCHEMA%.assignment a,        %SCHEMA%.solution s,        %SCHEMA%.department d,       %SCHEMA%.solver_group g      where a.class_id=uniqueid and        a.solution_id=s.uniqueid and        s.commited = %TRUE% and        d.uniqueid=managing_dept and        s.owner_id=g.uniqueid and       d.solver_group_id=g.uniqueid ) ")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Assignment getCommittedAssignment() { return iCommittedAssignment; }
 	public void setCommittedAssignment(Assignment committedAssignment) { iCommittedAssignment = committedAssignment; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "lms_info_id", nullable = true)
 	public LearningManagementSystemInfo getLmsInfo() { return iLmsInfo; }
 	public void setLmsInfo(LearningManagementSystemInfo lmsInfo) { iLmsInfo = lmsInfo; }
 
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "funding_dept_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
 	public void addTochildClasses(Class_ class_) {
@@ -182,6 +220,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iChildClasses.add(class_);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classInstructing", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ClassInstructor> getClassInstructors() { return iClassInstructors; }
 	public void setClassInstructors(Set<ClassInstructor> classInstructors) { iClassInstructors = classInstructors; }
 	public void addToclassInstructors(ClassInstructor classInstructor) {
@@ -189,6 +229,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iClassInstructors.add(classInstructor);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
@@ -196,6 +238,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iAssignments.add(assignment);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addTostudentEnrollments(StudentClassEnrollment studentClassEnrollment) {
@@ -203,6 +247,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iStudentEnrollments.add(studentClassEnrollment);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "teachingClass", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TeachingClassRequest> getTeachingRequests() { return iTeachingRequests; }
 	public void setTeachingRequests(Set<TeachingClassRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
 	public void addToteachingRequests(TeachingClassRequest teachingClassRequest) {
@@ -210,17 +256,20 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		iTeachingRequests.add(teachingClassRequest);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Class_)) return false;
 		if (getUniqueId() == null || ((Class_)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Class_)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Class_["+getUniqueId()+"]";
 	}

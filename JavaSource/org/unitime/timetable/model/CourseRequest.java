@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +45,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_request")
 public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;
 	
@@ -71,6 +84,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
         return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(cr.getUniqueId() == null ? -1 : cr.getUniqueId());
     }
     
+	@Transient
     public List<StudentClassEnrollment> getClassEnrollments() {
     	List<StudentClassEnrollment> ret = new ArrayList<StudentClassEnrollment>();
     	for (StudentClassEnrollment e: getCourseDemand().getStudent().getClassEnrollments()) {
@@ -132,6 +146,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     	}
     }
     
+	@Transient
     public CourseRequestOverrideStatus getCourseRequestOverrideStatus() {
     	if (getOverrideStatus() == null) return CourseRequestOverrideStatus.APPROVED;
     	return CourseRequestOverrideStatus.values()[getOverrideStatus()];
@@ -148,30 +163,37 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     		setOverrideIntent(intent.ordinal());
     }
     
+	@Transient
     public CourseRequestOverrideIntent getCourseRequestOverrideIntent() {
     	return (getOverrideIntent() == null ? null : CourseRequestOverrideIntent.values()[getOverrideIntent()]); 
     }
     
+	@Transient
     public boolean isRequestApproved() {
     	return getOverrideStatus() == null || getOverrideStatus().intValue() == CourseRequestOverrideStatus.APPROVED.ordinal();
     }
     
+	@Transient
     public boolean isRequestPending() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal();
     }
     
+	@Transient
     public boolean isRequestCancelled() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.CANCELLED.ordinal();
     }
     
+	@Transient
     public boolean isRequestNeeded() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.NOT_CHECKED.ordinal();
     }
     
+	@Transient
     public boolean isRequestNotNeeded() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.NOT_NEEDED.ordinal();
     }
     
+	@Transient
     public boolean isRequestRejected() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
     }
@@ -246,6 +268,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
     	return changed;
     }
     
+	@Transient
     public boolean isRequired() {
     	Set<StudentSectioningPref> prefs = getPreferences(); 
     	if (prefs == null || prefs.isEmpty()) return true;

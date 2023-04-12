@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
@@ -39,6 +52,7 @@ import org.unitime.timetable.model.Roles;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDepartmentalInstructor extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -65,79 +79,86 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private Set<OfferingCoordinator> iOfferingCoordinators;
 	private Set<InstructorAttribute> iAttributes;
 
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CAREER_ACCT = "careerAcct";
-	public static String PROP_FNAME = "firstName";
-	public static String PROP_MNAME = "middleName";
-	public static String PROP_LNAME = "lastName";
-	public static String PROP_ACAD_TITLE = "academicTitle";
-	public static String PROP_NOTE = "note";
-	public static String PROP_EMAIL = "email";
-	public static String PROP_IGNORE_TOO_FAR = "ignoreToFar";
-	public static String PROP_MAX_LOAD = "maxLoad";
-	public static String PROP_UNAVAILABLE_DAYS = "unavailableDays";
-	public static String PROP_UNAVAILABLE_OFFSET = "unavailableOffset";
-
 	public BaseDepartmentalInstructor() {
-		initialize();
 	}
 
 	public BaseDepartmentalInstructor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "career_acct", nullable = true, length = 20)
 	public String getCareerAcct() { return iCareerAcct; }
 	public void setCareerAcct(String careerAcct) { iCareerAcct = careerAcct; }
 
+	@Column(name = "fname", nullable = true, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "mname", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "lname", nullable = false, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "acad_title", nullable = true, length = 50)
 	public String getAcademicTitle() { return iAcademicTitle; }
 	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
+	@Column(name = "note", nullable = true, length = 2048)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Column(name = "ignore_too_far", nullable = false)
 	public Boolean isIgnoreToFar() { return iIgnoreToFar; }
+	@Transient
 	public Boolean getIgnoreToFar() { return iIgnoreToFar; }
 	public void setIgnoreToFar(Boolean ignoreToFar) { iIgnoreToFar = ignoreToFar; }
 
+	@Column(name = "max_load", nullable = true)
 	public Float getMaxLoad() { return iMaxLoad; }
 	public void setMaxLoad(Float maxLoad) { iMaxLoad = maxLoad; }
 
+	@Column(name = "unavailable_days", nullable = true, length = 366)
 	public String getUnavailableDays() { return iUnavailableDays; }
 	public void setUnavailableDays(String unavailableDays) { iUnavailableDays = unavailableDays; }
 
+	@Column(name = "unavailable_offset", nullable = true)
 	public Integer getUnavailableOffset() { return iUnavailableOffset; }
 	public void setUnavailableOffset(Integer unavailableOffset) { iUnavailableOffset = unavailableOffset; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "pos_code_type", nullable = true)
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "department_uniqueid", nullable = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "role_id", nullable = true)
 	public Roles getRole() { return iRole; }
 	public void setRole(Roles role) { iRole = role; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "teaching_pref_id", nullable = true)
 	public PreferenceLevel getTeachingPreference() { return iTeachingPreference; }
 	public void setTeachingPreference(PreferenceLevel teachingPreference) { iTeachingPreference = teachingPreference; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructor", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
 	public void addToclasses(ClassInstructor classInstructor) {
@@ -145,6 +166,11 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iClasses.add(classInstructor);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "exam_instructor",
+		joinColumns = { @JoinColumn(name = "instructor_id") },
+		inverseJoinColumns = { @JoinColumn(name = "exam_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToexams(Exam exam) {
@@ -152,6 +178,8 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iExams.add(exam);
 	}
 
+	@ManyToMany(mappedBy = "instructors")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
@@ -159,6 +187,8 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iAssignments.add(assignment);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructor")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
 	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
 	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
@@ -166,6 +196,11 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iOfferingCoordinators.add(offeringCoordinator);
 	}
 
+	@ManyToMany
+	@JoinTable(name = "instructor_attributes",
+		joinColumns = { @JoinColumn(name = "instructor_id") },
+		inverseJoinColumns = { @JoinColumn(name = "attribute_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<InstructorAttribute> getAttributes() { return iAttributes; }
 	public void setAttributes(Set<InstructorAttribute> attributes) { iAttributes = attributes; }
 	public void addToattributes(InstructorAttribute instructorAttribute) {
@@ -173,17 +208,20 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iAttributes.add(instructorAttribute);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DepartmentalInstructor)) return false;
 		if (getUniqueId() == null || ((DepartmentalInstructor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DepartmentalInstructor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DepartmentalInstructor["+getUniqueId()+"]";
 	}

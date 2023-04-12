@@ -21,6 +21,16 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -31,6 +41,7 @@ import org.unitime.timetable.model.TeachingResponsibility;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseClassInstructor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -43,54 +54,67 @@ public abstract class BaseClassInstructor implements Serializable {
 	private TeachingResponsibility iResponsibility;
 	private TeachingRequest iTeachingRequest;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PERCENT_SHARE = "percentShare";
-	public static String PROP_IS_LEAD = "lead";
-
 	public BaseClassInstructor() {
-		initialize();
 	}
 
 	public BaseClassInstructor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "class_instructor_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "class_instructor_seq")
+	})
+	@GeneratedValue(generator = "class_instructor_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "percent_share", nullable = false, length = 3)
 	public Integer getPercentShare() { return iPercentShare; }
 	public void setPercentShare(Integer percentShare) { iPercentShare = percentShare; }
 
+	@Column(name = "is_lead", nullable = false)
 	public Boolean isLead() { return iLead; }
+	@Transient
 	public Boolean getLead() { return iLead; }
 	public void setLead(Boolean lead) { iLead = lead; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "class_id", nullable = false)
 	public Class_ getClassInstructing() { return iClassInstructing; }
 	public void setClassInstructing(Class_ classInstructing) { iClassInstructing = classInstructing; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "instructor_id", nullable = false)
 	public DepartmentalInstructor getInstructor() { return iInstructor; }
 	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "responsibility_id", nullable = true)
 	public TeachingResponsibility getResponsibility() { return iResponsibility; }
 	public void setResponsibility(TeachingResponsibility responsibility) { iResponsibility = responsibility; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "request_id", nullable = true)
 	public TeachingRequest getTeachingRequest() { return iTeachingRequest; }
 	public void setTeachingRequest(TeachingRequest teachingRequest) { iTeachingRequest = teachingRequest; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ClassInstructor)) return false;
 		if (getUniqueId() == null || ((ClassInstructor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ClassInstructor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ClassInstructor["+getUniqueId()+"]";
 	}

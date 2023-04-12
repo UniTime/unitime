@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +49,9 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "timetable_manager")
 public class TimetableManager extends BaseTimetableManager implements Comparable, Qualifiable, NameInterface {
 	private static final long serialVersionUID = 1L;
 
@@ -71,6 +84,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return(tmDao.get(uniqueId));
 	}
 		
+	@Transient
 	public boolean isExternalManager(){
 		boolean isExternal = false; 
 		Department d = null;
@@ -119,6 +133,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return getMiddleName() != null && !getMiddleName().isEmpty();
 	}
 	
+	@Transient
 	public String getName() {
 		return (hasLastName() ? getLastName() : "") +
 				(hasFirstName() || hasMiddleName() ? "," : "") +
@@ -165,6 +180,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     	return groups;
     }
     
+	@Transient
 	public String getShortName() {
         StringBuffer sb = new StringBuffer();
         if (getFirstName()!=null && getFirstName().length()>0) {
@@ -196,6 +212,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	 * ordered by column last name, first name
      * @return Vector of TimetableManager objects
      */
+	@Transient
     public static synchronized Vector getManagerList() {
         
         TimetableManagerDAO tdao = new TimetableManagerDAO();
@@ -207,6 +224,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return null;
     }
     
+	@Transient
     public Roles getPrimaryRole() {
         for (Iterator i=getManagerRoles().iterator();i.hasNext();) {
             ManagerRole role = (ManagerRole)i.next();
@@ -217,21 +235,25 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     }
 
 	@Override
+	@Transient
 	public Serializable getQualifierId() {
 		return getUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierType() {
 		return getClass().getSimpleName();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierReference() {
 		return getExternalUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierLabel() {
 		return getName();
 	}

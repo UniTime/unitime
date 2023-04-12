@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.Date;
 
 import org.cpsolver.coursett.model.TimeLocation;
@@ -30,6 +36,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "time_pref")
 public class TimePref extends BaseTimePref implements Comparable {
 	private static final long serialVersionUID = 1L;
 
@@ -51,6 +59,7 @@ public class TimePref extends BaseTimePref implements Comparable {
     	return this.getTimePattern().getName();
     }
     
+	@Transient
     public TimePatternModel getTimePatternModel() {
     	return getTimePatternModel(null);
     }
@@ -114,6 +123,7 @@ public class TimePref extends BaseTimePref implements Comparable {
     	return true;
     }
 
+	@Transient
     public RequiredTimeTable getRequiredTimeTable() {
     	return getRequiredTimeTable(null);
     }
@@ -134,11 +144,13 @@ public class TimePref extends BaseTimePref implements Comparable {
     	return ToolBox.equals(getTimePattern(),((TimePref)other).getTimePattern());
     }
     
+	@Transient
     public String getPreference() {
     	if (super.getPreference()==null) {
     		return getTimePatternModel().getPreferences();
     	} else return super.getPreference();
     }
     
+	@Transient
     public Type getType() { return Type.TIME; }
 }

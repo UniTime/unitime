@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseSolutionInfo;
 
 
@@ -26,6 +31,8 @@ import org.unitime.timetable.model.base.BaseSolutionInfo;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("1")
 public class SolutionInfo extends BaseSolutionInfo {
 	private static final long serialVersionUID = 1L;
 

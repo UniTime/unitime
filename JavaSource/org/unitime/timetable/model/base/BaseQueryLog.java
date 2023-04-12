@@ -22,12 +22,20 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.QueryLog;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseQueryLog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,65 +50,69 @@ public abstract class BaseQueryLog implements Serializable {
 	private String iException;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_TIME_STAMP = "timeStamp";
-	public static String PROP_TIME_SPENT = "timeSpent";
-	public static String PROP_URI = "uri";
-	public static String PROP_TYPE = "type";
-	public static String PROP_SESSION_ID = "sessionId";
-	public static String PROP_USERID = "uid";
-	public static String PROP_QUERY = "query";
-	public static String PROP_EXCEPTION = "exception";
-
 	public BaseQueryLog() {
-		initialize();
 	}
 
 	public BaseQueryLog(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "query_log_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "query_log_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Column(name = "time_spent", nullable = false)
 	public Long getTimeSpent() { return iTimeSpent; }
 	public void setTimeSpent(Long timeSpent) { iTimeSpent = timeSpent; }
 
+	@Column(name = "uri", nullable = false, length = 255)
 	public String getUri() { return iUri; }
 	public void setUri(String uri) { iUri = uri; }
 
+	@Column(name = "type", nullable = false)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@Column(name = "session_id", nullable = true, length = 32)
 	public String getSessionId() { return iSessionId; }
 	public void setSessionId(String sessionId) { iSessionId = sessionId; }
 
+	@Column(name = "userid", nullable = true, length = 40)
 	public String getUid() { return iUid; }
 	public void setUid(String uid) { iUid = uid; }
 
+	@Column(name = "query", nullable = true)
 	public String getQuery() { return iQuery; }
 	public void setQuery(String query) { iQuery = query; }
 
+	@Column(name = "exception", nullable = true)
 	public String getException() { return iException; }
 	public void setException(String exception) { iException = exception; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof QueryLog)) return false;
 		if (getUniqueId() == null || ((QueryLog)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((QueryLog)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "QueryLog["+getUniqueId()+"]";
 	}

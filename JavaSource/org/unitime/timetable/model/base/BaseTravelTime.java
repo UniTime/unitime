@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TravelTime;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.TravelTime;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTravelTime implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,48 +48,54 @@ public abstract class BaseTravelTime implements Serializable {
 
 	private Session iSession;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_LOC1_ID = "location1Id";
-	public static String PROP_LOC2_ID = "location2Id";
-	public static String PROP_DISTANCE = "distance";
-
 	public BaseTravelTime() {
-		initialize();
 	}
 
 	public BaseTravelTime(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "travel_time_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "travel_time_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "loc1_id", nullable = false)
 	public Long getLocation1Id() { return iLocation1Id; }
 	public void setLocation1Id(Long location1Id) { iLocation1Id = location1Id; }
 
+	@Column(name = "loc2_id", nullable = false)
 	public Long getLocation2Id() { return iLocation2Id; }
 	public void setLocation2Id(Long location2Id) { iLocation2Id = location2Id; }
 
+	@Column(name = "distance", nullable = false)
 	public Integer getDistance() { return iDistance; }
 	public void setDistance(Integer distance) { iDistance = distance; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TravelTime)) return false;
 		if (getUniqueId() == null || ((TravelTime)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TravelTime)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TravelTime["+getUniqueId()+"]";
 	}

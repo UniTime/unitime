@@ -19,11 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BasePosMajorConcentration;
 import org.unitime.timetable.model.dao.PosMajorConcentrationDAO;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pos_major_conc")
 public class PosMajorConcentration extends BasePosMajorConcentration {
 	private static final long serialVersionUID = 1L;
 

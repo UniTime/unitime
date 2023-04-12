@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
 import org.unitime.timetable.model.UserData;
 
@@ -27,31 +29,20 @@ import org.unitime.timetable.model.UserData;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseUserData implements Serializable {
+@MappedSuperclass
+@IdClass(UserDataId.class)
+public abstract class BaseUserData extends UserDataId {
 	private static final long serialVersionUID = 1L;
 
-	private String iExternalUniqueId;
-	private String iName;
 	private String iValue;
 
 
-	public static String PROP_VALUE = "value";
 
-	public BaseUserData() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public String getExternalUniqueId() { return iExternalUniqueId; }
-	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
-
-	public String getName() { return iName; }
-	public void setName(String name) { iName = name; }
-
+	@Column(name = "value", nullable = false, length = 4000)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof UserData)) return false;
 		UserData userData = (UserData)o;
@@ -60,6 +51,7 @@ public abstract class BaseUserData implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getExternalUniqueId() == null || getName() == null) return super.hashCode();
 		return getExternalUniqueId().hashCode() ^ getName().hashCode();

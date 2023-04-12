@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseExamPeriodPref;
 
@@ -28,6 +34,8 @@ import org.unitime.timetable.model.base.BaseExamPeriodPref;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "exam_period_pref")
 public class ExamPeriodPref extends BaseExamPeriodPref {
 	private static final long serialVersionUID = 1L;
 
@@ -76,5 +84,6 @@ public class ExamPeriodPref extends BaseExamPeriodPref {
 	    return super.compareTo(o);
 	}
 	
+	@Transient
 	public Type getType() { return Type.PERIOD; }
 }

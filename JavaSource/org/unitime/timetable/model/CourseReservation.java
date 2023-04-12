@@ -19,12 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseCourseReservation;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("3")
 public class CourseReservation extends BaseCourseReservation {
 	private static final long serialVersionUID = -1024840740051802430L;
 
@@ -38,21 +46,25 @@ public class CourseReservation extends BaseCourseReservation {
 	}
 	
 	@Override
+	@Transient
 	public int getPriority() {
 		return ApplicationProperty.ReservationPriorityCourse.intValue();
 	}
 
 	@Override
+	@Transient
 	public boolean isCanAssignOverLimit() {
 		return ApplicationProperty.ReservationCanOverLimitCourse.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isMustBeUsed() {
 		return ApplicationProperty.ReservationMustBeUsedCourse.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isAllowOverlap() {
 		return ApplicationProperty.ReservationAllowOverlapCourse.isTrue();
 	}

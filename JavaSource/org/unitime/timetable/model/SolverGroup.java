@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,6 +49,9 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solver_group")
 public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
@@ -56,6 +69,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public boolean isExternalManager(){
 		for(Iterator i=getDepartments().iterator();i.hasNext();) {
 			Department d = (Department)i.next();
@@ -64,6 +78,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 		return false;
 	}
 	
+	@Transient
     public Collection getClasses() {
     	Vector classes = new Vector(); 
     	for (Iterator i=getDepartments().iterator();i.hasNext();) {
@@ -81,6 +96,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	}
     	return classes;
 	}
+	@Transient
     public Set getDistributionPreferences() {
     	TreeSet prefs = new TreeSet();
     	for (Iterator i=getDepartments().iterator();i.hasNext();) {
@@ -131,6 +147,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(sg.getUniqueId() == null ? -1 : sg.getUniqueId());
     }
     
+	@Transient
     public Solution getCommittedSolution() {
     	if (getSolutions() == null) return null;
     	for (Iterator i=getSolutions().iterator();i.hasNext();) {
@@ -144,6 +161,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	return getName();
     }
     
+	@Transient
 	public int getMinDistributionPriority() {
 		int ret = Integer.MAX_VALUE;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {
@@ -153,6 +171,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 		return ret;
 	}
 
+	@Transient
 	public int getMaxDistributionPriority() {
 		int ret = Integer.MIN_VALUE;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {
@@ -171,21 +190,25 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 	}
 
 	@Override
+	@Transient
 	public Serializable getQualifierId() {
 		return getUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierType() {
 		return getClass().getSimpleName();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierReference() {
 		return getAbbv();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierLabel() {
 		return getName();
 	}
@@ -201,6 +224,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 		return solverGroups;
 	}
 	
+	@Transient
     public boolean isAllowStudentScheduling() {
     	for (Department department: getDepartments())
     		if (department.isAllowStudentScheduling()) return true;

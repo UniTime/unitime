@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +47,9 @@ import org.unitime.timetable.model.dao.CourseDemandDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_demand")
 public class CourseDemand extends BaseCourseDemand implements Comparable {
 	private static final long serialVersionUID = 1L;
 	
@@ -150,6 +163,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	}
     }
     
+	@Transient
     public CourseOffering getFirstChoiceCourseOffering() {
     	CourseRequest ret = null;
     	for (CourseRequest cr: getCourseRequests()) {
@@ -158,6 +172,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return (ret == null ? null : ret.getCourseOffering());
     }
     
+	@Transient
     public Critical getEffectiveCritical() {
     	if (getCriticalOverride() != null)
     		return Critical.values()[getCriticalOverride()];
@@ -166,6 +181,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return Critical.NORMAL;
     }
     
+	@Transient
     public boolean isCriticalOrImportant() {
     	switch (getEffectiveCritical()) {
     	case CRITICAL:
@@ -216,6 +232,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return false;
     }
     
+	@Transient
     public CourseOffering getEnrolledCourse() {
     	for (CourseRequest cr: getCourseRequests())
         	for (StudentClassEnrollment e: getStudent().getClassEnrollments())
@@ -223,6 +240,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return null;
     }
     
+	@Transient
     public boolean isEnrolledExceptForWaitListSwap() {
     	for (CourseRequest cr: getCourseRequests()) {
     		if (cr.getCourseOffering().equals(getWaitListSwapWithCourseOffering())) continue;

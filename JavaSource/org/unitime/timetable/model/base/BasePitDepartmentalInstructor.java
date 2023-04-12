@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PitClassInstructor;
@@ -34,6 +48,7 @@ import org.unitime.timetable.model.PositionType;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitDepartmentalInstructor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -51,58 +66,69 @@ public abstract class BasePitDepartmentalInstructor implements Serializable {
 	private DepartmentalInstructor iDepartmentalInstructor;
 	private Set<PitClassInstructor> iPitClassesInstructing;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CAREER_ACCT = "careerAcct";
-	public static String PROP_FNAME = "firstName";
-	public static String PROP_MNAME = "middleName";
-	public static String PROP_LNAME = "lastName";
-	public static String PROP_EMAIL = "email";
-
 	public BasePitDepartmentalInstructor() {
-		initialize();
 	}
 
 	public BasePitDepartmentalInstructor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_dept_instructor_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_dept_instructor_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "career_acct", nullable = true, length = 20)
 	public String getCareerAcct() { return iCareerAcct; }
 	public void setCareerAcct(String careerAcct) { iCareerAcct = careerAcct; }
 
+	@Column(name = "fname", nullable = true, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "mname", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "lname", nullable = false, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "pos_code_type", nullable = true)
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "department_id", nullable = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "point_in_time_data_id", nullable = false)
 	public PointInTimeData getPointInTimeData() { return iPointInTimeData; }
 	public void setPointInTimeData(PointInTimeData pointInTimeData) { iPointInTimeData = pointInTimeData; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "dept_instructor_id", nullable = true)
 	public DepartmentalInstructor getDepartmentalInstructor() { return iDepartmentalInstructor; }
 	public void setDepartmentalInstructor(DepartmentalInstructor departmentalInstructor) { iDepartmentalInstructor = departmentalInstructor; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitDepartmentalInstructor", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitClassInstructor> getPitClassesInstructing() { return iPitClassesInstructing; }
 	public void setPitClassesInstructing(Set<PitClassInstructor> pitClassesInstructing) { iPitClassesInstructing = pitClassesInstructing; }
 	public void addTopitClassesInstructing(PitClassInstructor pitClassInstructor) {
@@ -110,17 +136,20 @@ public abstract class BasePitDepartmentalInstructor implements Serializable {
 		iPitClassesInstructing.add(pitClassInstructor);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitDepartmentalInstructor)) return false;
 		if (getUniqueId() == null || ((PitDepartmentalInstructor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitDepartmentalInstructor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitDepartmentalInstructor["+getUniqueId()+"]";
 	}

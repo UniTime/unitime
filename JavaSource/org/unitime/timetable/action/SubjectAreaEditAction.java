@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -178,9 +177,9 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
     	        }   		
         	}
 
-			Set s = sa.getInstructionalOfferings();
-			for (Iterator i = s.iterator(); i.hasNext();) {
-				InstructionalOffering io = (InstructionalOffering) i.next();
+			for (CourseOffering co: sa.getCourseOfferings()) {
+				if (!co.isIsControl()) continue;
+				InstructionalOffering io = co.getInstructionalOffering();
 				io.deleteAllDistributionPreferences(hibSession);
 				io.deleteAllClasses(hibSession);
 				io.deleteAllCourses(hibSession);

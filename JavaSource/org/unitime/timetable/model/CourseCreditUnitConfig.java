@@ -19,6 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseCourseCreditUnitConfig;
@@ -28,6 +42,11 @@ import org.unitime.timetable.model.base.BaseCourseCreditUnitConfig;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_credit_unit_config")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="credit_format", discriminatorType = DiscriminatorType.STRING)
 public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig {
 	private static final long serialVersionUID = 1L;
 	protected static java.text.DecimalFormat sCreditFormat = new java.text.DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
@@ -114,11 +133,13 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		}
 	}
 	
+	@Transient
 	public String getCreditFormat() {
 		CourseCreditFormat ccf = getCourseCreditFormat();
 		return (ccf == null ? null : ccf.getReference());
 	}
 	
+	@Transient
 	public String getCreditFormatAbbv() {
 		CourseCreditFormat ccf = getCourseCreditFormat();
 		return (ccf == null || ccf.getAbbreviation() == null ? "" : ccf.getAbbreviation());
@@ -131,7 +152,9 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		newCreditConfig.setDefinesCreditAtCourseLevel(isDefinesCreditAtCourseLevel());
 	}
 	
+	@Transient
 	public abstract float getMinCredit();
+	@Transient
 	public abstract float getMaxCredit();
 	
 	public abstract Object clone();

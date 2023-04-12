@@ -19,12 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Date;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.base.BaseOverrideReservation;
 
+@Entity
+@DiscriminatorValue("4")
 public class OverrideReservation extends BaseOverrideReservation {
 	private static final long serialVersionUID = 1L;
 
@@ -32,6 +40,7 @@ public class OverrideReservation extends BaseOverrideReservation {
 		super();
 	}
 	
+	@Transient
 	public OverrideType getOverrideType() {
 		return getType() == null ? null : OverrideType.values()[getType()];
 	}
@@ -41,47 +50,55 @@ public class OverrideReservation extends BaseOverrideReservation {
 	}
 	
 	@Override
+	@Transient
 	public boolean isExpired() {
 		OverrideType type = getOverrideType();
 		return (type == null || type.isCanHaveExpirationDate() ? super.isExpired() : type.isExpired());
 	}
 	
 	@Override
+	@Transient
 	public Date getStartDate() {
 		OverrideType type = getOverrideType();
 		return (type == null || type.isCanHaveExpirationDate() ? super.getStartDate() : null);
 	}
 	
 	@Override
+	@Transient
 	public Date getExpirationDate() {
 		OverrideType type = getOverrideType();
 		return (type == null || type.isCanHaveExpirationDate() ? super.getExpirationDate() : null);		
 	}
 	
 	@Override
+	@Transient
 	public int getPriority() {
 		return ApplicationProperty.ReservationPriorityOverride.intValue();
 	}
 
 	@Override
+	@Transient
 	public boolean isCanAssignOverLimit() {
 		OverrideType type = getOverrideType();
 		return type != null && type.isAllowOverLimit();
 	}
 
 	@Override
+	@Transient
 	public boolean isMustBeUsed() {
 		OverrideType type = getOverrideType();
 		return type != null && type.isMustBeUsed();
 	}
 
 	@Override
+	@Transient
 	public boolean isAllowOverlap() {
 		OverrideType type = getOverrideType();
 		return type != null && type.isAllowTimeConflict();
 	}
 	
 	@Override
+	@Transient
 	public boolean isAlwaysExpired() {
 		OverrideType type = getOverrideType();
 		return type != null && !type.isCanHaveExpirationDate();

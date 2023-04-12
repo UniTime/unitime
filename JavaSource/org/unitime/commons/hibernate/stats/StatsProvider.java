@@ -27,6 +27,7 @@ import org.hibernate.stat.CollectionStatistics;
 import org.hibernate.stat.EntityStatistics;
 import org.hibernate.stat.QueryStatistics;
 import org.hibernate.stat.Statistics;
+import org.unitime.commons.Debug;
 import org.unitime.commons.web.htmlgen.Table;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
@@ -458,7 +459,13 @@ public class StatsProvider {
 	
 	                for (int i=0; i<cRegionNames.length; i++) {
 	                    String cRegionName = cRegionNames[i];
-	                    CacheRegionStatistics sStats = stats.getDomainDataRegionStatistics(cRegionName);
+	                    CacheRegionStatistics sStats = null;
+	                    try {
+	                    	sStats = stats.getDomainDataRegionStatistics(cRegionName);
+	                    } catch (IllegalArgumentException e) {
+	                    	Debug.warning(e.getMessage());
+	                    	continue;
+	                    }
 	                    
 	                    row = new TableRow();
 	                    if(i%2==0)

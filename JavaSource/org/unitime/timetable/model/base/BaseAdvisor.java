@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
@@ -32,6 +46,7 @@ import org.unitime.timetable.model.Student;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAdvisor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -47,52 +62,62 @@ public abstract class BaseAdvisor implements Serializable {
 	private Roles iRole;
 	private Set<Student> iStudents;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_FIRST_NAME = "firstName";
-	public static String PROP_MIDDLE_NAME = "middleName";
-	public static String PROP_LAST_NAME = "lastName";
-	public static String PROP_ACAD_TITLE = "academicTitle";
-	public static String PROP_EMAIL = "email";
-
 	public BaseAdvisor() {
-		initialize();
 	}
 
 	public BaseAdvisor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "advisor_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "advisor_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = false, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "first_name", nullable = true, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "middle_name", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "last_name", nullable = true, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "acad_title", nullable = true, length = 50)
 	public String getAcademicTitle() { return iAcademicTitle; }
 	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "role_id", nullable = false)
 	public Roles getRole() { return iRole; }
 	public void setRole(Roles role) { iRole = role; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "student_advisor",
+		joinColumns = { @JoinColumn(name = "advisor_id") },
+		inverseJoinColumns = { @JoinColumn(name = "student_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
@@ -100,17 +125,20 @@ public abstract class BaseAdvisor implements Serializable {
 		iStudents.add(student);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Advisor)) return false;
 		if (getUniqueId() == null || ((Advisor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Advisor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Advisor["+getUniqueId()+"]";
 	}

@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.ContactCategory;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseContactCategory extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,42 +41,42 @@ public abstract class BaseContactCategory extends RefTableEntry implements Seria
 	private String iEmail;
 
 
-	public static String PROP_MESSAGE = "message";
-	public static String PROP_HAS_ROLE = "hasRole";
-	public static String PROP_EMAIL = "email";
-
 	public BaseContactCategory() {
-		initialize();
 	}
 
 	public BaseContactCategory(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "message", nullable = true, length = 2048)
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
 
+	@Column(name = "has_role", nullable = false)
 	public Boolean isHasRole() { return iHasRole; }
+	@Transient
 	public Boolean getHasRole() { return iHasRole; }
 	public void setHasRole(Boolean hasRole) { iHasRole = hasRole; }
 
+	@Column(name = "email", nullable = true, length = 1000)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ContactCategory)) return false;
 		if (getUniqueId() == null || ((ContactCategory)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ContactCategory)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ContactCategory["+getUniqueId()+" "+getLabel()+"]";
 	}

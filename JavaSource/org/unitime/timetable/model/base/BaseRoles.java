@@ -23,12 +23,24 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Roles;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoles implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,45 +53,54 @@ public abstract class BaseRoles implements Serializable {
 
 	private Set<String> iRights;
 
-	public static String PROP_ROLE_ID = "roleId";
-	public static String PROP_REFERENCE = "reference";
-	public static String PROP_ABBV = "abbv";
-	public static String PROP_MANAGER = "manager";
-	public static String PROP_ENABLED = "enabled";
-	public static String PROP_INSTRUCTOR = "instructor";
-
 	public BaseRoles() {
-		initialize();
 	}
 
 	public BaseRoles(Long roleId) {
 		setRoleId(roleId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "roles_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "role_seq")
+	})
+	@GeneratedValue(generator = "roles_id")
+	@Column(name="role_id")
 	public Long getRoleId() { return iRoleId; }
 	public void setRoleId(Long roleId) { iRoleId = roleId; }
 
+	@Column(name = "reference", nullable = false, length = 20)
 	public String getReference() { return iReference; }
 	public void setReference(String reference) { iReference = reference; }
 
+	@Column(name = "abbv", nullable = false, length = 40)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	@Column(name = "manager", nullable = false)
 	public Boolean isManager() { return iManager; }
+	@Transient
 	public Boolean getManager() { return iManager; }
 	public void setManager(Boolean manager) { iManager = manager; }
 
+	@Column(name = "enabled", nullable = false)
 	public Boolean isEnabled() { return iEnabled; }
+	@Transient
 	public Boolean getEnabled() { return iEnabled; }
 	public void setEnabled(Boolean enabled) { iEnabled = enabled; }
 
+	@Column(name = "instructor", nullable = false)
 	public Boolean isInstructor() { return iInstructor; }
+	@Transient
 	public Boolean getInstructor() { return iInstructor; }
 	public void setInstructor(Boolean instructor) { iInstructor = instructor; }
 
+	@ElementCollection
+	@CollectionTable(name = "rights",
+		joinColumns = @JoinColumn(name = "role_id")
+	)
+	@Column(name = "value")
 	public Set<String> getRights() { return iRights; }
 	public void setRights(Set<String> rights) { iRights = rights; }
 	public void addTorights(String string) {
@@ -87,17 +108,20 @@ public abstract class BaseRoles implements Serializable {
 		iRights.add(string);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Roles)) return false;
 		if (getRoleId() == null || ((Roles)o).getRoleId() == null) return false;
 		return getRoleId().equals(((Roles)o).getRoleId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getRoleId() == null) return super.hashCode();
 		return getRoleId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Roles["+getRoleId()+"]";
 	}

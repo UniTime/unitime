@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -39,6 +49,9 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class PreferenceGroup extends BasePreferenceGroup {
 	private static final long serialVersionUID = 1L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -61,10 +74,12 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of TimePrefs
      */
     
+	@Transient
     public Set getTimePreferences(){
     	return getPreferences(TimePref.class);
     }
 
+	@Transient
     public Set getTimePatterns() {
     	Set timePrefs = getTimePreferences();
     	if (timePrefs==null) return null;
@@ -81,6 +96,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of TimePrefs
      */
     
+	@Transient
     public Set getEffectiveTimePreferences(){
     	return effectivePreferences(TimePref.class);
     }
@@ -101,6 +117,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of RoomPrefs
      */
     
+	@Transient
     public Set getRoomPreferences(){
     	return getPreferences(RoomPref.class);
     }
@@ -109,6 +126,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of RoomPrefs
      */
     
+	@Transient
     public Set getEffectiveRoomPreferences(){
     	return effectivePreferences(RoomPref.class);
     }
@@ -117,6 +135,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of BuildingPrefs
      */
     
+	@Transient
     public Set getBuildingPreferences(){
     	return getPreferences(BuildingPref.class);
     }
@@ -125,6 +144,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of BuildingPrefs
      */
     
+	@Transient
     public Set getEffectiveBuildingPreferences(){
     	return effectivePreferences(BuildingPref.class);
     }
@@ -133,6 +153,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of RoomFeaturePrefs
      */
     
+	@Transient
     public Set getRoomFeaturePreferences(){
     	return getPreferences(RoomFeaturePref.class);
     }
@@ -141,6 +162,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of RoomGroupPrefs
      */
     
+	@Transient
     public Set getRoomGroupPreferences(){
     	return getPreferences(RoomGroupPref.class);
     }
@@ -149,6 +171,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of RoomFeaturePrefs
      */
     
+	@Transient
     public Set getEffectiveRoomFeaturePreferences(){
     	return effectivePreferences(RoomFeaturePref.class);
     }
@@ -157,6 +180,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of DistributionPrefs
      */
     
+	@Transient
     public Set getDistributionPreferences() {
     	return getPreferences(DistributionPref.class);
     }
@@ -165,6 +189,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return ArrayList of DistributionPrefs
      */
     
+	@Transient
     public Set getEffectiveDistributionPreferences(){
     	return effectivePreferences(DistributionPref.class);
     }
@@ -174,6 +199,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      * @return - a String of HTML to display the Preference
      */
     
+	@Transient
     public Set getDatePatternPreferences(){
     	return getPreferences(DatePatternPref.class);
     }
@@ -286,6 +312,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null, highlightClassPrefs));
     }
 
+	@Transient
     public Class getInstanceOf() {
         return PreferenceGroup.class;
     }
@@ -342,9 +369,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return null;
     }
     
+	@Transient
     public Set<Location> getAvailableRooms() {
     	return new TreeSet<Location>();
     }
+	@Transient
     public Set<Building> getAvailableBuildings() {
     	TreeSet<Building> bldgs = new TreeSet<Building>();
     	for (Location location: getAvailableRooms()) {
@@ -353,36 +382,46 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	}
     	return bldgs;
     }
+	@Transient
     public abstract Session getSession();
     
+	@Transient
     public Set<RoomFeature> getAvailableRoomFeatures() {
     	return new TreeSet<RoomFeature>(RoomFeature.getAllGlobalRoomFeatures(getSession()));
     }
+	@Transient
     public Set<RoomGroup> getAvailableRoomGroups() {
     	return new TreeSet<RoomGroup>(RoomGroup.getAllGlobalRoomGroups(getSession()));
     }
     
+	@Transient
     public Set getAvailableCourses() {
     	return new TreeSet();
     }
     
+	@Transient
     public Set getAvailableAttributeTypes() {
     	return new TreeSet();
     }
     
+	@Transient
     public Set getAvailableAttributes() {
     	return new TreeSet();
     }
     
+	@Transient
     public Set getExamPeriodPreferences(){
         return getPreferences(ExamPeriodPref.class);
     }
     
+	@Transient
     public Set getEffectiveExamPeriodPreferences(){
         return effectivePreferences(ExamPeriodPref.class);
     }
     
+	@Transient
     public abstract Department getDepartment();
     
+	@Transient
     public boolean isInstructorAssignmentNeeded() { return false; }
 }

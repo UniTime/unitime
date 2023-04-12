@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PitDepartmentalInstructor;
 import org.unitime.timetable.model.PitInstructionalOffering;
 import org.unitime.timetable.model.PitOfferingCoordinator;
@@ -30,6 +39,7 @@ import org.unitime.timetable.model.TeachingResponsibility;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitOfferingCoordinator implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,46 +50,56 @@ public abstract class BasePitOfferingCoordinator implements Serializable {
 	private PitDepartmentalInstructor iPitDepartmentalInstructor;
 	private TeachingResponsibility iResponsibility;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_PERCENT_SHARE = "percentShare";
-
 	public BasePitOfferingCoordinator() {
-		initialize();
 	}
 
 	public BasePitOfferingCoordinator(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_offering_coord_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_offering_coord_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "percent_share", nullable = false, length = 3)
 	public Integer getPercentShare() { return iPercentShare; }
 	public void setPercentShare(Integer percentShare) { iPercentShare = percentShare; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_offering_id", nullable = false)
 	public PitInstructionalOffering getPitInstructionalOffering() { return iPitInstructionalOffering; }
 	public void setPitInstructionalOffering(PitInstructionalOffering pitInstructionalOffering) { iPitInstructionalOffering = pitInstructionalOffering; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_dept_instr_id", nullable = false)
 	public PitDepartmentalInstructor getPitDepartmentalInstructor() { return iPitDepartmentalInstructor; }
 	public void setPitDepartmentalInstructor(PitDepartmentalInstructor pitDepartmentalInstructor) { iPitDepartmentalInstructor = pitDepartmentalInstructor; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "responsibility_id", nullable = true)
 	public TeachingResponsibility getResponsibility() { return iResponsibility; }
 	public void setResponsibility(TeachingResponsibility responsibility) { iResponsibility = responsibility; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitOfferingCoordinator)) return false;
 		if (getUniqueId() == null || ((PitOfferingCoordinator)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitOfferingCoordinator)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitOfferingCoordinator["+getUniqueId()+"]";
 	}

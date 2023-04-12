@@ -20,6 +20,16 @@
  
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Collection;
 
 import org.unitime.timetable.model.Event.MultiMeeting;
@@ -31,6 +41,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "event_note")
 public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	private static final long serialVersionUID = 1L;
 
@@ -80,6 +93,7 @@ public class EventNote extends BaseEventNote implements Comparable<EventNote> {
         setMeetings(meetingStr);
 	}
 	
+	@Transient
 	public String getMeetingsHtml() {
 	    if (getMeetings()==null || getMeetings().length()==0) return "<i>N/A</i>";
 	    return getMeetings().replaceAll("\n", "<br>");

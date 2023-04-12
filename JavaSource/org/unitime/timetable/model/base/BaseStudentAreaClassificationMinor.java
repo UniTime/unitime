@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.PosMinor;
@@ -31,6 +40,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMinor;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentAreaClassificationMinor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,45 +51,57 @@ public abstract class BaseStudentAreaClassificationMinor implements Serializable
 	private AcademicClassification iAcademicClassification;
 	private PosMinor iMinor;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-
 	public BaseStudentAreaClassificationMinor() {
-		initialize();
 	}
 
 	public BaseStudentAreaClassificationMinor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_area_clasf_minor_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_area_clasf_minor_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "student_id", nullable = false)
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_area_id", nullable = false)
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_clasf_id", nullable = false)
 	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
 	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "minor_id", nullable = false)
 	public PosMinor getMinor() { return iMinor; }
 	public void setMinor(PosMinor minor) { iMinor = minor; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentAreaClassificationMinor)) return false;
 		if (getUniqueId() == null || ((StudentAreaClassificationMinor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentAreaClassificationMinor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentAreaClassificationMinor["+getUniqueId()+"]";
 	}

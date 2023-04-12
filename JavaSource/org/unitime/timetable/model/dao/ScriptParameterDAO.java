@@ -23,10 +23,10 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.ScriptParameterId;
 import org.unitime.timetable.model.ScriptParameter;
 
-public class ScriptParameterDAO extends _RootDAO<ScriptParameter,Serializable> {
+public class ScriptParameterDAO extends _RootDAO<ScriptParameter,ScriptParameterId> {
 	private static ScriptParameterDAO sInstance;
 
 	public ScriptParameterDAO() {}

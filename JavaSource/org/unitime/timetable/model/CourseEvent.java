@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +37,8 @@ import org.unitime.timetable.model.base.BaseCourseEvent;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("3")
 public class CourseEvent extends BaseCourseEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -48,6 +56,7 @@ public class CourseEvent extends BaseCourseEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
     public Set<Student> getStudents() {
         HashSet<Student> students = new HashSet();
         if (isReqAttendance()==null || !isReqAttendance().booleanValue()) return students;
@@ -57,6 +66,7 @@ public class CourseEvent extends BaseCourseEvent {
   
     }
     
+	@Transient
     public Set<DepartmentalInstructor> getInstructors() {
         HashSet<DepartmentalInstructor> instructors = new HashSet();
         if (isReqAttendance()==null || !isReqAttendance().booleanValue()) return instructors;
@@ -65,8 +75,10 @@ public class CourseEvent extends BaseCourseEvent {
         return instructors;
     }
 
+	@Transient
     public int getEventType() { return sEventTypeCourse; }
 
+	@Transient
     public Collection<Long> getStudentIds() {
         HashSet<Long> studentIds = new HashSet();
         for (Iterator i=getRelatedCourses().iterator();i.hasNext();)
@@ -75,6 +87,7 @@ public class CourseEvent extends BaseCourseEvent {
     }
 
 	@Override
+	@Transient
 	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
         HashSet<StudentClassEnrollment> enrollments = new HashSet();
         for (RelatedCourseInfo owner: getRelatedCourses())
@@ -82,6 +95,7 @@ public class CourseEvent extends BaseCourseEvent {
         return enrollments;
 	}
 	
+	@Transient
 	public Session getSession() {
 		if (getRelatedCourses() == null) return null;
 		for (RelatedCourseInfo rc: getRelatedCourses())

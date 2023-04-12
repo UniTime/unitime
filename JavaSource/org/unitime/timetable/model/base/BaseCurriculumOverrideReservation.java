@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 
@@ -28,39 +31,39 @@ import org.unitime.timetable.model.CurriculumReservation;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCurriculumOverrideReservation extends CurriculumReservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Integer iFlags;
 
 
-	public static String PROP_OVERRIDE_TYPE = "flags";
-
 	public BaseCurriculumOverrideReservation() {
-		initialize();
 	}
 
 	public BaseCurriculumOverrideReservation(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "override_type", nullable = false)
 	public Integer getFlags() { return iFlags; }
 	public void setFlags(Integer flags) { iFlags = flags; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CurriculumOverrideReservation)) return false;
 		if (getUniqueId() == null || ((CurriculumOverrideReservation)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CurriculumOverrideReservation)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CurriculumOverrideReservation["+getUniqueId()+"]";
 	}

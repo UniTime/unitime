@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +36,8 @@ import org.unitime.timetable.model.base.BaseSpecialEvent;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("4")
 public class SpecialEvent extends BaseSpecialEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -47,19 +55,24 @@ public class SpecialEvent extends BaseSpecialEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
     public Set<Student> getStudents() {
         return new HashSet<Student>();
     }
     
+	@Transient
     public Set<DepartmentalInstructor> getInstructors() {
         return new HashSet<DepartmentalInstructor>();
     }
     
+	@Transient
     public int getEventType() { return sEventTypeSpecial; }
 
+	@Transient
     public Collection<Long> getStudentIds() { return null; }
 
     @Override
+	@Transient
 	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
     	return null;
     }

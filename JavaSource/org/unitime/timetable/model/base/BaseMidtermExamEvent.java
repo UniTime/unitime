@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.MidtermExamEvent;
 
@@ -28,33 +30,33 @@ import org.unitime.timetable.model.MidtermExamEvent;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseMidtermExamEvent extends ExamEvent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public BaseMidtermExamEvent() {
-		initialize();
 	}
 
 	public BaseMidtermExamEvent(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof MidtermExamEvent)) return false;
 		if (getUniqueId() == null || ((MidtermExamEvent)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((MidtermExamEvent)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "MidtermExamEvent["+getUniqueId()+"]";
 	}

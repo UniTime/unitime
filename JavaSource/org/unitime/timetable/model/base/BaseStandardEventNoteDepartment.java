@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.StandardEventNoteDepartment;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.StandardEventNoteDepartment;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStandardEventNoteDepartment extends StandardEventNote implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Department iDepartment;
 
-
 	public BaseStandardEventNoteDepartment() {
-		initialize();
 	}
 
 	public BaseStandardEventNoteDepartment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "department_id", nullable = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StandardEventNoteDepartment)) return false;
 		if (getUniqueId() == null || ((StandardEventNoteDepartment)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StandardEventNoteDepartment)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StandardEventNoteDepartment["+getUniqueId()+"]";
 	}

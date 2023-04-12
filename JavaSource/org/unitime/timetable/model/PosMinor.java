@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import org.unitime.timetable.model.base.BasePosMinor;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 
@@ -27,6 +36,9 @@ import org.unitime.timetable.model.dao.PosMinorDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pos_minor")
 public class PosMinor extends BasePosMinor {
 	private static final long serialVersionUID = 1L;
 

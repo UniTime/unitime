@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -40,6 +53,7 @@ import org.unitime.timetable.model.TimetableManager;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDepartment extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -71,99 +85,112 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	private Set<TimetableManager> iTimetableManagers;
 	private Set<DepartmentalInstructor> iInstructors;
 
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_DEPT_CODE = "deptCode";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_NAME = "name";
-	public static String PROP_ALLOW_REQ_TIME = "allowReqTime";
-	public static String PROP_ALLOW_REQ_ROOM = "allowReqRoom";
-	public static String PROP_ALLOW_REQ_DIST = "allowReqDistribution";
-	public static String PROP_ALLOW_EVENTS = "allowEvents";
-	public static String PROP_ALLOW_STUDENT_SCHD = "allowStudentScheduling";
-	public static String PROP_INSTRUCTOR_PREF = "inheritInstructorPreferences";
-	public static String PROP_RS_COLOR = "roomSharingColor";
-	public static String PROP_EXTERNAL_MANAGER = "externalManager";
-	public static String PROP_EXTERNAL_MGR_LABEL = "externalMgrLabel";
-	public static String PROP_EXTERNAL_MGR_ABBV = "externalMgrAbbv";
-	public static String PROP_DIST_PRIORITY = "distributionPrefPriority";
-	public static String PROP_EXTERNAL_FUNDING_DEPT = "externalFundingDept";
-
 	public BaseDepartment() {
-		initialize();
 	}
 
 	public BaseDepartment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "dept_code", nullable = false, length = 50)
 	public String getDeptCode() { return iDeptCode; }
 	public void setDeptCode(String deptCode) { iDeptCode = deptCode; }
 
+	@Column(name = "abbreviation", nullable = true, length = 20)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "allow_req_time", nullable = false)
 	public Boolean isAllowReqTime() { return iAllowReqTime; }
+	@Transient
 	public Boolean getAllowReqTime() { return iAllowReqTime; }
 	public void setAllowReqTime(Boolean allowReqTime) { iAllowReqTime = allowReqTime; }
 
+	@Column(name = "allow_req_room", nullable = false)
 	public Boolean isAllowReqRoom() { return iAllowReqRoom; }
+	@Transient
 	public Boolean getAllowReqRoom() { return iAllowReqRoom; }
 	public void setAllowReqRoom(Boolean allowReqRoom) { iAllowReqRoom = allowReqRoom; }
 
+	@Column(name = "allow_req_dist", nullable = false)
 	public Boolean isAllowReqDistribution() { return iAllowReqDistribution; }
+	@Transient
 	public Boolean getAllowReqDistribution() { return iAllowReqDistribution; }
 	public void setAllowReqDistribution(Boolean allowReqDistribution) { iAllowReqDistribution = allowReqDistribution; }
 
+	@Column(name = "allow_events", nullable = false)
 	public Boolean isAllowEvents() { return iAllowEvents; }
+	@Transient
 	public Boolean getAllowEvents() { return iAllowEvents; }
 	public void setAllowEvents(Boolean allowEvents) { iAllowEvents = allowEvents; }
 
+	@Column(name = "allow_student_schd", nullable = false)
 	public Boolean isAllowStudentScheduling() { return iAllowStudentScheduling; }
+	@Transient
 	public Boolean getAllowStudentScheduling() { return iAllowStudentScheduling; }
 	public void setAllowStudentScheduling(Boolean allowStudentScheduling) { iAllowStudentScheduling = allowStudentScheduling; }
 
+	@Column(name = "instructor_pref", nullable = false)
 	public Boolean isInheritInstructorPreferences() { return iInheritInstructorPreferences; }
+	@Transient
 	public Boolean getInheritInstructorPreferences() { return iInheritInstructorPreferences; }
 	public void setInheritInstructorPreferences(Boolean inheritInstructorPreferences) { iInheritInstructorPreferences = inheritInstructorPreferences; }
 
+	@Column(name = "rs_color", nullable = true, length = 6)
 	public String getRoomSharingColor() { return iRoomSharingColor; }
 	public void setRoomSharingColor(String roomSharingColor) { iRoomSharingColor = roomSharingColor; }
 
+	@Column(name = "external_manager", nullable = false)
 	public Boolean isExternalManager() { return iExternalManager; }
+	@Transient
 	public Boolean getExternalManager() { return iExternalManager; }
 	public void setExternalManager(Boolean externalManager) { iExternalManager = externalManager; }
 
+	@Column(name = "external_mgr_label", nullable = true, length = 30)
 	public String getExternalMgrLabel() { return iExternalMgrLabel; }
 	public void setExternalMgrLabel(String externalMgrLabel) { iExternalMgrLabel = externalMgrLabel; }
 
+	@Column(name = "external_mgr_abbv", nullable = true, length = 10)
 	public String getExternalMgrAbbv() { return iExternalMgrAbbv; }
 	public void setExternalMgrAbbv(String externalMgrAbbv) { iExternalMgrAbbv = externalMgrAbbv; }
 
+	@Column(name = "dist_priority", nullable = false)
 	public Integer getDistributionPrefPriority() { return iDistributionPrefPriority; }
 	public void setDistributionPrefPriority(Integer distributionPrefPriority) { iDistributionPrefPriority = distributionPrefPriority; }
 
+	@Column(name = "external_funding_dept", nullable = true)
 	public Boolean isExternalFundingDept() { return iExternalFundingDept; }
+	@Transient
 	public Boolean getExternalFundingDept() { return iExternalFundingDept; }
 	public void setExternalFundingDept(Boolean externalFundingDept) { iExternalFundingDept = externalFundingDept; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "status_type", nullable = true)
 	public DepartmentStatusType getStatusType() { return iStatusType; }
 	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
+	@ManyToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "solver_group_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public SolverGroup getSolverGroup() { return iSolverGroup; }
 	public void setSolverGroup(SolverGroup solverGroup) { iSolverGroup = solverGroup; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "department", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
@@ -171,6 +198,8 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iSubjectAreas.add(subjectArea);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "department", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
 	public void addToroomDepts(RoomDept roomDept) {
@@ -178,6 +207,11 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iRoomDepts.add(roomDept);
 	}
 
+	@ManyToMany
+	@JoinTable(name = "date_pattern_dept",
+		joinColumns = { @JoinColumn(name = "dept_id") },
+		inverseJoinColumns = { @JoinColumn(name = "pattern_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DatePattern> getDatePatterns() { return iDatePatterns; }
 	public void setDatePatterns(Set<DatePattern> datePatterns) { iDatePatterns = datePatterns; }
 	public void addTodatePatterns(DatePattern datePattern) {
@@ -185,6 +219,11 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iDatePatterns.add(datePattern);
 	}
 
+	@ManyToMany
+	@JoinTable(name = "time_pattern_dept",
+		joinColumns = { @JoinColumn(name = "dept_id") },
+		inverseJoinColumns = { @JoinColumn(name = "pattern_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimePattern> getTimePatterns() { return iTimePatterns; }
 	public void setTimePatterns(Set<TimePattern> timePatterns) { iTimePatterns = timePatterns; }
 	public void addTotimePatterns(TimePattern timePattern) {
@@ -192,6 +231,8 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iTimePatterns.add(timePattern);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "externalDepartment", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ExternalDepartmentStatusType> getExternalStatusTypes() { return iExternalStatusTypes; }
 	public void setExternalStatusTypes(Set<ExternalDepartmentStatusType> externalStatusTypes) { iExternalStatusTypes = externalStatusTypes; }
 	public void addToexternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
@@ -199,6 +240,11 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iExternalStatusTypes.add(externalDepartmentStatusType);
 	}
 
+	@ManyToMany
+	@JoinTable(name = "dept_to_tt_mgr",
+		joinColumns = { @JoinColumn(name = "department_id") },
+		inverseJoinColumns = { @JoinColumn(name = "timetable_mgr_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addTotimetableManagers(TimetableManager timetableManager) {
@@ -206,6 +252,8 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iTimetableManagers.add(timetableManager);
 	}
 
+	@OneToMany(mappedBy = "department", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
@@ -213,17 +261,20 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 		iInstructors.add(departmentalInstructor);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Department)) return false;
 		if (getUniqueId() == null || ((Department)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Department)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Department["+getUniqueId()+" "+getName()+"]";
 	}

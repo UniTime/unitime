@@ -24,6 +24,22 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.CourseDemand;
@@ -43,6 +59,7 @@ import org.unitime.timetable.model.WaitList;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -81,105 +98,113 @@ public abstract class BaseStudent implements Serializable {
 	private Set<Advisor> iAdvisors;
 	private Set<AdvisorCourseRequest> iAdvisorCourseRequests;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_FIRST_NAME = "firstName";
-	public static String PROP_MIDDLE_NAME = "middleName";
-	public static String PROP_LAST_NAME = "lastName";
-	public static String PROP_EMAIL = "email";
-	public static String PROP_FREE_TIME_CAT = "freeTimeCategory";
-	public static String PROP_SCHEDULE_PREFERENCE = "schedulePreference";
-	public static String PROP_MAX_CREDIT = "maxCredit";
-	public static String PROP_MIN_CREDIT = "minCredit";
-	public static String PROP_REQ_CREDIT = "overrideMaxCredit";
-	public static String PROP_REQ_STATUS = "overrideStatus";
-	public static String PROP_REQ_EXTID = "overrideExternalId";
-	public static String PROP_REQ_TS = "overrideTimeStamp";
-	public static String PROP_REQ_INTENT = "overrideIntent";
-	public static String PROP_PIN = "pin";
-	public static String PROP_PIN_RELEASED = "pinReleased";
-	public static String PROP_CLASS_START = "classStartDate";
-	public static String PROP_CLASS_END = "classEndDate";
-	public static String PROP_SCHEDULE_EMAILED = "scheduleEmailedDate";
-
 	public BaseStudent() {
-		initialize();
 	}
 
 	public BaseStudent(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "first_name", nullable = false, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "middle_name", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "last_name", nullable = false, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Column(name = "free_time_cat", nullable = false, length = 10)
 	public Integer getFreeTimeCategory() { return iFreeTimeCategory; }
 	public void setFreeTimeCategory(Integer freeTimeCategory) { iFreeTimeCategory = freeTimeCategory; }
 
+	@Column(name = "schedule_preference", nullable = false, length = 10)
 	public Integer getSchedulePreference() { return iSchedulePreference; }
 	public void setSchedulePreference(Integer schedulePreference) { iSchedulePreference = schedulePreference; }
 
+	@Column(name = "max_credit", nullable = true)
 	public Float getMaxCredit() { return iMaxCredit; }
 	public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
 
+	@Column(name = "min_credit", nullable = true)
 	public Float getMinCredit() { return iMinCredit; }
 	public void setMinCredit(Float minCredit) { iMinCredit = minCredit; }
 
+	@Column(name = "req_credit", nullable = true)
 	public Float getOverrideMaxCredit() { return iOverrideMaxCredit; }
 	public void setOverrideMaxCredit(Float overrideMaxCredit) { iOverrideMaxCredit = overrideMaxCredit; }
 
+	@Column(name = "req_status", nullable = true, length = 10)
 	public Integer getOverrideStatus() { return iOverrideStatus; }
 	public void setOverrideStatus(Integer overrideStatus) { iOverrideStatus = overrideStatus; }
 
+	@Column(name = "req_extid", nullable = true, length = 40)
 	public String getOverrideExternalId() { return iOverrideExternalId; }
 	public void setOverrideExternalId(String overrideExternalId) { iOverrideExternalId = overrideExternalId; }
 
+	@Column(name = "req_ts", nullable = true)
 	public Date getOverrideTimeStamp() { return iOverrideTimeStamp; }
 	public void setOverrideTimeStamp(Date overrideTimeStamp) { iOverrideTimeStamp = overrideTimeStamp; }
 
+	@Column(name = "req_intent", nullable = true, length = 10)
 	public Integer getOverrideIntent() { return iOverrideIntent; }
 	public void setOverrideIntent(Integer overrideIntent) { iOverrideIntent = overrideIntent; }
 
+	@Column(name = "pin", nullable = true, length = 40)
 	public String getPin() { return iPin; }
 	public void setPin(String pin) { iPin = pin; }
 
+	@Column(name = "pin_released", nullable = true)
 	public Boolean isPinReleased() { return iPinReleased; }
+	@Transient
 	public Boolean getPinReleased() { return iPinReleased; }
 	public void setPinReleased(Boolean pinReleased) { iPinReleased = pinReleased; }
 
+	@Column(name = "class_start", nullable = true)
 	public Date getClassStartDate() { return iClassStartDate; }
 	public void setClassStartDate(Date classStartDate) { iClassStartDate = classStartDate; }
 
+	@Column(name = "class_end", nullable = true)
 	public Date getClassEndDate() { return iClassEndDate; }
 	public void setClassEndDate(Date classEndDate) { iClassEndDate = classEndDate; }
 
+	@Column(name = "schedule_emailed", nullable = true)
 	public Date getScheduleEmailedDate() { return iScheduleEmailedDate; }
 	public void setScheduleEmailedDate(Date scheduleEmailedDate) { iScheduleEmailedDate = scheduleEmailedDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "sect_status", nullable = true)
 	public StudentSectioningStatus getSectioningStatus() { return iSectioningStatus; }
 	public void setSectioningStatus(StudentSectioningStatus sectioningStatus) { iSectioningStatus = sectioningStatus; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentAreaClassificationMajor> getAreaClasfMajors() { return iAreaClasfMajors; }
 	public void setAreaClasfMajors(Set<StudentAreaClassificationMajor> areaClasfMajors) { iAreaClasfMajors = areaClasfMajors; }
 	public void addToareaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
@@ -187,6 +212,8 @@ public abstract class BaseStudent implements Serializable {
 		iAreaClasfMajors.add(studentAreaClassificationMajor);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentAreaClassificationMinor> getAreaClasfMinors() { return iAreaClasfMinors; }
 	public void setAreaClasfMinors(Set<StudentAreaClassificationMinor> areaClasfMinors) { iAreaClasfMinors = areaClasfMinors; }
 	public void addToareaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
@@ -194,6 +221,8 @@ public abstract class BaseStudent implements Serializable {
 		iAreaClasfMinors.add(studentAreaClassificationMinor);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }
 	public void setAccomodations(Set<StudentAccomodation> accomodations) { iAccomodations = accomodations; }
 	public void addToaccomodations(StudentAccomodation studentAccomodation) {
@@ -201,6 +230,8 @@ public abstract class BaseStudent implements Serializable {
 		iAccomodations.add(studentAccomodation);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<StudentGroup> groups) { iGroups = groups; }
 	public void addTogroups(StudentGroup studentGroup) {
@@ -208,6 +239,8 @@ public abstract class BaseStudent implements Serializable {
 		iGroups.add(studentGroup);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<WaitList> getWaitlists() { return iWaitlists; }
 	public void setWaitlists(Set<WaitList> waitlists) { iWaitlists = waitlists; }
 	public void addTowaitlists(WaitList waitList) {
@@ -215,6 +248,8 @@ public abstract class BaseStudent implements Serializable {
 		iWaitlists.add(waitList);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CourseDemand> getCourseDemands() { return iCourseDemands; }
 	public void setCourseDemands(Set<CourseDemand> courseDemands) { iCourseDemands = courseDemands; }
 	public void addTocourseDemands(CourseDemand courseDemand) {
@@ -222,6 +257,8 @@ public abstract class BaseStudent implements Serializable {
 		iCourseDemands.add(courseDemand);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
 	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
 	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
@@ -229,6 +266,8 @@ public abstract class BaseStudent implements Serializable {
 		iClassEnrollments.add(studentClassEnrollment);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<LastLikeCourseDemand> getLastLikeCourseDemands() { return iLastLikeCourseDemands; }
 	public void setLastLikeCourseDemands(Set<LastLikeCourseDemand> lastLikeCourseDemands) { iLastLikeCourseDemands = lastLikeCourseDemands; }
 	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
@@ -236,6 +275,8 @@ public abstract class BaseStudent implements Serializable {
 		iLastLikeCourseDemands.add(lastLikeCourseDemand);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<StudentNote> getNotes() { return iNotes; }
 	public void setNotes(Set<StudentNote> notes) { iNotes = notes; }
 	public void addTonotes(StudentNote studentNote) {
@@ -243,6 +284,8 @@ public abstract class BaseStudent implements Serializable {
 		iNotes.add(studentNote);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Advisor> getAdvisors() { return iAdvisors; }
 	public void setAdvisors(Set<Advisor> advisors) { iAdvisors = advisors; }
 	public void addToadvisors(Advisor advisor) {
@@ -250,6 +293,8 @@ public abstract class BaseStudent implements Serializable {
 		iAdvisors.add(advisor);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<AdvisorCourseRequest> getAdvisorCourseRequests() { return iAdvisorCourseRequests; }
 	public void setAdvisorCourseRequests(Set<AdvisorCourseRequest> advisorCourseRequests) { iAdvisorCourseRequests = advisorCourseRequests; }
 	public void addToadvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {
@@ -257,17 +302,20 @@ public abstract class BaseStudent implements Serializable {
 		iAdvisorCourseRequests.add(advisorCourseRequest);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Student)) return false;
 		if (getUniqueId() == null || ((Student)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Student)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Student["+getUniqueId()+"]";
 	}

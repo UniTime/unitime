@@ -23,6 +23,23 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -33,6 +50,7 @@ import org.unitime.timetable.model.PosMajor;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCurriculum implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -46,41 +64,52 @@ public abstract class BaseCurriculum implements Serializable {
 	private Set<PosMajor> iMajors;
 	private Set<CurriculumClassification> iClassifications;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_ABBV = "abbv";
-	public static String PROP_NAME = "name";
-	public static String PROP_MULTIPLE_MAJORS = "multipleMajors";
-
 	public BaseCurriculum() {
-		initialize();
 	}
 
 	public BaseCurriculum(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "curriculum_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "curriculum_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "abbv", nullable = false, length = 40)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "multiple_majors", nullable = false)
 	public Boolean isMultipleMajors() { return iMultipleMajors; }
+	@Transient
 	public Boolean getMultipleMajors() { return iMultipleMajors; }
 	public void setMultipleMajors(Boolean multipleMajors) { iMultipleMajors = multipleMajors; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_area_id", nullable = false)
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "dept_id", nullable = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "curriculum_major",
+		joinColumns = { @JoinColumn(name = "curriculum_id") },
+		inverseJoinColumns = { @JoinColumn(name = "major_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
 	public void addTomajors(PosMajor posMajor) {
@@ -88,6 +117,8 @@ public abstract class BaseCurriculum implements Serializable {
 		iMajors.add(posMajor);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "curriculum", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CurriculumClassification> getClassifications() { return iClassifications; }
 	public void setClassifications(Set<CurriculumClassification> classifications) { iClassifications = classifications; }
 	public void addToclassifications(CurriculumClassification curriculumClassification) {
@@ -95,17 +126,20 @@ public abstract class BaseCurriculum implements Serializable {
 		iClassifications.add(curriculumClassification);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Curriculum)) return false;
 		if (getUniqueId() == null || ((Curriculum)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Curriculum)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Curriculum["+getUniqueId()+" "+getName()+"]";
 	}

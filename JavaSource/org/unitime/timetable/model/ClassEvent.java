@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +40,8 @@ import org.unitime.timetable.model.dao.RelatedCourseInfoDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("0")
 public class ClassEvent extends BaseClassEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -51,6 +59,7 @@ public class ClassEvent extends BaseClassEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
     public Set<Student> getStudents() {
         HashSet<Student> students = new HashSet();
         for (Iterator i=getClazz().getStudentEnrollments().iterator();i.hasNext();)
@@ -58,6 +67,7 @@ public class ClassEvent extends BaseClassEvent {
         return students;
     }
     
+	@Transient
     public Collection<Long> getStudentIds() {
         return new RelatedCourseInfoDAO().getSession().createQuery(
                 "select distinct e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId")
@@ -67,6 +77,7 @@ public class ClassEvent extends BaseClassEvent {
     }
 
     
+	@Transient
     public Set<DepartmentalInstructor> getInstructors() {
         HashSet<DepartmentalInstructor> instructors = new HashSet();
         for (Iterator i=getClazz().getClassInstructors().iterator();i.hasNext();) {
@@ -76,11 +87,14 @@ public class ClassEvent extends BaseClassEvent {
         return instructors;
     }
     
+	@Transient
     public int getEventType() { return sEventTypeClass; }
     
+	@Transient
     public Session getSession() { return getClazz().getSession(); }
 
 	@Override
+	@Transient
 	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
 		return (List<StudentClassEnrollment>)
 			ClassEventDAO.getInstance().getSession().createQuery(

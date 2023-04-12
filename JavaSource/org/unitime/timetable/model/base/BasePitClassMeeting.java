@@ -24,6 +24,20 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PitClassEvent;
 import org.unitime.timetable.model.PitClassMeeting;
 import org.unitime.timetable.model.PitClassMeetingUtilPeriod;
@@ -32,6 +46,7 @@ import org.unitime.timetable.model.PitClassMeetingUtilPeriod;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitClassMeeting implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,57 +63,62 @@ public abstract class BasePitClassMeeting implements Serializable {
 	private PitClassEvent iPitClassEvent;
 	private Set<PitClassMeetingUtilPeriod> iPitClassMeetingUtilPeriods;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_MEETING_DATE = "meetingDate";
-	public static String PROP_START_PERIOD = "startPeriod";
-	public static String PROP_START_OFFSET = "startOffset";
-	public static String PROP_STOP_PERIOD = "stopPeriod";
-	public static String PROP_STOP_OFFSET = "stopOffset";
-	public static String PROP_LOCATION_PERM_ID = "locationPermanentId";
-	public static String PROP_TIME_PATTERN_MIN_PER_MTG = "timePatternMinPerMtg";
-	public static String PROP_CALCULATED_MIN_PER_MTG = "calculatedMinPerMtg";
-
 	public BasePitClassMeeting() {
-		initialize();
 	}
 
 	public BasePitClassMeeting(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_class_meeting_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_class_meeting_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "meeting_date", nullable = false)
 	public Date getMeetingDate() { return iMeetingDate; }
 	public void setMeetingDate(Date meetingDate) { iMeetingDate = meetingDate; }
 
+	@Column(name = "start_period", nullable = false, length = 10)
 	public Integer getStartPeriod() { return iStartPeriod; }
 	public void setStartPeriod(Integer startPeriod) { iStartPeriod = startPeriod; }
 
+	@Column(name = "start_offset", nullable = true, length = 10)
 	public Integer getStartOffset() { return iStartOffset; }
 	public void setStartOffset(Integer startOffset) { iStartOffset = startOffset; }
 
+	@Column(name = "stop_period", nullable = false, length = 10)
 	public Integer getStopPeriod() { return iStopPeriod; }
 	public void setStopPeriod(Integer stopPeriod) { iStopPeriod = stopPeriod; }
 
+	@Column(name = "stop_offset", nullable = true, length = 10)
 	public Integer getStopOffset() { return iStopOffset; }
 	public void setStopOffset(Integer stopOffset) { iStopOffset = stopOffset; }
 
+	@Column(name = "location_perm_id", nullable = true, length = 20)
 	public Long getLocationPermanentId() { return iLocationPermanentId; }
 	public void setLocationPermanentId(Long locationPermanentId) { iLocationPermanentId = locationPermanentId; }
 
+	@Column(name = "time_pattern_min_per_mtg", nullable = false, length = 10)
 	public Integer getTimePatternMinPerMtg() { return iTimePatternMinPerMtg; }
 	public void setTimePatternMinPerMtg(Integer timePatternMinPerMtg) { iTimePatternMinPerMtg = timePatternMinPerMtg; }
 
+	@Column(name = "calculated_min_per_mtg", nullable = false, length = 10)
 	public Integer getCalculatedMinPerMtg() { return iCalculatedMinPerMtg; }
 	public void setCalculatedMinPerMtg(Integer calculatedMinPerMtg) { iCalculatedMinPerMtg = calculatedMinPerMtg; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_class_event_id", nullable = false)
 	public PitClassEvent getPitClassEvent() { return iPitClassEvent; }
 	public void setPitClassEvent(PitClassEvent pitClassEvent) { iPitClassEvent = pitClassEvent; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassMeeting", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PitClassMeetingUtilPeriod> getPitClassMeetingUtilPeriods() { return iPitClassMeetingUtilPeriods; }
 	public void setPitClassMeetingUtilPeriods(Set<PitClassMeetingUtilPeriod> pitClassMeetingUtilPeriods) { iPitClassMeetingUtilPeriods = pitClassMeetingUtilPeriods; }
 	public void addTopitClassMeetingUtilPeriods(PitClassMeetingUtilPeriod pitClassMeetingUtilPeriod) {
@@ -106,17 +126,20 @@ public abstract class BasePitClassMeeting implements Serializable {
 		iPitClassMeetingUtilPeriods.add(pitClassMeetingUtilPeriod);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitClassMeeting)) return false;
 		if (getUniqueId() == null || ((PitClassMeeting)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitClassMeeting)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitClassMeeting["+getUniqueId()+"]";
 	}

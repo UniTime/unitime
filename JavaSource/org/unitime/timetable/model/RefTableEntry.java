@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+
 import org.unitime.timetable.model.base.BaseRefTableEntry;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseRefTableEntry;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class RefTableEntry extends BaseRefTableEntry {
 	private static final long serialVersionUID = 1L;
 
@@ -46,8 +58,6 @@ public class RefTableEntry extends BaseRefTableEntry {
 	public RefTableEntry (java.lang.String reference, java.lang.String label) {
 		this.setReference(reference);
 		this.setLabel(label);
-		initialize();
-
 	}
 
 }

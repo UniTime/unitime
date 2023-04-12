@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRelatedCourseInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -39,47 +49,55 @@ public abstract class BaseRelatedCourseInfo implements Serializable {
 	private CourseEvent iEvent;
 	private CourseOffering iCourse;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_OWNER_ID = "ownerId";
-	public static String PROP_OWNER_TYPE = "ownerType";
-
 	public BaseRelatedCourseInfo() {
-		initialize();
 	}
 
 	public BaseRelatedCourseInfo(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "related_course_info_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "related_course_info_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "owner_id", nullable = false, length = 20)
 	public Long getOwnerId() { return iOwnerId; }
 	public void setOwnerId(Long ownerId) { iOwnerId = ownerId; }
 
+	@Column(name = "owner_type", nullable = false, length = 10)
 	public Integer getOwnerType() { return iOwnerType; }
 	public void setOwnerType(Integer ownerType) { iOwnerType = ownerType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "event_id", nullable = false)
 	public CourseEvent getEvent() { return iEvent; }
 	public void setEvent(CourseEvent event) { iEvent = event; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "course_id", nullable = false)
 	public CourseOffering getCourse() { return iCourse; }
 	public void setCourse(CourseOffering course) { iCourse = course; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RelatedCourseInfo)) return false;
 		if (getUniqueId() == null || ((RelatedCourseInfo)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RelatedCourseInfo)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RelatedCourseInfo["+getUniqueId()+"]";
 	}

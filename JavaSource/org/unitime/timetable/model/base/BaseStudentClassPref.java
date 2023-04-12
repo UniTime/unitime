@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentSectioningPref;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.StudentSectioningPref;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentClassPref extends StudentSectioningPref implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Class_ iClazz;
 
-
 	public BaseStudentClassPref() {
-		initialize();
 	}
 
 	public BaseStudentClassPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "class_id", nullable = false)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentClassPref)) return false;
 		if (getUniqueId() == null || ((StudentClassPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentClassPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentClassPref["+getUniqueId()+" "+getLabel()+"]";
 	}

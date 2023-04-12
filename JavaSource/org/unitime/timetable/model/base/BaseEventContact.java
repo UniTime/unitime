@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.EventContact;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseEventContact implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,61 +48,65 @@ public abstract class BaseEventContact implements Serializable {
 	private String iAcademicTitle;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_ID = "externalUniqueId";
-	public static String PROP_EMAIL = "emailAddress";
-	public static String PROP_PHONE = "phone";
-	public static String PROP_FIRSTNAME = "firstName";
-	public static String PROP_MIDDLENAME = "middleName";
-	public static String PROP_LASTNAME = "lastName";
-	public static String PROP_ACAD_TITLE = "academicTitle";
-
 	public BaseEventContact() {
-		initialize();
 	}
 
 	public BaseEventContact(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "event_contact_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "event_contact_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_id", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmailAddress() { return iEmailAddress; }
 	public void setEmailAddress(String emailAddress) { iEmailAddress = emailAddress; }
 
+	@Column(name = "phone", nullable = true, length = 35)
 	public String getPhone() { return iPhone; }
 	public void setPhone(String phone) { iPhone = phone; }
 
+	@Column(name = "firstname", nullable = true, length = 100)
 	public String getFirstName() { return iFirstName; }
 	public void setFirstName(String firstName) { iFirstName = firstName; }
 
+	@Column(name = "middlename", nullable = true, length = 100)
 	public String getMiddleName() { return iMiddleName; }
 	public void setMiddleName(String middleName) { iMiddleName = middleName; }
 
+	@Column(name = "lastname", nullable = true, length = 100)
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	@Column(name = "acad_title", nullable = true, length = 50)
 	public String getAcademicTitle() { return iAcademicTitle; }
 	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventContact)) return false;
 		if (getUniqueId() == null || ((EventContact)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((EventContact)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "EventContact["+getUniqueId()+"]";
 	}

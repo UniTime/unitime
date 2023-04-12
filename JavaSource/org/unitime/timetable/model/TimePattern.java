@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -44,6 +54,9 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "time_pattern")
 public class TimePattern extends BaseTimePattern implements Comparable<TimePattern> {
     private static final long serialVersionUID = 1L;
     protected static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -70,6 +83,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	ExactTime,
     	;
     	
+	@Transient
     	public String getLabel() {
     		switch(this) {
     		case Standard: return MSG.timePatterTypeStandard();
@@ -281,6 +295,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         return getName().compareTo(t.getName());
     }
     
+	@Transient
     public TimePatternModel getTimePatternModel() {
     	return getTimePatternModel(null, true);
     }
@@ -310,10 +325,12 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	return ret;
     }
     
+	@Transient
     public boolean isUsed() {
     	return findAllUsed(getSession()).contains(this);
     }
     
+	@Transient
     public boolean isEditable() {
     	if (isTimePatternEditableInitialDataLoad() && getSession().getStatusType().isAllowRollForward()) {
     		return true;
@@ -322,6 +339,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	}
     }
     
+	@Transient
     public static RequiredTimeTable getDefaultRequiredTimeTable() {
     	return new RequiredTimeTable(new TimePatternModel());
     }
@@ -343,6 +361,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	return ret;
     }
     
+	@Transient
     public Integer getBreakTime() {
     	Integer breakTime = super.getBreakTime();
     	if (breakTime!=null) return breakTime;
@@ -537,10 +556,12 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 	/**
 	 * @return the sTimePatternEditableInitialDataLoad
 	 */
+	@Transient
 	public static boolean isTimePatternEditableInitialDataLoad() {
 		return ApplicationProperty.TimePatternEditableDuringInitialDataLoad.isTrue();
 	}
 	
+	@Transient
 	public TimePatternType getTimePatternType() {
 		if (getType() == null)
 			return null;
@@ -553,9 +574,11 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 		else
 			setType(type.ordinal());
 	}
+	@Transient
 	public boolean isExtended() {
 		return getTimePatternType() == TimePatternType.Extended;
 	}
+	@Transient
 	public boolean isExactTime() {
 		return getTimePatternType() == TimePatternType.ExactTime;
 	}

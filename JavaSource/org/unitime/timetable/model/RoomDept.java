@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseRoomDept;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseRoomDept;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "room_dept")
 public class RoomDept extends BaseRoomDept implements Comparable {
 	private static final long serialVersionUID = 1L;
 

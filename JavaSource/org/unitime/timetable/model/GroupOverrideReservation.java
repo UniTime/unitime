@@ -19,12 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Date;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseGroupOverrideReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservation.Flags;
 
+@Entity
+@DiscriminatorValue("6")
 public class GroupOverrideReservation extends BaseGroupOverrideReservation {
 	private static final long serialVersionUID = 1L;
 	
@@ -32,6 +40,7 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
 		super();
 	}
 
+	@Transient
 	public int getFlagsNotNull() {
 		if (getFlags() == null) return 0;
 		return getFlags();
@@ -41,6 +50,7 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
      * True if holding this reservation allows a student to have attend overlapping class. 
      */
 	@Override
+	@Transient
     public boolean isAllowOverlap() { return Flags.AllowOverlap.in(getFlagsNotNull()); }
     
     public void setAllowOverlap(boolean allowOverlap) { setFlags(Flags.AllowOverlap.set(getFlagsNotNull(), allowOverlap)); }
@@ -48,6 +58,7 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
     /**
      * True if holding this reservation allows a student to have attend a class that is disabled for student scheduling. 
      */
+	@Transient
     public boolean isAllowDisabled() { return Flags.AllowDiabled.in(getFlagsNotNull()); }
     
     public void setAllowDisabled(boolean allowDisabled) { setFlags(Flags.AllowDiabled.set(getFlagsNotNull(), allowDisabled)); }
@@ -56,6 +67,7 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
      * True if can go over the course / config / section limit. Only to be used in the online sectioning. 
       */
     @Override
+	@Transient
     public boolean isCanAssignOverLimit() { return Flags.CanAssignOverLimit.in(getFlagsNotNull()); }
     
     public void setCanAssignOverLimit(boolean canAssignOverLimit) { setFlags(Flags.CanAssignOverLimit.set(getFlagsNotNull(), canAssignOverLimit)); }
@@ -64,6 +76,7 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
      * If true, student must use the reservation (if applicable)
      */
     @Override
+	@Transient
     public boolean isMustBeUsed() { return Flags.MustBeUsed.in(getFlagsNotNull()); }
     
     public void setMustBeUsed(boolean mustBeUsed) { setFlags(Flags.MustBeUsed.set(getFlagsNotNull(), mustBeUsed)); }
@@ -72,26 +85,31 @@ public class GroupOverrideReservation extends BaseGroupOverrideReservation {
      * If true, the reservation is override (it is always expired)
      */
     @Override
+	@Transient
     public boolean isAlwaysExpired() { return Flags.AlwaysExpired.in(getFlagsNotNull()); }
     
     public void setAlwaysExpired(boolean override) { setFlags(Flags.AlwaysExpired.set(getFlagsNotNull(), override)); }
         
 	@Override
+	@Transient
 	public boolean isExpired() {
 		return (isAlwaysExpired() ? true : super.isExpired());
 	}
 	
 	@Override
+	@Transient
 	public Date getStartDate() {
 		return (isAlwaysExpired() ? null : super.getStartDate());		
 	}
 	
 	@Override
+	@Transient
 	public Date getExpirationDate() {
 		return (isAlwaysExpired() ? null : super.getExpirationDate());		
 	}
 	
 	@Override
+	@Transient
 	public int getPriority() {
 		return (isAlwaysExpired() ? ApplicationProperty.ReservationPriorityOverride.intValue() : ApplicationProperty.ReservationPriorityGroup.intValue());
 	}

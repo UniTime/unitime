@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +44,9 @@ import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solver_parameter_group")
 public class SolverParameterGroup extends BaseSolverParameterGroup {
 	private static final long serialVersionUID = 1L;
 	
@@ -47,6 +60,7 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 		private String iPrefix;
 		SolverType(String prefix) { iPrefix = prefix; }
 		
+	@Transient
 		public String getPrefix() { return iPrefix; }
 	}
 
@@ -83,6 +97,7 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	 * @param key Setting key
 	 * @return Default value if found, null otherwise
 	 */
+	@Transient
 	public static String[] getGroupNames() {
 		List groups = (new SolverParameterGroupDAO()).findAll(Order.asc("order"));
 		String[] ret = new String[groups.size()];
@@ -96,9 +111,11 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	    return ret;
 	}
 
+	@Transient
 	public SolverParameterGroup.SolverType getSolverType() { return getType() == null ? null : SolverParameterGroup.SolverType.values()[getType()]; }
 	public void setSolverType(SolverParameterGroup.SolverType type) { setType(type == null ? null : Integer.valueOf(type.ordinal())); }
 	
+	@Transient
 	public boolean isVisible() {
 		for (SolverParameterDef d: getParameters()) {
 			if (d.isVisible()) return true;
@@ -106,6 +123,7 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 		return false;
 	}
 	
+	@Transient
 	public Set<SolverParameterDef> getVisibleParameters() {
 		Set<SolverParameterDef> ret = new TreeSet<SolverParameterDef>();
 		for (SolverParameterDef d: getParameters()) {

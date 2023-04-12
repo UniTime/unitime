@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Session;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseBuilding implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,56 +50,62 @@ public abstract class BaseBuilding implements Serializable {
 
 	private Session iSession;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_NAME = "name";
-	public static String PROP_COORDINATE_X = "coordinateX";
-	public static String PROP_COORDINATE_Y = "coordinateY";
-
 	public BaseBuilding() {
-		initialize();
 	}
 
 	public BaseBuilding(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "building_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "building_seq")
+	})
+	@GeneratedValue(generator = "building_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "abbreviation", nullable = false, length = 20)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "coordinate_x", nullable = true)
 	public Double getCoordinateX() { return iCoordinateX; }
 	public void setCoordinateX(Double coordinateX) { iCoordinateX = coordinateX; }
 
+	@Column(name = "coordinate_y", nullable = true)
 	public Double getCoordinateY() { return iCoordinateY; }
 	public void setCoordinateY(Double coordinateY) { iCoordinateY = coordinateY; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Building)) return false;
 		if (getUniqueId() == null || ((Building)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Building)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Building["+getUniqueId()+" "+getName()+"]";
 	}

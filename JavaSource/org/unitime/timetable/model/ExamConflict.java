@@ -19,11 +19,24 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseExamConflict;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "xconflict")
 public class ExamConflict extends BaseExamConflict implements Comparable<ExamConflict> {
 	private static final long serialVersionUID = 1L;
 
@@ -49,18 +62,22 @@ public class ExamConflict extends BaseExamConflict implements Comparable<ExamCon
 	
 	public static String[] sConflictTypes = new String[] {"Distance", ">2 A Day", "Distance Back-To-Back", "Back-To-Back"};
 	
+	@Transient
     public boolean isDirectConflict() {
         return sConflictTypeDirect==getConflictType();
     }
 
+	@Transient
     public boolean isMoreThanTwoADayConflict() {
         return sConflictTypeMoreThanTwoADay==getConflictType();
     }
 
+	@Transient
     public boolean isBackToBackConflict() {
         return sConflictTypeBackToBack==getConflictType() || sConflictTypeBackToBackDist==getConflictType();
     }
 
+	@Transient
     public boolean isDistanceBackToBackConflict() {
         return sConflictTypeBackToBackDist==getConflictType();
     }

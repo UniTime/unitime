@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
+
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -30,6 +40,9 @@ import org.unitime.timetable.model.base.BasePreference;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Preference extends BasePreference implements Comparable {
 	private static final long serialVersionUID = 1L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -53,6 +66,7 @@ public abstract class Preference extends BasePreference implements Comparable {
     	
     	Class<? extends Preference> iClazz;
     	Type(Class<? extends Preference> clazz) { iClazz = clazz; }
+	@Transient
     	public Class<? extends Preference> getImplementation() { return iClazz; }
     	
     	int flag() { return 1 << ordinal(); }
@@ -180,5 +194,6 @@ public abstract class Preference extends BasePreference implements Comparable {
     
     public abstract Object clone();
     public abstract boolean isSame(Preference other);
+	@Transient
     public abstract Type getType();
 }

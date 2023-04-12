@@ -23,6 +23,22 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
@@ -33,6 +49,7 @@ import org.unitime.timetable.model.TimetableManager;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSolverGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -45,33 +62,41 @@ public abstract class BaseSolverGroup implements Serializable {
 	private Set<Department> iDepartments;
 	private Set<Solution> iSolutions;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_ABBV = "abbv";
-
 	public BaseSolverGroup() {
-		initialize();
 	}
 
 	public BaseSolverGroup(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "solver_group_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "solver_group_seq")
+	})
+	@GeneratedValue(generator = "solver_group_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 50)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "abbv", nullable = false, length = 10)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany
+	@JoinTable(name = "solver_gr_to_tt_mgr",
+		joinColumns = { @JoinColumn(name = "solver_group_id") },
+		inverseJoinColumns = { @JoinColumn(name = "timetable_mgr_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addTotimetableManagers(TimetableManager timetableManager) {
@@ -79,6 +104,8 @@ public abstract class BaseSolverGroup implements Serializable {
 		iTimetableManagers.add(timetableManager);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solverGroup")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -86,6 +113,8 @@ public abstract class BaseSolverGroup implements Serializable {
 		iDepartments.add(department);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Solution> getSolutions() { return iSolutions; }
 	public void setSolutions(Set<Solution> solutions) { iSolutions = solutions; }
 	public void addTosolutions(Solution solution) {
@@ -93,17 +122,20 @@ public abstract class BaseSolverGroup implements Serializable {
 		iSolutions.add(solution);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SolverGroup)) return false;
 		if (getUniqueId() == null || ((SolverGroup)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SolverGroup)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SolverGroup["+getUniqueId()+" "+getName()+"]";
 	}

@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseArrangeCreditUnitConfig;
 
 
@@ -26,6 +32,8 @@ import org.unitime.timetable.model.base.BaseArrangeCreditUnitConfig;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("arrangeHours")
 public class ArrangeCreditUnitConfig extends BaseArrangeCreditUnitConfig {
 	private static final long serialVersionUID = 1L;
 	public static String CREDIT_FORMAT = "arrangeHours";
@@ -64,11 +72,13 @@ public class ArrangeCreditUnitConfig extends BaseArrangeCreditUnitConfig {
 	}
 
 	@Override
+	@Transient
 	public float getMinCredit() {
 		return 0f;
 	}
 
 	@Override
+	@Transient
 	public float getMaxCredit() {
 		return 0f;
 	}

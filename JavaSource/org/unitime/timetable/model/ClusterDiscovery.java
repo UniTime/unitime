@@ -19,8 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseClusterDiscovery;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "cluster_discovery")
 public class ClusterDiscovery extends BaseClusterDiscovery {
 	private static final long serialVersionUID = -493887104193883751L;
 

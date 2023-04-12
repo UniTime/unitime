@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.ExternalRoomDepartment;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExternalRoomDepartment implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,48 +48,54 @@ public abstract class BaseExternalRoomDepartment implements Serializable {
 
 	private ExternalRoom iRoom;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_DEPARTMENT_CODE = "departmentCode";
-	public static String PROP_PERCENT = "percent";
-	public static String PROP_ASSIGNMENT_TYPE = "assignmentType";
-
 	public BaseExternalRoomDepartment() {
-		initialize();
 	}
 
 	public BaseExternalRoomDepartment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "external_room_department_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "external_room_department_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "department_code", nullable = false, length = 50)
 	public String getDepartmentCode() { return iDepartmentCode; }
 	public void setDepartmentCode(String departmentCode) { iDepartmentCode = departmentCode; }
 
+	@Column(name = "percent", nullable = false, length = 3)
 	public Integer getPercent() { return iPercent; }
 	public void setPercent(Integer percent) { iPercent = percent; }
 
+	@Column(name = "assignment_type", nullable = false, length = 20)
 	public String getAssignmentType() { return iAssignmentType; }
 	public void setAssignmentType(String assignmentType) { iAssignmentType = assignmentType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "external_room_id", nullable = false)
 	public ExternalRoom getRoom() { return iRoom; }
 	public void setRoom(ExternalRoom room) { iRoom = room; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExternalRoomDepartment)) return false;
 		if (getUniqueId() == null || ((ExternalRoomDepartment)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExternalRoomDepartment)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExternalRoomDepartment["+getUniqueId()+"]";
 	}

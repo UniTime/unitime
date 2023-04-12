@@ -21,6 +21,13 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Preference;
@@ -29,37 +36,40 @@ import org.unitime.timetable.model.Preference;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstructorPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private DepartmentalInstructor iInstructor;
 
-
 	public BaseInstructorPref() {
-		initialize();
 	}
 
 	public BaseInstructorPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "instructor_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public DepartmentalInstructor getInstructor() { return iInstructor; }
 	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructorPref)) return false;
 		if (getUniqueId() == null || ((InstructorPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstructorPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstructorPref["+getUniqueId()+"]";
 	}

@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.SectioningInfo;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.SectioningInfo;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSectioningInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,44 +47,50 @@ public abstract class BaseSectioningInfo implements Serializable {
 
 	private Class_ iClazz;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NBR_EXP_STUDENTS = "nbrExpectedStudents";
-	public static String PROP_NBR_HOLD_STUDENTS = "nbrHoldingStudents";
-
 	public BaseSectioningInfo() {
-		initialize();
 	}
 
 	public BaseSectioningInfo(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "sectioning_info_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "sectioning_info_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "nbr_exp_students", nullable = false)
 	public Double getNbrExpectedStudents() { return iNbrExpectedStudents; }
 	public void setNbrExpectedStudents(Double nbrExpectedStudents) { iNbrExpectedStudents = nbrExpectedStudents; }
 
+	@Column(name = "nbr_hold_students", nullable = false)
 	public Double getNbrHoldingStudents() { return iNbrHoldingStudents; }
 	public void setNbrHoldingStudents(Double nbrHoldingStudents) { iNbrHoldingStudents = nbrHoldingStudents; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "class_id", nullable = false)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SectioningInfo)) return false;
 		if (getUniqueId() == null || ((SectioningInfo)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SectioningInfo)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SectioningInfo["+getUniqueId()+"]";
 	}

@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +59,9 @@ import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Heston Fernandes
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_offering")
 public class CourseOffering extends BaseCourseOffering implements Comparable {
 	private static final long serialVersionUID = 1L;
 	
@@ -69,16 +82,19 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
 	public String getCourseName() {
 		return getSubjectAreaAbbv()+" "+getCourseNbr();
 	}
 	
+	@Transient
 	public String getCourseNameWithTitle() {
 		return 
 			getSubjectAreaAbbv()+" "+getCourseNbr()+
 			(getTitle()!=null && !getTitle().isEmpty()?" - "+getTitle():""); 
 	}
 
+	@Transient
 	public String getCourseNumberWithTitle(){
 		return(getCourseNbr()+(getTitle()!=null && !getTitle().isEmpty()?" - "+getTitle():""));
 	}
@@ -96,6 +112,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 * Same as isIsContol. Added so that beans in JSPs can access getter method
 	 * @return true/false
 	 */
+	@Transient
 	public Boolean getIsControl() {
 	    return this.isIsControl();
 	}
@@ -110,8 +127,8 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public static CourseOffering findBySessionSubjAreaIdCourseNbr(Long acadSessionId, Long subjAreaId, String courseNbr) {
 		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
 				"from CourseOffering co " +
-				"where co.uniqueCourseNbr.subjectArea.uniqueId = :subjArea " +
-				"and co.uniqueCourseNbr.courseNbr = :crsNbr " +
+				"where co.subjectArea.uniqueId = :subjArea " +
+				"and co.courseNbr = :crsNbr " +
 				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
 				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("subjArea", subjAreaId, org.hibernate.type.LongType.INSTANCE)
@@ -122,8 +139,8 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     public static CourseOffering findBySessionSubjAreaAbbvCourseNbr(Long acadSessionId, String subjAreaAbbv, String courseNbr) {
 		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
 				"from CourseOffering co " +
-				"where co.uniqueCourseNbr.subjectArea.subjectAreaAbbreviation = :subjArea " +
-				"and co.uniqueCourseNbr.courseNbr = :crsNbr " +
+				"where co.subjectArea.subjectAreaAbbreviation = :subjArea " +
+				"and co.courseNbr = :crsNbr " +
 				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
 				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("subjArea", subjAreaAbbv, org.hibernate.type.StringType.INSTANCE)
@@ -248,6 +265,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		return l;
 	}
 	
+	@Transient
 	public Department getDepartment() {
 	    Department dept = null;
 	    try {
@@ -263,6 +281,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		return (dept);
 	}
 	
+	@Transient
 	public Department getManagingDept() {
 		Department dept = null;
 		for (InstrOfferingConfig config: getInstructionalOffering().getInstrOfferingConfigs())
@@ -279,6 +298,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		return (dept == null ? getDepartment() : dept);
 	}
 	
+	@Transient
     public List getCourseOfferingDemands() {
         if (getPermId()!=null)
             return (new CourseOfferingDAO()).
@@ -299,6 +319,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     
     //TODO: to distinguish between last like semester student demands and all student demands in the future
+	@Transient
     public List getLastLikeSemesterCourseOfferingDemands() {
     	return getCourseOfferingDemands();
     }
@@ -405,6 +426,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(co.getUniqueId() == null ? -1 : co.getUniqueId());
     }
     
+	@Transient
     public CourseCreditUnitConfig getCredit(){
     	if(this.getCreditConfigs() == null || this.getCreditConfigs().size() != 1){
     		return(null);
@@ -424,6 +446,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	}
     }
     
+	@Transient
     public boolean isAllowStudentScheduling() {
     	return getSubjectArea().getDepartment().isAllowStudentScheduling();
     }
@@ -436,6 +459,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return ret;
     }
     
+	@Transient
     public Set<OverrideType> getEnabledOverrides() {
     	Set<OverrideType> ret = new TreeSet<OverrideType>();
     	for (OverrideType override: OverrideTypeDAO.getInstance().findAll()) {
@@ -445,6 +469,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return ret;
     }
     
+	@Transient
     public Department getEffectiveFundingDept() {
     	if (getFundingDept() == null) {
     		return getSubjectArea().getEffectiveFundingDept();

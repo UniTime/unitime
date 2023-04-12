@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Session;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseFreeTime implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,56 +50,62 @@ public abstract class BaseFreeTime implements Serializable {
 
 	private Session iSession;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_DAY_CODE = "dayCode";
-	public static String PROP_START_SLOT = "startSlot";
-	public static String PROP_LENGTH = "length";
-	public static String PROP_CATEGORY = "category";
-
 	public BaseFreeTime() {
-		initialize();
 	}
 
 	public BaseFreeTime(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "free_time_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "free_time_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 50)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "day_code", nullable = false, length = 10)
 	public Integer getDayCode() { return iDayCode; }
 	public void setDayCode(Integer dayCode) { iDayCode = dayCode; }
 
+	@Column(name = "start_slot", nullable = false, length = 10)
 	public Integer getStartSlot() { return iStartSlot; }
 	public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
 
+	@Column(name = "length", nullable = false, length = 10)
 	public Integer getLength() { return iLength; }
 	public void setLength(Integer length) { iLength = length; }
 
+	@Column(name = "category", nullable = false, length = 10)
 	public Integer getCategory() { return iCategory; }
 	public void setCategory(Integer category) { iCategory = category; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof FreeTime)) return false;
 		if (getUniqueId() == null || ((FreeTime)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((FreeTime)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "FreeTime["+getUniqueId()+" "+getName()+"]";
 	}

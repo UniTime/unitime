@@ -19,11 +19,24 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseLocationPicture;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class LocationPicture extends BaseLocationPicture implements Comparable<LocationPicture> {
 	private static final long serialVersionUID = 1L;
 
@@ -38,6 +51,7 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 			((NonUniversityLocationPicture)this).setLocation((NonUniversityLocation)location);
 	}
 	
+	@Transient
 	public abstract Location getLocation();
 	
 	public int compareTo(LocationPicture other) {
@@ -58,6 +72,7 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(other.getUniqueId() == null ? -1 : other.getUniqueId());
 	}
 	
+	@Transient
 	public boolean isImage() {
 		return getType() == null || AttachmentType.VisibilityFlag.IS_IMAGE.in(getType().getVisibility());
 	}

@@ -41,11 +41,6 @@ public class CourseCreditUnitConfigDAO extends _RootDAO<CourseCreditUnitConfig,L
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<CourseCreditUnitConfig> findByCourseCreditFormat(org.hibernate.Session hibSession, Long courseCreditFormatId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseCreditFormat.uniqueId = :courseCreditFormatId").setParameter("courseCreditFormatId", courseCreditFormatId).list();
-	}
-
-	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
 		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
 	}

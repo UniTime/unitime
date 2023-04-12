@@ -19,11 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseOnlineSectioningLog;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "sectioning_log")
 public class OnlineSectioningLog extends BaseOnlineSectioningLog {
 	private static final long serialVersionUID = 2284161428989084076L;
 

@@ -23,6 +23,16 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -32,6 +42,7 @@ import org.unitime.timetable.model.Preference;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDistributionPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,29 +52,30 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 	private DistributionType iDistributionType;
 	private Set<DistributionObject> iDistributionObjects;
 
-	public static String PROP_DIST_GROUPING = "grouping";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-
 	public BaseDistributionPref() {
-		initialize();
 	}
 
 	public BaseDistributionPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "dist_grouping", nullable = true, length = 4)
 	public Integer getGrouping() { return iGrouping; }
 	public void setGrouping(Integer grouping) { iGrouping = grouping; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "dist_type_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public DistributionType getDistributionType() { return iDistributionType; }
 	public void setDistributionType(DistributionType distributionType) { iDistributionType = distributionType; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "distributionPref", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
 	public void addTodistributionObjects(DistributionObject distributionObject) {
@@ -71,17 +83,20 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 		iDistributionObjects.add(distributionObject);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DistributionPref)) return false;
 		if (getUniqueId() == null || ((DistributionPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DistributionPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DistributionPref["+getUniqueId()+"]";
 	}

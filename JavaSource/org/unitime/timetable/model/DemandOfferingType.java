@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseDemandOfferingType;
 
 
@@ -26,6 +31,8 @@ import org.unitime.timetable.model.base.BaseDemandOfferingType;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "demand_offr_type")
 public class DemandOfferingType extends BaseDemandOfferingType {
 	private static final long serialVersionUID = 1L;
 

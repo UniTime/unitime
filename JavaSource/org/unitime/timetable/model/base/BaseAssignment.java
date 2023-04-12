@@ -23,6 +23,23 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.Class_;
@@ -37,13 +54,13 @@ import org.unitime.timetable.model.TimePattern;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAssignment implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
 	private Integer iDays;
 	private Integer iStartSlot;
-	private Long iClassId;
 	private String iClassName;
 
 	private TimePattern iTimePattern;
@@ -55,50 +72,61 @@ public abstract class BaseAssignment implements Serializable {
 	private Set<AssignmentInfo> iAssignmentInfo;
 	private Set<ConstraintInfo> iConstraintInfo;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_DAYS = "days";
-	public static String PROP_SLOT = "startSlot";
-	public static String PROP_CLASS_ID = "classId";
-	public static String PROP_CLASS_NAME = "className";
-
 	public BaseAssignment() {
-		initialize();
 	}
 
 	public BaseAssignment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "assignment_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "assignment_seq")
+	})
+	@GeneratedValue(generator = "assignment_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "days", nullable = true, length = 4)
 	public Integer getDays() { return iDays; }
 	public void setDays(Integer days) { iDays = days; }
 
+	@Column(name = "slot", nullable = true, length = 4)
 	public Integer getStartSlot() { return iStartSlot; }
 	public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
 
-	public Long getClassId() { return iClassId; }
-	public void setClassId(Long classId) { iClassId = classId; }
-
+	@Column(name = "class_name", nullable = true, length = 100)
 	public String getClassName() { return iClassName; }
 	public void setClassName(String className) { iClassName = className; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "time_pattern_id", nullable = false)
 	public TimePattern getTimePattern() { return iTimePattern; }
 	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "date_pattern_id", nullable = false)
 	public DatePattern getDatePattern() { return iDatePattern; }
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "solution_id", nullable = false)
 	public Solution getSolution() { return iSolution; }
 	public void setSolution(Solution solution) { iSolution = solution; }
 
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "class_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "assigned_instructors",
+		joinColumns = { @JoinColumn(name = "assignment_id") },
+		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
@@ -106,6 +134,11 @@ public abstract class BaseAssignment implements Serializable {
 		iInstructors.add(departmentalInstructor);
 	}
 
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "assigned_rooms",
+		joinColumns = { @JoinColumn(name = "assignment_id") },
+		inverseJoinColumns = { @JoinColumn(name = "room_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
@@ -113,6 +146,8 @@ public abstract class BaseAssignment implements Serializable {
 		iRooms.add(location);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "assignment", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<AssignmentInfo> getAssignmentInfo() { return iAssignmentInfo; }
 	public void setAssignmentInfo(Set<AssignmentInfo> assignmentInfo) { iAssignmentInfo = assignmentInfo; }
 	public void addToassignmentInfo(AssignmentInfo assignmentInfo) {
@@ -120,6 +155,9 @@ public abstract class BaseAssignment implements Serializable {
 		iAssignmentInfo.add(assignmentInfo);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "assignments")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
 	public Set<ConstraintInfo> getConstraintInfo() { return iConstraintInfo; }
 	public void setConstraintInfo(Set<ConstraintInfo> constraintInfo) { iConstraintInfo = constraintInfo; }
 	public void addToconstraintInfo(ConstraintInfo constraintInfo) {
@@ -127,24 +165,26 @@ public abstract class BaseAssignment implements Serializable {
 		iConstraintInfo.add(constraintInfo);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Assignment)) return false;
 		if (getUniqueId() == null || ((Assignment)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Assignment)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Assignment["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "Assignment[" +
-			"\n	ClassId: " + getClassId() +
 			"\n	ClassName: " + getClassName() +
 			"\n	Clazz: " + getClazz() +
 			"\n	DatePattern: " + getDatePattern() +

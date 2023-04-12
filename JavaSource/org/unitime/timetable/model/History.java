@@ -19,6 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseHistory;
@@ -30,6 +42,11 @@ import org.unitime.timetable.model.dao.HistoryDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "history")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="subclass", discriminatorType = DiscriminatorType.STRING)
 public class History extends BaseHistory {
 	private static final long serialVersionUID = 1L;
 

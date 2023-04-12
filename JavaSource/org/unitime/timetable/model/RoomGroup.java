@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -34,6 +44,9 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "room_group")
 public class RoomGroup extends BaseRoomGroup implements Comparable {
 	private static final long serialVersionUID = 1L;
 
@@ -54,6 +67,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
     /** Request attribute name for available room groups **/
     public static String GROUP_LIST_ATTR_NAME = "roomGroupsList";
 	
+	@Transient
 	public static Collection getAllRoomGroups() throws HibernateException {
 		return (new RoomGroupDAO()).findAll(Order.asc("name"));
 	}
@@ -134,6 +148,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 			"</span>";
 	}
 	
+	@Transient
 	public String getNameWithTitle() {
 		return getName()+(isGlobal()!=null && isGlobal().booleanValue()?"":" (Department)");
 	}
@@ -178,6 +193,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		return null;
 	}
     
+	@Transient
     public String getAbbv() {
         if (super.getAbbv()!=null && super.getAbbv().trim().length()>0) return super.getAbbv();
         StringBuffer sb = new StringBuffer();

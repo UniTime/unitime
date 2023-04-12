@@ -19,40 +19,30 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.TaskParameter;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseTaskParameter implements Serializable {
+@MappedSuperclass
+@IdClass(TaskParameterId.class)
+public abstract class BaseTaskParameter extends TaskParameterId {
 	private static final long serialVersionUID = 1L;
 
-	private PeriodicTask iTask;
-	private String iName;
 	private String iValue;
 
 
-	public static String PROP_VALUE = "value";
 
-	public BaseTaskParameter() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public PeriodicTask getTask() { return iTask; }
-	public void setTask(PeriodicTask task) { iTask = task; }
-
-	public String getName() { return iName; }
-	public void setName(String name) { iName = name; }
-
+	@Column(name = "value", nullable = true, length = 2048)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TaskParameter)) return false;
 		TaskParameter taskParameter = (TaskParameter)o;
@@ -61,6 +51,7 @@ public abstract class BaseTaskParameter implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getTask() == null || getName() == null) return super.hashCode();
 		return getTask().hashCode() ^ getName().hashCode();

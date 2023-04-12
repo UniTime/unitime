@@ -23,6 +23,17 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQLParameter;
 
@@ -30,6 +41,7 @@ import org.unitime.timetable.model.SavedHQLParameter;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSavedHQL implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,38 +53,41 @@ public abstract class BaseSavedHQL implements Serializable {
 
 	private Set<SavedHQLParameter> iParameters;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_QUERY = "query";
-	public static String PROP_TYPE = "type";
-
 	public BaseSavedHQL() {
-		initialize();
 	}
 
 	public BaseSavedHQL(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "saved_hql_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "saved_hql_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "description", nullable = true, length = 1000)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Column(name = "query", nullable = false)
 	public String getQuery() { return iQuery; }
 	public void setQuery(String query) { iQuery = query; }
 
+	@Column(name = "type", nullable = false, length = 10)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@OneToMany(mappedBy = "savedHQL", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SavedHQLParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SavedHQLParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(SavedHQLParameter savedHQLParameter) {
@@ -80,17 +95,20 @@ public abstract class BaseSavedHQL implements Serializable {
 		iParameters.add(savedHQLParameter);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SavedHQL)) return false;
 		if (getUniqueId() == null || ((SavedHQL)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SavedHQL)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SavedHQL["+getUniqueId()+" "+getName()+"]";
 	}

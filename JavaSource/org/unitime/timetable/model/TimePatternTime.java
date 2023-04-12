@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import org.unitime.timetable.model.base.BaseTimePatternTime;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseTimePatternTime;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "time_pattern_time")
 public class TimePatternTime extends BaseTimePatternTime implements Comparable {
 	private static final long serialVersionUID = 1L;
 

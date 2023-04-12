@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
 
@@ -29,30 +31,21 @@ import org.unitime.timetable.model.ExternalDepartmentStatusType;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseExternalDepartmentStatusType implements Serializable {
+@MappedSuperclass
+@IdClass(ExternalDepartmentStatusTypeId.class)
+public abstract class BaseExternalDepartmentStatusType extends ExternalDepartmentStatusTypeId {
 	private static final long serialVersionUID = 1L;
 
-	private Department iExternalDepartment;
-	private Department iDepartment;
 
 	private DepartmentStatusType iStatusType;
 
 
-	public BaseExternalDepartmentStatusType() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public Department getExternalDepartment() { return iExternalDepartment; }
-	public void setExternalDepartment(Department externalDepartment) { iExternalDepartment = externalDepartment; }
-
-	public Department getDepartment() { return iDepartment; }
-	public void setDepartment(Department department) { iDepartment = department; }
-
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "status_type", nullable = false)
 	public DepartmentStatusType getStatusType() { return iStatusType; }
 	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExternalDepartmentStatusType)) return false;
 		ExternalDepartmentStatusType externalDepartmentStatusType = (ExternalDepartmentStatusType)o;
@@ -61,6 +54,7 @@ public abstract class BaseExternalDepartmentStatusType implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getExternalDepartment() == null || getDepartment() == null) return super.hashCode();
 		return getExternalDepartment().hashCode() ^ getDepartment().hashCode();

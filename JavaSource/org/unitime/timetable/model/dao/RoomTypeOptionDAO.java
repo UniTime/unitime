@@ -23,10 +23,10 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.RoomTypeOptionId;
 import org.unitime.timetable.model.RoomTypeOption;
 
-public class RoomTypeOptionDAO extends _RootDAO<RoomTypeOption,Serializable> {
+public class RoomTypeOptionDAO extends _RootDAO<RoomTypeOption,RoomTypeOptionId> {
 	private static RoomTypeOptionDAO sInstance;
 
 	public RoomTypeOptionDAO() {}

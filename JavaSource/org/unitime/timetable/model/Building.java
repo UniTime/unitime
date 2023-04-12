@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 
@@ -33,6 +43,9 @@ import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 /**
  * @author Tomas Muller, James Marshall, Zuzana Mullerova
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "building")
 public class Building extends BaseBuilding implements Comparable {
 
 /**
@@ -60,6 +73,7 @@ public class Building extends BaseBuilding implements Comparable {
     /**
      * @return Building Identifier of the form {Abbr} - {Name}
      */
+	@Transient
     public String getAbbrName() {
         return this.getAbbreviation() + " - " + this.getName();
     }
@@ -166,6 +180,7 @@ public class Building extends BaseBuilding implements Comparable {
 	}
 
     @Deprecated
+	@Transient
     public String getHtmlHint() {
     	String hint = getName();
     	String minimap = ApplicationProperty.RoomHintMinimapUrl.value();

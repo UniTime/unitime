@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -26,6 +35,9 @@ import java.util.Locale;
 import org.unitime.timetable.model.base.BasePitClassMeetingUtilPeriod;
 import org.unitime.timetable.util.Constants;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pit_class_mtg_util_period")
 public class PitClassMeetingUtilPeriod extends BasePitClassMeetingUtilPeriod {
 
 	/**

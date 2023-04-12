@@ -21,6 +21,11 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.Session;
@@ -29,6 +34,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseGlobalRoomFeature extends RoomFeature implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,40 +43,41 @@ public abstract class BaseGlobalRoomFeature extends RoomFeature implements Seria
 
 	private Session iSession;
 
-	public static String PROP_SIS_REFERENCE = "sisReference";
-	public static String PROP_SIS_VALUE = "sisValue";
-
 	public BaseGlobalRoomFeature() {
-		initialize();
 	}
 
 	public BaseGlobalRoomFeature(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "sis_reference", nullable = true, length = 20)
 	public String getSisReference() { return iSisReference; }
 	public void setSisReference(String sisReference) { iSisReference = sisReference; }
 
+	@Column(name = "sis_value", nullable = true, length = 20)
 	public String getSisValue() { return iSisValue; }
 	public void setSisValue(String sisValue) { iSisValue = sisValue; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof GlobalRoomFeature)) return false;
 		if (getUniqueId() == null || ((GlobalRoomFeature)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((GlobalRoomFeature)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "GlobalRoomFeature["+getUniqueId()+" "+getLabel()+"]";
 	}

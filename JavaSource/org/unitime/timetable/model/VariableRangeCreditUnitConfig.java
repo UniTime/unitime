@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseVariableRangeCreditUnitConfig;
 
 
@@ -26,6 +31,8 @@ import org.unitime.timetable.model.base.BaseVariableRangeCreditUnitConfig;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@DiscriminatorValue("variableRange")
 public class VariableRangeCreditUnitConfig extends BaseVariableRangeCreditUnitConfig {
 	private static final long serialVersionUID = 1L;
 	public static String CREDIT_FORMAT = "variableRange";

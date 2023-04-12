@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +43,9 @@ import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.AdvisorCriticalCourses;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "advisor_crsreq")
 public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Comparable<AdvisorCourseRequest> {
 	private static final long serialVersionUID = 1L;
 
@@ -119,6 +132,7 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		return cc.isCritical(getCourseOffering());
 	}
 	
+	@Transient
 	public float getCreditMin() {
 		if (getCredit() == null || getCredit().isEmpty()) return 0f;
 		try {
@@ -132,6 +146,7 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		return 0f;
 	}
 	
+	@Transient
 	public float getCreditMax() {
 		if (getCredit() == null || getCredit().isEmpty()) return 0f;
 		try {
@@ -154,12 +169,14 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		return getUniqueId().compareTo(r.getUniqueId());
 	}
 	
+	@Transient
 	public Critical getEffectiveCritical() {
     	if (getCritical() != null)
     		return Critical.values()[getCritical()];
     	return Critical.NORMAL;
     }
     
+	@Transient
     public boolean isCriticalOrImportant() {
     	switch (getEffectiveCritical()) {
     	case CRITICAL:

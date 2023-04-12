@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.StudentGroupType;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.StudentGroupType;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentGroupType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,43 +41,44 @@ public abstract class BaseStudentGroupType extends RefTableEntry implements Seri
 	private Boolean iAdvisorsCanSet;
 
 
-	public static String PROP_TOGETHER = "keepTogether";
-	public static String PROP_ALLOW_DISABLED = "allowDisabled";
-	public static String PROP_ADVISOR = "advisorsCanSet";
-
 	public BaseStudentGroupType() {
-		initialize();
 	}
 
 	public BaseStudentGroupType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "together", nullable = false)
 	public Boolean isKeepTogether() { return iKeepTogether; }
+	@Transient
 	public Boolean getKeepTogether() { return iKeepTogether; }
 	public void setKeepTogether(Boolean keepTogether) { iKeepTogether = keepTogether; }
 
+	@Column(name = "allow_disabled", nullable = false)
 	public Short getAllowDisabled() { return iAllowDisabled; }
 	public void setAllowDisabled(Short allowDisabled) { iAllowDisabled = allowDisabled; }
 
+	@Column(name = "advisor", nullable = false)
 	public Boolean isAdvisorsCanSet() { return iAdvisorsCanSet; }
+	@Transient
 	public Boolean getAdvisorsCanSet() { return iAdvisorsCanSet; }
 	public void setAdvisorsCanSet(Boolean advisorsCanSet) { iAdvisorsCanSet = advisorsCanSet; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentGroupType)) return false;
 		if (getUniqueId() == null || ((StudentGroupType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentGroupType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentGroupType["+getUniqueId()+" "+getLabel()+"]";
 	}

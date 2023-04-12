@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseAssignmentInfo;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("2")
 public class AssignmentInfo extends BaseAssignmentInfo {
 	private static final long serialVersionUID = 1L;
 

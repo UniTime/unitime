@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseMidtermExamEvent;
 
 
@@ -26,6 +32,8 @@ import org.unitime.timetable.model.base.BaseMidtermExamEvent;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("2")
 public class MidtermExamEvent extends BaseMidtermExamEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -43,6 +51,7 @@ public class MidtermExamEvent extends BaseMidtermExamEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public int getEventType() { return sEventTypeMidtermExam; }
 
 }

@@ -19,11 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 
 import org.unitime.timetable.model.base.BasePointInTimeData;
 import org.unitime.timetable.model.dao.PointInTimeDataDAO;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "point_in_time_data")
 public class PointInTimeData extends BasePointInTimeData implements Comparable<Object>{
 
 	/**

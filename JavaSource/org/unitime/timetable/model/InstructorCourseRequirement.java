@@ -19,11 +19,24 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirement;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementDAO;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "instr_crsreq")
 public class InstructorCourseRequirement extends BaseInstructorCourseRequirement implements Comparable<InstructorCourseRequirement> {
 	private static final long serialVersionUID = 3076787808984760805L;
 
@@ -55,6 +68,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 		return getUniqueId().compareTo(req.getUniqueId());
 	}
 	
+	@Transient
 	public InstructorCourseRequirementNote getFirstNote() {
 		InstructorCourseRequirementNote ret = null;
 		for (InstructorCourseRequirementNote note: getNotes()) {

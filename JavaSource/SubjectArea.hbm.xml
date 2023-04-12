@@ -75,22 +75,6 @@
             <one-to-many class="CourseOffering"/>
         </set>
 
-        <set
-            name="instructionalOfferings"
-            table="course_offering"
-            inverse="true"
-            cascade="all-delete-orphan">
-
-            <cache include="non-lazy" usage="transactional"/>
-            <key column="subject_area_id"/>
-            <many-to-many
-                column="instr_offr_id"
-                class="InstructionalOffering"
-                foreign-key="fk_crs_offr_instr_offr"
-                unique="true"/>
-
-        </set>
-        
 		<many-to-one
             name="fundingDept"
             class="Department"

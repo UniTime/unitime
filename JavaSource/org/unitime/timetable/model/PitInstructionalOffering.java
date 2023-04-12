@@ -19,8 +19,21 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BasePitInstructionalOffering;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pit_instr_offering")
 public class PitInstructionalOffering extends BasePitInstructionalOffering {
 
 	/**
@@ -32,6 +45,7 @@ public class PitInstructionalOffering extends BasePitInstructionalOffering {
 		super();
 	}
 	
+	@Transient
 	public PitCourseOffering getControllingPitCourseOffering() {
 		for(PitCourseOffering pco : this.getPitCourseOfferings()){
 			if (pco.isIsControl().booleanValue()){

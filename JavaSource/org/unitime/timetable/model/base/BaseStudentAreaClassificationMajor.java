@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Campus;
@@ -35,6 +44,7 @@ import org.unitime.timetable.model.StudentAreaClassificationMajor;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentAreaClassificationMajor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -50,61 +60,81 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 	private Program iProgram;
 	private Campus iCampus;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_WEIGHT = "weight";
-
 	public BaseStudentAreaClassificationMajor() {
-		initialize();
 	}
 
 	public BaseStudentAreaClassificationMajor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_area_clasf_major_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_area_clasf_major_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "weight", nullable = true)
 	public Double getWeight() { return iWeight; }
 	public void setWeight(Double weight) { iWeight = weight; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "student_id", nullable = false)
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_area_id", nullable = false)
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "acad_clasf_id", nullable = false)
 	public AcademicClassification getAcademicClassification() { return iAcademicClassification; }
 	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "major_id", nullable = false)
 	public PosMajor getMajor() { return iMajor; }
 	public void setMajor(PosMajor major) { iMajor = major; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "concentration_id", nullable = true)
 	public PosMajorConcentration getConcentration() { return iConcentration; }
 	public void setConcentration(PosMajorConcentration concentration) { iConcentration = concentration; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "degree_id", nullable = true)
 	public Degree getDegree() { return iDegree; }
 	public void setDegree(Degree degree) { iDegree = degree; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "program_id", nullable = true)
 	public Program getProgram() { return iProgram; }
 	public void setProgram(Program program) { iProgram = program; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "campus_id", nullable = true)
 	public Campus getCampus() { return iCampus; }
 	public void setCampus(Campus campus) { iCampus = campus; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentAreaClassificationMajor)) return false;
 		if (getUniqueId() == null || ((StudentAreaClassificationMajor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentAreaClassificationMajor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentAreaClassificationMajor["+getUniqueId()+"]";
 	}

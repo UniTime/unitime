@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
@@ -30,6 +40,9 @@ import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solver_predef_setting")
 public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 	private static final long serialVersionUID = 1L;
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -42,6 +55,7 @@ public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 		INSTRUCTOR_SOLVER,
 		;
 		
+	@Transient
 		public String getLabel() {
 			switch (this) {
 			case TIMETABLES:
@@ -59,6 +73,7 @@ public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 			}
 		}
 		
+	@Transient
 		public SolverType getSolverType() {
 			switch (this) {
 			case TIMETABLES:
@@ -118,6 +133,7 @@ public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
                 .uniqueResult();
 	}
 	
+	@Transient
 	public Appearance getAppearanceType() {
 		if (getAppearance() == null) return null;
 		return Appearance.values()[getAppearance()];

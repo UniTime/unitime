@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 
@@ -28,40 +30,39 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseArrangeCreditUnitConfig extends CourseCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public BaseArrangeCreditUnitConfig() {
-		initialize();
 	}
 
 	public BaseArrangeCreditUnitConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ArrangeCreditUnitConfig)) return false;
 		if (getUniqueId() == null || ((ArrangeCreditUnitConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ArrangeCreditUnitConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ArrangeCreditUnitConfig["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "ArrangeCreditUnitConfig[" +
-			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
 			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +

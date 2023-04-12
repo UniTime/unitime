@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +65,9 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "student")
 public class Student extends BaseStudent implements Comparable<Student>, NameInterface, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
@@ -247,28 +260,34 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
 
 	@Override
+	@Transient
 	public String getAcademicTitle() { return null; }
 	
 	@Override
+	@Transient
 	public Serializable getQualifierId() {
 		return getUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierType() {
 		return getClass().getSimpleName();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierReference() {
 		return getExternalUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierLabel() {
 		return NameFormat.LAST_FIRST_MIDDLE.format(this);
 	}
 	
+	@Transient
 	public CourseRequestOverrideStatus getMaxCreditOverrideStatus() {
     	if (getOverrideStatus() == null) return CourseRequestOverrideStatus.APPROVED;
     	return CourseRequestOverrideStatus.values()[getOverrideStatus()];
@@ -278,22 +297,27 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	setOverrideStatus(status == null ? null : Integer.valueOf(status.ordinal()));
     }
     
+	@Transient
     public boolean isRequestApproved() {
     	return getOverrideStatus() == null || getOverrideStatus().intValue() == CourseRequestOverrideStatus.APPROVED.ordinal();
     }
     
+	@Transient
     public boolean isRequestPending() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal();
     }
     
+	@Transient
     public boolean isRequestCancelled() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.CANCELLED.ordinal();
     }
     
+	@Transient
     public boolean isRequestRejected() {
     	return getOverrideStatus() != null && getOverrideStatus().intValue() == CourseRequestOverrideStatus.REJECTED.ordinal();
     }
     
+	@Transient
     public StudentSectioningStatus getEffectiveStatus() {
     	if (getSectioningStatus() != null) {
 			if (getSectioningStatus().isEffectiveNow())
@@ -322,6 +346,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	return null;
     }
     
+	@Transient
     public WaitListMode getWaitListMode() {
     	StudentSectioningStatus status = getEffectiveStatus();
 		if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {
@@ -332,6 +357,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 		return WaitListMode.None;
     }
     
+	@Transient
     public Date getLastChangedByStudent() {
     	Date ret = null;
     	if (getCourseDemands() != null) {
@@ -353,6 +379,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public boolean hasReleasedPin() { return getPin() != null && !getPin().isEmpty() && isPinReleased() != null && isPinReleased().booleanValue(); }
+	@Transient
     public String getReleasedPin() { return (hasReleasedPin() ? getPin() : null); }
     
     public Set<Long> getAdvisorWaitListedCourseIds(boolean useWaitLists, boolean useNoSubs) {
@@ -391,10 +418,12 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		setOverrideIntent(intent.ordinal());
     }
     
+	@Transient
     public CourseRequestOverrideIntent getMaxCreditOverrideIntent() {
     	return (getOverrideIntent() == null ? null : CourseRequestOverrideIntent.values()[getOverrideIntent()]); 
     }
     
+	@Transient
     public StudentAreaClassificationMajor getPrimaryAreaClasfMajor() {
     	if (getAreaClasfMajors() == null) return null;
     	StudentAreaClassificationMajor major = null;
@@ -546,6 +575,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 		}
     }
     
+	@Transient
     public ClassModality getPreferredClassModality() {
     	if (getSchedulePreference() == null) return ClassModality.NoPreference;
     	return ClassModality.values()[getSchedulePreference()];
@@ -556,6 +586,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	else
     		setSchedulePreference(modality.ordinal());
     }
+	@Transient
     public ModalityPreference getModalityPreference() {
     	switch(getPreferredClassModality()) {
     	case DiscouragedOnline: return ModalityPreference.ONILNE_DISCOURAGED;
@@ -565,6 +596,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	}
     }
     
+	@Transient
     public ScheduleGaps getPreferredScheduleGaps() {
     	if (getFreeTimeCategory() == null) return ScheduleGaps.NoPreference;
     	return ScheduleGaps.values()[getFreeTimeCategory()];
@@ -575,6 +607,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	else
     		setFreeTimeCategory(gaps.ordinal());
     }
+	@Transient
     public BackToBackPreference getBackToBackPreference() {
     	switch (getPreferredScheduleGaps()) {
     	case DiscourageBackToBack: return BackToBackPreference.BTB_DISCOURAGED;

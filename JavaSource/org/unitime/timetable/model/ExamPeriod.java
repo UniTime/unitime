@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -41,6 +51,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "exam_period")
 public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod> {
 	private static final long serialVersionUID = 1L;
 
@@ -60,6 +73,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	
 	public static String PERIOD_ATTR_NAME = "periodList";
 
+	@Transient
 	public Date getStartDate() {
 	    Calendar c = Calendar.getInstance(Locale.US);
 	    c.setTime(getSession().getExamBeginDate());
@@ -72,14 +86,17 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
        setDateOffset((int)Math.round(diff/(1000.0 * 60 * 60 * 24)));
     }
 	
+	@Transient
 	public int getStartHour() {
 	    return (Constants.SLOT_LENGTH_MIN*getStartSlot()+Constants.FIRST_SLOT_TIME_MIN) / 60;
 	}
 	
+	@Transient
     public int getStartMinute() {
         return (Constants.SLOT_LENGTH_MIN*getStartSlot()+Constants.FIRST_SLOT_TIME_MIN) % 60;
     }
     
+	@Transient
     public Date getStartTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
@@ -89,18 +106,22 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return c.getTime();
     }
     
+	@Transient
     public int getEndSlot() {
         return getStartSlot() + getLength();
     }
     
+	@Transient
     public int getEndHour() {
         return (Constants.SLOT_LENGTH_MIN*getEndSlot()+Constants.FIRST_SLOT_TIME_MIN) / 60;
     }
     
+	@Transient
     public int getEndMinute() {
         return (Constants.SLOT_LENGTH_MIN*getEndSlot()+Constants.FIRST_SLOT_TIME_MIN) % 60;
     }
     
+	@Transient
     public Date getEndTime() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
@@ -110,10 +131,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return c.getTime();
     }
     
+	@Transient
     public String getStartDateLabel() {
         return Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD).format(getStartDate());
     }
     
+	@Transient
     public String getStartTimeLabel() {
         int min = getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
         return Constants.toTime(min);
@@ -124,6 +147,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return Constants.toTime(min);
     }
 
+	@Transient
     public String getEndTimeLabel() {
         int min = (getStartSlot()+getLength())*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
         return Constants.toTime(min);
@@ -134,10 +158,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return Constants.toTime(min);
     }
 
+	@Transient
     public String getName() {
         return getStartDateLabel()+" "+getStartTimeLabel()+" - "+getEndTimeLabel();
     }
 
+	@Transient
     public String getAbbreviation() {
         return getStartDateLabel()+" "+getStartTimeLabel();
     }
@@ -244,6 +270,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return getStartSlot() - nrTravelSlots < meeting.getStopPeriod() && meeting.getStartPeriod() < getStartSlot() + getLength() + nrTravelSlots;
     }
     
+	@Transient
     protected int getStartMins() {
     	return Constants.SLOT_LENGTH_MIN * getStartSlot() + Constants.FIRST_SLOT_TIME_MIN;
     }
@@ -614,6 +641,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return ret;
     } 
     
+	@Transient
     public int getIndex() {
         int index = 0;
         for (Iterator i=findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
@@ -656,6 +684,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     			
     }
     
+	@Transient
     public int getDayOfWeek() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getSession().getExamBeginDate());
@@ -723,6 +752,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return new Date[] {min, max};
     }
 
+	@Transient
     public int getExamEventStartSlot(){
      	return(getStartSlot().intValue() - getEventStartOffset().intValue());
     }
@@ -742,6 +772,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	return(startOffset);
     }
     
+	@Transient
     public boolean isUsed() {
     	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setParameter("id", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }

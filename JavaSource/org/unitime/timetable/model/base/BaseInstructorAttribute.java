@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructorAttribute;
@@ -33,6 +46,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstructorAttribute implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -47,42 +61,53 @@ public abstract class BaseInstructorAttribute implements Serializable {
 	private Set<InstructorAttribute> iChildAttributes;
 	private Set<DepartmentalInstructor> iInstructors;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CODE = "code";
-	public static String PROP_NAME = "name";
-
 	public BaseInstructorAttribute() {
-		initialize();
 	}
 
 	public BaseInstructorAttribute(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "attribute_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "attribute_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "code", nullable = false, length = 20)
 	public String getCode() { return iCode; }
 	public void setCode(String code) { iCode = code; }
 
+	@Column(name = "name", nullable = false, length = 60)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "type_id", nullable = false)
 	public InstructorAttributeType getType() { return iType; }
 	public void setType(InstructorAttributeType type) { iType = type; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent_id", nullable = true)
 	public InstructorAttribute getParentAttribute() { return iParentAttribute; }
 	public void setParentAttribute(InstructorAttribute parentAttribute) { iParentAttribute = parentAttribute; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "department_id", nullable = true)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@OneToMany(mappedBy = "parentAttribute")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<InstructorAttribute> getChildAttributes() { return iChildAttributes; }
 	public void setChildAttributes(Set<InstructorAttribute> childAttributes) { iChildAttributes = childAttributes; }
 	public void addTochildAttributes(InstructorAttribute instructorAttribute) {
@@ -90,6 +115,8 @@ public abstract class BaseInstructorAttribute implements Serializable {
 		iChildAttributes.add(instructorAttribute);
 	}
 
+	@ManyToMany(mappedBy = "attributes")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
@@ -97,17 +124,20 @@ public abstract class BaseInstructorAttribute implements Serializable {
 		iInstructors.add(departmentalInstructor);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructorAttribute)) return false;
 		if (getUniqueId() == null || ((InstructorAttribute)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstructorAttribute)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstructorAttribute["+getUniqueId()+" "+getName()+"]";
 	}

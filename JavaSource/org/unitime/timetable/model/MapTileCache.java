@@ -19,12 +19,26 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Date;
 
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.base.BaseMapTileCache;
+import org.unitime.timetable.model.base.MapTileCacheId;
 import org.unitime.timetable.model.dao.MapTileCacheDAO;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "map_tiles")
 public class MapTileCache extends BaseMapTileCache {
 	private static final long serialVersionUID = 1L;
 
@@ -37,12 +51,13 @@ public class MapTileCache extends BaseMapTileCache {
 		setX(x); setY(y); setZ(zoom);
 	}
 	
+	@Transient
 	public boolean isTooOld() {
 		return System.currentTimeMillis() - getTimeStamp().getTime() > 604800000l;
 	}
 	
 	public static byte[] get(int zoom, int x, int y) {
-		MapTileCache tile = MapTileCacheDAO.getInstance().get(new MapTileCache(zoom, x, y));
+		MapTileCache tile = MapTileCacheDAO.getInstance().get(new MapTileCacheId(zoom, x, y));
 		return tile == null || tile.isTooOld() ? null : tile.getData();
 	}
 	
@@ -50,7 +65,7 @@ public class MapTileCache extends BaseMapTileCache {
 		org.hibernate.Session hibSession = MapTileCacheDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			MapTileCache tile =  MapTileCacheDAO.getInstance().get(new MapTileCache(zoom, x, y), hibSession);
+			MapTileCache tile =  MapTileCacheDAO.getInstance().get(new MapTileCacheId(zoom, x, y), hibSession);
 			if (tile == null) {
 				tile = new MapTileCache();
 				tile.setX(x); tile.setY(y); tile.setZ(zoom);

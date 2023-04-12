@@ -19,8 +19,20 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BasePitStudentAcadAreaMajorClassification;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pit_stu_aa_major_clasf")
 public class PitStudentAcadAreaMajorClassification extends BasePitStudentAcadAreaMajorClassification {
 
 	/**

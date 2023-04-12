@@ -35,15 +35,6 @@
         </id>
 
         <property
-            name="sessionId"
-            column="session_id"
-            type="java.lang.Long"
-            insert="false"
-            update="false"
-            not-null="true"
-            length="20"/>
-
-        <property
             name="groupAbbreviation"
             column="group_abbreviation"
             type="java.lang.String"

@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -35,6 +40,8 @@ import org.unitime.timetable.security.permissions.SimpleExaminationPermission;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "exam_type")
 public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	private static final long serialVersionUID = 1L;
 	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);

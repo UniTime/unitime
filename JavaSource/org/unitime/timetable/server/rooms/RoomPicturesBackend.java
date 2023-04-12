@@ -110,7 +110,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 
 		switch (request.getOperation()) {
 		case LOAD:
-			for (LocationPicture p: new TreeSet<LocationPicture>(location.getPictures()))
+			for (LocationPicture p: new TreeSet<LocationPicture>(location.getRoomPictures()))
 				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime(), getPictureType(p.getType())));
 
 			boolean samePast = true, sameFuture = true;
@@ -140,7 +140,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			break;
 		case SAVE:
 			Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
-			for (LocationPicture p: location.getPictures())
+			for (LocationPicture p: location.getRoomPictures())
 				pictures.put(p.getUniqueId(), p);
 			for (RoomPictureInterface p: request.getPictures()) {
 				LocationPicture picture = pictures.remove(p.getUniqueId());
@@ -165,7 +165,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				}
 			}
 			for (LocationPicture picture: pictures.values()) {
-				location.getPictures().remove(picture);
+				location.getRoomPictures().remove(picture);
 				hibSession.delete(picture);
 			}
 			hibSession.saveOrUpdate(location);
@@ -176,8 +176,8 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 					if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))
 						continue;
 					
-					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(other.getPictures());
-					p1: for (LocationPicture p1: location.getPictures()) {
+					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(other.getRoomPictures());
+					p1: for (LocationPicture p1: location.getRoomPictures()) {
 						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
 							LocationPicture p2 = i.next();
 							if (samePicture(p1, p2)) {
@@ -199,7 +199,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 					}
 					
 					for (LocationPicture picture: otherPictures) {
-						other.getPictures().remove(picture);
+						other.getRoomPictures().remove(picture);
 						hibSession.delete(picture);
 					}
 					
@@ -238,9 +238,9 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	}
 	
 	private boolean samePictures(Location l1, Location l2) {
-		if (l1.getPictures().size() != l2.getPictures().size()) return false;
-		p1: for (LocationPicture p1: l1.getPictures()) {
-			for (LocationPicture p2: l2.getPictures()) {
+		if (l1.getRoomPictures().size() != l2.getRoomPictures().size()) return false;
+		p1: for (LocationPicture p1: l1.getRoomPictures()) {
+			for (LocationPicture p2: l2.getRoomPictures()) {
 				if (samePicture(p1, p2)) continue p1;
 			}
 			return false;

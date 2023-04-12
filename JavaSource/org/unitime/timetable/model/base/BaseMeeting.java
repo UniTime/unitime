@@ -24,6 +24,21 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Meeting;
@@ -32,6 +47,7 @@ import org.unitime.timetable.model.Meeting;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseMeeting implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -49,62 +65,71 @@ public abstract class BaseMeeting implements Serializable {
 	private Event iEvent;
 	private Set<EventContact> iMeetingContacts;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_MEETING_DATE = "meetingDate";
-	public static String PROP_START_PERIOD = "startPeriod";
-	public static String PROP_START_OFFSET = "startOffset";
-	public static String PROP_STOP_PERIOD = "stopPeriod";
-	public static String PROP_STOP_OFFSET = "stopOffset";
-	public static String PROP_LOCATION_PERM_ID = "locationPermanentId";
-	public static String PROP_CLASS_CAN_OVERRIDE = "classCanOverride";
-	public static String PROP_APPROVAL_STATUS = "approvalStatus";
-	public static String PROP_APPROVAL_DATE = "approvalDate";
-
 	public BaseMeeting() {
-		initialize();
 	}
 
 	public BaseMeeting(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "meeting_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "meeting_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "meeting_date", nullable = false)
 	public Date getMeetingDate() { return iMeetingDate; }
 	public void setMeetingDate(Date meetingDate) { iMeetingDate = meetingDate; }
 
+	@Column(name = "start_period", nullable = false, length = 10)
 	public Integer getStartPeriod() { return iStartPeriod; }
 	public void setStartPeriod(Integer startPeriod) { iStartPeriod = startPeriod; }
 
+	@Column(name = "start_offset", nullable = true, length = 10)
 	public Integer getStartOffset() { return iStartOffset; }
 	public void setStartOffset(Integer startOffset) { iStartOffset = startOffset; }
 
+	@Column(name = "stop_period", nullable = false, length = 10)
 	public Integer getStopPeriod() { return iStopPeriod; }
 	public void setStopPeriod(Integer stopPeriod) { iStopPeriod = stopPeriod; }
 
+	@Column(name = "stop_offset", nullable = true, length = 10)
 	public Integer getStopOffset() { return iStopOffset; }
 	public void setStopOffset(Integer stopOffset) { iStopOffset = stopOffset; }
 
+	@Column(name = "location_perm_id", nullable = true, length = 20)
 	public Long getLocationPermanentId() { return iLocationPermanentId; }
 	public void setLocationPermanentId(Long locationPermanentId) { iLocationPermanentId = locationPermanentId; }
 
+	@Column(name = "class_can_override", nullable = false)
 	public Boolean isClassCanOverride() { return iClassCanOverride; }
+	@Transient
 	public Boolean getClassCanOverride() { return iClassCanOverride; }
 	public void setClassCanOverride(Boolean classCanOverride) { iClassCanOverride = classCanOverride; }
 
+	@Column(name = "approval_status", nullable = false)
 	public Integer getApprovalStatus() { return iApprovalStatus; }
 	public void setApprovalStatus(Integer approvalStatus) { iApprovalStatus = approvalStatus; }
 
+	@Column(name = "approval_date", nullable = true)
 	public Date getApprovalDate() { return iApprovalDate; }
 	public void setApprovalDate(Date approvalDate) { iApprovalDate = approvalDate; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "event_id", nullable = false)
 	public Event getEvent() { return iEvent; }
 	public void setEvent(Event event) { iEvent = event; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "meeting_contact",
+		joinColumns = { @JoinColumn(name = "meeting_id") },
+		inverseJoinColumns = { @JoinColumn(name = "contact_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<EventContact> getMeetingContacts() { return iMeetingContacts; }
 	public void setMeetingContacts(Set<EventContact> meetingContacts) { iMeetingContacts = meetingContacts; }
 	public void addTomeetingContacts(EventContact eventContact) {
@@ -112,17 +137,20 @@ public abstract class BaseMeeting implements Serializable {
 		iMeetingContacts.add(eventContact);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Meeting)) return false;
 		if (getUniqueId() == null || ((Meeting)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Meeting)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Meeting["+getUniqueId()+"]";
 	}

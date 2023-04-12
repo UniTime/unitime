@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +38,9 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePitClass;
 import org.unitime.timetable.util.Constants;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pit_class")
 public class PitClass extends BasePitClass {
 
 	/**
@@ -56,6 +69,7 @@ public class PitClass extends BasePitClass {
 		}
 	}
 
+	@Transient
 	public HashMap<Long, HashSet<java.util.Date>> getLocationPeriodUseMap(){
 		if (locationPeriodUseMap == null){
 			initializeRoomData();
@@ -63,6 +77,7 @@ public class PitClass extends BasePitClass {
 		return(locationPeriodUseMap);
 	}
 	
+	@Transient
 	public HashSet<java.util.Date> getUniquePeriods(){
 		if (uniquePeriods == null){
 			initializeRoomData();
@@ -108,6 +123,7 @@ public class PitClass extends BasePitClass {
 
 	}
 	
+	@Transient
 	public Set<Long> getLocationPermanentIdList() {
 		if(locationPermanentIdList == null) {
 			initializeRoomData();
@@ -119,6 +135,7 @@ public class PitClass extends BasePitClass {
 		return(getLocationPeriodUseMap().get(location));
 	}
 
+	@Transient
 	public boolean isOrganized() {
 		return(getPitSchedulingSubpart().getItype().isOrganized().booleanValue());
 	}

@@ -23,6 +23,17 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ManagerSettings;
 import org.unitime.timetable.model.Settings;
 
@@ -30,6 +41,7 @@ import org.unitime.timetable.model.Settings;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,38 +53,42 @@ public abstract class BaseSettings implements Serializable {
 
 	private Set<ManagerSettings> iManagerSettings;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "key";
-	public static String PROP_DEFAULT_VALUE = "defaultValue";
-	public static String PROP_ALLOWED_VALUES = "allowedValues";
-	public static String PROP_DESCRIPTION = "description";
-
 	public BaseSettings() {
-		initialize();
 	}
 
 	public BaseSettings(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "settings_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "settings_seq")
+	})
+	@GeneratedValue(generator = "settings_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 30)
 	public String getKey() { return iKey; }
 	public void setKey(String key) { iKey = key; }
 
+	@Column(name = "default_value", nullable = false, length = 100)
 	public String getDefaultValue() { return iDefaultValue; }
 	public void setDefaultValue(String defaultValue) { iDefaultValue = defaultValue; }
 
+	@Column(name = "allowed_values", nullable = false, length = 500)
 	public String getAllowedValues() { return iAllowedValues; }
 	public void setAllowedValues(String allowedValues) { iAllowedValues = allowedValues; }
 
+	@Column(name = "description", nullable = false, length = 100)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@OneToMany
+	@JoinColumn(name = "uniqueid", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ManagerSettings> getManagerSettings() { return iManagerSettings; }
 	public void setManagerSettings(Set<ManagerSettings> managerSettings) { iManagerSettings = managerSettings; }
 	public void addTomanagerSettings(ManagerSettings managerSettings) {
@@ -80,17 +96,20 @@ public abstract class BaseSettings implements Serializable {
 		iManagerSettings.add(managerSettings);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Settings)) return false;
 		if (getUniqueId() == null || ((Settings)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Settings)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Settings["+getUniqueId()+"]";
 	}

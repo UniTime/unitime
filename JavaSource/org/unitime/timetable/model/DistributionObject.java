@@ -19,11 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import org.unitime.timetable.model.base.BaseDistributionObject;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "distribution_object")
 public class DistributionObject extends BaseDistributionObject implements Comparable {
 	private static final long serialVersionUID = 1L;
 

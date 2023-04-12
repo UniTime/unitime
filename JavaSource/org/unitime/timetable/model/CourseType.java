@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseCourseType;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "course_type")
 public class CourseType extends BaseCourseType {
 	private static final long serialVersionUID = 1L;
 

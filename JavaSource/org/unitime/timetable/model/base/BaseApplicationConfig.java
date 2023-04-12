@@ -21,12 +21,17 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.ApplicationConfig;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseApplicationConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,41 +40,41 @@ public abstract class BaseApplicationConfig implements Serializable {
 	private String iDescription;
 
 
-	public static String PROP_NAME = "key";
-	public static String PROP_VALUE = "value";
-	public static String PROP_DESCRIPTION = "description";
-
 	public BaseApplicationConfig() {
-		initialize();
 	}
 
 	public BaseApplicationConfig(String key) {
 		setKey(key);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@Column(name="name")
 	public String getKey() { return iKey; }
 	public void setKey(String key) { iKey = key; }
 
+	@Column(name = "value", nullable = true, length = 4000)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@Column(name = "description", nullable = true, length = 500)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ApplicationConfig)) return false;
 		if (getKey() == null || ((ApplicationConfig)o).getKey() == null) return false;
 		return getKey().equals(((ApplicationConfig)o).getKey());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getKey() == null) return super.hashCode();
 		return getKey().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ApplicationConfig["+getKey()+"]";
 	}

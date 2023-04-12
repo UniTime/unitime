@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.LocationPicture;
 
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.LocationPicture;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseLocationPicture implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,52 +50,58 @@ public abstract class BaseLocationPicture implements Serializable {
 
 	private AttachmentType iType;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_DATA_FILE = "dataFile";
-	public static String PROP_FILE_NAME = "fileName";
-	public static String PROP_CONTENT_TYPE = "contentType";
-	public static String PROP_TIME_STAMP = "timeStamp";
-
 	public BaseLocationPicture() {
-		initialize();
 	}
 
 	public BaseLocationPicture(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "room_pict_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "room_seq")
+	})
+	@GeneratedValue(generator = "room_pict_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "data_file", nullable = false)
 	public byte[] getDataFile() { return iDataFile; }
 	public void setDataFile(byte[] dataFile) { iDataFile = dataFile; }
 
+	@Column(name = "file_name", nullable = false, length = 260)
 	public String getFileName() { return iFileName; }
 	public void setFileName(String fileName) { iFileName = fileName; }
 
+	@Column(name = "content_type", nullable = false, length = 260)
 	public String getContentType() { return iContentType; }
 	public void setContentType(String contentType) { iContentType = contentType; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "type_id", nullable = true)
 	public AttachmentType getType() { return iType; }
 	public void setType(AttachmentType type) { iType = type; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof LocationPicture)) return false;
 		if (getUniqueId() == null || ((LocationPicture)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((LocationPicture)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "LocationPicture["+getUniqueId()+"]";
 	}

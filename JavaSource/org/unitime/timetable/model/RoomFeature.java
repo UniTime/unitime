@@ -19,6 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -30,6 +43,11 @@ import org.unitime.timetable.model.dao.RoomFeatureDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "room_feature")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="discriminator", discriminatorType = DiscriminatorType.STRING)
 public class RoomFeature extends BaseRoomFeature implements Comparable {
 	private static final long serialVersionUID = 1L;
 
@@ -126,10 +144,12 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	/**
 	 * @return Room feature label
 	 */
+	@Transient
 	public String getLabelWithType() {
 	    return getLabel() + (getFeatureType() == null ? "" : " (" + getFeatureType().getReference() + ")");
 	}
     
+	@Transient
     public String getAbbv() {
         if (super.getAbbv()!=null && super.getAbbv().trim().length()>0) return super.getAbbv();
         StringBuffer sb = new StringBuffer();

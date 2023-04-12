@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseManagerSettings;
 import org.unitime.timetable.model.dao.ManagerSettingsDAO;
 import org.unitime.timetable.model.dao.SettingsDAO;
@@ -28,6 +37,9 @@ import org.unitime.timetable.model.dao.SettingsDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "manager_settings")
 public class ManagerSettings extends BaseManagerSettings {
 	private static final long serialVersionUID = 1L;
 

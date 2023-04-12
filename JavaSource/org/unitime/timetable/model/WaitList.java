@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.TreeSet;
 
 import org.unitime.timetable.model.base.BaseWaitList;
@@ -28,6 +38,9 @@ import org.unitime.timetable.model.base.BaseWaitList;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "waitlist")
 public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 	private static final long serialVersionUID = 1L;
 	
@@ -62,6 +75,7 @@ public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 /*[CONSTRUCTOR MARKER END]*/
 
 	
+	@Transient
 	public WaitListType getWaitListType() {
 		if (getType() == null) return WaitListType.OTHER;
 		return WaitListType.values()[getType()];

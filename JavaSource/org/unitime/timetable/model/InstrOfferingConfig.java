@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +51,9 @@ import org.unitime.timetable.util.duration.MinutesPerWeek;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "instr_offering_config")
 public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	private static final long serialVersionUID = 1L;
 
@@ -58,26 +71,32 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public Department getDepartment() {
  		return (this.getInstructionalOffering().getDepartment());
 	}
 
+	@Transient
 	public Session getSession() {
 		return (this.getInstructionalOffering().getSession());
 	}
 	
+	@Transient
 	public Long getSessionId() {
 		return (this.getInstructionalOffering().getSessionId());
 	}
 	
+	@Transient
 	public String getCourseName(){
 		return(this.getControllingCourseOffering().getCourseName());
 	}
 
+	@Transient
 	public String getCourseNameWithTitle(){
 		return(this.getControllingCourseOffering().getCourseNameWithTitle());
 	}
 
+	@Transient
 	public CourseOffering getControllingCourseOffering() {
 	       return(this.getInstructionalOffering().getControllingCourseOffering());
 		}
@@ -126,6 +145,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		getSchedulingSubparts().add(schedulingSubpart);
 	}
 
+	@Transient
     public String getName() {
     	String name = super.getName();
     	if (name!=null && name.length()>0) return name;
@@ -283,17 +303,20 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
             uniqueResult();
     }
     
+	@Transient
 	public ClassDurationType getEffectiveDurationType() {
 		if (getClassDurationType() != null) return getClassDurationType();
 		return getSession().getDefaultClassDurationType();
 	}
 	
+	@Transient
 	public DurationModel getDurationModel() {
 		ClassDurationType type = getEffectiveDurationType();
 		if (type == null) return new MinutesPerWeek(null);
 		else return type.getModel();
 	}
 	
+	@Transient
 	public int getEnrollment() {
 		int enrollment = 0;
     	for (SchedulingSubpart subpart: getSchedulingSubparts()) {
@@ -304,11 +327,13 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	return enrollment;
 	}
 	
+	@Transient
 	public InstructionalMethod getEffectiveInstructionalMethod() {
 		if (getInstructionalMethod() != null) return getInstructionalMethod();
 		return getSession().getDefaultInstructionalMethod();
 	}
 	
+	@Transient
 	public Integer getSnapShotLimit() {
 		Integer snapShotLimit = null;
     	for (SchedulingSubpart subpart: getSchedulingSubparts()) {

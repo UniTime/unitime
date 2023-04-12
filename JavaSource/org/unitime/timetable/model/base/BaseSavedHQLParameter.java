@@ -19,50 +19,40 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.IdClass;
+import javax.persistence.MappedSuperclass;
 
-import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQLParameter;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseSavedHQLParameter implements Serializable {
+@MappedSuperclass
+@IdClass(SavedHQLParameterId.class)
+public abstract class BaseSavedHQLParameter extends SavedHQLParameterId {
 	private static final long serialVersionUID = 1L;
 
-	private SavedHQL iSavedHQL;
-	private String iName;
 	private String iLabel;
 	private String iType;
 	private String iDefaultValue;
 
 
-	public static String PROP_LABEL = "label";
-	public static String PROP_TYPE = "type";
-	public static String PROP_DEFAULT_VALUE = "defaultValue";
 
-	public BaseSavedHQLParameter() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public SavedHQL getSavedHQL() { return iSavedHQL; }
-	public void setSavedHQL(SavedHQL savedHQL) { iSavedHQL = savedHQL; }
-
-	public String getName() { return iName; }
-	public void setName(String name) { iName = name; }
-
+	@Column(name = "label", nullable = true, length = 256)
 	public String getLabel() { return iLabel; }
 	public void setLabel(String label) { iLabel = label; }
 
+	@Column(name = "type", nullable = false, length = 2048)
 	public String getType() { return iType; }
 	public void setType(String type) { iType = type; }
 
+	@Column(name = "default_value", nullable = true, length = 2048)
 	public String getDefaultValue() { return iDefaultValue; }
 	public void setDefaultValue(String defaultValue) { iDefaultValue = defaultValue; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SavedHQLParameter)) return false;
 		SavedHQLParameter savedHQLParameter = (SavedHQLParameter)o;
@@ -71,6 +61,7 @@ public abstract class BaseSavedHQLParameter implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getSavedHQL() == null || getName() == null) return super.hashCode();
 		return getSavedHQL().hashCode() ^ getName().hashCode();

@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.ExamEvent;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExamEvent extends Event implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Exam iExam;
 
-
 	public BaseExamEvent() {
-		initialize();
 	}
 
 	public BaseExamEvent(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "exam_id", nullable = false)
 	public Exam getExam() { return iExam; }
 	public void setExam(Exam exam) { iExam = exam; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamEvent)) return false;
 		if (getUniqueId() == null || ((ExamEvent)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExamEvent)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExamEvent["+getUniqueId()+"]";
 	}

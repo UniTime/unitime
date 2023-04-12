@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
+
 import java.util.List;
 
 import org.hibernate.Session;
@@ -31,6 +41,9 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "student_group")
 public class StudentGroup extends BaseStudentGroup {
 	private static final long serialVersionUID = 1L;
 

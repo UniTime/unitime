@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAttachmentType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,37 +39,36 @@ public abstract class BaseAttachmentType extends RefTableEntry implements Serial
 	private Integer iVisibility;
 
 
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_VISIBILITY = "visibility";
-
 	public BaseAttachmentType() {
-		initialize();
 	}
 
 	public BaseAttachmentType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "abbreviation", nullable = false, length = 20)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "visibility", nullable = false)
 	public Integer getVisibility() { return iVisibility; }
 	public void setVisibility(Integer visibility) { iVisibility = visibility; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof AttachmentType)) return false;
 		if (getUniqueId() == null || ((AttachmentType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((AttachmentType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "AttachmentType["+getUniqueId()+" "+getLabel()+"]";
 	}

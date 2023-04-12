@@ -21,6 +21,16 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 
@@ -28,6 +38,7 @@ import org.unitime.timetable.model.SolverParameterGroup;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSolverParameterDef implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,61 +52,68 @@ public abstract class BaseSolverParameterDef implements Serializable {
 
 	private SolverParameterGroup iGroup;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_DEFAULT_VALUE = "default";
-	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_TYPE = "type";
-	public static String PROP_ORD = "order";
-	public static String PROP_VISIBLE = "visible";
-
 	public BaseSolverParameterDef() {
-		initialize();
 	}
 
 	public BaseSolverParameterDef(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "solver_parameter_def_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "solver_parameter_def_seq")
+	})
+	@GeneratedValue(generator = "solver_parameter_def_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = true, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "default_value", nullable = true, length = 2048)
 	public String getDefault() { return iDefault; }
 	public void setDefault(String defaultValue) { iDefault = defaultValue; }
 
+	@Column(name = "description", nullable = true, length = 1000)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Column(name = "type", nullable = true, length = 1000)
 	public String getType() { return iType; }
 	public void setType(String type) { iType = type; }
 
+	@Column(name = "ord", nullable = true, length = 4)
 	public Integer getOrder() { return iOrder; }
 	public void setOrder(Integer order) { iOrder = order; }
 
+	@Column(name = "visible", nullable = true)
 	public Boolean isVisible() { return iVisible; }
+	@Transient
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "solver_param_group_id", nullable = false)
 	public SolverParameterGroup getGroup() { return iGroup; }
 	public void setGroup(SolverParameterGroup group) { iGroup = group; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SolverParameterDef)) return false;
 		if (getUniqueId() == null || ((SolverParameterDef)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SolverParameterDef)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SolverParameterDef["+getUniqueId()+" "+getName()+"]";
 	}

@@ -19,12 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseLearningManagementSystemInfo;
 import org.unitime.timetable.model.dao.LearningManagementSystemInfoDAO;
 import org.unitime.timetable.security.UserContext;
 
+@Entity
+@Table(name = "learn_mgmt_sys_info")
 public class LearningManagementSystemInfo extends BaseLearningManagementSystemInfo {
 
     /**

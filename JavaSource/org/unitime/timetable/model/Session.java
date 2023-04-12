@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.io.Serializable;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -64,6 +70,8 @@ import org.unitime.timetable.util.ReferenceList;
  *
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Table(name = "sessions")
 public class Session extends BaseSession implements Comparable<Session>, Qualifiable {
 	protected static GwtConstants CONST = Localization.create(GwtConstants.class);
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -77,6 +85,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	public static String[] sHolidayTypeColors = new String[] {
 			"rgb(240,240,240)", "rgb(200,30,20)", "rgb(240,50,240)" };
 	
+	@Transient
 	public static String[] getHolidayNames() {
 		return new String[] {
 				MSG.legendNoHoliday(),
@@ -90,6 +99,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	/*
 	 * @return all sessions
 	 */
+	@Transient
 	public static TreeSet<Session> getAllSessions() throws HibernateException {
 		TreeSet<Session> ret = new TreeSet<Session>();
 		for (Session session: SessionDAO.getInstance().findAll()) {
@@ -193,6 +203,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		(new SessionDAO()).saveOrUpdate(this);
 	}
 
+	@Transient
 	public String getAcademicYearTerm() {
 		return (getAcademicYear() + getAcademicTerm());
 	}
@@ -200,6 +211,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	/**
 	 * @return Returns the term.
 	 */
+	@Transient
 	public String getTermLabel() {
 		return this.getAcademicTerm();
 	}
@@ -207,10 +219,12 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	/**
 	 * @return Returns the label.
 	 */
+	@Transient
 	public String getLabel() {
 		return getAcademicTerm() + " " + getAcademicYear() + " (" + getAcademicInitiative() + ")";
 	}
 	
+	@Transient
 	public String getReference() {
 		return getAcademicTerm() + getAcademicYear() + getAcademicInitiative();
 	}
@@ -222,6 +236,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	/**
 	 * @return Returns the year the session begins.
 	 */
+	@Transient
 	public int getSessionStartYear() {
 		if (getSessionBeginDateTime()!=null) {
 			Calendar c = Calendar.getInstance(Locale.US);
@@ -296,12 +311,14 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		}
 		return academicSessionLookup.findAcademicSession(campus, year, term, hibSession);
 	}
+	@Transient
 	public Session getLastLikeSession() {
 		String lastYr = Integer.valueOf(this.getSessionStartYear() - 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
 				lastYr, getAcademicTerm());
 	}
 
+	@Transient
 	public Session getNextLikeSession() {
 		String nextYr = Integer.valueOf(this.getSessionStartYear() + 1).toString();
 		return getSessionUsingInitiativeYearTerm(this.getAcademicInitiative(),
@@ -312,6 +329,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return ("done");
 	}
 
+	@Transient
 	public Long getSessionId() {
 		return (this.getUniqueId());
 	}
@@ -332,6 +350,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return(getEventEndDate()!=null&&getEventEndDate().after(getSessionEndDateTime())?getEventEndDate():getSessionEndDateTime());
 	}
 
+	@Transient
 	public int getStartMonth() {		
 		return DateUtils.getStartMonth(
 		        earliestSessionRelatedDate(),
@@ -339,16 +358,19 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		        ApplicationProperty.SessionNrExcessDays.intValue());
 	}
 
+	@Transient
 	public int getEndMonth() {
 		return DateUtils.getEndMonth(
 		        latestSessionRelatedDate(), getSessionStartYear(), 
 		        ApplicationProperty.SessionNrExcessDays.intValue());
 	}
 	
+	@Transient
 	public int getPatternStartMonth() {
 		return getStartMonth() - ApplicationProperty.DatePatternNrExessMonth.intValue();
 	}
 	
+	@Transient
 	public int getPatternEndMonth() {
 		return getEndMonth() + ApplicationProperty.DatePatternNrExessMonth.intValue();
 	}
@@ -375,6 +397,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		}
 	}
 
+	@Transient
 	public String getHolidaysHtml() {
 		return getHolidaysHtml(true);
 	}
@@ -563,6 +586,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
 
+	@Transient
 	public DatePattern getDefaultDatePatternNotNull() {
 		DatePattern dp = super.getDefaultDatePattern();
 		if (dp == null) {
@@ -571,6 +595,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return dp;
 	}
 
+	@Transient
 	public int getNrWeeks() {
 		Calendar sessionBeginDate = Calendar.getInstance(Locale.US);
 		sessionBeginDate.setTime(getSessionBeginDateTime());
@@ -595,6 +620,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return (6 + nrDays) / 7;
 	}
 	
+	@Transient
 	public int getExamBeginOffset() {
 	    return (int)Math.round((getSessionBeginDateTime().getTime() - getExamBeginDate().getTime()) / 86.4e6); 
 	}
@@ -618,6 +644,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return "null";
 	}
 	
+	@Transient
 	public String getColorArray() {
 		EventDateMapping.Class2EventDateMap class2EventDateMap = EventDateMapping.getMapping(getUniqueId());
 		int startMonth = getSession().getPatternStartMonth();
@@ -666,11 +693,13 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
                 setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).uniqueResult()).longValue()>0;
 	}
 	
+	@Transient
 	private OnlineSectioningServer getInstance() {
 		if (getUniqueId() == null) return null;
 		return ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getOnlineStudentSchedulingContainer().getSolver(getUniqueId().toString());
 	}
 
+	@Transient
 	public Collection<Long> getLockedOfferings() {
 		if (!getStatusType().canLockOfferings()) return null;
 		OnlineSectioningServer server = getInstance();
@@ -722,29 +751,35 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	}
 	
 	@Override
+	@Transient
 	public Session getSession() { return this; }
 
 	@Override
+	@Transient
 	public Serializable getQualifierId() {
 		return getUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierType() {
 		return getClass().getSimpleName();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierReference() {
 		return getReference();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierLabel() {
 		return getLabel();
 	}
 	
 	@Override
+	@Transient
 	public Department getDepartment() { return null; }
 	
 	public boolean canNoRoleReportExamFinal() {
@@ -783,6 +818,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		return getStatusType() != null && getStatusType().canOnlineSectionStudents() && !getStatusType().isTestSession();
 	}
     
+	@Transient
     public Date getCurrentSnapshotDate() {
     	Object o = InstructionalOfferingDAO.getInstance()
 				.getSession()

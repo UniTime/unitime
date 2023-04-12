@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -33,6 +43,9 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "roles")
 public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
 
 /**
@@ -73,8 +86,10 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     	return getRights().contains(right.name());
     }
     
+	@Transient
     public Long getUniqueId() { return getRoleId(); }
     
+	@Transient
     public boolean isUsed() {
     	return ((Number)RolesDAO.getInstance().getSession().createQuery(
     			"select count(m) from ManagerRole m where m.role.roleId = :roleId")

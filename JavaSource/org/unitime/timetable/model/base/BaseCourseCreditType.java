@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseCreditType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,37 +39,36 @@ public abstract class BaseCourseCreditType extends RefTableEntry implements Seri
 	private String iAbbreviation;
 
 
-	public static String PROP_LEGACY_CRSE_MASTER_CODE = "legacyCourseMasterCode";
-	public static String PROP_ABBREVIATION = "abbreviation";
-
 	public BaseCourseCreditType() {
-		initialize();
 	}
 
 	public BaseCourseCreditType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "legacy_crse_master_code", nullable = true, length = 10)
 	public String getLegacyCourseMasterCode() { return iLegacyCourseMasterCode; }
 	public void setLegacyCourseMasterCode(String legacyCourseMasterCode) { iLegacyCourseMasterCode = legacyCourseMasterCode; }
 
+	@Column(name = "abbreviation", nullable = true, length = 10)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseCreditType)) return false;
 		if (getUniqueId() == null || ((CourseCreditType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseCreditType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseCreditType["+getUniqueId()+" "+getLabel()+"]";
 	}

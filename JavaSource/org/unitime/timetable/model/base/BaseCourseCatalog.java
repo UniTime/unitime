@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseCatalog;
 import org.unitime.timetable.model.CourseSubpartCredit;
 import org.unitime.timetable.model.Session;
@@ -31,6 +45,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseCatalog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -53,82 +68,89 @@ public abstract class BaseCourseCatalog implements Serializable {
 	private Session iSession;
 	private Set<CourseSubpartCredit> iSubparts;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_SUBJECT = "subject";
-	public static String PROP_COURSE_NBR = "courseNumber";
-	public static String PROP_TITLE = "title";
-	public static String PROP_PERM_ID = "permanentId";
-	public static String PROP_APPROVAL_TYPE = "approvalType";
-	public static String PROP_PREV_SUBJECT = "previousSubject";
-	public static String PROP_PREV_CRS_NBR = "previousCourseNumber";
-	public static String PROP_CREDIT_TYPE = "creditType";
-	public static String PROP_CREDIT_UNIT_TYPE = "creditUnitType";
-	public static String PROP_CREDIT_FORMAT = "creditFormat";
-	public static String PROP_FIXED_MIN_CREDIT = "fixedMinimumCredit";
-	public static String PROP_MAX_CREDIT = "maximumCredit";
-	public static String PROP_FRAC_CREDIT_ALLOWED = "fractionalCreditAllowed";
-
 	public BaseCourseCatalog() {
-		initialize();
 	}
 
 	public BaseCourseCatalog(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "course_catalog_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "course_catalog_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "subject", nullable = false, length = 10)
 	public String getSubject() { return iSubject; }
 	public void setSubject(String subject) { iSubject = subject; }
 
+	@Column(name = "course_nbr", nullable = false, length = 10)
 	public String getCourseNumber() { return iCourseNumber; }
 	public void setCourseNumber(String courseNumber) { iCourseNumber = courseNumber; }
 
+	@Column(name = "title", nullable = false, length = 100)
 	public String getTitle() { return iTitle; }
 	public void setTitle(String title) { iTitle = title; }
 
+	@Column(name = "perm_id", nullable = true, length = 20)
 	public String getPermanentId() { return iPermanentId; }
 	public void setPermanentId(String permanentId) { iPermanentId = permanentId; }
 
+	@Column(name = "approval_type", nullable = true, length = 20)
 	public String getApprovalType() { return iApprovalType; }
 	public void setApprovalType(String approvalType) { iApprovalType = approvalType; }
 
+	@Column(name = "prev_subject", nullable = true, length = 10)
 	public String getPreviousSubject() { return iPreviousSubject; }
 	public void setPreviousSubject(String previousSubject) { iPreviousSubject = previousSubject; }
 
+	@Column(name = "prev_crs_nbr", nullable = true, length = 10)
 	public String getPreviousCourseNumber() { return iPreviousCourseNumber; }
 	public void setPreviousCourseNumber(String previousCourseNumber) { iPreviousCourseNumber = previousCourseNumber; }
 
+	@Column(name = "credit_type", nullable = false, length = 20)
 	public String getCreditType() { return iCreditType; }
 	public void setCreditType(String creditType) { iCreditType = creditType; }
 
+	@Column(name = "credit_unit_type", nullable = false, length = 20)
 	public String getCreditUnitType() { return iCreditUnitType; }
 	public void setCreditUnitType(String creditUnitType) { iCreditUnitType = creditUnitType; }
 
+	@Column(name = "credit_format", nullable = false, length = 20)
 	public String getCreditFormat() { return iCreditFormat; }
 	public void setCreditFormat(String creditFormat) { iCreditFormat = creditFormat; }
 
+	@Column(name = "fixed_min_credit", nullable = false, length = 10)
 	public Float getFixedMinimumCredit() { return iFixedMinimumCredit; }
 	public void setFixedMinimumCredit(Float fixedMinimumCredit) { iFixedMinimumCredit = fixedMinimumCredit; }
 
+	@Column(name = "max_credit", nullable = true, length = 10)
 	public Float getMaximumCredit() { return iMaximumCredit; }
 	public void setMaximumCredit(Float maximumCredit) { iMaximumCredit = maximumCredit; }
 
+	@Column(name = "frac_credit_allowed", nullable = true, length = 10)
 	public Boolean isFractionalCreditAllowed() { return iFractionalCreditAllowed; }
+	@Transient
 	public Boolean getFractionalCreditAllowed() { return iFractionalCreditAllowed; }
 	public void setFractionalCreditAllowed(Boolean fractionalCreditAllowed) { iFractionalCreditAllowed = fractionalCreditAllowed; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@JoinColumn(name = "course_catalog_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CourseSubpartCredit> getSubparts() { return iSubparts; }
 	public void setSubparts(Set<CourseSubpartCredit> subparts) { iSubparts = subparts; }
 	public void addTosubparts(CourseSubpartCredit courseSubpartCredit) {
@@ -136,17 +158,20 @@ public abstract class BaseCourseCatalog implements Serializable {
 		iSubparts.add(courseSubpartCredit);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseCatalog)) return false;
 		if (getUniqueId() == null || ((CourseCatalog)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseCatalog)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseCatalog["+getUniqueId()+"]";
 	}

@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -35,6 +45,9 @@ import org.unitime.timetable.model.base.BaseCurriculumClassification;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "curriculum_clasf")
 public class CurriculumClassification extends BaseCurriculumClassification implements Comparable<CurriculumClassification> {
 	private static Log sLog = LogFactory.getLog(CurriculumClassification.class);
 	private static final long serialVersionUID = 1L;
@@ -65,6 +78,7 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 	    return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(cc.getUniqueId() == null ? -1 : cc.getUniqueId());
 	}
 	
+	@Transient
 	public Document getStudentsDocument() {
 		if (getStudents() == null) return null;
 		try {

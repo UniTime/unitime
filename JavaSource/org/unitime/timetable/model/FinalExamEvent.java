@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseFinalExamEvent;
 
 
@@ -26,6 +32,8 @@ import org.unitime.timetable.model.base.BaseFinalExamEvent;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("1")
 public class FinalExamEvent extends BaseFinalExamEvent {
 	private static final long serialVersionUID = 1L;
 
@@ -43,6 +51,7 @@ public class FinalExamEvent extends BaseFinalExamEvent {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public int getEventType() { return sEventTypeFinalExam; }
 
 

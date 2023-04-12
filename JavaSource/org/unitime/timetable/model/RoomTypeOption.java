@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseRoomTypeOption;
 
 
@@ -26,6 +36,9 @@ import org.unitime.timetable.model.base.BaseRoomTypeOption;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "room_type_option")
 public class RoomTypeOption extends BaseRoomTypeOption {
 	private static final long serialVersionUID = 1L;
 
@@ -39,7 +52,6 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 	public RoomTypeOption(RoomType roomType, Department department) {
 		setRoomType(roomType);
 		setDepartment(department);
-		initialize();
 	}
 
 	public static enum Status {
@@ -68,20 +80,27 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 			this(userRequest, deptRequest, mgrRequest, mgrApproval, false);
 		}
 		
+	@Transient
 		public boolean isAuthenticatedUsersCanRequestEvents() { return iUserRequest; }
+	@Transient
 		public boolean isDepartmentalUsersCanRequestEvents() { return iDeptRequest; }
+	@Transient
 		public boolean isEventManagersCanApprove() { return iMgrApproval; }
+	@Transient
 		public boolean isEventManagersCanRequestEvents() { return iMgrRequest; }
+	@Transient
 		public boolean isAutomaticApproval() { return iAutoApproval; }
 		
 		@Override
 		public String toString() { return name().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2"); }
 	}
 	
+	@Transient
     public static int getDefaultStatus() {
     	return Status.NoEventManagement.ordinal();
     }
     
+	@Transient
     public Status getEventStatus() {
     	return Status.values()[getStatus() == null ? getDefaultStatus() : getStatus()];
     }

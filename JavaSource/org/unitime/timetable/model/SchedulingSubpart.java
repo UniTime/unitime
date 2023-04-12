@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -44,6 +50,8 @@ import org.unitime.timetable.webutil.Navigation;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Table(name = "scheduling_subpart")
 public class SchedulingSubpart extends BaseSchedulingSubpart {
 	private static final long serialVersionUID = 1L;
 
@@ -65,19 +73,23 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 /*[CONSTRUCTOR MARKER END]*/
 
 	/*
+	@Transient
 	public String getCourseName(){
 		return(this.getInstrOfferingConfig().getCourseName());
 	}
 	*/
 	
+	@Transient
 	public String getCourseNameWithTitle(){
 		return(this.getInstrOfferingConfig().getCourseNameWithTitle());
 	}
 
+	@Transient
 	public CourseOffering getControllingCourseOffering(){
 		return(this.getInstrOfferingConfig().getControllingCourseOffering());
 	}
 	
+	@Transient
 	public String getItypeDesc() {
 		try {
 			ItypeDesc itype = getItype();
@@ -88,6 +100,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		}
 	}
 	
+	@Transient
 	public Department getManagingDept(){
 		if (this.getClasses() != null){
 			boolean allSame = true;
@@ -114,20 +127,24 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return(this.getControllingDept());
 	}
     
+	@Transient
     public Department getControllingDept() {
  		return (this.getInstrOfferingConfig().getDepartment());
 	}
 	
     /*
+	@Transient
 	public Session getSession() {
 		return (this.getInstrOfferingConfig().getSession());
 	}
 	
+	@Transient
 	public Long getSessionId() {
 		return (this.getInstrOfferingConfig().getSessionId());
 	}
 	*/
     
+	@Transient
     public Long getSessionId() {
     	return getSession().getUniqueId();
     }
@@ -164,6 +181,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 * Gets the minimum class limit for the sub class
 	 * @return Class Limit (-1 if classes not defined, 0 if no classes set)
 	 */
+	@Transient
 	public int getMinClassLimit() {
 	    Set classes = this.getClasses();
         if(classes==null) return -1;
@@ -184,6 +202,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 * Gets the maximum class limit for the sub class
 	 * @return Class Limit (-1 if classes not defined, 0 if no classes set)
 	 */
+	@Transient
 	public int getMaxClassLimit() {
 	    Set classes = this.getClasses();
         if(classes==null) return -1;
@@ -204,12 +223,14 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 * Gets the number of classes for a subpart
 	 * @return Number of classes (-1 if classes not defined)
 	 */
+	@Transient
 	public int getNumClasses() {
 	    Set classes = this.getClasses();
         if(classes==null) return -1;
         return classes.size();	    
 	}
 	
+	@Transient
 	public String getSchedulingSubpartLabel() {
 		String sufix = getSchedulingSubpartSuffix();
         String cfgName = (getInstrOfferingConfig().getInstructionalOffering().hasMultipleConfigurations()?getInstrOfferingConfig().getName():null);        
@@ -226,6 +247,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	/**
 	 * @return Class type to distinguish the sub class in PrefGroup
 	 */
+	@Transient
 	public Class getInstanceOf() {
 	    return SchedulingSubpart.class;
 	}
@@ -235,6 +257,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
      * belonging to the subpart
      * @return max room ratio
      */
+	@Transient
     public float getMaxRoomRatio() {
 	    Set classes = this.getClasses();
         if(classes==null) return -1;
@@ -256,6 +279,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
      * belonging to the subpart
      * @return max number of rooms
      */
+	@Transient
     public int getMaxRooms() {
 	    Set classes = this.getClasses();
         if(classes==null) return -1;
@@ -273,6 +297,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         
     }
     
+	@Transient
     public Set getDistributionPreferences() {
     	TreeSet prefs = new TreeSet();
     	if (getDistributionObjects()!=null) {
@@ -530,6 +555,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		}
 	}
 
+	@Transient
 	public Set getAvailableRooms() {
     	Set rooms =  new TreeSet();
         for (Iterator i=getManagingDept().getRoomDepts().iterator();i.hasNext();) {
@@ -540,6 +566,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return rooms;
     }
 	
+	@Transient
     public Set getAvailableRoomFeatures() {
     	Set features = super.getAvailableRoomFeatures();
     	Department dept = getManagingDept();
@@ -549,6 +576,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	
     }
     
+	@Transient
     public Set getAvailableRoomGroups() {
     	Set groups = super.getAvailableRoomGroups();
     	Department dept = getManagingDept();
@@ -557,10 +585,12 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return groups;
     }
     
+	@Transient
 	public Set getAvailableAttributeTypes() {
 		return getControllingDept().getAvailableAttributeTypes();
     }
 
+	@Transient
 	public Set getAvailableAttributes() {
 		return getControllingDept().getAvailableAttributes();
     }
@@ -630,6 +660,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return previous;
     }
     
+	@Transient
     public String getSchedulingSubpartSuffix() {
     	return getSchedulingSubpartSuffix(null, true);
     }
@@ -718,6 +749,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (deleted) hibSession.saveOrUpdate(this);
     }
     
+	@Transient
     public int getMaxExpectedCapacity() {
     	int ret = 0;
     	for (Iterator i=getClasses().iterator();i.hasNext();) {
@@ -752,6 +784,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return false;
     }
     
+	@Transient
     public CourseCreditUnitConfig getCredit(){
     	if(this.getCreditConfigs() == null || this.getCreditConfigs().size() != 1){
     		return(null);
@@ -872,6 +905,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
 	@Override
+	@Transient
 	public Department getDepartment() { return getManagingDept(); }
 	
 	/**
@@ -910,12 +944,14 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return parent != null && (this.equals(parent) || isParentOf(parent)); 
 	}
 	
+	@Transient
 	public boolean isInstructorAssignmentNeeded() {
 		for (Class_ c: getClasses())
 			if (c.isInstructorAssignmentNeeded()) return true;
 		return false;
 	}
 	
+	@Transient
 	public int getNbrInstructors() {
 		int instructors = 0;
 		for (Class_ c: getClasses())
@@ -925,6 +961,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return instructors;
 	}
 	
+	@Transient
 	public float getTeachingLoad() {
 		int instructors = 0; float totalLoad = 0f;
 		for (Class_ c: getClasses())

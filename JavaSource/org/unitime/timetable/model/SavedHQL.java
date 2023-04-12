@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +44,9 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "saved_hql")
 public class SavedHQL extends BaseSavedHQL {
 	private static final long serialVersionUID = 2532519378106863655L;
 
@@ -57,7 +70,9 @@ public class SavedHQL extends BaseSavedHQL {
 		public int flag() { return 1 << ordinal(); }
 		public boolean isSet(int type) { return (type & flag()) != 0; }
 		public String description() { return iDescription; }
+	@Transient
 		public String getAppearance() { return iAppearance; }
+	@Transient
 		public Right getPermission() { return iRight; }
 	}
 	

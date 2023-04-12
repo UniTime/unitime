@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,6 +61,9 @@ import org.unitime.timetable.util.duration.DurationModel;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "assignment")
 public class Assignment extends BaseAssignment {
 	private static final long serialVersionUID = 1L;
 
@@ -68,6 +81,7 @@ public class Assignment extends BaseAssignment {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public int[] getStartSlots() {
 		int ret[] = new int[getTimePattern().getNrMeetings().intValue()];
 		int idx=0;
@@ -77,6 +91,7 @@ public class Assignment extends BaseAssignment {
 		return ret;
 	}
 
+	@Transient
 	public Vector getStartSlotsVect() {
 		Vector ret = new Vector();
 		for (int i=0;i<Constants.DAY_CODES.length;i++)
@@ -188,6 +203,7 @@ public class Assignment extends BaseAssignment {
 	public void setSlotsPerMtg(int slotsPerMtg) {
 		iSlotsPerMtg = slotsPerMtg;
 	}
+	@Transient
 	public int getSlotPerMtg() {
 		if (iSlotsPerMtg>=0) return iSlotsPerMtg;
 		TimePattern pattern = getTimePattern();
@@ -204,6 +220,7 @@ public class Assignment extends BaseAssignment {
 	public void setBreakTime(int breakTime) {
 		iBreakTime = breakTime;
 	}
+	@Transient
 	public int getBreakTime() {
 		if (iBreakTime>=0) return iBreakTime;
 		TimePattern pattern = getTimePattern();
@@ -217,6 +234,7 @@ public class Assignment extends BaseAssignment {
 	}
 
 	private transient TimeLocation iTimeLocation = null;
+	@Transient
 	public TimeLocation getTimeLocation() {
 		if (iPlacement!=null) return iPlacement.getTimeLocation();
 		if (iTimeLocation==null) {
@@ -235,6 +253,7 @@ public class Assignment extends BaseAssignment {
 		}
 		return iTimeLocation;
 	}
+	@Transient
 	public Vector getRoomLocations() {
 		Vector ret = new Vector();
 		for (Iterator i=getRooms().iterator();i.hasNext();) {
@@ -255,6 +274,7 @@ public class Assignment extends BaseAssignment {
 	}
 	
 	private transient Placement iPlacement = null;
+	@Transient
 	public Placement getPlacement() {
 		if (iPlacement!=null) return iPlacement;
 		TimeLocation timeLocation = getTimeLocation();
@@ -278,6 +298,7 @@ public class Assignment extends BaseAssignment {
 		return getClassName()+" "+getPlacement().getName();
 	}
 	
+	@Transient
 	public DatePattern getDatePattern() {
 		DatePattern dp = super.getDatePattern();
 		if (dp != null && !Hibernate.isInitialized(dp.getSession()))
@@ -287,6 +308,7 @@ public class Assignment extends BaseAssignment {
 		return dp;
 	}
 	
+	@Transient
 	public String getClassName() {
 		if (super.getClassName()!=null) return super.getClassName();
 		return getClazz().getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());
@@ -296,6 +318,7 @@ public class Assignment extends BaseAssignment {
 		return getClazz().getClassLabel(showSuffix);
 	}
 	
+	@Transient
 	public Set<Location> getRooms() {
 		try {
 			return super.getRooms();
@@ -340,6 +363,7 @@ public class Assignment extends BaseAssignment {
 	       return true;
    }
 	
+	@Transient
 	public int getMinutesPerMeeting() {
 		TimePattern pattern = getTimePattern();
 		if (pattern.isExactTime()) {
@@ -495,8 +519,14 @@ public class Assignment extends BaseAssignment {
         return shareDays(another) && shareHours(another) && shareWeeks(another);
     }    
     
+	@Transient
     public boolean isCommitted() {
     	if (getSolution() == null) return false;
     	return getSolution().getCommitDate() != null;
     }
+	
+	@Transient
+	public Long getClassId() {
+		return getClazz() == null ? null : getClazz().getUniqueId();
+	}
 }

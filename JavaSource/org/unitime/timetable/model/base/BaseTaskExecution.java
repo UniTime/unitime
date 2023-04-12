@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.TaskExecution;
 
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.TaskExecution;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTaskExecution implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -49,88 +59,94 @@ public abstract class BaseTaskExecution implements Serializable {
 
 	private PeriodicTask iTask;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXEC_DATE = "executionDate";
-	public static String PROP_EXEC_PERIOD = "executionPeriod";
-	public static String PROP_STATUS = "executionStatus";
-	public static String PROP_CREATED_DATE = "createdDate";
-	public static String PROP_SCHEDULED_DATE = "scheduledDate";
-	public static String PROP_QUEUED_DATE = "queuedDate";
-	public static String PROP_STARTED_DATE = "startedDate";
-	public static String PROP_FINISHED_DATE = "finishedDate";
-	public static String PROP_LOG_FILE = "logFile";
-	public static String PROP_OUTPUT_FILE = "outputFile";
-	public static String PROP_OUTPUT_NAME = "outputName";
-	public static String PROP_OUTPUT_CONTENT = "outputContentType";
-	public static String PROP_STATUS_MESSAGE = "statusMessage";
-
 	public BaseTaskExecution() {
-		initialize();
 	}
 
 	public BaseTaskExecution(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "task_execution_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "task_execution_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "exec_date", nullable = false)
 	public Integer getExecutionDate() { return iExecutionDate; }
 	public void setExecutionDate(Integer executionDate) { iExecutionDate = executionDate; }
 
+	@Column(name = "exec_period", nullable = false)
 	public Integer getExecutionPeriod() { return iExecutionPeriod; }
 	public void setExecutionPeriod(Integer executionPeriod) { iExecutionPeriod = executionPeriod; }
 
+	@Column(name = "status", nullable = false)
 	public Integer getExecutionStatus() { return iExecutionStatus; }
 	public void setExecutionStatus(Integer executionStatus) { iExecutionStatus = executionStatus; }
 
+	@Column(name = "created_date", nullable = false)
 	public Date getCreatedDate() { return iCreatedDate; }
 	public void setCreatedDate(Date createdDate) { iCreatedDate = createdDate; }
 
+	@Column(name = "scheduled_date", nullable = false)
 	public Date getScheduledDate() { return iScheduledDate; }
 	public void setScheduledDate(Date scheduledDate) { iScheduledDate = scheduledDate; }
 
+	@Column(name = "queued_date", nullable = true)
 	public Date getQueuedDate() { return iQueuedDate; }
 	public void setQueuedDate(Date queuedDate) { iQueuedDate = queuedDate; }
 
+	@Column(name = "started_date", nullable = true)
 	public Date getStartedDate() { return iStartedDate; }
 	public void setStartedDate(Date startedDate) { iStartedDate = startedDate; }
 
+	@Column(name = "finished_date", nullable = true)
 	public Date getFinishedDate() { return iFinishedDate; }
 	public void setFinishedDate(Date finishedDate) { iFinishedDate = finishedDate; }
 
+	@Column(name = "log_file", nullable = true)
 	public String getLogFile() { return iLogFile; }
 	public void setLogFile(String logFile) { iLogFile = logFile; }
 
+	@Column(name = "output_file", nullable = true)
 	public byte[] getOutputFile() { return iOutputFile; }
 	public void setOutputFile(byte[] outputFile) { iOutputFile = outputFile; }
 
+	@Column(name = "output_name", nullable = true, length = 260)
 	public String getOutputName() { return iOutputName; }
 	public void setOutputName(String outputName) { iOutputName = outputName; }
 
+	@Column(name = "output_content", nullable = true, length = 260)
 	public String getOutputContentType() { return iOutputContentType; }
 	public void setOutputContentType(String outputContentType) { iOutputContentType = outputContentType; }
 
+	@Column(name = "status_message", nullable = true, length = 260)
 	public String getStatusMessage() { return iStatusMessage; }
 	public void setStatusMessage(String statusMessage) { iStatusMessage = statusMessage; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "task_id", nullable = false)
 	public PeriodicTask getTask() { return iTask; }
 	public void setTask(PeriodicTask task) { iTask = task; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TaskExecution)) return false;
 		if (getUniqueId() == null || ((TaskExecution)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TaskExecution)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TaskExecution["+getUniqueId()+"]";
 	}

@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseJointEnrollment;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseJointEnrollment;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "jenrl")
 public class JointEnrollment extends BaseJointEnrollment {
 	private static final long serialVersionUID = 1L;
 

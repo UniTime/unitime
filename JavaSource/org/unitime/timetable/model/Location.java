@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +67,9 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Location extends BaseLocation implements Comparable {
 	public static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	public static final GwtMessages GWT_MSG = Localization.create(GwtMessages.class);
@@ -105,13 +118,16 @@ public abstract class Location extends BaseLocation implements Comparable {
 		}
 	}
 	
+	@Transient
 	public abstract String getLabel();
 	
 	/** Room sharing table with all fields editable (for administrator) */
+	@Transient
 	public RequiredTimeTable getRoomSharingTable() {
 		return new RequiredTimeTable(new RoomSharingModel(this, null, null)); //all editable
 	}
 	
+	@Transient
 	public RequiredTimeTable getEventAvailabilityTable() {
 		RoomSharingModel model = new RoomSharingModel(this, null, null);
 		model.setEventAvailabilityPreference(getEventAvailability());
@@ -143,6 +159,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     /** Room sharing model with all fields editable (for administrator) */
+	@Transient
     public RoomSharingModel getRoomSharingModel() {
     	return new RoomSharingModel(this, null, null);
     }
@@ -315,6 +332,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * 
 	 * @return
 	 */
+	@Transient
 	public TreeSet<GlobalRoomFeature> getGlobalRoomFeatures() {
 		TreeSet<GlobalRoomFeature> grfs = new TreeSet<GlobalRoomFeature>();
 		for (RoomFeature rf: getFeatures())
@@ -324,6 +342,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return grfs;
 	}
 	
+	@Transient
 	public TreeSet<RoomGroup> getGlobalRoomGroups() {
 		TreeSet<RoomGroup> grgs = new TreeSet<RoomGroup>();
 		for (RoomGroup rg: getRoomGroups()) {
@@ -337,6 +356,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @return
 	 */
 
+	@Transient
 	public TreeSet<DepartmentRoomFeature> getDepartmentRoomFeatures() {
 		TreeSet<DepartmentRoomFeature> drfs = new TreeSet<DepartmentRoomFeature>();
 		for (RoomFeature rf: getFeatures())
@@ -476,6 +496,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return m.getDistanceInMeters(getUniqueId(), getCoordinateX(), getCoordinateY(), other.getUniqueId(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	
+	@Transient
 	public Department getControllingDepartment() {
 		for (Iterator i=getRoomDepts().iterator();i.hasNext();) {
 			RoomDept rd = (RoomDept)i.next();
@@ -484,6 +505,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return null;
 	}
 	
+	@Transient
 	public abstract String getRoomTypeLabel();
 	
 	public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(ExamType examType) {
@@ -652,6 +674,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         return table;
     }
     
+	@Transient
     public Collection<Assignment> getCommitedAssignments() {
     	return new LocationDAO().getSession().createQuery(
                 "select a from Assignment a inner join a.rooms r where " +
@@ -792,6 +815,7 @@ public abstract class Location extends BaseLocation implements Comparable {
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
+	@Transient
     public abstract RoomType getRoomType();
     public abstract void setRoomType(RoomType roomType);
     
@@ -939,6 +963,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     @Deprecated
+	@Transient
     public String getHtmlHint() {
     	return getHtmlHint(null);
     }
@@ -1019,10 +1044,12 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return hint;
     }
     
+	@Transient
     public String getLabelWithHint() {
     	return "<span onmouseover=\"showGwtRoomHint(this, '" + getUniqueId() + "');\" onmouseout=\"hideGwtRoomHint();\">" + getLabel() + "</span>";
     }
     
+	@Transient
     public boolean isUsed() {
     	Number nrMeetings = (Number)LocationDAO.getInstance().getSession().createQuery(
     			"select count(m) from Meeting m, Location l where " +
@@ -1033,6 +1060,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return nrMeetings.intValue() > 0;
     }
     
+	@Transient
     public int getEffectiveBreakTime() {
     	if (getBreakTime() != null)
     		return getBreakTime();
@@ -1042,6 +1070,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     		return getRoomType().getOption(getEventDepartment()).getBreakTime();
     }
     
+	@Transient
     public RoomTypeOption.Status getEffectiveEventStatus() {
     	if (getEventStatus() != null)
     		return RoomTypeOption.Status.values()[getEventStatus()];
@@ -1051,6 +1080,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     		return getRoomType().getOption(getEventDepartment()).getEventStatus();
     }
 
+	@Transient
     public String getEventMessage() {
     	if (getNote() != null && !getNote().isEmpty()) return getNote();
     	if (getEventDepartment() == null)
@@ -1060,15 +1090,18 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
 
     
+	@Transient
     public String getLabelWithCapacity() {
     	return (getCapacity() == null ? getLabel() : MSG.labelLocationLabelWithCapacity(getLabel(), getCapacity()));
     }
     
+	@Transient
     public String getLabelWithExamCapacity() {
     	return (getExamCapacity() == null ? getLabelWithCapacity() : MSG.labelLocationLabelWithCapacity(getLabel(), getExamCapacity()));
     }
     
     @Override
+	@Transient
     public String getPattern() {
     	String pattern = super.getPattern();
     	if (pattern != null && pattern.length() == 336) {
@@ -1081,7 +1114,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return pattern;
     }
     
-    public abstract Set<? extends LocationPicture> getPictures();
+	@Transient
+    public abstract Set<? extends LocationPicture> getRoomPictures();
     
     public static Location findByName(org.hibernate.Session hibSession, Long sessionId, String name) {
     	Room room = (Room)hibSession.createQuery(
@@ -1100,6 +1134,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return location == null ? null : location.getFutureLocations();
     }
     
+	@Transient
     public abstract List<Location> getFutureLocations();
 
 	public static Collection<Location> lookupFutureLocations(org.hibernate.Session hibSession, List<Long> ids, Long sessionId) {
@@ -1145,6 +1180,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return locations.values();
 	}
 	
+	@Transient
 	public String getLabelWithDisplayName() {
 		if (getDisplayName() == null || getDisplayName().isEmpty())
 			return getLabel();
@@ -1152,6 +1188,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 			return GWT_MSG.roomLabelWithDisplayName(getLabel(), getDisplayName());
 	}
 	
+	@Transient
 	public abstract Set<EventServiceProvider> getAllowedServices();
 	public abstract void setAllowedServices(Set<EventServiceProvider> services);
 	
@@ -1161,6 +1198,7 @@ public abstract class Location extends BaseLocation implements Comparable {
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 	
+	@Transient
 	public Long getPartitionParentId() {
 		return null;
 	}

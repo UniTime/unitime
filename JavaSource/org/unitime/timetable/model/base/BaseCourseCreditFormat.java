@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,39 +31,39 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseCreditFormat extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String iAbbreviation;
 
 
-	public static String PROP_ABBREVIATION = "abbreviation";
-
 	public BaseCourseCreditFormat() {
-		initialize();
 	}
 
 	public BaseCourseCreditFormat(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "abbreviation", nullable = true, length = 10)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseCreditFormat)) return false;
 		if (getUniqueId() == null || ((CourseCreditFormat)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseCreditFormat)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseCreditFormat["+getUniqueId()+" "+getLabel()+"]";
 	}

@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PitClass;
 import org.unitime.timetable.model.PitCourseOffering;
 import org.unitime.timetable.model.PitStudent;
@@ -31,6 +40,7 @@ import org.unitime.timetable.model.PitStudentClassEnrollment;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePitStudentClassEnrollment implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,50 +52,60 @@ public abstract class BasePitStudentClassEnrollment implements Serializable {
 	private PitCourseOffering iPitCourseOffering;
 	private PitClass iPitClass;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_TIMESTAMP = "timestamp";
-	public static String PROP_CHANGED_BY = "changedBy";
-
 	public BasePitStudentClassEnrollment() {
-		initialize();
 	}
 
 	public BasePitStudentClassEnrollment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pit_student_class_enrl_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "pit_student_class_enrl_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "timestamp", nullable = false)
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
 
+	@Column(name = "changed_by", nullable = true, length = 40)
 	public String getChangedBy() { return iChangedBy; }
 	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_student_id", nullable = false)
 	public PitStudent getPitStudent() { return iPitStudent; }
 	public void setPitStudent(PitStudent pitStudent) { iPitStudent = pitStudent; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_course_offering_id", nullable = false)
 	public PitCourseOffering getPitCourseOffering() { return iPitCourseOffering; }
 	public void setPitCourseOffering(PitCourseOffering pitCourseOffering) { iPitCourseOffering = pitCourseOffering; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pit_class_id", nullable = false)
 	public PitClass getPitClass() { return iPitClass; }
 	public void setPitClass(PitClass pitClass) { iPitClass = pitClass; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PitStudentClassEnrollment)) return false;
 		if (getUniqueId() == null || ((PitStudentClassEnrollment)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PitStudentClassEnrollment)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PitStudentClassEnrollment["+getUniqueId()+"]";
 	}

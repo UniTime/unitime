@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseHistory;
 import org.unitime.timetable.model.History;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.History;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseHistory extends History implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,37 +39,36 @@ public abstract class BaseCourseHistory extends History implements Serializable 
 	private String iNewNumber;
 
 
-	public static String PROP_OLD_NUMBER = "oldNumber";
-	public static String PROP_NEW_NUMBER = "newNumber";
-
 	public BaseCourseHistory() {
-		initialize();
 	}
 
 	public BaseCourseHistory(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "old_number", nullable = true, length = 4)
 	public String getOldNumber() { return iOldNumber; }
 	public void setOldNumber(String oldNumber) { iOldNumber = oldNumber; }
 
+	@Column(name = "new_number", nullable = true, length = 4)
 	public String getNewNumber() { return iNewNumber; }
 	public void setNewNumber(String newNumber) { iNewNumber = newNumber; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseHistory)) return false;
 		if (getUniqueId() == null || ((CourseHistory)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseHistory)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseHistory["+getUniqueId()+"]";
 	}
@@ -77,7 +80,6 @@ public abstract class BaseCourseHistory extends History implements Serializable 
 			"\n	OldNumber: " + getOldNumber() +
 			"\n	OldValue: " + getOldValue() +
 			"\n	Session: " + getSession() +
-			"\n	SessionId: " + getSessionId() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

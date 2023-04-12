@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.ItypeDesc;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseItypeDesc implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -39,58 +47,62 @@ public abstract class BaseItypeDesc implements Serializable {
 
 	private ItypeDesc iParent;
 
-	public static String PROP_ITYPE = "itype";
-	public static String PROP_ABBV = "abbv";
-	public static String PROP_DESCRIPTION = "desc";
-	public static String PROP_SIS_REF = "sis_ref";
-	public static String PROP_BASIC = "basic";
-	public static String PROP_ORGANIZED = "organized";
-
 	public BaseItypeDesc() {
-		initialize();
 	}
 
 	public BaseItypeDesc(Integer itype) {
 		setItype(itype);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@Column(name="itype")
 	public Integer getItype() { return iItype; }
 	public void setItype(Integer itype) { iItype = itype; }
 
+	@Column(name = "abbv", nullable = true, length = 7)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	@Column(name = "description", nullable = true, length = 50)
 	public String getDesc() { return iDesc; }
 	public void setDesc(String desc) { iDesc = desc; }
 
+	@Column(name = "sis_ref", nullable = true, length = 20)
 	public String getSis_ref() { return iSis_ref; }
 	public void setSis_ref(String sis_ref) { iSis_ref = sis_ref; }
 
+	@Column(name = "basic", nullable = true)
 	public Boolean isBasic() { return iBasic; }
+	@Transient
 	public Boolean getBasic() { return iBasic; }
 	public void setBasic(Boolean basic) { iBasic = basic; }
 
+	@Column(name = "organized", nullable = false)
 	public Boolean isOrganized() { return iOrganized; }
+	@Transient
 	public Boolean getOrganized() { return iOrganized; }
 	public void setOrganized(Boolean organized) { iOrganized = organized; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent", nullable = true)
 	public ItypeDesc getParent() { return iParent; }
 	public void setParent(ItypeDesc parent) { iParent = parent; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ItypeDesc)) return false;
 		if (getItype() == null || ((ItypeDesc)o).getItype() == null) return false;
 		return getItype().equals(((ItypeDesc)o).getItype());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getItype() == null) return super.hashCode();
 		return getItype().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ItypeDesc["+getItype()+"]";
 	}

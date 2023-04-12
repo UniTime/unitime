@@ -19,9 +19,21 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseTeachingClassRequest;
 import org.unitime.timetable.model.comparators.ClassComparator;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "teachreq_class")
 public class TeachingClassRequest extends BaseTeachingClassRequest implements Comparable<TeachingClassRequest> {
 	private static final long serialVersionUID = 1L;
 

@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseVariableFixedCreditUnitConfig extends CourseCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,44 +39,42 @@ public abstract class BaseVariableFixedCreditUnitConfig extends CourseCreditUnit
 	private Float iMaxUnits;
 
 
-	public static String PROP_MIN_UNITS = "minUnits";
-	public static String PROP_MAX_UNITS = "maxUnits";
-
 	public BaseVariableFixedCreditUnitConfig() {
-		initialize();
 	}
 
 	public BaseVariableFixedCreditUnitConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "min_units", nullable = true)
 	public Float getMinUnits() { return iMinUnits; }
 	public void setMinUnits(Float minUnits) { iMinUnits = minUnits; }
 
+	@Column(name = "max_units", nullable = true)
 	public Float getMaxUnits() { return iMaxUnits; }
 	public void setMaxUnits(Float maxUnits) { iMaxUnits = maxUnits; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof VariableFixedCreditUnitConfig)) return false;
 		if (getUniqueId() == null || ((VariableFixedCreditUnitConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((VariableFixedCreditUnitConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "VariableFixedCreditUnitConfig["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "VariableFixedCreditUnitConfig[" +
-			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
 			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +

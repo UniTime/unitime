@@ -23,6 +23,22 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
@@ -33,6 +49,7 @@ import org.unitime.timetable.model.TimePatternTime;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTimePattern implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -50,54 +67,61 @@ public abstract class BaseTimePattern implements Serializable {
 	private Set<TimePatternDays> iDays;
 	private Set<Department> iDepartments;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_MINS_PMT = "minPerMtg";
-	public static String PROP_SLOTS_PMT = "slotsPerMtg";
-	public static String PROP_NR_MTGS = "nrMeetings";
-	public static String PROP_BREAK_TIME = "breakTime";
-	public static String PROP_TYPE = "type";
-	public static String PROP_VISIBLE = "visible";
-
 	public BaseTimePattern() {
-		initialize();
 	}
 
 	public BaseTimePattern(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "time_pattern_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "time_pattern_seq")
+	})
+	@GeneratedValue(generator = "time_pattern_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = true, length = 50)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "mins_pmt", nullable = true, length = 3)
 	public Integer getMinPerMtg() { return iMinPerMtg; }
 	public void setMinPerMtg(Integer minPerMtg) { iMinPerMtg = minPerMtg; }
 
+	@Column(name = "slots_pmt", nullable = true, length = 3)
 	public Integer getSlotsPerMtg() { return iSlotsPerMtg; }
 	public void setSlotsPerMtg(Integer slotsPerMtg) { iSlotsPerMtg = slotsPerMtg; }
 
+	@Column(name = "nr_mtgs", nullable = true, length = 3)
 	public Integer getNrMeetings() { return iNrMeetings; }
 	public void setNrMeetings(Integer nrMeetings) { iNrMeetings = nrMeetings; }
 
+	@Column(name = "break_time", nullable = true, length = 3)
 	public Integer getBreakTime() { return iBreakTime; }
 	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 
+	@Column(name = "type", nullable = true, length = 2)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@Column(name = "visible", nullable = true)
 	public Boolean isVisible() { return iVisible; }
+	@Transient
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@JoinColumn(name = "time_pattern_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimePatternTime> getTimes() { return iTimes; }
 	public void setTimes(Set<TimePatternTime> times) { iTimes = times; }
 	public void addTotimes(TimePatternTime timePatternTime) {
@@ -105,6 +129,9 @@ public abstract class BaseTimePattern implements Serializable {
 		iTimes.add(timePatternTime);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@JoinColumn(name = "time_pattern_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimePatternDays> getDays() { return iDays; }
 	public void setDays(Set<TimePatternDays> days) { iDays = days; }
 	public void addTodays(TimePatternDays timePatternDays) {
@@ -112,6 +139,8 @@ public abstract class BaseTimePattern implements Serializable {
 		iDays.add(timePatternDays);
 	}
 
+	@ManyToMany(mappedBy = "timePatterns")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -119,17 +148,20 @@ public abstract class BaseTimePattern implements Serializable {
 		iDepartments.add(department);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TimePattern)) return false;
 		if (getUniqueId() == null || ((TimePattern)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TimePattern)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TimePattern["+getUniqueId()+" "+getName()+"]";
 	}

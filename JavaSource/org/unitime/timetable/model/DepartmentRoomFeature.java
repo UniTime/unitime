@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import java.util.Collection;
 
 import org.unitime.timetable.model.base.BaseDepartmentRoomFeature;
@@ -30,6 +36,8 @@ import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("department")
 public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 	private static final long serialVersionUID = 1L;
 
@@ -50,6 +58,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		return "Department";		
 	}
 	
+	@Transient
 	public String getDeptCode() {
 		return (getDepartment()==null?null:getDepartment().getDeptCode());
 	}
@@ -66,6 +75,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 	/**
 	 * @return Room feature label with the word (Department) appended to it
 	 */
+	@Transient
 	public String getLabelWithType() {
 	    return getLabel() + (getFeatureType() == null ? " (Department)" : " (Department " + getFeatureType().getReference() + ")");
 	}

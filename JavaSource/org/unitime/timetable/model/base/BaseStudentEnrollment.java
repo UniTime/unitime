@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentEnrollment;
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.StudentEnrollment;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentEnrollment implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,43 +48,51 @@ public abstract class BaseStudentEnrollment implements Serializable {
 	private Solution iSolution;
 	private Class_ iClazz;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_STUDENT_ID = "studentId";
-
 	public BaseStudentEnrollment() {
-		initialize();
 	}
 
 	public BaseStudentEnrollment(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_enrl_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "student_enrl_seq")
+	})
+	@GeneratedValue(generator = "student_enrl_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "student_id", nullable = false, length = 20)
 	public Long getStudentId() { return iStudentId; }
 	public void setStudentId(Long studentId) { iStudentId = studentId; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "solution_id", nullable = false)
 	public Solution getSolution() { return iSolution; }
 	public void setSolution(Solution solution) { iSolution = solution; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "class_id", nullable = false)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentEnrollment)) return false;
 		if (getUniqueId() == null || ((StudentEnrollment)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentEnrollment)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentEnrollment["+getUniqueId()+"]";
 	}

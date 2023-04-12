@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.RefTableEntry;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,41 +43,45 @@ public abstract class BaseRefTableEntry implements Serializable {
 	private String iLabel;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_REFERENCE = "reference";
-	public static String PROP_LABEL = "label";
-
 	public BaseRefTableEntry() {
-		initialize();
 	}
 
 	public BaseRefTableEntry(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "ref_table_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "ref_table_seq")
+	})
+	@GeneratedValue(generator = "ref_table_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "reference", nullable = false, length = 20)
 	public String getReference() { return iReference; }
 	public void setReference(String reference) { iReference = reference; }
 
+	@Column(name = "label", nullable = true, length = 60)
 	public String getLabel() { return iLabel; }
 	public void setLabel(String label) { iLabel = label; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RefTableEntry)) return false;
 		if (getUniqueId() == null || ((RefTableEntry)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RefTableEntry)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RefTableEntry["+getUniqueId()+" "+getLabel()+"]";
 	}

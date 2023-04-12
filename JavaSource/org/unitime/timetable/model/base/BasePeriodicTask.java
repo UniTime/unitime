@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.Session;
@@ -34,6 +47,7 @@ import org.unitime.timetable.model.TimetableManager;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePeriodicTask implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,43 +62,52 @@ public abstract class BasePeriodicTask implements Serializable {
 	private Set<TaskParameter> iParameters;
 	private Set<TaskExecution> iSchedule;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_EMAIL = "email";
-	public static String PROP_INPUT_FILE = "inputFile";
-
 	public BasePeriodicTask() {
-		initialize();
 	}
 
 	public BasePeriodicTask(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "task_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "task_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 128)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "email", nullable = true, length = 1000)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Column(name = "input_file", nullable = true)
 	public byte[] getInputFile() { return iInputFile; }
 	public void setInputFile(byte[] inputFile) { iInputFile = inputFile; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "script_id", nullable = false)
 	public Script getScript() { return iScript; }
 	public void setScript(Script script) { iScript = script; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "owner_id", nullable = false)
 	public TimetableManager getOwner() { return iOwner; }
 	public void setOwner(TimetableManager owner) { iOwner = owner; }
 
+	@OneToMany(mappedBy = "task", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TaskParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<TaskParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(TaskParameter taskParameter) {
@@ -92,6 +115,8 @@ public abstract class BasePeriodicTask implements Serializable {
 		iParameters.add(taskParameter);
 	}
 
+	@OneToMany(mappedBy = "task", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TaskExecution> getSchedule() { return iSchedule; }
 	public void setSchedule(Set<TaskExecution> schedule) { iSchedule = schedule; }
 	public void addToschedule(TaskExecution taskExecution) {
@@ -99,17 +124,20 @@ public abstract class BasePeriodicTask implements Serializable {
 		iSchedule.add(taskExecution);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PeriodicTask)) return false;
 		if (getUniqueId() == null || ((PeriodicTask)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PeriodicTask)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PeriodicTask["+getUniqueId()+" "+getName()+"]";
 	}

@@ -19,10 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BasePitDepartmentalInstructor;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pit_dept_instructor")
 public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor implements NameInterface {
 
 	/**
@@ -75,6 +88,7 @@ public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor imp
 	}
 
 	@Override
+	@Transient
 	public String getAcademicTitle() {
 		return null;
 	}

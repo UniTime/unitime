@@ -19,9 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseInstructorCoursePref;
 
+@Entity
+@Table(name = "course_pref")
 public class InstructorCoursePref extends BaseInstructorCoursePref {
 	private static final long serialVersionUID = 2827106681341764953L;
 
@@ -67,6 +75,7 @@ public class InstructorCoursePref extends BaseInstructorCoursePref {
 	    return super.compareTo(o);
 	}
 	
+	@Transient
 	public Type getType() { return Type.COURSE; }
 
 }

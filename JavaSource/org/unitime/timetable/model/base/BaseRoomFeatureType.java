@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RoomFeatureType;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.RoomFeatureType;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoomFeatureType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,39 +40,40 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 	private Boolean iShowInInstructorSurvey;
 
 
-	public static String PROP_EVENTS = "showInEventManagement";
-	public static String PROP_SURVEY = "showInInstructorSurvey";
-
 	public BaseRoomFeatureType() {
-		initialize();
 	}
 
 	public BaseRoomFeatureType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "events", nullable = false)
 	public Boolean isShowInEventManagement() { return iShowInEventManagement; }
+	@Transient
 	public Boolean getShowInEventManagement() { return iShowInEventManagement; }
 	public void setShowInEventManagement(Boolean showInEventManagement) { iShowInEventManagement = showInEventManagement; }
 
+	@Column(name = "survey", nullable = false)
 	public Boolean isShowInInstructorSurvey() { return iShowInInstructorSurvey; }
+	@Transient
 	public Boolean getShowInInstructorSurvey() { return iShowInInstructorSurvey; }
 	public void setShowInInstructorSurvey(Boolean showInInstructorSurvey) { iShowInInstructorSurvey = showInInstructorSurvey; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomFeatureType)) return false;
 		if (getUniqueId() == null || ((RoomFeatureType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RoomFeatureType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RoomFeatureType["+getUniqueId()+" "+getLabel()+"]";
 	}

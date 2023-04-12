@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseBuildingPref;
 
@@ -28,6 +34,8 @@ import org.unitime.timetable.model.base.BaseBuildingPref;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "building_pref")
 public class BuildingPref extends BaseBuildingPref {
 	private static final long serialVersionUID = 1L;
 
@@ -105,5 +113,6 @@ public class BuildingPref extends BaseBuildingPref {
     	return MSG.prefTitleBuilding(getPrefLevel().getPrefName(), getBuilding().getName());
 	}
 	
+	@Transient
 	public Type getType() { return Type.BUILDING; }
 }

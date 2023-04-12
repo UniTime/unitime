@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.TimePatternTime;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTimePatternTime implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -34,37 +42,41 @@ public abstract class BaseTimePatternTime implements Serializable {
 	private Integer iStartSlot;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_START_SLOT = "startSlot";
-
 	public BaseTimePatternTime() {
-		initialize();
 	}
 
 	public BaseTimePatternTime(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "time_pattern_time_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "time_pattern_times_seq")
+	})
+	@GeneratedValue(generator = "time_pattern_time_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "start_slot", nullable = true, length = 3)
 	public Integer getStartSlot() { return iStartSlot; }
 	public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TimePatternTime)) return false;
 		if (getUniqueId() == null || ((TimePatternTime)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TimePatternTime)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TimePatternTime["+getUniqueId()+"]";
 	}

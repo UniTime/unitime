@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 import java.util.TreeSet;
 
@@ -32,6 +38,8 @@ import org.unitime.timetable.model.dao.PositionTypeDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "position_type")
 public class PositionType extends BasePositionType implements Comparable{
 	private static final long serialVersionUID = 1L;
 	
@@ -110,6 +118,7 @@ public class PositionType extends BasePositionType implements Comparable{
 	 * ordered by column label
 	 * @return List of PositionType objects
 	 */
+	@Transient
     public static synchronized List<PositionType> getPositionTypeList() {
         return PositionTypeDAO.getInstance().findAll(Order.asc("sortOrder"));
     }

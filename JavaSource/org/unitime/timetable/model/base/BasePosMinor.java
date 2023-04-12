@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.Session;
@@ -31,6 +45,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePosMinor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,37 +57,45 @@ public abstract class BasePosMinor implements Serializable {
 	private Session iSession;
 	private Set<AcademicArea> iAcademicAreas;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CODE = "code";
-	public static String PROP_NAME = "name";
-
 	public BasePosMinor() {
-		initialize();
 	}
 
 	public BasePosMinor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pos_minor_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "pos_minor_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "code", nullable = false, length = 40)
 	public String getCode() { return iCode; }
 	public void setCode(String code) { iCode = code; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "pos_acad_area_minor",
+		joinColumns = { @JoinColumn(name = "minor_id") },
+		inverseJoinColumns = { @JoinColumn(name = "academic_area_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
 	public void addToacademicAreas(AcademicArea academicArea) {
@@ -80,17 +103,20 @@ public abstract class BasePosMinor implements Serializable {
 		iAcademicAreas.add(academicArea);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PosMinor)) return false;
 		if (getUniqueId() == null || ((PosMinor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PosMinor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PosMinor["+getUniqueId()+" "+getName()+"]";
 	}

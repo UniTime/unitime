@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.hibernate.query.Query;
@@ -32,6 +42,9 @@ import org.unitime.timetable.model.dao.PosMajorDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "pos_major")
 public class PosMajor extends BasePosMajor {
 	private static final long serialVersionUID = 1L;
 
@@ -71,6 +84,7 @@ public class PosMajor extends BasePosMajor {
      * @return
      */
 
+	@Transient
 	public String getLabelNameCode() {
         return this.getName() + " - " + this.getCode();
     }
@@ -79,6 +93,7 @@ public class PosMajor extends BasePosMajor {
      * Creates label of the format Code - Name
      * @return
      */
+	@Transient
     public String getLabelCodeName() {
         return this.getCode() + " - " + this.getName();
     }

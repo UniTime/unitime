@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,6 +45,9 @@ import org.unitime.timetable.model.dao.EventDateMappingDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "date_mapping")
 public class EventDateMapping extends BaseEventDateMapping implements Comparable<EventDateMapping> {
 	private static final long serialVersionUID = 1L;
 
@@ -42,6 +55,7 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 		super();
 	}
 	
+	@Transient
 	public Date getClassDate() {
 	    Calendar c = Calendar.getInstance(Locale.US);
 	    c.setTime(getSession().getSessionBeginDateTime());
@@ -54,6 +68,7 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 		setClassDateOffset((int)Math.round(diff/(1000.0 * 60 * 60 * 24)));
 	}
 	
+	@Transient
 	public Date getEventDate() {
 		Calendar c = Calendar.getInstance(Locale.US);
 	    c.setTime(getSession().getSessionBeginDateTime());

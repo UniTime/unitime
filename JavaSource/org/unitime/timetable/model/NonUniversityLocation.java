@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +41,8 @@ import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "non_university_location")
 public class NonUniversityLocation extends BaseNonUniversityLocation {
 	private static final long serialVersionUID = 1L;
 
@@ -52,6 +60,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
 	public String getLabel(){
 		return(this.getName());
 	}
@@ -107,11 +116,13 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		return newNonUniversityLocation;
 	}
 	
+	@Transient
     public String getRoomTypeLabel() {
         return getRoomType().getLabel();
     }
 
 	@Override
+	@Transient
     public List<Location> getFutureLocations() {
     	List<Location> ret = new ArrayList<Location>();
     	Set<Long> futureSessionIds = new HashSet<Long>();
@@ -144,4 +155,9 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 
     	return ret;
     }
+	
+	@Transient
+    public Set<? extends LocationPicture> getRoomPictures() {
+		return getPictures();
+	}
 }

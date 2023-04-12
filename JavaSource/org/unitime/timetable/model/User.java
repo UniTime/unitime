@@ -19,12 +19,24 @@
 */
 package org.unitime.timetable.model;
 
+
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import org.unitime.timetable.model.base.BaseUser;
 import org.unitime.timetable.model.dao.UserDAO;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "users")
 public class User extends BaseUser {
 	private static final long serialVersionUID = 1L;
 

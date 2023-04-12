@@ -21,6 +21,13 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
@@ -29,37 +36,40 @@ import org.unitime.timetable.model.RoomFeature;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDepartmentRoomFeature extends RoomFeature implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Department iDepartment;
 
-
 	public BaseDepartmentRoomFeature() {
-		initialize();
 	}
 
 	public BaseDepartmentRoomFeature(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "department_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DepartmentRoomFeature)) return false;
 		if (getUniqueId() == null || ((DepartmentRoomFeature)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DepartmentRoomFeature)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DepartmentRoomFeature["+getUniqueId()+" "+getLabel()+"]";
 	}

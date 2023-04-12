@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.SolverParameterDef;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSolverParameter implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,40 +46,46 @@ public abstract class BaseSolverParameter implements Serializable {
 
 	private SolverParameterDef iDefinition;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_VALUE = "value";
-
 	public BaseSolverParameter() {
-		initialize();
 	}
 
 	public BaseSolverParameter(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "solver_parameter_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "solver_parameter_seq")
+	})
+	@GeneratedValue(generator = "solver_parameter_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "value", nullable = true, length = 2048)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "solver_param_def_id", nullable = false)
 	public SolverParameterDef getDefinition() { return iDefinition; }
 	public void setDefinition(SolverParameterDef definition) { iDefinition = definition; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SolverParameter)) return false;
 		if (getUniqueId() == null || ((SolverParameter)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SolverParameter)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SolverParameter["+getUniqueId()+"]";
 	}

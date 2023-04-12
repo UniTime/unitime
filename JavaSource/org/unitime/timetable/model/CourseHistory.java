@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -30,6 +35,8 @@ import org.unitime.timetable.model.base.BaseCourseHistory;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("Course")
 public class CourseHistory extends BaseCourseHistory {
 	private static final long serialVersionUID = 1L;
 

@@ -698,7 +698,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
-					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getPictures());
+					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getRoomPictures());
 					p1: for (RoomPictureInterface p1: room.getPictures()) {
 						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
 							LocationPicture p2 = i.next();
@@ -730,11 +730,11 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						}
 					}
 					for (LocationPicture picture: otherPictures) {
-						location.getPictures().remove(picture);
+						location.getRoomPictures().remove(picture);
 						hibSession.delete(picture);
 					}
 				} else {
-					for (LocationPicture p: location.getPictures())
+					for (LocationPicture p: location.getRoomPictures())
 						pictures.put(p.getUniqueId(), p);
 					for (RoomPictureInterface p: room.getPictures()) {
 						LocationPicture picture = pictures.remove(p.getUniqueId());
@@ -760,7 +760,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {
-						location.getPictures().remove(picture);
+						location.getRoomPictures().remove(picture);
 						hibSession.delete(picture);
 					}
 				}
@@ -1121,7 +1121,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
-					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getPictures());
+					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(location.getRoomPictures());
 					p1: for (RoomPictureInterface p1: room.getPictures()) {
 						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
 							LocationPicture p2 = i.next();
@@ -1153,11 +1153,11 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						}
 					}
 					for (LocationPicture picture: otherPictures) {
-						location.getPictures().remove(picture);
+						location.getRoomPictures().remove(picture);
 						hibSession.delete(picture);
 					}
 				} else {
-					for (LocationPicture p: location.getPictures())
+					for (LocationPicture p: location.getRoomPictures())
 						pictures.put(p.getUniqueId(), p);
 					for (RoomPictureInterface p: room.getPictures()) {
 						LocationPicture picture = pictures.remove(p.getUniqueId());
@@ -1192,7 +1192,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {
-						location.getPictures().remove(picture);
+						location.getRoomPictures().remove(picture);
 						hibSession.delete(picture);
 					}
 				}

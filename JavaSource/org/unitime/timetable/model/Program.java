@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseProgram;
 import org.unitime.timetable.model.dao.ProgramDAO;
 
+@Entity
+@Table(name = "program")
 public class Program extends BaseProgram {
 	private static final long serialVersionUID = 1L;
 

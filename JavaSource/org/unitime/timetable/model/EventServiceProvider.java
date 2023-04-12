@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +40,9 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "service_provider")
 public class EventServiceProvider extends BaseEventServiceProvider implements Comparable<EventServiceProvider> {
 	private static final long serialVersionUID = 1L;
 	
@@ -45,6 +58,7 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
+	@Transient
 	public boolean isUsed() {
 		if (((Number)EventServiceProviderDAO.getInstance().getSession().createQuery("select count(e) from Event e inner join e.requestedServices p where p.uniqueId = :providerId")
 			.setParameter("providerId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;

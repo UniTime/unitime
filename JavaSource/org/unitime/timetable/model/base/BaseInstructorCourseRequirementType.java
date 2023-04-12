@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.InstructorCourseRequirementType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +31,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstructorCourseRequirementType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,37 +39,36 @@ public abstract class BaseInstructorCourseRequirementType extends RefTableEntry 
 	private Integer iSortOrder;
 
 
-	public static String PROP_LENGTH = "length";
-	public static String PROP_SORT_ORDER = "sortOrder";
-
 	public BaseInstructorCourseRequirementType() {
-		initialize();
 	}
 
 	public BaseInstructorCourseRequirementType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "length", nullable = false)
 	public Integer getLength() { return iLength; }
 	public void setLength(Integer length) { iLength = length; }
 
+	@Column(name = "sort_order", nullable = false)
 	public Integer getSortOrder() { return iSortOrder; }
 	public void setSortOrder(Integer sortOrder) { iSortOrder = sortOrder; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructorCourseRequirementType)) return false;
 		if (getUniqueId() == null || ((InstructorCourseRequirementType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstructorCourseRequirementType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstructorCourseRequirementType["+getUniqueId()+" "+getLabel()+"]";
 	}

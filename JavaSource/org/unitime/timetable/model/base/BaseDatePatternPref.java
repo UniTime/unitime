@@ -21,6 +21,13 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Preference;
@@ -29,37 +36,40 @@ import org.unitime.timetable.model.Preference;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDatePatternPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private DatePattern iDatePattern;
 
-
 	public BaseDatePatternPref() {
-		initialize();
 	}
 
 	public BaseDatePatternPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "date_pattern_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public DatePattern getDatePattern() { return iDatePattern; }
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DatePatternPref)) return false;
 		if (getUniqueId() == null || ((DatePatternPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DatePatternPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DatePatternPref["+getUniqueId()+"]";
 	}

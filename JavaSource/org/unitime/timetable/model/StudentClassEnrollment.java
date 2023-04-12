@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,6 +40,9 @@ import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "student_class_enrl")
 public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	private static final long serialVersionUID = 1L;
 
@@ -57,6 +70,7 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 		private String iName;
 		SystemChange(String name) { iName = name; }
 		
+	@Transient
 		public String getName() { return iName; }
 	}
 

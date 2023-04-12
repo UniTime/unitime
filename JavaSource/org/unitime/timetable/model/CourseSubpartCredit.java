@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseCourseSubpartCredit;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseCourseSubpartCredit;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_subpart_credit")
 public class CourseSubpartCredit extends BaseCourseSubpartCredit {
 	private static final long serialVersionUID = 1L;
 

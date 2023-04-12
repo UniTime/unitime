@@ -21,6 +21,16 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.StudentSectioningPref;
 
@@ -28,6 +38,7 @@ import org.unitime.timetable.model.StudentSectioningPref;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentSectioningPref implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,45 +48,52 @@ public abstract class BaseStudentSectioningPref implements Serializable {
 
 	private CourseRequest iCourseRequest;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_LABEL = "label";
-	public static String PROP_REQUIRED = "required";
-
 	public BaseStudentSectioningPref() {
-		initialize();
 	}
 
 	public BaseStudentSectioningPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "sect_pref_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "sect_pref_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "label", nullable = true, length = 60)
 	public String getLabel() { return iLabel; }
 	public void setLabel(String label) { iLabel = label; }
 
+	@Column(name = "required", nullable = false)
 	public Boolean isRequired() { return iRequired; }
+	@Transient
 	public Boolean getRequired() { return iRequired; }
 	public void setRequired(Boolean required) { iRequired = required; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "request_id", nullable = false)
 	public CourseRequest getCourseRequest() { return iCourseRequest; }
 	public void setCourseRequest(CourseRequest courseRequest) { iCourseRequest = courseRequest; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentSectioningPref)) return false;
 		if (getUniqueId() == null || ((StudentSectioningPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentSectioningPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentSectioningPref["+getUniqueId()+" "+getLabel()+"]";
 	}

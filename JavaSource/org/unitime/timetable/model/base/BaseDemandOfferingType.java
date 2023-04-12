@@ -21,6 +21,8 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,33 +30,33 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDemandOfferingType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 
-
 	public BaseDemandOfferingType() {
-		initialize();
 	}
 
 	public BaseDemandOfferingType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DemandOfferingType)) return false;
 		if (getUniqueId() == null || ((DemandOfferingType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DemandOfferingType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DemandOfferingType["+getUniqueId()+" "+getLabel()+"]";
 	}

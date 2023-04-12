@@ -21,6 +21,16 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Session;
@@ -29,6 +39,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseEventServiceProvider implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -43,65 +54,75 @@ public abstract class BaseEventServiceProvider implements Serializable {
 	private Session iSession;
 	private Department iDepartment;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_REFERENCE = "reference";
-	public static String PROP_LABEL = "label";
-	public static String PROP_NOTE = "note";
-	public static String PROP_EMAIL = "email";
-	public static String PROP_ALL_ROOMS = "allRooms";
-	public static String PROP_VISIBLE = "visible";
-
 	public BaseEventServiceProvider() {
-		initialize();
 	}
 
 	public BaseEventServiceProvider(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "service_provider_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "ref_table_seq")
+	})
+	@GeneratedValue(generator = "service_provider_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "reference", nullable = false, length = 20)
 	public String getReference() { return iReference; }
 	public void setReference(String reference) { iReference = reference; }
 
+	@Column(name = "label", nullable = true, length = 60)
 	public String getLabel() { return iLabel; }
 	public void setLabel(String label) { iLabel = label; }
 
+	@Column(name = "note", nullable = true, length = 1000)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@Column(name = "email", nullable = true, length = 200)
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
 
+	@Column(name = "all_rooms", nullable = false)
 	public Boolean isAllRooms() { return iAllRooms; }
+	@Transient
 	public Boolean getAllRooms() { return iAllRooms; }
 	public void setAllRooms(Boolean allRooms) { iAllRooms = allRooms; }
 
+	@Column(name = "visible", nullable = false)
 	public Boolean isVisible() { return iVisible; }
+	@Transient
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "session_id", nullable = true)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "department_id", nullable = true)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventServiceProvider)) return false;
 		if (getUniqueId() == null || ((EventServiceProvider)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((EventServiceProvider)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "EventServiceProvider["+getUniqueId()+" "+getLabel()+"]";
 	}

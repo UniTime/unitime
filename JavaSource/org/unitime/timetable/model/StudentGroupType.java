@@ -19,9 +19,17 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.base.BaseStudentGroupType;
 import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
 
+@Entity
+@Table(name = "std_group_type")
 public class StudentGroupType extends BaseStudentGroupType {
 	private static final long serialVersionUID = 1L;
 
@@ -41,6 +49,7 @@ public class StudentGroupType extends BaseStudentGroupType {
 		AlwaysAllowed,
 	}
 	
+	@Transient
 	public AllowDisabledSection getAllowDisabledSection() {
 		if (getAllowDisabled() == null)
 			return AllowDisabledSection.NotAllowed;

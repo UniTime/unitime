@@ -21,6 +21,11 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Program;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.Session;
@@ -29,6 +34,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseProgram extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -36,36 +42,37 @@ public abstract class BaseProgram extends RefTableEntry implements Serializable 
 
 	private Session iSession;
 
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-
 	public BaseProgram() {
-		initialize();
 	}
 
 	public BaseProgram(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Program)) return false;
 		if (getUniqueId() == null || ((Program)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Program)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Program["+getUniqueId()+" "+getLabel()+"]";
 	}

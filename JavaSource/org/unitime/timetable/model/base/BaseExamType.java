@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExamType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -35,38 +40,38 @@ public abstract class BaseExamType extends RefTableEntry implements Serializable
 	private Boolean iHighlightInEvents;
 
 
-	public static String PROP_XTYPE = "type";
-	public static String PROP_EVENTS = "highlightInEvents";
-
 	public BaseExamType() {
-		initialize();
 	}
 
 	public BaseExamType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "xtype", nullable = false)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@Column(name = "events", nullable = false)
 	public Boolean isHighlightInEvents() { return iHighlightInEvents; }
+	@Transient
 	public Boolean getHighlightInEvents() { return iHighlightInEvents; }
 	public void setHighlightInEvents(Boolean highlightInEvents) { iHighlightInEvents = highlightInEvents; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamType)) return false;
 		if (getUniqueId() == null || ((ExamType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExamType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExamType["+getUniqueId()+" "+getLabel()+"]";
 	}

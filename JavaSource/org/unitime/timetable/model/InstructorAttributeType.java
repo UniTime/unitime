@@ -19,8 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseInstructorAttributeType;
 
+@Entity
+@Table(name = "attribute_type")
 public class InstructorAttributeType extends BaseInstructorAttributeType implements Comparable<InstructorAttributeType> {
 	private static final long serialVersionUID = 1L;
 	

@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +32,8 @@ import java.util.Set;
 import org.unitime.timetable.model.base.BaseTeachingResponsibility;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 
+@Entity
+@Table(name = "teaching_responsibility")
 public class TeachingResponsibility extends BaseTeachingResponsibility {
 	private static final long serialVersionUID = 1L;
 	
@@ -42,6 +50,7 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 			iName = name;
 		}
 		
+	@Transient
 		public String getName() { return iName; }
 		
 		public int toggle() { return 1 << ordinal(); }
@@ -51,24 +60,28 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 		super();
 	}
 	
+	@Transient
 	public static List<TeachingResponsibility> getInstructorTeachingResponsibilities() {
 		return (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 				"from TeachingResponsibility where instructor = true order by label"
 				).setCacheable(true).list();
     }
 	
+	@Transient
 	public static TeachingResponsibility getDefaultInstructorTeachingResponsibility() {
 		for (TeachingResponsibility r: getInstructorTeachingResponsibilities())
 			if (r.hasOption(Option.isdefault)) return r;
 		return null;
 	}
 	
+	@Transient
 	public static List<TeachingResponsibility> getCoordinatorTeachingResponsibilities() {
 		return (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 				"from TeachingResponsibility where coordinator = true order by label"
 				).setCacheable(true).list();
     }
 	
+	@Transient
 	public static TeachingResponsibility getDefaultCoordinatorTeachingResponsibility() {
 		for (TeachingResponsibility r: getCoordinatorTeachingResponsibilities())
 			if (r.hasOption(Option.isdefault)) return r;
@@ -113,6 +126,7 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 		}
 	}
 	
+	@Transient
 	public boolean isUsed() {
 		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId")
 			.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;

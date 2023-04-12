@@ -23,6 +23,22 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
@@ -32,6 +48,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePosMajor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -44,37 +61,45 @@ public abstract class BasePosMajor implements Serializable {
 	private Set<AcademicArea> iAcademicAreas;
 	private Set<PosMajorConcentration> iConcentrations;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CODE = "code";
-	public static String PROP_NAME = "name";
-
 	public BasePosMajor() {
-		initialize();
 	}
 
 	public BasePosMajor(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pos_major_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pos_major_seq")
+	})
+	@GeneratedValue(generator = "pos_major_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "code", nullable = false, length = 40)
 	public String getCode() { return iCode; }
 	public void setCode(String code) { iCode = code; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "pos_acad_area_major",
+		joinColumns = { @JoinColumn(name = "major_id") },
+		inverseJoinColumns = { @JoinColumn(name = "academic_area_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
 	public void addToacademicAreas(AcademicArea academicArea) {
@@ -82,6 +107,8 @@ public abstract class BasePosMajor implements Serializable {
 		iAcademicAreas.add(academicArea);
 	}
 
+	@OneToMany(mappedBy = "major", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
 	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
@@ -89,17 +116,20 @@ public abstract class BasePosMajor implements Serializable {
 		iConcentrations.add(posMajorConcentration);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PosMajor)) return false;
 		if (getUniqueId() == null || ((PosMajor)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PosMajor)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PosMajor["+getUniqueId()+" "+getName()+"]";
 	}

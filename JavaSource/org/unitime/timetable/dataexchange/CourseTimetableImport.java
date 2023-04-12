@@ -469,7 +469,6 @@ public class CourseTimetableImport extends BaseImport {
 			assignment.setInstructors(new HashSet<DepartmentalInstructor>());
 			assignment.setSolution(solution);
 			assignment.setClazz(clazz);
-			assignment.setClassId(clazz.getUniqueId());
 			assignment.setClassName(clazz.getClassLabel(iShowClassSuffix, iShowConfigName));
 			solution.getAssignments().add(assignment);
 			clazz.getAssignments().add(assignment);

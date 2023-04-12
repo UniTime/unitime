@@ -23,6 +23,17 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 
@@ -30,6 +41,7 @@ import org.unitime.timetable.model.ScriptParameter;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseScript implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,42 +54,45 @@ public abstract class BaseScript implements Serializable {
 
 	private Set<ScriptParameter> iParameters;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_ENGINE = "engine";
-	public static String PROP_PERMISSION = "permission";
-	public static String PROP_SCRIPT = "script";
-
 	public BaseScript() {
-		initialize();
 	}
 
 	public BaseScript(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "script_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "script_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 128)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "description", nullable = true, length = 1024)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Column(name = "engine", nullable = false, length = 32)
 	public String getEngine() { return iEngine; }
 	public void setEngine(String engine) { iEngine = engine; }
 
+	@Column(name = "permission", nullable = true, length = 128)
 	public String getPermission() { return iPermission; }
 	public void setPermission(String permission) { iPermission = permission; }
 
+	@Column(name = "script", nullable = false)
 	public String getScript() { return iScript; }
 	public void setScript(String script) { iScript = script; }
 
+	@OneToMany(mappedBy = "script", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<ScriptParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<ScriptParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(ScriptParameter scriptParameter) {
@@ -85,17 +100,20 @@ public abstract class BaseScript implements Serializable {
 		iParameters.add(scriptParameter);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Script)) return false;
 		if (getUniqueId() == null || ((Script)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Script)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Script["+getUniqueId()+" "+getName()+"]";
 	}

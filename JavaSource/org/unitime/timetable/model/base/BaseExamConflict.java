@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamConflict;
@@ -32,6 +46,7 @@ import org.unitime.timetable.model.Student;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExamConflict implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -45,36 +60,41 @@ public abstract class BaseExamConflict implements Serializable {
 	private Set<Student> iStudents;
 	private Set<DepartmentalInstructor> iInstructors;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CONFLICT_TYPE = "conflictType";
-	public static String PROP_DISTANCE = "distance";
-
 	public BaseExamConflict() {
-		initialize();
 	}
 
 	public BaseExamConflict(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "xconflict_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "xconflict_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "conflict_type", nullable = false, length = 10)
 	public Integer getConflictType() { return iConflictType; }
 	public void setConflictType(Integer conflictType) { iConflictType = conflictType; }
 
+	@Column(name = "distance", nullable = true)
 	public Double getDistance() { return iDistance; }
 	public void setDistance(Double distance) { iDistance = distance; }
 
+	@Formula("(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)")
 	public Integer getNrStudents() { return iNrStudents; }
 	public void setNrStudents(Integer nrStudents) { iNrStudents = nrStudents; }
 
+	@Formula("(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)")
 	public Integer getNrInstructors() { return iNrInstructors; }
 	public void setNrInstructors(Integer nrInstructors) { iNrInstructors = nrInstructors; }
 
+	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "conflicts")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToexams(Exam exam) {
@@ -82,6 +102,11 @@ public abstract class BaseExamConflict implements Serializable {
 		iExams.add(exam);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "xconflict_student",
+		joinColumns = { @JoinColumn(name = "conflict_id") },
+		inverseJoinColumns = { @JoinColumn(name = "student_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
@@ -89,6 +114,11 @@ public abstract class BaseExamConflict implements Serializable {
 		iStudents.add(student);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "xconflict_instructor",
+		joinColumns = { @JoinColumn(name = "conflict_id") },
+		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
@@ -96,17 +126,20 @@ public abstract class BaseExamConflict implements Serializable {
 		iInstructors.add(departmentalInstructor);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamConflict)) return false;
 		if (getUniqueId() == null || ((ExamConflict)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExamConflict)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExamConflict["+getUniqueId()+"]";
 	}

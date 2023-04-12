@@ -19,11 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirementType;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
 
+@Entity
+@Table(name = "instr_crsreq_note_type")
 public class InstructorCourseRequirementType extends BaseInstructorCourseRequirementType {
 	private static final long serialVersionUID = -2083877056369018586L;
 
@@ -31,6 +39,7 @@ public class InstructorCourseRequirementType extends BaseInstructorCourseRequire
 		super();
 	}
 	
+	@Transient
 	public static List<InstructorCourseRequirementType> getInstructorCourseRequirementTypes() {
 		return (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
 				"from InstructorCourseRequirementType order by sortOrder")

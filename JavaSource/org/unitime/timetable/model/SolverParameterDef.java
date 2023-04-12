@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +43,9 @@ import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "solver_parameter_def")
 public class SolverParameterDef extends BaseSolverParameterDef implements Comparable {
 	private static final long serialVersionUID = 1L;
 
@@ -53,6 +66,7 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	/*
 	 * @return all SolverParameterDefs
 	 */
+	@Transient
 	public static ArrayList getAll() throws HibernateException {
 		return (ArrayList) (new SolverParameterDefDAO().findAll());
 	}
@@ -131,11 +145,13 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
     }
     
     @Override
+	@Transient
     public String getDefault() {
     	String ret = super.getDefault();
     	return ret == null ? "" : ret;
     }
     
+	@Transient
     public String[] getOptions() {
     	if (getType() != null && getType().startsWith("enum(") && getType().endsWith(")"))
     		return getType().substring(5, getType().length() - 1).split(",");

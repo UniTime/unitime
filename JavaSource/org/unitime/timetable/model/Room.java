@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +47,8 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "room")
 public class Room extends BaseRoom {
 	private static final long serialVersionUID = 1L;
 
@@ -74,6 +82,7 @@ public class Room extends BaseRoom {
      * This method is used as a getter for property label
      * @return Room Label
      */
+	@Transient
     public String getLabel() {
         return this.bldgAbbvRoomNumber();
     }
@@ -283,11 +292,13 @@ public class Room extends BaseRoom {
 		hibSession.flush();
 	}
 	
+	@Transient
 	public String getRoomTypeLabel() {
 	    return getRoomType().getLabel();
 	}
 
 	@Override
+	@Transient
     public List<Location> getFutureLocations() {
     	List<Location> ret = new ArrayList<Location>();
     	Set<Long> futureSessionIds = new HashSet<Long>();
@@ -322,7 +333,13 @@ public class Room extends BaseRoom {
     }
 	
 	@Override
+	@Transient
 	public Long getPartitionParentId() {
 		return getParentRoom() == null ? null : getParentRoom().getUniqueId();
+	}
+	
+	@Transient
+    public Set<? extends LocationPicture> getRoomPictures() {
+		return getPictures();
 	}
 }

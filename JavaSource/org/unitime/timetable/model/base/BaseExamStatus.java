@@ -19,45 +19,50 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.FetchType;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamStatus;
-import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseExamStatus implements Serializable {
+@MappedSuperclass
+@IdClass(ExamStatusId.class)
+public abstract class BaseExamStatus extends ExamStatusId {
 	private static final long serialVersionUID = 1L;
 
-	private Session iSession;
-	private ExamType iType;
 
 	private DepartmentStatusType iStatus;
 	private Set<TimetableManager> iManagers;
 
 
-	public BaseExamStatus() {
-		initialize();
-	}
-
-	protected void initialize() {}
-
-	public Session getSession() { return iSession; }
-	public void setSession(Session session) { iSession = session; }
-
-	public ExamType getType() { return iType; }
-	public void setType(ExamType type) { iType = type; }
-
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "status_id", nullable = true)
 	public DepartmentStatusType getStatus() { return iStatus; }
 	public void setStatus(DepartmentStatusType status) { iStatus = status; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "exam_managers",
+		joinColumns = {
+			@JoinColumn(name = "session_id"),
+			@JoinColumn(name = "type_id")
+		},
+		inverseJoinColumns = { @JoinColumn(name = "manager_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<TimetableManager> getManagers() { return iManagers; }
 	public void setManagers(Set<TimetableManager> managers) { iManagers = managers; }
 	public void addTomanagers(TimetableManager timetableManager) {
@@ -65,6 +70,7 @@ public abstract class BaseExamStatus implements Serializable {
 		iManagers.add(timetableManager);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamStatus)) return false;
 		ExamStatus examStatus = (ExamStatus)o;
@@ -73,6 +79,7 @@ public abstract class BaseExamStatus implements Serializable {
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		if (getSession() == null || getType() == null) return super.hashCode();
 		return getSession().hashCode() ^ getType().hashCode();

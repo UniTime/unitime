@@ -21,6 +21,18 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -29,6 +41,7 @@ import org.unitime.timetable.model.PreferenceLevel;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePreference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,43 +51,52 @@ public abstract class BasePreference implements Serializable {
 	private PreferenceGroup iOwner;
 	private PreferenceLevel iPrefLevel;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NOTE = "note";
-
 	public BasePreference() {
-		initialize();
 	}
 
 	public BasePreference(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pref_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_seq")
+	})
+	@GeneratedValue(generator = "pref_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "note", nullable = true, length = 2048)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "owner_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public PreferenceGroup getOwner() { return iOwner; }
 	public void setOwner(PreferenceGroup owner) { iOwner = owner; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "pref_level_id", nullable = false)
 	public PreferenceLevel getPrefLevel() { return iPrefLevel; }
 	public void setPrefLevel(PreferenceLevel prefLevel) { iPrefLevel = prefLevel; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Preference)) return false;
 		if (getUniqueId() == null || ((Preference)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Preference)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Preference["+getUniqueId()+"]";
 	}

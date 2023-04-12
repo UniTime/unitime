@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseStandardEventNoteGlobal;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("global")
 public class StandardEventNoteGlobal extends BaseStandardEventNoteGlobal {
 	private static final long serialVersionUID = 1L;
 

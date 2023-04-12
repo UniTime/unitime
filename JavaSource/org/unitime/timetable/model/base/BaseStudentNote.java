@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentNote;
 
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.StudentNote;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentNote implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -39,48 +49,54 @@ public abstract class BaseStudentNote implements Serializable {
 
 	private Student iStudent;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_TEXT_NOTE = "textNote";
-	public static String PROP_TIME_STAMP = "timeStamp";
-	public static String PROP_USER_ID = "userId";
-
 	public BaseStudentNote() {
-		initialize();
 	}
 
 	public BaseStudentNote(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_note_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_note_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "text_note", nullable = true, length = 1000)
 	public String getTextNote() { return iTextNote; }
 	public void setTextNote(String textNote) { iTextNote = textNote; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Column(name = "user_id", nullable = true, length = 40)
 	public String getUserId() { return iUserId; }
 	public void setUserId(String userId) { iUserId = userId; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "student_id", nullable = false)
 	public Student getStudent() { return iStudent; }
 	public void setStudent(Student student) { iStudent = student; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentNote)) return false;
 		if (getUniqueId() == null || ((StudentNote)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentNote)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentNote["+getUniqueId()+"]";
 	}

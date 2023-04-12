@@ -23,10 +23,10 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.ClusterDiscoveryId;
 import org.unitime.timetable.model.ClusterDiscovery;
 
-public class ClusterDiscoveryDAO extends _RootDAO<ClusterDiscovery,Serializable> {
+public class ClusterDiscoveryDAO extends _RootDAO<ClusterDiscovery,ClusterDiscoveryId> {
 	private static ClusterDiscoveryDAO sInstance;
 
 	public ClusterDiscoveryDAO() {}

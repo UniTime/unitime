@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import org.unitime.timetable.model.base.BaseRoomPicture;
 
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "room_picture")
 public class RoomPicture extends BaseRoomPicture {
 	private static final long serialVersionUID = 1L;
 

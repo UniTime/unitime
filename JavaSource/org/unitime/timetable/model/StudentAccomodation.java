@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -33,6 +43,9 @@ import org.unitime.timetable.model.dao.StudentAccomodationDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "student_accomodation")
 public class StudentAccomodation extends BaseStudentAccomodation {
 	private static final long serialVersionUID = 1L;
 
@@ -149,7 +162,9 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     		iCount = count;
     	}
     	
+	@Transient
     	public int getCount() { return iCount; }
+	@Transient
     	public StudentAccomodation getAccommodation() { return iAccommodation; }
     	
     	public void increment(int count) { iCount += count; }

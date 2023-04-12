@@ -19,10 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseInstructorPref;
 import org.unitime.timetable.util.NameFormat;
 
+@Entity
+@Table(name = "instructor_pref")
 public class InstructorPref extends BaseInstructorPref {
 	private static final long serialVersionUID = 6242763326071980017L;
 
@@ -95,5 +103,6 @@ public class InstructorPref extends BaseInstructorPref {
 		return true;
 	}
 	
+	@Transient
 	public Type getType() { return Type.INSTRUCTOR; }
 }

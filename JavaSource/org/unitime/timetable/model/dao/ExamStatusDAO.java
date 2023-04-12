@@ -23,11 +23,11 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.ExamStatusId;
 import java.util.List;
 import org.unitime.timetable.model.ExamStatus;
 
-public class ExamStatusDAO extends _RootDAO<ExamStatus,Serializable> {
+public class ExamStatusDAO extends _RootDAO<ExamStatus,ExamStatusId> {
 	private static ExamStatusDAO sInstance;
 
 	public ExamStatusDAO() {}

@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomFeature;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.ExternalRoomFeature;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseExternalRoomFeature implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,44 +47,50 @@ public abstract class BaseExternalRoomFeature implements Serializable {
 
 	private ExternalRoom iRoom;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_VALUE = "value";
-
 	public BaseExternalRoomFeature() {
-		initialize();
 	}
 
 	public BaseExternalRoomFeature(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "external_room_feature_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "external_room_feature_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 20)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "value", nullable = false, length = 20)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "external_room_id", nullable = false)
 	public ExternalRoom getRoom() { return iRoom; }
 	public void setRoom(ExternalRoom room) { iRoom = room; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExternalRoomFeature)) return false;
 		if (getUniqueId() == null || ((ExternalRoomFeature)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((ExternalRoomFeature)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "ExternalRoomFeature["+getUniqueId()+" "+getName()+"]";
 	}

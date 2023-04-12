@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -73,6 +79,8 @@ import org.unitime.timetable.webutil.Navigation;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "class_")
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
     private static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -92,10 +100,12 @@ public class Class_ extends BaseClass_ {
 
     /* [CONSTRUCTOR MARKER END] */
 
+	@Transient
     public String getCourseName(){
 		return getSchedulingSubpart().getCourseName();
 	}
 
+	@Transient
     public String getCourseNameWithTitle(){
 		return getSchedulingSubpart().getCourseNameWithTitle();
 	}
@@ -104,15 +114,18 @@ public class Class_ extends BaseClass_ {
      *
      * @return
      */
+	@Transient
     public String getItypeDesc() {
    		return getSchedulingSubpart().getItypeDesc();
     }
 
+	@Transient
     public Department getManagingDept(){
     	if (super.getManagingDept()==null) return getControllingDept();
         return super.getManagingDept();
     }
     
+	@Transient
     public Department getControllingDept() {
     	if (super.getControllingDept() == null) return getSchedulingSubpart().getControllingDept();
     	return super.getControllingDept();
@@ -120,7 +133,10 @@ public class Class_ extends BaseClass_ {
     
     @Override
     public void setManagingDept(Department dept) {
-    	setManagingDept(dept, null, Class_DAO.getInstance().getSession());
+    	if (super.getManagingDept() == null)
+    		super.setManagingDept(dept);
+    	else
+    		setManagingDept(dept, null, Class_DAO.getInstance().getSession());
     }
 
     public void setManagingDept(Department dept, UserContext user, org.hibernate.Session hibSession) {
@@ -187,6 +203,7 @@ public class Class_ extends BaseClass_ {
      * controlling course offering for the class
      * @return Department object
      */
+	@Transient
     public Department getDepartmentForSubjectArea() {
         Department dept = this.getSchedulingSubpart()
 			        		.getInstrOfferingConfig()
@@ -196,10 +213,12 @@ public class Class_ extends BaseClass_ {
         return dept;
     }
 
+	@Transient
     public Session getSession(){
     	return (this.getSchedulingSubpart().getSession());
     }
 
+	@Transient
 	public Long getSessionId() {
 		return (this.getSchedulingSubpart().getSessionId());
 	}
@@ -390,6 +409,7 @@ public class Class_ extends BaseClass_ {
 		return ret;
     }
 
+	@Transient
     public Set getDistributionPreferences() {
     	TreeSet prefs = new TreeSet();
     	if (getDistributionObjects()!=null) {
@@ -676,6 +696,7 @@ public class Class_ extends BaseClass_ {
 		return(htmlForTimePatterns(this.getTimePatterns()));
 	}
 
+	@Transient
 	public Integer getSectionNumber() {
 		return getSectionNumber(null, true);
 	}
@@ -724,6 +745,7 @@ public class Class_ extends BaseClass_ {
     	return sectionNumber;
     }
 
+	@Transient
     public String getSectionNumberString(){
     	return getSectionNumber()+getSchedulingSubpart().getSchedulingSubpartSuffix();
     }
@@ -732,6 +754,7 @@ public class Class_ extends BaseClass_ {
     	return getSectionNumber(hibSession)+getSchedulingSubpart().getSchedulingSubpartSuffix(hibSession);
     }
 
+	@Transient
     public List<DepartmentalInstructor> getLeadInstructors() {
     	List<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>();
     	if (getClassInstructors() == null) {
@@ -746,6 +769,7 @@ public class Class_ extends BaseClass_ {
     /**
      * @return Class Label of the form {CourseName} {Itype} {[config]} {Section No.}
      */
+	@Transient
     public String getClassLabel() {
         // return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
     	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering());
@@ -786,6 +810,7 @@ public class Class_ extends BaseClass_ {
     	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering());
     }
 
+	@Transient
     public String getClassLabelWithTitle() {
     	// return getCourseNameWithTitle()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
     	return getClassLabelWithTitle(getSchedulingSubpart().getControllingCourseOffering());
@@ -801,6 +826,7 @@ public class Class_ extends BaseClass_ {
 	/**
 	 * @return Class type to distinguish the sub class in PrefGroup
 	 */
+	@Transient
 	public Class getInstanceOf() {
 	    return Class_.class;
 	}
@@ -848,6 +874,7 @@ public class Class_ extends BaseClass_ {
     	return getSchedulingSubpart().effectiveDatePattern();
     }
 
+	@Transient
     public Set<Location> getAvailableRooms() {
 
     	Set<Location> rooms =  new TreeSet<Location>();
@@ -859,6 +886,7 @@ public class Class_ extends BaseClass_ {
         return rooms;
     }
 
+	@Transient
     public Set getAvailableRoomFeatures() {
     	Set features = new TreeSet(GlobalRoomFeature.getAllGlobalRoomFeatures(getSession()));
     	Department dept = getManagingDept();
@@ -868,6 +896,7 @@ public class Class_ extends BaseClass_ {
 
     }
 
+	@Transient
     public Set getAvailableRoomGroups() {
     	Set groups = super.getAvailableRoomGroups();
     	Department dept = getManagingDept();
@@ -876,10 +905,12 @@ public class Class_ extends BaseClass_ {
     	return groups;
     }
     
+	@Transient
 	public Set getAvailableAttributeTypes() {
 		return getControllingDept().getAvailableAttributeTypes();
     }
 
+	@Transient
 	public Set getAvailableAttributes() {
 		return getControllingDept().getAvailableAttributes();
     }
@@ -992,6 +1023,7 @@ public class Class_ extends BaseClass_ {
     		hibSession.saveOrUpdate(this);
     }
 
+	@Transient
     public Integer getMinRoomLimit() {
     	int expCap = (getExpectedCapacity()==null?0:getExpectedCapacity().intValue());
     	float roomRatio = (getRoomRatio()==null?0.0f:getRoomRatio().floatValue());
@@ -1024,6 +1056,7 @@ public class Class_ extends BaseClass_ {
     		list();
     }
 
+	@Transient
     public String getDivSecNumber() {
     	if (getParentClass()!=null && getSchedulingSubpart().getItype().equals(getParentClass().getSchedulingSubpart().getItype())) {
     		return getParentClass().getDivSecNumber();
@@ -1035,6 +1068,7 @@ public class Class_ extends BaseClass_ {
     	return suffix;
     }
 
+	@Transient
     public int getClassLimit() {
     	return getClassLimit(new CommitedClassAssignmentProxy());
     }
@@ -1201,6 +1235,7 @@ public class Class_ extends BaseClass_ {
 		}
 	}
 	
+	@Transient
 	public boolean isOddOrEvenWeeksOnly(){
 		if (effectiveDatePattern() != null && effectiveDatePattern().isAlternate()){
 			return(true);
@@ -1281,6 +1316,7 @@ public class Class_ extends BaseClass_ {
     }
     
     private ClassEvent iEvent = null;
+	@Transient
     public ClassEvent getEvent() {
         if (iEvent==null) 
             iEvent = (ClassEvent)new Class_DAO().getSession().createQuery(
@@ -1292,6 +1328,7 @@ public class Class_ extends BaseClass_ {
     public void setEvent(ClassEvent event) {
         iEvent = event;
     }
+	@Transient
     public ClassEvent getCachedEvent() {
     	return iEvent;
     }
@@ -1467,7 +1504,6 @@ public class Class_ extends BaseClass_ {
             a.setBreakTime(assignment.getTime().getBreakTime());
             a.setClazz(this);
             a.setClassName(getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue()));
-            a.setClassId(getUniqueId());
             a.setDays(assignment.getTime().getDayCode());
             a.setRooms(new HashSet());
             a.setInstructors(new HashSet());
@@ -1552,6 +1588,7 @@ public class Class_ extends BaseClass_ {
         }   
     }
     
+	@Transient
     public Collection<Long> getEnrolledStudentIds() {
         return Class_DAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId from StudentClassEnrollment e where "+
@@ -1645,6 +1682,7 @@ public class Class_ extends BaseClass_ {
 	    return(sb.toString());
 	}
 
+	@Transient
 	public static ExternalClassNameHelperInterface getExternalClassNameHelper() {
 		return Customization.ClassNamingHelper.getProvider();
 	}
@@ -1669,6 +1707,7 @@ public class Class_ extends BaseClass_ {
 		return getExternalClassNameHelper().getClassCredit(this, courseOffering);
 	}
 	
+	@Transient
 	public SectioningInfo getSectioningInfo() {
 		return (SectioningInfo) SectioningInfoDAO.getInstance().getSession().createQuery(
 				"select i from SectioningInfo i where i.clazz.uniqueId = :classId")
@@ -1685,6 +1724,7 @@ public class Class_ extends BaseClass_ {
 
 
 	@Override
+	@Transient
 	public Department getDepartment() { return getManagingDept(); }
 	
 	public List<DistributionPref> getSharedPreferences(Long classId, Long subpartId, String[] preferences,  String[] types) {
@@ -1777,6 +1817,7 @@ public class Class_ extends BaseClass_ {
 		return parent != null && (this.equals(parent) || isParentOf(parent)); 
 	}
 	
+	@Transient
 	public int getSectioningLimit() {
 		if (getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
         	return -1;
@@ -1795,6 +1836,7 @@ public class Class_ extends BaseClass_ {
         }
 	}
 	
+	@Transient
 	private List<Reservation> getSectionReservations() {
 		List<Reservation> reservations = new ArrayList<Reservation>();
 		for (Reservation reservation: getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getReservations()) {
@@ -1809,6 +1851,7 @@ public class Class_ extends BaseClass_ {
 		return reservations;
 	}
 	
+	@Transient
 	public int getUnreservedSectionSpace() {
 		if (!isEnabledForStudentScheduling())
 			return 0;
@@ -1842,6 +1885,7 @@ public class Class_ extends BaseClass_ {
         return available;
     }
 	
+	@Transient
 	public boolean isInstructorAssignmentNeeded() {
 		for (TeachingClassRequest tcr: getTeachingRequests())
 			if (tcr.isAssignInstructor()) return true;
@@ -1876,6 +1920,7 @@ public class Class_ extends BaseClass_ {
 		return label;
 	}
 	
+	@Transient
 	public LearningManagementSystemInfo getLms() {
 		if (this.getLmsInfo() == null) {
 			return(LearningManagementSystemInfo.getDefaultIfExists(getSessionId()));	
@@ -1891,6 +1936,7 @@ public class Class_ extends BaseClass_ {
 		}
 	}
 	
+	@Transient
 	public Department getEffectiveFundingDept() {
 		if (getFundingDept() == null) {
 			return getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getEffectiveFundingDept();

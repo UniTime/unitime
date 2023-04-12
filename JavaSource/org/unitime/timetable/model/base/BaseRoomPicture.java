@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.RoomPicture;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoomPicture extends LocationPicture implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Room iLocation;
 
-
 	public BaseRoomPicture() {
-		initialize();
 	}
 
 	public BaseRoomPicture(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "location_id", nullable = false)
 	public Room getLocation() { return iLocation; }
 	public void setLocation(Room location) { iLocation = location; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomPicture)) return false;
 		if (getUniqueId() == null || ((RoomPicture)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RoomPicture)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RoomPicture["+getUniqueId()+"]";
 	}

@@ -24,6 +24,21 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -33,6 +48,7 @@ import org.unitime.timetable.model.Reservation;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseReservation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -46,42 +62,51 @@ public abstract class BaseReservation implements Serializable {
 	private Set<InstrOfferingConfig> iConfigurations;
 	private Set<Class_> iClasses;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXPIRATION_DATE = "expirationDate";
-	public static String PROP_RESERVATION_LIMIT = "limit";
-	public static String PROP_START_DATE = "startDate";
-	public static String PROP_INCLUSIVE = "inclusive";
-
 	public BaseReservation() {
-		initialize();
 	}
 
 	public BaseReservation(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "reservation_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "reservation_seq")
+	})
+	@GeneratedValue(generator = "reservation_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "expiration_date", nullable = true)
 	public Date getExpirationDate() { return iExpirationDate; }
 	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
 
+	@Column(name = "reservation_limit", nullable = true)
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }
 
+	@Column(name = "start_date", nullable = true)
 	public Date getStartDate() { return iStartDate; }
 	public void setStartDate(Date startDate) { iStartDate = startDate; }
 
+	@Column(name = "inclusive", nullable = true)
 	public Boolean isInclusive() { return iInclusive; }
+	@Transient
 	public Boolean getInclusive() { return iInclusive; }
 	public void setInclusive(Boolean inclusive) { iInclusive = inclusive; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "offering_id", nullable = false)
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "reservation_config",
+		joinColumns = { @JoinColumn(name = "reservation_id") },
+		inverseJoinColumns = { @JoinColumn(name = "config_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<InstrOfferingConfig> getConfigurations() { return iConfigurations; }
 	public void setConfigurations(Set<InstrOfferingConfig> configurations) { iConfigurations = configurations; }
 	public void addToconfigurations(InstrOfferingConfig instrOfferingConfig) {
@@ -89,6 +114,11 @@ public abstract class BaseReservation implements Serializable {
 		iConfigurations.add(instrOfferingConfig);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "reservation_class",
+		joinColumns = { @JoinColumn(name = "reservation_id") },
+		inverseJoinColumns = { @JoinColumn(name = "class_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToclasses(Class_ class_) {
@@ -96,17 +126,20 @@ public abstract class BaseReservation implements Serializable {
 		iClasses.add(class_);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Reservation)) return false;
 		if (getUniqueId() == null || ((Reservation)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Reservation)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Reservation["+getUniqueId()+"]";
 	}

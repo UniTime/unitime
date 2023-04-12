@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,6 +40,9 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "course_catalog")
 public class CourseCatalog extends BaseCourseCatalog {
 	private static final long serialVersionUID = 1L;
 

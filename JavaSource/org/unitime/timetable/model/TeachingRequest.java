@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +37,8 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseTeachingRequest;
 
+@Entity
+@Table(name = "teaching_request")
 public class TeachingRequest extends BaseTeachingRequest implements Comparable<TeachingRequest> {
 	private static final long serialVersionUID = 1L;
 
@@ -52,15 +60,18 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 	}
 
 	@Override
+	@Transient
 	public Session getSession() {
 		return getOffering().getSession();
 	}
 
 	@Override
+	@Transient
 	public Department getDepartment() {
 		return getOffering().getDepartment();
 	}
 	
+	@Transient
 	public Map<SchedulingSubpart, List<TeachingClassRequest>> getSubparMap() {
 		Map<SchedulingSubpart, List<TeachingClassRequest>> map = new HashMap<SchedulingSubpart, List<TeachingClassRequest>>();
 		for (TeachingClassRequest r: getClassRequests()) {
@@ -183,6 +194,7 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(r.getUniqueId() == null ? -1 : r.getUniqueId());
 	}
 	
+	@Transient
 	public boolean isCancelled() {
 		if (isAssignCoordinator()) return false;
 		for (TeachingClassRequest tcr: getClassRequests()) {
@@ -191,6 +203,7 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		return true;
 	}
 	
+	@Transient
 	public boolean isCommitted() {
 		for (TeachingClassRequest tcr: getClassRequests())
 			if (tcr.isAssignInstructor())

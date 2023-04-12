@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCurriculum;
@@ -27,6 +36,9 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "curriculum")
 public class Curriculum extends BaseCurriculum implements Comparable<Curriculum> {
 	private static final long serialVersionUID = 1L;
 

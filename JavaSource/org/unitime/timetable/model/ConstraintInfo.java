@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -32,6 +37,8 @@ import org.unitime.timetable.model.base.BaseConstraintInfo;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("3")
 public class ConstraintInfo extends BaseConstraintInfo {
 	private static final long serialVersionUID = 1L;
 

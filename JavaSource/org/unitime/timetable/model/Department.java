@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.Collection;
@@ -42,6 +48,8 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Table(name = "department")
 public class Department extends BaseDepartment implements Comparable<Department>, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
@@ -145,10 +153,12 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return(this.getDeptCode() + " - " + this.getName());
 	}
 	
+	@Transient
 	public String getHtmlTitle() {
 		return getDeptCode()+" - "+getName()+(isExternalManager().booleanValue()?" ("+getExternalMgrLabel()+")":"");
 	}
 	
+	@Transient
 	public String getShortLabel() {
 		if (isExternalManager().booleanValue())
 			return getExternalMgrAbbv().trim();
@@ -170,6 +180,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return(this.getDeptCode() + " - " + this.getName());
 	}
 	
+	@Transient
 	public String getLabel(){
 		return(this.getDeptCode() 
 		        + " - " + this.getName()) 
@@ -267,6 +278,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return getRoomSharingColor(); 
 	}
 	
+	@Transient
 	public String getManagingDeptLabel(){
 		if (isExternalManager().booleanValue()){
 			return(getExternalMgrLabel());
@@ -275,11 +287,13 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		}
 	}
 	
+	@Transient
 	public String getManagingDeptAbbv(){
 		return "<span title='"+getHtmlTitle()+"'>"+getShortLabel()+"</span>";
 	}
 
 	@SuppressWarnings("unchecked")
+	@Transient
 	public Collection<Class_> getClasses() {
 		return (new DepartmentDAO()).
 			getSession().
@@ -289,6 +303,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Transient
 	public Collection<Class_> getClassesFetchWithStructure() {
 		return (new DepartmentDAO()).
 			getSession().
@@ -378,6 +393,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return effectiveStatusType();
 	}
 	
+	@Transient
 	public Long getSessionId(){
 		if (getSession() != null){
 			return(getSession().getUniqueId());
@@ -439,21 +455,25 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	@Override
+	@Transient
 	public Serializable getQualifierId() {
 		return getUniqueId();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierType() {
 		return getClass().getSimpleName();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierReference() {
 		return getDeptCode();
 	}
 
 	@Override
+	@Transient
 	public String getQualifierLabel() {
 		return getName();
 	}
@@ -470,9 +490,11 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	@Override
+	@Transient
 	public Department getDepartment() { return this; }
 	
 	@SuppressWarnings("unchecked")
+	@Transient
 	public Set<InstructorAttributeType> getAvailableAttributeTypes() {
 		return new TreeSet<InstructorAttributeType>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select distinct t from InstructorAttribute a inner join a.type t " +
@@ -481,6 +503,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 
 	@SuppressWarnings("unchecked")
+	@Transient
 	public Set<InstructorAttribute> getAvailableAttributes() {
 		return new TreeSet<InstructorAttribute>(DepartmentDAO.getInstance().getSession().createQuery(
         		"select a from InstructorAttribute a " +

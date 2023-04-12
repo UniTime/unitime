@@ -23,6 +23,20 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
@@ -31,6 +45,7 @@ import org.unitime.timetable.model.StudentAccomodation;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentAccomodation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -42,37 +57,45 @@ public abstract class BaseStudentAccomodation implements Serializable {
 	private Session iSession;
 	private Set<Student> iStudents;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-
 	public BaseStudentAccomodation() {
-		initialize();
 	}
 
 	public BaseStudentAccomodation(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_accomodation_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_accomodation_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = false, length = 50)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "abbreviation", nullable = false, length = 20)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "student_to_acomodation",
+		joinColumns = { @JoinColumn(name = "accomodation_id") },
+		inverseJoinColumns = { @JoinColumn(name = "student_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
@@ -80,17 +103,20 @@ public abstract class BaseStudentAccomodation implements Serializable {
 		iStudents.add(student);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentAccomodation)) return false;
 		if (getUniqueId() == null || ((StudentAccomodation)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentAccomodation)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentAccomodation["+getUniqueId()+" "+getName()+"]";
 	}

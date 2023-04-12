@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
@@ -34,6 +47,7 @@ import org.unitime.timetable.model.RoomType;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoom extends Location implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,38 +62,43 @@ public abstract class BaseRoom extends Location implements Serializable {
 	private Set<EventServiceProvider> iAllowedServices;
 	private Set<Room> iPartitions;
 
-	public static String PROP_ROOM_NUMBER = "roomNumber";
-	public static String PROP_CLASSIFICATION = "classification";
-
 	public BaseRoom() {
-		initialize();
 	}
 
 	public BaseRoom(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Formula(" (select b.abbreviation from %SCHEMA%.building b where b.uniqueid = building_id) ")
 	public String getBuildingAbbv() { return iBuildingAbbv; }
 	public void setBuildingAbbv(String buildingAbbv) { iBuildingAbbv = buildingAbbv; }
 
+	@Column(name = "room_number", nullable = false, length = 40)
 	public String getRoomNumber() { return iRoomNumber; }
 	public void setRoomNumber(String roomNumber) { iRoomNumber = roomNumber; }
 
+	@Column(name = "classification", nullable = true, length = 20)
 	public String getClassification() { return iClassification; }
 	public void setClassification(String classification) { iClassification = classification; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "room_type", nullable = false)
 	public RoomType getRoomType() { return iRoomType; }
 	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "building_id", nullable = false)
 	public Building getBuilding() { return iBuilding; }
 	public void setBuilding(Building building) { iBuilding = building; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent_room_id", nullable = true)
 	public Room getParentRoom() { return iParentRoom; }
 	public void setParentRoom(Room parentRoom) { iParentRoom = parentRoom; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<RoomPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<RoomPicture> pictures) { iPictures = pictures; }
 	public void addTopictures(RoomPicture roomPicture) {
@@ -87,6 +106,11 @@ public abstract class BaseRoom extends Location implements Serializable {
 		iPictures.add(roomPicture);
 	}
 
+	@ManyToMany
+	@JoinTable(name = "room_service_provider",
+		joinColumns = { @JoinColumn(name = "location_id") },
+		inverseJoinColumns = { @JoinColumn(name = "provider_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
 	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
 	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
@@ -94,6 +118,8 @@ public abstract class BaseRoom extends Location implements Serializable {
 		iAllowedServices.add(eventServiceProvider);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentRoom")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Room> getPartitions() { return iPartitions; }
 	public void setPartitions(Set<Room> partitions) { iPartitions = partitions; }
 	public void addTopartitions(Room room) {
@@ -101,17 +127,20 @@ public abstract class BaseRoom extends Location implements Serializable {
 		iPartitions.add(room);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Room)) return false;
 		if (getUniqueId() == null || ((Room)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Room)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Room["+getUniqueId()+"]";
 	}

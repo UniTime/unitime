@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 
@@ -28,46 +31,45 @@ import org.unitime.timetable.model.FixedCreditUnitConfig;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseFixedCreditUnitConfig extends CourseCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Float iFixedUnits;
 
 
-	public static String PROP_FIXED_UNITS = "fixedUnits";
-
 	public BaseFixedCreditUnitConfig() {
-		initialize();
 	}
 
 	public BaseFixedCreditUnitConfig(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "fixed_units", nullable = true)
 	public Float getFixedUnits() { return iFixedUnits; }
 	public void setFixedUnits(Float fixedUnits) { iFixedUnits = fixedUnits; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof FixedCreditUnitConfig)) return false;
 		if (getUniqueId() == null || ((FixedCreditUnitConfig)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((FixedCreditUnitConfig)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "FixedCreditUnitConfig["+getUniqueId()+"]";
 	}
 
 	public String toDebugString() {
 		return "FixedCreditUnitConfig[" +
-			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
 			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +

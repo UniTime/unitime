@@ -19,8 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
 import org.unitime.timetable.model.base.BaseStudentInstrMthPref;
 
+@Entity
+@DiscriminatorValue("1")
 public class StudentInstrMthPref extends BaseStudentInstrMthPref {
 	private static final long serialVersionUID = 1L;
 

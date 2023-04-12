@@ -21,6 +21,7 @@ package org.unitime.commons.hibernate.util;
 
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
+import javax.persistence.Entity;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 
@@ -42,6 +44,8 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.cfgxml.spi.LoadedConfig;
+import org.hibernate.boot.cfgxml.spi.MappingReference;
+import org.hibernate.boot.cfgxml.spi.MappingReference.Type;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.dialect.MySQLDialect;
@@ -59,6 +63,9 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.StandardBasicTypes;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
@@ -192,6 +199,15 @@ public class HibernateUtil {
         if (default_schema != null)
         	config.getConfigurationValues().put("default_schema", default_schema);
         
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
+        for (MappingReference mr: new ArrayList<MappingReference>(config.getMappingReferences())) {
+        	if (mr.getType() == Type.PACKAGE)
+        		for (BeanDefinition bd : scanner.findCandidateComponents(mr.getReference())) {
+                	config.getMappingReferences().add(new MappingReference(Type.CLASS, bd.getBeanClassName()));
+                }	
+        }
+        
         UniqueIdGenerator.configure(config);
         
         registryBuilder.configure(config);
@@ -284,6 +300,15 @@ public class HibernateUtil {
         String default_schema = ApplicationProperty.DatabaseSchema.value();
         if (default_schema != null)
         	config.getConfigurationValues().put("default_schema", default_schema);
+        
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
+        for (MappingReference mr: new ArrayList<MappingReference>(config.getMappingReferences())) {
+        	if (mr.getType() == Type.PACKAGE)
+        		for (BeanDefinition bd : scanner.findCandidateComponents(mr.getReference())) {
+                	config.getMappingReferences().add(new MappingReference(Type.CLASS, bd.getBeanClassName()));
+                }	
+        }
         
         UniqueIdGenerator.configure(config);
         

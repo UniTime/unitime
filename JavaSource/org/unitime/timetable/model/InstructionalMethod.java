@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseInstructionalMethod;
 import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 
+@Entity
+@Table(name = "instructional_method")
 public class InstructionalMethod extends BaseInstructionalMethod {
 	private static final long serialVersionUID = 1L;
 

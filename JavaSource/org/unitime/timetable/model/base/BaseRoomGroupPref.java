@@ -21,6 +21,13 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
@@ -29,37 +36,40 @@ import org.unitime.timetable.model.RoomGroupPref;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseRoomGroupPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private RoomGroup iRoomGroup;
 
-
 	public BaseRoomGroupPref() {
-		initialize();
 	}
 
 	public BaseRoomGroupPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "room_group_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public RoomGroup getRoomGroup() { return iRoomGroup; }
 	public void setRoomGroup(RoomGroup roomGroup) { iRoomGroup = roomGroup; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomGroupPref)) return false;
 		if (getUniqueId() == null || ((RoomGroupPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((RoomGroupPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "RoomGroupPref["+getUniqueId()+"]";
 	}

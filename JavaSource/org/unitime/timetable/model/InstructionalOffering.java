@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -48,6 +58,9 @@ import org.unitime.timetable.webutil.Navigation;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "instructional_offering")
 public class InstructionalOffering extends BaseInstructionalOffering {
 	private static final long serialVersionUID = 1L;
 
@@ -58,9 +71,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		WaitList,
 		ReSchedule,
 		;
+	@Transient
 		public boolean isWaitlist() {
 			return this == WaitList;
 		}
+	@Transient
 		public boolean isReschedule() {
 			return this == WaitList || this == ReSchedule;
 		}
@@ -80,10 +95,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Transient
 	public String getCourseName(){
 		return(this.getControllingCourseOffering() == null?"missing course name":this.getControllingCourseOffering().getCourseName());
 	}
 
+	@Transient
 	public String getCourseNameWithTitle(){
 		return(this.getControllingCourseOffering().getCourseNameWithTitle());
 	}
@@ -148,16 +165,19 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	    return(courseOfferingsMinusSortCourseOfferingForSubjectArea(subjectArea.getUniqueId()));
 	}
 
+	@Transient
 	public Boolean getNotOffered() {
 	    return(isNotOffered());
 	}
 
 
+	@Transient
 	public Department getDepartment() {
 		CourseOffering course = getControllingCourseOffering();
 		return (course == null ? null : course.getDepartment());
 	}
 	
+	@Transient
 	public Department getManagingDept() {
 		CourseOffering course = getControllingCourseOffering();
 		return (course == null ? null : course.getManagingDept());
@@ -166,6 +186,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	/**
 	 * @return Returns the controllingCourseOffering.
 	 */
+	@Transient
 	public CourseOffering getControllingCourseOffering() {
 		if (controllingCourseOffering == null){
 			if (this.getCourseOfferings() != null && this.getCourseOfferings().size() > 0){
@@ -511,6 +532,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     }
     
     /*
+	@Transient
     public CourseCreditUnitConfig getCredit(){
     	if(this.getCreditConfigs() == null || this.getCreditConfigs().size() != 1){
     		return(null);
@@ -545,6 +567,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		return ret;
 	}
 
+	@Transient
 	public Long getSessionId(){
 		if (getSession() != null){
 			return(getSession().getSessionId());
@@ -678,6 +701,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
             uniqueResult();
     }
     
+	@Transient
     public Integer getProjectedDemand() {
     	int demand = 0;
     	for (Iterator<CourseOffering> i = getCourseOfferings().iterator(); i.hasNext(); ) {
@@ -688,6 +712,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return demand;
     }
     
+	@Transient
     public int getUnreservedSpace() {
         // compute available space
         int available = 0;
@@ -719,6 +744,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return available - reserved;
     }
 
+	@Transient
     public boolean isAllowStudentScheduling() {
     	for (CourseOffering course: getCourseOfferings())
     		if (course.isAllowStudentScheduling()) return true;
@@ -729,6 +755,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return getCourseOfferings().size() > 1;
     }
     
+	@Transient
     public OfferingWaitListMode getEffectiveWaitListMode() {
     	if (getWaitlistMode() != null) return getWaitListMode();
     	return getDefaultWaitListMode();
@@ -754,10 +781,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     			(getSession() != null && getSession().canOnlineSectionStudents());
     }
 
+	@Transient
     public Department getEffectiveFundingDept() {
     	return getControllingCourseOffering().getEffectiveFundingDept();
     }
     
+	@Transient
     public static OfferingWaitListMode getDefaultWaitListMode() {
     	String value = ApplicationProperty.OfferingWaitListDefault.value();
     	if ("waitlist".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value))
@@ -768,6 +797,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		return OfferingWaitListMode.Disabled;
     }
     
+	@Transient
     public OfferingWaitListMode getWaitListMode() {
     	if (getWaitlistMode() == null)
     		return OfferingWaitListMode.Disabled;
@@ -781,14 +811,17 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		setWaitlistMode(mode.ordinal());
     }
     
+	@Transient
     public Boolean isWaitlist() {
     	return getWaitListMode().isWaitlist();
     }
     
+	@Transient
     public Boolean getWaitlist() {
     	return getWaitListMode().isWaitlist();
     }
     
+	@Transient
     public Boolean isReschedule() {
     	return getWaitListMode().isReschedule();
     }

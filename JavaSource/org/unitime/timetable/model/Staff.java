@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.hibernate.query.Query;
@@ -34,6 +44,9 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "staff")
 public class Staff extends BaseStaff implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
 
@@ -128,6 +141,7 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 			return getDept() + (getCampus() == null ? "" : " (" + getCampus() + ")");
 	}
 	
+	@Transient
 	public String getName() {
 		return Constants.toInitialCase(
 				(getLastName()==null?"":getLastName().trim())+", "+

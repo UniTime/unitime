@@ -22,6 +22,15 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 
@@ -29,6 +38,7 @@ import org.unitime.timetable.model.StudentEnrollmentMessage;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentEnrollmentMessage implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -41,56 +51,62 @@ public abstract class BaseStudentEnrollmentMessage implements Serializable {
 
 	private CourseDemand iCourseDemand;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_MESSAGE = "message";
-	public static String PROP_MSG_LEVEL = "level";
-	public static String PROP_TYPE = "type";
-	public static String PROP_TIMESTAMP = "timestamp";
-	public static String PROP_ORD = "order";
-
 	public BaseStudentEnrollmentMessage() {
-		initialize();
 	}
 
 	public BaseStudentEnrollmentMessage(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "student_enrl_msg_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "student_enrl_msg_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "message", nullable = false, length = 255)
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
 
+	@Column(name = "msg_level", nullable = false, length = 10)
 	public Integer getLevel() { return iLevel; }
 	public void setLevel(Integer level) { iLevel = level; }
 
+	@Column(name = "type", nullable = false, length = 10)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@Column(name = "timestamp", nullable = false)
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
 
+	@Column(name = "ord", nullable = false, length = 10)
 	public Integer getOrder() { return iOrder; }
 	public void setOrder(Integer order) { iOrder = order; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "course_demand_id", nullable = false)
 	public CourseDemand getCourseDemand() { return iCourseDemand; }
 	public void setCourseDemand(CourseDemand courseDemand) { iCourseDemand = courseDemand; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentEnrollmentMessage)) return false;
 		if (getUniqueId() == null || ((StudentEnrollmentMessage)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentEnrollmentMessage)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentEnrollmentMessage["+getUniqueId()+"]";
 	}

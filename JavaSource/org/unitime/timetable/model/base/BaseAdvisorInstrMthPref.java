@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.AdvisorInstrMthPref;
 import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.InstructionalMethod;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAdvisorInstrMthPref extends AdvisorSectioningPref implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private InstructionalMethod iInstructionalMethod;
 
-
 	public BaseAdvisorInstrMthPref() {
-		initialize();
 	}
 
 	public BaseAdvisorInstrMthPref(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "instr_mthd_id", nullable = false)
 	public InstructionalMethod getInstructionalMethod() { return iInstructionalMethod; }
 	public void setInstructionalMethod(InstructionalMethod instructionalMethod) { iInstructionalMethod = instructionalMethod; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof AdvisorInstrMthPref)) return false;
 		if (getUniqueId() == null || ((AdvisorInstrMthPref)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((AdvisorInstrMthPref)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "AdvisorInstrMthPref["+getUniqueId()+" "+getLabel()+"]";
 	}

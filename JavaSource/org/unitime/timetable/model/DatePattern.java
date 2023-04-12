@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -55,6 +65,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "date_pattern")
 public class DatePattern extends BaseDatePattern implements Comparable<DatePattern> {
 	private static final long serialVersionUID = 1L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -68,6 +81,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		PatternSet,
 		;
 		
+	@Transient
 		public String getLabel() {
 			switch (this) {
 			case Standard: return MSG.datePatternTypeStandard();
@@ -108,6 +122,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	@Transient
 	public int getPatternOffset() {
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(getSession().getSessionBeginDateTime());
@@ -138,6 +153,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	    setOffset(offset);
 	}
 
+	@Transient
 	public BitSet getPatternBitSet() {
 		if (iCachedPatternBitSet!=null) return iCachedPatternBitSet;
 		if (getPattern()==null || getOffset()==null) return null;
@@ -180,6 +196,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return usage.contains(getSession().getDayOfYear(day, month));
 	}
 
+	@Transient
 	public String getPatternArray() {
 		StringBuffer sb = new StringBuffer("[");
 		int startMonth = getSession().getPatternStartMonth();
@@ -199,6 +216,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return sb.toString();
 	}
 	
+	@Transient
 	public String getPatternString() {
 		
 		StringBuffer sb = new StringBuffer();
@@ -224,6 +242,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return sb.toString();
 	}
 	
+	@Transient
 	public HashMap<Date, Date> getPatternDateStringHashMaps() {
 		Calendar startDate = Calendar.getInstance(Locale.US);
 		startDate.setTime(getStartDate());
@@ -398,6 +417,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return sb.toString();
 	}
 	
+	@Transient
 	public String getPatternHtml() {
 		return getPatternHtml(true, null);
 	}
@@ -575,10 +595,12 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
         		setParameter("parentType", DatePatternType.PatternSet.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
+	@Transient
     public boolean isUsed() {
     	return findAllUsed(getSession().getUniqueId()).contains(this);
     }
     
+	@Transient
     public boolean isDefault() {
     	return this.equals(getSession().getDefaultDatePattern());
     }
@@ -626,6 +648,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return dp;
 	}
 	
+	@Transient
 	public Date getStartDate() {
 		if (getPattern()==null || getOffset()==null) return null;
 		int idx = getPattern().indexOf('1');
@@ -636,6 +659,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return cal.getTime();
 	}
 
+	@Transient
 	public Date getEndDate() {
 		if (getPattern()==null || getOffset()==null) return null;
 		int idx = getPattern().lastIndexOf('1');
@@ -732,6 +756,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
         return new Date[] { startDateCal.getTime(), endDateCal.getTime()};
 	}
 	
+	@Transient
 	public float getComputedNumberOfWeeks() {
 		if (getType() != null && getType() == DatePatternType.PatternSet.ordinal()) {
 			for (DatePattern dp: findChildren())
@@ -747,6 +772,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return daysInWeek[2];
 	}
 	
+	@Transient
 	public float getEffectiveNumberOfWeeks() {
 		return (getNumberOfWeeks() == null ? getComputedNumberOfWeeks() : getNumberOfWeeks());
 	}
@@ -807,6 +833,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		return(respectsSessionHolidays(true));
 	}
 	
+	@Transient
 	public DatePatternType getDatePatternType() {
 		if (getType() == null) return null;
 		return DatePatternType.values()[getType()];
@@ -819,12 +846,15 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 			setType(type.ordinal());
 	}
 	
+	@Transient
 	public boolean isAlternate() {
 		return getDatePatternType() == DatePatternType.Alternate;
 	}
+	@Transient
 	public boolean isExtended() {
 		return getDatePatternType() == DatePatternType.Extended;
 	}
+	@Transient
 	public boolean isPatternSet() {
 		return getDatePatternType() == DatePatternType.PatternSet;
 	}

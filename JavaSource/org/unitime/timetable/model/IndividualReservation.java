@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseIndividualReservation;
 
@@ -27,6 +33,8 @@ import org.unitime.timetable.model.base.BaseIndividualReservation;
 /**
  * @author Tomas Muller
  */
+@Entity
+@DiscriminatorValue("0")
 public class IndividualReservation extends BaseIndividualReservation {
 	private static final long serialVersionUID = 1L;
 
@@ -50,26 +58,31 @@ public class IndividualReservation extends BaseIndividualReservation {
 	}
 
 	@Override
+	@Transient
 	public int getPriority() {
 		return ApplicationProperty.ReservationPriorityIndividual.intValue();
 	}
 
 	@Override
+	@Transient
 	public boolean isCanAssignOverLimit() {
 		return ApplicationProperty.ReservationCanOverLimitIndividual.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isMustBeUsed() {
 		return ApplicationProperty.ReservationMustBeUsedIndividual.isTrue();
 	}
 
 	@Override
+	@Transient
 	public boolean isAllowOverlap() {
 		return ApplicationProperty.ReservationAllowOverlapIndividual.isTrue();
 	}
 
 	@Override
+	@Transient
 	public int getReservationLimit() {
 		return getStudents().size();
 	}

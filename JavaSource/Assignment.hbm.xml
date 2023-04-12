@@ -47,14 +47,6 @@
             length="4"/>
 
         <property
-            name="classId"
-            column="class_id"
-            type="java.lang.Long"
-            not-null="false"
-            insert="false"
-            update="false"/>
-
-        <property
             name="className"
             column="class_name"
             type="java.lang.String"

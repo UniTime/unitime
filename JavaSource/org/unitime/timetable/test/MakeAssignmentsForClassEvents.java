@@ -256,7 +256,6 @@ public class MakeAssignmentsForClassEvents {
             if (dept==null) dept = clazz.getSchedulingSubpart().getControllingDept();
             assignment.setSolution(getSolution(dept));
             assignment.setClassName(clazz.getClassLabel(ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue()));
-            assignment.setClassId(clazz.getUniqueId());
             clazz.setCommittedAssignment(assignment);
         }
         assignment.setDays(getDaysCode(event));

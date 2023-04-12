@@ -21,6 +21,9 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,39 +31,39 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePositionType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Integer iSortOrder;
 
 
-	public static String PROP_SORT_ORDER = "sortOrder";
-
 	public BasePositionType() {
-		initialize();
 	}
 
 	public BasePositionType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "sort_order", nullable = false)
 	public Integer getSortOrder() { return iSortOrder; }
 	public void setSortOrder(Integer sortOrder) { iSortOrder = sortOrder; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PositionType)) return false;
 		if (getUniqueId() == null || ((PositionType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PositionType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PositionType["+getUniqueId()+" "+getLabel()+"]";
 	}

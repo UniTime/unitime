@@ -19,12 +19,25 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.unitime.timetable.model.base.BaseInstructorAttribute;
 import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "attribute")
 public class InstructorAttribute extends BaseInstructorAttribute implements Comparable<InstructorAttribute> {
 	private static final long serialVersionUID = 331064011983395675L;
 	
@@ -80,6 +93,7 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 		return false;
 	}
 	
+	@Transient
 	public String getNameWithType() {
 		return getName() + (getType() == null ? "" : " (" + getType().getLabel() + ")");
 	}

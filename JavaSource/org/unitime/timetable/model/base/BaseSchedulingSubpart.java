@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.JoinFormula;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.DatePattern;
@@ -36,6 +49,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSchedulingSubpart extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -56,61 +70,75 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	private Set<Class_> iClasses;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 
-	public static String PROP_MIN_PER_WK = "minutesPerWk";
-	public static String PROP_AUTO_TIME_SPREAD = "autoSpreadInTime";
-	public static String PROP_STUDENT_ALLOW_OVERLAP = "studentAllowOverlap";
-	public static String PROP_SUBPART_SUFFIX = "schedulingSubpartSuffixCache";
-	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
-
 	public BaseSchedulingSubpart() {
-		initialize();
 	}
 
 	public BaseSchedulingSubpart(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "min_per_wk", nullable = false, length = 4)
 	public Integer getMinutesPerWk() { return iMinutesPerWk; }
 	public void setMinutesPerWk(Integer minutesPerWk) { iMinutesPerWk = minutesPerWk; }
 
+	@Column(name = "auto_time_spread", nullable = false)
 	public Boolean isAutoSpreadInTime() { return iAutoSpreadInTime; }
+	@Transient
 	public Boolean getAutoSpreadInTime() { return iAutoSpreadInTime; }
 	public void setAutoSpreadInTime(Boolean autoSpreadInTime) { iAutoSpreadInTime = autoSpreadInTime; }
 
+	@Column(name = "student_allow_overlap", nullable = false)
 	public Boolean isStudentAllowOverlap() { return iStudentAllowOverlap; }
+	@Transient
 	public Boolean getStudentAllowOverlap() { return iStudentAllowOverlap; }
 	public void setStudentAllowOverlap(Boolean studentAllowOverlap) { iStudentAllowOverlap = studentAllowOverlap; }
 
+	@Column(name = "subpart_suffix", nullable = true, length = 5)
 	public String getSchedulingSubpartSuffixCache() { return iSchedulingSubpartSuffixCache; }
 	public void setSchedulingSubpartSuffixCache(String schedulingSubpartSuffixCache) { iSchedulingSubpartSuffixCache = schedulingSubpartSuffixCache; }
 
+	@Formula("(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid and co.is_control = %TRUE% and co.instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)")
 	public String getCourseName() { return iCourseName; }
 	public void setCourseName(String courseName) { iCourseName = courseName; }
 
+	@Formula(" ( select sum(crs.expected_capacity) from %SCHEMA%.class_ crs where crs.subpart_id = uniqueid ) ")
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }
 
+	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinFormula("(select io.session_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid)")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "itype", nullable = false)
 	public ItypeDesc getItype() { return iItype; }
 	public void setItype(ItypeDesc itype) { iItype = itype; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent", nullable = true)
 	public SchedulingSubpart getParentSubpart() { return iParentSubpart; }
 	public void setParentSubpart(SchedulingSubpart parentSubpart) { iParentSubpart = parentSubpart; }
 
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "config_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public InstrOfferingConfig getInstrOfferingConfig() { return iInstrOfferingConfig; }
 	public void setInstrOfferingConfig(InstrOfferingConfig instrOfferingConfig) { iInstrOfferingConfig = instrOfferingConfig; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "date_pattern_id", nullable = true)
 	public DatePattern getDatePattern() { return iDatePattern; }
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
 	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
 	public void addTochildSubparts(SchedulingSubpart schedulingSubpart) {
@@ -118,6 +146,8 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 		iChildSubparts.add(schedulingSubpart);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToclasses(Class_ class_) {
@@ -125,6 +155,8 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 		iClasses.add(class_);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "subpartOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
@@ -132,17 +164,20 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SchedulingSubpart)) return false;
 		if (getUniqueId() == null || ((SchedulingSubpart)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SchedulingSubpart)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SchedulingSubpart["+getUniqueId()+"]";
 	}

@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -40,6 +50,9 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "change_log")
 public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 1L;
@@ -74,6 +87,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         
         private String iTitle;
         Operation(String title) { iTitle = title; }
+	@Transient
         public String getTitle() { return iTitle; }
     }
     
@@ -138,12 +152,14 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         
         private String iTitle;
         Source(String title) { iTitle = title; }
+	@Transient
         public String getTitle() { return iTitle; }
     }
     
     public static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
     public static Formats.Format<Date> sDFdate = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
     
+	@Transient
     public Operation getOperation() {
         return Operation.valueOf(getOperationString());
     }
@@ -152,6 +168,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         setOperationString(operation.name());
     }
     
+	@Transient
     public Source getSource() {
         return Source.valueOf(getSourceString());
     }
@@ -289,16 +306,19 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     }
     */
             
+	@Transient
     public String getOperationTitle() {
     	return getOperation().getTitle();
         // return getMessage(request, "changelog.operation."+getOperationString());
     }
 
+	@Transient
     public String getSourceTitle() {
     	return getSource().getTitle();
     	//return getMessage(request, "changelog.source."+getSourceString());
     }
     
+	@Transient
     public String getLabel() {
         return MSG.formatLongLastChange(
         		getOperationTitle(),
@@ -307,6 +327,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         		sDF.format(getTimeStamp())); 
     }
 
+	@Transient
     public String getShortLabel() {
         return MSG.formatShortLastChange(
         		getOperationTitle(),

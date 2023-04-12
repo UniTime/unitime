@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -35,6 +40,8 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "distribution_type")
 public class DistributionType extends BaseDistributionType implements Comparable {
 	private static final long serialVersionUID = 1L;
 

@@ -23,10 +23,10 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.io.Serializable;
+import org.unitime.timetable.model.base.SavedHQLParameterId;
 import org.unitime.timetable.model.SavedHQLParameter;
 
-public class SavedHQLParameterDAO extends _RootDAO<SavedHQLParameter,Serializable> {
+public class SavedHQLParameterDAO extends _RootDAO<SavedHQLParameter,SavedHQLParameterId> {
 	private static SavedHQLParameterDAO sInstance;
 
 	public SavedHQLParameterDAO() {}

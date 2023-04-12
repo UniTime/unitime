@@ -24,6 +24,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DatePattern;
@@ -41,6 +51,7 @@ import org.unitime.timetable.model.SubjectArea;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSession extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -69,85 +80,93 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private Set<Location> iRooms;
 	private Set<InstructionalOffering> iInstructionalOfferings;
 
-	public static String PROP_ACADEMIC_INITIATIVE = "academicInitiative";
-	public static String PROP_ACADEMIC_YEAR = "academicYear";
-	public static String PROP_ACADEMIC_TERM = "academicTerm";
-	public static String PROP_SESSION_BEGIN_DATE_TIME = "sessionBeginDateTime";
-	public static String PROP_CLASSES_END_DATE_TIME = "classesEndDateTime";
-	public static String PROP_SESSION_END_DATE_TIME = "sessionEndDateTime";
-	public static String PROP_EXAM_BEGIN_DATE = "examBeginDate";
-	public static String PROP_EVENT_BEGIN_DATE = "eventBeginDate";
-	public static String PROP_EVENT_END_DATE = "eventEndDate";
-	public static String PROP_HOLIDAYS = "holidays";
-	public static String PROP_WK_ENROLL = "lastWeekToEnroll";
-	public static String PROP_WK_CHANGE = "lastWeekToChange";
-	public static String PROP_WK_DROP = "lastWeekToDrop";
-
 	public BaseSession() {
-		initialize();
 	}
 
 	public BaseSession(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "academic_initiative", nullable = false, length = 20)
 	public String getAcademicInitiative() { return iAcademicInitiative; }
 	public void setAcademicInitiative(String academicInitiative) { iAcademicInitiative = academicInitiative; }
 
+	@Column(name = "academic_year", nullable = false, length = 4)
 	public String getAcademicYear() { return iAcademicYear; }
 	public void setAcademicYear(String academicYear) { iAcademicYear = academicYear; }
 
+	@Column(name = "academic_term", nullable = false, length = 20)
 	public String getAcademicTerm() { return iAcademicTerm; }
 	public void setAcademicTerm(String academicTerm) { iAcademicTerm = academicTerm; }
 
+	@Column(name = "session_begin_date_time", nullable = false)
 	public Date getSessionBeginDateTime() { return iSessionBeginDateTime; }
 	public void setSessionBeginDateTime(Date sessionBeginDateTime) { iSessionBeginDateTime = sessionBeginDateTime; }
 
+	@Column(name = "classes_end_date_time", nullable = false)
 	public Date getClassesEndDateTime() { return iClassesEndDateTime; }
 	public void setClassesEndDateTime(Date classesEndDateTime) { iClassesEndDateTime = classesEndDateTime; }
 
+	@Column(name = "session_end_date_time", nullable = false)
 	public Date getSessionEndDateTime() { return iSessionEndDateTime; }
 	public void setSessionEndDateTime(Date sessionEndDateTime) { iSessionEndDateTime = sessionEndDateTime; }
 
+	@Column(name = "exam_begin_date", nullable = false)
 	public Date getExamBeginDate() { return iExamBeginDate; }
 	public void setExamBeginDate(Date examBeginDate) { iExamBeginDate = examBeginDate; }
 
+	@Column(name = "event_begin_date", nullable = false)
 	public Date getEventBeginDate() { return iEventBeginDate; }
 	public void setEventBeginDate(Date eventBeginDate) { iEventBeginDate = eventBeginDate; }
 
+	@Column(name = "event_end_date", nullable = false)
 	public Date getEventEndDate() { return iEventEndDate; }
 	public void setEventEndDate(Date eventEndDate) { iEventEndDate = eventEndDate; }
 
+	@Column(name = "holidays", nullable = true, length = 366)
 	public String getHolidays() { return iHolidays; }
 	public void setHolidays(String holidays) { iHolidays = holidays; }
 
+	@Column(name = "wk_enroll", nullable = false)
 	public Integer getLastWeekToEnroll() { return iLastWeekToEnroll; }
 	public void setLastWeekToEnroll(Integer lastWeekToEnroll) { iLastWeekToEnroll = lastWeekToEnroll; }
 
+	@Column(name = "wk_change", nullable = false)
 	public Integer getLastWeekToChange() { return iLastWeekToChange; }
 	public void setLastWeekToChange(Integer lastWeekToChange) { iLastWeekToChange = lastWeekToChange; }
 
+	@Column(name = "wk_drop", nullable = false)
 	public Integer getLastWeekToDrop() { return iLastWeekToDrop; }
 	public void setLastWeekToDrop(Integer lastWeekToDrop) { iLastWeekToDrop = lastWeekToDrop; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "status_type", nullable = false)
 	public DepartmentStatusType getStatusType() { return iStatusType; }
 	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "def_datepatt_id", nullable = true)
 	public DatePattern getDefaultDatePattern() { return iDefaultDatePattern; }
 	public void setDefaultDatePattern(DatePattern defaultDatePattern) { iDefaultDatePattern = defaultDatePattern; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "sect_status", nullable = true)
 	public StudentSectioningStatus getDefaultSectioningStatus() { return iDefaultSectioningStatus; }
 	public void setDefaultSectioningStatus(StudentSectioningStatus defaultSectioningStatus) { iDefaultSectioningStatus = defaultSectioningStatus; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "duration_type_id", nullable = true)
 	public ClassDurationType getDefaultClassDurationType() { return iDefaultClassDurationType; }
 	public void setDefaultClassDurationType(ClassDurationType defaultClassDurationType) { iDefaultClassDurationType = defaultClassDurationType; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "instr_method_id", nullable = true)
 	public InstructionalMethod getDefaultInstructionalMethod() { return iDefaultInstructionalMethod; }
 	public void setDefaultInstructionalMethod(InstructionalMethod defaultInstructionalMethod) { iDefaultInstructionalMethod = defaultInstructionalMethod; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
@@ -155,6 +174,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 		iSubjectAreas.add(subjectArea);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Building> getBuildings() { return iBuildings; }
 	public void setBuildings(Set<Building> buildings) { iBuildings = buildings; }
 	public void addTobuildings(Building building) {
@@ -162,6 +183,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 		iBuildings.add(building);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -169,6 +192,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 		iDepartments.add(department);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
@@ -176,6 +201,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 		iRooms.add(location);
 	}
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
 	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
 	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
@@ -183,17 +210,20 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 		iInstructionalOfferings.add(instructionalOffering);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Session)) return false;
 		if (getUniqueId() == null || ((Session)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((Session)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "Session["+getUniqueId()+"]";
 	}

@@ -21,12 +21,20 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.TimePatternDays;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTimePatternDays implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -34,37 +42,41 @@ public abstract class BaseTimePatternDays implements Serializable {
 	private Integer iDayCode;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_DAY_CODE = "dayCode";
-
 	public BaseTimePatternDays() {
-		initialize();
 	}
 
 	public BaseTimePatternDays(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "time_pattern_days_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "time_pattern_days_seq")
+	})
+	@GeneratedValue(generator = "time_pattern_days_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "day_code", nullable = true, length = 7)
 	public Integer getDayCode() { return iDayCode; }
 	public void setDayCode(Integer dayCode) { iDayCode = dayCode; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TimePatternDays)) return false;
 		if (getUniqueId() == null || ((TimePatternDays)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TimePatternDays)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TimePatternDays["+getUniqueId()+"]";
 	}

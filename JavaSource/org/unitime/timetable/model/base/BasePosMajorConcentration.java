@@ -21,6 +21,15 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
 
@@ -28,6 +37,7 @@ import org.unitime.timetable.model.PosMajorConcentration;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePosMajorConcentration implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,48 +48,54 @@ public abstract class BasePosMajorConcentration implements Serializable {
 
 	private PosMajor iMajor;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_CODE = "code";
-	public static String PROP_NAME = "name";
-
 	public BasePosMajorConcentration() {
-		initialize();
 	}
 
 	public BasePosMajorConcentration(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "pos_major_conc_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pos_major_seq")
+	})
+	@GeneratedValue(generator = "pos_major_conc_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "code", nullable = false, length = 40)
 	public String getCode() { return iCode; }
 	public void setCode(String code) { iCode = code; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "major_id", nullable = false)
 	public PosMajor getMajor() { return iMajor; }
 	public void setMajor(PosMajor major) { iMajor = major; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PosMajorConcentration)) return false;
 		if (getUniqueId() == null || ((PosMajorConcentration)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PosMajorConcentration)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PosMajorConcentration["+getUniqueId()+" "+getName()+"]";
 	}

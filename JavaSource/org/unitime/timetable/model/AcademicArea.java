@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +43,9 @@ import org.unitime.timetable.model.dao.AcademicAreaDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "academic_area")
 public class AcademicArea extends BaseAcademicArea {
 	private static final long serialVersionUID = 1L;
 
@@ -57,6 +70,7 @@ public class AcademicArea extends BaseAcademicArea {
     /*
 	 * @return all Academic Areas
 	 */
+	@Transient
 	public static ArrayList getAll() throws HibernateException {
 		return (ArrayList) (new AcademicAreaDAO()).findAll();
 	}
@@ -82,6 +96,7 @@ public class AcademicArea extends BaseAcademicArea {
      * Creates label of the format Abbr - Short Title 
      * @return
      */
+	@Transient
     public String getLabelAbbrTitle() {
         return this.getAcademicAreaAbbreviation() + " : " + this.getTitle();
     }
@@ -90,10 +105,12 @@ public class AcademicArea extends BaseAcademicArea {
      * Creates label of the format Short Title - Abbr
      * @return
      */
+	@Transient
     public String getLabelTitleAbbr() {
         return this.getTitle() + " : " + this.getAcademicAreaAbbreviation();
     }
 	
+	@Transient
 	public Long getSessionId(){
 		if (getSession() != null){
 			return(getSession().getUniqueId());

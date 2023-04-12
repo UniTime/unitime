@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.RefTableEntry;
 
@@ -28,40 +32,41 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseInstructionalMethod extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Boolean iVisible;
 
 
-	public static String PROP_VISIBLE = "visible";
-
 	public BaseInstructionalMethod() {
-		initialize();
 	}
 
 	public BaseInstructionalMethod(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "visible", nullable = true)
 	public Boolean isVisible() { return iVisible; }
+	@Transient
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof InstructionalMethod)) return false;
 		if (getUniqueId() == null || ((InstructionalMethod)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((InstructionalMethod)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "InstructionalMethod["+getUniqueId()+" "+getLabel()+"]";
 	}

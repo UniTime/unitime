@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Iterator;
 import java.util.Set;
 
@@ -29,6 +39,9 @@ import org.unitime.timetable.model.base.BaseExternalRoomDepartment;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "external_room_department")
 public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 	private static final long serialVersionUID = 1L;
 
@@ -53,6 +66,7 @@ public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 	 * Check for assigned department
 	 * @return true if assigned department
 	 */
+	@Transient
 	public boolean isAssigned() {
 		
 		return checkAssignmentType(ASSIGNMENT_TYPE_ASSIGNED);
@@ -62,6 +76,7 @@ public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 	 * Check for scheduling department
 	 * @return true if scheduling department
 	 */
+	@Transient
 	public boolean isScheduling() {
 		
 		return checkAssignmentType(ASSIGNMENT_TYPE_SCHEDULING);

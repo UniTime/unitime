@@ -20,6 +20,20 @@
  
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -42,6 +56,11 @@ import org.unitime.timetable.util.Formats;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "event")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="event_type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class Event extends BaseEvent implements Comparable<Event> {
 	private static final long serialVersionUID = 1L;
 
@@ -82,18 +101,25 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
         "Not Available"
     };
 
+	@Transient
 	public abstract int getEventType();
 	
+	@Transient
 	public String getEventTypeLabel() { return sEventTypes[getEventType()]; }
 	
+	@Transient
 	public String getEventTypeAbbv() { return sEventTypesAbbv[getEventType()]; }
 	
+	@Transient
     public abstract Set<Student> getStudents();
     
+	@Transient
     public abstract Collection<StudentClassEnrollment> getStudentClassEnrollments();
     
+	@Transient
     public abstract Collection<Long> getStudentIds();
     
+	@Transient
     public abstract Set<DepartmentalInstructor> getInstructors();
 
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
@@ -152,6 +178,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	            .list();
 	}
 	
+	@Transient
 	public TreeSet<MultiMeeting> getMultiMeetings() {
 	    return getMultiMeetings(getMeetings());
 	}
@@ -210,14 +237,17 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	        iPast = past;
 	    }
 	    
+	@Transient
 	    public boolean isPast() { return iPast; }
 	    
+	@Transient
 	    public TreeSet<Meeting> getMeetings() { return iMeetings; }
 
 	    public int compareTo(MultiMeeting m) {
 	        return getMeetings().first().compareTo(m.getMeetings().first());
 	    }
 	    
+	@Transient
 	    public String getDays() {
 	        return getDays(Constants.DAY_NAME, Constants.DAY_NAMES_SHORT);
 	    }
@@ -264,6 +294,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    }
 	}
 	
+	@Transient
 	public Session getSession() { return null; }
 	
 	public static Hashtable<Event,Set<Long>> findStudentConflicts(Date meetingDate, int startSlot, int endSlot, Set<Long> studentIds) {

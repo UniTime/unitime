@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -66,6 +72,8 @@ import org.unitime.timetable.util.NameInterface;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Table(name = "departmental_instructor")
 public class DepartmentalInstructor extends BaseDepartmentalInstructor implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
 	protected static GwtConstants CONS = Localization.create(GwtConstants.class);
@@ -132,6 +140,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * Gets full name with first name first 
 	 * @return
 	 */
+	@Transient
 	public String getNameFirst() {
 		return nameFirstNameFirst();
 	}
@@ -141,6 +150,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * Gets full name with last name first 
 	 * @return
 	 */
+	@Transient
 	public String getNameLast() {
 		return nameLastNameFirst();
 	}
@@ -149,6 +159,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * 
 	 * @return
 	 */
+	@Transient
 	public String getNameLastFirst() {
 		return nameLastFirst();
 	}
@@ -157,6 +168,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * 
 	 * @return
 	 */
+	@Transient
 	public String getNameInitLast() {
 		return nameInitLast();
 	}
@@ -232,6 +244,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(this.nameFirstNameFirst() + ", " + this.getDepartment().getDeptCode());
 	}
 	
+	@Transient
     public Set<Location> getAvailableRooms() {
     	return new TreeSet<Location>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r from RoomDept rd inner join rd.room r inner join rd.department d " +
@@ -240,6 +253,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     			.setParameter("deptId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     }
     
+	@Transient
     public Set<Building> getAvailableBuildings() {
     	return new TreeSet<Building>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r.building from Room r inner join r.roomDepts rd inner join rd.department d " +
@@ -248,12 +262,14 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     			.setParameter("deptId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     }
     
+	@Transient
     public Set<RoomFeature> getAvailableRoomFeatures() {
     	Set<RoomFeature> features = super.getAvailableRoomFeatures();
     	features.addAll((DepartmentRoomFeature.getAllDepartmentRoomFeatures(getDepartment())));
     	return features;
     }
     
+	@Transient
     public Set<RoomGroup> getAvailableRoomGroups() {
     	Set<RoomGroup> groups = super.getAvailableRoomGroups();
     	groups.addAll(RoomGroup.getAllDepartmentRoomGroups(getDepartment()));
@@ -494,6 +510,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         }
     }
     
+	@Transient
     public List<Exam> getAllExams() {
         if (getExternalUniqueId()!=null) {
             return (new DepartmentalInstructorDAO()).getSession()
@@ -512,6 +529,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         }
     }
     
+	@Transient
     public Collection<Assignment> getCommitedAssignments() {
     	return new DepartmentalInstructorDAO().getSession().createQuery(
                 "select a from Assignment a inner join a.instructors i where " +
@@ -521,6 +539,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     }
 
     @Override
+	@Transient
     public Session getSession() {
     	return getDepartment().getSession();
     }
@@ -545,6 +564,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return ret;
     }
     
+	@Transient
     public Set<CourseOffering> getAvailableCourses() {
     	return new TreeSet<CourseOffering>(
     			DepartmentalInstructorDAO.getInstance().getSession().createQuery(
@@ -553,10 +573,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     			);
     }
     
+	@Transient
 	public Set getAvailableAttributeTypes() {
 		return getDepartment().getAvailableAttributeTypes();
     }
 
+	@Transient
 	public Set getAvailableAttributes() {
 		return getDepartment().getAvailableAttributes();
     }
@@ -633,6 +655,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 				.setParameter("externalId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
 	}
 	
+	@Transient
 	public int getUnavailablePatternOffset() {
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(getSession().getSessionBeginDateTime());
@@ -640,6 +663,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return beginDate-(getUnavailableOffset()==null?0:getUnavailableOffset().intValue())-1;
 	}
 	
+	@Transient
 	public String getUnavailablePatternArray() {
 		StringBuffer sb = new StringBuffer("[");
 		int startMonth = getSession().getPatternStartMonth();
@@ -659,6 +683,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return sb.toString();
 	}
 	
+	@Transient
 	public String getUnavailableBorderArray() {
 		int startMonth = getSession().getPatternStartMonth();
 		int endMonth = getSession().getPatternEndMonth();
@@ -679,6 +704,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return sb.toString();
 	}
 	
+	@Transient
 	public String getUnavailablePatternHtml() {
 		return getUnavailablePatternHtml(true, true);
 	}
@@ -752,6 +778,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		}
 	}
 	
+	@Transient
 	public Date getUnavailableStartDate() {
 		if (getUnavailableDays()==null || getUnavailableOffset()==null) return null;
 		int idx = getUnavailableDays().indexOf('1');
@@ -762,6 +789,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return cal.getTime();
 	}
 
+	@Transient
 	public Date getUnavailableEndDate() {
 		if (getUnavailableDays()==null || getUnavailableOffset()==null) return null;
 		int idx = getUnavailableDays().lastIndexOf('1');
@@ -772,6 +800,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return cal.getTime();
 	}
 	
+	@Transient
 	public Map<Date, Date> getUnavailablePatternDateStringHashMaps() {
 		Calendar startDate = Calendar.getInstance(Locale.US);
 		startDate.setTime(getUnavailableStartDate());
@@ -861,14 +890,19 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		private Date iDate;
 		private UnavailableDay(Date date) { iDate = date; }
 		@Override
+	@Transient
 		public Long getEventId() { return - getUniqueId(); }
 		@Override
+	@Transient
 		public String getEventName() { return MSG.instructorNotAvailableName(); }
 		@Override
+	@Transient
 		public String getEventType() { return MSG.instructorNotAvailableType(); }
 		@Override
+	@Transient
 		public Date getStartTime() { return iDate; }
 		@Override
+	@Transient
 		public Date getEndTime() { return new Date(iDate.getTime() + 86400000l); }
 		@Override
 		public int compareTo(TimeBlock block) {

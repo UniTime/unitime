@@ -20,6 +20,16 @@
  
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.Collection;
 import java.util.List;
 
@@ -38,6 +48,9 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "related_course_info")
 public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparable<RelatedCourseInfo> {
 	private static final long serialVersionUID = 1L;
 
@@ -68,6 +81,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
 	
 	
 	private Object iOwnerObject = null;
+	@Transient
 	public Object getOwnerObject() {
 	    if (iOwnerObject!=null) return iOwnerObject;
 	    switch (getOwnerType()) {
@@ -148,6 +162,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         return getOwnerId().compareTo(owner.getOwnerId());
     }
     
+	@Transient
     public List getStudents() {
         switch (getOwnerType()) {
         case ExamOwner.sOwnerTypeClass : 
@@ -186,6 +201,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         }
     }
     
+	@Transient
     public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
         switch (getOwnerType()) {
         case ExamOwner.sOwnerTypeClass : 
@@ -218,6 +234,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         }
     }
     
+	@Transient
     public List getStudentIds() {
         switch (getOwnerType()) {
         case ExamOwner.sOwnerTypeClass : 
@@ -256,6 +273,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         }
     }
     
+	@Transient
     public List getInstructors() {
         switch (getOwnerType()) {
         case ExamOwner.sOwnerTypeClass : 
@@ -332,6 +350,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         }
     }
     
+	@Transient
     public int getLimit() {
         Object owner = getOwnerObject();
         switch (getOwnerType()) {
@@ -350,6 +369,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
         }
     }
     
+	@Transient
     public String getLabel() {
         Object owner = getOwnerObject();
         switch (getOwnerType()) {

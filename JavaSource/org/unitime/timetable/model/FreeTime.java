@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import org.unitime.timetable.model.base.BaseFreeTime;
 
 
@@ -26,6 +35,9 @@ import org.unitime.timetable.model.base.BaseFreeTime;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "free_time")
 public class FreeTime extends BaseFreeTime {
 	private static final long serialVersionUID = 1L;
 

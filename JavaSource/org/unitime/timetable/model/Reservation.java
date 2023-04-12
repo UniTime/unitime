@@ -19,6 +19,19 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +46,11 @@ import org.unitime.timetable.model.base.BaseReservation;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "reservation")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="reservation_type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class Reservation extends BaseReservation implements Comparable<Reservation> {
 	private static final long serialVersionUID = 1L;
 
@@ -50,6 +68,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 
 /*[CONSTRUCTOR MARKER END]*/
 	
+	@Transient
 	public boolean isExpired() {
 		if (getStartDate() == null && getExpirationDate() == null) return false;
 		Calendar c = Calendar.getInstance(Locale.US);
@@ -63,6 +82,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 	
 	public abstract boolean isApplicable(Student student, CourseRequest request);
 	
+	@Transient
 	public int getReservationLimit() {
 		Integer cap = getLimitCap();
 		if (cap != null)
@@ -112,10 +132,15 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 		return true;
 	}
 	
+	@Transient
 	public abstract int getPriority();
+	@Transient
 	public abstract boolean isCanAssignOverLimit();
+	@Transient
 	public abstract boolean isMustBeUsed();
+	@Transient
 	public abstract boolean isAllowOverlap();
+	@Transient
 	public boolean isAlwaysExpired() { return false; }
 	
 	@Override
@@ -128,6 +153,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
         return getUniqueId().compareTo(r.getUniqueId());
     }
 	
+	@Transient
 	public double getRestrictivity() {
 		if (getConfigurations().isEmpty()) return 1.0;
 		
@@ -145,6 +171,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
 		return restrictivity;
     }
     
+	@Transient
     protected Map<Long, Set<Long>> getSections() {
     	Map<Long, Set<Long>> ret = new HashMap<Long, Set<Long>>();
     	for (Class_ clazz: getClasses()) {
@@ -161,6 +188,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
     	return ret;
     }
     
+	@Transient
     public int getReservedAvailableSpace() {
         // Unlimited
         if (getReservationLimit() < 0) return Integer.MAX_VALUE;
@@ -181,6 +209,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
     	return students.size();
     }
     
+	@Transient
     protected Set<InstrOfferingConfig> getAllConfigurations() {
     	Set<InstrOfferingConfig> configs = new HashSet<InstrOfferingConfig>();
     	if (getConfigurations() != null)
@@ -191,6 +220,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
     	return configs;
     }
     
+	@Transient
     protected Map<SchedulingSubpart, Set<Class_>> getAllSections() {
     	Map<SchedulingSubpart, Set<Class_>> ret = new HashMap<SchedulingSubpart, Set<Class_>>();
     	for (Class_ clazz: getClasses()) {
@@ -207,6 +237,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
     	return ret;
     }
     
+	@Transient
     public Integer getLimitCap() {
     	Set<InstrOfferingConfig> configs = getAllConfigurations();
     	if (configs.isEmpty()) return null;
@@ -237,6 +268,7 @@ public abstract class Reservation extends BaseReservation implements Comparable<
         return (l1 < 0 ? -1 : l2 < 0 ? -1 : l1 + l2);
     }
     
+	@Transient
     public boolean isReservationInclusive() {
     	return (isInclusive() == null ? ApplicationProperty.ReservationsAreInclusive.isTrue() : isInclusive());
     }

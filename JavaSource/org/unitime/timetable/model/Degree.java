@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseDegree;
 import org.unitime.timetable.model.dao.DegreeDAO;
 
+@Entity
+@Table(name = "degree")
 public class Degree extends BaseDegree {
 	private static final long serialVersionUID = 1L;
 

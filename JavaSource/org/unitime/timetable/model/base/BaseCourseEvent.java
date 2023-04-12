@@ -23,6 +23,15 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -31,6 +40,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseCourseEvent extends Event implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,23 +48,22 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 
 	private Set<RelatedCourseInfo> iRelatedCourses;
 
-	public static String PROP_REQ_ATTD = "reqAttendance";
-
 	public BaseCourseEvent() {
-		initialize();
 	}
 
 	public BaseCourseEvent(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "req_attd", nullable = false)
 	public Boolean isReqAttendance() { return iReqAttendance; }
+	@Transient
 	public Boolean getReqAttendance() { return iReqAttendance; }
 	public void setReqAttendance(Boolean reqAttendance) { iReqAttendance = reqAttendance; }
 
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<RelatedCourseInfo> getRelatedCourses() { return iRelatedCourses; }
 	public void setRelatedCourses(Set<RelatedCourseInfo> relatedCourses) { iRelatedCourses = relatedCourses; }
 	public void addTorelatedCourses(RelatedCourseInfo relatedCourseInfo) {
@@ -62,17 +71,20 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 		iRelatedCourses.add(relatedCourseInfo);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseEvent)) return false;
 		if (getUniqueId() == null || ((CourseEvent)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((CourseEvent)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "CourseEvent["+getUniqueId()+"]";
 	}

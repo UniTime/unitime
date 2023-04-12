@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.TeachingResponsibility;
 
@@ -28,6 +32,7 @@ import org.unitime.timetable.model.TeachingResponsibility;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseTeachingResponsibility extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -37,47 +42,48 @@ public abstract class BaseTeachingResponsibility extends RefTableEntry implement
 	private Integer iOptions;
 
 
-	public static String PROP_COORDINATOR = "coordinator";
-	public static String PROP_INSTRUCTOR = "instructor";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_OPTIONS = "options";
-
 	public BaseTeachingResponsibility() {
-		initialize();
 	}
 
 	public BaseTeachingResponsibility(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "coordinator", nullable = false)
 	public Boolean isCoordinator() { return iCoordinator; }
+	@Transient
 	public Boolean getCoordinator() { return iCoordinator; }
 	public void setCoordinator(Boolean coordinator) { iCoordinator = coordinator; }
 
+	@Column(name = "instructor", nullable = false)
 	public Boolean isInstructor() { return iInstructor; }
+	@Transient
 	public Boolean getInstructor() { return iInstructor; }
 	public void setInstructor(Boolean instructor) { iInstructor = instructor; }
 
+	@Column(name = "abbreviation", nullable = true, length = 40)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "options", nullable = false)
 	public Integer getOptions() { return iOptions; }
 	public void setOptions(Integer options) { iOptions = options; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof TeachingResponsibility)) return false;
 		if (getUniqueId() == null || ((TeachingResponsibility)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((TeachingResponsibility)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "TeachingResponsibility["+getUniqueId()+" "+getLabel()+"]";
 	}

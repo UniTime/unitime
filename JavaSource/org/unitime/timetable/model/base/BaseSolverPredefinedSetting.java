@@ -23,6 +23,18 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 
@@ -30,6 +42,7 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseSolverPredefinedSetting implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,34 +53,38 @@ public abstract class BaseSolverPredefinedSetting implements Serializable {
 
 	private Set<SolverParameter> iParameters;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_NAME = "name";
-	public static String PROP_DESCRIPTION = "description";
-	public static String PROP_APPEARANCE = "appearance";
-
 	public BaseSolverPredefinedSetting() {
-		initialize();
 	}
 
 	public BaseSolverPredefinedSetting(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "solver_predef_setting_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "solver_predef_setting_seq")
+	})
+	@GeneratedValue(generator = "solver_predef_setting_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "name", nullable = true, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "description", nullable = true, length = 1000)
 	public String getDescription() { return iDescription; }
 	public void setDescription(String description) { iDescription = description; }
 
+	@Column(name = "appearance", nullable = true, length = 2)
 	public Integer getAppearance() { return iAppearance; }
 	public void setAppearance(Integer appearance) { iAppearance = appearance; }
 
+	@OneToMany(cascade = {CascadeType.ALL})
+	@JoinColumn(name = "solver_predef_setting_id", nullable = true)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(SolverParameter solverParameter) {
@@ -75,17 +92,20 @@ public abstract class BaseSolverPredefinedSetting implements Serializable {
 		iParameters.add(solverParameter);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof SolverPredefinedSetting)) return false;
 		if (getUniqueId() == null || ((SolverPredefinedSetting)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((SolverPredefinedSetting)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "SolverPredefinedSetting["+getUniqueId()+" "+getName()+"]";
 	}

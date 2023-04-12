@@ -22,6 +22,16 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Session;
 
@@ -29,6 +39,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BasePointInTimeData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,53 +51,60 @@ public abstract class BasePointInTimeData implements Serializable {
 
 	private Session iSession;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_TIMESTAMP = "timestamp";
-	public static String PROP_NAME = "name";
-	public static String PROP_NOTE = "note";
-	public static String PROP_SAVED_SUCCESSFULLY = "savedSuccessfully";
-
 	public BasePointInTimeData() {
-		initialize();
 	}
 
 	public BasePointInTimeData(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "point_in_time_data_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "point_in_time_seq")
+	})
+	@GeneratedValue(generator = "point_in_time_data_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "timestamp", nullable = false)
 	public Date getTimestamp() { return iTimestamp; }
 	public void setTimestamp(Date timestamp) { iTimestamp = timestamp; }
 
+	@Column(name = "name", nullable = false, length = 100)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
+	@Column(name = "note", nullable = true, length = 1000)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
 
+	@Column(name = "saved_successfully", nullable = false)
 	public Boolean isSavedSuccessfully() { return iSavedSuccessfully; }
+	@Transient
 	public Boolean getSavedSuccessfully() { return iSavedSuccessfully; }
 	public void setSavedSuccessfully(Boolean savedSuccessfully) { iSavedSuccessfully = savedSuccessfully; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PointInTimeData)) return false;
 		if (getUniqueId() == null || ((PointInTimeData)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((PointInTimeData)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "PointInTimeData["+getUniqueId()+" "+getName()+"]";
 	}

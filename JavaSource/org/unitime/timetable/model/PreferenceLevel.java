@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.awt.Color;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -35,6 +45,9 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "preference_level")
 public class PreferenceLevel extends BasePreferenceLevel {
 	private static final long serialVersionUID = 1L;
 
@@ -150,12 +163,14 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	/**
 	 * @return Returns the sAwtPref2color.
 	 */
+	@Transient
 	public static Hashtable getSAwtPref2color() {
 		return sAwtPref2color;
 	}
 	/**
 	 * @return Returns the sPref2color.
 	 */
+	@Transient
 	public static Hashtable getSPref2color() {
 		return sPref2color;
 	}
@@ -165,6 +180,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	 * ordered by column pref_id
 	 * @return Vector of PreferenceLevel objects
 	 */
+	@Transient
 	public static synchronized List<PreferenceLevel> getPreferenceLevelList() {
 		return getPreferenceLevelList(false);
 	}
@@ -181,6 +197,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     	}
     }
 
+	@Transient
     public static List<PreferenceLevel> getPreferenceLevelListSoftOnly() {
     	List<PreferenceLevel> ret = getPreferenceLevelList(false);
     	for (Iterator<PreferenceLevel> i = ret.iterator(); i.hasNext(); ) {
@@ -271,6 +288,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         }
     }
     
+	@Transient
     public String getDropdownOptionStyle() {
     	return "background-color: " + prefcolor() + ";";
     }
@@ -386,10 +404,12 @@ public class PreferenceLevel extends BasePreferenceLevel {
 		}
 	}
 	
+	@Transient
 	public boolean isHard() {
 		return sProhibited.equals(getPrefProlog()) || sRequired.equals(getPrefProlog());
 	}
 
+	@Transient
 	public String getAbbreviation() {
 		return getPrefAbbv() == null ? "" : getPrefAbbv();
 	}

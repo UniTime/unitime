@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
+
 import java.util.Hashtable;
 import java.util.List;
 
@@ -30,6 +40,9 @@ import org.unitime.timetable.model.dao.CurriculumProjectionRuleDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "curriculum_rule")
 public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
 	private static final long serialVersionUID = 1L;
 

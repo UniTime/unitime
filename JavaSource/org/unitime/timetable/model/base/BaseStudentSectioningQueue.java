@@ -22,12 +22,20 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.StudentSectioningQueue;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseStudentSectioningQueue implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -38,49 +46,53 @@ public abstract class BaseStudentSectioningQueue implements Serializable {
 	private String iData;
 
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_SESSION_ID = "sessionId";
-	public static String PROP_TIME_STAMP = "timeStamp";
-	public static String PROP_TYPE = "type";
-	public static String PROP_MESSAGE = "data";
-
 	public BaseStudentSectioningQueue() {
-		initialize();
 	}
 
 	public BaseStudentSectioningQueue(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "sectioning_queue_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "pref_group_seq")
+	})
+	@GeneratedValue(generator = "sectioning_queue_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "session_id", nullable = false)
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 
+	@Column(name = "time_stamp", nullable = false)
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
+	@Column(name = "type", nullable = false, length = 10)
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
 
+	@Column(name = "message", nullable = true)
 	public String getData() { return iData; }
 	public void setData(String data) { iData = data; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentSectioningQueue)) return false;
 		if (getUniqueId() == null || ((StudentSectioningQueue)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((StudentSectioningQueue)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "StudentSectioningQueue["+getUniqueId()+"]";
 	}

@@ -21,6 +21,10 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.SolverInfo;
@@ -29,37 +33,39 @@ import org.unitime.timetable.model.SolverInfo;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAssignmentInfo extends SolverInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Assignment iAssignment;
 
-
 	public BaseAssignmentInfo() {
-		initialize();
 	}
 
 	public BaseAssignmentInfo(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "assignment_id", nullable = false)
 	public Assignment getAssignment() { return iAssignment; }
 	public void setAssignment(Assignment assignment) { iAssignment = assignment; }
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof AssignmentInfo)) return false;
 		if (getUniqueId() == null || ((AssignmentInfo)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((AssignmentInfo)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "AssignmentInfo["+getUniqueId()+"]";
 	}

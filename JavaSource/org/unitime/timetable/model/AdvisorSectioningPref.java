@@ -19,8 +19,26 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+
+
 import org.unitime.timetable.model.base.BaseAdvisorSectioningPref;
 
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "advisor_sect_pref")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="preference_type", discriminatorType = DiscriminatorType.INTEGER)
 public abstract class AdvisorSectioningPref extends BaseAdvisorSectioningPref {
 	private static final long serialVersionUID = 1L;
 

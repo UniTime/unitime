@@ -23,6 +23,15 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.RefTableEntry;
@@ -31,6 +40,7 @@ import org.unitime.timetable.model.RefTableEntry;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseDistributionType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -45,54 +55,59 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 
 	private Set<Department> iDepartments;
 
-	public static String PROP_SEQUENCING_REQUIRED = "sequencingRequired";
-	public static String PROP_REQ_ID = "requirementId";
-	public static String PROP_ALLOWED_PREF = "allowedPref";
-	public static String PROP_DESCRIPTION = "descr";
-	public static String PROP_ABBREVIATION = "abbreviation";
-	public static String PROP_INSTRUCTOR_PREF = "instructorPref";
-	public static String PROP_EXAM_PREF = "examPref";
-	public static String PROP_VISIBLE = "visible";
-
 	public BaseDistributionType() {
-		initialize();
 	}
 
 	public BaseDistributionType(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Column(name = "sequencing_required", nullable = false)
 	public Boolean isSequencingRequired() { return iSequencingRequired; }
+	@Transient
 	public Boolean getSequencingRequired() { return iSequencingRequired; }
 	public void setSequencingRequired(Boolean sequencingRequired) { iSequencingRequired = sequencingRequired; }
 
+	@Column(name = "req_id", nullable = false)
 	public Integer getRequirementId() { return iRequirementId; }
 	public void setRequirementId(Integer requirementId) { iRequirementId = requirementId; }
 
+	@Column(name = "allowed_pref", nullable = true, length = 10)
 	public String getAllowedPref() { return iAllowedPref; }
 	public void setAllowedPref(String allowedPref) { iAllowedPref = allowedPref; }
 
+	@Column(name = "description", nullable = true, length = 2048)
 	public String getDescr() { return iDescr; }
 	public void setDescr(String descr) { iDescr = descr; }
 
+	@Column(name = "abbreviation", nullable = true)
 	public String getAbbreviation() { return iAbbreviation; }
 	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
 
+	@Column(name = "instructor_pref", nullable = false)
 	public Boolean isInstructorPref() { return iInstructorPref; }
+	@Transient
 	public Boolean getInstructorPref() { return iInstructorPref; }
 	public void setInstructorPref(Boolean instructorPref) { iInstructorPref = instructorPref; }
 
+	@Column(name = "exam_pref", nullable = false)
 	public Boolean isExamPref() { return iExamPref; }
+	@Transient
 	public Boolean getExamPref() { return iExamPref; }
 	public void setExamPref(Boolean examPref) { iExamPref = examPref; }
 
+	@Column(name = "visible", nullable = false)
 	public Boolean isVisible() { return iVisible; }
+	@Transient
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@ManyToMany
+	@JoinTable(name = "dist_type_dept",
+		joinColumns = { @JoinColumn(name = "dist_type_id") },
+		inverseJoinColumns = { @JoinColumn(name = "dept_id") })
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -100,17 +115,20 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 		iDepartments.add(department);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DistributionType)) return false;
 		if (getUniqueId() == null || ((DistributionType)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((DistributionType)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "DistributionType["+getUniqueId()+" "+getLabel()+"]";
 	}

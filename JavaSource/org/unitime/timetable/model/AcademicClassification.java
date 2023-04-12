@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,6 +43,9 @@ import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
+@Entity
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Table(name = "academic_classification")
 public class AcademicClassification extends BaseAcademicClassification {
 	private static final long serialVersionUID = 1L;
 
@@ -77,6 +90,7 @@ public class AcademicClassification extends BaseAcademicClassification {
      * Creates label of the format Name - Code
      * @return
      */
+	@Transient
     public String getLabelNameCode() {
         return this.getName() + " - " + this.getCode();
     }
@@ -85,6 +99,7 @@ public class AcademicClassification extends BaseAcademicClassification {
      * Creates label of the format Code - Name
      * @return
      */
+	@Transient
     public String getLabelCodeName() {
         return this.getCode() + " - " + this.getName();
     }
@@ -115,6 +130,7 @@ public class AcademicClassification extends BaseAcademicClassification {
 					.get(academicClass);
 	}
 	
+	@Transient
 	public Long getSessionId(){
 		if (getSession() != null){
 			return(getSession().getUniqueId());

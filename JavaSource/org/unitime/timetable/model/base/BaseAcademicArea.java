@@ -23,6 +23,19 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
@@ -32,6 +45,7 @@ import org.unitime.timetable.model.Session;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
+@MappedSuperclass
 public abstract class BaseAcademicArea implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -44,37 +58,42 @@ public abstract class BaseAcademicArea implements Serializable {
 	private Set<PosMajor> iPosMajors;
 	private Set<PosMinor> iPosMinors;
 
-	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
-	public static String PROP_ACADEMIC_AREA_ABBREVIATION = "academicAreaAbbreviation";
-	public static String PROP_LONG_TITLE = "title";
-
 	public BaseAcademicArea() {
-		initialize();
 	}
 
 	public BaseAcademicArea(Long uniqueId) {
 		setUniqueId(uniqueId);
-		initialize();
 	}
 
-	protected void initialize() {}
 
+	@Id
+	@GenericGenerator(name = "academic_area_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+		@Parameter(name = "sequence", value = "academic_area_seq")
+	})
+	@GeneratedValue(generator = "academic_area_id")
+	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
+	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
+	@Column(name = "academic_area_abbreviation", nullable = false, length = 40)
 	public String getAcademicAreaAbbreviation() { return iAcademicAreaAbbreviation; }
 	public void setAcademicAreaAbbreviation(String academicAreaAbbreviation) { iAcademicAreaAbbreviation = academicAreaAbbreviation; }
 
+	@Column(name = "long_title", nullable = false, length = 100)
 	public String getTitle() { return iTitle; }
 	public void setTitle(String title) { iTitle = title; }
 
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "academicAreas")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PosMajor> getPosMajors() { return iPosMajors; }
 	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
 	public void addToposMajors(PosMajor posMajor) {
@@ -82,6 +101,8 @@ public abstract class BaseAcademicArea implements Serializable {
 		iPosMajors.add(posMajor);
 	}
 
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "academicAreas")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
 	public Set<PosMinor> getPosMinors() { return iPosMinors; }
 	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
 	public void addToposMinors(PosMinor posMinor) {
@@ -89,17 +110,20 @@ public abstract class BaseAcademicArea implements Serializable {
 		iPosMinors.add(posMinor);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof AcademicArea)) return false;
 		if (getUniqueId() == null || ((AcademicArea)o).getUniqueId() == null) return false;
 		return getUniqueId().equals(((AcademicArea)o).getUniqueId());
 	}
 
+	@Override
 	public int hashCode() {
 		if (getUniqueId() == null) return super.hashCode();
 		return getUniqueId().hashCode();
 	}
 
+	@Override
 	public String toString() {
 		return "AcademicArea["+getUniqueId()+"]";
 	}

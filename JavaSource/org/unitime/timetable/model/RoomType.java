@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import java.util.List;
 import java.util.TreeSet;
 
@@ -33,6 +38,8 @@ import org.unitime.timetable.model.dao.RoomTypeOptionDAO;
 /**
  * @author Tomas Muller
  */
+@Entity
+@Table(name = "room_type")
 public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 	private static final long serialVersionUID = 1L;
 
