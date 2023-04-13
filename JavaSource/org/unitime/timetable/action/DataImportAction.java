@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -347,11 +348,12 @@ public class DataImportAction extends UniTimeAction<DataImportForm> {
 		protected void executeDataExchange() throws Exception {
         	ExportType type = iForm.getExportType();
         	if (type == ExportType.SESSION) {
-    			FileOutputStream out = new FileOutputStream(createOutput("session", "dat"));
+        		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(createOutput("session", "dat.gz")));
     			try {
     				SessionBackupInterface backup = (SessionBackupInterface)Class.forName(ApplicationProperty.SessionBackupInterface.value()).getConstructor().newInstance();
     				backup.backup(out, this, getSessionId());
     			} finally {
+    				out.flush();
     				out.close();
     			}
         	} else {

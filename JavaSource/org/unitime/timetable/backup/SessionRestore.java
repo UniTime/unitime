@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.zip.GZIPInputStream;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -1043,7 +1044,12 @@ public class SessionRestore implements SessionRestoreInterface {
 		try {
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
-            FileInputStream in = new FileInputStream(args[0]);
+            InputStream in = null;
+            if (args[0].endsWith(".dat.gz")) {
+            	in = new GZIPInputStream(new FileInputStream(args[0]));
+            } else {
+            	in = new FileInputStream(args[0]);
+            }
             
             sLog.info("Using " + ApplicationProperty.SessionRestoreInterface.value());
             SessionRestore restore = (SessionRestore)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getDeclaredConstructor().newInstance();
