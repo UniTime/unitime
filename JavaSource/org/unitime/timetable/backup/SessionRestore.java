@@ -144,6 +144,7 @@ public class SessionRestore implements SessionRestoreInterface {
 	private org.hibernate.Session iHibSession = null;
 	private BackupProgress iProgress = null;
 	private boolean iIsClone = false;
+	private SimpleDateFormat iDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
@@ -340,18 +341,26 @@ public class SessionRestore implements SessionRestoreInterface {
 					}
 				} else if (type instanceof DateType) {
 					try {
-						value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
-					} catch (ParseException e) {
-						value  = new DateType().fromStringValue(element.getValue(0));
+						value = iDateFormat.parse(element.getValue(0));
+					} catch (ParseException p) {
+						try {
+							value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
+						} catch (ParseException e) {
+							value  = new DateType().fromStringValue(element.getValue(0));
+						}
 					}
 				} else if (type instanceof TimestampType) {
 					try {
-						value = new TimestampType().fromStringValue(element.getValue(0));
-					} catch (HibernateException e) {
+						value = iDateFormat.parse(element.getValue(0));
+					} catch (ParseException p) {
 						try {
-							value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
-						} catch (ParseException x) {
-							throw new HibernateException(x);
+							value = new TimestampType().fromStringValue(element.getValue(0));
+						} catch (HibernateException e) {
+							try {
+								value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
+							} catch (ParseException x) {
+								throw new HibernateException(x);
+							}
 						}
 					}
 				} else if (type instanceof StringType) {

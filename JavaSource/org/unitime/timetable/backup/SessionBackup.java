@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -37,33 +38,18 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.ifs.util.ToolBox;
-import org.dom4j.Document;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.hibernate.CacheMode;
-import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.BinaryType;
-import org.hibernate.type.CollectionType;
-import org.hibernate.type.ComponentType;
-import org.hibernate.type.CustomType;
-import org.hibernate.type.DateType;
-import org.hibernate.type.EmbeddedComponentType;
-import org.hibernate.type.EntityType;
-import org.hibernate.type.PrimitiveType;
-import org.hibernate.type.StringType;
-import org.hibernate.type.TimestampType;
-import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -71,7 +57,6 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ConstraintInfo;
-import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -98,13 +83,14 @@ import com.google.protobuf.CodedOutputStream;
  */
 public class SessionBackup implements SessionBackupInterface {
     private static Log sLog = LogFactory.getLog(SessionBackup.class);
-    private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
 	
 	private CodedOutputStream iOut = null;
 	private PrintWriter iDebug = null;
 	private Long iSessionId = null;
 	private BackupProgress iProgress = null;
+	private Metamodel iMetamodel = null;
+	private SimpleDateFormat iDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 	
 	public BackupProgress getProgress() {
 		return iProgress;
@@ -126,7 +112,60 @@ public class SessionBackup implements SessionBackupInterface {
 		iDebug = pw;
 	}
 	
-	@SuppressWarnings("deprecation")
+	private boolean hasSubclasses(EntityType type) {
+		for (EntityType et: iMetamodel.getEntities()) {
+			if (et.equals(type)) continue;
+			if (type.getJavaType().isAssignableFrom(et.getJavaType())) return true;
+		}
+		return false;
+	}
+	
+	private boolean isNullable(Attribute attribute) {
+		return attribute instanceof SingularAttribute && ((SingularAttribute)attribute).isOptional(); 
+	}
+	
+	private boolean isEntity(Attribute attribute) {
+		if (attribute.isCollection()) return false;
+		try {
+			return iMetamodel.entity(attribute.getJavaType()) != null;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	private boolean hasCompositeId(EntityType meta) {
+		return !meta.hasSingleIdAttribute();
+	}
+	
+	private SingularAttribute getIdAttribute(EntityType meta) {
+		if (meta.hasSingleIdAttribute()) {
+			return meta.getId(meta.getIdType().getJavaType());
+		} else {
+			return null;
+		}
+	}
+	
+	private List<SingularAttribute> getIdAttributes(EntityType meta) {
+		if (meta.hasSingleIdAttribute()) {
+			List<SingularAttribute> ret = new ArrayList<SingularAttribute>(1);
+			ret.add(meta.getId(meta.getIdType().getJavaType()));
+			return ret;
+		} else {
+			List<SingularAttribute> ret = new ArrayList<SingularAttribute>(meta.getIdClassAttributes().size());
+			ret.addAll(meta.getIdClassAttributes());
+			return ret;
+		}
+	}
+	
+	private Object getProperty(Object object, Attribute attribute) {
+		try {
+			return ((Method)attribute.getJavaMember()).invoke(object);
+		} catch (Exception e) {
+			iProgress.warn("Failed to get " + attribute + ": " + e.getMessage());
+			return null;
+		}
+	}
+	
 	@Override
 	public void backup(OutputStream out, BackupProgress progress, Long sessionId) throws IOException {
         iOut = CodedOutputStream.newInstance(out);
@@ -134,25 +173,23 @@ public class SessionBackup implements SessionBackupInterface {
 		iSessionId = sessionId;
         iHibSession = new _RootDAO().createNewSession(); 
         iHibSession.setCacheMode(CacheMode.IGNORE);
-        iHibSessionFactory = iHibSession.getSessionFactory();
+        iMetamodel = iHibSession.getMetamodel();
         try {
     		iProgress.setStatus("Exporting Session");
     		iProgress.setPhase("Loading Model", 3);
-    		TreeSet<ClassMetadata> allMeta = new TreeSet<ClassMetadata>(new Comparator<ClassMetadata>() {
+    		TreeSet<EntityType> allMeta = new TreeSet<EntityType>(new Comparator<EntityType>() {
     			@Override
-    			public int compare(ClassMetadata m1, ClassMetadata m2) {
-    				return m1.getEntityName().compareTo(m2.getEntityName());
+    			public int compare(EntityType m1, EntityType m2) {
+    				return m1.getName().compareTo(m2.getName());
     			}
     		});
-    		for (javax.persistence.metamodel.EntityType t: iHibSession.getMetamodel().getEntities()) {
-    			allMeta.add(iHibSessionFactory.getClassMetadata(t.getJavaType()));
-    		}
+    		allMeta.addAll(iMetamodel.getEntities());
 
     		iProgress.incProgress();
     		
     		Queue<QueueItem> queue = new LinkedList<QueueItem>();
     		
-    		queue.add(new QueueItem(iHibSessionFactory.getClassMetadata(Session.class), null, "uniqueId", Relation.None));
+    		queue.add(new QueueItem(iMetamodel.entity(Session.class), null, "uniqueId", Relation.None));
 
     		Set<String> avoid = new HashSet<String>();
     		// avoid following relations
@@ -197,13 +234,12 @@ public class SessionBackup implements SessionBackupInterface {
     		QueueItem item = null;
             while ((item = queue.poll()) != null) {
             	if (item.size() == 0) continue;
-            	for (ClassMetadata meta: allMeta) {
-                	if (meta.hasSubclasses()) continue;
-                    for (int i = 0; i < meta.getPropertyNames().length; i++) {
-                    	String property = meta.getPropertyNames()[i];
-                    	if (disallowedNotNullRelations.contains(meta.getEntityName() + "." + property) || meta.getPropertyNullability()[i]) continue;
-                    	Type type = meta.getPropertyTypes()[i];
-                    	if (type instanceof EntityType && type.getReturnedClass().equals(item.clazz())) {
+            	for (EntityType meta: allMeta) {
+                	if (hasSubclasses(meta)) continue;
+                	for (Attribute attribute: (Set<Attribute>)meta.getAttributes()) {
+                		String property = attribute.getName();
+                    	if (disallowedNotNullRelations.contains(meta.getJavaType().getName() + "." + property) || isNullable(attribute)) continue;
+                    	if (isEntity(attribute) && attribute.getJavaType().equals(item.clazz())) {
                     		QueueItem qi = new QueueItem(meta, item, property, Relation.Parent);
                     		if (!data.containsKey(qi.name())) {
                     			List<QueueItem> items = new ArrayList<QueueItem>();
@@ -225,7 +261,7 @@ public class SessionBackup implements SessionBackupInterface {
             // The following part is needed to ensure that instructor distribution preferences are saved including their distribution types 
             List<QueueItem> distributions = new ArrayList<QueueItem>();
             for (QueueItem instructor: data.get(DepartmentalInstructor.class.getName())) {
-            	QueueItem qi = new QueueItem(iHibSessionFactory.getClassMetadata(DistributionPref.class), instructor, "owner", Relation.Parent);
+            	QueueItem qi = new QueueItem(iMetamodel.entity(DistributionPref.class), instructor, "owner", Relation.Parent);
             	distributions.add(qi);
             	queue.add(qi);
             	if (qi.size() > 0)
@@ -235,14 +271,16 @@ public class SessionBackup implements SessionBackupInterface {
             
             while ((item = queue.poll()) != null) {
             	if (item.size() == 0) continue;
-            	for (int i = 0; i < item.meta().getPropertyNames().length; i++) {
-                	String property = item.meta().getPropertyNames()[i];
-                	Type type = item.meta().getPropertyTypes()[i];
-                	if (type instanceof EntityType) {
+            	for (Attribute attribute: (Set<Attribute>)item.meta().getAttributes()) {
+            		String property = attribute.getName();
+            		if (isEntity(attribute)) {
                 		if (avoid.contains(item.name() + "." + property)) continue;
 
-                		ClassMetadata meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
-                		if (item.contains(meta.getEntityName())) continue;
+                		EntityType meta = null;
+                		try {
+                			meta = iMetamodel.entity(attribute.getJavaType());
+                		} catch (IllegalArgumentException e) {}
+                		if (meta == null || item.contains(meta.getJavaType().getName())) continue;
                 		
                 		QueueItem qi = new QueueItem(meta, item, property, Relation.One);
                 		List<QueueItem> items = data.get(qi.name());
@@ -256,14 +294,14 @@ public class SessionBackup implements SessionBackupInterface {
                 		if (qi.size() > 0)
                 			iProgress.info("One: " + qi);
                 	}
-                	if (type instanceof CollectionType) {
+                	if (attribute.isCollection()) {
                 		if (avoid.contains(item.name() + "." + property)) continue;
                 		
-                		ClassMetadata meta = null;
+                		EntityType meta = null;
                 		try {
-                			meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-                		} catch (MappingException e) {}
-                		if (meta == null || item.contains(meta.getEntityName())) continue;
+                			meta = iMetamodel.entity(((PluralAttribute)attribute).getElementType().getJavaType());
+                		} catch (IllegalArgumentException e) {}
+                		if (meta == null || item.contains(meta.getJavaType().getName())) continue;
 
                 		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
                 		List<QueueItem> items = data.get(qi.name());
@@ -295,138 +333,117 @@ public class SessionBackup implements SessionBackupInterface {
             			iProgress.incProgress();
             			
             			// Get meta data (check for sub-classes)
-            			ClassMetadata meta = null;
+            			EntityType meta = null;
             			try {
-            				meta = iHibSessionFactory.getClassMetadata(object.getClass());
-            			} catch (MappingException e) {}
+            				meta = iMetamodel.entity(object.getClass());
+            			} catch (IllegalArgumentException e) {}
             			if (meta == null) meta = current.meta();
-            			if (meta.hasSubclasses()) {
-            				for (javax.persistence.metamodel.EntityType t: iHibSession.getMetamodel().getEntities()) {
-            					ClassMetadata classMetadata = iHibSessionFactory.getClassMetadata(t.getJavaType());
-            					if (classMetadata.getMappedClass().isInstance(object) && !classMetadata.hasSubclasses()) {
-            	                	meta = classMetadata; break;
+            			if (hasSubclasses(meta)) {
+            				for (EntityType t: iMetamodel.getEntities()) {
+            					if (t.getJavaType().isInstance(object) && !hasSubclasses(t)) {
+            	                	meta = t; break;
             	                }
             	    		}
             			}
             			
             			// Get unique identifier
-            			Serializable id = meta.getIdentifier(object, (SessionImplementor)iHibSession);
-            			if (meta.getIdentifierType().isComponentType()) {
-            				ComponentType cid = (ComponentType)meta.getIdentifierType();
-            				Object[] ids = new Object[cid.getPropertyNames().length];
-            				for (int i = 0; i < cid.getPropertyNames().length; i++) {
-            					Type type = meta.getPropertyType(cid.getPropertyNames()[i]);
-                				Object value = cid.getPropertyValue(object, i);
-                				if (value == null) continue;
-                				if (type.isEntityType()) {
-                					ids[i] = iHibSessionFactory.getClassMetadata(type.getReturnedClass()).getIdentifier(value, (SessionImplementor)iHibSession); 
-                				} else {
-                					ids[i] = value;
-                				}
+            			Serializable id = null;
+            			if (hasCompositeId(meta)) {
+            				List<SingularAttribute> idAttributes = getIdAttributes(meta);
+            				Object[] ids = new Object[idAttributes.size()];
+            				for (int i = 0; i < idAttributes.size(); i++) {
+            					Object value = getProperty(object, idAttributes.get(i));
+            					if (value == null) continue;
+            					if (isEntity(idAttributes.get(i))) {
+            						ids[i] = getProperty(value, getIdAttribute(iMetamodel.entity(idAttributes.get(i).getJavaType())));
+            					} else {
+            						ids[i] = value;
+            					}
             				}
             				id = new CompositeId(ids);
+            			} else {
+            				id = (Serializable)getProperty(object, getIdAttribute(meta));
             			}
             			
             			// Check if already exported
-            			Set<Serializable> exportedIds = allExportedIds.get(meta.getEntityName());
+            			Set<Serializable> exportedIds = allExportedIds.get(meta.getJavaType().getName());
             			if (exportedIds == null) {
             				exportedIds = new HashSet<Serializable>();
-            				allExportedIds.put(meta.getEntityName(), exportedIds);
+            				allExportedIds.put(meta.getJavaType().getName(), exportedIds);
             			}
             			if (!exportedIds.add(id)) continue;
             			
             			// Check relation to an academic session (if exists)
-            			for (String property: meta.getPropertyNames()) {
-            				Type type = meta.getPropertyType(property);
-                        	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
-                        		Session s = (Session)meta.getPropertyValue(object, property);
+            			for (Attribute attribute: (Set<Attribute>)meta.getAttributes()) {
+                        	if (attribute.getJavaType().equals(Session.class)) {
+                        		Session s = (Session)getProperty(object, attribute);
                         		if (s != null && !s.getUniqueId().equals(iSessionId)) {
-                        			iProgress.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
+                        			iProgress.warn(meta.getName() + "@" + id + " belongs to a different academic session (" + s + ")");
                         			continue objects; // wrong session
                         		}
                         	}
             			}
 
             			// Get appropriate table
-            			TableData.Table.Builder table = tables.get(meta.getEntityName());
+            			TableData.Table.Builder table = tables.get(meta.getJavaType().getName());
             			if (table == null) {
             				table = TableData.Table.newBuilder();
-            				tables.put(meta.getEntityName(), table);
-            				table.setName(meta.getEntityName());
+            				tables.put(meta.getJavaType().getName(), table);
+            				table.setName(meta.getJavaType().getName());
             			}
 
             			// Export object
             			TableData.Record.Builder record = TableData.Record.newBuilder();
             			record.setId(id.toString());
-            			for (String property: meta.getPropertyNames()) {
-            				Type type = meta.getPropertyType(property);
-            				Object value = meta.getPropertyValue(object, property);
+            			List<Attribute> attributes = new ArrayList<Attribute>();
+            			if (hasCompositeId(meta))
+            				attributes.addAll(getIdAttributes(meta));
+            			for (Attribute attribute: (Set<Attribute>)meta.getAttributes()) {
+            				if (attribute.isCollection() || !((SingularAttribute)attribute).isId())
+            					attributes.add(attribute);
+            			}
+            			for (Attribute attribute: attributes) {
+                    		String property = attribute.getName();
+            				Object value = getProperty(object, attribute);
             				if (value == null) continue;
             				TableData.Element.Builder element = TableData.Element.newBuilder();
             				element.setName(property);
-            				if (type instanceof PrimitiveType) {
-            					element.addValue(((PrimitiveType)type).toString(value));
-            				} else if (type instanceof StringType) {	
-            					element.addValue(((StringType)type).toString((String)value));
-            				} else if (type instanceof BinaryType) {	
+            				if (value instanceof Boolean) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Byte) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Short) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Integer) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Long) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Float) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Double) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof String) {
+            					element.addValue(value.toString());
+            				} else if (value instanceof Date) {
+            					element.addValue(iDateFormat.format((Date)value));
+            				} else if (value instanceof byte[]) {
             					element.addValueBytes(ByteString.copyFrom((byte[])value));
-            				} else if (type instanceof TimestampType) {
-            					element.addValue(((TimestampType)type).toString((Date)value));
-            				} else if (type instanceof DateType) {
-            					element.addValue(((DateType)type).toString((Date)value));
-            				} else if (type instanceof EntityType) {
+            				} else if (isEntity(attribute)) {
     							List<Object> ids = current.relation(property, meta, id, false);
     							if (ids != null)
     								for (Object i: ids)
     									element.addValue(i.toString());
     							iHibSession.evict(value);
-            				} else if (type instanceof CustomType && value instanceof Document) {
-            					if (object instanceof CurriculumClassification && property.equals("students")) continue;
-            					StringWriter w = new StringWriter();
-            					XMLWriter x = new XMLWriter(w, OutputFormat.createCompactFormat());
-            					x.write((Document)value);
-            					x.flush(); x.close();
-            					element.addValue(w.toString());
-            				} else if (type instanceof CollectionType) {
+            				} else if (attribute.isCollection()) {
     							List<Object> ids = current.relation(property, meta, id, false);
     							if (ids != null)
     								for (Object i: ids)
     									element.addValue(i.toString());
-            				} else if (type instanceof EmbeddedComponentType && property.equalsIgnoreCase("uniqueCourseNbr")) {
-            					continue;
             				} else {
-            					iProgress.warn("Unknown data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
+            					iProgress.warn("Unknown data type: " + attribute.getJavaType() + " (property " + meta.getName() + "." + property + ", " + value.getClass() + ")");
             					continue;
             				}
             				record.addElement(element.build());
-            			}
-            			if (meta.getIdentifierType().isComponentType()) {
-            				ComponentType cid = (ComponentType)meta.getIdentifierType();
-            				for (int i = 0; i < cid.getPropertyNames().length; i++) {
-            					String property = cid.getPropertyNames()[i];
-            					Type type = cid.getSubtypes()[i];
-                				Object value = ((CompositeId)id).iId[i];
-                				if (value == null) continue;
-                				TableData.Element.Builder element = TableData.Element.newBuilder();
-                				element.setName(property);
-                				if (type instanceof PrimitiveType) {
-                					element.addValue(((PrimitiveType)type).toString(value));
-                				} else if (type instanceof StringType) {	
-                					element.addValue(((StringType)type).toString((String)value));
-                				} else if (type instanceof BinaryType) {	
-                					element.addValueBytes(ByteString.copyFrom((byte[])value));
-                				} else if (type instanceof TimestampType) {
-                					element.addValue(((TimestampType)type).toString((Date)value));
-                				} else if (type instanceof DateType) {
-                					element.addValue(((DateType)type).toString((Date)value));
-                				} else if (type instanceof EntityType) {
-                    				element.addValue(value.toString());
-                				} else {
-                					iProgress.warn("Not-supported composite key data type: " + type + " (property " + meta.getEntityName() + "." + property + ", class " + value.getClass() + ")");
-                					continue;
-                				}
-                				record.addElement(element.build());
-            				}
             			}
             			table.addRecord(record.build());
             			iHibSession.evict(object);
@@ -439,29 +456,6 @@ public class SessionBackup implements SessionBackupInterface {
             	}
             }
             
-            /*
-            // Skip ConstraintInfo
-            if (!iData.containsKey(ConstraintInfo.class.getName()))
-            	iData.put(ConstraintInfo.class.getName(), new QueueItem(iHibSessionFactory.getClassMetadata(ConstraintInfo.class), null, null, Relation.Empty));
-
-            for (String name: items)
-            	export(iData.get(name));
-                    
-    		while (true) {
-    			List<Object> objects = new ArrayList<Object>();
-    			ClassMetadata meta = null;
-    			for (Entity e: iObjects) {
-    				if (e.exported()) continue;
-    				if (objects.isEmpty() || meta.getEntityName().equals(e.name())) {
-    					meta = e.meta();
-    					objects.add(e.object());
-    					e.notifyExported();
-    				}
-    			}
-    			if (objects.isEmpty()) break;
-    			export(meta, objects, null);
-    		}
-    		*/
     		iProgress.setStatus("All done.");
         } finally {
         	iHibSession.close();
@@ -475,16 +469,15 @@ public class SessionBackup implements SessionBackupInterface {
 	private int iQueueItemCoutner = 0;
 	private Map<String, Set<Serializable>> iExclude = new HashMap<String, Set<Serializable>>();
 
-	@SuppressWarnings("deprecation")
 	class QueueItem {
 		QueueItem iParent;
-		ClassMetadata iMeta;
+		EntityType iMeta;
 		String iProperty;
 		int iQueueItemId = iQueueItemCoutner++;
 		Relation iRelation;
 		int size = -1;
 		
-		QueueItem(ClassMetadata meta, QueueItem parent, String property, Relation relation) {
+		QueueItem(EntityType meta, QueueItem parent, String property, Relation relation) {
 			iMeta = meta;
 			iParent = parent;
 			iProperty = property;
@@ -493,10 +486,10 @@ public class SessionBackup implements SessionBackupInterface {
 		
 		String property() { return iProperty; }
 		QueueItem parent() { return iParent; }
-		ClassMetadata meta() { return iMeta; }
-		String name() { return meta().getEntityName(); }
-		String abbv() { return meta().getEntityName().substring(meta().getEntityName().lastIndexOf('.') + 1); }
-		Class clazz() { return meta().getMappedClass(); }
+		EntityType meta() { return iMeta; }
+		String name() { return meta().getJavaType().getName(); }
+		String abbv() { return meta().getName(); }
+		Class clazz() { return meta().getJavaType(); }
 		int qid() { return iQueueItemId; }
 		Relation relation() { return iRelation; }
 		boolean contains(String name) {
@@ -572,18 +565,20 @@ public class SessionBackup implements SessionBackupInterface {
 					iExclude.put(name(), ids);
 				}
 				size = 0;
-				if (meta().getIdentifierType().isComponentType()) {
-					ComponentType type = (ComponentType)meta().getIdentifierType();
+				if (hasCompositeId(meta())) {
+					List<SingularAttribute> idAttributes = getIdAttributes(meta());
 					String select = "";
-					for (int i = 0; i < type.getPropertyNames().length; i++) {
-						ClassMetadata meta = null;
+					int i = 0;
+					for (SingularAttribute id: idAttributes) {
+						EntityType meta = null;
 						try {
-							meta = iHibSessionFactory.getClassMetadata(type.getSubtypes()[i].getReturnedClass());
-						} catch (MappingException e) {}
+							meta = iMetamodel.entity(id.getJavaType());
+						} catch (IllegalArgumentException e) {}
 						if (meta == null)
-							select += (i > 0 ? ", " : "") + hqlName() + "." + type.getPropertyNames()[i];
+							select += (i > 0 ? ", " : "") + hqlName() + "." + id.getName();
 						else
-							select += (i > 0 ? ", " : "") + hqlName() + "." + type.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
+							select += (i > 0 ? ", " : "") + hqlName() + "." + id.getName() + "." + getIdAttribute(meta).getName();
+						i++;
 					}
 					for (Object[] id: (List<Object[]>)iHibSession.createQuery(
 							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere()
@@ -592,7 +587,7 @@ public class SessionBackup implements SessionBackupInterface {
 					}
 				} else {
 					for (Serializable id: (List<Serializable>)iHibSession.createQuery(
-							"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + " from " + hqlFrom() + " where " + hqlWhere()
+							"select distinct " + hqlName() + "." + getIdAttribute(meta()).getName() + " from " + hqlFrom() + " where " + hqlWhere()
 							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						if (ids.add(id)) size++;
 					}
@@ -602,8 +597,9 @@ public class SessionBackup implements SessionBackupInterface {
 		}
 		
 		boolean hasBlob() {
-			for (String property: iMeta.getPropertyNames()) {
-				if (iMeta.getPropertyType(property) instanceof BinaryType) return true;
+			for (Attribute attribute: (Set<Attribute>)meta().getAttributes()) {
+				if (attribute.getJavaType().equals(byte[].class))
+					return true;
 			}
 			return false;
 		}
@@ -633,82 +629,81 @@ public class SessionBackup implements SessionBackupInterface {
 		
 		Map<String, Map<Serializable, List<Object>>> iRelationCache = new HashMap<String, Map<Serializable,List<Object>>>();
 		
-		List<Object> relation(String property, ClassMetadata m, Serializable id, boolean data) {
+		List<Object> relation(String property, EntityType m, Serializable id, boolean data) {
 			Map<Serializable, List<Object>> relation = iRelationCache.get(property);
 			if (relation == null) {
 				String idProperty = null;
 				boolean join = false;
-				Type type = null;
+				Attribute attribute = null;
 				try {
-					type = meta().getPropertyType(property);
-				} catch (HibernateException e) {
-					type = m.getPropertyType(property);
+					attribute = meta().getAttribute(property);
+				} catch (IllegalArgumentException e) {
+					attribute = m.getAttribute(property);
 					join = true;
 				}
 				int composite = 0;
 				if (!data) {
-					ClassMetadata meta = null;
+					EntityType meta = null;
 					try {
-						if (type instanceof CollectionType)
-							meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+						if (attribute.isCollection())
+							meta = (EntityType)((PluralAttribute)attribute).getElementType();
 						else
-							meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
-					} catch (MappingException e) {}
+							meta = (EntityType)((SingularAttribute)attribute).getType();
+					} catch (ClassCastException e) {}
 					if (meta == null) {
 						data = true;
-					} else if (meta.getIdentifierType().isComponentType()) {
-						ComponentType idtype = (ComponentType)meta.getIdentifierType();
+					} else if (hasCompositeId(meta)) {
 						idProperty = "";
-						for (int i = 0; i < idtype.getPropertyNames().length; i++) {
-							ClassMetadata idmeta = null;
+						for (SingularAttribute idatt: getIdAttributes(meta)) {
+							EntityType idmeta = null;
 							try {
-								idmeta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
-							} catch (MappingException e) {}
+								idmeta = iMetamodel.entity(idatt.getJavaType());
+							} catch (IllegalArgumentException e) {}
 							if (idmeta == null)
-								idProperty += (i > 0 ? ", p." : "") + idtype.getPropertyNames()[i];
+								idProperty += (composite > 0 ? ", p." : "") + idatt.getName();
 							else
-								idProperty += (i > 0 ? ", p." : "") + idtype.getPropertyNames()[i] + "." + idmeta.getIdentifierPropertyName();
+								idProperty += (composite > 0 ? ", p." : "") + idatt.getName() + "." + getIdAttribute(idmeta).getName();
+							composite++;
 						}
-						composite = idtype.getPropertyNames().length;
 					} else {
-						idProperty = meta.getIdentifierPropertyName();
+						idProperty = getIdAttribute(meta).getName();
 						if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
 							idProperty = "externalUniqueId";
 					}
 				}
 				relation = new HashMap<Serializable, List<Object>>();
-				if (meta().getIdentifierType().isComponentType()) {
-					ComponentType idtype = (ComponentType)meta().getIdentifierType();
+				if (hasCompositeId(meta())) {
+					List<SingularAttribute> idatts = getIdAttributes(meta());
 					String select = "";
-					for (int i = 0; i < idtype.getPropertyNames().length; i++) {
-						ClassMetadata meta = null;
+					for (int i = 0; i < idatts.size(); i++) {
+						EntityType meta = null;
 						try {
-							meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
-						} catch (MappingException e) {}
+							meta = iMetamodel.entity(idatts.get(i).getJavaType());
+						} catch (IllegalArgumentException e) {}
 						if (meta == null)
-							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i];
+							select += (i > 0 ? ", " : "") + hqlName() + "." + idatts.get(i).getName();
 						else
-							select += (i > 0 ? ", " : "") + hqlName() + "." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
+							select += (i > 0 ? ", " : "") + hqlName() + "." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName();
 					}
 					String q = "select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere();
 					if (join) {
-						q = "select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + ", " + m.getEntityName() + " x inner join x." + property + " p where " + hqlWhere();
-						for (int i = 0; i < idtype.getPropertyNames().length; i++) {
-							ClassMetadata meta = null;
+						q = "select distinct " + select + (data ? ", p" : ", p." + idProperty) + " from " + hqlFrom() + ", " + m.getName() + " x inner join x." + property + " p where " + hqlWhere();
+						for (int i = 0; i < idatts.size(); i++) {
+							EntityType meta = null;
 							try {
-								meta = iHibSessionFactory.getClassMetadata(idtype.getSubtypes()[i].getReturnedClass());
-							} catch (MappingException e) {}
+								meta = iMetamodel.entity(idatts.get(i).getJavaType());
+							} catch (IllegalArgumentException e) {}
 							if (meta == null)
-								q += " and " + hqlName() + "." + idtype.getPropertyNames()[i] + " = x." + idtype.getPropertyNames()[i];
+								q += " and " + hqlName() + "." + idatts.get(i).getName() + " = x." + idatts.get(i).getName();
 							else
-								q += " and " + hqlName() + "." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName() + " = x." + idtype.getPropertyNames()[i] + "." + meta.getIdentifierPropertyName();
+								q += " and " + hqlName() + "." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName() + " = x." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName();
 						}	
 					}
 					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
-						Object[] cid = new Object[idtype.getPropertyNames().length];
-						for (int i = 0; i < idtype.getPropertyNames().length; i++)
+						Object[] cid = new Object[idatts.size()];
+						for (int i = 0; i < idatts.size(); i++)
 							cid[i] = o[i];
-						Object obj = o[idtype.getPropertyNames().length];
+						Object obj = o[idatts.size()];
 						List<Object> list = relation.get(new CompositeId(cid));
 						if (list == null) {
 							list = new ArrayList<Object>();
@@ -716,19 +711,20 @@ public class SessionBackup implements SessionBackupInterface {
 						}
 						if (composite > 1) {
 							Object[] oid = new Object[composite];
-							for (int i = 0; i < composite; i++) oid[i] = o[idtype.getPropertyNames().length + i];
+							for (int i = 0; i < composite; i++) oid[i] = o[idatts.size() + i];
 							list.add(new CompositeId(oid));
 						} else {
 							list.add(obj);
 						}
 					}
 				} else {
-					String q = "select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
+					SingularAttribute idattr = getIdAttribute(meta());
+					String q = "select distinct " + hqlName() + "." + idattr.getName() + (data ? ", p" : ", p." + idProperty) + 
 							" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere();
 					if (join) {
-							q = "select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
-								" from " + hqlFrom() + ", " + m.getEntityName() + " x inner join x." + property + " p where " + hqlWhere() + 
-								" and " + hqlName() + "." + meta().getIdentifierPropertyName() + " = x." + meta().getIdentifierPropertyName();
+							q = "select distinct " + hqlName() + "." + idattr.getName() + (data ? ", p" : ", p." + idProperty) + 
+								" from " + hqlFrom() + ", " + m.getName() + " x inner join x." + property + " p where " + hqlWhere() + 
+								" and " + hqlName() + "." + idattr.getName() + " = x." + idattr.getName();
 					}
 					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						List<Object> list = relation.get((Serializable)o[0]);
