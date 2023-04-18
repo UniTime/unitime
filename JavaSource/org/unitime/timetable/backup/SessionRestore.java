@@ -25,10 +25,12 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -43,6 +45,11 @@ import java.util.zip.GZIPInputStream;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,35 +59,9 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.hibernate.CacheMode;
-import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
-import org.hibernate.HibernateException;
 import org.hibernate.NonUniqueResultException;
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.PersistentClass;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.type.BinaryType;
-import org.hibernate.type.BooleanType;
-import org.hibernate.type.ByteType;
-import org.hibernate.type.CharacterType;
-import org.hibernate.type.CollectionType;
-import org.hibernate.type.ComponentType;
-import org.hibernate.type.CustomType;
 import org.hibernate.type.DateType;
-import org.hibernate.type.DoubleType;
-import org.hibernate.type.EntityType;
-import org.hibernate.type.FloatType;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.ListType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.PrimitiveType;
-import org.hibernate.type.SetType;
-import org.hibernate.type.ShortType;
-import org.hibernate.type.StringType;
-import org.hibernate.type.TimestampType;
-import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -141,17 +122,18 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class SessionRestore implements SessionRestoreInterface {
     private static Log sLog = LogFactory.getLog(SessionBackup.class);
-    private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
 	private BackupProgress iProgress = null;
 	private boolean iIsClone = false;
 	private SimpleDateFormat iDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	private SimpleDateFormat iAltDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private Map<String, Map<String, Entity>> iEntities = new Hashtable<String, Map<String, Entity>>();
 	private List<Entity> iAllEntitites = new ArrayList<Entity>();
 	private Map<String, Student> iStudents = new Hashtable<String, Student>();
 	private PrintWriter iDebug = null;
 	private Map<String, TableData.Table> iSkippedTables = new Hashtable<String, TableData.Table>();
+	private Metamodel iMetamodel = null;
 
 	private InputStream iIn;
 
@@ -165,14 +147,14 @@ public class SessionRestore implements SessionRestoreInterface {
 	
 	private boolean lookup(Entity entity, String property, Object value, String session) {
 		boolean hasSession = false;
-		for (String p: entity.getMetaData().getPropertyNames())
-			if (session.equals(p)) { hasSession = true; break; }
+		for (SingularAttribute attribute: (Set<SingularAttribute>)entity.getMeta().getSingularAttributes())
+			if (session.equals(attribute.getName())) { hasSession = true; break; }
 		if (!hasSession) return lookup(entity, property, value);
 		if (entity.getElement(session) != null) return false;
 		try {
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
-			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
-			Root root = cr.from(entity.getMetaData().getMappedClass());
+			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
+			Root root = cr.from(entity.getMeta().getJavaType());
 			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
 			Object object = iHibSession.createQuery(cr).uniqueResult();
 			if (object != null)
@@ -183,8 +165,8 @@ public class SessionRestore implements SessionRestoreInterface {
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
-			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
-			Root root = cr.from(entity.getMetaData().getMappedClass());
+			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
+			Root root = cr.from(entity.getMeta().getJavaType());
 			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
 			List<Object> list = iHibSession.createQuery(cr).list();
 			if (!list.isEmpty()) {
@@ -199,8 +181,8 @@ public class SessionRestore implements SessionRestoreInterface {
 	private boolean lookup(Entity entity, String property, Object value) {
 		try {
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
-			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
-			Root root = cr.from(entity.getMetaData().getMappedClass());
+			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
+			Root root = cr.from(entity.getMeta().getJavaType());
 			cr.select(root).where(cb.equal(root.get(property), value));
 			Object object = iHibSession.createQuery(cr).uniqueResult();
 			if (object != null)
@@ -211,8 +193,8 @@ public class SessionRestore implements SessionRestoreInterface {
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
-			CriteriaQuery cr = cb.createQuery(entity.getMetaData().getMappedClass());
-			Root root = cr.from(entity.getMetaData().getMappedClass());
+			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
+			Root root = cr.from(entity.getMeta().getJavaType());
 			cr.select(root).where(cb.equal(root.get(property), value));
 			List<Object> list = iHibSession.createQuery(cr).list();
 			if (!list.isEmpty()) {
@@ -286,104 +268,122 @@ public class SessionRestore implements SessionRestoreInterface {
 		return null;
 	}
 	
+	private boolean isNullable(Attribute attribute) {
+		return attribute instanceof SingularAttribute && ((SingularAttribute)attribute).isOptional(); 
+	}
+	
+	private boolean isEntity(Attribute attribute) {
+		if (attribute.isCollection()) return false;
+		try {
+			return iMetamodel.entity(attribute.getJavaType()) != null;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	/*
+	private boolean hasCompositeId(EntityType meta) {
+		return !meta.hasSingleIdAttribute();
+	}
+	
+	private List<SingularAttribute> getIdAttributes(EntityType meta) {
+		if (meta.hasSingleIdAttribute()) {
+			List<SingularAttribute> ret = new ArrayList<SingularAttribute>(1);
+			ret.add(meta.getId(meta.getIdType().getJavaType()));
+			return ret;
+		} else {
+			List<SingularAttribute> ret = new ArrayList<SingularAttribute>(meta.getIdClassAttributes().size());
+			ret.addAll(meta.getIdClassAttributes());
+			return ret;
+		}
+	}
+	*/
+	
+	public String getSetterMethod(Attribute attribute) {
+		return "set" + attribute.getName().substring(0, 1).toUpperCase() + attribute.getName().substring(1);
+	}
+	
+	private void setAttribute(Object object, Attribute attribute, Object value) {
+		try {
+			object.getClass().getMethod(getSetterMethod(attribute), attribute.getJavaType()).invoke(object, value);
+		} catch (Exception e) {
+			iProgress.warn("Failed to set " + object.getClass().getSimpleName() + "." + attribute + ": " + e.getMessage());
+		}
+	}
+	
 	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException, InvocationTargetException, NoSuchMethodException {
-		ClassMetadata metadata = iHibSessionFactory.getClassMetadata(table.getName());
-		if (metadata == null) {
+		EntityType meta = null;
+		try {
+			meta = iMetamodel.entity(Class.forName(table.getName()));
+		} catch (ClassNotFoundException e) {
+		} catch (IllegalArgumentException e) {}
+		if (meta == null) {
 			iSkippedTables.put(table.getName(), table);
 			return;
 		}
-		PersistentClass mapping = HibernateUtil.getConfiguration().getClassMapping(table.getName());
-		Map<String, Integer> lengths = new HashMap<String, Integer>();
-		for (String property: metadata.getPropertyNames()) {
-			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(metadata.getEntityName() + "." + property)) continue;
-			if ("org.unitime.timetable.model.Script.script".equals(metadata.getEntityName() + "." + property)) continue;
-			if ("org.unitime.timetable.model.TaskExecution.logFile".equals(metadata.getEntityName() + "." + property)) continue;
-			Type type = metadata.getPropertyType(property);
-			if (type instanceof StringType)
-				for (Iterator<?> i = mapping.getProperty(property).getColumnIterator(); i.hasNext(); ) {
-					Object o = i.next();
-					if (o instanceof Column) {
-						Column column = (Column)o;
-						lengths.put(property, column.getLength());
-					}
-					break;
-				}
+		for (Attribute attribute: (Set<Attribute>)meta.getAttributes()) {
+			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(meta.getJavaType().getName() + "." + attribute.getName())) continue;
+			if ("org.unitime.timetable.model.Script.script".equals(meta.getJavaType().getName() + "." + attribute.getName())) continue;
+			if ("org.unitime.timetable.model.TaskExecution.logFile".equals(meta.getJavaType().getName() + "." + attribute.getName())) continue;
 		}
-		iProgress.setPhase(metadata.getEntityName().substring(metadata.getEntityName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + "]", table.getRecordCount());
+		iProgress.setPhase(meta.getName() + " [" + table.getRecordCount() + "]", table.getRecordCount());
 		for (TableData.Record record: table.getRecordList()) {
 			iProgress.incProgress();
-			Object object = metadata.getMappedClass().getDeclaredConstructor().newInstance();
-			for (String property: metadata.getPropertyNames()) {
+			Object object = meta.getJavaType().getDeclaredConstructor().newInstance();
+			for (SingularAttribute attribute: (Set<SingularAttribute>)meta.getSingularAttributes()) {
 				TableData.Element element = null;
 				for (TableData.Element e: record.getElementList())
-					if (e.getName().equals(property)) {
+					if (e.getName().equals(attribute.getName())) {
 						element = e; break;
 					}
 				if (element == null) continue;
 				Object value = null;
-				Type type = metadata.getPropertyType(property);
-				if (type instanceof PrimitiveType) {
-					if (type instanceof BooleanType) {
-						value = Boolean.valueOf("true".equals(element.getValue(0)));
-					} else if (type instanceof ByteType) {
-						value = Byte.valueOf(element.getValue(0));
-					} else if (type instanceof CharacterType) {
-						value = Character.valueOf(element.getValue(0).charAt(0));
-					} else if (type instanceof DoubleType) {
-						value = Double.valueOf(element.getValue(0));
-					} else if (type instanceof FloatType) {
-						value = Float.valueOf(element.getValue(0));
-					} else if (type instanceof IntegerType) {
-						value = Integer.valueOf(element.getValue(0));
-					} else if (type instanceof LongType) {
-						value = Long.valueOf(element.getValue(0));
-					} else if (type instanceof ShortType) {
-						value = Short.valueOf(element.getValue(0));
+				Class type = attribute.getJavaType();
+				if (Boolean.class.isAssignableFrom(type)) {
+					value = Boolean.valueOf(element.getValue(0));
+				} else if (Byte.class.isAssignableFrom(type)) {
+					value = Byte.valueOf(element.getValue(0));
+				} else if (Short.class.isAssignableFrom(type)) {
+					value = Short.valueOf(element.getValue(0));
+				} else if (Integer.class.isAssignableFrom(type)) {
+					value = Integer.valueOf(element.getValue(0));
+				} else if (Long.class.isAssignableFrom(type)) {
+					value = Long.valueOf(element.getValue(0));
+				} else if (Float.class.isAssignableFrom(type)) {
+					value = Float.valueOf(element.getValue(0));
+				} else if (Double.class.isAssignableFrom(type)) {
+					value = Double.valueOf(element.getValue(0));
+				} else if (String.class.isAssignableFrom(type)) {
+					value = element.getValue(0);
+					javax.persistence.Column col = ((AnnotatedElement) attribute.getJavaMember()).getAnnotation(javax.persistence.Column.class);
+					if (col != null && col.length() > 0 && col.length() != 255 && value.toString().length() > col.length()) {
+						message("Value is too long, truncated (property " + meta.getName() + "." + attribute.getName() +", length " + col.length() +")", record.getId());
+						value = value.toString().substring(0, col.length());
 					}
-				} else if (type instanceof DateType) {
+				} else if (Date.class.isAssignableFrom(type)) {
 					try {
 						value = iDateFormat.parse(element.getValue(0));
 					} catch (ParseException p) {
 						try {
-							value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
-						} catch (ParseException e) {
-							value  = new DateType().fromStringValue(element.getValue(0));
-						}
-					}
-				} else if (type instanceof TimestampType) {
-					try {
-						value = iDateFormat.parse(element.getValue(0));
-					} catch (ParseException p) {
-						try {
-							value = new TimestampType().fromStringValue(element.getValue(0));
-						} catch (HibernateException e) {
+							value = iAltDateFormat.parse(element.getValue(0));
+						} catch (ParseException q) {
 							try {
-								value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
-							} catch (ParseException x) {
-								throw new HibernateException(x);
+								value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
+							} catch (ParseException e) {
+								value  = new DateType().fromStringValue(element.getValue(0));
 							}
 						}
 					}
-				} else if (type instanceof StringType) {
-					value = element.getValue(0);
-					Integer len = lengths.get(property);
-					if (len != null && value.toString().length() > len) {
-						message("Value is  too long, truncated (property " + metadata.getEntityName() + "." + property +", length " + len +")", record.getId());
-						value = value.toString().substring(0, len);
-					}
-				} else if (type instanceof BinaryType) {
+				} else if (byte[].class.isAssignableFrom(type)) {
 					value = element.getValueBytes(0).toByteArray();
-				} else if (type instanceof CustomType && type.getReturnedClass().equals(Document.class)) {
-					value = new SAXReader().read(new StringReader(element.getValue(0)));
-				} else if (type instanceof EntityType) {
-				} else if (type instanceof CollectionType) {
+				} else if (isEntity(attribute)) {
 				} else {
-					message("Unknown type " + type.getClass().getName() + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", record.getId());
+					message("Unknown type " + type.getClass().getName() + " (property " + meta.getName() + "." + attribute.getName() + ", class " + type.getSimpleName() + ")", record.getId());
 				}
 				if (value != null)
-					metadata.setPropertyValue(object, property, value);
+					setAttribute(object, attribute, value);
 			}
-			add(new Entity(metadata, record, object, record.getId()));
+			add(new Entity(meta, record, object, record.getId()));
 		}
 	}
 	
@@ -432,15 +432,15 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	protected Object get(Class clazz, String id) {
-		if (clazz.equals(String.class) || clazz.equals(StringType.class)) return id;
-		if (clazz.equals(Character.class) || clazz.equals(CharacterType.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
-		if (clazz.equals(Byte.class) || clazz.equals(ByteType.class)) return Byte.valueOf(id);
-		if (clazz.equals(Short.class) || clazz.equals(ShortType.class)) return Short.valueOf(id);
-		if (clazz.equals(Integer.class) || clazz.equals(IntegerType.class)) return Integer.valueOf(id);
-		if (clazz.equals(Long.class) || clazz.equals(LongType.class)) return Long.valueOf(id);
-		if (clazz.equals(Float.class) || clazz.equals(FloatType.class)) return Float.valueOf(id);
-		if (clazz.equals(Double.class) || clazz.equals(DoubleType.class)) return Double.valueOf(id);
-		if (clazz.equals(Boolean.class) || clazz.equals(BooleanType.class)) return Boolean.valueOf(id);
+		if (clazz.equals(String.class)) return id;
+		if (clazz.equals(Character.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
+		if (clazz.equals(Byte.class)) return Byte.valueOf(id);
+		if (clazz.equals(Short.class)) return Short.valueOf(id);
+		if (clazz.equals(Integer.class)) return Integer.valueOf(id);
+		if (clazz.equals(Long.class)) return Long.valueOf(id);
+		if (clazz.equals(Float.class)) return Float.valueOf(id);
+		if (clazz.equals(Double.class)) return Double.valueOf(id);
+		if (clazz.equals(Boolean.class)) return Boolean.valueOf(id);
 		
 		Map<String, Entity> entities = iEntities.get(clazz.getName());
 		if (entities != null) {
@@ -518,7 +518,7 @@ public class SessionRestore implements SessionRestoreInterface {
         iProgress = progress;
         iHibSession = new _RootDAO().createNewSession();
         iHibSession.setCacheMode(CacheMode.IGNORE);
-        iHibSessionFactory = iHibSession.getSessionFactory();
+        iMetamodel = iHibSession.getMetamodel();
         try {
             CodedInputStream cin = CodedInputStream.newInstance(iIn);
             cin.setSizeLimit(1024*1024*1024); // 1 GB
@@ -594,21 +594,21 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	protected class Entity {
-		private ClassMetadata iMetaData;
+		private EntityType iMeta;
 		private TableData.Record iRecord;
 		private Object iObject;
 		private String iId;
 		
-		protected Entity(ClassMetadata metadata, TableData.Record record, Object object, String id) {
-			iMetaData = metadata;
+		protected Entity(EntityType meta, TableData.Record record, Object object, String id) {
+			iMeta = meta;
 			iRecord = record;
 			iObject = object;
 			iId = id;
 		}
 		
-		public ClassMetadata getMetaData() { return iMetaData; }
-		public String getName() { return getMetaData().getEntityName(); }
-		public String getAbbv() { return getName().substring(getName().lastIndexOf('.') + 1); }
+		public EntityType getMeta() { return iMeta; }
+		public String getName() { return getMeta().getJavaType().getName(); }
+		public String getAbbv() { return getMeta().getName(); }
 		public Object getObject() { return iObject; }
 		public void setObject(Object object) { iObject = object; }
 		public String getId() { return iId; }
@@ -635,26 +635,13 @@ public class SessionRestore implements SessionRestoreInterface {
 		}
 		
 		public String canSave() {
-			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
-				if (getMetaData().getPropertyNullability()[i]) continue;
-				Type type = getMetaData().getPropertyTypes()[i];
-				if (type instanceof EntityType) {
-					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
+			for (SingularAttribute attribute: (Set<SingularAttribute>)getMeta().getSingularAttributes()) {
+				if (isNullable(attribute) && !attribute.isId()) continue;
+				if (isEntity(attribute)) {
+					TableData.Element element = getElement(attribute.getName());
 					if (element == null || element.getValueCount() == 0) continue;
-					Object value = get(type.getReturnedClass(), element.getValue(0));
-					if (value == null || !iHibSession.contains(value)) return getMetaData().getPropertyNames()[i];
-				}
-			}
-			if (getMetaData().getIdentifierType().isComponentType()) {
-				ComponentType cid = (ComponentType)getMetaData().getIdentifierType();
-				for (int i = 0; i < cid.getPropertyNames().length; i++) {
-					Type type = cid.getSubtypes()[i];
-					if (type instanceof EntityType) {
-						TableData.Element element = getElement(cid.getPropertyNames()[i]);
-						if (element == null) continue;
-						Object value = get(type.getReturnedClass(), element.getValue(0));
-						if (value == null || !iHibSession.contains(value)) return cid.getPropertyNames()[i];
-					}
+					Object value = get(attribute.getJavaType(), element.getValue(0));
+					if (value == null || !iHibSession.contains(value)) return attribute.getName();
 				}
 			}
 			return null;
@@ -680,83 +667,23 @@ public class SessionRestore implements SessionRestoreInterface {
 		}
 		
 		public void fixRelationsNullOnly() {
-			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
-				String property = getMetaData().getPropertyNames()[i];
-				if (getMetaData().getPropertyNullability()[i]) continue;
-				Type type = getMetaData().getPropertyTypes()[i];
-				if (type instanceof EntityType) {
-					TableData.Element element = getElement(getMetaData().getPropertyNames()[i]);
+			for (SingularAttribute attribute: (Set<SingularAttribute>)getMeta().getSingularAttributes()) {
+				if (isNullable(attribute) && !attribute.isId()) continue;
+				if (isEntity(attribute)) {
+					TableData.Element element = getElement(attribute.getName());
 					if (element == null) continue;
 					if (element.getValueCount() == 0) {
-						message("Required " + getAbbv() + "." + property + " has no value", getRecord().getId());
+						message("Required " + getAbbv() + "." + attribute.getName() + " has no value", getRecord().getId());
 						continue;
 					}
-					Object value = get(type.getReturnedClass(), element.getValue(0));
+					Object value = get(attribute.getJavaType(), element.getValue(0));
 					if (value != null) {
 						if (!iHibSession.contains(value))
-							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+							message("Required " + getAbbv() + "." + attribute.getName() + " has transient value", getId() + "-" + element.getValue(0));
 						else
-							getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value);
+							setAttribute(getObject(), attribute, value);
 					}
 				}
-			}
-			if (getMetaData().getIdentifierType().isComponentType()) {
-				ComponentType cid = (ComponentType)getMetaData().getIdentifierType();
-				Object[] id = new Object[cid.getPropertyNames().length];
-				for (int i = 0; i < cid.getPropertyNames().length; i++) {
-					String property = cid.getPropertyNames()[i];
-					Type type = cid.getSubtypes()[i];
-					TableData.Element element = getElement(cid.getPropertyNames()[i]);
-					if (element == null) continue;
-					Object value = null;
-					if (type instanceof PrimitiveType) {
-						if (type instanceof BooleanType) {
-							value = Boolean.valueOf("true".equals(element.getValue(0)));
-						} else if (type instanceof ByteType) {
-							value = Byte.valueOf(element.getValue(0));
-						} else if (type instanceof CharacterType) {
-							value = Character.valueOf(element.getValue(0).charAt(0));
-						} else if (type instanceof DoubleType) {
-							value = Double.valueOf(element.getValue(0));
-						} else if (type instanceof FloatType) {
-							value = Float.valueOf(element.getValue(0));
-						} else if (type instanceof IntegerType) {
-							value = Integer.valueOf(element.getValue(0));
-						} else if (type instanceof LongType) {
-							value = Long.valueOf(element.getValue(0));
-						} else if (type instanceof ShortType) {
-							value = Short.valueOf(element.getValue(0));
-						}
-					} else if (type instanceof DateType) {
-						try {
-							value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
-						} catch (ParseException e) {
-							value  = new DateType().fromStringValue(element.getValue(0));
-						}
-					} else if (type instanceof TimestampType) {
-						try {
-							value = new TimestampType().fromStringValue(element.getValue(0));
-						} catch (HibernateException e) {
-							try {
-								value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parseObject(element.getValue(0));
-							} catch (ParseException x) {
-								throw new HibernateException(x);
-							}
-						}
-					} else if (type instanceof StringType) {
-						value = element.getValue(0);
-					} else if (type instanceof BinaryType) {
-						value = element.getValueBytes(0).toByteArray();
-					} else if (type instanceof EntityType) {
-						value = get(type.getReturnedClass(), element.getValue(0));
-						if (value != null && !iHibSession.contains(value))
-							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
-					} else {
-						message("Not-supported composite key type " + type.getClass().getName() + " (property " + getMetaData().getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", getId());
-					}
-					id[i] = value;
-				}
-				cid.setPropertyValues(getObject(), id, EntityMode.POJO);
 			}
 			if (getObject() instanceof Class_) {
 				Class_ clazz = (Class_)getObject();
@@ -869,51 +796,52 @@ public class SessionRestore implements SessionRestoreInterface {
 		}
 		
 		public void fixRelations() {
-			for (int i = 0; i < getMetaData().getPropertyNames().length; i++) {
-				String property = getMetaData().getPropertyNames()[i];
-				if (!getMetaData().getPropertyNullability()[i]) continue;
-				Type type = getMetaData().getPropertyType(property);
-				if (type instanceof EntityType) {
-					TableData.Element element = getElement(property);
+			for (Attribute attribute: (Set<Attribute>)getMeta().getAttributes()) {
+				if (!isNullable(attribute) && !attribute.isCollection()) continue;
+				if (isEntity(attribute)) {
+					TableData.Element element = getElement(attribute.getName());
 					if (element == null || element.getValueCount() == 0) continue;
-					Object value = get(type.getReturnedClass(), element.getValue(0));
+					Object value = get(attribute.getJavaType(), element.getValue(0));
 					if (value != null) {
 						if (!iHibSession.contains(value))
-							message("Optional " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+							message("Optional " + getAbbv() + "." + attribute.getName() + " has transient value", getId() + "-" + element.getValue(0));
 						else
-							getMetaData().setPropertyValue(getObject(), property, value);
+							setAttribute(getObject(), attribute, value);
 					}
-				} else if (type instanceof CollectionType) {
-					TableData.Element element = getElement(property);
+				} else if (attribute.isCollection()) {
+					TableData.Element element = getElement(attribute.getName());
 					if (element == null) continue;
-					Type elementType =((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory);
-					Class clazz = elementType.getReturnedClass();
-					if (type instanceof SetType) {
+					Class clazz = ((PluralAttribute)attribute).getElementType().getJavaType();
+					boolean isEnity = false;
+					try {
+						isEnity = (iMetamodel.entity(clazz) != null);
+					} catch (IllegalArgumentException e) {}
+					if (Set.class.isAssignableFrom(attribute.getJavaType())) {
 						Set<Object> set = new HashSet<Object>();
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								if (elementType instanceof EntityType && !iHibSession.contains(v)) 
-									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+								if (isEnity && !iHibSession.contains(v)) 
+									message("Collection " + getAbbv() + "." + attribute.getName() + " has transient value", getId() + "-" + id);
 								else
 									set.add(v);
 							}
 						}
-						getMetaData().setPropertyValue(getObject(), property, set);
-					} else if (type instanceof ListType) {
+						setAttribute(getObject(), attribute, set);
+					} else if (List.class.isAssignableFrom(attribute.getJavaType())) {
 						List<Object> set = new ArrayList<Object>();
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								if (elementType instanceof EntityType && !iHibSession.contains(v))
-									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+								if (isEnity && !iHibSession.contains(v))
+									message("Collection " + getAbbv() + "." + attribute.getName() + " has transient value", getId() + "-" + id);
 								else
 									set.add(v);
 							}
 						}
-						getMetaData().setPropertyValue(getObject(), property, set);
+						setAttribute(getObject(), attribute, set);
 					} else {
-						message("Unimplemented collection type: " + type.getClass().getName() + " (" + getAbbv() + "." + property + ")", "");
+						message("Unimplemented collection type: " + attribute.getJavaType().getSimpleName() + " (" + getAbbv() + "." + attribute.getName() + ")", "");
 					}
 				}
 			}
