@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.fork.ForkChannel;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.util.RoomAvailability;
@@ -38,9 +38,19 @@ public class RemoteRoomAvailability {
 	private static Log sLog = LogFactory.getLog(RemoteRoomAvailability.class);
 	
 	private RpcDispatcher iDispatcher;
+	private ForkChannel iChannel;
 		
-	public RemoteRoomAvailability(JChannel channel, short scope) {
-		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+	public RemoteRoomAvailability(JChannel channel, short scope) throws Exception {
+		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+		iDispatcher = new RpcDispatcher(iChannel, this);
+	}
+	
+	public void start() throws Exception {
+		iChannel.connect("UniTime:RPC:Availability");
+	}
+	
+	public void stop() throws Exception {
+		iChannel.disconnect();
 	}
 	
 	public RpcDispatcher getDispatcher() {

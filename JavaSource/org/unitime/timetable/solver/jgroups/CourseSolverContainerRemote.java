@@ -36,7 +36,7 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.fork.ForkChannel;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -59,10 +59,24 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	private boolean iSaveFileInfos = false;
 	
 	private RpcDispatcher iDispatcher;
+	private ForkChannel iChannel;
 		
-	public CourseSolverContainerRemote(JChannel channel, short scope, boolean saveFileInfos) {
-		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+	public CourseSolverContainerRemote(JChannel channel, short scope, boolean saveFileInfos) throws Exception {
+		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+		iDispatcher = new RpcDispatcher(iChannel, this);
 		iSaveFileInfos = saveFileInfos;
+	}
+	
+	@Override
+	public void start() throws Exception {
+		iChannel.connect("UniTime:RPC:Courses");
+		super.start();
+	}
+	
+	@Override
+	public void stop() throws Exception {
+		iChannel.disconnect();
+		super.stop();
 	}
 	
 	@Override

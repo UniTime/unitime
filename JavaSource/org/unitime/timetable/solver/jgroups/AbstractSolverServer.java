@@ -60,13 +60,13 @@ public abstract class AbstractSolverServer implements SolverServer {
 	}
 	
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		iActive = true;
 		sLog.info("Solver server is up and running.");
 	}
 	
 	@Override
-	public void stop() {
+	public void stop() throws Exception {
 		sLog.info("Solver server is going down...");
 		iActive = false;
 	}

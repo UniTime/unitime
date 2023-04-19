@@ -17,32 +17,42 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.solver.jgroups;
+package org.unitime.commons.jgroups;
 
-import java.util.Set;
+import java.util.Properties;
 
-import org.cpsolver.ifs.util.DataProperties;
-
+import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
+import org.jgroups.JChannel;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
  */
-public interface SolverContainer<T> {
-	public Set<String> getSolvers();
-	
-	public T getSolver(String user);
-	
-	public boolean hasSolver(String user);
-	
-	public T createSolver(String user, DataProperties config);
-	
-	public void unloadSolver(String user);
-	
-	public int getUsage();
-	
-	public void start() throws Exception;
-	
-	public void stop() throws Exception;
-	
-	public long getMemUsage(String user);
+@Deprecated
+public class HibernateChannelLookup implements JGroupsChannelLookup {
+
+	@Override
+	public JChannel getJGroupsChannel(Properties p) {
+		try {
+			return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.HibernateClusterConfiguration.value()));
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public boolean shouldConnect() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldDisconnect() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldClose() {
+		return true;
+	}
+
 }

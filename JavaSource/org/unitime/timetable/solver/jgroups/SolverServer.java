@@ -39,9 +39,9 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 public interface SolverServer {
 	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5, SCOPE_INSTRUCTOR = 6, SCOPE_QUEUE_PROCESSOR = 7;
 	
-	public void start();
+	public void start() throws Exception;
 	
-	public void stop();
+	public void stop() throws Exception;
 
 	public boolean isLocal();
 	

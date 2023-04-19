@@ -50,10 +50,8 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.MembershipListener;
 import org.jgroups.MergeView;
 import org.jgroups.Message;
-import org.jgroups.MessageListener;
 import org.jgroups.Receiver;
 import org.jgroups.SuspectedException;
 import org.jgroups.Message.Flag;
@@ -61,8 +59,7 @@ import org.jgroups.View;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
-import org.jgroups.blocks.mux.MuxUpHandler;
+import org.jgroups.fork.ForkChannel;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -87,13 +84,14 @@ import org.unitime.timetable.util.queue.RemoteQueueProcessor;
 /**
  * @author Tomas Muller
  */
-public class SolverServerImplementation extends AbstractSolverServer implements MessageListener, MembershipListener, Receiver {
+public class SolverServerImplementation extends AbstractSolverServer implements Receiver {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, ApplicationProperty.SolverClusterTimeout.intValue()).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, ApplicationProperty.SolverClusterTimeout.intValue()).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
 	private JChannel iChannel;
+	private ForkChannel iServerChannel;
 	private RpcDispatcher iDispatcher;
 	
 	private CourseSolverContainerRemote iCourseSolverContainer;
@@ -107,14 +105,13 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	
 	protected boolean iLocal = false;
 	
-	public SolverServerImplementation(boolean local, JChannel channel) {
+	public SolverServerImplementation(boolean local, JChannel channel) throws Exception {
 		super();
 		
 		iLocal = local;
 		iChannel = channel;
-		// iChannel.setReceiver(this);
-		iChannel.setUpHandler(new MuxUpHandler());
-		iDispatcher = new MuxRpcDispatcher(SCOPE_SERVER, channel, this, this, this);
+		iServerChannel = new ForkChannel(channel, String.valueOf(SCOPE_SERVER), "fork-" + SCOPE_SERVER);
+		iDispatcher = new RpcDispatcher(iChannel, this);
 		
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE, local);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
@@ -131,27 +128,34 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
 	@Override
-	public void start() {
+	public void start() throws Exception {
+		iServerChannel.connect("UniTime:RPC:Server");
+
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
 		iInstructorSchedulingContainer.start();
 		iOnlineStudentSchedulingContainer.start();
 		iUpdater.start();
+		iRemoteRoomAvailability.start();
+		iRemoteQueueProcessor.start();
 
 		super.start();
 	}
 	
 	@Override
-	public void stop() {
+	public void stop() throws Exception {
 		super.stop();
-
+		
+		iServerChannel.disconnect();
+	
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
 		iInstructorSchedulingContainer.stop();
 		iOnlineStudentSchedulingContainer.stop();
 		iUpdater.stopUpdating();
+		iRemoteRoomAvailability.stop();
 	}
 	
 	@Override
@@ -169,9 +173,11 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		if (isLocal()) return getAddress();
 		try {
 			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isLocal", new Object[] {}, new Class[] {}, sAllResponses);
-			for (Rsp<Boolean> local: ret) {
+			for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+				Address sender = entry.getKey();
+				Rsp<Boolean> local = entry.getValue();
 				if (Boolean.TRUE.equals(local.getValue()))
-					return local.getSender();
+					return sender;
 			}
 			return null;
 		} catch (Exception e) {
@@ -186,9 +192,11 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		try {
 			int myIndex = iChannel.getView().getMembers().indexOf(iChannel.getAddress());
 			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isLocal", new Object[] {}, new Class[] {}, sAllResponses);
-			for (Rsp<Boolean> local: ret) {
+			for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+				Address sender = entry.getKey();
+				Rsp<Boolean> local = entry.getValue();
 				if (Boolean.TRUE.equals(local.getValue())) {
-					int idx = iChannel.getView().getMembers().indexOf(local.getSender());
+					int idx = iChannel.getView().getMembers().indexOf(sender);
 					if (idx < myIndex) return false;
 				}
 			}
@@ -417,12 +425,6 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		if (view instanceof MergeView) {
 			reset();
 		}
-	}
-
-
-	@Override
-	public void suspect(Address suspected_mbr) {
-		sLog.warn("suspect(" + suspected_mbr + ")");
 	}
 
 
@@ -751,7 +753,8 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 
 	@Override
 	public synchronized void reset() {
-		sLog.info(iOnlineStudentSchedulingContainer.getLockService().printLocks());
+		if (iOnlineStudentSchedulingContainer.getLockService() != null)
+			sLog.info(iOnlineStudentSchedulingContainer.getLockService().printLocks());
 		
 		// For each of my online student sectioning solvers
 		for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {

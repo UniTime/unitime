@@ -95,7 +95,7 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 	}
 	
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		iPassivation = new PassivationThread(ApplicationProperties.getPassivationFolder());
 		iPassivation.start();
 		File folder = ApplicationProperties.getRestoreFolder();
@@ -117,7 +117,7 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 	}
 	
 	@Override
-	public void stop() {
+	public void stop() throws Exception {
 		File folder = ApplicationProperties.getRestoreFolder();
 		if (folder.exists() && !folder.isDirectory()) return;
 		

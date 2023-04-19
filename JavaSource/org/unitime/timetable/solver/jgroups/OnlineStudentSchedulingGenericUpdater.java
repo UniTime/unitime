@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
@@ -105,15 +106,20 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			iLog.info("Hibernate is not configured yet, will check for new servers later...");
 			return;
 		}
-		Lock lock = iContainer.getLockService().getLock("updater[generic].check");
-		lock.lock();
+		Lock lock = null;
+		if (iContainer.getLockService() != null) {
+			iContainer.getLockService().getLock("updater[generic].check");
+			lock.lock();
+		}
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
 			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
 			try {
 				RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(
 						null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
-				for (Rsp<Set<String>> rsp : ret) {
+				for (Map.Entry<Address, Rsp<Set<String>>> entry : ret.entrySet()) {
+					Address sender = entry.getKey();
+					Rsp<Set<String>> rsp = entry.getValue();
 					if (rsp.getValue() == null) continue;
 					for (String solver: rsp.getValue()) {
 						Set<Address> members = solvers.get(solver);
@@ -121,7 +127,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 							members = new HashSet<Address>();
 							solvers.put(solver, members);
 						}
-						members.add(rsp.getSender());
+						members.add(sender);
 					}
 				}
 			} catch (Exception e) {
@@ -135,29 +141,56 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					try {
 						Set<Address> members = solvers.get(session.getUniqueId().toString());
 						if (members.size() > 1) {
-							List<Address> masters = new ArrayList<Address>();
+							if (iContainer.getLockService() != null) {
+								List<Address> masters = new ArrayList<Address>();
 								RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(
 										members, "hasMaster", new Object[] { session.getUniqueId().toString() }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
-								for (Rsp<Boolean> rsp : ret) {
-									if (Boolean.TRUE.equals(rsp.getValue())) masters.add(rsp.getSender());
+								for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+									Address sender = entry.getKey();
+									Rsp<Boolean> rsp = entry.getValue();
+									if (Boolean.TRUE.equals(rsp.getValue())) masters.add(sender);
 								}
-							if (masters.size() > 1) {
-								iLog.warn(masters.size() + " masters for " + session.getLabel() + " detected.");
-								iLog.info(iContainer.getLockService().printLocks());
-								iLog.info("Releasing master locks for " + session.getLabel() + " ...");
-								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+								if (masters.size() > 1) {
+									iLog.warn(masters.size() + " masters for " + session.getLabel() + " detected.");
+									iLog.info(iContainer.getLockService().printLocks());
+									iLog.info("Releasing master locks for " + session.getLabel() + " ...");
+									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+											new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},
+											new Class[] { String.class, String.class, Class[].class, Object[].class },
+											SolverServerImplementation.sAllResponses);
+									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+											new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReloadIsNeeded", Boolean.TRUE}},
+											new Class[] { String.class, String.class, Class[].class, Object[].class },
+											SolverServerImplementation.sAllResponses);
+									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+											new Object[] { "releaseMasterLockIfHeld", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
+											new Class[] { String.class, String.class, Class[].class, Object[].class },
+											SolverServerImplementation.sAllResponses);
+									continue;
+								}
+							} else {
+								iLog.warn(members.size() + " members for " + session.getLabel() + " detected.");
+								// pick a master
+								Address master = ToolBox.random(members); members.remove(master);
+								// reload master
+								iLog.warn("Reloading " + master + " for " + session.getLabel() + ".");
+								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
 										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},
 										new Class[] { String.class, String.class, Class[].class, Object[].class },
-										SolverServerImplementation.sAllResponses);
-								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+										SolverServerImplementation.sFirstResponse);
+								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
 										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReloadIsNeeded", Boolean.TRUE}},
 										new Class[] { String.class, String.class, Class[].class, Object[].class },
-										SolverServerImplementation.sAllResponses);
-								iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
+										SolverServerImplementation.sFirstResponse);
+								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
 										new Object[] { "releaseMasterLockIfHeld", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
 										new Class[] { String.class, String.class, Class[].class, Object[].class },
+										SolverServerImplementation.sFirstResponse);
+								// unload all others
+								iContainer.getDispatcher().callRemoteMethods(members, "unloadSolver",
+										new Object[] { session.getUniqueId().toString() },
+										new Class[] { String.class },
 										SolverServerImplementation.sAllResponses);
-								continue;
 							}
 						}
 					} catch (Exception e) {
@@ -177,9 +210,11 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				List<Address> available = new ArrayList<Address>();
 				try {
 					RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isAvailable", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
-					for (Rsp<Boolean> rsp : ret) {
+					for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+						Address sender = entry.getKey();
+						Rsp<Boolean> rsp = entry.getValue();
 						if (Boolean.TRUE.equals(rsp.getValue()))
-							available.add(rsp.getSender());
+							available.add(sender);
 					}
 				} catch (Exception e) {
 					iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
@@ -224,7 +259,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			}
 		} finally {
 			hibSession.close();
-			lock.unlock();
+			if (lock != null) lock.unlock();
 		}
 	}
 	

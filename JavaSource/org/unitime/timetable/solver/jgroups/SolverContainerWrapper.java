@@ -22,6 +22,7 @@ package org.unitime.timetable.solver.jgroups;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -74,9 +75,11 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();
-			for (Rsp<Boolean> rsp : ret) {
+			for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+				Address sender = entry.getKey();
+				Rsp<Boolean> rsp = entry.getValue();
 				if (rsp != null && rsp.getValue() != null && rsp.getValue())
-					senders.add(rsp.getSender());
+					senders.add(sender);
 			}
 			if (senders.isEmpty())
 				return null;
@@ -135,11 +138,13 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			Address bestAddress = null;
 			int bestUsage = 0;
 			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isAvailable", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
-			for (Rsp<Boolean> rsp : ret) {
+			for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+				Address sender = entry.getKey();
+				Rsp<Boolean> rsp = entry.getValue();
 				if (Boolean.TRUE.equals(rsp.getValue())) {
-					Integer usage = iDispatcher.callRemoteMethod(rsp.getSender(), "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
+					Integer usage = iDispatcher.callRemoteMethod(sender, "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
 					if (bestAddress == null || bestUsage > usage) {
-						bestAddress = rsp.getSender();
+						bestAddress = sender;
 		                bestUsage = usage;
 		            }
 				}
@@ -167,9 +172,11 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 				iContainer.unloadSolver(user);
 			
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
-			for (Rsp<Boolean> rsp : ret) {
+			for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+				Address sender = entry.getKey();
+				Rsp<Boolean> rsp = entry.getValue();
 				if (rsp.getValue())
-					iContainer.getDispatcher().callRemoteMethod(rsp.getSender(), "unloadSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
+					iContainer.getDispatcher().callRemoteMethod(sender, "unloadSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
 			}
 		} catch (Exception e) {
 			sLog.error("Failed to unload solver " + user + ": " + e.getMessage(), e);

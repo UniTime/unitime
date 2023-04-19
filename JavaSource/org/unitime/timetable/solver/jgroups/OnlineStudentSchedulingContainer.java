@@ -224,7 +224,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	}
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		sLog.info("Student Sectioning Service is starting up ...");
 		OnlineSectioningLogger.startLogger();
 	}
@@ -278,7 +278,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	}
 
 	@Override
-	public void stop() {
+	public void stop() throws Exception {
 		sLog.info("Student Sectioning Service is going down ...");
 		unloadAll();
 		OnlineSectioningLogger.stopLogger();

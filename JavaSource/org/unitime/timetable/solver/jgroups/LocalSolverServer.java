@@ -66,7 +66,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 	}
 	
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
@@ -78,7 +78,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 	}
 	
 	@Override
-	public void stop() {
+	public void stop() throws Exception {
 		super.stop();
 
 		iCourseSolverContainer.stop();

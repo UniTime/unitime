@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.fork.ForkChannel;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -46,12 +46,26 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 	private static Log sLog = LogFactory.getLog(RemoteQueueProcessor.class);
 	
 	private RpcDispatcher iDispatcher;
+	private ForkChannel iChannel;
 		
-	public RemoteQueueProcessor(JChannel channel, short scope) {
+	public RemoteQueueProcessor(JChannel channel, short scope) throws Exception {
 		super();
-		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+		iDispatcher = new RpcDispatcher(iChannel, this);
 		sInstance = this;
-		start();
+	}
+	
+	@Override
+	public void run() {
+		try {
+			iChannel.connect("UniTime:RPC:Queue");
+		} catch (Exception e) { 
+			sLog.error("Failed to start the queue processor: " + e.getMessage(), e);
+		}
+		
+		super.run();
+		
+		iChannel.disconnect();
 	}
 	
 	public RpcDispatcher getDispatcher() {

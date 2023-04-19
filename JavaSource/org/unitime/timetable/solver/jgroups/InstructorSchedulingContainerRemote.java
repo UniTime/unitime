@@ -31,7 +31,7 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.fork.ForkChannel;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
@@ -43,9 +43,23 @@ public class InstructorSchedulingContainerRemote extends InstructorSchedulingCon
 	private static Log sLog = LogFactory.getLog(ExaminationSolverContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
+	private ForkChannel iChannel;
 		
-	public InstructorSchedulingContainerRemote(JChannel channel, short scope) {
-		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+	public InstructorSchedulingContainerRemote(JChannel channel, short scope) throws Exception {
+		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+		iDispatcher = new RpcDispatcher(iChannel, this);
+	}
+	
+	@Override
+	public void start() throws Exception {
+		iChannel.connect("UniTime:RPC:Instructors");
+		super.start();
+	}
+	
+	@Override
+	public void stop() throws Exception {
+		iChannel.disconnect();
+		super.stop();
 	}
 	
 	@Override

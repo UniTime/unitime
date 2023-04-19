@@ -10,12 +10,10 @@
         xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd"
         xmlns="urn:infinispan:config:13.0">
 
-   <jgroups>
-      <stack-file name="hibernate-jgroups" path="${hibernate.cache.infinispan.jgroups_cfg:hibernate-jgroups-tcp.xml}"/>
-   </jgroups>
-
    <cache-container name="SampleCacheManager" statistics="false" default-cache="the-default-cache" shutdown-hook="DEFAULT">
-      <transport stack="hibernate-jgroups" cluster="UniTime:hibernate"/>
+      <transport stack="hibernate-jgroups" cluster="UniTime:hibernate">
+      	<property name="channelLookup">org.unitime.commons.jgroups.HibernateChannelLookup</property>
+      </transport>
 
       <local-cache-configuration name="the-default-cache" statistics="false" />
 

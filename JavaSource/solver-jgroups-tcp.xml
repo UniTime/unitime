@@ -20,80 +20,42 @@
  -->
  <config xmlns="urn:org:jgroups"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.3.xsd">
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd">
     <TCP
-         bind_addr="${jgroups.tcp.address:127.0.0.1}"
+         bind_addr="${jgroups.tcp.address:SITE_LOCAL}"
          bind_port="${unitime.solver.port:7800}"
          port_range="${jgroups.tcp.port_range:3}"
-         recv_buf_size="${tcp.recv_buf_size:5M}"
-         send_buf_size="${tcp.send_buf_size:640K}"
-         max_bundle_size="64K"
-         max_bundle_timeout="30"
-         use_send_queues="true"
-         sock_conn_timeout="300"
+         recv_buf_size="${jgroups.tcp.recv_buf_size:5M}"
+         send_buf_size="${jgroups.tcp.send_buf_size:640K}"
+         sock_conn_timeout="${jgroups.tcp.sock_conn_timeout:300}"
 
-         timer_type="new3"
-         timer.min_threads="4"
-         timer.max_threads="10"
-         timer.keep_alive_time="3000"
-         timer.queue_max_size="500"
-
-         internal_thread_pool.enabled="true"
-         internal_thread_pool.min_threads="4"
-         internal_thread_pool.max_threads="8"
-         internal_thread_pool.queue_enabled="true"
-         internal_thread_pool.queue_max_size="500"
-         internal_thread_pool.keep_alive_time="30000"
-         internal_thread_pool.rejection_policy="discard"
-
-         thread_pool.enabled="true"
-         thread_pool.min_threads="1"
-         thread_pool.max_threads="${unitime.solver.thread_pool.max_threads:50}"
+         thread_pool.min_threads="${unitime.solver.thread_pool.min_threads:0}"
+         thread_pool.max_threads="${unitime.solver.thread_pool.max_threads:200}"
          thread_pool.keep_alive_time="5000"
-         thread_pool.queue_enabled="false"
-         thread_pool.queue_max_size="100"
-         thread_pool.rejection_policy="discard"
-
-         oob_thread_pool.enabled="true"
-         oob_thread_pool.min_threads="${unitime.solver.oob_thread_pool.min_threads:50}"
-         oob_thread_pool.max_threads="${unitime.solver.oob_thread_pool.max_threads:100}"
-         oob_thread_pool.keep_alive_time="5000"
-         oob_thread_pool.queue_enabled="${unitime.solver.oob_thread_pool.queue_enabled:true}"
-         oob_thread_pool.queue_max_size="${unitime.solver.oob_thread_pool.queue_max_size:1000}"
-         oob_thread_pool.rejection_policy="discard"/>
-   <!--
-   <MPING
-          bind_addr="${jgroups.bind_addr:127.0.0.1}" break_on_coord_rsp="true"
-          mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
-          mcast_port="${unitime.solver.mping_port:43377}"
-          ip_ttl="${jgroups.udp.ip_ttl:2}"
-          num_initial_members="3"/>
-    -->
-    <TCPPING initial_hosts="${unitime.solver.initial_hosts:127.0.0.1[7800]}" port_range="${jgroups.tcp.port_range:3}"/>
-    <!-- 
-    <org.unitime.commons.jgroups.UniTimeClusterDiscovery initial_hosts="${unitime.solver.initial_hosts:127.0.0.1[7800]}" port_range="3" />
-    -->
-    <MERGE2  min_interval="10000"
-             max_interval="30000"/>
-    <FD_SOCK bind_addr="${jgroups.tcp.address:127.0.0.1}"
+	/>
+    <TCPPING initial_hosts="${unitime.solver.initial_hosts:}" port_range="${jgroups.tcp.port_range:3}"/>
+    <org.unitime.commons.jgroups.UniTimeClusterDiscovery
+    	remove_all_data_on_view_change="true"
+    />
+    <MERGE3
+    	min_interval="10000" max_interval="30000"/>
+    <FD_SOCK
+    	bind_addr="${jgroups.tcp.address:SITE_LOCAL}"
     	port_range="${jgroups.fd_sock.port_range:50}"
     	start_port="${jgroups.fd_sock.start_port:0}"
     	client_bind_port="${jgroups.fd_sock.client_bind_port:0}"
     	/>
-    <FD timeout="${jgroups.fd.timeout:5000}" max_tries="${jgroups.fd.max_tries:5}" />
-    <VERIFY_SUSPECT timeout="${jgroups.verify_suspect.timeout:2500}" bind_addr="${jgroups.tcp.address:127.0.0.1}" />
-    <BARRIER />
-    <pbcast.NAKACK2 use_mcast_xmit="false"
-                   discard_delivered_msgs="true"/>
-    <UNICAST3 />
-    <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
-                   max_bytes="4M"/>
-    <pbcast.GMS print_local_addr="true" join_timeout="3000"
-                view_bundling="true"/>
-    <MFC max_credits="2M"
-         min_threshold="0.4"/>
-    <FRAG2 frag_size="60K"  />
-    <!--RSVP resend_interval="2000" timeout="10000"/-->
+    <FD_ALL
+    	timeout="${jgroups.fd.timeout:30000}"
+    	interval="${jgroups.fd.interval:10000}"
+    	timeout_check_interval="${jgroups.fd.timeout_check_interval:5000}"
+    	/>
+    <VERIFY_SUSPECT timeout="${jgroups.verify_suspect.timeout:2500}" bind_addr="${jgroups.tcp.address:SITE_LOCAL}" />
+    <pbcast.NAKACK2/>
+    <UNICAST3/>
+    <pbcast.STABLE/>
+    <FRAG2/>
+    <pbcast.GMS join_timeout="3000"/>
+    <FORK/>
     <pbcast.STATE_TRANSFER/>
-   <CENTRAL_LOCK/>
 </config>

@@ -26,6 +26,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +37,7 @@ import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.locking.LockService;
-import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.fork.ForkChannel;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -54,21 +55,30 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	
 	private RpcDispatcher iDispatcher;
 	private LockService iLockService;
+	private ForkChannel iChannel;
 
-	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) {
-		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
-		iLockService = new LockService(channel);
+	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) throws Exception {
+		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+		iDispatcher = new RpcDispatcher(iChannel, this);
+		iLockService = null;//new LockService(channel);
+	}
+	
+	@Override
+	public void start() throws Exception {
+		iChannel.connect("UniTime:RPC:Online");
+		super.start();
+	}
+	
+	@Override
+	public void stop() throws Exception {
+		iChannel.disconnect();
+		super.stop();
 	}
 	
 	@Override
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
 	public LockService getLockService() { return iLockService; }
-	
-	@Override
-	public void start() {
-		super.start();
-	}
 	
 	@Override
 	public boolean hasMaster(String sessionId) {
@@ -128,17 +138,21 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 					ch = args[0].getClass().getAnnotation(CheckMaster.class);
 				RspList<Boolean> ret = iDispatcher.callRemoteMethods(addresses, "hasMaster", new Object[] { sessionId }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 				if (ch != null && ch.value() == Master.REQUIRED) {
-					for (Rsp<Boolean> rsp : ret) {
+					for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+						Address sender = entry.getKey();
+						Rsp<Boolean> rsp = entry.getValue();
 						if (rsp != null && rsp.getValue()) {
-							address = rsp.getSender();
+							address = sender;
 							break;
 						}
 					}
 				} else {
 					List<Address> slaves = new ArrayList<Address>();
-					for (Rsp<Boolean> rsp : ret) {
+					for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
+						Address sender = entry.getKey();
+						Rsp<Boolean> rsp = entry.getValue();
 						if (rsp != null && !rsp.getValue()) {
-							slaves.add(rsp.getSender());
+							slaves.add(sender);
 						}
 					}
 					if (!slaves.isEmpty())
