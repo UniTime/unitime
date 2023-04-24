@@ -414,7 +414,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				if (!iDays.contains(period.getDateOffset())) {
 				    for (Exam exam: hibSession.createQuery(
                     "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-                    .setParameter("periodId", period.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("periodId", period.getUniqueId(), Long.class)
                     .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
@@ -472,7 +472,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				if (start==null) {
 				    for (Exam exam: hibSession.createQuery(
 				            "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-				            .setParameter("periodId", period.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				            .setParameter("periodId", period.getUniqueId(), Long.class)
 				            .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
@@ -520,7 +520,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 		ExamPeriod ep = (ExamPeriodDAO.getInstance()).get(getUniqueId(), hibSession);
 		for (Exam exam: hibSession.createQuery(
 		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-		        .setParameter("periodId", ep.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+		        .setParameter("periodId", ep.getUniqueId(), Long.class)
 		        .list()) {
             exam.unassign(context.getUser().getExternalUserId(), hibSession);
 		}

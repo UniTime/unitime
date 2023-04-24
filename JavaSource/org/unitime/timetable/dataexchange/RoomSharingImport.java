@@ -75,7 +75,7 @@ public class RoomSharingImport  extends BaseImport {
             Set<String> avoidRoomName = new HashSet<String>();
             Map<String, Location> id2location = new HashMap<String, Location>();
             Map<String, Location> name2location = new HashMap<String, Location>();
-            for (Location location: getHibSession().createQuery("from Location where session.uniqueId = :sessionId", Location.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (Location location: getHibSession().createQuery("from Location where session.uniqueId = :sessionId", Location.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
             	if (location.getExternalUniqueId() != null && !avoidRoomId.contains(location.getExternalUniqueId())) {
             		Location old = id2location.put(location.getExternalUniqueId(), location);
             		if (old != null) {
@@ -95,7 +95,7 @@ public class RoomSharingImport  extends BaseImport {
             info("Loading departments...");
             Map<String, Department> id2department = new HashMap<String, Department>();
             Map<String, Department> code2department = new HashMap<String, Department>();
-            for (Department dept: getHibSession().createQuery("from Department where session.uniqueId = :sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (Department dept: getHibSession().createQuery("from Department where session.uniqueId = :sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
             	if (dept.getExternalUniqueId() != null) {
             		Department old = id2department.put(dept.getExternalUniqueId(), dept);
             		if (old != null) {

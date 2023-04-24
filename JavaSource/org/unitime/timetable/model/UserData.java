@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -99,7 +99,7 @@ public class UserData extends BaseUserData {
 		}
 		q += ")";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, String.class).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;
@@ -108,7 +108,7 @@ public class UserData extends BaseUserData {
 	public static HashMap<String,String> getProperties(String externalUniqueId) {
 		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, String.class).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;

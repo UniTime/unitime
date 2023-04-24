@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -46,20 +46,22 @@ import org.hibernate.boot.cfgxml.spi.MappingReference.Type;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
 import org.hibernate.dialect.MySQLDialect;
-import org.hibernate.dialect.Oracle8iDialect;
-import org.hibernate.dialect.PostgreSQL9Dialect;
-import org.hibernate.dialect.function.SQLFunctionTemplate;
-import org.hibernate.dialect.function.StandardSQLFunction;
+import org.hibernate.dialect.OracleDialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
+import org.hibernate.query.sqm.function.NamedSqmFunctionDescriptor;
+import org.hibernate.query.sqm.produce.function.StandardArgumentsValidators;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.sql.ast.SqlAstNodeRenderingMode;
+import org.hibernate.sql.ast.SqlAstTranslator;
+import org.hibernate.sql.ast.spi.SqlAppender;
+import org.hibernate.sql.ast.tree.SqlAstNode;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -70,9 +72,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao._RootDAO;
 
-import javax.persistence.Entity;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.EntityType;
 
 /**
  * @author Tomas Muller
@@ -102,12 +104,8 @@ public class HibernateUtil {
     
     public static void fixSchemaInFormulas(Metadata meta, String schema, Class dialect) throws ClassNotFoundException {
     	for (PersistentClass pc: meta.getEntityBindings()) {
-    		// Hiberbate 6: for (Property p : pc.getProperties())
-    		for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
-    			Property p = (Property)j.next();
-    			// Hibernate 6: for (Selectable c: p.getSelectables())
-    			for (Iterator k=p.getColumnIterator();k.hasNext();) {
-    				Selectable c = (Selectable)k.next();
+    		for (Property p : pc.getProperties()) {
+    			for (Selectable c: p.getSelectables()) {
                     if (c instanceof Formula) {
                         Formula f = (Formula)c;
                         boolean updated = false;
@@ -156,18 +154,16 @@ public class HibernateUtil {
         if (idgen!=null)
         	config.getConfigurationValues().put("tmtbl.uniqueid.generator", idgen);
 
-        if (ApplicationProperty.HibernateCacheConfiguration.value() != null)
-        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", ApplicationProperty.HibernateCacheConfiguration.value());
-        else if (ApplicationProperty.HibernateClusterEnabled.isTrue())
-        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-cluster.xml");
-        else if (ApplicationProperty.HibernateClusterEnabled.isFalse())
-        	config.getConfigurationValues().put("hibernate.cache.infinispan.cfg", "infinispan-local.xml");
-        config.getConfigurationValues().put("hibernate.cache.infinispan.jgroups_cfg", ApplicationProperty.HibernateClusterConfiguration.value());
-
         // Remove second level cache
         config.getConfigurationValues().put("hibernate.cache.use_second_level_cache", "false");
         config.getConfigurationValues().put("hibernate.cache.use_query_cache", "false");
         config.getConfigurationValues().remove("hibernate.cache.region.factory_class");
+        config.getConfigurationValues().remove("hibernate.cache.infinispan.cfg");
+        config.getConfigurationValues().put("cache.use_second_level_cache", "false");
+        config.getConfigurationValues().put("cache.use_query_cache", "false");
+        config.getConfigurationValues().remove("cache.region.factory_class");
+        config.getConfigurationValues().remove("cache.infinispan.cfg");
+        
 
         for (Enumeration e=properties.propertyNames();e.hasMoreElements();) {
         	String name = (String)e.nextElement();
@@ -415,15 +411,15 @@ public class HibernateUtil {
     }
     
     public static boolean isOracle() {
-    	return Oracle8iDialect.class.isAssignableFrom(getDialect());
+    	return OracleDialect.class.isAssignableFrom(getDialect());
     }
     
     public static boolean isPostgress() {
-    	return PostgreSQL9Dialect.class.isAssignableFrom(getDialect());
+    	return PostgreSQLDialect.class.isAssignableFrom(getDialect());
     }
     
     public static boolean isPostgress(Class dialect) {
-    	return PostgreSQL9Dialect.class.isAssignableFrom(dialect);
+    	return PostgreSQLDialect.class.isAssignableFrom(dialect);
     }
     
     public static String addDate(String dateSQL, String incrementSQL) {
@@ -450,41 +446,25 @@ public class HibernateUtil {
     }
     
     public static void addOperations(MetadataBuilder builder, Class dialect) {
-    	if (Oracle8iDialect.class.isAssignableFrom(dialect)) {
-    		builder.applySqlFunction(
-    				"bit_and",
-    				new StandardSQLFunction("bitand", StandardBasicTypes.INTEGER)
-    				);
-        } else if (PostgreSQL9Dialect.class.isAssignableFrom(dialect)) {
-    		builder.applySqlFunction(
-    				"bit_and",
-    				new SQLFunctionTemplate(IntegerType.INSTANCE, "cast(?1 as int) & cast(?2 as int)")
-    				/* // Hibernate 6: SQLFunctionTemplate >> PatternBasedSqmFunctionDescriptor
-    				new PatternBasedSqmFunctionDescriptor(
-    						new PatternRenderer("cast(?1 as int) & cast(?2 as int)"),
-    						null,
-    						null,
-    						null,
-    						null,
-    						FunctionKind.NORMAL,
-    						null
-    						)*/
-    				);
-    		builder.applySqlFunction(
-    				"adddate",
-    				new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'")
-    				);
-        } else {
-        	builder.applySqlFunction(
-    				"bit_and",
-    				new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 & ?2")
-    				);
+    	if (PostgreSQLDialect.class.isAssignableFrom(dialect)) {
+    		builder.applySqlFunction("adddate", PostgreSQLAddDateFunction.INSTANCE);
         }
-    	builder.applySqlFunction(
-				"replace",
-				new StandardSQLFunction("replace", StandardBasicTypes.STRING)
-				);
-    }    
+    }
+    
+    public static class PostgreSQLAddDateFunction extends NamedSqmFunctionDescriptor {
+    	public static final PostgreSQLAddDateFunction INSTANCE = new PostgreSQLAddDateFunction();
+    	public PostgreSQLAddDateFunction() {
+    		super("adddate", false, StandardArgumentsValidators.exactly(2), null);
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(" as int) & cast(");
+    		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(") * interval '1 day'");
+    	}
+    }
     
     public static String escapeSql(String str) {
     	if (str == null) return null;

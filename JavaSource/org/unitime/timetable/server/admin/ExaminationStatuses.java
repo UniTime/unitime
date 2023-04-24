@@ -77,9 +77,9 @@ public class ExaminationStatuses implements AdminTable {
 				"where d.session.uniqueId = :sessionId and mr.role.enabled = true "+
 				"and :prmExMgr in elements(mr.role.rights) and :prmAdmin not in elements(mr.role.rights) " +
 				"order by m.lastName, m.firstName", TimetableManager.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("prmExMgr", Right.ExaminationSolver.name(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("prmAdmin", Right.StatusIndependent.name(), org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("prmExMgr", Right.ExaminationSolver.name(), String.class)
+				.setParameter("prmAdmin", Right.StatusIndependent.name(), String.class)
 				.setCacheable(true).list()) {
 			managers.add(new ListItem(m.getUniqueId().toString(), nf.format(m)));
 		}

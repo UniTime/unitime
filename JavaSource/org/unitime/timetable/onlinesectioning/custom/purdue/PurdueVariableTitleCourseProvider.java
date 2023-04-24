@@ -89,10 +89,10 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	@Override
 	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		org.hibernate.query.Query q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
-		q.setParameter("query", query == null ? "%" : query.toUpperCase() + "%", org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-		q.setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("query", query == null ? "%" : query.toUpperCase() + "%", String.class);
+		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()), String.class);
+		q.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class);
+		q.setParameter("studentId", studentId, Long.class);
 		if (limit > 0)
 			q.setMaxResults(5 * limit);
 		
@@ -149,10 +149,10 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	@Override
 	public VariableTitleCourseInfo getVariableTitleCourse(String query, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		org.hibernate.query.Query q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
-		q.setParameter("query", query.toUpperCase(), org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-		q.setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("query", query.toUpperCase(), String.class);
+		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()), String.class);
+		q.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class);
+		q.setParameter("studentId", studentId, Long.class);
 		
 		NameFormat nameFormat = NameFormat.fromReference(getInstructorNameFormat());
 
@@ -194,8 +194,8 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 				}
 				for (DepartmentalInstructor di: helper.getHibSession().createQuery(
 						"select i from DepartmentalInstructor i inner join i.department.subjectAreas sa where " +
-						"i.department.session = :sessionId and sa.subjectAreaAbbreviation = :subject and i.externalUniqueId is not null", DepartmentalInstructor.class
-						).setCacheable(true).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("subject", subject, org.hibernate.type.StringType.INSTANCE).list()) {
+						"i.department.session.uniqueId = :sessionId and sa.subjectAreaAbbreviation = :subject and i.externalUniqueId is not null", DepartmentalInstructor.class
+						).setCacheable(true).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setParameter("subject", subject, String.class).list()) {
 					info.addInstructor(di.getUniqueId(), nameFormat.format(di));
 				}
 				

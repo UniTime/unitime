@@ -442,7 +442,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	        		Query q = hibSession.createQuery(query.toString());
 	        		q.setFetchSize(200);
 	        		q.setCacheable(true);
-	        		q.setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE);
+	        		q.setParameter("subjectAreaId", Long.parseLong(subjectAreaId), Long.class);
 	                
 	        		List result = q.list();
 	                crsNumList = new Vector();
@@ -482,7 +482,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 		        		q = hibSession.createQuery(query.toString());
 		        		q.setFetchSize(200);
 		        		q.setCacheable(true);
-		        		q.setParameter("courseNbr", Long.parseLong(courseNbr), org.hibernate.type.LongType.INSTANCE);
+		        		q.setParameter("courseNbr", Long.parseLong(courseNbr), Long.class);
 		                
 		        		result = new Vector(q.list());
 		        		if(result!=null && result.size()>0) {
@@ -531,7 +531,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 			        		q = hibSession.createQuery(query.toString());
 			        		q.setFetchSize(200);
 			        		q.setCacheable(true);
-			        		q.setParameter("itype", Long.parseLong(subpart), org.hibernate.type.LongType.INSTANCE);
+			        		q.setParameter("itype", Long.parseLong(subpart), Long.class);
 			        		
 			        		result = q.list();
 			        		if(result!=null && result.size()>0) {
@@ -786,7 +786,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         String query = "delete DistributionPref dp where dp.uniqueId=:distPrefId";
 
         Query q = hibSession.createQuery(query);
-        q.setParameter("distPrefId", Long.parseLong(distPrefId, org.hibernate.type.LongType.INSTANCE));
+        q.setParameter("distPrefId", Long.parseLong(distPrefId, Long.class));
         q.executeUpdate();
         */
         

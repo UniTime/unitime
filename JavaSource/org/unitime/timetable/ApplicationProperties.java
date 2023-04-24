@@ -197,7 +197,8 @@ public class ApplicationProperties {
 		Properties properties = sSessionProperties.get(sessionId);
 		if (properties == null) {
 			properties = SessionConfig.toProperties(sessionId);
-			sSessionProperties.put(sessionId, properties);
+			if (properties != null)
+				sSessionProperties.put(sessionId, properties);
 		}
 		return properties;
 	}

@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -73,9 +73,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 			query += "  and cc.permanentId = '" + courseOffering.getPermId() + "'";
 		}
 		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
-					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
-					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", session.getUniqueId(), Long.class)
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), String.class)
+					.setParameter("courseNbr", courseOffering.getCourseNbr(), String.class)
 					.list();
 		if (l != null && l.size() == 1){
 			return l.get(0);
@@ -107,9 +107,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 		query += "  and cc.subject=:subjectAbbv";
 		query += "  and cc.courseNumber=:courseNbr";
 		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
-					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
-					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", session.getUniqueId(), Long.class)
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), String.class)
+					.setParameter("courseNbr", courseOffering.getCourseNbr(), String.class)
 					.list();
 		if (l != null && l.size() == 1){
 			return((CourseCatalog) l.get(0));

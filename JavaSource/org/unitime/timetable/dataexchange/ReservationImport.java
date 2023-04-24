@@ -78,7 +78,7 @@ public class ReservationImport  extends BaseImport {
             
         	info("Deleting existing reservations...");
         	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session=:sessionId", Reservation.class).
-            	setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            	setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		getHibSession().delete(r);
         	}
         	flush(false);
@@ -89,7 +89,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, AcademicArea> areasByExtId = new Hashtable<String, AcademicArea>();
         	for (AcademicArea area: getHibSession().createQuery(
         			"select a from AcademicArea a where a.session.uniqueId = :sessionId", AcademicArea.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		areasByAbbv.put(area.getAcademicAreaAbbreviation(), area);
         		if (area.getExternalUniqueId() != null)
         			areasByExtId.put(area.getExternalUniqueId(), area);
@@ -99,7 +99,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, StudentGroup> groupsByExtId = new Hashtable<String, StudentGroup>();
         	for (StudentGroup group: getHibSession().createQuery(
         			"select a from StudentGroup a where a.session.uniqueId = :sessionId", StudentGroup.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		groupsByCode.put(group.getGroupAbbreviation(), group);
         		if (group.getExternalUniqueId() != null)
         			groupsByExtId.put(group.getExternalUniqueId(), group);
@@ -109,7 +109,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, PosMajor> majorsByExtId = new Hashtable<String, PosMajor>();
         	for (PosMajor major: getHibSession().createQuery(
         			"select a from PosMajor a where a.session.uniqueId = :sessionId", PosMajor.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		for (AcademicArea area: major.getAcademicAreas())
         			majorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + major.getCode(), major);
         		if (major.getExternalUniqueId() != null)
@@ -120,7 +120,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, PosMinor> minorsByExtId = new Hashtable<String, PosMinor>();
         	for (PosMinor minor: getHibSession().createQuery(
         			"select a from PosMinor a where a.session.uniqueId = :sessionId", PosMinor.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		for (AcademicArea area: minor.getAcademicAreas())
         			minorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + minor.getCode(), minor);
         		if (minor.getExternalUniqueId() != null)
@@ -131,7 +131,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, AcademicClassification> clasfsByExtId = new Hashtable<String, AcademicClassification>();
         	for (AcademicClassification clasf: getHibSession().createQuery(
         			"select a from AcademicClassification a where a.session.uniqueId = :sessionId", AcademicClassification.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		clasfsByCode.put(clasf.getCode(), clasf);
         		if (clasf.getExternalUniqueId() != null)
         			clasfsByExtId.put(clasf.getExternalUniqueId(), clasf);
@@ -142,7 +142,7 @@ public class ReservationImport  extends BaseImport {
         	Hashtable<String, CourseOffering> corusesBySubjectCourseNbr = new Hashtable<String, CourseOffering>();
         	for (CourseOffering course: getHibSession().createQuery(
         			"select a from CourseOffering a where a.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
-        			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
         		corusesBySubjectCourseNbr.put(course.getSubjectArea().getSubjectAreaAbbreviation() + "|" + course.getCourseNbr(), course);
         		if (course.getExternalUniqueId() != null)
         			corusesByExtId.put(course.getExternalUniqueId(), course);

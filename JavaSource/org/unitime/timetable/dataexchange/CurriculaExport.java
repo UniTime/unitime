@@ -55,7 +55,7 @@ public class CurriculaExport extends BaseExport{
 
     		List<Curriculum> curricula = getHibSession().createQuery(
     				"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId", Curriculum.class
-    				).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+    				).setParameter("sessionId", session.getUniqueId(), Long.class).list();
     		
             boolean externalIds = "true".equals(parameters.getProperty("tmtbl.export.curricula.externalIds", "true"));
             boolean minimalistic = "true".equals(parameters.getProperty("tmtbl.export.curricula.minimalistic", "false"));

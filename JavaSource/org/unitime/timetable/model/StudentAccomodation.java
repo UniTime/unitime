@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -67,8 +67,8 @@ public class StudentAccomodation extends BaseStudentAccomodation {
                     "select a from StudentAccomodation a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.abbreviation=:abbv", StudentAccomodation.class).
-             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-             setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
+             setParameter("sessionId", sessionId.longValue(), Long.class).
+             setParameter("abbv", abbv, String.class).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -80,7 +80,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name", Object[].class)
-    			.setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("offeringId", offering.getUniqueId(), Long.class)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -94,7 +94,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.clazz.uniqueId = :classId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name", Object[].class)
-    			.setParameter("classId", clazz.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("classId", clazz.getUniqueId(), Long.class)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -125,7 +125,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
         			"where " + query + " " +
         			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
         			"order by count(a) desc, a.name", Object[].class)
-        			.setParameter("examOwnerId", owner.getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+        			.setParameter("examOwnerId", owner.getOwnerId(), Long.class)
         			.setCacheable(true).list()) {
             	StudentAccomodation a = (StudentAccomodation)line[0];
             	int count = ((Number)line[1]).intValue();

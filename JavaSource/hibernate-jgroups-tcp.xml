@@ -20,7 +20,7 @@
  -->
  <config xmlns="urn:org:jgroups"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd">
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups-5.2.xsd">
    <TCP bind_addr="${jgroups.tcp.address:SITE_LOCAL}"
         bind_port="${unitime.hibernate.port:7833}"
         port_range="${jgroups.tcp.port_range:3}"
@@ -33,7 +33,7 @@
         thread_pool.keep_alive_time="5000"
    />
    <TCPPING initial_hosts="${unitime.hibernate.initial_hosts:localhost[7833]}" port_range="${jgroups.tcp.port_range:3}"/>
-   <!--
+   <!-- 
    <JDBC_PING
      	connection_driver="${connection.driver_class}"
      	connection_url="${connection.url}"
@@ -45,8 +45,9 @@
      	select_all_pingdata_sql="select ping_data, own_address, cluster_name from cluster_discovery where cluster_name=?"
  		contains_sql="select count(own_address) from cluster_discovery where cluster_name=? and own_address=?"
  		initialize_sql=""
+ 		remove_all_data_on_view_change="true"
  	/>
-   -->
+ 	 -->
    <MERGE3 min_interval="10000"
            max_interval="30000"
    />

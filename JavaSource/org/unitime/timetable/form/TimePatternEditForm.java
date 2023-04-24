@@ -203,7 +203,7 @@ public class TimePatternEditForm implements UniTimeForm {
 				if (oldDays != tp.getDays().size() || oldTimes != tp.getTimes().size()) {
 					for (TimePref tpref: hibSession.createQuery(
 							"from TimePref tp where tp.timePattern.uniqueId = :tpid", TimePref.class)
-							.setParameter("tpid", tp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+							.setParameter("tpid", tp.getUniqueId(), Long.class).list()) {
 						tpref.setPreference(null);
 						hibSession.update(tpref);
 					}

@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.List;
 import java.util.Set;
@@ -61,14 +61,14 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	public static ClassDurationType findByReference(String reference, org.hibernate.Session hibSession) {
 		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"from ClassDurationType where reference = :reference", ClassDurationType.class)
-				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("reference", reference, String.class)
 				.setCacheable(true).uniqueResult();
 	}
 	
 	public static ClassDurationType findDefaultType(Long sessionId, org.hibernate.Session hibSession) {
 		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"select t from Session s inner join s.defaultClassDurationType t where s.uniqueId = :sessionId", ClassDurationType.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true).uniqueResult();
 	}
 	

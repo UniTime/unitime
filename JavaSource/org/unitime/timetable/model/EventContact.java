@@ -21,9 +21,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -63,7 +63,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {
 	    return EventContactDAO.getInstance().getSession().
 	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId", EventContact.class).
-	        setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).
+	        setParameter("externalUniqueId", externalUniqueId, String.class).
 	        setHibernateFlushMode(FlushMode.MANUAL).
 	        uniqueResult();
 	}
@@ -71,7 +71,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	public static EventContact findByEmail(String email) {
 	    List<EventContact> ec = EventContactDAO.getInstance().getSession().
 	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress", EventContact.class).
-	        setParameter("emailAddress", email, org.hibernate.type.StringType.INSTANCE).list();
+	        setParameter("emailAddress", email, String.class).list();
 	    if (ec.isEmpty()) return null; 
 	    else return ec.get(0);
 	}

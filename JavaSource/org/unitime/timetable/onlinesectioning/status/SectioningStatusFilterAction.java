@@ -566,8 +566,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			List<SubjectArea> subjects = helper.getHibSession().createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
 					"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title) " +
 					"order by s.subjectAreaAbbreviation", SubjectArea.class)
-					.setParameter("name", iRequest.getText().toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "% " + iRequest.getText().toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
-					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(20).list();
+					.setParameter("name", iRequest.getText().toLowerCase() + "%", String.class).setParameter("title", "% " + iRequest.getText().toLowerCase() + "%", String.class)
+					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setMaxResults(20).list();
 			for (SubjectArea subject: subjects)
 				response.addSuggestion(subject.getSubjectAreaAbbreviation() + " - " + subject.getTitle(), subject.getSubjectAreaAbbreviation(), "Subject Area", "course", true);
 			if (subjects.size() == 1) {
@@ -579,8 +579,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				List<CourseOffering> courses = helper.getHibSession().createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
 						"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
 						"order by s.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-						.setParameter("name", iRequest.getText().toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "% " + iRequest.getText().toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
-						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(20).list();
+						.setParameter("name", iRequest.getText().toLowerCase() + "%", String.class).setParameter("title", "% " + iRequest.getText().toLowerCase() + "%", String.class)
+						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setMaxResults(20).list();
 				for (CourseOffering course: courses) {
 					response.addSuggestion(course.getCourseName() + (course.getTitle() == null ? "" : " - " + course.getTitle()), course.getCourseName(), "Course Offering", "course", true);
 				}
@@ -631,7 +631,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					"select distinct m from TimetableManager m inner join m.managerRoles r inner join m.departments d where " +
 					" (lower(m.externalUniqueId) like :q || '%' or lower(m.emailAddress) like :q || '%' or lower(m.lastName) || ' ' || lower(m.firstName) like :q || '%')" +
 					" and 'ConsentApproval' in elements(r.role.rights) and d.session.uniqueId = :sessionId order by m.lastName, m.firstName, m.middleName", TimetableManager.class
-					).setParameter("q", iRequest.getText().toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(20).list()) {
+					).setParameter("q", iRequest.getText().toLowerCase(), String.class).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setMaxResults(20).list()) {
 				response.addSuggestion(manager.getName(), manager.getName(), "Approved by", "approver");
 			}
 			
@@ -640,7 +640,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					"c.subjectArea.session.uniqueId = :sessionId and c.consentType.reference != :reference and " +
 					"(lower(i.externalUniqueId) like :q || '%' or lower(i.email) like :q || '%' or lower(i.lastName) || ' ' || lower(i.firstName) like :q || '%') " +
 					"order by i.lastName, i.firstName, i.middleName", DepartmentalInstructor.class
-					).setParameter("q", iRequest.getText().toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("reference", "IN", org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(20).list()) {
+					).setParameter("q", iRequest.getText().toLowerCase(), String.class).setParameter("reference", "IN", String.class).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setMaxResults(20).list()) {
 				response.addSuggestion(coordinator.getNameLastFirst(), coordinator.getNameLastFirst(), "Approved by", "approver");
 			}
 		}
@@ -1298,23 +1298,23 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
 					} else if (param.getValue() instanceof Float) {
-						query.setParameter(param.getKey(), (Float)param.getValue(), org.hibernate.type.FloatType.INSTANCE);
+						query.setParameter(param.getKey(), (Float)param.getValue(), Float.class);
 					} else if (param.getValue() instanceof Double) {
-						query.setParameter(param.getKey(), (Double)param.getValue(), org.hibernate.type.DoubleType.INSTANCE);
+						query.setParameter(param.getKey(), (Double)param.getValue(), Double.class);
 					} else if (param.getValue() instanceof Number) {
-						query.setParameter(param.getKey(), ((Number)param.getValue()).doubleValue(), org.hibernate.type.DoubleType.INSTANCE);
+						query.setParameter(param.getKey(), ((Number)param.getValue()).doubleValue(), Double.class);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
 					}
 				}
 			}
@@ -1363,27 +1363,27 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
-				query.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE);
+				query.setParameter("sessionId", iSessionId, Long.class);
 				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
 					} else if (param.getValue() instanceof Float) {
-						query.setParameter(param.getKey(), (Float)param.getValue(), org.hibernate.type.FloatType.INSTANCE);
+						query.setParameter(param.getKey(), (Float)param.getValue(), Float.class);
 					} else if (param.getValue() instanceof Double) {
-						query.setParameter(param.getKey(), (Double)param.getValue(), org.hibernate.type.DoubleType.INSTANCE);
+						query.setParameter(param.getKey(), (Double)param.getValue(), Double.class);
 					} else if (param.getValue() instanceof Number) {
-						query.setParameter(param.getKey(), ((Number)param.getValue()).doubleValue(), org.hibernate.type.DoubleType.INSTANCE);
+						query.setParameter(param.getKey(), ((Number)param.getValue()).doubleValue(), Double.class);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
 					}
 				}
 				if (iLimit != null)

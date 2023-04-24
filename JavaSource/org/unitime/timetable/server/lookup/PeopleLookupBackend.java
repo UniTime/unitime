@@ -233,7 +233,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = StaffDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         for (Staff staff: (List<Staff>)hq.setCacheable(true).list()) {
@@ -261,7 +261,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = AdvisorDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         for (Advisor advisor: (List<Advisor>)hq.setCacheable(true).list()) {
@@ -289,7 +289,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = EventContactDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         for (EventContact contact: (List<EventContact>)hq.setCacheable(true).list()) {
@@ -324,8 +324,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = DepartmentalInstructorDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
-        hq.setParameter("sessionId", context.getSessionId(), org.hibernate.type.LongType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
+        hq.setParameter("sessionId", context.getSessionId(), Long.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         int ret = 0;
@@ -358,16 +358,16 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = StudentDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
         	if (context.isAdmin()) {
         		if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue()) {
-            		hq.setParameter("i" + idx, context.getQueryTokens().get(idx).replaceFirst("^0+(?!$)", ""), org.hibernate.type.StringType.INSTANCE);
+            		hq.setParameter("i" + idx, context.getQueryTokens().get(idx).replaceFirst("^0+(?!$)", ""), String.class);
             	} else {
-            		hq.setParameter("i" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+            		hq.setParameter("i" + idx, context.getQueryTokens().get(idx), String.class);
             	}
         	}
         }
-        hq.setParameter("sessionId", context.getSessionId(), org.hibernate.type.LongType.INSTANCE);
+        hq.setParameter("sessionId", context.getSessionId(), Long.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         for (Student student: (List<Student>)hq.setCacheable(true).list()) {
@@ -395,7 +395,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = TimetableManagerDAO.getInstance().getSession().createQuery(q);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
-        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), org.hibernate.type.StringType.INSTANCE);
+        	hq.setParameter("t" + idx, context.getQueryTokens().get(idx), String.class);
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         for (TimetableManager manager: (List<TimetableManager>)hq.setCacheable(true).list()) {

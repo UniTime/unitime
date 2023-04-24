@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -76,8 +76,8 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 				"(s.campus is null or s.campus=(select x.academicInitiative from Session x where x.uniqueId = :sessionId)) and " +
 				"(select di.externalUniqueId from DepartmentalInstructor di " +
 				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
-		q.setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("sessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("deptCode", deptCode, String.class);
+		q.setParameter("sessionId", acadSessionId, Long.class);
 		q.setCacheable(true);
 		return (q.list());
 	}

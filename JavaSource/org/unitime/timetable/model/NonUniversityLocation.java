@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -113,11 +113,6 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		return newNonUniversityLocation;
 	}
 	
-	@Transient
-    public String getRoomTypeLabel() {
-        return getRoomType().getLabel();
-    }
-
 	@Override
 	@Transient
     public List<Location> getFutureLocations() {
@@ -136,7 +131,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime", Location.class
-    			).setParameter("uniqueId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+    			).setParameter("uniqueId", getUniqueId(), Long.class).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);
     		else

@@ -264,14 +264,14 @@ public class ImportPreferences {
 		if ("LLR".equals(deptCode) || "LAB".equals(deptCode)) {
 			return hibSession.
 			createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.externalManager=true and d.externalMgrAbbv=:deptCode", Department.class).
-			setParameter("sessionId", iSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
+			setParameter("deptCode", deptCode, String.class).
 			uniqueResult();
 		}
 		return hibSession.
 		createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.deptCode=:deptCode", Department.class).
-		setParameter("sessionId", iSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
-		setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
+		setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
+		setParameter("deptCode", deptCode, String.class).
 		uniqueResult();
 	}
 
@@ -361,8 +361,8 @@ public class ImportPreferences {
 			try {
 				instructor = (DepartmentalInstructor)hibSession.
 					createQuery("select i from DepartmentalInstructor i where i.puid=:puid and i.department.uniqueId=:deptId", DepartmentalInstructor.class).
-					setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
-					setParameter("deptId", clazz.getControllingDept().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
+					setParameter("puid", puid, String.class).
+					setParameter("deptId", clazz.getControllingDept().getUniqueId().longValue(), Long.class).
 					uniqueResult();
 			} catch (NonUniqueResultException e) {
 				sLog.error("Two or more instructors with puid "+puid+" (department: "+clazz.getControllingDept().getDeptCode()+")");
@@ -373,8 +373,8 @@ public class ImportPreferences {
 				try {
 					staff = hibSession.
 						createQuery("select distinct s from Staff s where s.dept=:dept and s.puid=:puid", Staff.class).
-						setParameter("dept", clazz.getControllingDept().getDeptCode(), org.hibernate.type.StringType.INSTANCE).
-						setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
+						setParameter("dept", clazz.getControllingDept().getDeptCode(), String.class).
+						setParameter("puid", puid, String.class).
 						uniqueResult();
 				} catch (NonUniqueResultException e) {
 					sLog.error("Two or more staffs with puid "+puid+" (department: "+clazz.getControllingDept().getDeptCode()+")");
@@ -383,7 +383,7 @@ public class ImportPreferences {
 				if (staff==null) {
 					List staffs = hibSession.
 						createQuery("select distinct s from Staff s where s.puid=:puid", Staff.class).
-						setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
+						setParameter("puid", puid, String.class).
 						list();
 					if (!staffs.isEmpty())
 						staff = (Staff)staffs.get(0);
@@ -505,9 +505,9 @@ public class ImportPreferences {
 		String puid = element.attributeValue("puid");
 		DepartmentalInstructor instructor = hibSession.
 			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId and id.puid=:puid", DepartmentalInstructor.class).
-			setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
-			setParameter("sessionId", iSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
+			setParameter("deptCode", deptCode, String.class).
+			setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
+			setParameter("puid", puid, String.class).
 			uniqueResult();
 		if (instructor==null) {
 			sLog.error("Unable to find instructor "+puid+" for department "+deptCode);
@@ -552,7 +552,7 @@ public class ImportPreferences {
 		PreferenceLevel level = PreferenceLevel.getPreferenceLevel(element.attributeValue("level"));
 		DistributionType type = hibSession.
 			createQuery("select t from DistributionType t where t.reference=:reference", DistributionType.class).
-			setParameter("reference", element.attributeValue("type"), org.hibernate.type.StringType.INSTANCE).uniqueResult();
+			setParameter("reference", element.attributeValue("type"), String.class).uniqueResult();
 		if (type==null) {
 			sLog.error("Unable to find distribution preference type "+element.attributeValue("type"));
 			return null;
@@ -646,13 +646,13 @@ public class ImportPreferences {
 				Element x = (Element)i.next();
 				SubjectArea sa =  hibSession.
 					createQuery("select sa from SubjectArea sa where sa.subjectAreaAbbreviation=:subjectAreaAbbreviation and sa.sessionId=:sessionId", SubjectArea.class).
-					setParameter("sessionId", iSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
-					setParameter("subjectAreaAbbreviation", x.attributeValue("subjectArea"), org.hibernate.type.StringType.INSTANCE).
+					setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
+					setParameter("subjectAreaAbbreviation", x.attributeValue("subjectArea"), String.class).
 					uniqueResult();
 				CourseOffering co = hibSession.
 					createQuery("select co from CourseOffering co where co.subjectArea.uniqueId=:subjectAreaId and co.courseNbr=:courseNbr", CourseOffering.class).
-					setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-					setParameter("courseNbr", x.attributeValue("courseNbr"), org.hibernate.type.StringType.INSTANCE).
+					setParameter("subjectAreaId", sa.getUniqueId(), Long.class).
+					setParameter("courseNbr", x.attributeValue("courseNbr"), String.class).
 					uniqueResult();
 				if (co==null) {
 					co = new CourseOffering();
@@ -727,7 +727,7 @@ public class ImportPreferences {
 			subpart.setItype(
 					hibSession.
 					createQuery("select i from ItypeDesc i where i.abbv=:abbv", ItypeDesc.class).
-					setParameter("abbv", element.attributeValue("itype"), org.hibernate.type.StringType.INSTANCE).
+					setParameter("abbv", element.attributeValue("itype"), String.class).
 					uniqueResult());
 			subpart.setParentSubpart(parent);
 			subpart.setInstrOfferingConfig(cfg);
@@ -803,8 +803,8 @@ public class ImportPreferences {
 			sLog.info("solverGroupName:"+root.attributeValue("solverGroupName"));
 			iSession = hibSession.
 				createQuery("select s from Session s where s.academicYearTerm=:academicYearTerm and s.academicInitiative=:academicInitiative", Session.class).
-				setParameter("academicYearTerm", root.attributeValue("academicYearTerm"), org.hibernate.type.StringType.INSTANCE).
-				setParameter("academicInitiative", root.attributeValue("academicInitiative"), org.hibernate.type.StringType.INSTANCE).
+				setParameter("academicYearTerm", root.attributeValue("academicYearTerm"), String.class).
+				setParameter("academicInitiative", root.attributeValue("academicInitiative"), String.class).
 				uniqueResult();
 			sLog.info("session:"+iSession);
 			

@@ -282,7 +282,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         DepartmentStatusType s = (DepartmentStatusTypeDAO.getInstance()).get(getUniqueId());
         for (Session session: hibSession.createQuery(
                 "select s from Session s where s.statusType.uniqueId=:id", Session.class).
-                setParameter("id", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+                setParameter("id", s.getUniqueId(), Long.class).list()) {
             DepartmentStatusType other = null;
             for (Iterator j=DepartmentStatusType.findAll().iterator();j.hasNext();) {
                 DepartmentStatusType x = (DepartmentStatusType)j.next();
@@ -297,7 +297,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         }
         for (Department dept: hibSession.createQuery(
                 "select d from Department d where d.statusType.uniqueId=:id",Department.class).
-                setParameter("id", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+                setParameter("id", s.getUniqueId(), Long.class).list()) {
             dept.setStatusType(null);
             hibSession.saveOrUpdate(dept);
         }        

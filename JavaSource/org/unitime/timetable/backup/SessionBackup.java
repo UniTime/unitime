@@ -38,11 +38,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.Metamodel;
-import javax.persistence.metamodel.PluralAttribute;
-import javax.persistence.metamodel.SingularAttribute;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.Metamodel;
+import jakarta.persistence.metamodel.PluralAttribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +50,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ProgressWriter;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
+import org.hibernate.UnknownEntityTypeException;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -583,14 +584,14 @@ public class SessionBackup implements SessionBackupInterface {
 					for (Object[] id: iHibSession.createQuery(
 							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere(),
 							Object[].class
-							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+							).setParameter("sessionId", iSessionId, Long.class).list()) {
 						if (ids.add(new CompositeId(id))) size++;
 					}
 				} else {
 					for (Serializable id: iHibSession.createQuery(
 							"select distinct " + hqlName() + "." + getIdAttribute(meta()).getName() + " from " + hqlFrom() + " where " + hqlWhere(),
 							Serializable.class
-							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+							).setParameter("sessionId", iSessionId, Long.class).list()) {
 						if (ids.add(id)) size++;
 					}
 				}
@@ -627,7 +628,7 @@ public class SessionBackup implements SessionBackupInterface {
 			return iHibSession.createQuery(
 					"select " + (distinct() ? "" : "distinct ") + hqlName() + " from " + hqlFrom() + " where " + hqlWhere(),
 					Object.class
-					).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
+					).setParameter("sessionId", iSessionId, Long.class).list();
 		}
 		
 		Map<String, Map<Serializable, List<Object>>> iRelationCache = new HashMap<String, Map<Serializable,List<Object>>>();
@@ -641,6 +642,9 @@ public class SessionBackup implements SessionBackupInterface {
 				try {
 					attribute = meta().getAttribute(property);
 				} catch (IllegalArgumentException e) {
+					attribute = m.getAttribute(property);
+					join = true;
+				} catch (UnknownEntityTypeException e) {
 					attribute = m.getAttribute(property);
 					join = true;
 				}
@@ -702,7 +706,7 @@ public class SessionBackup implements SessionBackupInterface {
 								q += " and " + hqlName() + "." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName() + " = x." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName();
 						}	
 					}
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, Long.class).list()) {
 						Object[] cid = new Object[idatts.size()];
 						for (int i = 0; i < idatts.size(); i++)
 							cid[i] = o[i];
@@ -729,7 +733,7 @@ public class SessionBackup implements SessionBackupInterface {
 								" from " + hqlFrom() + ", " + m.getName() + " x inner join x." + property + " p where " + hqlWhere() + 
 								" and " + hqlName() + "." + idattr.getName() + " = x." + idattr.getName();
 					}
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, Long.class).list()) {
 						List<Object> list = relation.get((Serializable)o[0]);
 						if (list == null) {
 							list = new ArrayList<Object>();

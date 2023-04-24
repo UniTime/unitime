@@ -227,7 +227,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
 				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
-				).setParameter("studentId", iStudentId, org.hibernate.type.LongType.INSTANCE).list();
+				).setParameter("studentId", iStudentId, Long.class).list();
 		
 		if (student != null && iCheckExistingDemands) {
 			Format<Date> ts = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
@@ -513,7 +513,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		List<AdvisorCourseRequest> acrs = hibSession.createQuery(
 				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
-				).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list();
+				).setParameter("studentId", studentId, Long.class).list();
 		
 		fillCourseRequests(request, acrs);
 		

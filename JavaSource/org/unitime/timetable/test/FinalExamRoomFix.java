@@ -41,7 +41,7 @@ public class FinalExamRoomFix {
             
             for(Location location: hibSession.createQuery(
             		"select distinct p.location from ExamLocationPref p where p.examPeriod.examType.uniqueId = :type", Location.class
-            		).setParameter("type", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		).setParameter("type", type.getUniqueId(), Long.class).list()) {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");
             		location.setExamEnabled(type, true);
@@ -51,7 +51,7 @@ public class FinalExamRoomFix {
 
             for(Location location: hibSession.createQuery(
             		"select distinct r from Exam x inner join x.assignedRooms r where x.examType.uniqueId = :type", Location.class
-            		).setParameter("type", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		).setParameter("type", type.getUniqueId(), Long.class).list()) {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");
             		location.setExamEnabled(type, true);

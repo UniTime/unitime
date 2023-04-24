@@ -148,7 +148,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							"select f.uniqueId from Session f, Session s where " +
 							"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
 							"order by f.sessionBeginDateTime", Long.class)
-							.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list();
+							.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).list();
 					for (Long id: futureSessionIds) {
 						Integer flags = request.getFutureFlag(-id);
 						if (flags != null)
@@ -229,7 +229,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					"select m from Meeting m, Location l where " +
 					"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
 					"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate",
-					Meeting.class).setParameter("locId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+					Meeting.class).setParameter("locId", location.getUniqueId(), Long.class).list()) {
 				Event event = meeting.getEvent();
 				event.getMeetings().remove(meeting);
 				List<Meeting> deleted = deletedMeetings.get(event);
@@ -460,7 +460,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						location.clearExamPreferences(type.getUniqueId());
 						for (ExamPeriod period: hibSession.createQuery(
 								"from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId", ExamPeriod.class
-								).setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("typeId", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+								).setParameter("sessionId", location.getSession().getUniqueId(), Long.class).setParameter("typeId", type.getUniqueId(), Long.class).setCacheable(true).list()) {
 							PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
 							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode()))
 								location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
@@ -996,7 +996,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						location.clearExamPreferences(type.getUniqueId());
 						for (ExamPeriod period: hibSession.createQuery(
 								"from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId", ExamPeriod.class
-								).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("typeId", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+								).setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("typeId", type.getUniqueId(), Long.class).setCacheable(true).list()) {
 							PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
 							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode()))
 								location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
@@ -1231,7 +1231,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		else
 			return hibSession.createQuery(
 					"select t from RoomType t where t.reference = :reference", RoomType.class)
-					.setParameter("reference", original.getReference(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("reference", original.getReference(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
 	
 	protected PreferenceLevel lookupPreferenceLevel(org.hibernate.Session hibSession, PreferenceInterface original) {
@@ -1247,7 +1247,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		if (future || original.getId() == null) {
 			return hibSession.createQuery(
 					"select b from Building b where b.abbreviation = :abbreviation and b.session.uniqueId = :sessionId", Building.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbreviation", original.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("abbreviation", original.getAbbreviation(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return BuildingDAO.getInstance().get(original.getId(), hibSession);
 		}
@@ -1277,22 +1277,22 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			if (original.isDepartmental())
 				return hibSession.createQuery(
 					"select f from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.abbv = :abbv and f.department.deptCode = :deptCode", DepartmentRoomFeature.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", original.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setParameter("deptCode", original.getDepartment().getDeptCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", original.getAbbreviation(), String.class).setParameter("deptCode", original.getDepartment().getDeptCode(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select f from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.abbv = :abbv", GlobalRoomFeature.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", original.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", original.getAbbreviation(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else if (future) {
 			if (original.isDepartmental())
 				return hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode", DepartmentRoomFeature.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv", GlobalRoomFeature.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomFeatureDAO.getInstance().get(original.getId(), hibSession);
 		}
@@ -1304,22 +1304,22 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			if (original.isDepartmental())
 				return hibSession.createQuery(
 					"select g from RoomGroup g where g.department.session.uniqueId = :sessionId and g.abbv = :abbv and g.department.deptCode = :deptCode and g.global = false", RoomGroup.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", original.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setParameter("deptCode", original.getDepartment().getDeptCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", original.getAbbreviation(), String.class).setParameter("deptCode", original.getDepartment().getDeptCode(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select g from RoomGroup g where g.session.uniqueId = :sessionId and g.abbv = :abbv and g.global = true", RoomGroup.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", original.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", original.getAbbreviation(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else if (future) {
 			if (original.isDepartmental())
 				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false", RoomGroup.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.global = true", RoomGroup.class)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomGroupDAO.getInstance().get(original.getId(), hibSession);
 		}
@@ -1330,7 +1330,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		if (future) {
 			return hibSession.createQuery(
 				"select d from Department d, Department o where d.deptCode = o.deptCode and d.session.uniqueId = :sessionId and o.uniqueId = :originalId", Department.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+				.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getUniqueId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return original;
 		}
@@ -1341,7 +1341,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		if (future) {
 			return hibSession.createQuery(
 				"select distinct d from Department d, Department o where d.deptCode = o.deptCode and d.session.uniqueId = :sessionId and o.uniqueId = :originalId", Department.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", originalId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+				.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", originalId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return DepartmentDAO.getInstance().get(originalId, hibSession);
 		}

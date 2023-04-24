@@ -153,8 +153,8 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
 		NameFormat nf = NameFormat.fromReference(UserProperty.NameFormat.get(context.getUser()));
 		Gson gson = getGson();
 		for (SectioningSolutionLog log: SectioningSolutionLogDAO.getInstance().getSession().createQuery(
-				"from SectioningSolutionLog where session = :sessionId order by timeStamp", SectioningSolutionLog.class)
-				.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				"from SectioningSolutionLog where session.uniqueId = :sessionId order by timeStamp", SectioningSolutionLog.class)
+				.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).setCacheable(true).list()) {
 			PublishedSectioningSolutionInterface pss = new PublishedSectioningSolutionInterface();
 			pss.setUniqueId(log.getUniqueId());
 			pss.setInfo(new HashMap<String, String>(gson.fromJson(log.getInfo(), Map.class)));

@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.unitime.timetable.model.base.BaseStudentGroupType;
 import org.unitime.timetable.model.dao.StudentGroupTypeDAO;
@@ -39,7 +39,7 @@ public class StudentGroupType extends BaseStudentGroupType {
 	public static StudentGroupType findByReference(String reference, org.hibernate.Session hibSession) {
 		return (hibSession == null ? StudentGroupTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"from StudentGroupType where reference = :reference", StudentGroupType.class
-				).setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
+				).setParameter("reference", reference, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	public static enum AllowDisabledSection {

@@ -21,9 +21,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -127,15 +127,15 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (session!=null) {
 		    location = RoomDAO.getInstance().getSession().createQuery(
 		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
-		            .setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-		            .setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
+		            .setParameter("sessionId", session.getUniqueId(), Long.class)
+		            .setParameter("permId", getLocationPermanentId(), Long.class)
 		            .setCacheable(true)
 		            .uniqueResult();
 		    if (location==null)
 		        location = RoomDAO.getInstance().getSession().createQuery(
 		            "select r from NonUniversityLocation r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
-		            .setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-		            .setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
+		            .setParameter("sessionId", session.getUniqueId(), Long.class)
+		            .setParameter("permId", getLocationPermanentId(), Long.class)
 		            .setCacheable(true)
 		            .uniqueResult();
 		    return location;
@@ -143,7 +143,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		long distance = -1;
 		List<Location> locations = LocationDAO.getInstance().getSession().createQuery(
 				"from Location where permanentId = :permId", Location.class).
-				setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("permId", getLocationPermanentId(), Long.class).
 				setCacheable(true).list();
 		if (!locations.isEmpty()) {
 			for (Location loc: locations) {
@@ -172,11 +172,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return (MeetingDAO.getInstance()).getSession().createQuery(
 		        "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
 		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Meeting.class)
-		        .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
-		        .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-		        .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-		        .setParameter("locPermId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
-		        .setParameter("uniqueId", this.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+		        .setParameter("meetingDate", getMeetingDate(), Date.class)
+		        .setParameter("stopPeriod", getStopPeriod(), Integer.class)
+		        .setParameter("startPeriod", getStartPeriod(), Integer.class)
+		        .setParameter("locPermId", getLocationPermanentId(), Long.class)
+		        .setParameter("uniqueId", this.getUniqueId(), Long.class)
 		        .list();
 	}
 
@@ -186,11 +186,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus = 1", Meeting.class)
-                .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
-                .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("locPermId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
-                .setParameter("uniqueId", this.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("meetingDate", getMeetingDate(), Date.class)
+                .setParameter("stopPeriod", getStopPeriod(), Integer.class)
+                .setParameter("startPeriod", getStartPeriod(), Integer.class)
+                .setParameter("locPermId", getLocationPermanentId(), Long.class)
+                .setParameter("uniqueId", this.getUniqueId(), Long.class)
                 .list();
     }
     
@@ -198,10 +198,10 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.approvalStatus <= 1", Meeting.class)
-                .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
-                .setParameter("stopPeriod", stopPeriod, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("startPeriod", startPeriod, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("locPermId", locationPermId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("meetingDate", meetingDate, Date.class)
+                .setParameter("stopPeriod", stopPeriod, Integer.class)
+                .setParameter("startPeriod", startPeriod, Integer.class)
+                .setParameter("locPermId", locationPermId, Long.class)
                 .list();
     }
 
@@ -209,11 +209,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return MeetingDAO.getInstance().getSession().createQuery(
                 "select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Number.class)
-                .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
-                .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("locPermId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
-                .setParameter("uniqueId", this.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                .setParameter("meetingDate", getMeetingDate(), Date.class)
+                .setParameter("stopPeriod", getStopPeriod(), Integer.class)
+                .setParameter("startPeriod", getStartPeriod(), Integer.class)
+                .setParameter("locPermId", getLocationPermanentId(), Long.class)
+                .setParameter("uniqueId", this.getUniqueId(), Long.class)
                 .uniqueResult().longValue()>0;
 	}
 	

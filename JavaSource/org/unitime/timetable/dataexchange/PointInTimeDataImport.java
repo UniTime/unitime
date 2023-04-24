@@ -1204,7 +1204,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingStudents(Long sessionId) {
 		for (Student s : getHibSession().createQuery("select distinct s from Student as s where s.session.uniqueId=:sessionId", Student.class).
-				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("sessionId", sessionId.longValue(), Long.class).
 				setCacheable(true).
 				list()) {
 			students.put(s.getUniqueId(), s);
@@ -1215,7 +1215,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingTimePatterns(Long sessionId) {
 		@SuppressWarnings("unchecked")
 		List<TimePattern> patterns = getHibSession().createQuery("select distinct tp from TimePattern as tp where tp.session.uniqueId=:sessionId", TimePattern.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (TimePattern tp : patterns) {
@@ -1226,7 +1226,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingDatePatterns(Long sessionId) {
 		@SuppressWarnings("unchecked")
 		List<DatePattern> patterns = getHibSession().createQuery("select distinct dp from DatePattern as dp where dp.session.uniqueId=:sessionId", DatePattern.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (DatePattern dp : patterns) {
@@ -1237,7 +1237,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingBuildings(Long sessionId) {
 		@SuppressWarnings("unchecked")
 		List<Building> existingBuildings = getHibSession().createQuery("select distinct b from Building as b where b.session.uniqueId=:sessionId", Building.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (Building building : existingBuildings) {
@@ -1248,7 +1248,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingLocations(Long sessionId) {
 		@SuppressWarnings("unchecked")
 		List<Room> existingRooms = getHibSession().createQuery("select distinct r from Room as r where r.session.uniqueId=:sessionId", Room.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (Room room : existingRooms) {
@@ -1256,7 +1256,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		}
 		@SuppressWarnings("unchecked")
 		List<NonUniversityLocation> existingNonUniversityLocation = getHibSession().createQuery("select distinct n from NonUniversityLocation as n where n.session.uniqueId=:sessionId", NonUniversityLocation.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (NonUniversityLocation nonUniversityLocation : existingNonUniversityLocation) {
@@ -1619,7 +1619,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingSubjectAreas(Long sessionId) {
 		List<SubjectArea> subjects = getHibSession().
 			createQuery("select distinct sa from SubjectArea as sa where sa.session.uniqueId=:sessionId", SubjectArea.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list();
 		for (Iterator<?> it = subjects.iterator(); it.hasNext();) {
@@ -1631,7 +1631,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadDepartmentalInstructors(Long sessionId) {
 		for (DepartmentalInstructor di : getHibSession().createQuery("select distinct di from DepartmentalInstructor as di where di.department.session.uniqueId=:sessionId", DepartmentalInstructor.class).
-				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("sessionId", sessionId.longValue(), Long.class).
 				setCacheable(true).
 				list()) {
 			departmentalInstructorsByName.put(
@@ -1645,7 +1645,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingDepartments(Long sessionId) {
 		for (Department department : getHibSession().createQuery("select distinct d from Department as d where d.session.uniqueId=:sessionId", Department.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list()) {
 			departmentsByCode.put(department.getDeptCode(), department);
@@ -1655,7 +1655,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingMinors(Long sessionId) {
 		for (PosMinor minor : getHibSession().createQuery("select distinct m from PosMinor as m where m.session.uniqueId=:sessionId", PosMinor.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list()) {
 			minorsByCode.put(minor.getCode(), minor);
@@ -1665,7 +1665,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingMajors(Long sessionId) {
 		for (PosMajor major : getHibSession().createQuery("select distinct m from PosMajor as m where m.session.uniqueId=:sessionId", PosMajor.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list()) {
 			majorsByCode.put(major.getCode(), major);
@@ -1677,7 +1677,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingAcademicClassifications(Long sessionId) {
 		for (AcademicClassification ac : getHibSession().createQuery("select distinct ac from AcademicClassification as ac where ac.session.uniqueId=:sessionId", AcademicClassification.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list()) {
 			academicClassificationsByCode.put(ac.getCode(), ac);
@@ -1687,7 +1687,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	@SuppressWarnings("unchecked")
 	private void loadExistingAcademicAreas(Long sessionId) {
 		for (AcademicArea aa : getHibSession().createQuery("select distinct ac from AcademicArea as ac where ac.session.uniqueId=:sessionId", AcademicArea.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
 			setCacheable(true).
 			list()) {
 			academicAreasByAbbv.put(aa.getAcademicAreaAbbreviation(), aa);
@@ -1723,7 +1723,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingInstrOfferingConfigs(Long sessionId) throws Exception {
 		String qs = "from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId = :sessionId";
 		
-		for (InstrOfferingConfig instrOfferingConfig : getHibSession().createQuery(qs, InstrOfferingConfig.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+		for (InstrOfferingConfig instrOfferingConfig : getHibSession().createQuery(qs, InstrOfferingConfig.class).setParameter("sessionId", sessionId, Long.class).list()) {
 			instrOfferingConfigs.put(instrOfferingConfig.getUniqueId(), instrOfferingConfig);
 		}
 	}
@@ -1732,7 +1732,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void loadExistingSchedulingSubparts(Long sessionId) throws Exception {
 		String qs = "from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId";
 		
-		for (SchedulingSubpart schedulingSubpart : getHibSession().createQuery(qs, SchedulingSubpart.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+		for (SchedulingSubpart schedulingSubpart : getHibSession().createQuery(qs, SchedulingSubpart.class).setParameter("sessionId", sessionId, Long.class).list()) {
 			schedulingSubparts.put(schedulingSubpart.getUniqueId(), schedulingSubpart);
 		}
 	}

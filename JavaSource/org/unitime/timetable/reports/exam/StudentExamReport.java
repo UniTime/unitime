@@ -82,7 +82,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
             iStudents = new Hashtable();
             for (Student s: StudentDAO.getInstance().getSession().createQuery(
             		"select s from Student s where s.session.uniqueId=:sessionId", Student.class)
-            		.setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("sessionId", getSession().getUniqueId(), Long.class)
             		.setCacheable(true).list()) {
                 iStudents.put(s.getUniqueId(), s);
             }
@@ -96,7 +96,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                             "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
                             "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
                             "co.subjectArea.uniqueId=:subjectAreaId", Object[].class).
-                            setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                            setParameter("subjectAreaId", subject.getUniqueId(), Long.class).setCacheable(true).list()) {
                         iClass2event.put((Long)o[0], (ClassEvent)o[1]);
                     }
             	}
@@ -105,7 +105,7 @@ public class StudentExamReport extends PdfLegacyExamReport {
                         "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
                         "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
                         "co.subjectArea.session.uniqueId=:sessionId", Object[].class).
-                        setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                        setParameter("sessionId", getSession().getUniqueId(), Long.class).setCacheable(true).list()) {
                     iClass2event.put((Long)o[0], (ClassEvent)o[1]);
                 }
             }
@@ -115,12 +115,12 @@ public class StudentExamReport extends PdfLegacyExamReport {
             iLocations = new Hashtable();
             for (Location location: SessionDAO.getInstance().getSession().createQuery(
                     "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null", Location.class).
-                    setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                    setParameter("sessionId", getSession().getUniqueId(), Long.class).setCacheable(true).list()) {
                 iLocations.put(location.getPermanentId(), location);
             }
             for (Location location: SessionDAO.getInstance().getSession().createQuery(
                     "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null", Location.class).
-                    setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                    setParameter("sessionId", getSession().getUniqueId(), Long.class).setCacheable(true).list()) {
                 iLocations.put(location.getPermanentId(), location);
             }
         }

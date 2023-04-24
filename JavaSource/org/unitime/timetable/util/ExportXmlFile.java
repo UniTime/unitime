@@ -54,7 +54,7 @@ public class ExportXmlFile {
 	        // Load academic session
 	        Session session = SessionDAO.getInstance().getSession().createQuery(
 	        		"from Session s where s.academicTerm || s.academicYear || s.academicInitiative = :session", Session.class)
-	        		.setParameter("session", args[0], org.hibernate.type.StringType.INSTANCE).uniqueResult();
+	        		.setParameter("session", args[0], String.class).uniqueResult();
 	        if (session == null)
 	        	throw new Exception("Session " + args[0] + " not found.");
 	        

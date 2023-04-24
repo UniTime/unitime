@@ -62,7 +62,7 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	private double iMaxProgress = 100.0;
 	
 	private String iId = null;
-	private Address iAddress = null;
+	private String iHost = null;
 	private Long iTaskExecutionId = null;
 	
 	public QueueItem(Long sessionId, UserContext owner) {
@@ -184,9 +184,8 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	
 	public String getId() { return iId; }
 	public void setId(String id) { iId = id; }
-	public String getHost() { return (iAddress == null ? "Local" : iAddress.toString()); }
-	public Address getAddress() { return iAddress; }
-	public void setAddress(Address address) { iAddress = address; }
+	public String getHost() { return (iHost == null ? "Local" : iHost); }
+	public void setAddress(Address address) { iHost = (address == null ? null : address.toString()); }
 	
 	public Date created() { return iCreated; }
 	public Date started() { return iStarted; }

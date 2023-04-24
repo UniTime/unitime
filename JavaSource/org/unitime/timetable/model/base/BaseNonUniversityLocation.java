@@ -19,15 +19,14 @@
 */
 package org.unitime.timetable.model.base;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OneToMany;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -39,7 +38,6 @@ import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
-import org.unitime.timetable.model.RoomType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -51,7 +49,6 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 
 	private String iName;
 
-	private RoomType iRoomType;
 	private Set<NonUniversityLocationPicture> iPictures;
 	private Set<EventServiceProvider> iAllowedServices;
 
@@ -66,11 +63,6 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	@Column(name = "name", nullable = false, length = 40)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
-
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "room_type", nullable = false)
-	public RoomType getRoomType() { return iRoomType; }
-	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")

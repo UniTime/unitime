@@ -318,7 +318,7 @@ public class LookupTables {
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(5000);
 		q.setCacheable(true);
-		q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("acadSessionId", acadSessionId, Long.class);
         
 		List<DepartmentalInstructor> result = q.list();
         Vector<ComboBoxLookup> v = new Vector<ComboBoxLookup>(result.size());

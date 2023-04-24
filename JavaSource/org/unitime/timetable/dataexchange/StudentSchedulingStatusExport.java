@@ -54,8 +54,8 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        document.addDocType("studentStatuses", "-//UniTime//UniTime Student Scheduling Statuses DTD/EN", "http://www.unitime.org/interface/StudentStatuses.dtd");
 	        
 	        for (StudentSectioningStatus status: getHibSession().createQuery(
-	        		"from StudentSectioningStatus where session is null or session = :sessionId order by reference", StudentSectioningStatus.class
-	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		"from StudentSectioningStatus where session is null or session.uniqueId = :sessionId order by reference", StudentSectioningStatus.class
+	        		).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	Element statusElement = root.addElement("status");
 	        	statusElement.addAttribute("reference", status.getReference());
 	        	statusElement.addAttribute("name", status.getLabel());

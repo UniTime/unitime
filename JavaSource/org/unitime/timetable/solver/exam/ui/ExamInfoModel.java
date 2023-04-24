@@ -547,7 +547,7 @@ public class ExamInfoModel implements Serializable {
         return new TreeSet<Location>(
                 (LocationDAO.getInstance()).getSession()
                 .createQuery("select r from Location r inner join r.examTypes x "+a+" where r.session.uniqueId = :sessionId and x.uniqueId = :examTypeId "+b, Location.class)
-                .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+                .setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list());
     }
     
     protected void filterRooms() {
@@ -581,8 +581,8 @@ public class ExamInfoModel implements Serializable {
     	return new HashSet<Long>(ExamDAO.getInstance().getSession().createQuery(
     			"select o.prefGroup.uniqueId from DistributionPref p inner join p.distributionObjects x inner join p.distributionObjects o " +
     			"where p.distributionType.reference = :shareType and x.prefGroup.uniqueId = :examId and x.prefGroup != o.prefGroup", Long.class)
-    			.setParameter("shareType", "EX_SHARE_ROOM", org.hibernate.type.StringType.INSTANCE)
-    			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("shareType", "EX_SHARE_ROOM", String.class)
+    			.setParameter("examId", examId, Long.class)
     			.setCacheable(true).list());
     }
     

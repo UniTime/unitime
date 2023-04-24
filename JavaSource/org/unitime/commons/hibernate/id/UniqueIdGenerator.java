@@ -19,7 +19,6 @@
 */
 package org.unitime.commons.hibernate.id;
 
-import java.io.Serializable;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
@@ -38,6 +37,7 @@ import org.hibernate.type.Type;
  * @author Tomas Muller
  */
 public class UniqueIdGenerator implements IdentifierGenerator {
+	private static final long serialVersionUID = -2217592981811005640L;
 	IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
@@ -68,7 +68,7 @@ public class UniqueIdGenerator implements IdentifierGenerator {
     }
     
     @Override
-    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
+    public Object generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
         return getGenerator().generate(session, object);
     }
     

@@ -82,7 +82,7 @@ public class EduNavPilotPlansProvider implements DegreePlansProvider {
 
 	protected boolean isStudentInPilot(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) {
 		org.hibernate.query.Query query = helper.getHibSession().createNativeQuery(getCriticalPlaceholdersSQL());
-		query.setParameter("externalId", getBannerId(student), org.hibernate.type.StringType.INSTANCE);
+		query.setParameter("externalId", getBannerId(student), String.class);
 		return ((Number)query.uniqueResult()).intValue() > 0;
 	}
 

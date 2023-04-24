@@ -358,7 +358,7 @@ public class SessionRollForward {
 				GlobalRoomFeature grf = null;
 				List<Object[]> newGlobalFeatures = grfDao.getSession().createQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
 					" where erf.room.building.session.uniqueId=:sessionId", Object[].class)
-					.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", toSession.getUniqueId(), Long.class)
 					.list();
 				if (newGlobalFeatures != null){
 					String newLabel = null;
@@ -724,12 +724,12 @@ public class SessionRollForward {
 		TravelTimeDAO dao = TravelTimeDAO.getInstance();
 		dao.getSession().createQuery(
 				"delete from TravelTime where session.uniqueId = :sessionId")
-				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", toSession.getUniqueId(), Long.class)
 				.executeUpdate();
 		
 		for (TravelTime travel: dao.getSession().createQuery(
     			"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
-    			.setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+    			.setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
 			Location from = findLocation(travel.getLocation1Id(), toSession.getUniqueId());
 			if (from == null) continue;
 			Location to = findLocation(travel.getLocation2Id(), toSession.getUniqueId());
@@ -752,8 +752,8 @@ public class SessionRollForward {
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
 				"((r1.externalUniqueId is not null and r1.externalUniqueId = r2.externalUniqueId) or " +
 				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("locationId", locationId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("locationId", locationId, Long.class)
 				.setCacheable(true)
 				.setMaxResults(1)
 				.uniqueResult();
@@ -763,8 +763,8 @@ public class SessionRollForward {
 		return dao.getSession().createQuery(
 				"select r2 from NonUniversityLocation r1, NonUniversityLocation r2 where r1.uniqueId = :locationId and r2.session.uniqueId=:sessionId "
 				+"and r1.name = r2.name", NonUniversityLocation.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("locationId", locationId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("locationId", locationId, Long.class)
 				.setCacheable(true)
 				.setMaxResults(1)
 				.uniqueResult();
@@ -1003,7 +1003,7 @@ public class SessionRollForward {
 				CourseCatalogDAO ccDao = CourseCatalogDAO.getInstance();
 				List<Object[]> subjects = ccDao.getSession().createQuery(
 						"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null",
-						Object[].class).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+						Object[].class).setParameter("sessionId", toSession.getUniqueId(), Long.class).list();
 				if (subjects != null){
 					String toSubject = null;
 					String fromSubject = null;
@@ -1045,8 +1045,8 @@ public class SessionRollForward {
 				}
 				/*
 				List pseudoSubjects = sDao.getQuery("from SubjectArea sa where sa.session=:fromSessionId and sa.pseudoSubjectArea = 1 and sa.subjectAreaAbbreviation not in (select cc.subject from CourseCatalog cc where cc.session.uniqueId=:toSessionId)")
-					.setParameter("fromSessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("toSessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("fromSessionId", fromSession.getUniqueId(), Long.class)
+					.setParameter("toSessionId", toSession.getUniqueId(), Long.class)
 					.list();
 				if (pseudoSubjects != null){
 					for(Iterator it = pseudoSubjects.iterator(); it.hasNext();){
@@ -1072,7 +1072,7 @@ public class SessionRollForward {
 				*/
 				List<String> newSubjects = ccDao.getSession().createQuery(
 						"select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)",
-						String.class).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+						String.class).setParameter("sessionId", toSession.getUniqueId(), Long.class).list();
 				toDepartment = Department.findByDeptCode("TEMP", toSession.getUniqueId());
 				if (toDepartment == null){
 					toDepartment = new Department();
@@ -1926,7 +1926,7 @@ public class SessionRollForward {
 	private void rollForwardExamLocationPrefs(Session toSession, Session fromSession) throws Exception{
 		List<Room> rooms = (RoomDAO.getInstance()).getSession().createQuery(
 				"select distinct r from Room r inner join r.examPreferences as ep where r.session.uniqueId = :sessionId", Room.class)
-				.setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
+				.setParameter("sessionId", fromSession.getUniqueId().longValue(), Long.class).list();
 		Room fromRoom = null;
 		Room toRoom = null;
 		ExamLocationPref fromPref = null;
@@ -1946,7 +1946,7 @@ public class SessionRollForward {
 		}
 		List<NonUniversityLocation> nonUniversityLocations = (NonUniversityLocationDAO.getInstance()).getSession().createQuery(
 				"select distinct nul from NonUniversityLocation nul inner join nul.examPreferences as ep where nul.session.uniqueId = :sessionId", NonUniversityLocation.class)
-				.setParameter("sessionId", fromSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list();
+				.setParameter("sessionId", fromSession.getUniqueId().longValue(), Long.class).list();
 		NonUniversityLocation fromNonUniversityLocation = null;	
 		NonUniversityLocation toNonUniversityLocation = null;
 		for (Iterator nulIt = nonUniversityLocations.iterator(); nulIt.hasNext();){
@@ -1971,11 +1971,11 @@ public class SessionRollForward {
 				"where d.session.uniqueId = :sessionId and mr.role.enabled = true "+
 				"and :prmExMgr in elements(mr.role.rights) and :prmAdmin not in elements(mr.role.rights) " +
 				"order by m.lastName, m.firstName", TimetableManager.class)
-				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-				.setParameter("prmExMgr", Right.ExaminationSolver.name(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("prmAdmin", Right.StatusIndependent.name(), org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", toSession.getUniqueId(), Long.class)
+				.setParameter("prmExMgr", Right.ExaminationSolver.name(), String.class)
+				.setParameter("prmAdmin", Right.StatusIndependent.name(), String.class)
 				.list());
-		List<ExamStatus> statuses = dao.getSession().createQuery("from ExamStatus s where s.session.uniqueId = :sessionId", ExamStatus.class).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+		List<ExamStatus> statuses = dao.getSession().createQuery("from ExamStatus s where s.session.uniqueId = :sessionId", ExamStatus.class).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list();
 		for (ExamStatus fromStatus: statuses) {
 			ExamStatus toStatus = ExamStatus.findStatus(toSession.getUniqueId(), fromStatus.getType().getUniqueId());
 			if (toStatus == null) {
@@ -2069,12 +2069,12 @@ public class SessionRollForward {
 				" or (eo.ownerType=:ownerTypeOffering and eo.ownerId in (select io.uniqueIdRolledForwardFrom from InstructionalOffering as io where io.session.uniqueId = :toSessionId)) " +
 				" or (eo.ownerType=:ownerTypeConfig and eo.ownerId in (select ioc.uniqueIdRolledForwardFrom from InstrOfferingConfig as ioc where ioc.instructionalOffering.session.uniqueId = :toSessionId)))",
 				Exam.class)
-				.setParameter("toSessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
-				.setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
-				.setParameter("ownerTypeClass", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-				.setParameter("ownerTypeCourse", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-				.setParameter("ownerTypeOffering", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-				.setParameter("ownerTypeConfig", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+				.setParameter("toSessionId", toSession.getUniqueId().longValue(), Long.class)
+				.setParameter("examType", examType, Integer.class)
+				.setParameter("ownerTypeClass", ExamOwner.sOwnerTypeClass, Integer.class)
+				.setParameter("ownerTypeCourse", ExamOwner.sOwnerTypeCourse, Integer.class)
+				.setParameter("ownerTypeOffering", ExamOwner.sOwnerTypeOffering, Integer.class)
+				.setParameter("ownerTypeConfig", ExamOwner.sOwnerTypeConfig, Integer.class)
 				.list());
 	}
 	
@@ -2165,13 +2165,13 @@ public class SessionRollForward {
 				String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
 				List<String> existingInstructors = iDao.getSession()
 						.createQuery(existingQuery, String.class)
-						.setParameter("sessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("sessionId", toSession.getUniqueId().longValue(), Long.class)
 						.list();
 				
 				String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
 				List<String> existingNoExtIdInstructors = iDao.getSession()
 						.createQuery(existingNoExtIdQuery, String.class)
-						.setParameter("sessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
+						.setParameter("sessionId", toSession.getUniqueId().longValue(), Long.class)
 						.list();
 				
 				for(Department fromDepartment: fromSession.getDepartments()){
@@ -2562,7 +2562,7 @@ public class SessionRollForward {
 		iLog.info("Rolling forward offering coordinators for:  " + subjectArea.getSubjectAreaAbbreviation());
 		for (InstructionalOffering toInstructionalOffering: OfferingCoordinatorDAO.getInstance().getSession().createQuery(
 				"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null", InstructionalOffering.class)
-				.setParameter("subjectAreaId", subjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+				.setParameter("subjectAreaId", subjectArea.getUniqueId(), Long.class).list()) {
 			InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
 			if (fromInstructionalOffering != null) {
 				for (Iterator coIt = fromInstructionalOffering.getOfferingCoordinators().iterator(); coIt.hasNext();){
@@ -2599,9 +2599,9 @@ public class SessionRollForward {
 				" and co.subjectArea.subjectAreaAbbreviation=:subject" +
 				" and co.courseNbr=:crsNbr";
 		List l = ioDao.getQuery(query)
-					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("subject", cloneSubj, org.hibernate.type.StringType.INSTANCE)
-					.setParameter("crsNbr", cloneCrs, org.hibernate.type.StringType.INSTANCE).list();
+					.setParameter("sessionId", session.getUniqueId(), Long.class)
+					.setParameter("subject", cloneSubj, String.class)
+					.setParameter("crsNbr", cloneCrs, String.class).list();
 		if (l.size() == 1){
 			cloneFromIo = (InstructionalOffering) l.get(0);
 			for (int i = 0; i < courses.length; i++){
@@ -2609,9 +2609,9 @@ public class SessionRollForward {
 				subj = crs.substring(0,4).trim();
 				crsNbr = crs.substring(4,8).trim();
 				l = ioDao.getQuery(query)
-				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-				.setParameter("subject", subj, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("crsNbr", crsNbr, org.hibernate.type.StringType.INSTANCE).list();
+				.setParameter("sessionId", session.getUniqueId(), Long.class)
+				.setParameter("subject", subj, String.class)
+				.setParameter("crsNbr", crsNbr, String.class).list();
 				if (l.size() == 1){
 					io = (InstructionalOffering) l.get(0);
 					io.cloneOfferingConfigurationFrom(cloneFromIo);
@@ -2662,11 +2662,11 @@ public class SessionRollForward {
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
         hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
-        		.setParameter("toSessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).executeUpdate();;
+        		.setParameter("toSessionId", toSession.getUniqueId().longValue(), Long.class).executeUpdate();;
         
         for (int i=0;i<query.length;i++) {
             for (Object[] o: hibSession.createQuery(query[i], Object[].class)
-            		.setParameter("toSessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		.setParameter("toSessionId", toSession.getUniqueId(), Long.class).list()) {
                 Student s = (Student)o[0];
                 CourseOffering co = (CourseOffering)o[1];
                 Number priority = (Number)o[2];
@@ -2685,19 +2685,19 @@ public class SessionRollForward {
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
 	                "c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
-	                setParameter("sessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+	                setParameter("sessionId", toSession.getUniqueId().longValue(), Long.class).executeUpdate();
         } else {
         	hibSession.createQuery("update CourseOffering c set c.demand="+
                     "(select count(distinct d.student) from LastLikeCourseDemand d where "+
                     "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
                     "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
-                    setParameter("sessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+                    setParameter("sessionId", toSession.getUniqueId().longValue(), Long.class).executeUpdate();
 
         	hibSession.createQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
 	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
-	                setParameter("sessionId", toSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+	                setParameter("sessionId", toSession.getUniqueId().longValue(), Long.class).executeUpdate();
 
         }
 
@@ -2865,14 +2865,14 @@ public class SessionRollForward {
         for (CourseOffering course: hibSession.createQuery("select co from CourseOffering co " +
         		"where co.uniqueIdRolledForwardFrom is not null and " +
         		"co.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
-        		.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		.setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	courses.put(course.getUniqueIdRolledForwardFrom(), course);
         }
         
         // cleanup all curricula
         for (Iterator<Curriculum> i = hibSession.createQuery(
         		"select c from Curriculum c where c.department.session=:sessionId", Curriculum.class).
-            	setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator(); i.hasNext(); ) {
+            	setParameter("sessionId", toSession.getUniqueId(), Long.class).list().iterator(); i.hasNext(); ) {
         	hibSession.delete(i.next());
     	}
     	hibSession.flush();
@@ -2880,7 +2880,7 @@ public class SessionRollForward {
     	// roll forward curricula
 		Department tempDept = null;
     	curricula: for (Curriculum curriculum: hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId", Curriculum.class).
-            	setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            	setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
     		Curriculum newCurriculum = new Curriculum();
     		newCurriculum.setAbbv(curriculum.getAbbv());
     		newCurriculum.setName(curriculum.getName());
@@ -2966,9 +2966,9 @@ public class SessionRollForward {
 		
 		// roll forward projection rules (if empty)
 		if (hibSession.createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId", CurriculumProjectionRule.class)
-				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().isEmpty()) {
+				.setParameter("sessionId", toSession.getUniqueId(), Long.class).list().isEmpty()) {
 			rules: for (CurriculumProjectionRule rule: hibSession.createQuery("select r from CurriculumProjectionRule r " +
-					"where r.academicArea.session.uniqueId = :sessionId", CurriculumProjectionRule.class).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+					"where r.academicArea.session.uniqueId = :sessionId", CurriculumProjectionRule.class).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
 				CurriculumProjectionRule newRule = new CurriculumProjectionRule();
 	    		AcademicArea area = areas.get(rule.getAcademicArea().getAcademicAreaAbbreviation());
 	    		if (area == null) continue;
@@ -2999,14 +2999,14 @@ public class SessionRollForward {
         // remove old configuration
         for (SessionConfig config: hibSession.createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class
-        		).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	hibSession.delete(config);
         }
         
         // create new configuration
         for (SessionConfig config: hibSession.createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class
-        		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
         	
         	SessionConfig newConfig = new SessionConfig();
         	newConfig.setKey(config.getKey());
@@ -3020,20 +3020,20 @@ public class SessionRollForward {
         // remove old notes
         for (StandardEventNoteSession note: hibSession.createQuery(
         		"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNoteSession.class
-        		).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	hibSession.delete(note);
         }
         
         for (StandardEventNoteDepartment note: hibSession.createQuery(
         		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNoteDepartment.class
-        		).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	hibSession.delete(note);
         }
         
         // create new notes
         for (StandardEventNoteSession note: hibSession.createQuery(
         		"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNoteSession.class
-        		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
         	StandardEventNoteSession newNote = new StandardEventNoteSession();
         	newNote.setNote(note.getNote());
         	newNote.setReference(note.getReference());
@@ -3043,7 +3043,7 @@ public class SessionRollForward {
         
         for (StandardEventNoteDepartment note: hibSession.createQuery(
         		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNoteDepartment.class
-        		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
         	Department newDepartment = note.getDepartment().findSameDepartmentInSession(toSession);
         	if (newDepartment != null) {
             	StandardEventNoteDepartment newNote = new StandardEventNoteDepartment();
@@ -3057,14 +3057,14 @@ public class SessionRollForward {
         // remove room type options
         for (RoomTypeOption option: hibSession.createQuery(
         		"from RoomTypeOption where department.session.uniqueId = :sessionId", RoomTypeOption.class
-        		).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	hibSession.delete(option);
         }
         
         // create new room type options
         for (RoomTypeOption option: hibSession.createQuery(
         		"from RoomTypeOption where department.session.uniqueId = :sessionId", RoomTypeOption.class
-        		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
         	Department newDepartment = option.getDepartment().findSameDepartmentInSession(toSession);
         	if (newDepartment != null) {
         		RoomTypeOption newOption = new RoomTypeOption();
@@ -3080,14 +3080,14 @@ public class SessionRollForward {
         // remove old service providers
         for (EventServiceProvider provider: hibSession.createQuery(
         		"from EventServiceProvider where session.uniqueId = :sessionId", EventServiceProvider.class
-        		).setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", toSession.getUniqueId(), Long.class).list()) {
         	hibSession.delete(provider);
         }
         
         // create new service providers
         for (EventServiceProvider provider: hibSession.createQuery(
         		"from EventServiceProvider where session.uniqueId = :sessionId", EventServiceProvider.class
-        		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		).setParameter("sessionId", fromSession.getUniqueId(), Long.class).list()) {
         	if (!provider.isVisible()) continue; // do not roll-forward providers that are marked as not visible
         	EventServiceProvider newProvider = new EventServiceProvider();
         	newProvider.setReference(provider.getReference());
@@ -3137,12 +3137,12 @@ public class SessionRollForward {
 			}
 			for (SubjectArea subject: subjects) {
 				hibSession.createQuery("delete CourseReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
-						).setParameter("subjectId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+						).setParameter("subjectId", subject.getUniqueId(), Long.class).executeUpdate();
 				
 				for (CourseReservation reservation: hibSession.createQuery(
 						"select distinct r from CourseReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId", CourseReservation.class)
-						.setParameter("subject", subject.getSubjectAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), org.hibernate.type.LongType.INSTANCE).list()) {
+						.setParameter("subject", subject.getSubjectAreaAbbreviation(), String.class).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), Long.class).list()) {
 					CourseReservation toReservation = rollCourseReservationForward(reservation, subject.getSession(), startDate, expiration);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
@@ -3211,12 +3211,12 @@ public class SessionRollForward {
 	        
 			for (SubjectArea subject: subjects) {
 				hibSession.createQuery("delete CurriculumReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
-						).setParameter("subjectId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+						).setParameter("subjectId", subject.getUniqueId(), Long.class).executeUpdate();
 				
 				for (CurriculumReservation reservation: hibSession.createQuery(
 						"select distinct r from CurriculumReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId", CurriculumReservation.class)
-						.setParameter("subject", subject.getSubjectAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), org.hibernate.type.LongType.INSTANCE).list()) {
+						.setParameter("subject", subject.getSubjectAreaAbbreviation(), String.class).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), Long.class).list()) {
 					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors, concentrations, minors);
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
@@ -3244,12 +3244,12 @@ public class SessionRollForward {
 
 			for (SubjectArea subject: subjects) {
 				hibSession.createQuery("delete StudentGroupReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
-						).setParameter("subjectId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+						).setParameter("subjectId", subject.getUniqueId(), Long.class).executeUpdate();
 				
 				for (StudentGroupReservation reservation: hibSession.createQuery(
 						"select distinct r from StudentGroupReservation r inner join r.instructionalOffering.courseOfferings c where " +
 						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId", StudentGroupReservation.class)
-						.setParameter("subject", subject.getSubjectAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), org.hibernate.type.LongType.INSTANCE).list()) {
+						.setParameter("subject", subject.getSubjectAreaAbbreviation(), String.class).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom(), Long.class).list()) {
 					StudentGroupReservation toReservation = rollGroupReservationForward(reservation, subject.getSession(), startDate, expiration, groups, rollForwardSessionForm.getCreateStudentGroupsIfNeeded());
 					if (toReservation != null)
 						hibSession.saveOrUpdate(toReservation);
@@ -3492,7 +3492,7 @@ public class SessionRollForward {
 			iLog.info("Rolling forward teaching requests for:  " + toSubjectArea.getSubjectAreaAbbreviation());
 			for (InstructionalOffering toInstructionalOffering: OfferingCoordinatorDAO.getInstance().getSession().createQuery(
 					"select co.instructionalOffering from CourseOffering co where co.isControl = true and co.subjectArea.uniqueId = :subjectAreaId and co.instructionalOffering.uniqueIdRolledForwardFrom is not null", InstructionalOffering.class)
-					.setParameter("subjectAreaId", toSubjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+					.setParameter("subjectAreaId", toSubjectArea.getUniqueId(), Long.class).list()) {
 				InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
 				if (fromInstructionalOffering == null) continue;
 				for (Iterator<TeachingRequest> it = toInstructionalOffering.getTeachingRequests().iterator(); it.hasNext(); ) {
@@ -3550,16 +3550,16 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		org.hibernate.Session hibSession = PeriodicTaskDAO.getInstance().getSession();
 		Set<String> existing = new HashSet<String>();
-		for (PeriodicTask task: hibSession.createQuery("from PeriodicTask where session = :sessionId", PeriodicTask.class)
-				.setParameter("sessionId", rollForwardSessionForm.getSessionToRollForwardTo(), org.hibernate.type.LongType.INSTANCE).list()) {
+		for (PeriodicTask task: hibSession.createQuery("from PeriodicTask where session.uniqueId = :sessionId", PeriodicTask.class)
+				.setParameter("sessionId", rollForwardSessionForm.getSessionToRollForwardTo(), Long.class).list()) {
 			existing.add(task.getName());
 		}
 
 		Date now = new Date();
 		Date firstDate = DateUtils.getDate(1, toSession.getStartMonth() - ApplicationProperty.DatePatternNrExessMonth.intValue(), toSession.getSessionStartYear());
 		Date lastDate = DateUtils.getDate(1, toSession.getEndMonth() + ApplicationProperty.DatePatternNrExessMonth.intValue(), toSession.getSessionStartYear());
-		for (PeriodicTask original: hibSession.createQuery("from PeriodicTask where session = :sessionId", PeriodicTask.class)
-				.setParameter("sessionId", rollForwardSessionForm.getSessionToRollPeriodicTasksFrom(), org.hibernate.type.LongType.INSTANCE).list()) {
+		for (PeriodicTask original: hibSession.createQuery("from PeriodicTask where session.uniqueId = :sessionId", PeriodicTask.class)
+				.setParameter("sessionId", rollForwardSessionForm.getSessionToRollPeriodicTasksFrom(), Long.class).list()) {
 			if (existing.contains(original.getName())) continue;
 			PeriodicTask task = new PeriodicTask();
 			task = new PeriodicTask();

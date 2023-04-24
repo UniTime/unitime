@@ -62,7 +62,7 @@ public class StudentAdvisorsImport extends BaseImport {
             
             Map<String, Advisor> id2advisor = new Hashtable<String, Advisor>();
             for (Advisor advisor: getHibSession().createQuery(
-            		"from Advisor where session.uniqueId=:sessionId", Advisor.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		"from Advisor where session.uniqueId=:sessionId", Advisor.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
             	id2advisor.put(advisor.getExternalUniqueId(), advisor);
             }
             

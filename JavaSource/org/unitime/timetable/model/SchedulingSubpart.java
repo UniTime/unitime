@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -518,7 +518,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		Set parentPrefs = new HashSet();
     		for (InstructorCoursePref icp: InstructorCoursePrefDAO.getInstance().getSession().createQuery(
     				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId", InstructorCoursePref.class)
-    				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+    				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId(), Long.class).setCacheable(true).list()) {
     			InstructorPref ip = new InstructorPref();
     			ip.setInstructor((DepartmentalInstructor)icp.getOwner());
     			ip.setPrefLevel(icp.getPrefLevel());
@@ -766,7 +766,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		getSession().
     		createQuery("select distinct s from SchedulingSubpart s where " +
     				"s.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId", SchedulingSubpart.class).
-    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+    		setParameter("sessionId", sessionId.longValue(), Long.class).
     		list();
     }
     
@@ -897,8 +897,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return SchedulingSubpartDAO.getInstance().
             getSession().
             createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", SchedulingSubpart.class).
-            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
             setCacheable(true).
             uniqueResult();
     }

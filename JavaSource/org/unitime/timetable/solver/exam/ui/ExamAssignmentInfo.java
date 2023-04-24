@@ -1658,10 +1658,10 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 		"select m from ClassEvent e inner join e.meetings m, StudentClassEnrollment en "+
                 		"where en.student.uniqueId=:studentId and e.clazz=en.clazz and " +
                 		"m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot", Meeting.class)
-                		.setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                		.setParameter("startDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                		.setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                		.setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
+                		.setParameter("studentId", student.getUniqueId(), Long.class)
+                		.setParameter("startDate", getPeriod().getStartDate(), Date.class)
+                		.setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, Integer.class)
+                		.setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, Integer.class)
                 		.setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
@@ -1673,14 +1673,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Meeting.class)
-                        .setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setParameter("meetingDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("studentId", student.getUniqueId(), Long.class)
+                        .setParameter("meetingDate", getPeriod().getStartDate(), Date.class)
+                        .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
                         .setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
@@ -1692,15 +1692,15 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Meeting.class)
-                        .setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setParameter("meetingDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("examTypeId", getPeriod().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("studentId", student.getUniqueId(), Long.class)
+                        .setParameter("meetingDate", getPeriod().getStartDate(), Date.class)
+                        .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getPeriod().getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                        .setParameter("examTypeId", getPeriod().getExamType().getUniqueId(), Long.class)
                         .setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}

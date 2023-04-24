@@ -483,15 +483,15 @@ public class OnlineSectioningHelper {
     public String getApproverName(String externalId, Long sessionId) {
     	if (externalId == null) return null;
     	TimetableManager mgr = getHibSession().createQuery( "from TimetableManager where externalUniqueId = :externalId", TimetableManager.class)
-				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("externalId", externalId, String.class)
 				.setCacheable(true).setMaxResults(1).uniqueResult();
 		if (mgr != null)
 			return mgr.getName();
 		    		
 		DepartmentalInstructor instr = getHibSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
-				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("externalId", externalId, String.class)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true).setMaxResults(1).uniqueResult();
 		return instr == null ? externalId : instr.nameLastNameFirst();
     }

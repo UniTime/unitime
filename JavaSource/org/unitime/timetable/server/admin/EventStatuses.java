@@ -106,7 +106,7 @@ public class EventStatuses implements AdminTable {
 			if (!department.isAllowEvents()) continue;
 			for (RoomType roomType: hibSession.createQuery(
 					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
 				r.setField(0, "+", false);
@@ -120,7 +120,7 @@ public class EventStatuses implements AdminTable {
 					r.setField(7 + i, MESSAGES.notApplicable(), false);
 				for (Room room: hibSession.createQuery(
 						"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber", Room.class)
-						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("roomTypeId", roomType.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("departmentId", department.getUniqueId(), Long.class).setParameter("roomTypeId", roomType.getUniqueId(), Long.class).setCacheable(true).list()) {
 					r = data.addRecord(room.getUniqueId(), false);
 					r.setField(0, String.valueOf(id));
 					r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
@@ -138,7 +138,7 @@ public class EventStatuses implements AdminTable {
 			}
 			for (RoomType roomType: hibSession.createQuery(
 					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
 				r.setField(0, "+", false);
@@ -152,7 +152,7 @@ public class EventStatuses implements AdminTable {
 					r.setField(7 + i, MESSAGES.notApplicable(), false);
 				for (NonUniversityLocation room: hibSession.createQuery(
 						"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name", NonUniversityLocation.class)
-						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("roomTypeId", roomType.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("departmentId", department.getUniqueId(), Long.class).setParameter("roomTypeId", roomType.getUniqueId(), Long.class).setCacheable(true).list()) {
 					r = data.addRecord(room.getUniqueId(), false);
 					r.setField(0, String.valueOf(id));
 					r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
@@ -180,7 +180,7 @@ public class EventStatuses implements AdminTable {
 			if (!department.isAllowEvents()) continue;
 			for (RoomType roomType: hibSession.createQuery(
 					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
 					if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
@@ -210,7 +210,7 @@ public class EventStatuses implements AdminTable {
 			}
 			for (RoomType roomType: hibSession.createQuery(
 					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
 					if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
@@ -240,7 +240,7 @@ public class EventStatuses implements AdminTable {
 			}
 			for (Location location: hibSession.createQuery(
 					"from Location where eventDepartment.uniqueId = :departmentId", Location.class)
-					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 				Record r = data.getRecord(location.getUniqueId());
 				if (r != null)
 					update(location, r, context, hibSession);
@@ -326,7 +326,7 @@ public class EventStatuses implements AdminTable {
 			if (record.getField(1).equals(department.getLabel())) {
 				for (RoomType roomType: hibSession.createQuery(
 						"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);
 						boolean optionChanged = 
@@ -355,7 +355,7 @@ public class EventStatuses implements AdminTable {
 				}
 				for (RoomType roomType: hibSession.createQuery(
 						"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
-						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("departmentId", department.getUniqueId(), Long.class).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);
 						boolean optionChanged = 

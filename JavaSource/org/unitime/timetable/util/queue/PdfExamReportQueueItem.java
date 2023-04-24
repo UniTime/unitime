@@ -134,31 +134,31 @@ public class PdfExamReportQueueItem extends QueueItem {
                 		setStatus("  " + MSG.statusFetchingExams());
                 		hibSession.createQuery(
                                 "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", ExamOwner.class
-                                ).setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                                ).setParameter("sessionId", iExamSolver.getSessionId(), Long.class).setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class).setCacheable(true).list();
                 		setStatus("  " + MSG.statusFetchingRelatedClasses());
                         hibSession.createQuery(
                                 "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class_.class)
-                                .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+                                .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class)
+                                .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedConfigs());
                         hibSession.createQuery(
                                 "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", InstrOfferingConfig.class)
-                                .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+                                .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class)
+                                .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedCourses());
                         hibSession.createQuery(
                                 "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", CourseOffering.class)
-                                .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+                                .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class)
+                                .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedOfferings());
                         hibSession.createQuery(
                                 "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", InstructionalOffering.class)
-                                .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
-                                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+                                .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                                .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class)
+                                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class).setCacheable(true).list();
                         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
                         setStatus("  " + MSG.statusLoadingStudentsFromClasses());
                         for (Object[] o:
@@ -169,8 +169,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                             "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
                             "o.ownerId=c.uniqueId", Object[].class)
-                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                            .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class).setCacheable(true).list()) {
                                 Long ownerId = (Long)o[0];
                                 Long studentId = (Long)o[1];
                                 Long courseId = (Long)o[2];
@@ -196,8 +196,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
                                     "o.ownerId=ioc.uniqueId", Object[].class)
-                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                            .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];
@@ -222,8 +222,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
                                     "o.ownerId=co.uniqueId", Object[].class)
-                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                            .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];
@@ -248,8 +248,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
                                     "o.ownerId=io.uniqueId", Object[].class)
-                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
-                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+                            .setParameter("sessionId", iExamSolver.getSessionId(), Long.class)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), Long.class).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];

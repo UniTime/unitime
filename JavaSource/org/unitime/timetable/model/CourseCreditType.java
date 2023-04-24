@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.List;
 
@@ -66,7 +66,7 @@ public class CourseCreditType extends BaseCourseCreditType {
 		if (referenceString == null || referenceString.isEmpty()) return null;
 		return CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
 				"from CourseCreditType where reference = :reference", CourseCreditType.class)
-				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", referenceString, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
 	public static CourseCreditType getCourseCreditTypeForUniqueId(Long uniqueId){

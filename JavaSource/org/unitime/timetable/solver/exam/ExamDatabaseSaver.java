@@ -111,8 +111,8 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
         Hashtable<Long,ExamEvent> examEvents = new Hashtable();
         for (ExamEvent e: hibSession.createQuery(
                 "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType.uniqueId=:examTypeId", ExamEvent.class)
-                .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", iExamTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("sessionId", iSessionId, Long.class)
+                .setParameter("examTypeId", iExamTypeId, Long.class)
                 .list()) {
             examEvents.put(e.getExam().getUniqueId(),e);
         }

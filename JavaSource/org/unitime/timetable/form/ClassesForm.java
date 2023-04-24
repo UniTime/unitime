@@ -90,7 +90,7 @@ public class ClassesForm implements UniTimeForm {
 		if (iSession != null){
 			String queryStr = "select count(io) from InstructionalOffering io where io.session.uniqueId = :sessionId";
 			int count = SessionDAO.getInstance().getSession().createQuery(queryStr, Number.class)
-					.setParameter("sessionId", iSession, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
+					.setParameter("sessionId", iSession, Long.class).setCacheable(true).uniqueResult().intValue();
 			if (count <= 300){
 				displayAll = Boolean.valueOf(true);
 			}

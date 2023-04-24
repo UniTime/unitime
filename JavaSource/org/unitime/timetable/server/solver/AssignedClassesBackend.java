@@ -109,7 +109,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 	    		for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
 	        		for (Long id: SolutionDAO.getInstance().getSession().createQuery(
 	        				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId", Long.class)
-	        				.setParameter("groupId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+	        				.setParameter("groupId", g.getUniqueId(), Long.class).setCacheable(true).list()) {
 	        			if (solutionIdsStr == null)
 	        				solutionIdsStr = id.toString();
 	        			else
@@ -305,7 +305,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-					.setParameterList("classIds", id2row.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameterList("classIds", id2row.keySet(), Long.class).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
 				TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -320,7 +320,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
 						TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -334,7 +334,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
 					TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());

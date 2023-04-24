@@ -66,12 +66,12 @@ public class CourseTimetableExport extends CourseOfferingExport {
             if (ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
             	iClassEvents = new HashMap<Long, ClassEvent>();
             	for (ClassEvent e: getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", ClassEvent.class)
-            			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            			.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
             		iClassEvents.put(e.getClazz().getUniqueId(), e);
             	}
             	iMeetingLocations = new HashMap<Long, Location>();
                 for (Location l: getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId", Location.class)
-                		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+                		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
                 	iMeetingLocations.put(l.getPermanentId(), l);
             	}
             }
@@ -80,7 +80,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
                     "select c from CourseOffering as c where " +
                     "c.subjectArea.session.uniqueId=:sessionId " + 
                     "order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class).
-                    setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                    setParameter("sessionId", session.getUniqueId(), Long.class).
                     setFetchSize(1000).list();
             
             for (CourseOffering course: courses) {

@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -190,7 +190,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     	} else {
     		return PreferenceLevelDAO.getInstance().getSession().createQuery(
     				"from PreferenceLevel where prefProlog != :na order by prefId", PreferenceLevel.class)
-    				.setParameter("na", sNotAvailable, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
+    				.setParameter("na", sNotAvailable, String.class).setCacheable(true).list();
     	}
     }
 

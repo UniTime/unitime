@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -47,8 +47,8 @@ public class ExamStatus extends BaseExamStatus {
 	public static ExamStatus findStatus(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		return (hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId", ExamStatus.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("typeId", typeId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("typeId", typeId, Long.class)
 				.setCacheable(true)
 				.uniqueResult();
 	}
@@ -60,7 +60,7 @@ public class ExamStatus extends BaseExamStatus {
 	public static List<ExamStatus> findAll(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId", ExamStatus.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true)
 				.list();
 	}

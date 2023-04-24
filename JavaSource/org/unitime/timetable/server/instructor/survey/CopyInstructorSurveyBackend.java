@@ -156,11 +156,11 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 						"select distinct co from CourseOffering co, " +
 						"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 						"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
-						"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
+						"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
 						"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 						)
-						.setParameter("id", survey.getExternalId(), org.hibernate.type.StringType.INSTANCE)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("id", survey.getExternalId(), String.class)
+						.setParameter("sessionId", sessionId, Long.class)
 						.setCacheable(true).list()) {
 					if (courseIds.add(co.getUniqueId())) {
 						Course ci = new Course();

@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -58,14 +58,14 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
 	public static List<CurriculumProjectionRule> findAll(Long sessionId) {
 	    return CurriculumProjectionRuleDAO.getInstance().getSession()
 	        .createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId", CurriculumProjectionRule.class)
-	        .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+	        .setParameter("sessionId", sessionId, Long.class)
 	        .setCacheable(true).list();
 	}
 
     public static List<CurriculumProjectionRule> findByAcademicArea(Long acadAreaId) {
         return CurriculumProjectionRuleDAO.getInstance().getSession()
             .createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
-            .setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+            .setParameter("acadAreaId", acadAreaId, Long.class)
             .setCacheable(true).list();
     }
     
@@ -73,8 +73,8 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
     	Hashtable<String, Float> ret = new Hashtable<String, Float>();
     	for (CurriculumProjectionRule r: CurriculumProjectionRuleDAO.getInstance().getSession()
     			.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId and r.academicClassification.uniqueId=:acadClasfId", CurriculumProjectionRule.class)
-    			.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
-    			.setParameter("acadClasfId", acadClasfId, org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("acadAreaId", acadAreaId, Long.class)
+    			.setParameter("acadClasfId", acadClasfId, Long.class)
     			.setCacheable(true).list()) {
     		ret.put(r.getMajor() == null ? "" : r.getMajor().getCode(), r.getProjection());
     	}

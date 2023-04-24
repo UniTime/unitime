@@ -131,22 +131,22 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 		CriticalCoursesImpl cc = new CriticalCoursesImpl();
 		for (XAreaClassificationMajor acm: getAreaClasfMajors(server, helper, student)) {
 			org.hibernate.query.Query query = helper.getHibSession().createNativeQuery(sqlCourses);
-			query.setParameter("area", acm.getArea(), org.hibernate.type.StringType.INSTANCE);
+			query.setParameter("area", acm.getArea(), String.class);
 			if (action != null) action.addOptionBuilder().setKey("area").setValue(acm.getArea());
-			query.setParameter("major", acm.getMajor(), org.hibernate.type.StringType.INSTANCE);
+			query.setParameter("major", acm.getMajor(), String.class);
 			if (action != null) action.addOptionBuilder().setKey("major").setValue(acm.getMajor());
 			if (sqlCourses.contains(":catyear")) {
-				query.setParameter("catyear", catyear, org.hibernate.type.StringType.INSTANCE);
+				query.setParameter("catyear", catyear, String.class);
 				if (action != null) action.addOptionBuilder().setKey("catyear").setValue(catyear);
 			}
 			cc.addCourses((List<String>)query.list());
 			if (action != null) action.addOptionBuilder().setKey("critical").setValue(cc.toString());
 			if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty() && CustomCourseLookupHolder.hasProvider()) {
 				query = helper.getHibSession().createNativeQuery(sqlPlaceholders);
-				query.setParameter("area", acm.getArea(), org.hibernate.type.StringType.INSTANCE);
-				query.setParameter("major", acm.getMajor(), org.hibernate.type.StringType.INSTANCE);
+				query.setParameter("area", acm.getArea(), String.class);
+				query.setParameter("major", acm.getMajor(), String.class);
 				if (sqlPlaceholders.contains(":catyear"))
-					query.setParameter("catyear", catyear, org.hibernate.type.StringType.INSTANCE);
+					query.setParameter("catyear", catyear, String.class);
 				List<String> placeholders = (List<String>)query.list();
 				if (placeholders != null && !placeholders.isEmpty()) {
 					for (String ph: placeholders) {
@@ -353,16 +353,16 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				int term = cyt.getTermSequence();
 				if (catyear == null) continue;
 				org.hibernate.query.Query query = helper.getHibSession().createNativeQuery(sqlCourses);
-				query.setParameter("area", acm.getArea(), org.hibernate.type.StringType.INSTANCE);
+				query.setParameter("area", acm.getArea(), String.class);
 				if (action != null) action.addOptionBuilder().setKey("area").setValue(acm.getArea());
-				query.setParameter("major", acm.getMajor(), org.hibernate.type.StringType.INSTANCE);
+				query.setParameter("major", acm.getMajor(), String.class);
 				if (action != null) action.addOptionBuilder().setKey("major").setValue(acm.getMajor());
 				if (sqlCourses.contains(":catyear")) {
-					query.setParameter("catyear", catyear, org.hibernate.type.StringType.INSTANCE);
+					query.setParameter("catyear", catyear, String.class);
 					if (action != null) action.addOptionBuilder().setKey("catyear").setValue(catyear);
 				}
 				if (sqlCourses.contains(":term")) {
-					query.setParameter("term", term, org.hibernate.type.IntegerType.INSTANCE);
+					query.setParameter("term", term, Integer.class);
 					if (action != null) action.addOptionBuilder().setKey("term").setValue(String.valueOf(term));
 				}
 				for (Object[] o: (List<Object[]>)query.list()) {
@@ -404,12 +404,12 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				}
 				if (sqlPlaceholders != null && !sqlPlaceholders.isEmpty()) {
 					query = helper.getHibSession().createNativeQuery(sqlPlaceholders);
-					query.setParameter("area", acm.getArea(), org.hibernate.type.StringType.INSTANCE);
-					query.setParameter("major", acm.getMajor(), org.hibernate.type.StringType.INSTANCE);
+					query.setParameter("area", acm.getArea(), String.class);
+					query.setParameter("major", acm.getMajor(), String.class);
 					if (sqlCourses.contains(":catyear"))
-						query.setParameter("catyear", catyear, org.hibernate.type.StringType.INSTANCE);
+						query.setParameter("catyear", catyear, String.class);
 					if (sqlPlaceholders.contains(":term"))
-						query.setParameter("term", term, org.hibernate.type.IntegerType.INSTANCE);
+						query.setParameter("term", term, Integer.class);
 					for (Object[] o: (List<Object[]>)query.list()) {
 						String progCode = (String)o[0] + ":" + cyt.getCatalogYear() + ":" + cyt.getTermSequence();
 						String progName = (String)o[1];

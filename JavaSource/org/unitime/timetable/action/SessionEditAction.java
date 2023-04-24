@@ -273,16 +273,16 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             if (sessn.getStatusType().isTestSession()) {
             	hibSession.createQuery(
             			"delete ExamEvent where exam in (from Exam x where x.session.uniqueId = :sessionId)")
-            			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+            			.setParameter("sessionId", sessn.getUniqueId(), Long.class).executeUpdate();
             	hibSession.createQuery(
             			"delete ClassEvent where clazz in (from Class_ c where c.committedAssignment.solution.owner.session.uniqueId = :sessionId)")
-            			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+            			.setParameter("sessionId", sessn.getUniqueId(), Long.class).executeUpdate();
             } else {
             	for (Assignment assignment: hibSession.createQuery(
             			"select a from Class_ c inner join c.assignments a inner join a.solution s where s.commited = true and s.owner.session.uniqueId = :sessionId " +
             			"and c.uniqueId not in (select e.clazz.uniqueId from ClassEvent e where e.clazz.controllingDept.session.uniqueId = :sessionId)",
             			Assignment.class)
-            			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            			.setParameter("sessionId", sessn.getUniqueId(), Long.class).list()) {
             		ClassEvent event = assignment.generateCommittedEvent(null,true);
             		if (event != null && !event.getMeetings().isEmpty()) {
                     	event.setMainContact(contact);
@@ -295,7 +295,7 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null " +
             			"and x.uniqueId not in (select e.exam.uniqueId from ExamEvent e where e.exam.session.uniqueId = :sessionId)",
             			Exam.class)
-            			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            			.setParameter("sessionId", sessn.getUniqueId(), Long.class).list()) {
             		ExamEvent event = exam.generateEvent(null, true);
                     if (event!=null) {
                         event.setEventName(exam.getLabel());

@@ -47,7 +47,7 @@ public class StudentAdvisorsExport extends BaseExport {
 	        document.addDocType("studentAdvisors", "-//UniTime//UniTime Student Advisors DTD/EN", "http://www.unitime.org/interface/StudentAdvisors.dtd");
 	        
 	        for (Advisor advisor: getHibSession().createQuery(
-	        		"from Advisor a where a.session.uniqueId = :sessionId order by a.lastName, a.firstName, a.externalUniqueId", Advisor.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		"from Advisor a where a.session.uniqueId = :sessionId order by a.lastName, a.firstName, a.externalUniqueId", Advisor.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	Element advisorEl = root.addElement("studentAdvisor");
 	        	advisorEl.addAttribute("externalId", advisor.getExternalUniqueId());
 	        	if (advisor.getFirstName() != null)

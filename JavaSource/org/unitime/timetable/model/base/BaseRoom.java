@@ -19,15 +19,15 @@
 */
 package org.unitime.timetable.model.base;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OneToMany;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -41,7 +41,6 @@ import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
-import org.unitime.timetable.model.RoomType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -55,7 +54,6 @@ public abstract class BaseRoom extends Location implements Serializable {
 	private String iRoomNumber;
 	private String iClassification;
 
-	private RoomType iRoomType;
 	private Building iBuilding;
 	private Room iParentRoom;
 	private Set<RoomPicture> iPictures;
@@ -81,11 +79,6 @@ public abstract class BaseRoom extends Location implements Serializable {
 	@Column(name = "classification", nullable = true, length = 20)
 	public String getClassification() { return iClassification; }
 	public void setClassification(String classification) { iClassification = classification; }
-
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "room_type", nullable = false)
-	public RoomType getRoomType() { return iRoomType; }
-	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "building_id", nullable = false)

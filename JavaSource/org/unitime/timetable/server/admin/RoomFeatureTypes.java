@@ -71,7 +71,7 @@ public class RoomFeatureTypes implements AdminTable {
 			int used =
 					(hibSession.createQuery(
 							"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId", Number.class)
-							.setParameter("uniqueId", ftype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
+							.setParameter("uniqueId", ftype.getUniqueId(), Long.class).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.RoomFeatureTypeEdit));

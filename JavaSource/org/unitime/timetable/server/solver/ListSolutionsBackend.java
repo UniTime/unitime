@@ -321,7 +321,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 
 		List<SolverPredefinedSetting> configs = SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
 				"from SolverPredefinedSetting s where s.appearance = :appearance", SolverPredefinedSetting.class
-				).setParameter("appearance", appearance, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+				).setParameter("appearance", appearance, Integer.class).setCacheable(true).list();
 		
 		for (SolverPredefinedSetting config: configs) {
 			SolverConfiguration c = new SolverConfiguration();

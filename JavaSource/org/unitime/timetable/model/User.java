@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -57,7 +57,7 @@ public class User extends BaseUser {
             UserDAO.getInstance().
             getSession().
             createQuery("select u from User u where u.externalUniqueId=:externalId", User.class).
-            setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
+            setParameter("externalId", externalId, String.class).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();
@@ -68,7 +68,7 @@ public class User extends BaseUser {
             UserDAO.getInstance().
             getSession().
             createQuery("select u from User u where u.username=:userName", User.class).
-            setParameter("userName", userName, org.hibernate.type.StringType.INSTANCE).
+            setParameter("userName", userName, String.class).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();

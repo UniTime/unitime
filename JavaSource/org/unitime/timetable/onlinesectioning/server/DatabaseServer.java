@@ -97,8 +97,8 @@ public class DatabaseServer extends AbstractLockingServer {
 				"order by case " +
 				"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 				"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-				.setParameter("q", query.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("q", query.toLowerCase(), String.class)
+				.setParameter("sessionId", getAcademicSession().getUniqueId(), Long.class)
 				.setCacheable(true).list()) {
 			XCourse course = new XCourse(c);
 			if (matcher == null || matcher.match(course))
@@ -118,7 +118,7 @@ public class DatabaseServer extends AbstractLockingServer {
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false " +
 				"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-				.setParameter("sessionId", getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", getAcademicSession().getUniqueId(), Long.class)
 				.setCacheable(true).list()) {
 			XCourse course = new XCourse(c);
 			if (matcher == null || matcher.match(course))
@@ -142,7 +142,7 @@ public class DatabaseServer extends AbstractLockingServer {
 	                    "left join fetch s.groups as g " +
 	                    "left join fetch s.notes as n " +
 				"where s.session.uniqueId = :sessionId", Student.class)
-				.setParameter("sessionId", getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", getAcademicSession().getUniqueId(), Long.class)
 				.setCacheable(true).list()) {
 			XStudent student = new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern(), getAcademicSession().getDatePatternFirstDate());
 			if (matcher == null || matcher.match(student))
@@ -175,7 +175,7 @@ public class DatabaseServer extends AbstractLockingServer {
                 "left join fetch cr.classWaitLists as cwl " + 
                 "left join fetch s.classEnrollments as e " +
 				"where s.uniqueId = :studentId", Student.class)
-				.setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+				.setParameter("studentId", studentId, Long.class).setCacheable(true).uniqueResult();
 		return s == null ? null : new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern(), getAcademicSession().getDatePatternFirstDate());
 	}
 
@@ -188,11 +188,11 @@ public class DatabaseServer extends AbstractLockingServer {
     		"where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId " +
     		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
     		"and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
-    		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), org.hibernate.type.StringType.INSTANCE)
-    		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, org.hibernate.type.StringType.INSTANCE)
-    		.setParameter("pref", PreferenceLevel.sRequired, org.hibernate.type.StringType.INSTANCE)
-    		.setParameter("sessionId", getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    		.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE)
+    		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), String.class)
+    		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, String.class)
+    		.setParameter("pref", PreferenceLevel.sRequired, String.class)
+    		.setParameter("sessionId", getAcademicSession().getUniqueId(), Long.class)
+    		.setParameter("offeringId", offeringId, Long.class)
     		.setCacheable(true)
     		.list();
         if (!distPrefs.isEmpty()) {
@@ -219,7 +219,7 @@ public class DatabaseServer extends AbstractLockingServer {
 				"left join fetch co.creditConfigs cc " +
 				"left join fetch ss.creditConfigs sc " +
 				"where io.uniqueId = :offeringId", InstructionalOffering.class)
-				.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+				.setParameter("offeringId", offeringId, Long.class).setCacheable(true).uniqueResult();
 		if (o == null || !o.isAllowStudentScheduling()) return null;
 		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null) {
 			if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpartCache) {
@@ -242,8 +242,8 @@ public class DatabaseServer extends AbstractLockingServer {
 				"left join fetch cr.classWaitLists as cwl " +
 				"left join fetch cd.student as s " +
 				"left join fetch s.classEnrollments as e " +
-				"where r.courseOffering.instructionalOffering = :offeringId", CourseDemand.class)
-				.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				"where r.courseOffering.instructionalOffering.uniqueId = :offeringId", CourseDemand.class)
+				.setParameter("offeringId", offeringId, Long.class).setCacheable(true).list()) {
 			ret.add(new XCourseRequest(d, getCurrentHelper()));
 		}
 		return ret;
@@ -253,9 +253,9 @@ public class DatabaseServer extends AbstractLockingServer {
 	public XExpectations getExpectations(Long offeringId) {
 		Map<Long, Double> expectations = new HashMap<Long, Double>();
 		for (Object[] info: getCurrentHelper().getHibSession().createQuery(
-    			"select i.clazz.uniqueId, i.nbrExpectedStudents from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId",
+    			"select i.clazz.uniqueId, i.nbrExpectedStudents from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId",
     			Object[].class).
-    			setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).
+    			setParameter("offeringId", offeringId, Long.class).
     			setCacheable(true).list()) {
 			expectations.put((Long)info[0], (Double)info[1]);
 		}
@@ -308,8 +308,8 @@ public class DatabaseServer extends AbstractLockingServer {
 				"select distinct ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId " +
 				"from ClassInstructor ci " +
 				"where ci.instructor.externalUniqueId = :instructorExternalId and ci.instructor.department.session.uniqueId = :sessionId", Long.class)
-				.setParameter("sessionId", getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-				.setParameter("instructorExternalId", instructorExternalId, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("sessionId", getAcademicSession().getUniqueId(), Long.class)
+				.setParameter("instructorExternalId", instructorExternalId, String.class)
 				.setCacheable(true).list();
 	}
 	
@@ -317,6 +317,6 @@ public class DatabaseServer extends AbstractLockingServer {
 	public Set<Long> getRequestedCourseIds(Long studentId) {
 		return new HashSet<Long>(getCurrentHelper().getHibSession().createQuery(
 				"select cr.courseOffering.uniqueId from CourseRequest cr where cr.courseDemand.student.uniqueId = :studentId", Long.class
-				).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+				).setParameter("studentId", studentId, Long.class).setCacheable(true).list());
 	}
 }

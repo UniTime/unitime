@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -68,7 +68,7 @@ public class ExternalRoom extends BaseExternalRoom {
     public static List<ExternalRoom> findAll(Long sessionId) {
         return ExternalRoomDAO.getInstance().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId", ExternalRoom.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
                 setCacheable(true).
                 list();
     }
@@ -77,9 +77,9 @@ public class ExternalRoom extends BaseExternalRoom {
         return ExternalRoomDAO.getInstance().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId and " +
                 "r.building.abbreviation=:bldgAbbv and r.roomNumber=:roomNbr", ExternalRoom.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("bldgAbbv", bldgAbbv, org.hibernate.type.StringType.INSTANCE).
-                setParameter("roomNbr", roomNbr, org.hibernate.type.StringType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("bldgAbbv", bldgAbbv, String.class).
+                setParameter("roomNbr", roomNbr, String.class).
                 uniqueResult();
     }
 	

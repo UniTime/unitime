@@ -47,7 +47,7 @@ public class StudentEnrollmentExport extends BaseExport {
 	        
 	        for (Student student: getHibSession().createQuery(
 	        		"select s from Student s where s.session.uniqueId = :sessionId", Student.class)
-	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	if (student.getClassEnrollments().isEmpty()) continue;
 	        	Element studentEl = root.addElement("student");
 	        	studentEl.addAttribute("externalId",

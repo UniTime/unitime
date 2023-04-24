@@ -40,7 +40,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from QueryLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the query log (" + rows + " records).");
 			tx.commit();
@@ -60,7 +60,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from ChangeLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the change log (" + rows + " records).");
 			tx.commit();
@@ -80,7 +80,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from OnlineSectioningLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the online sectioning log (" + rows + " records).");
 			tx.commit();
@@ -100,7 +100,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from MessageLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the message log (" + rows + " records).");
 			tx.commit();
@@ -120,7 +120,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from StudentSectioningQueue where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the student sectioning queue (" + rows + " records).");
 			tx.commit();
@@ -140,7 +140,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from HashedQuery where lastUsed < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records not used for more than " + days + " days deleted from the hashed queries (" + rows + " records).");
 			tx.commit();
@@ -160,7 +160,7 @@ public class LogCleaner {
 			tx = hibSession.beginTransaction();
 			int rows = hibSession.createQuery(
 					"delete from SectioningSolutionLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
-					).setParameter("days", - days, org.hibernate.type.IntegerType.INSTANCE).executeUpdate();
+					).setParameter("days", - days, Integer.class).executeUpdate();
 			if (rows > 0)
 				sLog.info("All records older than " + days + " days deleted from the sectioning solutions log (" + rows + " records).");
 			tx.commit();

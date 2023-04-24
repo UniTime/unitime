@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -369,11 +369,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         (source==null?"":"and ch.sourceString=:source ") +
                         "and ch.operationString != :note " +
                         "order by ch.timeStamp desc");
-            q.setParameter("objectUniqueId", objectUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE);
-            q.setParameter("objectType", objectType, org.hibernate.type.StringType.INSTANCE);
-            q.setParameter("note", Operation.NOTE.toString(), org.hibernate.type.StringType.INSTANCE);
+            q.setParameter("objectUniqueId", objectUniqueId.longValue(), Long.class);
+            q.setParameter("objectType", objectType, String.class);
+            q.setParameter("note", Operation.NOTE.toString(), String.class);
             if (source!=null)
-                q.setParameter("source", source.name(), org.hibernate.type.StringType.INSTANCE);
+                q.setParameter("source", source.name(), String.class);
             q.setMaxResults(1);
             q.setCacheable(true);
             @SuppressWarnings("unchecked")
@@ -399,8 +399,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                             "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                             (source==null?"":"and ch.sourceString=:source ") +
                             "order by ch.timeStamp desc");
-                    q.setParameter("objectType", objectType, org.hibernate.type.StringType.INSTANCE);
-                    if (source!=null) q.setParameter("source", source.name(), org.hibernate.type.StringType.INSTANCE);
+                    q.setParameter("objectType", objectType, String.class);
+                    if (source!=null) q.setParameter("source", source.name(), String.class);
                     q.setMaxResults(1);
                     @SuppressWarnings("unchecked")
 					List<ChangeLog> logs = q.list();
@@ -422,8 +422,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
                         "order by ch.timeStamp desc");
-                q.setParameter("objectType", objectType, org.hibernate.type.StringType.INSTANCE);
-                if (source!=null) q.setParameter("source", source.name(), org.hibernate.type.StringType.INSTANCE);
+                q.setParameter("objectType", objectType, String.class);
+                if (source!=null) q.setParameter("source", source.name(), String.class);
                 q.setMaxResults(1);
                 q.setCacheable(true);
                 @SuppressWarnings("unchecked")
@@ -457,10 +457,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
                         "order by ch.timeStamp desc");
-            q.setParameter("objectUniqueId", objectUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE);
-            q.setParameter("objectType", objectType, org.hibernate.type.StringType.INSTANCE);
+            q.setParameter("objectUniqueId", objectUniqueId.longValue(), Long.class);
+            q.setParameter("objectType", objectType, String.class);
             if (source!=null)
-                q.setParameter("source", source.name(), org.hibernate.type.StringType.INSTANCE);
+                q.setParameter("source", source.name(), String.class);
             q.setMaxResults(n);
             q.setCacheable(true);
             return q.list();
@@ -481,10 +481,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         (subjAreaId==null?"":"and ch.subjectArea.uniqueId=:subjAreaId ") +
                         (departmentId==null?"":"and ch.department.uniqueId=:departmentId ") + 
                         "order by ch.timeStamp desc");
-            q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
-            if (managerId!=null) q.setParameter("managerId", managerId.longValue(), org.hibernate.type.LongType.INSTANCE);
-            if (subjAreaId!=null) q.setParameter("subjAreaId", subjAreaId.longValue(), org.hibernate.type.LongType.INSTANCE);
-            if (departmentId!=null) q.setParameter("departmentId", departmentId.longValue(), org.hibernate.type.LongType.INSTANCE);
+            q.setParameter("sessionId", sessionId.longValue(), Long.class);
+            if (managerId!=null) q.setParameter("managerId", managerId.longValue(), Long.class);
+            if (subjAreaId!=null) q.setParameter("subjAreaId", subjAreaId.longValue(), Long.class);
+            if (departmentId!=null) q.setParameter("departmentId", departmentId.longValue(), Long.class);
             q.setMaxResults(n);
             q.setCacheable(true);
             return q.list();

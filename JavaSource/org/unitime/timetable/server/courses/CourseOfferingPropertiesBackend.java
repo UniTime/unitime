@@ -206,7 +206,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(5000);
 			q.setCacheable(true);
-			q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
+			q.setParameter("acadSessionId", acadSessionId, Long.class);
 	        
 			List result = q.list();
 			if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
@@ -277,7 +277,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			Query q2 = hibSession2.createQuery(query2.toString());
 			q2.setFetchSize(5000);
 			q2.setCacheable(true);
-			q2.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
+			q2.setParameter("acadSessionId", acadSessionId, Long.class);
 	        
 			List result2 = q2.list();
 	        Collections.sort(result2);

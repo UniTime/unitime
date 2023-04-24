@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -59,7 +59,7 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (mgr == null) {
 			Settings s = SettingsDAO.getInstance().getSession().createQuery(
 					"select s from Settings s where s.key = :key", Settings.class
-					).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
+					).setParameter("key", name, String.class).setCacheable(true).uniqueResult();
 			return (s == null ? defaultValue : s.getDefaultValue());
 		}
 		return getValue(mgr.getUniqueId(), name, defaultValue);
@@ -73,11 +73,11 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (managerId == null) return defaultValue;
 		Settings s = SettingsDAO.getInstance().getSession().createQuery(
 				"select s from Settings s where s.key = :key", Settings.class
-				).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
+				).setParameter("key", name, String.class).setCacheable(true).uniqueResult();
 		if (s == null) return defaultValue;
 		ManagerSettings m = ManagerSettingsDAO.getInstance().getSession().createQuery(
 				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId", ManagerSettings.class
-				).setParameter("managerId", managerId, org.hibernate.type.LongType.INSTANCE).setParameter("settingsId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+				).setParameter("managerId", managerId, Long.class).setParameter("settingsId", s.getUniqueId(), Long.class).setCacheable(true).uniqueResult();
 		return (m == null? s.getDefaultValue() : m.getValue());
 	}
 

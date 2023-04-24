@@ -451,7 +451,7 @@ public class CurriculaServlet implements CurriculaService {
 							"select distinct x from Curriculum x, Curriculum c inner join c.majors m where " +
 							"c.uniqueId = :curriculumId and x.uniqueId != c.uniqueId and c.academicArea = x.academicArea and (x.majors is empty or m in elements(x.majors))",
 							Curriculum.class)
-							.setParameter("curriculumId", c.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameter("curriculumId", c.getUniqueId(), Long.class).setCacheable(true).list()) {
 						if (x.getMajors().size() > 1) continue;
 						String template = x.getAcademicArea().getAcademicAreaAbbreviation();
 						String groupPrefix = x.getAcademicArea().getAcademicAreaAbbreviation() + " ";
@@ -707,12 +707,12 @@ public class CurriculaServlet implements CurriculaService {
 				List<Curriculum> curricula = new ArrayList<Curriculum>();
 				curricula.addAll(hibSession.createQuery(
 						"select distinct x from Curriculum x where x.academicArea.uniqueId = :acadAreaId and x.majors is empty", Curriculum.class)
-						.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+						.setParameter("acadAreaId", acadAreaId, Long.class).setCacheable(true).list());
 				if (!majors.isEmpty())
 					curricula.addAll(hibSession.createQuery(
 							"select distinct x from Curriculum x inner join x.majors m where " +
 							"x.academicArea.uniqueId = :acadAreaId and m.uniqueId in :majorIds", Curriculum.class)
-							.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setParameterList("majorIds", majors).setCacheable(true).list());
+							.setParameter("acadAreaId", acadAreaId, Long.class).setParameterList("majorIds", majors).setCacheable(true).list());
 				
 				for (Curriculum x: curricula) {
 					if (x.getMajors().size() > 1) continue;
@@ -1440,7 +1440,7 @@ public class CurriculaServlet implements CurriculaService {
 				Long sessionId = getAcademicSessionId();
 				for (AcademicClassification clasf: hibSession.createQuery(
 						"select c from AcademicClassification c where c.session.uniqueId = :sessionId", AcademicClassification.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
 					AcademicClassificationInterface aci = new AcademicClassificationInterface();
 					aci.setId(clasf.getUniqueId());
 					aci.setName(clasf.getName());
@@ -1591,7 +1591,7 @@ public class CurriculaServlet implements CurriculaService {
 
 		for (CurriculumCourse course : hibSession.createQuery(
 				"select c from CurriculumCourse c where c.course.uniqueId = :courseId", CurriculumCourse.class)
-				.setParameter("courseId", courseOffering.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				.setParameter("courseId", courseOffering.getUniqueId(), Long.class).setCacheable(true).list()) {
 			CurriculumClassification clasf = course.getClassification();
 			Curriculum curriculum = clasf.getCurriculum();
 			
@@ -1600,13 +1600,13 @@ public class CurriculaServlet implements CurriculaService {
 				children = hibSession.createQuery("select c from Curriculum c where c.academicArea.uniqueId = :areaId and c.multipleMajors = true and " +
 						"(select count(x) from CurriculumCourse x where x.course.uniqueId = :courseId and x.classification.curriculum.uniqueId = c.uniqueId) = 0",
 						Curriculum.class
-						).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("courseId", course.getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+						).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), Long.class).setParameter("courseId", course.getCourse().getUniqueId(), Long.class).setCacheable(true).list();
 			} else if (curriculum.getMajors().size() == 1) {
 				children = hibSession.createQuery("select c from Curriculum c inner join c.majors m where c.academicArea.uniqueId = :areaId and m.uniqueId = :majorId and c.multipleMajors = true and " +
 						"(select count(x) from CurriculumCourse x where x.course.uniqueId = :courseId and x.classification.curriculum.uniqueId = c.uniqueId) = 0",
 						Curriculum.class
-						).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("majorId", curriculum.getMajors().iterator().next().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-						.setParameter("courseId", course.getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+						).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), Long.class).setParameter("majorId", curriculum.getMajors().iterator().next().getUniqueId(), Long.class)
+						.setParameter("courseId", course.getCourse().getUniqueId(), Long.class).setCacheable(true).list();
 			}
 			if (children != null && !children.isEmpty()) {
 				for (Curriculum child: children) {
@@ -2271,7 +2271,7 @@ public class CurriculaServlet implements CurriculaService {
 				List<AcademicArea> areas = hibSession.createQuery(
 						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title",
 						AcademicArea.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 				for (AcademicArea a: areas) {
 					AcademicAreaInterface ai = new AcademicAreaInterface();
 					ai.setId(a.getUniqueId());
@@ -2319,7 +2319,7 @@ public class CurriculaServlet implements CurriculaService {
 					majors.removeAll(
 							hibSession.createQuery("select m from Curriculum c inner join c.majors m where c.academicArea = :academicAreaId and c.uniqueId != :curriculumId and c.multipleMajors = false",
 									PosMajor.class)
-							.setParameter("academicAreaId", academicAreaId, org.hibernate.type.LongType.INSTANCE).setParameter("curriculumId", (curriculumId == null ? -1l : curriculumId), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+							.setParameter("academicAreaId", academicAreaId, Long.class).setParameter("curriculumId", (curriculumId == null ? -1l : curriculumId), Long.class).setCacheable(true).list());
 				}
 				for (PosMajor m: majors) {
 					MajorInterface mi = new MajorInterface();
@@ -2404,8 +2404,8 @@ public class CurriculaServlet implements CurriculaService {
 						"order by case " +
 						"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 						"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-						.setParameter("q", query.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("q", query.toLowerCase(), String.class)
+						.setParameter("sessionId", sessionId, Long.class)
 						.setCacheable(true).setMaxResults(limit == null || limit < 0 || checkDepartment? Integer.MAX_VALUE : limit).list()) {
 					if (checkDepartment && !permissionDepartment.check(getSessionContext().getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit, DepartmentStatusType.Status.ManagerLimitedEdit))
 						continue;
@@ -2495,8 +2495,8 @@ public class CurriculaServlet implements CurriculaService {
 						"select c from CourseOffering c where " +
 						"c.subjectArea.session.uniqueId = :sessionId and " +
 						"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course", CourseOffering.class)
-						.setParameter("course", course.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("course", course.toLowerCase(), String.class)
+						.setParameter("sessionId", sessionId, Long.class)
 						.setCacheable(true).setMaxResults(1).list()) {
 					courseOffering = c; break;
 				}
@@ -2627,7 +2627,7 @@ public class CurriculaServlet implements CurriculaService {
 				Hashtable<Long, List<MajorInterface>> majors = new Hashtable<Long, List<MajorInterface>>();
 				for (PosMajor major: hibSession.createQuery(
 						"select m from PosMajor m where m.session.uniqueId=:sessionId", PosMajor.class).
-						setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
 					MajorInterface mi = new MajorInterface();
 					mi.setId(major.getUniqueId());
 					mi.setCode(major.getCode());
@@ -2685,7 +2685,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				for (CurriculumProjectionRule rule: hibSession.createQuery(
 						"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId", CurriculumProjectionRule.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
 					try {
 						rules.get(areaLookup.get(rule.getAcademicArea().getUniqueId()))
 						.get(rule.getMajor() == null ? dummyMajor : majorLookup.get(rule.getMajor().getUniqueId()))
@@ -2723,7 +2723,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				for (CurriculumProjectionRule rule: hibSession.createQuery(
 						"select r from CurriculumProjectionRule r where academicArea.session.uniqueId=:sessionId", CurriculumProjectionRule.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
 					
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
@@ -2811,7 +2811,7 @@ public class CurriculaServlet implements CurriculaService {
 				tx = hibSession.beginTransaction();
 				Long sessionId = getAcademicSessionId();
 				
-				for (Curriculum c: hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId", Curriculum.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+				for (Curriculum c: hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId", Curriculum.class).setParameter("sessionId", sessionId, Long.class).list()) {
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
 							c,
@@ -2826,7 +2826,7 @@ public class CurriculaServlet implements CurriculaService {
 				MakeCurriculaFromLastlikeDemands m = new MakeCurriculaFromLastlikeDemands(sessionId);
 				m.update(hibSession, lastLike);
 				
-				for (Curriculum c: hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId", Curriculum.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+				for (Curriculum c: hibSession.createQuery("from Curriculum where department.session.uniqueId = :sessionId", Curriculum.class).setParameter("sessionId", sessionId, Long.class).list()) {
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
 							c,
@@ -2884,7 +2884,7 @@ public class CurriculaServlet implements CurriculaService {
 					
 					List<AcademicClassification> classifications = hibSession.createQuery(
 							"select c from AcademicClassification c where c.session.uniqueId = :sessionId", AcademicClassification.class)
-							.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+							.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 					
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
 					
@@ -3106,10 +3106,10 @@ public class CurriculaServlet implements CurriculaService {
 				
 				List<AcademicClassification> classifications = hibSession.createQuery(
 						"select c from AcademicClassification c where c.session.uniqueId = :sessionId", AcademicClassification.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 				
 				List<Curriculum> curricula = hibSession.createQuery("from Curriculum c where c.academicArea.session.uniqueId = :sessionId", Curriculum.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
+						.setParameter("sessionId", sessionId, Long.class).list();
 				
 				Map<Long, List<Curriculum>> curriculum2children = new HashMap<Long, List<Curriculum>>();
 				for (Curriculum c1: curricula) {
@@ -3128,7 +3128,7 @@ public class CurriculaServlet implements CurriculaService {
 				Map<Long, List<CurriculumCourse>> course2curriculum = new Hashtable<Long, List<CurriculumCourse>>();
 				for (CurriculumCourse cc: hibSession.createQuery(
 						"select cc from CurriculumCourse cc where cc.classification.curriculum.academicArea.session.uniqueId = :sessionId", CurriculumCourse.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("sessionId", sessionId, Long.class)
 						.setCacheable(true).list()) {
 					List<CurriculumCourse> courses = course2curriculum.get(cc.getCourse().getUniqueId());
 					if (courses == null) {
@@ -3140,7 +3140,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				for (CourseOffering courseOffering: hibSession.createQuery(
 						"select co from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+						.setParameter("sessionId", sessionId, Long.class)
 						.setCacheable(true).list()) {
 					
 					Integer oldDemand = courseOffering.getDemand();
@@ -3340,7 +3340,7 @@ public class CurriculaServlet implements CurriculaService {
 					
 					for (CurriculumCourse course: hibSession.createQuery(
 							"select cc from CurriculumCourse cc where cc.course.uniqueId = :courseId", CurriculumCourse.class)
-							.setParameter("courseId", courseOffering.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+							.setParameter("courseId", courseOffering.getUniqueId(), Long.class)
 							.setCacheable(true).list()) {
 						CurriculumClassification clasf = course.getClassification();
 						Curriculum curriculum = clasf.getCurriculum();
@@ -3351,12 +3351,12 @@ public class CurriculaServlet implements CurriculaService {
 						if (curriculum.getMajors().isEmpty()) {
 							children = hibSession.createQuery("select c from Curriculum c where c.academicArea.uniqueId = :areaId and c.multipleMajors = true and " +
 									"(select count(x) from CurriculumCourse x where x.course.uniqueId = :courseId and x.classification.curriculum.uniqueId = c.uniqueId) = 0", Curriculum.class
-									).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("courseId", course.getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+									).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), Long.class).setParameter("courseId", course.getCourse().getUniqueId(), Long.class).setCacheable(true).list();
 						} else if (curriculum.getMajors().size() == 1) {
 							children = hibSession.createQuery("select c from Curriculum c inner join c.majors m where c.academicArea.uniqueId = :areaId and m.uniqueId = :majorId and c.multipleMajors = true and " +
 									"(select count(x) from CurriculumCourse x where x.course.uniqueId = :courseId and x.classification.curriculum.uniqueId = c.uniqueId) = 0", Curriculum.class
-									).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("majorId", curriculum.getMajors().iterator().next().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-									.setParameter("courseId", course.getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+									).setParameter("areaId", curriculum.getAcademicArea().getUniqueId(), Long.class).setParameter("majorId", curriculum.getMajors().iterator().next().getUniqueId(), Long.class)
+									.setParameter("courseId", course.getCourse().getUniqueId(), Long.class).setCacheable(true).list();
 						}
 						if (children != null && !children.isEmpty()) {
 							for (Curriculum child: children) {
@@ -3388,7 +3388,7 @@ public class CurriculaServlet implements CurriculaService {
 					if (area2major2clasf2ll != null) {
 						List<AcademicClassification> classifications = hibSession.createQuery(
 								"select c from AcademicClassification c where c.session.uniqueId = :sessionId", AcademicClassification.class)
-								.setParameter("sessionId", offering.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+								.setParameter("sessionId", offering.getSessionId(), Long.class).setCacheable(true).list();
 						for (Curriculum curriculum: curricula) {
 							Map<String, Map<String, Map<Long, Double>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
 							if (major2clasf2ll != null) {
@@ -3496,7 +3496,7 @@ public class CurriculaServlet implements CurriculaService {
 	private List<Curriculum> findAllCurricula(org.hibernate.Session hibSession) {
 		return hibSession.createQuery(
 				"select distinct c from Curriculum c where c.department.session.uniqueId = :sessionId", Curriculum.class)
-				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", getAcademicSessionId(), Long.class)
 				.setCacheable(true).list();
 	}
 	
@@ -3510,7 +3510,7 @@ public class CurriculaServlet implements CurriculaService {
 			// students with all majors
 			if (!c.isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
@@ -3518,7 +3518,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -3536,9 +3536,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
@@ -3561,12 +3561,12 @@ public class CurriculaServlet implements CurriculaService {
 			// students with all majors
 			if (!multipleMajors)
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds", Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
@@ -3584,9 +3584,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Map<Long, Double>> clasf2enrl = new Hashtable<Long, Map<Long, Double>>();
@@ -3617,7 +3617,7 @@ public class CurriculaServlet implements CurriculaService {
 				select = "f.code, '', sum(a.weight)";
 				group = "f.code";
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-						.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 						.setCacheable(true).list();
 			}
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3626,7 +3626,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorCodes.add(major.getCode());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 					.setParameterList("majorCodes", majorCodes)
 					.setCacheable(true).list();
 		} else {
@@ -3646,9 +3646,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class);
 			for (Map.Entry<String, String> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), String.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Hashtable<String, Integer>> clasfMajor2ll = new Hashtable<String, Hashtable<String,Integer>>();
@@ -3679,7 +3679,7 @@ public class CurriculaServlet implements CurriculaService {
 			// students with all majors
 			if (!c.isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
@@ -3687,7 +3687,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorCodes.add(major.getCode());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.code in :majorCodes group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 					.setParameterList("majorCodes", majorCodes)
 					.setCacheable(true).list();
 		} else {
@@ -3705,9 +3705,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class);
 			for (Map.Entry<String, String> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), String.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, Integer> clasf2ll = new Hashtable<String, Integer>();
@@ -3731,7 +3731,7 @@ public class CurriculaServlet implements CurriculaService {
 			if (!multipleMajors) {
 				select = "f.code, '', s.uniqueId, a.weight";
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class)
 						.setCacheable(true).list();
 			}
 		} else if (!multipleMajors || majors.size() == 1) {
@@ -3740,7 +3740,7 @@ public class CurriculaServlet implements CurriculaService {
 				codes.add(major.getCode());
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes", Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class)
 					.setParameterList("majorCodes", codes)
 					.setCacheable(true).list();
 		} else {
@@ -3759,9 +3759,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE);
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class);
 			for (Map.Entry<String, String> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), String.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<String, HashMap<String, Map<Long, Double>>> clasf2ll = new Hashtable<String, HashMap<String, Map<Long, Double>>>();
@@ -3798,7 +3798,7 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!c.isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
@@ -3806,7 +3806,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -3825,9 +3825,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<Long, Integer>> clasf2course2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
@@ -3856,12 +3856,12 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!multipleMajors)
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds", Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
@@ -3879,9 +3879,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Map<Long, Double>>>();
@@ -3930,7 +3930,7 @@ public class CurriculaServlet implements CurriculaService {
 					select = "f.code, '', co.uniqueId, sum(a.weight)";
 					group = "f.code, co.uniqueId";
 					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-							.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+							.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 							.setCacheable(true).list();
 				}
 			} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
@@ -3939,7 +3939,7 @@ public class CurriculaServlet implements CurriculaService {
 				for (PosMajor major: c.getMajors())
 					majorCodes.add(major.getCode());
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes group by " + group, Object[].class)
-						.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class)
 						.setParameterList("majorCodes", majorCodes)
 						.setCacheable(true).list();
 			} else {
@@ -3959,9 +3959,9 @@ public class CurriculaServlet implements CurriculaService {
 					idx ++;
 				}
 				org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-						.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE);
+						.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("acadAbbv", c.getAcademicArea().getAcademicAreaAbbreviation(), String.class);
 				for (Map.Entry<String, String> e: params.entrySet())
-					q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
+					q.setParameter(e.getKey(), e.getValue(), String.class);
 				lines = q.setCacheable(true).list();
 			}
 			if (lines != null)
@@ -4005,7 +4005,7 @@ public class CurriculaServlet implements CurriculaService {
 				if (!multipleMajors) {
 					select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, '', s.uniqueId, a.weight";
 					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-							.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE)
+							.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class)
 							.setCacheable(true).list();
 				}
 			} else if (!multipleMajors || majors.size() == 1) {
@@ -4014,7 +4014,7 @@ public class CurriculaServlet implements CurriculaService {
 					codes.add(major.getCode());
 				// students with one major
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.code in :majorCodes", Object[].class)
-						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class)
 						.setParameterList("majorCodes", codes)
 						.setCacheable(true).list();
 			} else {
@@ -4033,9 +4033,9 @@ public class CurriculaServlet implements CurriculaService {
 					idx ++;
 				}
 				org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("acadAbbv", acadAreaAbbv, org.hibernate.type.StringType.INSTANCE);
+						.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("acadAbbv", acadAreaAbbv, String.class);
 				for (Map.Entry<String, String> e: params.entrySet())
-					q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.StringType.INSTANCE);
+					q.setParameter(e.getKey(), e.getValue(), String.class);
 				lines = q.setCacheable(true).list();
 			}
 			if (lines != null)
@@ -4089,7 +4089,7 @@ public class CurriculaServlet implements CurriculaService {
 				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, e.student.uniqueId, a.weight " +
 				"from StudentClassEnrollment e inner join e.student.areaClasfMajors a left outer join a.major m where " +
 				"e.courseOffering.uniqueId = :courseId", Object[].class)
-				.setParameter("courseId", courseOfferingId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("courseId", courseOfferingId, Long.class)
 				.setCacheable(true).list()) {
 			Long areaId = (Long)o[0];
 			Long majorId = (Long)o[1];
@@ -4130,8 +4130,8 @@ public class CurriculaServlet implements CurriculaService {
 					"select distinct r.academicAreaAbbreviation, m.code, f.code, s.uniqueId, a.weight from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a left outer join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("courseId", courseOfferingId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class)
+					.setParameter("courseId", courseOfferingId, Long.class)
 					.setCacheable(true).list()) {
 				String areaAbbv = (String)o[0];
 				String majorCode = (String)o[1];
@@ -4168,7 +4168,7 @@ public class CurriculaServlet implements CurriculaService {
 				"inner join ac.major m " +
 				"where s.uniqueId in (select x.student.uniqueId from LastLikeCourseDemand x where x.subjectArea.session.uniqueId = :sessionId) " +
 				"group by a.academicAreaAbbreviation, m.code, f.code", Object[].class)
-				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", getAcademicSessionId(), Long.class)
 				.setCacheable(true).list()) {
 			String area = (String)o[0];
 			String major = (String)o[1];
@@ -4202,7 +4202,7 @@ public class CurriculaServlet implements CurriculaService {
 					"select distinct co.uniqueId, r.academicAreaAbbreviation, m.code, f.code, s.uniqueId, a.weight from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class)
 					.setCacheable(true).list()) {
 				Long courseId = (Long)o[0];
 				String areaAbbv = (String)o[1];
@@ -4247,7 +4247,7 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!c.isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where  + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
@@ -4255,7 +4255,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds  group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -4273,9 +4273,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Integer> clasf2enrl = new Hashtable<Long, Integer>();
@@ -4298,12 +4298,12 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!multipleMajors)
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds", Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
@@ -4321,9 +4321,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Map<Long, Double>> clasf2enrl = new Hashtable<Long, Map<Long, Double>>();
@@ -4352,7 +4352,7 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!c.isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setCacheable(true).list();
 		} else if (!c.isMultipleMajors() || c.getMajors().size() == 1) {
 			// students with one major
@@ -4360,7 +4360,7 @@ public class CurriculaServlet implements CurriculaService {
 			for (PosMajor major: c.getMajors())
 				majorIds.add(major.getUniqueId());
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -4378,9 +4378,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where + " group by " + group, Object[].class)
-					.setParameter("sessionId", c.getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", c.getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", c.getAcademicArea().getSessionId(), Long.class).setParameter("areaId", c.getAcademicArea().getUniqueId(), Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<Long, Integer>> clasf2course2enrl = new Hashtable<Long, Hashtable<Long,Integer>>();
@@ -4409,12 +4409,12 @@ public class CurriculaServlet implements CurriculaService {
 			// students with no major
 			if (!multipleMajors)
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setCacheable(true).list();
 		} else if (!multipleMajors || majors.size() == 1) {
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and m.uniqueId in :majorIds", Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class)
 					.setParameterList("majorIds", majors)
 					.setCacheable(true).list();
 		} else {
@@ -4432,9 +4432,9 @@ public class CurriculaServlet implements CurriculaService {
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("areaId", acadAreaId, org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", getAcademicSessionId(), Long.class).setParameter("areaId", acadAreaId, Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Hashtable<Long, Hashtable<CourseInterface, Map<Long, Double>>> clasf2course2enrl = new Hashtable<Long, Hashtable<CourseInterface,Map<Long, Double>>>();
@@ -4470,7 +4470,7 @@ public class CurriculaServlet implements CurriculaService {
 				"select distinct a.academicArea.uniqueId, m.uniqueId, a.academicClassification.uniqueId, s.uniqueId, a.weight " +
 				"from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a inner join a.major m where " +
 				"r.courseOffering.uniqueId = :courseId", Object[].class)
-				.setParameter("courseId", courseOfferingId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("courseId", courseOfferingId, Long.class)
 				.setCacheable(true).list()) {
 			Long areaId = (Long)o[0];
 			Long majorId = (Long)o[1];
@@ -4503,8 +4503,8 @@ public class CurriculaServlet implements CurriculaService {
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
 				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course", CourseOffering.class)
-				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("course", courseName.toLowerCase(), String.class)
+				.setParameter("sessionId", getAcademicSessionId(), Long.class)
 				.setCacheable(true).setMaxResults(1).list()) {
 			return co;
 		}
@@ -4515,7 +4515,7 @@ public class CurriculaServlet implements CurriculaService {
 		Long cnt = hibSession
 				.createQuery(
 						"select count(1) from InstructionalOffering io where io.snapshotLimitDate is not null and io.session.uniqueId = :sessId", Long.class)
-				.setParameter("sessId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+				.setParameter("sessId", sessionId, Long.class).setCacheable(true).uniqueResult();
 		return (cnt.longValue() > 0);
 	}
 
@@ -4523,7 +4523,7 @@ public class CurriculaServlet implements CurriculaService {
 		Hashtable<String,HashMap<String, Float>> clasf2major2proj = new Hashtable<String, HashMap<String,Float>>();
 		for (CurriculumProjectionRule rule: hibSession.createQuery(
 				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
-				.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				.setParameter("acadAreaId", acadAreaId, Long.class).setCacheable(true).list()) {
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
 			Float projection = rule.getProjection();
@@ -4541,7 +4541,7 @@ public class CurriculaServlet implements CurriculaService {
 		Hashtable<String, Hashtable<String, HashMap<String, Float>>> area2clasf2major2proj = new Hashtable<String, Hashtable<String,HashMap<String,Float>>>();
 		for (CurriculumProjectionRule rule: hibSession.createQuery(
 				"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId = :sessionId", CurriculumProjectionRule.class)
-				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				.setParameter("sessionId", getAcademicSessionId(), Long.class).setCacheable(true).list()) {
 			String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
@@ -4567,7 +4567,7 @@ public class CurriculaServlet implements CurriculaService {
 		if (hasSnapshotData(hibSession, getAcademicSessionId())) {
 			for (CurriculumProjectionRule rule : hibSession
 					.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
-					.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("acadAreaId", acadAreaId, Long.class).setCacheable(true).list()) {
 				String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 				String clasfCode = rule.getAcademicClassification().getCode();
 				Float snapshotProjection = rule.getSnapshotProjection();

@@ -92,8 +92,8 @@ public class CourseSelectionBoxBackend {
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-					.setParameter("q", request.getQuery().toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-					.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("q", request.getQuery().toLowerCase(), String.class)
+					.setParameter("sessionId", request.getSessionId(), Long.class)
 					.setCacheable(true)
 					.setMaxResults(request.getLimit() == null || request.getLimit() < 0 ? Integer.MAX_VALUE : request.getLimit())
 					.list()) {
@@ -139,8 +139,8 @@ public class CourseSelectionBoxBackend {
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
 				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course", CourseOffering.class)
-				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("course", courseName.toLowerCase(), String.class)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true).setMaxResults(1).list()) {
 			return co;
 		}

@@ -488,7 +488,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 			if (courseNbr != null && courseNbr.length() > 0) {
 				if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
 	            	courseNbr = courseNbr.toUpperCase();
-				q.setParameter("courseNbr", courseNbr.replace('*', '%'), org.hibernate.type.StringType.INSTANCE);
+				q.setParameter("courseNbr", courseNbr.replace('*', '%'), String.class);
 			}
 			q.setCacheable(true);
 	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));

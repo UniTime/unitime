@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -73,7 +73,7 @@ public class AcademicClassification extends BaseAcademicClassification {
  		return AcademicClassificationDAO.getInstance().getSession().createQuery(
 	    		"select c from AcademicClassification as c where c.session.uniqueId=:sessionId " +
 	    		"order by c.name", AcademicClassification.class).
- 				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+ 				setParameter("sessionId", sessionId.longValue(), Long.class).setCacheable(true).list();
 	}
 
     /**
@@ -139,8 +139,8 @@ public class AcademicClassification extends BaseAcademicClassification {
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code", AcademicClassification.class).
-         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
+         setParameter("sessionId", sessionId.longValue(), Long.class).
+         setParameter("code", code, String.class).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -155,8 +155,8 @@ public class AcademicClassification extends BaseAcademicClassification {
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.externalUniqueId=:externalUniqueId", AcademicClassification.class).
-         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("externalUniqueId", externalId, org.hibernate.type.StringType.INSTANCE).
+         setParameter("sessionId", sessionId.longValue(), Long.class).
+         setParameter("externalUniqueId", externalId, String.class).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -172,7 +172,7 @@ public class AcademicClassification extends BaseAcademicClassification {
     public boolean isUsed(org.hibernate.Session hibSession) {
     	return ((hibSession == null ? AcademicClassificationDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from CurriculumClassification c inner join c.academicClassification f where f.uniqueId = :clasfId", Number.class)
-    			.setParameter("clasfId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("clasfId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
 }

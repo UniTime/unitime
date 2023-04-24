@@ -93,7 +93,7 @@ public class PreferencesExport extends BaseExport{
 	        for (Department department: getHibSession().createQuery(
 	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId",
 	        		Department.class)
-	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 				exportPrefGroup(root, department);
 			}
 	        Set<DepartmentalInstructor> instructors = new TreeSet<DepartmentalInstructor>(new Comparator<DepartmentalInstructor>() {
@@ -109,7 +109,7 @@ public class PreferencesExport extends BaseExport{
 	        instructors.addAll(getHibSession().createQuery(
 	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
 	        		DepartmentalInstructor.class
-	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+	        		).setParameter("sessionId", session.getUniqueId(), Long.class).list());
 	        for (DepartmentalInstructor instructor: instructors) {
 				exportPrefGroup(root, instructor);
 			}
@@ -133,7 +133,7 @@ public class PreferencesExport extends BaseExport{
 	        		"left join fetch c.preferences cp " +
 	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
 	        		SchedulingSubpart.class
-	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+	        		).setParameter("sessionId", session.getUniqueId(), Long.class).list());
 	        for (SchedulingSubpart subpart: subparts) {
 				exportPrefGroup(root, subpart);
 				for (Class_ clazz: subpart.getClasses())

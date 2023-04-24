@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -75,14 +75,14 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 	            "select e from StudentClassEnrollment e where "+
 	            "e.student.session.uniqueId=:sessionId", StudentClassEnrollment.class).
-	            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).list();
+	            setParameter("sessionId", sessionId.longValue(), Long.class).list();
 	}
 
     public static Iterator<StudentClassEnrollment> findAllForStudent(Long studentId) {
         return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
                 "select e from StudentClassEnrollment e where "+
                 "e.student.uniqueId=:studentId", StudentClassEnrollment.class).
-                setParameter("studentId", studentId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();
+                setParameter("studentId", studentId.longValue(), Long.class).setCacheable(true).list().iterator();
     }
 
 	public static boolean sessionHasEnrollments(Long sessionId) {
@@ -90,7 +90,7 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 		    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 		            "select count(e) from StudentClassEnrollment e where "+
 		            "e.student.session.uniqueId=:sessionId", Number.class).
-		            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue() > 0;
+		            setParameter("sessionId", sessionId.longValue(), Long.class).setCacheable(true).uniqueResult().longValue() > 0;
 		}
 		return false;
 	}

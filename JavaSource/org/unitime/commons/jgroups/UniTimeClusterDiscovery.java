@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.jgroups.Address;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.JDBC_PING;
@@ -61,11 +62,15 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 		if (!HibernateUtil.isConfigured()) return;
         final String addressAsString = addressAsString(addr);
 		Session hibSession = HibernateUtil.createNewSession();
+		Transaction tx = hibSession.beginTransaction();
 		try {
-			ClusterDiscovery cd = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(addressAsString, clustername), hibSession);
+			ClusterDiscovery cd = hibSession.get(ClusterDiscovery.class, new ClusterDiscoveryId(addressAsString, clustername));
 			if (cd != null)
-				hibSession.delete(cd);
-			hibSession.flush();
+				hibSession.remove(cd);
+			tx.commit();
+		} catch (Exception e) {
+			log.error("%s: failed to remove address %s: %s", clustername, addr, e);
+			if (tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -88,10 +93,15 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
     protected void removeAll(String clustername) {
 		if (!HibernateUtil.isConfigured()) return;
 		Session hibSession = HibernateUtil.createNewSession();
+		Transaction tx = hibSession.beginTransaction();
 		try {
-			hibSession.createQuery(
+			hibSession.createMutationQuery(
 					"delete ClusterDiscovery where clusterName = :clustername")
 				.setParameter("clustername", clustername).executeUpdate();
+			tx.commit();
+		} catch (Exception e) {
+			log.error("%s: failed to remove all: %s", clustername, e);
+			if (tx.isActive()) tx.rollback();
         } finally {
 			hibSession.close();
 		}
@@ -101,6 +111,7 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 	protected void readAll(List<Address> members, String clustername, Responses responses) {
 		if (!HibernateUtil.isConfigured()) return;
 		Session hibSession = HibernateUtil.createNewSession();
+		Transaction tx = hibSession.beginTransaction();
 		try {
 			for (ClusterDiscovery cd: hibSession.createQuery(
 					"from ClusterDiscovery where clusterName = :clustername", ClusterDiscovery.class)
@@ -114,10 +125,13 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 	                    addDiscoveryResponseToCaches(data.getAddress(), data.getLogicalName(), data.getPhysicalAddr());
 				} catch(Exception e) {
                     log.error("%s: failed deserializing row %s: %s; removing it from the table", local_addr, cd.getOwnAddress(), e);
-                    hibSession.delete(cd);
+                    hibSession.remove(cd);
                 }
 			}
-			hibSession.flush();
+			tx.commit();
+		} catch (Exception e) {
+			log.error("%s: failed to read all: %s", clustername, e);
+			if (tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -129,13 +143,14 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 		final String ownAddress = addressAsString(data.getAddress());
 		final byte[] serializedPingData = serializeWithoutView(data);
         Session hibSession = HibernateUtil.createNewSession();
+        Transaction tx = hibSession.beginTransaction();
         try {
         	ClusterDiscovery cd = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(ownAddress, cluster_name), hibSession);
         	if (cd != null) {
         		if (overwrite) {
         			cd.setPingData(serializedPingData);
         			cd.setTimeStamp(new Date());
-        			hibSession.update(cd);
+        			hibSession.merge(cd);
         		}
         	} else {
         		cd = new ClusterDiscovery();
@@ -143,9 +158,12 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
         		cd.setOwnAddress(ownAddress);
         		cd.setPingData(serializedPingData);
         		cd.setTimeStamp(new Date());
-        		hibSession.save(cd);
+        		hibSession.persist(cd);
         	}
-        	hibSession.flush();
+			tx.commit();
+		} catch (Exception e) {
+			log.error("%s: failed to update database: %s", clustername, e);
+			if (tx.isActive()) tx.rollback();
         } finally {
 			hibSession.close();
 		}

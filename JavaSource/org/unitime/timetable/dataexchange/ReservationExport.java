@@ -70,7 +70,7 @@ public class ReservationExport extends BaseExport {
 
 	        List<Reservation> reservations = getHibSession().createQuery(
     			"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId", Reservation.class)
-    			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+    			.setParameter("sessionId", session.getUniqueId(), Long.class).list();
 	        Collections.sort(reservations, new Comparator<Reservation>() {
 				@Override
 				public int compare(Reservation r1, Reservation r2) {
@@ -86,7 +86,7 @@ public class ReservationExport extends BaseExport {
 	        
 	        for (Reservation reservation: getHibSession().createQuery(
 	        		"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId", Reservation.class)
-	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	Element reservationEl = root.addElement("reservation");
 	        	CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();
 	        	if (reservation instanceof CourseReservation)

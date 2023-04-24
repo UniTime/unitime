@@ -21,9 +21,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -65,8 +65,8 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
 	public static List<RelatedCourseInfo> findByOwnerIdType(org.hibernate.Session hibSession, Long ownerId, Integer ownerType) {
 	    return (hibSession.
 	        createQuery("select o from RelatedCourseInfo o where o.ownerId=:ownerId and o.ownerType=:ownerType", RelatedCourseInfo.class).
-	        setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).
-	        setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE).
+	        setParameter("ownerId", ownerId, Long.class).
+	        setParameter("ownerType", ownerType, Integer.class).
 	        setCacheable(true).list());
 	}
 	
@@ -165,7 +165,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :eventOwnerId", Student.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeConfig : 
@@ -173,7 +173,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId", Student.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeCourse : 
@@ -181,7 +181,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :eventOwnerId", Student.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeOffering : 
@@ -189,7 +189,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :eventOwnerId", Student.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -203,26 +203,26 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
             return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
         			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
-                    .setParameter("classId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("classId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeConfig : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
             		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
-                    .setParameter("configId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("configId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeCourse : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId", StudentClassEnrollment.class)
-                    .setParameter("courseId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("courseId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeOffering : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class)
-                    .setParameter("offeringId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("offeringId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -237,7 +237,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :eventOwnerId", Long.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeConfig : 
@@ -245,7 +245,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId", Long.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeCourse : 
@@ -253,7 +253,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :eventOwnerId", Long.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeOffering : 
@@ -261,7 +261,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :eventOwnerId", Long.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -276,7 +276,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select i from " +
                     "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
                     "where c.uniqueId = :eventOwnerId and ci.lead=true", DepartmentalInstructor.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeConfig : 
@@ -284,7 +284,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct i from " +
                     "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId", DepartmentalInstructor.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeCourse : 
@@ -292,7 +292,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct i from " +
                     "Class_ c inner join c.classInstructors ci inner join ci.instructor i inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
                     "where co.uniqueId = :eventOwnerId", DepartmentalInstructor.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         case ExamOwner.sOwnerTypeOffering : 
@@ -300,7 +300,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select distinct i from " +
                     "Class_ c inner join c.classInstructors ci inner join ci.instructor i " +
                     "where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :eventOwnerId", DepartmentalInstructor.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -314,7 +314,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :eventOwnerId", Number.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case ExamOwner.sOwnerTypeConfig : 
@@ -322,7 +322,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :eventOwnerId", Number.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case ExamOwner.sOwnerTypeCourse : 
@@ -330,7 +330,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :eventOwnerId", Number.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case ExamOwner.sOwnerTypeOffering : 
@@ -338,7 +338,7 @@ public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparab
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :eventOwnerId", Number.class)
-                    .setParameter("eventOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("eventOwnerId", getOwnerId(), Long.class)
                     .setCacheable(true)
                     .uniqueResult().intValue();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());

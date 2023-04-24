@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -188,8 +188,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-	            .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+	            .setParameter("sessionId", sessionId, Long.class)
+	            .setParameter("examTypeId", examTypeId, Long.class)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -198,8 +198,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.type=:type", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-	            .setParameter("type", ExamType.sExamTypeMidterm, org.hibernate.type.IntegerType.INSTANCE)
+	            .setParameter("sessionId", sessionId, Long.class)
+	            .setParameter("type", ExamType.sExamTypeMidterm, Integer.class)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -208,8 +208,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.type=:type", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-	            .setParameter("type", ExamType.sExamTypeFinal, org.hibernate.type.IntegerType.INSTANCE)
+	            .setParameter("sessionId", sessionId, Long.class)
+	            .setParameter("type", ExamType.sExamTypeFinal, Integer.class)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -218,8 +218,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("subjectAreaId", subjectAreaId, Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class)
                 .setCacheable(true)
                 .list();
     }
@@ -228,8 +228,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o inner join o.course.instructionalOffering.courseOfferings co where " +
                 "co.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("subjectAreaId", subjectAreaId, Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class)
                 .setCacheable(true)
                 .list();
     }
@@ -238,8 +238,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.uniqueId=:courseOfferingId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("courseOfferingId", courseOfferingId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("courseOfferingId", courseOfferingId, Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class)
                 .setCacheable(true)
                 .list();
     }
@@ -252,9 +252,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and ("+
                     (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr") +
                     " or lower(o.course.title) like lower('%' || :courseNbr || '%'))", Exam.class)
-                    .setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE)
-                    .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE)
-                    .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("subjectAreaId", subjectAreaId, Long.class)
+                    .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class)
+                    .setParameter("examTypeId", examTypeId, Long.class)
                     .setCacheable(true)
                     .list();
         }
@@ -262,9 +262,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and "+
                 (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr"), Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("subjectAreaId", subjectAreaId, Long.class)
+                .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class)
+                .setParameter("examTypeId", examTypeId, Long.class)
                 .setCacheable(true)
                 .list();
     }
@@ -457,8 +457,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public static void deleteFromExams(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
         for (ExamOwner owner: hibSession.createQuery("select o from Exam x inner join x.owners o where "+
                 "o.ownerType=:ownerType and o.ownerId=:ownerId", ExamOwner.class)
-                .setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).list()) {
+                .setParameter("ownerType", ownerType, Integer.class)
+                .setParameter("ownerId", ownerId, Long.class).list()) {
             Exam exam = owner.getExam();
             exam.getOwners().remove(owner);
             hibSession.delete(owner);
@@ -488,8 +488,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where "+
                 "o.ownerType=:ownerType and o.ownerId=:ownerId", Exam.class).
-                setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE).
-                setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("ownerType", ownerType, Integer.class).
+                setParameter("ownerId", ownerId, Long.class).
                 setCacheable(true).list();
     }
     
@@ -508,7 +508,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("classId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("classId", id, Long.class).setCacheable(true).list();
         } else if ("SchedulingSubpart".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -522,7 +522,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("subpartId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("subpartId", id, Long.class).setCacheable(true).list();
         } else if ("CourseOffering".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -536,7 +536,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("courseOfferingId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("courseOfferingId", id, Long.class).setCacheable(true).list();
         } else if ("InstructionalOffering".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -550,7 +550,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("instructionalOfferingId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("instructionalOfferingId", id, Long.class).setCacheable(true).list();
         } else if ("InstrOfferingConfig".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -564,14 +564,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("instrOfferingConfigId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("instrOfferingConfigId", id, Long.class).setCacheable(true).list();
         } else if ("DepartmentalInstructor".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.instructors xi, DepartmentalInstructor i where "+
                     "i.uniqueId=:instructorId and (xi.uniqueId=i.uniqueId or ("+
                     "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId " +
                     "and xi.department.session = i.department.session))", Exam.class).
-                    setParameter("instructorId", id, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+                    setParameter("instructorId", id, Long.class).setCacheable(true).list();
         } else if ("ExamEvent".equals(type)) {
             List ret = new ArrayList();
             ExamEvent event = ExamEventDAO.getInstance().get(id);
@@ -587,7 +587,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null and x.examType.type=:examType", Number.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId, Long.class).setParameter("examType", examType, Integer.class).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasTimetable(Long sessionId) {
@@ -596,7 +596,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null", Number.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
     }
 
     public static boolean hasMidtermExams(Long sessionId) {
@@ -605,7 +605,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     			createQuery("select count(p) from ExamPeriod p " +
     					"where p.session.uniqueId=:sessionId and "+
     					"p.examType.type = "+ExamType.sExamTypeMidterm, Number.class).
-    			setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
+    			setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasFinalExams(Long sessionId) {
@@ -614,7 +614,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.type = "+ExamType.sExamTypeFinal, Number.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasExamsOfType(Long sessionId, ExamType type) {
@@ -623,7 +623,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.uniqueid = :typeId", Number.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("typeId", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId, Long.class).setParameter("typeId", type.getUniqueId(), Long.class).setCacheable(true).uniqueResult().longValue()>0;
     }
 
     public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long examTypeId) {
@@ -631,8 +631,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null and x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -645,8 +645,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod=null and x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamInfo(exam));
@@ -662,9 +662,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null", Exam.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("subjectAreaId", subjectAreaId, Long.class).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -680,9 +680,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod=null", Exam.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("subjectAreaId", subjectAreaId, Long.class).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamInfo(exam));
@@ -696,8 +696,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.assignedRooms r where " +
                 "r.uniqueId=:locationId and x.assignedPeriod!=null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("locationId", locationId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("locationId", locationId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -712,8 +712,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.instructors i where " +
                 "i.uniqueId=:instructorId and x.assignedPeriod!=null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("instructorId", instructorId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("instructorId", instructorId, Long.class).
+                setParameter("examTypeId", examTypeId, Long.class).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -1034,8 +1034,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().
             getSession().
             createQuery("select e from Exam e where e.session.uniqueId=:sessionId and e.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", Exam.class).
-            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
             setCacheable(true).
             uniqueResult();
     }
@@ -1175,7 +1175,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (iEvent==null) 
             iEvent = ExamDAO.getInstance().getSession().createQuery(
                 "select e from ExamEvent e left join fetch e.meetings m where e.exam.uniqueId=:examId", ExamEvent.class).
-                setParameter("examId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                setParameter("examId", getUniqueId(), Long.class).
                 setCacheable(true).uniqueResult();
         return iEvent;
     }

@@ -169,7 +169,7 @@ public class ExamDistributionPrefsForm implements UniTimeForm {
                             "order by co.courseNbr ", Object[].class).
                     setFetchSize(200).
                     setCacheable(true).
-                    setParameter("subjectAreaId", getSubjectArea(idx), org.hibernate.type.LongType.INSTANCE).list()) {
+                    setParameter("subjectAreaId", getSubjectArea(idx), Long.class).list()) {
                 ret.add(new IdValue((Long)o[0],((String)o[1]) + " - " + (String) o[2]));
                 if (o[0].equals(getCourseNbr(idx))) contains = true;
             }

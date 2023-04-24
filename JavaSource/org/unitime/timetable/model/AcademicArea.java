@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -82,7 +82,7 @@ public class AcademicArea extends BaseAcademicArea {
 		return AcademicAreaDAO.getInstance().getSession().createQuery(
 				"select a from AcademicArea as a where a.session.uniqueId=:sessionId " +
 	    		"order by a.academicAreaAbbreviation", AcademicArea.class).
-				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				setParameter("sessionId", sessionId.longValue(), Long.class).setCacheable(true).list();
 	}
 	
     /**
@@ -122,8 +122,8 @@ public class AcademicArea extends BaseAcademicArea {
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.academicAreaAbbreviation=:abbv", AcademicArea.class).
-             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-             setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
+             setParameter("sessionId", sessionId.longValue(), Long.class).
+             setParameter("abbv", abbv, String.class).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -138,8 +138,8 @@ public class AcademicArea extends BaseAcademicArea {
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.externalUniqueId=:externalId", AcademicArea.class).
-             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-             setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
+             setParameter("sessionId", sessionId.longValue(), Long.class).
+             setParameter("externalId", externalId, String.class).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -155,6 +155,6 @@ public class AcademicArea extends BaseAcademicArea {
     public boolean isUsed(org.hibernate.Session hibSession) {
     	return ((hibSession == null ? AcademicAreaDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from Curriculum c inner join c.academicArea a where a.uniqueId = :areaId", Number.class)
-    			.setParameter("areaId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("areaId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 }

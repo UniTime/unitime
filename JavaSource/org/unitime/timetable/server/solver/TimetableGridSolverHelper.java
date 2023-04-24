@@ -331,8 +331,8 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +
 				"c.classification.curriculum.abbv || ' ' || c.classification.academicClassification.code = :name and " + 
 				"c.classification.curriculum.department.session.uniqueId = :sessionId", Object[].class)
-				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null), org.hibernate.type.LongType.INSTANCE)
+				.setParameter("name", name, String.class)
+				.setParameter("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null), Long.class)
 				.setCacheable(true).list()) {
 			Long courseId = (Long)o[0];
 			String group = (String)o[1];
@@ -725,7 +725,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-					.setParameterList("classIds", id2cells.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameterList("classIds", id2cells.keySet(), Long.class).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
 				for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -739,7 +739,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
 						for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -752,7 +752,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
 					for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -825,7 +825,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 					"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-					.setParameterList("classIds", id2cells.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameterList("classIds", id2cells.keySet(), Long.class).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
 				for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -839,7 +839,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
 						for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -852,7 +852,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 						"co.isControl = true and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
 					for (TimetableGridCell cell: id2cells.get(clazz.getUniqueId()))
@@ -891,7 +891,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		
 		if (id2cells.size() <= 1000) {
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-					.setParameterList("classIds", id2cells.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameterList("classIds", id2cells.keySet(), Long.class).setCacheable(true).list()) {
 				Long classId = (Long)o[0];
 				DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
 				for (TimetableGridCell cell: id2cells.get(classId)) {
@@ -904,7 +904,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				ids.add(id);
 				if (ids.size() == 1000) {
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Long classId = (Long)o[0];
 						DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
 						for (TimetableGridCell cell: id2cells.get(classId)) {
@@ -916,7 +916,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			}
 			if (!ids.isEmpty()) {
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Long classId = (Long)o[0];
 					DepartmentalInstructor instructor = (DepartmentalInstructor)o[1];
 					for (TimetableGridCell cell: id2cells.get(classId)) {
@@ -944,7 +944,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		String query = "select c.uniqueId, t.itype from Class_ c inner join c.schedulingSubpart.itype t where c.uniqueId in :classIds";
 		if (id2cells.size() <= 1000) {
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-					.setParameterList("classIds", id2cells.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameterList("classIds", id2cells.keySet(), Long.class).setCacheable(true).list()) {
 				Long classId = (Long)o[0];
 				for (TimetableGridCell cell: id2cells.get(classId)) {
 					cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
@@ -956,7 +956,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				ids.add(id);
 				if (ids.size() == 1000) {
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Long classId = (Long)o[0];
 						for (TimetableGridCell cell: id2cells.get(classId)) {
 							cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
@@ -967,7 +967,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			}
 			if (!ids.isEmpty()) {
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(query, Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Long classId = (Long)o[0];
 					for (TimetableGridCell cell: id2cells.get(classId)) {
 						cell.setBackground(context.getInstructionalTypeColor((Integer)o[1]));
@@ -1028,13 +1028,13 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 							resp = TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.uniqueId = :instructorId", TeachingResponsibility.class
-									).setParameter("classId", p.variable().getId(), org.hibernate.type.LongType.INSTANCE).setParameter("instructorId", ic.getId(), org.hibernate.type.LongType.INSTANCE)
+									).setParameter("classId", p.variable().getId(), Long.class).setParameter("instructorId", ic.getId(), Long.class)
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						else
 							resp = TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.externalUniqueId = :extId", TeachingResponsibility.class
-									).setParameter("classId", p.variable().getId(), org.hibernate.type.LongType.INSTANCE).setParameter("extId", ic.getPuid(), org.hibernate.type.StringType.INSTANCE)
+									).setParameter("classId", p.variable().getId(), Long.class).setParameter("extId", ic.getPuid(), String.class)
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						if (term.equalsIgnoreCase("null") && resp == null) return true;
 						if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;

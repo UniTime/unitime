@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -83,13 +83,13 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	public static List<EventDateMapping> findAll(Long sessionId) {
 		return EventDateMappingDAO.getInstance().getSession().createQuery(
 				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset", EventDateMapping.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 	}
 	
 	public static boolean hasMapping(Long sessionId) {
 		return (EventDateMappingDAO.getInstance().getSession().createQuery(
 				"select count(m) from EventDateMapping m where m.session.uniqueId = :sessionId", Number.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Class2EventDateMap getMapping(Long sessionId) {

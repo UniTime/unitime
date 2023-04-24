@@ -99,10 +99,10 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
 		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
 		        		" and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
-		        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), org.hibernate.type.StringType.INSTANCE)
-		        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, org.hibernate.type.StringType.INSTANCE)
-		        		.setParameter("pref", PreferenceLevel.sRequired, org.hibernate.type.StringType.INSTANCE)
-		        		.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+		        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), String.class)
+		        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, String.class)
+		        		.setParameter("pref", PreferenceLevel.sRequired, String.class)
+		        		.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class)
 		        		.list();
 		        if (!distPrefs.isEmpty()) {
 		        	for (DistributionPref pref: distPrefs) {
@@ -137,7 +137,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 						"left join fetch io.reservations x " +
 						"where io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true",
 						InstructionalOffering.class)
-						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).list();
 				for (InstructionalOffering io: offerings) {
 					XOffering offering = loadOffering(io, distributions.get(io.getUniqueId()), server, helper);
 					if (offering != null) {
@@ -163,7 +163,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	                    "left join fetch s.groups as g " +
 	                    "left join fetch s.notes as n " +
 	                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
-	                    setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+	                    setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).list();
 	            for (org.unitime.timetable.model.Student student: students) {
 	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)
@@ -173,7 +173,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    	List<Object[]> infos = helper.getHibSession().createQuery(
 		    			"select i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId, i.clazz.uniqueId, i.nbrExpectedStudents from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId",
 		    			Object[].class)
-		    			.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+		    			.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class)
 		    			.list();
 		    	for (Object[] info : infos) {
 		    		Long offeringId = (Long)info[0];

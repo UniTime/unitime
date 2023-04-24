@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -291,8 +291,8 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
         return InstrOfferingConfigDAO.getInstance().
             getSession().
             createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstrOfferingConfig.class).
-            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
             setCacheable(true).
             uniqueResult();
     }
@@ -349,7 +349,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	public TreeSet<Department> findPossibleFundingDepts(org.hibernate.Session hibSession){
 		TreeSet<Department> deptSet = new TreeSet<>();
 		String query = "from Department d where d.externalFundingDept = true and d.session.uniqueId = :sessId";
-		deptSet.addAll(hibSession.createQuery(query, Department.class).setParameter("sessId", this.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+		deptSet.addAll(hibSession.createQuery(query, Department.class).setParameter("sessId", this.getSessionId(), Long.class).setCacheable(true).list());
 		for (CourseOffering co : this.getInstructionalOffering().getCourseOfferings()){
 			deptSet.add(co.getDepartment());
 			deptSet.add(co.getEffectiveFundingDept());

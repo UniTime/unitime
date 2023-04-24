@@ -23,12 +23,12 @@ package org.unitime.timetable.model;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
-import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Table;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Table;
 
 import java.util.HashSet;
 
@@ -58,7 +58,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 		try {
 			boolean first = true;
 			for (CourseRequestOption option: hibSession.createQuery("from CourseRequestOption where optionType = :type", CourseRequestOption.class
-					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber(), org.hibernate.type.IntegerType.INSTANCE).list()) {
+					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber(), Integer.class).list()) {
 				if (first) {
 					Debug.info(" - Updating student scheduling preferences ...");
 					first = false;

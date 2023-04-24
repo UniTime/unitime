@@ -71,16 +71,16 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				Set<String> userIds = new HashSet<String>();
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from TimetableManager where lower(emailAddress) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
+						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from Staff where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
+						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from DepartmentalInstructor where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
+						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from Student where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
+						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
 
 				if (userIds.isEmpty())
 					throw new GwtRpcException(MESSAGES.errorEmailNotValid());
@@ -164,8 +164,8 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				
 				User user = hibSession.createQuery(
 						"from User where username = :username and password = :password", User.class)
-						.setParameter("username", username, org.hibernate.type.StringType.INSTANCE)
-						.setParameter("password", encode(request.getOldPassword()), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("username", username, String.class)
+						.setParameter("password", encode(request.getOldPassword()), String.class)
 						.setMaxResults(1).uniqueResult();
 				
 				if (user == null) {

@@ -178,7 +178,7 @@ public class EventsConnector extends ApiConnector {
 			org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
 			EventContact contact = hibSession.createQuery(
 					"from EventContact where externalUniqueId = :userId", EventContact.class
-					).setParameter("userId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+					).setParameter("userId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 			if (contact != null) {
 				c.setFirstName(contact.getFirstName());
 				c.setMiddleName(contact.getMiddleName());
@@ -190,7 +190,7 @@ public class EventsConnector extends ApiConnector {
 			}
 			TimetableManager manager = hibSession.createQuery(
 					"from TimetableManager where externalUniqueId = :userId", TimetableManager.class
-					).setParameter("userId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+					).setParameter("userId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 			if (manager != null) {
 				c.setExternalId(manager.getExternalUniqueId());
 				c.setFirstName(manager.getFirstName());
@@ -202,7 +202,7 @@ public class EventsConnector extends ApiConnector {
 			}
 			DepartmentalInstructor instructor = hibSession.createQuery(
 					"from DepartmentalInstructor where department.session.uniqueId = :sessionId and externalUniqueId = :userId", DepartmentalInstructor.class
-					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("userId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+					).setParameter("sessionId", sessionId, Long.class).setParameter("userId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 			if (instructor != null) {
 				c.setExternalId(instructor.getExternalUniqueId());
 				c.setFirstName(instructor.getFirstName());
@@ -214,7 +214,7 @@ public class EventsConnector extends ApiConnector {
 			}
 			Staff staff = hibSession.createQuery(
 					"from Staff where externalUniqueId = :userId", Staff.class
-					).setParameter("userId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+					).setParameter("userId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 			if (staff != null) {
 				c.setExternalId(staff.getExternalUniqueId());
 				c.setFirstName(staff.getFirstName());
@@ -226,7 +226,7 @@ public class EventsConnector extends ApiConnector {
 			}
 			Student student = hibSession.createQuery(
 					"from Student where session.uniqueId = :sessionId and externalUniqueId = :userId", Student.class
-					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("userId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+					).setParameter("sessionId", sessionId, Long.class).setParameter("userId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 			if (student != null) {
 				c.setExternalId(student.getExternalUniqueId());
 				c.setFirstName(student.getFirstName());

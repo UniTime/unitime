@@ -60,7 +60,7 @@ public class HQLImport extends BaseImport {
 			return;
 		}
 		SavedHQL report =  getHibSession().createQuery("from SavedHQL where name = :name", SavedHQL.class)
-				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+				.setParameter("name", name, String.class).setMaxResults(1).uniqueResult();
 		if (report == null) {
 			report = new SavedHQL();
 			report.setName(name);

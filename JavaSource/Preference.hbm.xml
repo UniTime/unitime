@@ -38,7 +38,7 @@
             column="owner_id"
             not-null="true"
             insert="true"
-            lazy="false"
+            lazy="proxy"
             update="true"/>
 
         <many-to-one

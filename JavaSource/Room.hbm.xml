@@ -220,6 +220,12 @@
             type="java.lang.String"
             not-null="false"
             length="40"/>
+
+       	<many-to-one
+       		name="roomType"
+       		class="RoomType"
+       		column="room_type"
+       		not-null="true"/>
             
         <union-subclass
             name="Room"
@@ -236,13 +242,6 @@
                 type="java.lang.String"
                 not-null="true"
                 length="40"/>
-
-            <many-to-one
-                name="roomType"
-                class="RoomType"
-                column="room_type"
-                foreign-key="fk_room_type"
-                not-null="true"/>
 
             <property
                 name="classification"
@@ -307,13 +306,6 @@
                 type="java.lang.String"
                 not-null="true"
                 length="40"/>
-
-            <many-to-one
-                name="roomType"
-                class="RoomType"
-                column="room_type"
-                foreign-key="fk_non_university_location_type"
-                not-null="true"/>
 
             <set
                 name="pictures"

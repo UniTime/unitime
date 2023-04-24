@@ -71,7 +71,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
-					).setParameter("now", new Date(), org.hibernate.type.DateType.INSTANCE).setParameter("status", ExecutionStatus.QUEUED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
+					).setParameter("now", new Date(), Date.class).setParameter("status", ExecutionStatus.QUEUED.ordinal(), Integer.class).list();
 			for (TaskExecution execution: executions) {
 				if (solverServerService.getQueueProcessor().getByExecutionId(execution.getUniqueId()) != null) continue;
 				try {
@@ -107,7 +107,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
-					).setParameter("now", new Date(), org.hibernate.type.DateType.INSTANCE).setParameter("status", ExecutionStatus.CREATED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
+					).setParameter("now", new Date(), Date.class).setParameter("status", ExecutionStatus.CREATED.ordinal(), Integer.class).list();
 			for (TaskExecution execution: executions) {
 				try {
 					TaskExecutionItem item = new TaskExecutionItem(execution, unitimePermissionCheck);

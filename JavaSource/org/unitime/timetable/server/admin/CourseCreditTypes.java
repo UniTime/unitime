@@ -64,7 +64,7 @@ public class CourseCreditTypes implements AdminTable {
 			int used =
 				(hibSession.createQuery(
 						"select count(c) from CourseCreditUnitConfig c where c.creditType.uniqueId = :uniqueId", Number.class)
-						.setParameter("uniqueId", credit.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
+						.setParameter("uniqueId", credit.getUniqueId(), Long.class).uniqueResult()).intValue();
 			Record r = data.addRecord(credit.getUniqueId(), used == 0);
 			r.setField(0, credit.getReference());
 			r.setField(1, credit.getLabel());

@@ -121,9 +121,9 @@ public abstract class EventRelatedImports extends BaseImport {
 	protected Session findSession(String academicInitiative, String academicYear, String academicTerm){ 		
 		return getHibSession().
 		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.academicYear = :academicYear  and s.academicTerm = :academicTerm", Session.class).
-		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
-		setParameter("academicYear", academicYear, org.hibernate.type.StringType.INSTANCE).
-		setParameter("academicTerm", academicTerm, org.hibernate.type.StringType.INSTANCE).
+		setParameter("academicInititive", academicInitiative, String.class).
+		setParameter("academicYear", academicYear, String.class).
+		setParameter("academicTerm", academicTerm, String.class).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -132,16 +132,16 @@ public abstract class EventRelatedImports extends BaseImport {
 		if (id != null) {
 			return getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.externalUniqueId=:id and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
-			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("id", id, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", session.getUniqueId(), Long.class).
+			setParameter("id", id, String.class).
 			setCacheable(true).
 			list();
 		}
 		if (name != null) {
 			return getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
-			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", session.getUniqueId(), Long.class).
+			setParameter("name", name, String.class).
 			setCacheable(true).
 			list();
 		}
@@ -152,8 +152,8 @@ public abstract class EventRelatedImports extends BaseImport {
 		if (name != null) {
 			return getHibSession().
 			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
-			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", session.getUniqueId(), Long.class).
+			setParameter("name", name, String.class).
 			setCacheable(true).
 			list();
 		}

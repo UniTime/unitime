@@ -82,14 +82,14 @@ public class BuildingsConntector extends ApiConnector {
 				String externalId = helper.getOptinalParameter("externalId", null);
 				if (externalId != null) {
 					building = helper.getHibSession().createQuery("from Building where externalUniqueId = :externalId and session.uniqueId = :sessionId", Building.class)
-							.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+							.setParameter("sessionId", sessionId, Long.class).setParameter("externalId", externalId, String.class).setMaxResults(1).uniqueResult();
 					if (building == null)
 						throw new IllegalArgumentException("Building " + externalId + " does not exist.");
 				}
 				if (building == null) {
 					String abbv = helper.getRequiredParameter("building");
 					building = helper.getHibSession().createQuery("from Building where (abbreviation = :abbv or name = :abbv) and session.uniqueId = :sessionId", Building.class)
-							.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+							.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", abbv, String.class).setMaxResults(1).uniqueResult();
 					if (building == null)
 						throw new IllegalArgumentException("Building " + abbv + " does not exist.");
 				}
@@ -97,8 +97,8 @@ public class BuildingsConntector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(building.getSession(), Right.ApiRoomEdit);
 			helper.getSessionContext().checkPermissionAnyAuthority(building, Right.BuildingDelete);
 			
-			for (Room r: BuildingDAO.getInstance().getSession().createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
-				helper.getHibSession().createQuery("delete RoomPref p where p.room.uniqueId = :roomId").setParameter("roomId", r.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+			for (Room r: BuildingDAO.getInstance().getSession().createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), Long.class).list()) {
+				helper.getHibSession().createQuery("delete RoomPref p where p.room.uniqueId = :roomId").setParameter("roomId", r.getUniqueId(), Long.class).executeUpdate();
 				for (Iterator<Assignment> i = r.getAssignments().iterator(); i.hasNext(); ) {
 					Assignment a = i.next();
                     a.getRooms().remove(r);
@@ -143,10 +143,10 @@ public class BuildingsConntector extends ApiConnector {
 					throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
 				if (b.getExternalId() != null) {
 					building = helper.getHibSession().createQuery("from Building where externalUniqueId = :externalId and session.uniqueId = :sessionId", Building.class)
-							.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", b.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+							.setParameter("sessionId", sessionId, Long.class).setParameter("externalId", b.getExternalId(), String.class).setMaxResults(1).uniqueResult();
 				} else if (b.getAbbreviation() != null) {
 					building = helper.getHibSession().createQuery("from Building where abbreviation = :abbv and session.uniqueId = :sessionId", Building.class)
-							.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("abbv", b.getAbbreviation(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+							.setParameter("sessionId", sessionId, Long.class).setParameter("abbv", b.getAbbreviation(), String.class).setMaxResults(1).uniqueResult();
 				}
 			}
 			if (building != null) {

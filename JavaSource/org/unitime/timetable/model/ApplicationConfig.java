@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -87,7 +87,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
         String value = ApplicationConfigDAO.getInstance().
             getSession().
             createQuery("select c.value from ApplicationConfig c where c.key=:key", String.class).
-            setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
+            setParameter("key", key, String.class).setCacheable(true).uniqueResult();
         
         return (value==null?defaultValue:value);
 	}

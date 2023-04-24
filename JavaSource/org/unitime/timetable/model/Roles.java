@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -75,7 +75,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public static Roles getRole(String roleRef, org.hibernate.Session hibSession) {
     	return hibSession.createQuery(
     			"from Roles where reference = :reference", Roles.class)
-    			.setParameter("reference", roleRef, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
+    			.setParameter("reference", roleRef, String.class).setCacheable(true).uniqueResult();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public boolean isUsed() {
     	return (RolesDAO.getInstance().getSession().createQuery(
     			"select count(m) from ManagerRole m where m.role.roleId = :roleId", Number.class)
-    			.setParameter("roleId", getRoleId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0;
+    			.setParameter("roleId", getRoleId(), Long.class).uniqueResult()).intValue() > 0;
     }
     
     public static Set<Roles> findAll(boolean managerOnly) {

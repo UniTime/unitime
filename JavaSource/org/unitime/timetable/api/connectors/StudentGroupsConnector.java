@@ -52,7 +52,7 @@ public class StudentGroupsConnector extends ApiConnector {
 		List<StudentGroupInfo> response = new ArrayList<StudentGroupInfo>();
 		for (StudentGroup g: StudentGroupDAO.getInstance().getSession().createQuery(
 				"from StudentGroup g where g.session.uniqueId = :sessionId", StudentGroup.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list())
+				.setParameter("sessionId", sessionId, Long.class).list())
 			response.add(new StudentGroupInfo(g));
 			
 		helper.setResponse(response);

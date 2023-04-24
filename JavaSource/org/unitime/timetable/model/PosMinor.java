@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -58,8 +58,8 @@ public class PosMinor extends BasePosMinor {
                 "select a from PosMinor a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
+         setParameter("sessionId", sessionId.longValue(), Long.class).
+         setParameter("code", code, String.class).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -72,9 +72,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.uniqueId=:areaId and p.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("areaId", areaId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
+         setParameter("sessionId", sessionId.longValue(), Long.class).
+         setParameter("areaId", areaId.longValue(), Long.class).
+         setParameter("code", code, String.class).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -87,9 +87,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.academicAreaAbbreviation=:areaAbbv and p.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-         setParameter("areaAbbv", areaAbbv, org.hibernate.type.StringType.INSTANCE).
-         setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
+         setParameter("sessionId", sessionId.longValue(), Long.class).
+         setParameter("areaAbbv", areaAbbv, String.class).
+         setParameter("code", code, String.class).
          setCacheable(true).
          uniqueResult(); 
     }

@@ -101,7 +101,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "order by co.courseNbr ", Object[].class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE).
+            setParameter("subjectAreaId", Long.parseLong(subjectAreaId), Long.class).
             list();
         if (courseNumbers.isEmpty()) print(out, "-1", EXMSG.examOwnerNotApplicable());
         if (courseNumbers.size()>1) print(out, "-1", "-");
@@ -131,7 +131,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where co.uniqueId = :courseOfferingId", InstrOfferingConfig.class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("courseOfferingId", course.getUniqueId(), Long.class).
             list());
         TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator(null));
         subparts.addAll(SchedulingSubpartDAO.getInstance().
@@ -141,7 +141,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("courseOfferingId", course.getUniqueId(), Long.class).
             list());
         if (!configs.isEmpty()) {
             print(out, String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeConfigurations());
@@ -186,7 +186,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
                     "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), org.hibernate.type.LongType.INSTANCE).
+            setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), Long.class).
             list());
         if (classes.size()>1)
             print(out, "-1", "-");

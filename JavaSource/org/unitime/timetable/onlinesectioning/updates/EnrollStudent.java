@@ -239,7 +239,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	                    "left join fetch e.clazz as c " +
 	                    "left join fetch c.managingDept as cmd " +
 	                    "left join fetch c.schedulingSubpart as ss " +
-						"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId(), org.hibernate.type.LongType.INSTANCE).uniqueResult();
+						"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId(), Long.class).uniqueResult();
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				wlMode = student.getWaitListMode();
 				

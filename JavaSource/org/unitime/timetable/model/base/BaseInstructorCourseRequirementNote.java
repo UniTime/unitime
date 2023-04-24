@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
-import javax.persistence.Column;
-import javax.persistence.IdClass;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Column;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.MappedSuperclass;
 
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
 

@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.model.base;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 

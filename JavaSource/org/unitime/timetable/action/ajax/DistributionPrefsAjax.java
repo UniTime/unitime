@@ -133,7 +133,7 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
                     "order by co.courseNbr ", Object[].class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE).
+            setParameter("subjectAreaId", Long.parseLong(subjectAreaId), Long.class).
             list();
         for (Object[] o : courseNumbers) {
             print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2])));
@@ -150,7 +150,7 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
                     "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("courseOfferingId", Long.parseLong(courseOfferingId), org.hibernate.type.LongType.INSTANCE).
+            setParameter("courseOfferingId", Long.parseLong(courseOfferingId), Long.class).
             list());
         for (SchedulingSubpart s: subparts) {
             String id = s.getUniqueId().toString();
@@ -175,7 +175,7 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
                     "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
             setFetchSize(200).
             setCacheable(true).
-            setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), org.hibernate.type.LongType.INSTANCE).
+            setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), Long.class).
             list());
         print(out, "-1", MSG.dropDistrPrefAll());
         boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();

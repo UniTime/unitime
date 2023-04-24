@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -108,7 +108,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     			(SolverGroupDAO.getInstance()).
     			getSession().
     			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId", SolverGroup.class).
-    			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+    			setParameter("sessionId", sessionId.longValue(), Long.class).
     			setCacheable(true).list());
     }
     
@@ -116,8 +116,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.name=:name", SolverGroup.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("name", name, String.class).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;
@@ -128,8 +128,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.abbv=:abbv", SolverGroup.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("abbv", abbv, String.class).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;

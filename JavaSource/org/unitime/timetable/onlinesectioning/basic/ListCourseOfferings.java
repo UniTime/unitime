@@ -131,7 +131,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 					for (CourseAssignment ca: courses)
 						table.put(ca.getCourseId(), ca);
 					for (CourseOffering co: helper.getHibSession().createQuery("from CourseOffering co left join fetch co.disabledOverrides do where co.uniqueId in :courseIds", CourseOffering.class)
-							.setParameterList("courseIds", table.keySet(), org.hibernate.type.LongType.INSTANCE).list()) {
+							.setParameterList("courseIds", table.keySet(), Long.class).list()) {
 						for (OverrideType override: overrides)
 							if (!co.getDisabledOverrides().contains(override))
 								table.get(co.getUniqueId()).addOverride(override.getReference(), override.getLabel());

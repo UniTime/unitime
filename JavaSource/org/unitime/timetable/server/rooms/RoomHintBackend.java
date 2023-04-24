@@ -148,8 +148,8 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 		    		response.addService(provider);
 		    	}
 		    	for (EventServiceProvider p: LocationDAO.getInstance().getSession().createQuery(
-		    		"from EventServiceProvider where visible = true and allRooms = true and (session is null or session = :sessionId) and (department is null or department = :departmentId)", EventServiceProvider.class
-		    		).setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", location.getEventDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+		    		"from EventServiceProvider where visible = true and allRooms = true and (session is null or session.uniqueId = :sessionId) and (department is null or department.uniqueId = :departmentId)", EventServiceProvider.class
+		    		).setParameter("sessionId", location.getSession().getUniqueId(), Long.class).setParameter("departmentId", location.getEventDepartment().getUniqueId(), Long.class).setCacheable(true).list()) {
 		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();
 		    		provider.setId(p.getUniqueId());
 					provider.setReference(p.getReference());

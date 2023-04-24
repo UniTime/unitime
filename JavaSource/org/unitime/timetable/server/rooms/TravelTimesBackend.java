@@ -91,12 +91,12 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 				hibSession.createQuery(
 						"select distinct l from Location l " +
 						"where l.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and l.uniqueId in (" + ids + ")"), Location.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
 		
 		List<TravelTime> times = (List<TravelTime>)hibSession.createQuery(
 				"select t from TravelTime t " + 
 				"where t.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and t.location1Id in (" + ids + ") and t.location1Id in (" + ids + ")"), TravelTime.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 		
 		for (Location location: locations) {
 			TravelTimes.Room room = null;
@@ -140,7 +140,7 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 		hibSession.createQuery(
 				"delete from TravelTime where session.uniqueId = :sessionId" +
 				(ids.isEmpty() ? "" : " and location1Id in (" + ids + ") and location2Id in (" + ids + ")"))
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("sessionId", sessionId, Long.class)
 				.executeUpdate();
 		
 		for (TravelTimes.Room room: request.getRooms()) {

@@ -194,13 +194,13 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 		    	        	"from StudentEnrollment e, StudentEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.studentId = e.studentId and e.clazz != x.clazz and " + 
 		    	        	"e.solution.commited = true and x.solution.commited = true and x.solution.owner.session = e.solution.owner.session", Object[].class)
-		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
+		            .setParameter("classId", classId, Long.class);
 		} else {
 			q = LocationDAO.getInstance().getSession()
 		    	    .createQuery("select e.clazz.committedAssignment, e.student.uniqueId "+
 		    	        	"from StudentClassEnrollment e, StudentClassEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.student = e.student and e.clazz != x.clazz ", Object[].class)
-		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
+		            .setParameter("classId", classId, Long.class);
 		}
 		for (Object[] line: q.setCacheable(true).list()) {
 			Assignment assignment = (Assignment) line[0];

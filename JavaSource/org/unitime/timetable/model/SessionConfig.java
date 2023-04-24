@@ -20,9 +20,10 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
+import org.hibernate.Transaction;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -51,13 +52,13 @@ public class SessionConfig extends BaseSessionConfig {
 		if (sessionId == null) return null;
         return SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class
-        		).setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+        		).setParameter("key", key, String.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult();
 	}
 	
 	public static List<SessionConfig> findAll(Long sessionId) {
         return SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId order by key", SessionConfig.class
-        		).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+        		).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 	}
 
 	public static String getConfigValue(String key, Long sessionId, String defaultValue) {
@@ -66,25 +67,29 @@ public class SessionConfig extends BaseSessionConfig {
         
         String value = SessionConfigDAO.getInstance().getSession().createQuery(
         		"select value from SessionConfig where key = :key and session.uniqueId = :sessionId", String.class
-        		).setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+        		).setParameter("key", key, String.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult();
 
         return (value == null ? defaultValue : value);
 	}
     
     public static Properties toProperties(Long sessionId) {
-        Properties properties = new Properties();
-        if (!HibernateUtil.isConfigured() || sessionId == null) return properties;
+        if (!HibernateUtil.isConfigured() || sessionId == null) return null;
         
         org.hibernate.Session hibSession = SessionConfigDAO.getInstance().createNewSession();
+        Transaction tx = hibSession.beginTransaction();
         try {
+            Properties properties = new Properties();
             for (SessionConfig config: hibSession.createQuery(
-            		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+            		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
             	properties.setProperty(config.getKey(), config.getValue() == null ? "" : config.getValue());
             }
-        } finally {
+			tx.commit();
+			return properties;
+		} catch (Exception e) {
+			if (tx.isActive()) tx.rollback();
+		} finally {
         	hibSession.close();
         }
-
-        return properties;
+        return null;
     }
 }

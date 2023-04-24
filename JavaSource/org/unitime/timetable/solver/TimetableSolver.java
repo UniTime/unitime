@@ -1324,7 +1324,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     				Map<Department, Set<Long>> dept2class = new HashMap<Department, Set<Long>>();
     				for (Object[] pair: DepartmentDAO.getInstance().getSession().createQuery(
     						"select c.controllingDept, c.uniqueId from Class_ c where c.managingDept.solverGroup.uniqueId in :solverGroupIds", Object[].class
-    						).setParameterList("solverGroupIds", getOwnerId(), org.hibernate.type.LongType.INSTANCE).list()) {
+    						).setParameterList("solverGroupIds", getOwnerId(), Long.class).list()) {
     					Department dept = (Department)pair[0];
     					Long classId = (Long)pair[1];
     					Set<Long> classIds = dept2class.get(dept);
@@ -1389,7 +1389,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 				Map<SubjectArea, Set<Long>> sa2class = new HashMap<SubjectArea, Set<Long>>();
 				for (Object[] pair: DepartmentDAO.getInstance().getSession().createQuery(
 						"select co.subjectArea, c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and c.managingDept.solverGroup.uniqueId in :solverGroupIds", Object[].class
-						).setParameterList("solverGroupIds", getOwnerId(), org.hibernate.type.LongType.INSTANCE).list()) {
+						).setParameterList("solverGroupIds", getOwnerId(), Long.class).list()) {
 					SubjectArea sa = (SubjectArea)pair[0];
 					Long classId = (Long)pair[1];
 					Set<Long> classIds = sa2class.get(sa);

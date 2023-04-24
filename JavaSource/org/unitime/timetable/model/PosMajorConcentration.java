@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -45,7 +45,7 @@ public class PosMajorConcentration extends BasePosMajorConcentration {
 	public static List<PosMajorConcentration> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? PosMajorConcentrationDAO.getInstance().getSession() : hibSession).createQuery(
 				"from PosMajorConcentration x where x.major.session.uniqueId = :sessionId order by x.major.code, x.code", PosMajorConcentration.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
+				.setParameter("sessionId", sessionId, Long.class).list();
 	}
 	
     public Object clone() {

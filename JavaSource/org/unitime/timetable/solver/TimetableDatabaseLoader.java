@@ -1483,8 +1483,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	Query<Object[]> q = hibSession.createQuery("select distinct i.externalUniqueId, a from ClassInstructor ci inner join ci.instructor i inner join ci.classInstructing.assignments a " +
     			"where ci.lead = true and i.externalUniqueId in :puids and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")",
     			Object[].class);
-    	q.setParameter("sessionId", iSessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
-    	q.setParameterList("puids", puids, org.hibernate.type.StringType.INSTANCE);
+    	q.setParameter("sessionId", iSessionId.longValue(), Long.class);
+    	q.setParameterList("puids", puids, String.class);
 		for (Object[] x: q.list()) {
 			String puid = (String)x[0];
 			Assignment a = (Assignment)x[1];
@@ -1518,8 +1518,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void loadInstructorStudentConflicts(org.hibernate.Session hibSession, Set<String> puids) {
     	for (Object[] x: hibSession.createQuery("select s.uniqueId, s.externalUniqueId from Student s " +
     			"where s.session.uniqueId = :sessionId and s.externalUniqueId in :puids", Object[].class)
-    			.setParameter("sessionId", iSessionId.longValue(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameterList("puids", puids, org.hibernate.type.StringType.INSTANCE)
+    			.setParameter("sessionId", iSessionId.longValue(), Long.class)
+    			.setParameterList("puids", puids, String.class)
     			.list()) {
     		Long studentId = (Long)x[0];
     		String puid = (String)x[1];
@@ -1555,7 +1555,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		Query<Object[]> q = hibSession.createQuery("select distinct r.uniqueId, a from Location r inner join r.assignments as a "+
 				"where r.uniqueId in ("+roomids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and " +
 				"a.solution.owner.uniqueId not in ("+iSolverGroupIds+") and r.ignoreRoomCheck = false", Object[].class);
-		q.setParameter("sessionId", iSessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("sessionId", iSessionId.longValue(), Long.class);
 		for (Object[] x: q.list()) {
 			Long roomId = (Long)x[0];
 			Assignment a = (Assignment)x[1];
@@ -2041,12 +2041,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	List<DepartmentalInstructor> instructors = null;
     	if (department.isExternalManager()) {
     		instructors = hibSession.createQuery("select distinct i.instructor from Class_ as c inner join c.classInstructors i " +
-    				"where i.lead = true and (c.managingDept=:deptId or (c.managingDept is null and c.controllingDept=:deptId))", DepartmentalInstructor.class).
-    				setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();    		
+    				"where i.lead = true and (c.managingDept.uniqueId=:deptId or (c.managingDept is null and c.controllingDept.uniqueId=:deptId))", DepartmentalInstructor.class).
+    				setParameter("deptId", department.getUniqueId(), Long.class).list();    		
     	} else {
     		instructors = hibSession.createQuery(
     				"select distinct di from DepartmentalInstructor di inner join di.department d where d.uniqueId=:deptId", DepartmentalInstructor.class
-    				).setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+    				).setParameter("deptId", department.getUniqueId(), Long.class).list();
     	}
     	if (instructors==null || instructors.isEmpty()) return;
     	setPhase(MSG.phaseLoadInstructorGroupConstraints(department.getShortLabel()), instructors.size());
@@ -2340,7 +2340,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			"Solution s inner join s.assignments a inner join s.studentEnrollments e inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering io "+
     			"where "+
     			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner not in ("+iSolverGroupIds+") and "+
-    			"a.clazz=e.clazz", Object[].class).setParameter("sessionId", iSessionId.longValue(), org.hibernate.type.LongType.INSTANCE).list();
+    			"a.clazz=e.clazz", Object[].class).setParameter("sessionId", iSessionId.longValue(), Long.class).list();
 
     	
 		// Filter out relevant relations (relations that are for loaded students)
@@ -3431,12 +3431,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		if (solution != null) {
             			studentEnrls = hibSession
             				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.uniqueId=:solutionId", Object[].class)
-            				.setParameter("solutionId", solution.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+            				.setParameter("solutionId", solution.getUniqueId(), Long.class)
             				.list();
             		} else {
             			studentEnrls = hibSession
         				.createQuery("select distinct e.studentId, e.clazz.uniqueId from StudentEnrollment e where e.solution.owner.uniqueId=:sovlerGroupId and e.solution.commited = true", Object[].class)
-        				.setParameter("sovlerGroupId", iSolverGroupId[idx], org.hibernate.type.LongType.INSTANCE)
+        				.setParameter("sovlerGroupId", iSolverGroupId[idx], Long.class)
         				.list();
             		}
             		setPhase(MSG.phaseLoadingStudentEnrollemntsPhase(idx+1),studentEnrls.size());
@@ -4043,7 +4043,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		String constraints = getModel().getProperties().getProperty("General.AutomaticHierarchicalConstraints");
 		if (constraints == null || constraints.isEmpty()) return;
 		List<DistributionType> types = hibSession.createQuery("from DistributionType where examPref = false", DistributionType.class).list();
-		List<DatePattern> patterns = hibSession.createQuery("from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
+		List<DatePattern> patterns = hibSession.createQuery("from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", iSessionId, Long.class).list();
 		for (String term: constraints.split("[,;][ ]?(?=([^\"]*\"[^\"]*\")*[^\"]*$)")) {
 			String constraint = term.trim().toLowerCase();
 			if (constraint.isEmpty()) continue;

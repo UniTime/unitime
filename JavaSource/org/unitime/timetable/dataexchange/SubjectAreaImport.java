@@ -105,8 +105,8 @@ public class SubjectAreaImport  extends BaseImport {
 	private SubjectArea findByExternalId(String externalId, Long sessionId) {
 		return getHibSession().
 			createQuery("select distinct a from SubjectArea as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId", SubjectArea.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("externalId", externalId, String.class).
 			setCacheable(true).
 			uniqueResult();
 	}
@@ -114,8 +114,8 @@ public class SubjectAreaImport  extends BaseImport {
 	private Department findByDeptCode(String deptCode, Long sessionId) {
 		return getHibSession().
 			createQuery("select distinct a from Department as a where a.deptCode=:deptCode and a.session.uniqueId=:sessionId", Department.class).
-			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-			setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
+			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("deptCode", deptCode, String.class).
 			setCacheable(true).
 			uniqueResult();
 	}

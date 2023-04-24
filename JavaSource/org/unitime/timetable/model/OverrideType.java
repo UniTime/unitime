@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.unitime.timetable.model.base.BaseOverrideType;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
@@ -43,7 +43,7 @@ public class OverrideType extends BaseOverrideType implements Comparable<Overrid
 		if (reference == null || reference.isEmpty()) return null;
 		return OverrideTypeDAO.getInstance().getSession().createQuery(
 				"from OverrideType where reference = :reference", OverrideType.class
-				).setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+				).setParameter("reference", reference, String.class).setMaxResults(1).uniqueResult();
 	}
 
 }

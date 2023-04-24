@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -102,8 +102,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	public static SolverParameterDef findByNameGroup(org.hibernate.Session hibSession, String name, String group) {
 		List<SolverParameterDef> list = hibSession.createQuery(
 				"from SolverParameterDef where name = :name and group.name = :group", SolverParameterDef.class)
-				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("group", group, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("name", name, String.class)
+				.setParameter("group", group, String.class)
 				.setCacheable(true).list();
 		return list.isEmpty() ? null : list.get(0);
 	}
@@ -115,8 +115,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, SolverType type) {
 		List<SolverParameterDef> list = hibSession.createQuery(
 				"from SolverParameterDef where name = :name and group.type = :type", SolverParameterDef.class)
-				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("type", type.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
+				.setParameter("name", name, String.class)
+				.setParameter("type", type.ordinal(), Integer.class)
 				.setCacheable(true).list();
 		return list.isEmpty() ? null : list.get(0);
 	}	

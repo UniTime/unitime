@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,9 +53,9 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	
 	public static InstructorSurvey getInstructorSurvey(String externalUniqueId, Long sessionId) {
 		return  InstructorSurveyDAO.getInstance().getSession().createQuery(
-				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
-				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("externalId", externalUniqueId, org.hibernate.type.StringType.INSTANCE)
+				"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
+				).setParameter("sessionId", sessionId, Long.class)
+				.setParameter("externalId", externalUniqueId, String.class)
 				.setMaxResults(1).uniqueResult();
 	}
 	
@@ -68,8 +68,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 		return InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"select count(s) from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
-				"di.department = :deptId", Number.class)
-				.setParameter("deptId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()
+				"di.department.uniqueId = :deptId", Number.class)
+				.setParameter("deptId", departmentId, Long.class).setCacheable(true).uniqueResult()
 				.intValue() > 0;
 	}
 	
@@ -78,8 +78,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 		for (InstructorSurvey is: InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"select s from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
-				"di.department = :deptId", InstructorSurvey.class)
-				.setParameter("deptId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				"di.department.uniqueId = :deptId", InstructorSurvey.class)
+				.setParameter("deptId", departmentId, Long.class).setCacheable(true).list()) {
 			ret.put(is.getExternalUniqueId(), is);
 		}
 		return ret;
@@ -88,9 +88,9 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	public DepartmentalInstructor getInstructor(InstructionalOffering io) {
 		Map<Department, DepartmentalInstructor> ret = new HashMap<Department, DepartmentalInstructor>();
 		for (DepartmentalInstructor di: InstructorSurveyDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor where externalUniqueId = :extId and department.session = :sessionId", DepartmentalInstructor.class)
-				.setParameter("extId", getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", io.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+				"from DepartmentalInstructor where externalUniqueId = :extId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
+				.setParameter("extId", getExternalUniqueId(), String.class)
+				.setParameter("sessionId", io.getSessionId(), Long.class)
 				.setCacheable(true).list()) {
 			if (di.getDepartment().equals(io.getDepartment()))
 				return di;

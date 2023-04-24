@@ -134,7 +134,7 @@ public class ScriptConnector extends ApiConnector {
 			throw new IllegalArgumentException("SCRIPT parameter not provided.");
 		
 		Script script = ScriptDAO.getInstance().getSession().createQuery(
-				"from Script where name = :name", Script.class).setParameter("name", scriptName, org.hibernate.type.StringType.INSTANCE).uniqueResult();
+				"from Script where name = :name", Script.class).setParameter("name", scriptName, String.class).uniqueResult();
 		if (script == null)
 			throw new IllegalArgumentException("Script " + scriptName + " does not exist.");
 		

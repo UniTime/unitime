@@ -48,7 +48,7 @@
             not-null="true"
             insert="true"
             update="true"
-            lazy="false"/>
+            lazy="proxy"/>
 
         <property
             name="sequenceNumber"

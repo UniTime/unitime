@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -182,14 +182,14 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	if (examTypeId==null)
     		ret.addAll(ExamPeriodDAO.getInstance().getSession().
                 createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId", ExamPeriod.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
+                setParameter("sessionId", sessionId, Long.class).
                 setCacheable(true).
                 list());
     	else
     		ret.addAll(ExamPeriodDAO.getInstance().getSession().
                     createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId", ExamPeriod.class).
-                    setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                    setParameter("typeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
+                    setParameter("sessionId", sessionId, Long.class).
+                    setParameter("typeId", examTypeId, Long.class).
                     setCacheable(true).
                     list());
         return ret;
@@ -199,10 +199,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return ExamPeriodDAO.getInstance().getSession().createQuery(
                 "select ep from ExamPeriod ep where " +
                 "ep.session.uniqueId = :sessionId and ep.dateOffset = :dateOffset and ep.startSlot = :startSlot and ep.examType.uniqueId = :typeId", ExamPeriod.class).
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
-                setParameter("dateOffset", dateOffset, org.hibernate.type.IntegerType.INSTANCE).
-                setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE).
-                setParameter("typeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+                setParameter("sessionId", sessionId, Long.class).
+                setParameter("dateOffset", dateOffset, Integer.class).
+                setParameter("startSlot", startSlot, Integer.class).
+                setParameter("typeId", examTypeId, Long.class).setCacheable(true).uniqueResult();
     }
     
     public static ExamPeriod findByIndex(Long sessionId, ExamType type, Integer idx) {
@@ -286,9 +286,9 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return ExamPeriodDAO.getInstance().getSession().createQuery(
                 "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot", Meeting.class)
-                .setParameter("startDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
+                .setParameter("startDate", getStartDate(), Date.class)
+                .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
                 .setCacheable(true)
                 .list();
     } 
@@ -302,10 +302,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and " +
                 "e.clazz.uniqueId=:classId", Meeting.class)
-                .setParameter("startDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE)
+                .setParameter("startDate", getStartDate(), Date.class)
+                .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                .setParameter("classId", classId, Long.class)
                 .setCacheable(true)
                 .list();
     }
@@ -330,10 +330,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -346,10 +346,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -362,10 +362,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -378,10 +378,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -399,10 +399,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -415,10 +415,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -431,10 +431,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -447,10 +447,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -482,11 +482,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
+                        .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -499,11 +499,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
+                        .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -516,11 +516,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
+                        .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -533,11 +533,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
-                        .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                        .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                        .setParameter("meetingDate", getStartDate(), Date.class)
+                        .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                        .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                        .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                         .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
@@ -555,11 +555,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
+                    .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -572,11 +572,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
+                    .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -589,11 +589,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
+                    .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -606,11 +606,11 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
-                    .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
-                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                    .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+                    .setParameter("meetingDate", getStartDate(), Date.class)
+                    .setParameter("startSlot", getStartSlot()-nrTravelSlots, Integer.class)
+                    .setParameter("endSlot", getEndSlot()+nrTravelSlots, Integer.class)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                    .setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
                     .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
@@ -654,12 +654,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     			" and ep.length = :length" +
     			" and ep.prefLevel.uniqueId = :prefLevelId" +
     			" and ep.startSlot = :startSlot", ExamPeriod.class)
-    			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameter("dateOffset", getDateOffset(), org.hibernate.type.IntegerType.INSTANCE)
-    			.setParameter("length", getLength(), org.hibernate.type.IntegerType.INSTANCE)
-    			.setParameter("prefLevelId", getPrefLevel().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameter("startSlot", getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
+    			.setParameter("sessionId", session.getUniqueId(), Long.class)
+    			.setParameter("examTypeId", getExamType().getUniqueId(), Long.class)
+    			.setParameter("dateOffset", getDateOffset(), Integer.class)
+    			.setParameter("length", getLength(), Integer.class)
+    			.setParameter("prefLevelId", getPrefLevel().getUniqueId(), Long.class)
+    			.setParameter("startSlot", getStartSlot(), Integer.class)
     			.setCacheable(true)
     			.uniqueResult();
     			
@@ -707,8 +707,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     public static Date[] getBounds(Long sessionId, Date examBeginDate, Long examTypeId) {
         Object[] bounds = ExamPeriodDAO.getInstance().getSession().createQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
         		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType.uniqueId = :examTypeId", Object[].class)
-        		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+        		.setParameter("sessionId", sessionId, Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class)
                 .setCacheable(true).uniqueResult();
         if (bounds == null || bounds[0] == null) return null;
         int minDateOffset = ((Number)bounds[0]).intValue();
@@ -755,7 +755,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     
 	@Transient
     public boolean isUsed() {
-    	return (ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id", Number.class).setParameter("id", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+    	return (ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id", Number.class).setParameter("id", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
     public int getExamEventStopOffsetForExam(Exam exam) {

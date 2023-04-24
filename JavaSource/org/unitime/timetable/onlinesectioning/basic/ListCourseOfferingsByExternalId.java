@@ -60,7 +60,7 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 						"where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true " +
 						"and ((lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' ' || z.classSuffix) like :q || '%' and :q like lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' %')) or lower(z.classSuffix) like :q || '%') " +
 						"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr, z.classSuffix", Object[].class
-						).setParameter("q", iQuery, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						).setParameter("q", iQuery, String.class).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setCacheable(true).list()) {
 					Long courseId = (Long)courseClassId[0];
 					Long sectionId = (Long)courseClassId[1];
 					XCourse course = server.getCourse(courseId);

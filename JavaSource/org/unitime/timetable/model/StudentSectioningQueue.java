@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -76,12 +76,12 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			if (lastTimeStamp == null) {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId", StudentSectioningQueue.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list());
+						.setParameter("sessionId", sessionId, Long.class).list());
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId and q.timeStamp > :timeStamp", StudentSectioningQueue.class)
-						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.DateType.INSTANCE).list());
+						.setParameter("sessionId", sessionId, Long.class)
+						.setParameter("timeStamp", lastTimeStamp, Date.class).list());
 			}
 		} else {
 			if (lastTimeStamp == null) {
@@ -90,7 +90,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.timeStamp > :timeStamp", StudentSectioningQueue.class)
-						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.DateType.INSTANCE).list());
+						.setParameter("timeStamp", lastTimeStamp, Date.class).list());
 			}
 		}
 	}
@@ -99,7 +99,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		if (sessionId != null)
 			return  hibSession.createQuery(
 						"select max(q.timeStamp) from StudentSectioningQueue q where q.sessionId = :sessionId", Date.class
-					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).uniqueResult();
+					).setParameter("sessionId", sessionId, Long.class).uniqueResult();
 		else
 			return  hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q", Date.class).uniqueResult();
 			

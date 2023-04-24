@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class LearningManagementSystemInfo extends BaseLearningManagementSystemIn
     	    }
     	    return ((hibSession == null ? LearningManagementSystemInfoDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from Class_ c where c.lmsInfo.uniqueId = :lmsId", Number.class)
-    			.setParameter("lmsId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("lmsId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 
 	public static List<LearningManagementSystemInfo> findAll(UserContext user) {
@@ -60,7 +60,7 @@ public class LearningManagementSystemInfo extends BaseLearningManagementSystemIn
 	   	@SuppressWarnings("unchecked")
 		List<LearningManagementSystemInfo> list = LearningManagementSystemInfoDAO.getInstance().getSession().createQuery(
     			"select distinct lms from LearningManagementSystemInfo as lms where lms.session.uniqueId=:sessionId", LearningManagementSystemInfo.class)
-    			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("sessionId", sessionId, Long.class)
     			.setCacheable(true).list();
 	   	return(list);
 	}
@@ -69,7 +69,7 @@ public class LearningManagementSystemInfo extends BaseLearningManagementSystemIn
 	   	@SuppressWarnings("unchecked")
 		LearningManagementSystemInfo lms = LearningManagementSystemInfoDAO.getInstance().getSession().createQuery(
     			"select distinct lms from LearningManagementSystemInfo as lms where lms.session.uniqueId=:sessionId and lms.reference = :ref", LearningManagementSystemInfo.class)
-    			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("ref", reference, org.hibernate.type.StringType.INSTANCE)
+    			.setParameter("sessionId", sessionId, Long.class).setParameter("ref", reference, String.class)
     			.setCacheable(true).uniqueResult();
 
 	   	return(lms);
@@ -78,7 +78,7 @@ public class LearningManagementSystemInfo extends BaseLearningManagementSystemIn
 	public static LearningManagementSystemInfo getDefaultIfExists(Long sessionId) {
 		return(LearningManagementSystemInfoDAO.getInstance().getSession().createQuery(
     			"select distinct lms from LearningManagementSystemInfo as lms where lms.session.uniqueId=:sessionId and lms.defaultLms = true", LearningManagementSystemInfo.class)
-    			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+    			.setParameter("sessionId", sessionId, Long.class)
     			.setCacheable(true).uniqueResult());
 	}
 	

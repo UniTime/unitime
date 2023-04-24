@@ -1024,7 +1024,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 						TeachingRequestDAO.getInstance().getSession().createQuery(
 								"select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and cast(co.subjectArea.uniqueId as string) in :subjectIds",
 								TeachingRequest.class)
-					.setParameterList("subjectIds", getRollForwardOfferingCoordinatorsSubjectIds(), org.hibernate.type.StringType.INSTANCE).list());
+					.setParameterList("subjectIds", getRollForwardOfferingCoordinatorsSubjectIds(), String.class).list());
 			}
 		}
 	}

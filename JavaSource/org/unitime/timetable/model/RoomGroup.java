@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -72,7 +72,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static List<RoomGroup> getAllGlobalRoomGroups(Long sessionId) throws HibernateException {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllGlobalRoomGroups(Session session) throws HibernateException {
@@ -98,7 +98,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static RoomGroup getGlobalDefaultRoomGroup(Long sessionId) {
 		List<RoomGroup> groups = RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId and g.defaultGroup = true order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 		return (groups.isEmpty() ? null : groups.get(0));
 	}
 	
@@ -109,13 +109,13 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static List<RoomGroup> getAllDepartmentRoomGroups(Department dept) {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = false and g.department.uniqueId = :deptId order by name", RoomGroup.class
-				).setParameter("deptId", dept.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				).setParameter("deptId", dept.getUniqueId(), Long.class).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllRoomGroupsForSession(Long sessionId) {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.session.uniqueId = :sessionId order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllRoomGroupsForSession(Session session) {

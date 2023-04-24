@@ -182,9 +182,9 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and (co.courseNbr like :courseNbr or lower(co.title) like ('%' || lower(:courseNbr) || '%'))",
                                     Class_.class).
-                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
-                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE).
+                            setParameter("sessionId", form.getSession(), Long.class).
+                            setParameter("subjectAreaId", sa.getUniqueId(), Long.class).
+                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), String.class).
                             setCacheable(true).list();
                 		} else if (form.getCourseNumber()!=null && form.getCourseNumber().length()>0) {
                             classes = Class_DAO.getInstance().getSession().createQuery(
@@ -192,9 +192,9 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId and co.courseNbr like :courseNbr",
                                     Class_.class).
-                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
-                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE).
+                            setParameter("sessionId", form.getSession(), Long.class).
+                            setParameter("subjectAreaId", sa.getUniqueId(), Long.class).
+                            setParameter("courseNbr", form.getCourseNumber().replaceAll("\\*", "%"), String.class).
                             setCacheable(true).list();
                         } else {
                             classes = Class_DAO.getInstance().getSession().createQuery(
@@ -202,8 +202,8 @@ public class ClassesAction extends UniTimeAction<ClassesForm> {
                                     "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and "+
                                     "co.subjectArea.uniqueId=:subjectAreaId",
                                     Class_.class).
-                            setParameter("sessionId", form.getSession(), org.hibernate.type.LongType.INSTANCE).
-                            setParameter("subjectAreaId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                            setParameter("sessionId", form.getSession(), Long.class).
+                            setParameter("subjectAreaId", sa.getUniqueId(), Long.class).
                             setCacheable(true).list();
                         }
                     }

@@ -90,7 +90,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 			Map<Long, InstructorScheduleInfo> responses = new HashMap<Long, InstructorScheduleInfo>();
 			for (DepartmentalInstructor di: helper.getHibSession().createQuery(
 					"from DepartmentalInstructor d where d.externalUniqueId = :externalId", DepartmentalInstructor.class)
-					.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("externalId", externalId, String.class).setCacheable(true).list()) {
 				Long sid = di.getDepartment().getSessionId();
 				InstructorScheduleInfo response = responses.get(sid);
 				if (response == null) {
@@ -109,8 +109,8 @@ public class InstructorScheduleConnector extends ApiConnector{
 			InstructorScheduleInfo response = null;
 			for (DepartmentalInstructor di: helper.getHibSession().createQuery(
 					"from DepartmentalInstructor d where d.externalUniqueId = :externalId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
-					.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE)
-					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					.setParameter("externalId", externalId, String.class)
+					.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
 				if (response == null) response = new InstructorScheduleInfo(di);
 				response.add(di, checkStatus, includePrefs);
 			}

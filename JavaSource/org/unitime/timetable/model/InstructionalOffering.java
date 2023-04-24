@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -327,12 +327,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
-		q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
-		q.setParameter("sessionId", acadSessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("subjectAreaId", subjectAreaId, Long.class);
+		q.setParameter("sessionId", acadSessionId.longValue(), Long.class);
 		if (courseNbr != null && courseNbr.length() > 0) {
 			if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
             	courseNbr = courseNbr.toUpperCase();
-			q.setParameter("courseNbr", courseNbr.replace('*', '%'), org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("courseNbr", courseNbr.replace('*', '%'), String.class);
 		}
 		q.setCacheable(true);
 
@@ -507,7 +507,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		getSession().
     		createQuery("select distinct io from InstructionalOffering io where " +
     				"io.session.uniqueId=:sessionId", InstructionalOffering.class).
-    		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
+    		setParameter("sessionId", sessionId.longValue(), Long.class).
     		list();
     }
 
@@ -692,8 +692,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return InstructionalOfferingDAO.getInstance().
             getSession().
             createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstructionalOffering.class).
-            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
+            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
             setCacheable(true).
             uniqueResult();
     }

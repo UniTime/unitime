@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class AttachmentType extends BaseAttachmentType implements Comparable<Att
 					"from AttachmentType order by label", AttachmentType.class).setCacheable(true).list();
 		else
 			return AttachmentTypeDAO.getInstance().getSession().createQuery(
-					"from AttachmentType where bit_and(visibility, :flag) = :flag order by label", AttachmentType.class).setParameter("flag", flag, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+					"from AttachmentType where bitand(visibility, :flag) = :flag order by label", AttachmentType.class).setParameter("flag", flag, Integer.class).setCacheable(true).list();
 	}
 	
 	public static List<AttachmentType> listTypes(VisibilityFlag... flags) {
@@ -82,7 +82,7 @@ public class AttachmentType extends BaseAttachmentType implements Comparable<Att
 		if (reference == null) return null;
 		return hibSession.createQuery(
 				"from AttachmentType t where t.reference = :reference", AttachmentType.class)
-				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE)
+				.setParameter("reference", reference, String.class)
 				.setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 }

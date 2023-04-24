@@ -119,20 +119,20 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 			q.setMaxResults(ApplicationProperty.LastChangesLimit.intValue());
 		
 		if (request.hasOption("operation")) {
-			q.setParameter("operation", request.getOption("operation").toUpperCase(), org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("operation", request.getOption("operation").toUpperCase(), String.class);
 		}
 		
 		if (request.hasOption("page")) {
-			q.setParameter("source", request.getOption("page").replace(' ', '_').toUpperCase(), org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("source", request.getOption("page").replace(' ', '_').toUpperCase(), String.class);
 		}
 		
 		if (Location.class.getName().equals(request.getObjectType())) {
-			q.setParameter("roomType", Room.class.getName(), org.hibernate.type.StringType.INSTANCE);
-			q.setParameter("locType", NonUniversityLocation.class.getName(), org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("roomType", Room.class.getName(), String.class);
+			q.setParameter("locType", NonUniversityLocation.class.getName(), String.class);
 		}
 
-		q.setParameter("type", request.getObjectType(), org.hibernate.type.StringType.INSTANCE);
-		q.setParameter("id", request.getObjectId(), org.hibernate.type.LongType.INSTANCE);
+		q.setParameter("type", request.getObjectType(), String.class);
+		q.setParameter("id", request.getObjectId(), Long.class);
 		q.setCacheable(true);
 		return q.list();
 	}

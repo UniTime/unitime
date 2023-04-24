@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -59,7 +59,7 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 		return
 			ExactTimeMinsDAO.getInstance().getSession().
 			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax", ExactTimeMins.class).
-			setParameter("minPerMtg", minPerMtg, org.hibernate.type.IntegerType.INSTANCE).
+			setParameter("minPerMtg", minPerMtg, Integer.class).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();

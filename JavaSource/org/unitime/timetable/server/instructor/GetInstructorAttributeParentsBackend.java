@@ -44,8 +44,8 @@ public class GetInstructorAttributeParentsBackend implements GwtRpcImplementatio
 		GwtRpcResponseList<AttributeInterface> response = new GwtRpcResponseList<AttributeInterface>();
 		for (InstructorAttribute attribute: InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) and a.type.uniqueId = :typeId", InstructorAttribute.class
-				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", request.getDepartmentId() == null ? -1l : request.getDepartmentId(), org.hibernate.type.LongType.INSTANCE)
-				.setParameter("typeId", request.getTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).setParameter("departmentId", request.getDepartmentId() == null ? -1l : request.getDepartmentId(), Long.class)
+				.setParameter("typeId", request.getTypeId(), Long.class).setCacheable(true).list()) {
 			if (current == null || (!current.equals(attribute) && !current.isParentOf(attribute))) {
 				AttributeInterface a = new AttributeInterface();
 				a.setId(attribute.getUniqueId());

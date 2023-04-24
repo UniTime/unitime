@@ -53,7 +53,7 @@ public class AcademicAreaImport extends BaseImport {
             Map<String, AcademicArea> id2area = new Hashtable<String, AcademicArea>();
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
             for (AcademicArea area: getHibSession().createQuery(
-            		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
             	if (area.getExternalUniqueId() != null)
             		id2area.put(area.getExternalUniqueId(), area);
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);

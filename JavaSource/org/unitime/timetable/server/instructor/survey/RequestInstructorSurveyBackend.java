@@ -116,7 +116,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				} catch (NumberFormatException e) {
 					Number id = SessionDAO.getInstance().getSession().createQuery(
 							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session", Number.class
-							).setParameter("session", request.getSession(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
+							).setParameter("session", request.getSession(), String.class).setMaxResults(1).setCacheable(true).uniqueResult();
 					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
 					sessionId = id.longValue();
 				}
@@ -131,9 +131,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		}
 		boolean editable = true;
 		InstructorSurvey is = InstructorSurveyDAO.getInstance().getSession().createQuery(
-				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
-				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+				"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
+				).setParameter("sessionId", sessionId, Long.class)
+				.setParameter("externalId", externalId, String.class).setMaxResults(1).uniqueResult();
 
 		if (!admin) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
@@ -167,7 +167,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			if (!sessionIds.isEmpty()) {
 				for (Session session: SessionDAO.getInstance().getSession().createQuery(
 						"from Session where uniqueId in :ids order by academicInitiative, sessionBeginDateTime", Session.class)
-						.setParameterList("ids", sessionIds, org.hibernate.type.LongType.INSTANCE)
+						.setParameterList("ids", sessionIds, Long.class)
 						.setCacheable(true).list()) {
 					survey.addSession(new AcademicSessionInfo(
 							session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -215,8 +215,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		
 		List<DepartmentalInstructor> instructors = DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId", DepartmentalInstructor.class)
-				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("id", externalId, String.class)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true).list();
 
 		for (DepartmentalInstructor di: instructors) {
@@ -478,11 +478,11 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				"select distinct co from " +
 				"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 				"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
-				"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
+				"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
 				"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 				)
-				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+				.setParameter("id", externalId, String.class)
+				.setParameter("sessionId", sessionId, Long.class)
 				.setCacheable(true).list()) {
 			if (courseIds.add(co.getUniqueId())) {
 				Course ci = new Course();

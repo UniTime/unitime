@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 import org.unitime.timetable.model.MapTileCache;

@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.List;
 
@@ -71,7 +71,7 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 		if (referenceString == null || referenceString.isEmpty()) return null;
 		return OfferingConsentTypeDAO.getInstance().getSession().createQuery(
 				"from OfferingConsentType where reference = :reference", OfferingConsentType.class)
-				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", referenceString, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 }

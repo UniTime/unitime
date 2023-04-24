@@ -251,7 +251,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	List timePrefs = 
             			hibSession.
                 		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid", TimePref.class).
-        				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+        				setParameter("uniqueid", tp.getUniqueId(), Long.class).
                 		list();
             	
             	CSVFile csv = new CSVFile();
@@ -445,7 +445,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                 	List timePrefs = 
             			hibSession.
                 		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
-        				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.IntegerType.INSTANCE).
+        				setParameter("uniqueid", tp.getUniqueId(), Integer.class).
                 		list();
             		
             		HashSet depts = new HashSet();
@@ -556,7 +556,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                     	List timePrefs = 
                 			hibSession.
                     		createQuery("select distinct p.owner from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
-            				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.IntegerType.INSTANCE).
+            				setParameter("uniqueid", tp.getUniqueId(), Integer.class).
                     		list();
 	            		
 	            		TreeSet allOwners = new TreeSet();

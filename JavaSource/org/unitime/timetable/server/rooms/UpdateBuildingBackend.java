@@ -100,7 +100,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
                     null);
             
             if (updateRoomCoordinates) {
-            	for (Room room: hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            	for (Room room: hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), Long.class).list()) {
             		if (!ToolBox.equals(room.getCoordinateX(), building.getCoordinateX()) || !ToolBox.equals(room.getCoordinateY(), building.getCoordinateY())) {
             			room.setCoordinateX(building.getCoordinateX());
             			room.setCoordinateY(building.getCoordinateY());
@@ -138,8 +138,8 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
             if (building != null) {
                 for (Room r: hibSession.createQuery(
                 		"select r from Room r where r.building.uniqueId=:buildingId", Room.class)
-                		.setParameter("buildingId", building.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
-                    hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
+                		.setParameter("buildingId", building.getUniqueId(), Long.class).list()) {
+                    hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId(), Long.class).executeUpdate();
                     for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
                         Assignment a = (Assignment)j.next();
                         a.getRooms().remove(r);

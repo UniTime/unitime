@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -154,8 +154,8 @@ public class Assignment extends BaseAssignment {
 				org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 				Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 						"c.definition.name=:name and a.uniqueId=:assignmentId");
-				q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-				q.setParameter("name", name, org.hibernate.type.StringType.INSTANCE);
+				q.setParameter("assignmentId", getUniqueId(), Long.class);
+				q.setParameter("name", name, String.class);
 				tInfos = new Vector();
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					ConstraintInfo info = (ConstraintInfo)i.next();
@@ -184,8 +184,8 @@ public class Assignment extends BaseAssignment {
 			org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 			Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 					"c.definition.name=:name and a.uniqueId=:assignmentId");
-			q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-			q.setParameter("name", name, org.hibernate.type.StringType.INSTANCE);
+			q.setParameter("assignmentId", getUniqueId(), Long.class);
+			q.setParameter("name", name, String.class);
 			for (Iterator i=q.list().iterator();i.hasNext();) {
 				ConstraintInfo info = (ConstraintInfo)i.next();
 				TimetableInfo tInfo = info.getInfo();

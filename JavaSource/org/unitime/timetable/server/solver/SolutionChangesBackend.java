@@ -113,7 +113,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	for (Long ownerId: solver.getProperties().getPropertyLongArry("General.SolverGroupId", null)) {
         		Long solutionId = SolutionDAO.getInstance().getSession().createQuery(
         				"select uniqueId from Solution where owner.uniqueId = :ownerId and commited = true", Long.class
-        				).setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
+        				).setParameter("ownerId", ownerId, Long.class).setMaxResults(1).uniqueResult();
         		if (solutionId != null) {
         			hasCommittedSolution = true;
         			List<RecordedAssignment> ch = solver.getChangesToSolution(solutionId);
@@ -286,7 +286,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr",
-					Object[].class).setParameterList("classIds", id2row.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+					Object[].class).setParameterList("classIds", id2row.keySet(), Long.class).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
 				TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -301,7 +301,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr",
-							Object[].class).setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+							Object[].class).setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
 						TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -315,7 +315,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
-						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
 					TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());

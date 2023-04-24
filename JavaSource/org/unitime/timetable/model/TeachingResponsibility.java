@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.HashSet;
 import java.util.List;
@@ -91,7 +91,7 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 		if (reference == null || reference.isEmpty()) return null;
 		return hibSession.createQuery(
 				"from TeachingResponsibility where reference = :reference", TeachingResponsibility.class)
-				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", reference, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	public boolean hasOption(Option option) {
@@ -128,9 +128,9 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	@Transient
 	public boolean isUsed() {
 		if ((TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId", Number.class)
-			.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
+			.setParameter("responsibilityId", getUniqueId(), Long.class).uniqueResult()).intValue() > 0) return true;
 		if ((TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId", Number.class)
-				.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
+				.setParameter("responsibilityId", getUniqueId(), Long.class).uniqueResult()).intValue() > 0) return true;
 		return false;
 	}
 }

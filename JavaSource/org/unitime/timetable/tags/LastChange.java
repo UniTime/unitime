@@ -168,7 +168,7 @@ public class LastChange extends BodyTagSupport {
         
         curriculumIds.addAll(InstructionalOfferingDAO.getInstance().getSession().createQuery(
 				"select c.classification.curriculum.uniqueId from CurriculumCourse c where c.course.instructionalOffering.uniqueId = :offeringId", Long.class)
-				.setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+				.setParameter("offeringId", io.getUniqueId(), Long.class).setCacheable(true).list());
 
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(io, ChangeLog.Source.CROSS_LIST));

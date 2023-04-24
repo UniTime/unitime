@@ -78,7 +78,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 			context.getUser().setProperty("Admin.SolverParameterDef.FilterType", filter[0]);
 			return SolverParameterGroupDAO.getInstance().getSession().createQuery(
 					"from SolverParameterDef where group = :group order by group.order, order, name", SolverParameterDef.class
-					).setParameter("group", Long.valueOf(filter[0]), org.hibernate.type.LongType.INSTANCE).list();
+					).setParameter("group", Long.valueOf(filter[0]), Long.class).list();
 		}
 		
 	}
@@ -153,7 +153,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 	protected int nextOrd(Long groupId) {
 		List<SolverParameterDef> defs = SolverParameterGroupDAO.getInstance().getSession().createQuery(
 				"from SolverParameterDef where group = :group order by group.order, order, name", SolverParameterDef.class
-				).setParameter("group", groupId, org.hibernate.type.LongType.INSTANCE).list();
+				).setParameter("group", groupId, Long.class).list();
 		int idx = 0;
 		t: while (true) {
 			for (SolverParameterDef t: defs) {
@@ -176,7 +176,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
 			for (SolverParameterDef def: SolverParameterGroupDAO.getInstance().getSession().createQuery(
 					"from SolverParameterDef where group != :group order by group.order, order, name", SolverParameterDef.class
-					).setParameter("group", Long.valueOf(filter[0]), org.hibernate.type.LongType.INSTANCE).list()) {
+					).setParameter("group", Long.valueOf(filter[0]), Long.class).list()) {
 				Set<Integer> ords = g2ords.get(def.getGroup().getUniqueId());
 				if (ords == null) {
 					ords = new HashSet<Integer>();

@@ -102,9 +102,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
             			: "and co.courseNbr like :q") + " order by co.courseNbr", CourseOffering.class)
-            			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-            			.setParameter("subjectAbbv", params.get("subjectAbbv"), org.hibernate.type.StringType.INSTANCE)
-            			.setParameter("q", request.getQuery() + "%", org.hibernate.type.StringType.INSTANCE)
+            			.setParameter("sessionId", sessionId, Long.class)
+            			.setParameter("subjectAbbv", params.get("subjectAbbv"), String.class)
+            			.setParameter("q", request.getQuery() + "%", String.class)
             			.setCacheable(true).setMaxResults(request.getLimit()).list()) {
             		result.add(new SuggestionInterface(co.getCourseNumberWithTitle(), co.getCourseNbr()));
             	}
@@ -125,8 +125,8 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
             			: "and co.courseNbr like :q") + " order by co.courseNbr", CourseOffering.class)
-            			.setParameter("subjectId", subjectId, org.hibernate.type.LongType.INSTANCE)
-            			.setParameter("q", request.getQuery() + "%", org.hibernate.type.StringType.INSTANCE)
+            			.setParameter("subjectId", subjectId, Long.class)
+            			.setParameter("q", request.getQuery() + "%", String.class)
             			.setCacheable(true).setMaxResults(request.getLimit()).list()) {
             		result.add(new SuggestionInterface(co.getCourseNumberWithTitle(), co.getCourseNbr()));
             	}
@@ -157,9 +157,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             q.setFetchSize(5000);
             q.setCacheable(true);
             q.setHibernateFlushMode(FlushMode.MANUAL);
-            q.setParameter("acadSessionId", Long.parseLong(map.get("session", org.hibernate.type.LongType.INSTANCE).toString()));
-            q.setParameter("subjectArea", map.get("subjectArea", org.hibernate.type.StringType.INSTANCE).toString());
-            q.setParameter("courseNbr", map.get("courseNumber", org.hibernate.type.StringType.INSTANCE).toString() + "%");
+            q.setParameter("acadSessionId", Long.parseLong(map.get("session", Long.class).toString()));
+            q.setParameter("subjectArea", map.get("subjectArea", String.class).toString());
+            q.setParameter("courseNbr", map.get("courseNumber", String.class).toString() + "%");
     
             result = q.list();
             
@@ -196,9 +196,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setHibernateFlushMode(FlushMode.MANUAL);
-	        q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
-	        q.setParameter("subjectAreaId", Long.valueOf(map.get("subjectAreaId", org.hibernate.type.LongType.INSTANCE).toString()));
-	        q.setParameter("courseNbr", map.get("courseNbr", org.hibernate.type.StringType.INSTANCE).toString() + "%");
+	        q.setParameter("acadSessionId", acadSessionId, Long.class);
+	        q.setParameter("subjectAreaId", Long.valueOf(map.get("subjectAreaId", Long.class).toString()));
+	        q.setParameter("courseNbr", map.get("courseNbr", String.class).toString() + "%");
 	
 	        result = q.list();
         }
@@ -223,9 +223,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setHibernateFlushMode(FlushMode.MANUAL);
-	        q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
-	        q.setParameter("subjectAreaId", Long.valueOf(map.get("filterSubjectAreaId", org.hibernate.type.LongType.INSTANCE).toString()));
-	        q.setParameter("courseNbr", map.get("filterCourseNbr", org.hibernate.type.StringType.INSTANCE).toString() + "%");
+	        q.setParameter("acadSessionId", acadSessionId, Long.class);
+	        q.setParameter("subjectAreaId", Long.valueOf(map.get("filterSubjectAreaId", Long.class).toString()));
+	        q.setParameter("courseNbr", map.get("filterCourseNbr", String.class).toString() + "%");
 	
 	        result = q.list();
         }
@@ -251,9 +251,9 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setHibernateFlushMode(FlushMode.MANUAL);
-	        q.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE);
-	        q.setParameter("subjectAreaId", Long.valueOf(map.get("subjectAreaIds", org.hibernate.type.LongType.INSTANCE).toString()));
-	        q.setParameter("courseNbr", map.get("courseNbr", org.hibernate.type.StringType.INSTANCE).toString() + "%");
+	        q.setParameter("acadSessionId", acadSessionId, Long.class);
+	        q.setParameter("subjectAreaId", Long.valueOf(map.get("subjectAreaIds", Long.class).toString()));
+	        q.setParameter("courseNbr", map.get("courseNbr", String.class).toString() + "%");
 	
 	        result = q.list();
         }

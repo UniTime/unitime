@@ -156,8 +156,8 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
 								for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
-									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
+									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
+									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
 									.setCacheable(true).list()) {
 									Assignment a = getAssignment(c);
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
@@ -200,14 +200,14 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 						"where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId and type(ex) != ClassEvent and m.approvalStatus = 1 and mx.approvalStatus = 1 and " +
 						"m.locationPermanentId = mx.locationPermanentId and m.meetingDate = mx.meetingDate and " +
 						"m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and mx.meetingDate >= :today", Number.class
-						).setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setParameter("today", today, org.hibernate.type.DateType.INSTANCE).setCacheable(true).uniqueResult().intValue() > 0;
+						).setParameter("offeringId", offeringId, Long.class).setParameter("today", today, Date.class).setCacheable(true).uniqueResult().intValue() > 0;
 			} else {
 				return MeetingDAO.getInstance().getSession().createQuery(
 						"select count(mx) from ClassEvent e inner join e.meetings m, Meeting mx inner join mx.event ex " +
 						"where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId and type(ex) != ClassEvent and m.approvalStatus = 1 and mx.approvalStatus = 1 and " +
 						"m.locationPermanentId = mx.locationPermanentId and m.meetingDate = mx.meetingDate and " +
 						"m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod", Number.class
-						).setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue() > 0;
+						).setParameter("offeringId", offeringId, Long.class).setCacheable(true).uniqueResult().intValue() > 0;
 			}
 		} else if (RoomAvailability.getInstance() != null) {
         	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
@@ -300,8 +300,8 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
 					for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
-						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
+						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
+						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
 						.setCacheable(true).list()) {
 						Assignment a = getAssignment(c);
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
@@ -408,14 +408,14 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
  						"where e.clazz.uniqueId = :classId and type(ex) != ClassEvent and m.approvalStatus = 1 and mx.approvalStatus = 1 and " +
  						"m.locationPermanentId = mx.locationPermanentId and m.meetingDate = mx.meetingDate and " +
  						"m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and mx.meetingDate >= :today", Meeting.class
- 						).setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE).setParameter("today", today, org.hibernate.type.DateType.INSTANCE).setCacheable(true).list();
+ 						).setParameter("classId", classId, Long.class).setParameter("today", today, Date.class).setCacheable(true).list();
  			} else {
  				meetings = MeetingDAO.getInstance().getSession().createQuery(
  						"select distinct mx from ClassEvent e inner join e.meetings m, Meeting mx inner join mx.event ex " +
  						"where e.clazz.uniqueId = :classId and type(ex) != ClassEvent and m.approvalStatus = 1 and mx.approvalStatus = 1 and " +
  						"m.locationPermanentId = mx.locationPermanentId and m.meetingDate = mx.meetingDate and " +
  						"m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod", Meeting.class
- 						).setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+ 						).setParameter("classId", classId, Long.class).setCacheable(true).list();
  			}
 			for (Meeting m: meetings) {
 				if (m.getLocationPermanentId() != null && ignorePermIds.contains(m.getLocationPermanentId())) continue;

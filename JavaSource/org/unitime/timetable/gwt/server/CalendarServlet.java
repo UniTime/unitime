@@ -149,7 +149,7 @@ public class CalendarServlet extends HttpServlet {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
-						setParameter("term", params.getParameter("term"), org.hibernate.type.StringType.INSTANCE).list();
+						setParameter("term", params.getParameter("term"), String.class).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
 			} finally {
@@ -231,7 +231,7 @@ public class CalendarServlet extends HttpServlet {
             if (userId != null && !userId.isEmpty()) {
                 for (DepartmentalInstructor instructor: hibSession.createQuery("select i from DepartmentalInstructor i " +
                 		"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId", DepartmentalInstructor.class).
-                		setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).list()) {
+                		setParameter("sessionId", sessionId, Long.class).setParameter("externalId", userId, String.class).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {
                 		ExamStatus status = ExamStatus.findStatus(hibSession, instructor.getSession().getUniqueId(), t.getUniqueId());
@@ -252,7 +252,7 @@ public class CalendarServlet extends HttpServlet {
                 }
                 for (Student student: hibSession.createQuery("select s from Student s where " +
                 		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId", Student.class).
-                		setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).list()) {
+                		setParameter("sessionId", sessionId, Long.class).setParameter("externalId", userId, String.class).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {
                 		ExamStatus status = ExamStatus.findStatus(hibSession, student.getSession().getUniqueId(), t.getUniqueId());

@@ -311,11 +311,11 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
         	} else if (filter.hasOption("departmentId")) {
         		instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
         				"select i.uniqueId from DepartmentalInstructor i where i.department.uniqueId = :departmentId", Long.class
-        					).setParameter("departmentId", Long.valueOf(filter.getOption("departmentId")), org.hibernate.type.LongType.INSTANCE).list());
+        					).setParameter("departmentId", Long.valueOf(filter.getOption("departmentId")), Long.class).list());
         	} else if (filter.hasOption("department")) {
         		instructorIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
         				"select i.uniqueId from DepartmentalInstructor i where i.department.deptCode = :deptCode and i.department.session.uniqueId = :sessionId", Long.class
-        					).setParameter("deptCode", filter.getOption("department"), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", filter.getSessionId(), org.hibernate.type.LongType.INSTANCE).list());
+        					).setParameter("deptCode", filter.getOption("department"), String.class).setParameter("sessionId", filter.getSessionId(), Long.class).list());
         	}
         	InstructorSchedulingModel model = (InstructorSchedulingModel)currentSolution().getModel();
         	for (Instructor instructor: model.getInstructors()) {

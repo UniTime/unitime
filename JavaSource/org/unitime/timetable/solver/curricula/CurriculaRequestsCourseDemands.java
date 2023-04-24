@@ -121,7 +121,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				Set<Curriculum> curriculaSet = new HashSet<Curriculum>(hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
 						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
-						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+						.setParameter("sessionId", session.getUniqueId(), Long.class).list());
 				// include children curricula
 				curriculaSet.addAll(
 						hibSession.createQuery(
@@ -129,7 +129,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 							"where c.academicArea = d.academicArea and d.multipleMajors = true and size(c.majors) <= 1 and size(c.majors) < size(d.majors) and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = c.uniqueId and m not in elements(d.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
-							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()
+							.setParameter("sessionId", session.getUniqueId(), Long.class).list()
 						);
 				// include parent curricula
 				curriculaSet.addAll(
@@ -138,7 +138,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 							"where c.multipleMajors = true and size(c.majors) >= 1 and size(c.majors) > size(d.majors) and c.academicArea = d.academicArea and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = d.uniqueId and m not in elements(c.majors)) = 0 and " +
 							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
-							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+							.setParameter("sessionId", session.getUniqueId(), Long.class).list());
 				curricula = new ArrayList<Curriculum>(curriculaSet);
 			}
 		}
@@ -146,7 +146,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 		if (curricula == null) {
 			curricula = hibSession.createQuery(
 					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId", Curriculum.class)
-					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
+					.setParameter("sessionId", session.getUniqueId(), Long.class).list();
 		}
 
 		List<Initialization> inits = new ArrayList<Initialization>();
@@ -181,9 +181,9 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 			// students with no major
 			if (!cc.getCurriculum().isMultipleMajors())
 				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), Long.class)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), Long.class)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), Long.class)
 					.setCacheable(true).list();
 		} else if (!cc.getCurriculum().isMultipleMajors() || cc.getCurriculum().getMajors().size() == 1) {
 			List<Long> majorIds = new ArrayList<Long>();
@@ -191,9 +191,9 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				majorIds.add(major.getUniqueId());
 			// students with one major
 			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.uniqueId in :majorIds", Object[].class)
-					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), Long.class)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), Long.class)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), Long.class)
 					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
@@ -211,11 +211,11 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands, Nee
 				idx ++;
 			}
 			org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
-					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+					.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), Long.class)
+					.setParameter("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId(), Long.class)
+					.setParameter("clasfId", cc.getAcademicClassification().getUniqueId(), Long.class);
 			for (Map.Entry<String, Long> e: params.entrySet())
-				q.setParameter(e.getKey(), e.getValue(), org.hibernate.type.LongType.INSTANCE);
+				q.setParameter(e.getKey(), e.getValue(), Long.class);
 			lines = q.setCacheable(true).list();
 		}
 		Map<CourseOffering, Set<WeightedStudentId>> course2req = new HashMap<CourseOffering,Set<WeightedStudentId>>();

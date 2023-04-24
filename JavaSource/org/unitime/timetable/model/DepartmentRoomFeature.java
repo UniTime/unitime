@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Transient;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 
 import java.util.List;
 
@@ -87,7 +87,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		return  DepartmentRoomFeatureDAO.getInstance().
 				getSession().
 				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId order by label", DepartmentRoomFeature.class).
-				setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
+				setParameter("sessionId", session.getUniqueId().longValue(), Long.class).
 				setCacheable(true).
 				list();
 	}

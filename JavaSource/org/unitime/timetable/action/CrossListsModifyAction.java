@@ -266,7 +266,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     
                     for (CurriculumCourse x: hibSession.createQuery(
                     		"from CurriculumCourse where course.uniqueId = :courseId", CurriculumCourse.class)
-                    		.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+                    		.setParameter("courseId", co1.getUniqueId(), Long.class).list()) {
                     	cc.add(x.clone(co2));
                     	x.getClassification().getCourses().remove(x);
                     	hibSession.delete(x);
@@ -274,7 +274,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
                     	for (CourseRequest oldReq: hibSession.createQuery(
                     			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
-                    			.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+                    			.setParameter("courseId", co1.getUniqueId(), Long.class).list()) {
                     		CourseRequest newReq = new CourseRequest();
                     		newReq.setAllowOverlap(oldReq.getAllowOverlap());
                     		newReq.setOrder(oldReq.getOrder());
@@ -288,7 +288,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     
                     advCourseReqs.put(co2.getCourseName(), hibSession.createQuery(
                 			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-                			.setParameter("courseId", co1.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+                			.setParameter("courseId", co1.getUniqueId(), Long.class).list());
                     
                     deletedOfferings.add(co2);
 /*	                
@@ -401,7 +401,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    
 	                    for (CurriculumCourse x: hibSession.createQuery(
 	                    		"from CurriculumCourse where course.uniqueId = :courseId", CurriculumCourse.class)
-	                    		.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	                    		.setParameter("courseId", co2.getUniqueId(), Long.class).list()) {
 	                    	cc.add(x.clone(co3));
 	                    	x.getClassification().getCourses().remove(x);
 	                    	hibSession.delete(x);
@@ -409,7 +409,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
 	                    	for (CourseRequest oldReq: hibSession.createQuery(
 	                    			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
-	                    			.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	                    			.setParameter("courseId", co2.getUniqueId(), Long.class).list()) {
 	                    		CourseRequest newReq = new CourseRequest();
 	                    		newReq.setAllowOverlap(oldReq.getAllowOverlap());
 	                    		newReq.setOrder(oldReq.getOrder());
@@ -423,7 +423,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 
 	                    advCourseReqs.put(co3.getCourseName(), hibSession.createQuery(
 	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-	                			.setParameter("courseId", co2.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
+	                			.setParameter("courseId", co2.getUniqueId(), Long.class).list());
 	                    addedOfferings.add(co3);
 
     	                int indx = form.getIndex(course);

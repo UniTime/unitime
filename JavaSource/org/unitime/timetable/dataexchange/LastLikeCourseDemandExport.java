@@ -53,14 +53,14 @@ public class LastLikeCourseDemandExport extends BaseExport {
 	        Map<String, CourseOffering> permId2course = new Hashtable<String, CourseOffering>();
 	        for (CourseOffering course: getHibSession().createQuery(
 	        		"from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
-	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	if (course.getPermId() != null)
 	        		permId2course.put(course.getPermId(), course);
 	        }
 	        for (LastLikeCourseDemand demand : getHibSession().createQuery(
 	        		"from LastLikeCourseDemand d where d.subjectArea.session.uniqueId = :sessionId " +
 	        		"order by d.student.externalUniqueId, d.priority, d.subjectArea.subjectAreaAbbreviation, d.courseNbr", LastLikeCourseDemand.class)
-	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
 	        	if (!demand.getStudent().getExternalUniqueId().equals(lastExternalId)) {
 	        		lastExternalId = demand.getStudent().getExternalUniqueId();
 	        		studentEl = root.addElement("student");

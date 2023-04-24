@@ -203,8 +203,8 @@ public class EventEmail {
 						"select distinct m from Location l inner join l.eventDepartment.timetableManagers m inner join m.managerRoles r where " +
 						"l.uniqueId in :locationIds and m.emailAddress is not null and r.receiveEmails = true and :permission in elements (r.role.rights)",
 						TimetableManager.class)
-						.setParameterList("locationIds", locationIds, org.hibernate.type.LongType.INSTANCE)
-						.setParameter("permission", Right.EventLookupContact.name(), org.hibernate.type.StringType.INSTANCE)
+						.setParameterList("locationIds", locationIds, Long.class)
+						.setParameter("permission", Right.EventLookupContact.name(), String.class)
 						.list()) {
 					email.addRecipientCC(m.getEmailAddress(), nf.format(m));
 				}

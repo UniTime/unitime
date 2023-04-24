@@ -71,12 +71,12 @@ public class ExamDistributionPrefsTableBuilder {
 	            "dp.distributionType.examPref = true and "+
 	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
 	    Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
-	    		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
+	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
+	    		.setParameter("examTypeId", examTypeId, Long.class);
 	    if (subjectAreaId!=null)
-	        q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
+	        q.setParameter("subjectAreaId", subjectAreaId, Long.class);
 	    if (courseNbr!=null && !courseNbr.trim().isEmpty())
-	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
+	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
 	    List<DistributionPref> distPrefs = q.setCacheable(true).list();
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
@@ -95,12 +95,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class);
         if (subjectAreaId!=null)
-            q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
+            q.setParameter("subjectAreaId", subjectAreaId, Long.class);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
         List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toPdfTable(out, request, context, distPrefs, examTypeId); 
@@ -120,12 +120,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
-                .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
+                .setParameter("examTypeId", examTypeId, Long.class);
         if (subjectAreaId!=null)
-            q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
+            q.setParameter("subjectAreaId", subjectAreaId, Long.class);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
         List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toCsvTable(out, request, context, distPrefs, examTypeId); 

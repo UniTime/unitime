@@ -190,7 +190,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
         	 if (department.isExternalManager().booleanValue()) {
         		 for (Class_ clazz: hibSession.createQuery(
         				 "select c from Class_ c where c.managingDept.uniqueId=:deptId", Class_.class)
-        				 .setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        				 .setParameter("deptId", department.getUniqueId(), Long.class).list()) {
                      if (clazz.getSchedulingSubpart().getManagingDept().equals(department)) {
                          // Clear all room preferences from the subpart
                          for (Iterator<Preference> j = clazz.getSchedulingSubpart().getPreferences().iterator(); j.hasNext(); ) {
@@ -217,7 +217,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
                          "co.isControl=true and " +
                          "c.schedulingSubpart.instrOfferingConfig.instructionalOffering=co.instructionalOffering and "+
                          "co.subjectArea.department.uniqueId=:deptId)").
-                         setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
+                         setParameter("deptId", department.getUniqueId(), Long.class).
                          executeUpdate();
              }             
 

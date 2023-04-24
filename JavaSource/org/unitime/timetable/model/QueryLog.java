@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -78,7 +78,7 @@ public class QueryLog extends BaseQueryLog {
 		c.add(Calendar.DAY_OF_YEAR, -days);
 		return (QueryLogDAO.getInstance().getSession().createQuery(
 				"select count(distinct q.sessionId) from QueryLog q where q.timeStamp > :date", Number.class).
-				setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).uniqueResult()).intValue();
+				setParameter("date", c.getTime(), Date.class).uniqueResult()).intValue();
 	}
 	
 	public static int getNrActiveUsers(int days) {
@@ -87,7 +87,7 @@ public class QueryLog extends BaseQueryLog {
 		c.add(Calendar.DAY_OF_YEAR, -days);
 		return (QueryLogDAO.getInstance().getSession().createQuery(
 				"select count(distinct q.uid) from QueryLog q where q.timeStamp > :date", Number.class).
-				setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).uniqueResult()).intValue();
+				setParameter("date", c.getTime(), Date.class).uniqueResult()).intValue();
 	}
 
 	public static WebTable getTopQueries(int days) {
@@ -102,31 +102,31 @@ public class QueryLog extends BaseQueryLog {
 		HashMap<String, Integer> errors = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
 			errors.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> overMinutes = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
 			overMinutes.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over100mss = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
 			over100mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over10mss = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
 			over10mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q), avg(q.timeSpent), max(q.timeSpent) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
 			Integer nrErrors = errors.get((String)o[0]);
 			if (nrErrors == null) nrErrors = 0;
 			Integer overMinute = overMinutes.get((String)o[0]);

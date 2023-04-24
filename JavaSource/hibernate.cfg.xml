@@ -69,16 +69,6 @@
 	<!-- Generate comments inside the SQL, for easier debugging, defaults -->
 	<property name="hibernate.use_sql_comments">true</property>
 
-	<!-- 
-		Set a maximum "depth" for the outer join fetch tree for single-ended 
-		associations (one-to-one, many-to-one) 
-	-->
-	<property name="hibernate.max_fetch_depth">2</property>
-
-	<property name="hibernate.jdbc.fetch_size">1000</property>
-
-	<property name="hibernate.jdbc.batch_size">20</property>
-
 	<!-- See https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/resource/jdbc/spi/PhysicalConnectionHandlingMode.html -->
 	<property name="hibernate.connection.handling_mode">DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION</property>
 
@@ -97,27 +87,11 @@
 	<property name="hibernate.cache.infinispan.cfg">infinispan-cluster.xml</property>
 	<property name="hibernate.cache.infinispan.jgroups_cfg">hibernate-jgroups-tcp.xml</property>
 	
-	<!-- Keep the cache entries in a more human-understandable format -->
-	<property name="hibernate.cache.use_structured_entries">true</property>
-
 	<!-- Enable the query cache, individual queries still have to be set cachable -->
 	<property name="hibernate.cache.use_query_cache">true</property>
 
-	<!-- 
-		Force Hibernate to order SQL updates by the primary key value of the items being updates. 
-		This will result in fewer transaction deadlocks in highly concurrent systems.		
-	-->
-	<property name="hibernate.order_updates">true</property>
-
 	<!-- Collect statistics useful for performance tuning -->
 	<property name="hibernate.generate_statistics">false</property>
-
-	<!-- Enables use of CGLIB instead of runtime reflection (useful when troubleshooting) -->
-	<!-- property name="hibernate.cglib.use_reflection_optimizer">
-		true
-		</property -->
-		
-	<property name="SetBigStringTryClob">true</property>
 
 	<!-- Mapping files -->
 	<mapping package="org.unitime.timetable.model"/>

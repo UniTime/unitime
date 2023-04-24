@@ -20,9 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -82,7 +82,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     public static ItypeDesc findForReference(String reference, Session hibSession) {
     	return((ItypeDesc) hibSession
     			.createQuery("from ItypeDesc i where i.sis_ref = :ref", ItypeDesc.class)
-    			.setParameter("ref", reference, org.hibernate.type.StringType.INSTANCE)
+    			.setParameter("ref", reference, String.class)
     			.setCacheable(true)
     			.uniqueResult());
     }

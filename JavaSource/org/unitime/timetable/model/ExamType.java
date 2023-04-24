@@ -20,8 +20,8 @@
 package org.unitime.timetable.model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,19 +60,19 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	public static ExamType findByReference(String ref) {
 		return ExamTypeDAO.getInstance().getSession().createQuery(
 				"from ExamType where reference = :ref", ExamType.class)
-				.setParameter("ref", ref, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
+				.setParameter("ref", ref, String.class).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
 	
 	public static List<ExamType> findAllOfType(int type) {
 		return ExamTypeDAO.getInstance().getSession().createQuery(
 				"from ExamType where type = :type order by type, label", ExamType.class)
-				.setParameter("type", type, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
+				.setParameter("type", type, Integer.class).setCacheable(true).list();
 	}
 
 	public static TreeSet<ExamType> findAllUsed(Long sessionId) {
 		return new TreeSet<ExamType>(ExamTypeDAO.getInstance().getSession().createQuery(
 				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId", ExamType.class)
-				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
+				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
 	}
 
 	public static List<ExamType> findAllApplicable(UserContext user, DepartmentStatusType.Status... status) {
@@ -127,11 +127,11 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 		if (sessionId == null) {
 			return (ExamTypeDAO.getInstance().getSession().createQuery(
 					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId", Number.class)
-					.setParameter("typeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0;
+					.setParameter("typeId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).longValue() > 0;
 		} else {
 			return (ExamTypeDAO.getInstance().getSession().createQuery(
 					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId and p.session.uniqueId = :sessionId", Number.class)
-					.setParameter("typeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0;
+					.setParameter("typeId", getUniqueId(), Long.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).longValue() > 0;
 		}
 	}
 	
@@ -140,8 +140,8 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
         SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
         for (Long examId: hibSession.createQuery(
         		"select x.uniqueId from Exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId", Long.class)
-        		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-        		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+        		.setParameter("sessionId", sessionId, Long.class)
+        		.setParameter("examTypeId", examTypeId, Long.class)
         		.setCacheable(true).list()) {
             hibSessionFactory.getCache().evictEntityData(Exam.class, examId);
             hibSessionFactory.getCache().evictCollectionData(Exam.class.getName()+".assignedRooms", examId);
@@ -149,8 +149,8 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
         }
         for (Long eventId: hibSession.createQuery(
         		"select e.uniqueId from ExamEvent e inner join e.exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId", Long.class)
-        		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-        		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
+        		.setParameter("sessionId", sessionId, Long.class)
+        		.setParameter("examTypeId", examTypeId, Long.class)
         		.setCacheable(true).list()) {
             hibSessionFactory.getCache().evictEntityData(Event.class, eventId);
             hibSessionFactory.getCache().evictCollectionData(Event.class.getName()+".meetings", eventId);
