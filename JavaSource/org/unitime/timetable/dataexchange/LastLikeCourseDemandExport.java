@@ -21,7 +21,6 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -52,15 +51,15 @@ public class LastLikeCourseDemandExport extends BaseExport {
 	        String lastExternalId = null;
 	        Element studentEl = null;
 	        Map<String, CourseOffering> permId2course = new Hashtable<String, CourseOffering>();
-	        for (CourseOffering course: (List<CourseOffering>)getHibSession().createQuery(
-	        		"from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId")
+	        for (CourseOffering course: getHibSession().createQuery(
+	        		"from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	if (course.getPermId() != null)
 	        		permId2course.put(course.getPermId(), course);
 	        }
-	        for (LastLikeCourseDemand demand : (List<LastLikeCourseDemand>)getHibSession().createQuery(
+	        for (LastLikeCourseDemand demand : getHibSession().createQuery(
 	        		"from LastLikeCourseDemand d where d.subjectArea.session.uniqueId = :sessionId " +
-	        		"order by d.student.externalUniqueId, d.priority, d.subjectArea.subjectAreaAbbreviation, d.courseNbr")
+	        		"order by d.student.externalUniqueId, d.priority, d.subjectArea.subjectAreaAbbreviation, d.courseNbr", LastLikeCourseDemand.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	if (!demand.getStudent().getExternalUniqueId().equals(lastExternalId)) {
 	        		lastExternalId = demand.getStudent().getExternalUniqueId();

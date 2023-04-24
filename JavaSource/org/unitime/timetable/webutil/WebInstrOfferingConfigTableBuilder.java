@@ -134,7 +134,7 @@ public class WebInstrOfferingConfigTableBuilder extends
             JspWriter outputStream){
     	
     	if (instrOfferingConfigId != null){
-	        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+	        InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
 	        InstrOfferingConfig ioc = iocDao.get(instrOfferingConfigId);
 	        
 	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream);
@@ -268,7 +268,7 @@ public class WebInstrOfferingConfigTableBuilder extends
     	}
     	
        	if (instructionalOffering != null) {
-	        InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
+	        InstructionalOfferingDAO iDao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = iDao.get(instructionalOffering);
 	        
 			setUserSettings(context.getUser());

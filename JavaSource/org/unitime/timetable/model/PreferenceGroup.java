@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -42,8 +41,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.webutil.RequiredTimeTable;
-
-
 
 
 /**

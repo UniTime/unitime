@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.IdClass;
 import javax.persistence.MappedSuperclass;
+
+import java.util.Date;
 
 import org.unitime.timetable.model.MapTileCache;
 
@@ -38,8 +38,6 @@ public abstract class BaseMapTileCache extends MapTileCacheId {
 
 	private byte[] iData;
 	private Date iTimeStamp;
-
-
 
 	@Column(name = "data", nullable = false)
 	public byte[] getData() { return iData; }

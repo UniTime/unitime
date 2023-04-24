@@ -20,14 +20,12 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 
 import java.util.Calendar;
 import java.util.Date;
@@ -46,7 +44,6 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -183,14 +180,14 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     public static TreeSet<ExamPeriod> findAll(Long sessionId, Long examTypeId) {
     	TreeSet<ExamPeriod> ret = new TreeSet<ExamPeriod>();
     	if (examTypeId==null)
-    		ret.addAll(new ExamPeriodDAO().getSession().
-                createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId").
+    		ret.addAll(ExamPeriodDAO.getInstance().getSession().
+                createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId", ExamPeriod.class).
                 setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
                 setCacheable(true).
                 list());
     	else
-    		ret.addAll(new ExamPeriodDAO().getSession().
-                    createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId").
+    		ret.addAll(ExamPeriodDAO.getInstance().getSession().
+                    createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId", ExamPeriod.class).
                     setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
                     setParameter("typeId", examTypeId, org.hibernate.type.LongType.INSTANCE).
                     setCacheable(true).
@@ -199,9 +196,9 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public static ExamPeriod findByDateStart(Long sessionId, int dateOffset, int startSlot, Long examTypeId) {
-        return (ExamPeriod)new ExamPeriodDAO().getSession().createQuery(
+        return ExamPeriodDAO.getInstance().getSession().createQuery(
                 "select ep from ExamPeriod ep where " +
-                "ep.session.uniqueId = :sessionId and ep.dateOffset = :dateOffset and ep.startSlot = :startSlot and ep.examType.uniqueId = :typeId").
+                "ep.session.uniqueId = :sessionId and ep.dateOffset = :dateOffset and ep.startSlot = :startSlot and ep.examType.uniqueId = :typeId", ExamPeriod.class).
                 setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
                 setParameter("dateOffset", dateOffset, org.hibernate.type.IntegerType.INSTANCE).
                 setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE).
@@ -286,9 +283,9 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
 
     public List<Meeting> findOverlappingClassMeetings(int nrTravelSlots) {
-        return new ExamPeriodDAO().getSession().createQuery(
+        return ExamPeriodDAO.getInstance().getSession().createQuery(
                 "select m from ClassEvent e inner join e.meetings m where " +
-                "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
+                "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot", Meeting.class)
                 .setParameter("startDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                 .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
@@ -301,10 +298,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public List<Meeting> findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
-        return new ExamPeriodDAO().getSession().createQuery(
+        return ExamPeriodDAO.getInstance().getSession().createQuery(
                 "select m from ClassEvent e inner join e.meetings m where " +
                 "m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and " +
-                "e.clazz.uniqueId=:classId")
+                "e.clazz.uniqueId=:classId", Meeting.class)
                 .setParameter("startDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                 .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
@@ -328,68 +325,64 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             students += (students.length()==0?"":",")+studentId;
             nrStudents++;
             if (nrStudents==1000) {
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                        "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                        "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                        "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                        "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
@@ -401,68 +394,64 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         }
 
         if (nrStudents > 0 && students.trim().length() > 0) {
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                    "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                    "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                    "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                    "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
@@ -488,72 +477,68 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             students += (students.length()==0?"":",")+studentId;
             nrStudents++;
             if (nrStudents==1000) {
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                        "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                        "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                        "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
                     if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                     conf.add(xstudentId);
                 }
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                        "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                        "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
                         .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Meeting meeting = (Meeting)o[0];
                     long xstudentId = (Long)o[1];
                     Set<Long> conf = ret.get(meeting);
@@ -565,72 +550,68 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         }
 
         if (nrStudents > 0 && students.trim().length() > 0) {
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
+                    "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
+                    "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
+                    "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
                 if (conf==null) { conf = new HashSet(); ret.put(meeting, conf); }
                 conf.add(xstudentId);
             }
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId!=:examTypeId and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
-                    "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
+                    "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId", Object[].class)
                     .setParameter("meetingDate", getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", getEndSlot()+nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Meeting meeting = (Meeting)o[0];
                 long xstudentId = (Long)o[1];
                 Set<Long> conf = ret.get(meeting);
@@ -667,12 +648,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 		if (session == null) {
 			return(null);
 		}
-    	return((ExamPeriod)(new ExamPeriodDAO()).getSession().createQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
+    	return ExamPeriodDAO.getInstance().getSession().createQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
     			" and ep.examType.uniqueId = :examTypeId" +
     			" and ep.dateOffset = :dateOffset" +
     			" and ep.length = :length" +
     			" and ep.prefLevel.uniqueId = :prefLevelId" +
-    			" and ep.startSlot = :startSlot")
+    			" and ep.startSlot = :startSlot", ExamPeriod.class)
     			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("examTypeId", getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("dateOffset", getDateOffset(), org.hibernate.type.IntegerType.INSTANCE)
@@ -680,7 +661,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     			.setParameter("prefLevelId", getPrefLevel().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("startSlot", getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
     			.setCacheable(true)
-    			.uniqueResult());
+    			.uniqueResult();
     			
     }
     
@@ -724,8 +705,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public static Date[] getBounds(Long sessionId, Date examBeginDate, Long examTypeId) {
-        Object[] bounds = (Object[])new ExamPeriodDAO().getSession().createQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
-        		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType.uniqueId = :examTypeId")
+        Object[] bounds = ExamPeriodDAO.getInstance().getSession().createQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
+        		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType.uniqueId = :examTypeId", Object[].class)
         		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).uniqueResult();
@@ -774,7 +755,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     
 	@Transient
     public boolean isUsed() {
-    	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setParameter("id", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
+    	return (ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id", Number.class).setParameter("id", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
     public int getExamEventStopOffsetForExam(Exam exam) {

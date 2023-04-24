@@ -22,7 +22,6 @@ package org.unitime.timetable.dataexchange;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,8 +61,8 @@ public class StudentAdvisorsImport extends BaseImport {
             }
             
             Map<String, Advisor> id2advisor = new Hashtable<String, Advisor>();
-            for (Advisor advisor: (List<Advisor>)getHibSession().createQuery(
-            		"from Advisor where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (Advisor advisor: getHibSession().createQuery(
+            		"from Advisor where session.uniqueId=:sessionId", Advisor.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	id2advisor.put(advisor.getExternalUniqueId(), advisor);
             }
             

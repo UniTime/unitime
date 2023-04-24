@@ -20,8 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -55,10 +53,10 @@ public class User extends BaseUser {
 /*[CONSTRUCTOR MARKER END]*/
     
     public static User findByExternalId(String externalId) {
-        return (User)
-            new UserDAO().
+        return
+            UserDAO.getInstance().
             getSession().
-            createQuery("select u from User u where u.externalUniqueId=:externalId").
+            createQuery("select u from User u where u.externalUniqueId=:externalId", User.class).
             setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
             setMaxResults(1).
@@ -66,10 +64,10 @@ public class User extends BaseUser {
     }
 
     public static User findByUserName(String userName) {
-        return (User)
-            new UserDAO().
+        return
+            UserDAO.getInstance().
             getSession().
-            createQuery("select u from User u where u.username=:userName").
+            createQuery("select u from User u where u.username=:userName", User.class).
             setParameter("userName", userName, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
             setMaxResults(1).

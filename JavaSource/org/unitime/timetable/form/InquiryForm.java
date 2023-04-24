@@ -119,8 +119,8 @@ public class InquiryForm implements UniTimeForm {
 
 	public List<IdValue> getTypeOptions() {
 		List<IdValue> ret = new ArrayList<IdValue>();
-		for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
-				"from ContactCategory order by reference").setCacheable(true).list()) {
+		for (ContactCategory cc: ContactCategoryDAO.getInstance().getSession().createQuery(
+				"from ContactCategory order by reference", ContactCategory.class).setCacheable(true).list()) {
 			if (cc.getHasRole() && iNoRole) continue;
 			ret.add(new IdValue(cc.getUniqueId(), cc.getLabel()));
 		}
@@ -131,8 +131,8 @@ public class InquiryForm implements UniTimeForm {
 		if (iMessage != null && !iMessage.isEmpty()) {
 			String message = null;
 			boolean eq = false;
-			for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
-					"from ContactCategory order by reference").setCacheable(true).list()) {
+			for (ContactCategory cc: ContactCategoryDAO.getInstance().getSession().createQuery(
+					"from ContactCategory order by reference", ContactCategory.class).setCacheable(true).list()) {
 				if (cc.getMessage() != null && cc.getMessage().replaceAll("\\s+","").equals(iMessage.replaceAll("\\s+",""))) eq = true;
 				if (cc.getUniqueId().equals(iType)) message = cc.getMessage();
 			}

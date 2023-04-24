@@ -613,7 +613,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		this.setEnableAllClassesForStudentSchedulingForSubpart(new ArrayList<Boolean>());
 		this.setDisplayAllClassesInstructorsForSubpart(new ArrayList<Boolean>());
 		this.setReadOnlySubparts(new ArrayList<Boolean>());
-		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
+		SchedulingSubpartDAO ssDao = SchedulingSubpartDAO.getInstance();
 		SchedulingSubpart ss = null;
     	int i = 0;
     	int cnt = 0;

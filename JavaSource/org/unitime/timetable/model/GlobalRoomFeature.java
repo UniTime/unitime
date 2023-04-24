@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-
-
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -29,8 +26,6 @@ import java.util.TreeMap;
 
 import org.unitime.timetable.model.base.BaseGlobalRoomFeature;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-
-
 
 
 /**

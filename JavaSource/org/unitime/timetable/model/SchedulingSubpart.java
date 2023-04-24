@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -517,8 +516,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	/*
     	if (InstructorPref.class.equals(type)) {
     		Set parentPrefs = new HashSet();
-    		for (InstructorCoursePref icp: (List<InstructorCoursePref>)InstructorCoursePrefDAO.getInstance().getSession().createQuery(
-    				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId")
+    		for (InstructorCoursePref icp: InstructorCoursePrefDAO.getInstance().getSession().createQuery(
+    				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId", InstructorCoursePref.class)
     				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     			InstructorPref ip = new InstructorPref();
     			ip.setInstructor((DepartmentalInstructor)icp.getOwner());
@@ -608,7 +607,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	Long nextId = Navigation.getNext(context, Navigation.sSchedulingSubpartLevel, getUniqueId());
     	if (nextId!=null) {
     		if (nextId.longValue()<0) return null;
-    		SchedulingSubpart next = (new SchedulingSubpartDAO()).get(nextId);
+    		SchedulingSubpart next = (SchedulingSubpartDAO.getInstance()).get(nextId);
     		if (next==null) return null;
     		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? next.getControllingDept() : next, right)) return next.getNextSchedulingSubpart(context, cmp, right); 
     		return next;
@@ -636,7 +635,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	Long previousId = Navigation.getPrevious(context, Navigation.sSchedulingSubpartLevel, getUniqueId());
     	if (previousId!=null) {
     		if (previousId.longValue()<0) return null;
-    		SchedulingSubpart previous = (new SchedulingSubpartDAO()).get(previousId);
+    		SchedulingSubpart previous = (SchedulingSubpartDAO.getInstance()).get(previousId);
     		if (previous==null) return null;
     		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? previous.getControllingDept() : previous, right)) return previous.getPreviousSchedulingSubpart(context, cmp, right); 
     		return previous;
@@ -703,8 +702,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	
     	if (save) {
     		if (hibSession == null) {
-        		(new SchedulingSubpartDAO()).getSession().saveOrUpdate(this);
-        		(new SchedulingSubpartDAO()).getSession().flush();
+        		(SchedulingSubpartDAO.getInstance()).getSession().saveOrUpdate(this);
+        		(SchedulingSubpartDAO.getInstance()).getSession().flush();
     		} else {
     			hibSession.saveOrUpdate(this);
     		}
@@ -762,11 +761,11 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return ret;
     }
     
-    public static List findAll(Long sessionId) {
-    	return (new SchedulingSubpartDAO()).
+    public static List<SchedulingSubpart> findAll(Long sessionId) {
+    	return (SchedulingSubpartDAO.getInstance()).
     		getSession().
     		createQuery("select distinct s from SchedulingSubpart s where " +
-    				"s.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId").
+    				"s.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId", SchedulingSubpart.class).
     		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     		list();
     }
@@ -895,9 +894,9 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
     public static SchedulingSubpart findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
-        return (SchedulingSubpart)new SchedulingSubpartDAO().
+        return SchedulingSubpartDAO.getInstance().
             getSession().
-            createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", SchedulingSubpart.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).

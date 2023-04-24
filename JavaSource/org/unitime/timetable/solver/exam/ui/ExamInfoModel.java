@@ -192,7 +192,7 @@ public class ExamInfoModel implements Serializable {
             }
             return message;
         } else {
-            org.hibernate.Session hibSession = new ExamDAO().getSession();
+            org.hibernate.Session hibSession = ExamDAO.getInstance().getSession();
             String message = null;
             for (ExamAssignment assignment : iChange.getConflicts()) {
                 String m = assignment.getExam(hibSession).unassign(iManagerExternalId, hibSession);
@@ -519,7 +519,7 @@ public class ExamInfoModel implements Serializable {
         return iPeriods;
     }
     
-    public TreeSet findAllExamLocations(Long sessionId, Long examTypeId) {
+    public TreeSet<Location> findAllExamLocations(Long sessionId, Long examTypeId) {
 		String a = "", b = "";
 		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
 			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
@@ -544,9 +544,9 @@ public class ExamInfoModel implements Serializable {
             }
             b+=")";
         }    
-        return new TreeSet(
-                (new LocationDAO()).getSession()
-                .createQuery("select r from Location r inner join r.examTypes x "+a+" where r.session.uniqueId = :sessionId and x.uniqueId = :examTypeId "+b)
+        return new TreeSet<Location>(
+                (LocationDAO.getInstance()).getSession()
+                .createQuery("select r from Location r inner join r.examTypes x "+a+" where r.session.uniqueId = :sessionId and x.uniqueId = :examTypeId "+b, Location.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     }
     
@@ -580,7 +580,7 @@ public class ExamInfoModel implements Serializable {
     protected Set<Long> getCanShareRoomExams(Long examId) {
     	return new HashSet<Long>(ExamDAO.getInstance().getSession().createQuery(
     			"select o.prefGroup.uniqueId from DistributionPref p inner join p.distributionObjects x inner join p.distributionObjects o " +
-    			"where p.distributionType.reference = :shareType and x.prefGroup.uniqueId = :examId and x.prefGroup != o.prefGroup")
+    			"where p.distributionType.reference = :shareType and x.prefGroup.uniqueId = :examId and x.prefGroup != o.prefGroup", Long.class)
     			.setParameter("shareType", "EX_SHARE_ROOM", org.hibernate.type.StringType.INSTANCE)
     			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list());
@@ -592,7 +592,7 @@ public class ExamInfoModel implements Serializable {
         boolean reqBldg = false;
         boolean reqGroup = false;
         
-        Exam exam = getExam().getExam(new ExamDAO().getSession());
+        Exam exam = getExam().getExam(ExamDAO.getInstance().getSession());
         Set<Long> canShareRoom = getCanShareRoomExams(getExam().getExamId());
         
         Set groupPrefs = exam.getPreferences(RoomGroupPref.class);

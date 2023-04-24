@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -37,8 +36,6 @@ import java.util.Map;
 
 import org.unitime.timetable.model.base.BaseStudentAccomodation;
 import org.unitime.timetable.model.dao.StudentAccomodationDAO;
-
-
 
 /**
  * @author Tomas Muller
@@ -64,12 +61,12 @@ public class StudentAccomodation extends BaseStudentAccomodation {
 /*[CONSTRUCTOR MARKER END]*/
 
     public static StudentAccomodation findByAbbv(Long sessionId, String abbv) {
-        return (StudentAccomodation)new StudentAccomodationDAO().
+        return StudentAccomodationDAO.getInstance().
             getSession().
             createQuery(
                     "select a from StudentAccomodation a where "+
                     "a.session.uniqueId=:sessionId and "+
-                    "a.abbreviation=:abbv").
+                    "a.abbreviation=:abbv", StudentAccomodation.class).
              setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
              setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
@@ -78,11 +75,11 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     
     public static List<AccommodationCounter> getAccommodations(InstructionalOffering offering) {
     	List<AccommodationCounter> ret = new ArrayList<AccommodationCounter>();
-    	for (Object[] line: (List<Object[]>)StudentAccomodationDAO.getInstance().getSession().createQuery(
+    	for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
     			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
     			"where e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
-    			"order by count(a) desc, a.name")
+    			"order by count(a) desc, a.name", Object[].class)
     			.setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
@@ -92,11 +89,11 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     
     public static List<AccommodationCounter> getAccommodations(Class_ clazz) {
     	List<AccommodationCounter> ret = new ArrayList<AccommodationCounter>();
-    	for (Object[] line: (List<Object[]>)StudentAccomodationDAO.getInstance().getSession().createQuery(
+    	for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
     			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
     			"where e.clazz.uniqueId = :classId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
-    			"order by count(a) desc, a.name")
+    			"order by count(a) desc, a.name", Object[].class)
     			.setParameter("classId", clazz.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
@@ -123,11 +120,11 @@ public class StudentAccomodation extends BaseStudentAccomodation {
             	break;
             }
             if (query == null) continue;
-            for (Object[] line: (List<Object[]>)StudentAccomodationDAO.getInstance().getSession().createQuery(
+            for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
         			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
         			"where " + query + " " +
         			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
-        			"order by count(a) desc, a.name")
+        			"order by count(a) desc, a.name", Object[].class)
         			.setParameter("examOwnerId", owner.getOwnerId(), org.hibernate.type.LongType.INSTANCE)
         			.setCacheable(true).list()) {
             	StudentAccomodation a = (StudentAccomodation)line[0];

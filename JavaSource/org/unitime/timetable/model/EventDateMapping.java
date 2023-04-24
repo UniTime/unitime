@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -82,14 +81,14 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	}
 	
 	public static List<EventDateMapping> findAll(Long sessionId) {
-		return (List<EventDateMapping>)EventDateMappingDAO.getInstance().getSession().createQuery(
-				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset")
+		return EventDateMappingDAO.getInstance().getSession().createQuery(
+				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset", EventDateMapping.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
 	public static boolean hasMapping(Long sessionId) {
-		return ((Number)EventDateMappingDAO.getInstance().getSession().createQuery(
-				"select count(m) from EventDateMapping m where m.session.uniqueId = :sessionId")
+		return (EventDateMappingDAO.getInstance().getSession().createQuery(
+				"select count(m) from EventDateMapping m where m.session.uniqueId = :sessionId", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	

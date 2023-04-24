@@ -109,7 +109,7 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
         form.setScreenName("instructorPref");
         
         // If subpart id is not null - load subpart info
-        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+        DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
         DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
         LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
         

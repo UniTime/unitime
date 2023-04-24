@@ -163,7 +163,7 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 					for (int i=0;i<form.getSubjectAreaIds().length;i++) {
 						if (i>0) names.append(","); 
 						ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
-						names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+						names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 					}
 					BackTracker.markForBack(
 							request, 
@@ -260,7 +260,7 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 					}
 				ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
 				subjIds.append(form.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassAssignmentsSubjectAreas, subjIds);
 			if("search".equals(action)){

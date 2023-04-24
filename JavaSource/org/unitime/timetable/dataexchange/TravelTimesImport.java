@@ -89,8 +89,8 @@ public class TravelTimesImport extends BaseImport {
     
 	private Location findLocation(Long sessionId, Element element){
 		if (element.attributeValue("id") != null) {
-			Room room = (Room)getHibSession().createQuery(
-					"select r from Room r where r.externalUniqueId=:externalId and r.building.session.uniqueId=:sessionId")
+			Room room = getHibSession().createQuery(
+					"select r from Room r where r.externalUniqueId=:externalId and r.building.session.uniqueId=:sessionId", Room.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("externalId", element.attributeValue("id"), org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true)
@@ -99,8 +99,8 @@ public class TravelTimesImport extends BaseImport {
 			if (room != null) return room;
 		} 
 		if (element.attributeValue("building") != null && element.attributeValue("roomNbr") != null) {
-			Room room = (Room)getHibSession().createQuery(
-					"select  r from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session.uniqueId=:sessionId")
+			Room room = getHibSession().createQuery(
+					"select  r from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session.uniqueId=:sessionId", Room.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("building", element.attributeValue("building"), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("roomNbr", element.attributeValue("roomNbr"), org.hibernate.type.StringType.INSTANCE)
@@ -110,8 +110,8 @@ public class TravelTimesImport extends BaseImport {
 			if (room != null) return room;
 		}
 		if (element.attributeValue("name") != null) {
-			Room room = (Room)getHibSession().createQuery(
-					"select  r from Room r where (r.building.abbreviation || ' ' || r.roomNumber) = :name and r.session.uniqueId=:sessionId")
+			Room room = getHibSession().createQuery(
+					"select  r from Room r where (r.building.abbreviation || ' ' || r.roomNumber) = :name and r.session.uniqueId=:sessionId", Room.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("name", element.attributeValue("name"), org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true)
@@ -119,8 +119,8 @@ public class TravelTimesImport extends BaseImport {
 					.uniqueResult();
 			if (room != null) return room;
 			
-			NonUniversityLocation location = (NonUniversityLocation)getHibSession().createQuery(
-					"select  r from NonUniversityLocation r where r.name = :name and r.session.uniqueId=:sessionId")
+			NonUniversityLocation location = getHibSession().createQuery(
+					"select  r from NonUniversityLocation r where r.name = :name and r.session.uniqueId=:sessionId", NonUniversityLocation.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("name", element.attributeValue("name"), org.hibernate.type.StringType.INSTANCE)
 					.setCacheable(true)

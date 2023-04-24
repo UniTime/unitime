@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -34,8 +33,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreference;
-
-
 
 /**
  * @author Tomas Muller

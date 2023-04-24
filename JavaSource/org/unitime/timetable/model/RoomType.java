@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -31,8 +30,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoomType;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.RoomTypeOptionDAO;
-
-
 
 
 /**
@@ -63,7 +60,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 
 	public static TreeSet<RoomType> findAll(Long sessionId) {
 		return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createQuery(
-				"select distinct t from Location l inner join l.roomType t where l.session.uniqueId = :sessionId")
+				"select distinct t from Location l inner join l.roomType t where l.session.uniqueId = :sessionId", RoomType.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 
@@ -99,8 +96,8 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
         	opt.setBreakTime(ApplicationProperty.RoomDefaultBreakTime.intValue(getReference()));
     		return opt;
     	}
-        RoomTypeOption opt = (RoomTypeOption)RoomTypeOptionDAO.getInstance().getSession().createQuery(
-    			"from RoomTypeOption where department.uniqueId = :departmentId and roomType.uniqueId = :roomTypeId")
+        RoomTypeOption opt = RoomTypeOptionDAO.getInstance().getSession().createQuery(
+    			"from RoomTypeOption where department.uniqueId = :departmentId and roomType.uniqueId = :roomTypeId", RoomTypeOption.class)
     			.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true)
@@ -114,61 +111,62 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     
     @Deprecated
     public boolean canScheduleEvents(Long sessionId) {
-    	for (RoomTypeOption option: (List<RoomTypeOption>)RoomTypeDAO.getInstance().getSession().createQuery(
+    	boolean ret = false;
+    	for (RoomTypeOption option: RoomTypeDAO.getInstance().getSession().createQuery(
                 "select distinct o from " + (isRoom() ? "Room" : "NonUniversityLocation") + " r, RoomTypeOption o " +
                 "where r.roomType.uniqueId = :roomTypeId and r.session.uniqueId = :sessionId and "+
-                "r.eventDepartment.allowEvents = true and r.eventDepartment = o.department and r.roomType = o.roomType")
+                "r.eventDepartment.allowEvents = true and r.eventDepartment = o.department and r.roomType = o.roomType", RoomTypeOption.class)
                 .setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-    			.setCacheable(true).uniqueResult()) {
-    		if (option.canScheduleEvents()) return true;
+    			.setCacheable(true).list()) {
+    		if (option.canScheduleEvents()) { ret = true; break; }
     	}
-    	return false;
+    	return ret;
 
     }
     
     public int countRooms() {
-        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
-                "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+        return RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId", Number.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countRooms(Long sessionId) {
-        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
-                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+        return RoomTypeDAO.getInstance().getSession().createQuery(
+                "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId", Number.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countManagableRooms() {
-        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+        return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and "+
-                "r.eventDepartment.allowEvents = true"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                "r.eventDepartment.allowEvents = true", Number.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
     }
     
     public List<Location> getManagableRooms(Long sessionId) {
-        return (List<Location>)RoomTypeDAO.getInstance().getSession().createQuery(
+        return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select r from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
-                "r.eventDepartment.allowEvents = true"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
+                "r.eventDepartment.allowEvents = true", Location.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
 
     public int countManagableRooms(Long sessionId) {
-        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+        return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
-                "r.eventDepartment.allowEvents = true"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                "r.eventDepartment.allowEvents = true", Number.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countManagableRoomsOfBuilding(Long buildingId) {
-        return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
+        return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(r) from Room r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.building.uniqueId=:buildingId and "+
-                "r.eventDepartment.allowEvents = true"
-        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("buildingId", buildingId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                "r.eventDepartment.allowEvents = true", Number.class
+        ).setParameter("roomTypeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("buildingId", buildingId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
     }
 }

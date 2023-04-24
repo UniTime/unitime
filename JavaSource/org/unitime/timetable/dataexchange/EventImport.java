@@ -536,9 +536,8 @@ public class EventImport extends EventRelatedImports {
 	}
 	
 	private Session findDefaultSession(String academicInitiative, Date aDate){
-		return(Session) this.
-		getHibSession().
-		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.eventBeginDate <= :aDate  and s.eventEndDate >= :aDate").
+		return getHibSession().
+		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.eventBeginDate <= :aDate  and s.eventEndDate >= :aDate", Session.class).
 		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aDate", aDate, org.hibernate.type.DateType.INSTANCE).
 		setCacheable(true).
@@ -549,8 +548,8 @@ public class EventImport extends EventRelatedImports {
 		if (buildingAbbv == null || roomNumber == null) return null;
 		Room room = null;
 		if (session != null) {
-			room = (Room) getHibSession().createQuery(
-					"from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session = :sessionId")
+			room = getHibSession().createQuery(
+					"from Room r where r.roomNumber=:roomNbr and r.building.abbreviation = :building and r.session = :sessionId", Room.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("building", buildingAbbv, org.hibernate.type.StringType.INSTANCE)
 					.setParameter("roomNbr", roomNumber, org.hibernate.type.StringType.INSTANCE)
@@ -560,16 +559,15 @@ public class EventImport extends EventRelatedImports {
 					.uniqueResult();
 		}
 		if (room == null) {
-			List rooms =  this.
-			getHibSession().
-			createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building").
+			List<Room> rooms =  getHibSession().
+			createQuery("select distinct r from Room as r where r.roomNumber=:roomNbr and r.building.abbreviation = :building", Room.class).
 			setParameter("building", buildingAbbv, org.hibernate.type.StringType.INSTANCE).
 			setParameter("roomNbr", roomNumber, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
 			list();
 			if (rooms != null && rooms.size() > 0){
-				room = (Room) rooms.iterator().next();
+				room = rooms.iterator().next();
 			}
 		}
 		return(room);
@@ -578,9 +576,8 @@ public class EventImport extends EventRelatedImports {
 	private SponsoringOrganization findSponsoringOrg(String name){
 		SponsoringOrganization sponsoringOrg = null;
 		if (sponsoringOrg == null) {
-			sponsoringOrg = (SponsoringOrganization)this.
-			getHibSession().
-			createQuery("select distinct so from SponsoringOrganization as so where so.name = :name").
+			sponsoringOrg = getHibSession().
+			createQuery("select distinct so from SponsoringOrganization as so where so.name = :name", SponsoringOrganization.class).
 			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
@@ -615,15 +612,15 @@ public class EventImport extends EventRelatedImports {
 			return(null);
 		}
 
-		return((Class_) getHibSession().
-		createQuery("select c from Class_ as c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and c.externalUniqueId = :anExternalId").
+		return getHibSession().
+		createQuery("select c from Class_ as c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and c.externalUniqueId = :anExternalId", Class_.class).
 		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
 		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
-		uniqueResult());
+		uniqueResult();
 
 	}
 	
@@ -632,15 +629,15 @@ public class EventImport extends EventRelatedImports {
 			return(null);
 		}
 
-		return((InstructionalOffering) getHibSession().
-		createQuery("select io from InstructionalOffering as io inner join io.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and io.externalUniqueId = :anExternalId").
+		return getHibSession().
+		createQuery("select io from InstructionalOffering as io inner join io.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and io.externalUniqueId = :anExternalId", InstructionalOffering.class).
 		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
 		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
-		uniqueResult());
+		uniqueResult();
 
 	}
 	
@@ -649,15 +646,15 @@ public class EventImport extends EventRelatedImports {
 			return(null);
 		}
 
-		return((CourseOffering) getHibSession().
-		createQuery("select co from CourseOffering as co inner join co.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and co.externalUniqueId = :anExternalId").
+		return getHibSession().
+		createQuery("select co from CourseOffering as co inner join co.instructionalOffering.session as s where s.academicInitiative = :academicInititive and s.academicYear = :aYear and s.academicTerm = :aTerm and co.externalUniqueId = :anExternalId", CourseOffering.class).
 		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aYear", year, org.hibernate.type.StringType.INSTANCE).
 		setParameter("aTerm", term, org.hibernate.type.StringType.INSTANCE).
 		setParameter("anExternalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
 		setMaxResults(1).
-		uniqueResult());
+		uniqueResult();
 
 	}
 

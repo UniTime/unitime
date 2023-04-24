@@ -264,7 +264,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
 	public DepartmentStatusType saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         DepartmentStatusType s = null;
 		if (getUniqueId().intValue()>=0)
-			s = (new DepartmentStatusTypeDAO()).get(getUniqueId());
+			s = (DepartmentStatusTypeDAO.getInstance()).get(getUniqueId());
 		if (s==null) 
             s = new DepartmentStatusType();
         s.setReference(getReference());
@@ -279,7 +279,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
 	
 	public void delete(org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().intValue()<0) return;
-        DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(getUniqueId());
+        DepartmentStatusType s = (DepartmentStatusTypeDAO.getInstance()).get(getUniqueId());
         for (Session session: hibSession.createQuery(
                 "select s from Session s where s.statusType.uniqueId=:id", Session.class).
                 setParameter("id", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {

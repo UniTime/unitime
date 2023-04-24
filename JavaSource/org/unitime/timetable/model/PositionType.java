@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -28,11 +27,8 @@ import javax.persistence.Transient;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BasePositionType;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
-
-
 
 
 /**
@@ -97,7 +93,7 @@ public class PositionType extends BasePositionType implements Comparable{
 	 */
 	public static TreeSet findAll() {
 		return new TreeSet(
-				(new PositionTypeDAO().findAll()));
+				(PositionTypeDAO.getInstance().findAll()));
 	}
 	
 	/**
@@ -120,6 +116,8 @@ public class PositionType extends BasePositionType implements Comparable{
 	 */
 	@Transient
     public static synchronized List<PositionType> getPositionTypeList() {
-        return PositionTypeDAO.getInstance().findAll(Order.asc("sortOrder"));
+		return PositionTypeDAO.getInstance().getSession().createQuery(
+				"from PositionType order by sortOrder", PositionType.class)
+				.setCacheable(true).list();
     }
 }

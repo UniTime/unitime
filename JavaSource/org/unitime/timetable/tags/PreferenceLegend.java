@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -82,8 +81,8 @@ public class PreferenceLegend extends TagSupport {
         
         Collection prefLevels = (Collection)pageContext.getRequest().getAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME);
         if (prefLevels==null) {
-        	PreferenceLevelDAO pdao = new PreferenceLevelDAO();
-        	prefLevels = pdao.findAll(Order.asc("prefId"));
+        	prefLevels = PreferenceLevelDAO.getInstance().getSession().createQuery(
+        			"from PreferenceLevel order by prefId", PreferenceLevel.class).setCacheable(true).list();
         }
         String imgFolder = ((HttpServletRequest)pageContext.getRequest()).getContextPath()+"/images/";
         if (isPrefs()) {

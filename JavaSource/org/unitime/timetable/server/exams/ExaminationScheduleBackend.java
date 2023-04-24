@@ -82,28 +82,28 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		List<Object[]> exams = new ArrayList<Object[]>();
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.courseOffering co " +
-				"where o.ownerType = :type and o.ownerId = co.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId")
+				"where o.ownerType = :type and o.ownerId = co.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
 				.setParameter("type", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("examTypeId", exam.getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.courseOffering.instructionalOffering io " +
-				"where o.ownerType = :type and o.ownerId = io.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId")
+				"where o.ownerType = :type and o.ownerId = io.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
 				.setParameter("type", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("examTypeId", exam.getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.clazz.schedulingSubpart.instrOfferingConfig cfg " +
-				"where o.ownerType = :type and o.ownerId = cfg.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId")
+				"where o.ownerType = :type and o.ownerId = cfg.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
 				.setParameter("type", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("examTypeId", exam.getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.clazz c " +
-				"where o.ownerType = :type and o.ownerId = c.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId")
+				"where o.ownerType = :type and o.ownerId = c.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
 				.setParameter("type", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("examTypeId", exam.getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
@@ -203,7 +203,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		        			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
 		        			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		        			ExaminationEnrollmentsBackend.where(t2, 2) + 
-		        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod")
+		        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod", Event.class)
 		        			.setParameter("examId", x.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 		        			.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 		        			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
@@ -220,7 +220,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		            			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
 		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
-		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
+		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1", Event.class)
 		            			.setParameter("examId", x.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 		        			.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 		            			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
@@ -238,7 +238,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		            			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
 		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
-		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.exam.examType.uniqueId != :examTypeId and m1.approvalStatus = 1")
+		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.exam.examType.uniqueId != :examTypeId and m1.approvalStatus = 1", Event.class)
 		            			.setParameter("examId", x.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 		        			.setParameter("studentId", request.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 		            			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)

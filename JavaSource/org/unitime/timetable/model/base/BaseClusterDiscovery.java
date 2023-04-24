@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.IdClass;
 import javax.persistence.MappedSuperclass;
+
+import java.util.Date;
 
 import org.unitime.timetable.model.ClusterDiscovery;
 
@@ -38,8 +38,6 @@ public abstract class BaseClusterDiscovery extends ClusterDiscoveryId {
 
 	private byte[] iPingData;
 	private Date iTimeStamp;
-
-
 
 	@Column(name = "ping_data", nullable = true, length = 5000)
 	public byte[] getPingData() { return iPingData; }

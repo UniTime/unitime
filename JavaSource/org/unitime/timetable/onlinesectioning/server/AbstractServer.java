@@ -676,13 +676,13 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
-				for (SolverParameterDef def: (List<SolverParameterDef>)hibSession.createQuery(
-						"from SolverParameterDef x where x.group.type = :type and x.default is not null")
+				for (SolverParameterDef def: hibSession.createQuery(
+						"from SolverParameterDef x where x.group.type = :type and x.default is not null", SolverParameterDef.class)
 						.setParameter("type", SolverParameterGroup.SolverType.STUDENT.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list()) {
 					setProperty(def.getName(), def.getDefault());
 				}
-				SolverPredefinedSetting settings = (SolverPredefinedSetting)hibSession.createQuery(
-						"from SolverPredefinedSetting x where x.name = :reference")
+				SolverPredefinedSetting settings = hibSession.createQuery(
+						"from SolverPredefinedSetting x where x.name = :reference", SolverPredefinedSetting.class)
 						.setParameter("reference", "StudentSct.Online", org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 				if (settings != null) {
 					for (SolverParameter param: settings.getParameters()) {

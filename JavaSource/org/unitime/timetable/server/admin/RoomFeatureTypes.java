@@ -69,8 +69,8 @@ public class RoomFeatureTypes implements AdminTable {
 			r.setField(2, ftype.isShowInEventManagement() ? "true" : "false");
 			r.setField(3, ftype.isShowInInstructorSurvey() ? "true" : "false");
 			int used =
-					((Number)hibSession.createQuery(
-							"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId")
+					(hibSession.createQuery(
+							"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId", Number.class)
 							.setParameter("uniqueId", ftype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}

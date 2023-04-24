@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -32,8 +31,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseSponsoringOrganization;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
-
-
 
 /**
  * @author Zuzana Mullerova, Tomas Muller
@@ -67,7 +64,7 @@ public class SponsoringOrganization extends BaseSponsoringOrganization implement
 	}
 
     public static List<SponsoringOrganization> findAll() {
-        return new SponsoringOrganizationDAO().getSession().createQuery(
+        return SponsoringOrganizationDAO.getInstance().getSession().createQuery(
                 "select so from SponsoringOrganization so order by so.name"
                 ).setCacheable(true).list();
     }

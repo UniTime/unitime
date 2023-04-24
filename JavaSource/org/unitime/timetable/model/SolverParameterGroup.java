@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -29,16 +28,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseSolverParameterGroup;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
-
-
 
 
 /**
@@ -99,12 +94,13 @@ public class SolverParameterGroup extends BaseSolverParameterGroup {
 	 */
 	@Transient
 	public static String[] getGroupNames() {
-		List groups = (new SolverParameterGroupDAO()).findAll(Order.asc("order"));
+		List<SolverParameterGroup> groups = SolverParameterGroupDAO.getInstance().getSession().createQuery(
+				"from SolverParameterGroup order by order", SolverParameterGroup.class)
+				.setCacheable(true).list();
 		String[] ret = new String[groups.size()];
 		int idx = 0;
 		
-		for (Iterator i=groups.iterator();i.hasNext();) {
-			SolverParameterGroup group = (SolverParameterGroup)i.next();
+		for (SolverParameterGroup group: groups) {
 			ret[idx++] = group.getName();
 		}
 			    

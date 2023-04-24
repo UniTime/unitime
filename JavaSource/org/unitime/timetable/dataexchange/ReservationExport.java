@@ -68,8 +68,8 @@ public class ReservationExport extends BaseExport {
 	        root.addAttribute("dateFormat", sDateFormat);
 	        root.addAttribute("created", new Date().toString());
 
-	        List<Reservation> reservations = (List<Reservation>)getHibSession().createQuery(
-    			"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId")
+	        List<Reservation> reservations = getHibSession().createQuery(
+    			"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId", Reservation.class)
     			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 	        Collections.sort(reservations, new Comparator<Reservation>() {
 				@Override
@@ -84,8 +84,8 @@ public class ReservationExport extends BaseExport {
 	        
 	        SimpleDateFormat df = new SimpleDateFormat(sDateFormat, Locale.US);
 	        
-	        for (Reservation reservation: (List<Reservation>)getHibSession().createQuery(
-	        		"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId")
+	        for (Reservation reservation: getHibSession().createQuery(
+	        		"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId", Reservation.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Element reservationEl = root.addElement("reservation");
 	        	CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();

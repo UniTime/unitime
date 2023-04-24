@@ -93,8 +93,8 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			return ((StudentSolverProxy)server).getReservations(iOfferingId);
 		} else if (server instanceof DatabaseServer) {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
-			for (Reservation reservation: (List<Reservation>)helper.getHibSession().createQuery(
-					"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId")
+			for (Reservation reservation: helper.getHibSession().createQuery(
+					"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId", Reservation.class)
 					.setParameter("offeringId", iOfferingId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				ReservationInterface r = convert(reservation, helper);
 				if (r != null) results.add(r);
@@ -331,35 +331,35 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 		
 		List<CourseRequest> requests = null;
 		if (reservation instanceof CourseReservation) {
-			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
+			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
-					"cr.courseOffering = :courseId"
+					"cr.courseOffering = :courseId", CourseRequest.class
 					).setParameter("courseId", ((CourseReservation) reservation).getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof LearningCommunityReservation) {
-			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
+			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering = :courseId and s.uniqueId in " +
-					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)"
+					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)", CourseRequest.class
 					).setParameter("courseId", ((LearningCommunityReservation) reservation).getCourse().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof IndividualReservation) {
-			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
+			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering = :offeringId and s.uniqueId in " +
-					"(select s.uniqueId from IndividualReservation r inner join r.students s where r.uniqueId = :reservationId)"
+					"(select s.uniqueId from IndividualReservation r inner join r.students s where r.uniqueId = :reservationId)", CourseRequest.class
 					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else if (reservation instanceof StudentGroupReservation) {
-			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
+			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering = :offeringId and s.uniqueId in " +
-					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)"
+					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)", CourseRequest.class
 					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("reservationId", reservation.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else {
-			requests = (List<CourseRequest>)helper.getHibSession().createQuery(
+			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
-					"cr.courseOffering.instructionalOffering = :offeringId"
+					"cr.courseOffering.instructionalOffering = :offeringId", CourseRequest.class
 					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 		

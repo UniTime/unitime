@@ -20,18 +20,14 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import java.util.List;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseOfferingConsentType;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
-
-
 
 
 /**
@@ -66,13 +62,15 @@ public class OfferingConsentType extends BaseOfferingConsentType {
 	 */
 	@Transient
     public static List<OfferingConsentType> getConsentTypeList() {
-    	return OfferingConsentTypeDAO.getInstance().findAll(Order.asc("label"));
+		return OfferingConsentTypeDAO.getInstance().getSession().createQuery(
+				"from OfferingConsentType order by label", OfferingConsentType.class)
+				.setCacheable(true).list();
     }
     
 	public static OfferingConsentType getOfferingConsentTypeForReference(String referenceString) {
 		if (referenceString == null || referenceString.isEmpty()) return null;
-		return (OfferingConsentType)OfferingConsentTypeDAO.getInstance().getSession().createQuery(
-				"from OfferingConsentType where reference = :reference")
+		return OfferingConsentTypeDAO.getInstance().getSession().createQuery(
+				"from OfferingConsentType where reference = :reference", OfferingConsentType.class)
 				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	

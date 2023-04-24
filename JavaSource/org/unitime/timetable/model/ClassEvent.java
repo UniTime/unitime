@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
@@ -28,14 +27,11 @@ import javax.persistence.Transient;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseClassEvent;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.RelatedCourseInfoDAO;
-
-
 
 /**
  * @author Tomas Muller
@@ -69,8 +65,8 @@ public class ClassEvent extends BaseClassEvent {
     
 	@Transient
     public Collection<Long> getStudentIds() {
-        return new RelatedCourseInfoDAO().getSession().createQuery(
-                "select distinct e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId")
+        return RelatedCourseInfoDAO.getInstance().getSession().createQuery(
+                "select distinct e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId", Long.class)
                 .setParameter("classId", getClazz().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true)
                 .list();
@@ -96,10 +92,10 @@ public class ClassEvent extends BaseClassEvent {
 	@Override
 	@Transient
 	public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
-		return (List<StudentClassEnrollment>)
+		return
 			ClassEventDAO.getInstance().getSession().createQuery(
 					"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
-        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
 				.setParameter("classId", getClazz().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.list();
 	}

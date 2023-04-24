@@ -21,7 +21,6 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Element;
@@ -53,8 +52,8 @@ public class AcademicAreaImport extends BaseImport {
             
             Map<String, AcademicArea> id2area = new Hashtable<String, AcademicArea>();
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
-            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-            		"from AcademicArea where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (AcademicArea area: getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (area.getExternalUniqueId() != null)
             		id2area.put(area.getExternalUniqueId(), area);
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);

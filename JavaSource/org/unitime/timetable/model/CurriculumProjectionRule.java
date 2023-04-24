@@ -20,22 +20,17 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
-
 import java.util.Hashtable;
 import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCurriculumProjectionRule;
 import org.unitime.timetable.model.dao.CurriculumProjectionRuleDAO;
-
-
 
 /**
  * @author Tomas Muller
@@ -62,22 +57,22 @@ public class CurriculumProjectionRule extends BaseCurriculumProjectionRule {
 
 	public static List<CurriculumProjectionRule> findAll(Long sessionId) {
 	    return CurriculumProjectionRuleDAO.getInstance().getSession()
-	        .createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId")
+	        .createQuery("select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId", CurriculumProjectionRule.class)
 	        .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 	        .setCacheable(true).list();
 	}
 
     public static List<CurriculumProjectionRule> findByAcademicArea(Long acadAreaId) {
         return CurriculumProjectionRuleDAO.getInstance().getSession()
-            .createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
+            .createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
             .setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
     }
     
     public static Hashtable<String, Float> getProjections(Long acadAreaId, Long acadClasfId) {
     	Hashtable<String, Float> ret = new Hashtable<String, Float>();
-    	for (CurriculumProjectionRule r: (List<CurriculumProjectionRule>)CurriculumProjectionRuleDAO.getInstance().getSession()
-    			.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId and r.academicClassification.uniqueId=:acadClasfId")
+    	for (CurriculumProjectionRule r: CurriculumProjectionRuleDAO.getInstance().getSession()
+    			.createQuery("select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId and r.academicClassification.uniqueId=:acadClasfId", CurriculumProjectionRule.class)
     			.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE)
     			.setParameter("acadClasfId", acadClasfId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list()) {

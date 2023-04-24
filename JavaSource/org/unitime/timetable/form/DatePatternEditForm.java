@@ -179,7 +179,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		
 		HashSet oldParents = new HashSet(dp.getParents());
 		for (Long parentId: iParentIds) {
-			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
+			DatePattern d = (DatePatternDAO.getInstance()).get(parentId,hibSession);
 			if (d==null) continue;
 			if (oldParents.remove(d)) {
 				//not changed -> do nothing
@@ -196,7 +196,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		
 		HashSet oldDepts = new HashSet(dp.getDepartments());
 		for (Long departmentId: iDepartmentIds) {
-			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+			Department d = (DepartmentDAO.getInstance()).get(departmentId,hibSession);
 			if (d==null) continue;
 			if (oldDepts.remove(d)) {
 				//not changed -> do nothing
@@ -217,7 +217,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		if (dp.isPatternSet()) {
 			List<DatePattern> oldChildren = dp.findChildren(hibSession);
 			for (Long childId: iChildrenIds) {
-				DatePattern d = (new DatePatternDAO()).get(childId,hibSession);
+				DatePattern d = (DatePatternDAO.getInstance()).get(childId,hibSession);
 				if (d==null) continue;
 				if (oldChildren.remove(d)) {
 					//not changed -> do nothing
@@ -259,14 +259,14 @@ public class DatePatternEditForm implements UniTimeForm {
 		
 		HashSet newParents = new HashSet();
 		for (Long parentId: iParentIds) {
-			DatePattern d = (new DatePatternDAO()).get(parentId,hibSession);
+			DatePattern d = (DatePatternDAO.getInstance()).get(parentId,hibSession);
 			if (d==null) continue;
 			newParents.add(d);
 		}
 		dp.setParents(newParents);
 		HashSet newDepts = new HashSet();
 		for (Long departmentId: iDepartmentIds) {
-			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+			Department d = (DepartmentDAO.getInstance()).get(departmentId,hibSession);
 			if (d==null) continue;
 			newDepts.add(d);
 		}
@@ -280,7 +280,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		setUniqueId(dp.getUniqueId());
 		if (dp.isPatternSet()) {
 			for (Long childId: iChildrenIds) {
-				DatePattern d = (new DatePatternDAO()).get(childId,hibSession);
+				DatePattern d = (DatePatternDAO.getInstance()).get(childId,hibSession);
 				if (d==null) continue;
 				d.getParents().add(dp);
 				hibSession.saveOrUpdate(d);
@@ -292,7 +292,7 @@ public class DatePatternEditForm implements UniTimeForm {
 	public DatePattern saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
 		DatePattern dp = null;
 		if (getUniqueId().longValue()>=0)
-			dp = (new DatePatternDAO()).get(getUniqueId());
+			dp = (DatePatternDAO.getInstance()).get(getUniqueId());
 		if (dp==null)
 			dp = create(request, hibSession);
 		else 
@@ -303,7 +303,7 @@ public class DatePatternEditForm implements UniTimeForm {
 	public void delete(org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().longValue()<0) return;
 		if (getIsUsed()) return;
-		DatePattern dp = (new DatePatternDAO()).get(getUniqueId(), hibSession);
+		DatePattern dp = (DatePatternDAO.getInstance()).get(getUniqueId(), hibSession);
 		for (Iterator i=dp.getDepartments().iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getDatePatterns().remove(dp);
@@ -380,7 +380,7 @@ public class DatePatternEditForm implements UniTimeForm {
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
 		DatePattern dp = null;
 		if (getUniqueId()!=null) {
-			dp = (new DatePatternDAO()).get(getUniqueId());
+			dp = (DatePatternDAO.getInstance()).get(getUniqueId());
 			if (dp!=null) dp = (DatePattern)dp.clone();
 		}
 		if (dp==null) {

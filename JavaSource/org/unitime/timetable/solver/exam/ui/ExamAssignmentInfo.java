@@ -1189,7 +1189,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Event getOtherEvent() {
             if (iOtherEvent!=null) return iOtherEvent;
             if (iOtherEventId==null) return null;
-            iOtherEvent = new EventDAO().get(iOtherEventId);
+            iOtherEvent = EventDAO.getInstance().get(iOtherEventId);
             return iOtherEvent;
         }
         public String getOtherEventName() {
@@ -1213,7 +1213,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Class_ getOtherClass() {
             if (!isOtherClass()) return null;
             if (!(iOtherEvent instanceof ClassEvent)) 
-                iOtherEvent = new ClassEventDAO().get(getOtherEventId()); //proxy
+                iOtherEvent = ClassEventDAO.getInstance().get(getOtherEventId()); //proxy
             return ((ClassEvent)iOtherEvent).getClazz();
         }
         public int compareTo(DirectConflict c) {
@@ -1654,10 +1654,10 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             
             if (ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(examOwner.getExam().getExamType().getReference())) {
                 int nrTravelSlots = ApplicationProperty.ExaminationTravelTimeClass.intValue();
-            	for (Iterator i = new ExamDAO().getSession().createQuery(
+            	for (Iterator<Meeting> i = ExamDAO.getInstance().getSession().createQuery(
                 		"select m from ClassEvent e inner join e.meetings m, StudentClassEnrollment en "+
                 		"where en.student.uniqueId=:studentId and e.clazz=en.clazz and " +
-                		"m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot")
+                		"m.meetingDate=:startDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot", Meeting.class)
                 		.setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 		.setParameter("startDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
                 		.setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
@@ -1665,14 +1665,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 		.setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
-            	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
+            	for (Iterator<Meeting> i=ExamDAO.getInstance().getSession().createQuery(
                         "select m from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId=:studentId and ("+
                         "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Meeting.class)
                         .setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                         .setParameter("meetingDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)
@@ -1684,14 +1684,14 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                         .setCacheable(true).list().iterator();i.hasNext();) {
             		iDirects.add(new DirectConflict((Meeting)i.next(), studentIds));
             	}
-            	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
+            	for (Iterator<Meeting> i=ExamDAO.getInstance().getSession().createQuery(
                         "select m from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where e.exam.examType.uniqueId != :examTypeId and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId=:studentId and ("+
                         "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Meeting.class)
                         .setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                         .setParameter("meetingDate", getPeriod().getStartDate(), org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", getPeriod().getStartSlot()-nrTravelSlots, org.hibernate.type.IntegerType.INSTANCE)

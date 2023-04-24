@@ -22,7 +22,6 @@ package org.unitime.timetable.onlinesectioning.updates;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.unitime.localization.impl.Localization;
@@ -98,10 +97,10 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
 		Map<Long, Double> expectations = server.getExpectations(offeringId).toMap();
 		if (expectations == null || expectations.isEmpty()) return;
 		
-    	for (SectioningInfo info: (List<SectioningInfo>)helper.getHibSession().createQuery(
+    	for (SectioningInfo info: helper.getHibSession().createQuery(
     			"select i from SectioningInfo i " +
     			"left join fetch i.clazz as c " +
-    			"where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
+    			"where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId", SectioningInfo.class).
     			setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).
     			setCacheable(true).list()) {
     		Double expectation = expectations.remove(info.getClazz().getUniqueId());
@@ -122,8 +121,8 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
     	}
     	
     	if (!expectations.isEmpty())
-        	for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
-        			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
+        	for (Class_ clazz: helper.getHibSession().createQuery(
+        			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId", Class_.class).
         			setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).
         			setCacheable(true).list()) {
         		Double expectation = expectations.remove(clazz.getUniqueId());

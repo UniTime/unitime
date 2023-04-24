@@ -66,17 +66,17 @@ public class UniTimeUserContext extends AbstractUserContext {
 		iLogin = login; iPassword = password; iId = userId; iName = name;
 		org.hibernate.Session hibSession = TimetableManagerDAO.getInstance().createNewSession();
 		try {
-			for (UserData data: (List<UserData>)hibSession.createQuery(
-					"from UserData where externalUniqueId = :id")
+			for (UserData data: hibSession.createQuery(
+					"from UserData where externalUniqueId = :id", UserData.class)
 					.setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
 				getProperties().put(data.getName(), data.getValue());
 			}
-			for (Settings setting: (List<Settings>)hibSession.createQuery("from Settings").list()) {
+			for (Settings setting: hibSession.createQuery("from Settings", Settings.class).list()) {
 				if (setting.getDefaultValue() != null)
 					getProperties().put(setting.getKey(), setting.getDefaultValue());
 			}
-			for (ManagerSettings setting: (List<ManagerSettings>)hibSession.createQuery(
-					"from ManagerSettings where manager.externalUniqueId = :id").setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
+			for (ManagerSettings setting: hibSession.createQuery(
+					"from ManagerSettings where manager.externalUniqueId = :id", ManagerSettings.class).setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
 				if (setting.getValue() != null)
 					getProperties().put(setting.getKey().getKey(), setting.getValue());
 			}
@@ -86,8 +86,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (lastSessionId != null) sessionId = Long.valueOf(lastSessionId);
 			}
 			
-			TimetableManager manager = (TimetableManager)hibSession.createQuery(
-					"from TimetableManager where externalUniqueId = :id")
+			TimetableManager manager = hibSession.createQuery(
+					"from TimetableManager where externalUniqueId = :id", TimetableManager.class)
 					.setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			if (manager != null) {
 				iName = manager.getName();
@@ -143,8 +143,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 			
 			TreeSet<Session> sessions = new TreeSet<Session>();
 			
-			for (Advisor advisor: (List<Advisor>)hibSession.createQuery(
-					"from Advisor where externalUniqueId = :id")
+			for (Advisor advisor: hibSession.createQuery(
+					"from Advisor where externalUniqueId = :id", Advisor.class)
 					.setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
 				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
 				if (ApplicationProperty.AuthorizationAdvisorMustHaveStudents.isTrue() && advisor.getStudents().isEmpty()) continue;
@@ -158,8 +158,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 
 			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR, hibSession);
 			if (instructorRole != null && instructorRole.isEnabled()) {
-				for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
-						"from DepartmentalInstructor where externalUniqueId = :id")
+				for (DepartmentalInstructor instructor: hibSession.createQuery(
+						"from DepartmentalInstructor where externalUniqueId = :id", DepartmentalInstructor.class)
 						.setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
 					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = instructor.getEmail();
@@ -188,8 +188,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 
 			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT, hibSession);
 			if (studentRole != null && studentRole.isEnabled()) {
-				for (Student student: (List<Student>)hibSession.createQuery(
-						"from Student where externalUniqueId = :id")
+				for (Student student: hibSession.createQuery(
+						"from Student where externalUniqueId = :id", Student.class)
 						.setParameter("id", userId, org.hibernate.type.StringType.INSTANCE).list()) {
 					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = student.getEmail();
@@ -395,12 +395,12 @@ public class UniTimeUserContext extends AbstractUserContext {
 		if (getExternalUserId() == null || getExternalUserId().isEmpty()) return;
 		org.hibernate.Session hibSession = UserDataDAO.getInstance().createNewSession();
 		try {
-			Settings settings = (Settings)hibSession.createQuery("from Settings where key = :key")
+			Settings settings = hibSession.createQuery("from Settings where key = :key", Settings.class)
 					.setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			
 			if (settings != null && getCurrentAuthority() != null && !getCurrentAuthority().getQualifiers("TimetableManager").isEmpty()) {
-				ManagerSettings managerData = (ManagerSettings)hibSession.createQuery(
-						"from ManagerSettings where key.key = :key and manager.externalUniqueId = :id")
+				ManagerSettings managerData = hibSession.createQuery(
+						"from ManagerSettings where key.key = :key and manager.externalUniqueId = :id", ManagerSettings.class)
 						.setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setParameter("id", getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 				
 				if (value == null && managerData == null) return;

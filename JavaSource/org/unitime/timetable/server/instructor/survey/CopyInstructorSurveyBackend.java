@@ -22,7 +22,6 @@ package org.unitime.timetable.server.instructor.survey;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
@@ -153,12 +152,12 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 					}
 				}
 				
-				for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+				for (CourseOffering co: CourseOfferingDAO.getInstance().getSession().createQuery(
 						"select distinct co from CourseOffering co, " +
 						"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 						"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
 						"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
-						"and ci.lead = true and c.schedulingSubpart.itype.organized = true"
+						"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 						)
 						.setParameter("id", survey.getExternalId(), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)

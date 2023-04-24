@@ -101,12 +101,12 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 		and cu.course.subjectAreaAbbv='BAND'
 		and cu.course.instructionalOffering.session.uniqueId=231379
 		*/
-		return (String)CurriculumCourseDAO.getInstance().createNewSession().createQuery(
+		return CurriculumCourseDAO.getInstance().createNewSession().createQuery(
 				"select min(cu.classification.academicClassification.code) " +
 				"from CurriculumCourse as cu " +
 				"where cu.course.subjectAreaAbbv = :subjArea " +
 				"and cu.course.courseNbr = :crsNbr " +
-				"and cu.course.instructionalOffering.session.uniqueId = :acadSessionId")
+				"and cu.course.instructionalOffering.session.uniqueId = :acadSessionId", String.class)
 				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("subjArea", subject, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("acadSessionId", sessionId, org.hibernate.type.LongType.INSTANCE)

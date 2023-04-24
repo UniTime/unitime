@@ -22,7 +22,6 @@ package org.unitime.timetable.tags;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
@@ -167,8 +166,8 @@ public class LastChange extends BodyTagSupport {
             offeringIds.add(o.getUniqueId());
         }
         
-        curriculumIds.addAll((List<Long>)InstructionalOfferingDAO.getInstance().getSession().createQuery(
-				"select c.classification.curriculum.uniqueId from CurriculumCourse c where c.course.instructionalOffering.uniqueId = :offeringId")
+        curriculumIds.addAll(InstructionalOfferingDAO.getInstance().getSession().createQuery(
+				"select c.classification.curriculum.uniqueId from CurriculumCourse c where c.course.instructionalOffering.uniqueId = :offeringId", Long.class)
 				.setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 
         nrChanges += printLastChangeTableRow(webTable, 
@@ -337,13 +336,13 @@ public class LastChange extends BodyTagSupport {
                 ChangeLog.Source.valueOf(getSource().trim());
             
             if (source==null) {
-                if (InstructionalOffering.class.getName().equals(objectType) && printLastChange(new InstructionalOfferingDAO().get(objectId))) 
+                if (InstructionalOffering.class.getName().equals(objectType) && printLastChange(InstructionalOfferingDAO.getInstance().get(objectId))) 
                     return EVAL_PAGE;
                 
-                if (DepartmentalInstructor.class.getName().equals(objectType) && printLastChange(new DepartmentalInstructorDAO().get(objectId)))
+                if (DepartmentalInstructor.class.getName().equals(objectType) && printLastChange(DepartmentalInstructorDAO.getInstance().get(objectId)))
                     return EVAL_PAGE;
 
-                if (Location.class.getName().equals(objectType) && printLastChange(new LocationDAO().get(objectId)))
+                if (Location.class.getName().equals(objectType) && printLastChange(LocationDAO.getInstance().get(objectId)))
                     return EVAL_PAGE;
             }
 

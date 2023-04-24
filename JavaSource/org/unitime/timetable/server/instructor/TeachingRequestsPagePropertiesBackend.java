@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -119,8 +117,8 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 				ret.setLastDepartmentId(Long.valueOf(deptId));
 			} catch (NumberFormatException e) {}
 		}
-		for (InstructorAttributeType type: (List<InstructorAttributeType>)InstructorAttributeTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttributeType order by label").setCacheable(true).list()) {
+		for (InstructorAttributeType type: InstructorAttributeTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttributeType order by label", InstructorAttributeType.class).setCacheable(true).list()) {
 			AttributeTypeInterface t = new AttributeTypeInterface();
 			t.setId(type.getUniqueId());
 			t.setAbbreviation(type.getReference());

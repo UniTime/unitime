@@ -304,7 +304,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         if(configId==null)
             throw new Exception ("Config Id need for operation. ");
 
-        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+        InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
         InstrOfferingConfig ioc = iocDao.get(configId);
 
         if(ioc==null)
@@ -342,7 +342,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             throw new Exception ("Course Offering Id need for operation. ");
 
         // Load Course Offering
-        CourseOfferingDAO coDao = new CourseOfferingDAO();
+        CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
         CourseOffering co = coDao.get(courseOfferingId);
 
         if(co==null)
@@ -425,7 +425,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             InstructionalOfferingConfigEditForm form) throws Exception {
 
         // Create object
-        ItypeDescDAO itypeDao = new ItypeDescDAO();
+        ItypeDescDAO itypeDao = ItypeDescDAO.getInstance();
         ItypeDesc itype = itypeDao.get(Integer.valueOf(form.getItype()));
         if(itype==null)
             throw new Exception ("Instructional Type not found");
@@ -718,7 +718,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 
         try {
 
-	        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+	        InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
 	        hibSession = iocDao.getSession();
 	        tx = hibSession.beginTransaction();
 
@@ -805,8 +805,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 
         try {
 
-            InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
-            InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+            InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
+            InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
             hibSession = iocDao.getSession();
             tx = hibSession.beginTransaction();
 
@@ -1300,7 +1300,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 
 	                    //Weaken time preferences if the new manager is external
 	                    if (a instanceof TimePref) {
-                            Department mgDept = new DepartmentDAO().get(Long.valueOf(mdId));
+                            Department mgDept = DepartmentDAO.getInstance().get(Long.valueOf(mdId));
                             if (mgDept.isExternalManager().booleanValue()) {
                                 //weaken only when both controling and managing departments do not allow required time
                                 if (subpart.getControllingDept().isAllowReqTime()==null || !subpart.getControllingDept().isAllowReqTime().booleanValue()) {
@@ -1352,7 +1352,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		                    Debug.debug("Class Managing department changed ...");
 
                             // Update Managing Department
-                            c.setManagingDept(new DepartmentDAO().get(Long.valueOf(mdId)), sessionContext.getUser(), hibSession);
+                            c.setManagingDept(DepartmentDAO.getInstance().get(Long.valueOf(mdId)), sessionContext.getUser(), hibSession);
 
 		                    // Remove from distribution prefs
 		                    c.deleteAllDistributionPreferences(hibSession);
@@ -1662,7 +1662,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                     c.setEnabledForStudentScheduling(Boolean.valueOf(true));
         	        c.setPreferences(new HashSet());
         	        if (md>0)
-        	            c.setManagingDept(new DepartmentDAO().get(Long.valueOf(md)), sessionContext.getUser(), hibSession);
+        	            c.setManagingDept(DepartmentDAO.getInstance().get(Long.valueOf(md)), sessionContext.getUser(), hibSession);
         	        c.setCancelled(false);
         	        subpart.addToclasses(c);
                 }

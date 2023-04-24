@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
-import org.hibernate.criterion.Order;
-import org.hibernate.type.LongType;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -37,7 +35,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OverrideType;
-import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -127,13 +124,14 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				courses = listCourses(server, helper);
 			}
 			if (courses != null && !courses.isEmpty() && courses.size() <= 1000) {
-				List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(helper.getHibSession(), Order.asc("label"));
+				List<OverrideType> overrides = helper.getHibSession().createQuery(
+						"from OverrideType oder by label").setCacheable(true).list();
 				if (overrides != null && !overrides.isEmpty()) {
 					Map<Long, CourseAssignment> table = new HashMap<Long, CourseAssignment>();
 					for (CourseAssignment ca: courses)
 						table.put(ca.getCourseId(), ca);
-					for (CourseOffering co: (List<CourseOffering>)helper.getHibSession().createQuery("from CourseOffering co left join fetch co.disabledOverrides do where co.uniqueId in :courseIds")
-							.setParameterList("courseIds", table.keySet(), LongType.INSTANCE).list()) {
+					for (CourseOffering co: helper.getHibSession().createQuery("from CourseOffering co left join fetch co.disabledOverrides do where co.uniqueId in :courseIds", CourseOffering.class)
+							.setParameterList("courseIds", table.keySet(), org.hibernate.type.LongType.INSTANCE).list()) {
 						for (OverrideType override: overrides)
 							if (!co.getDisabledOverrides().contains(override))
 								table.get(co.getUniqueId()).addOverride(override.getReference(), override.getLabel());

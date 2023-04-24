@@ -134,24 +134,20 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         //if (user.getRole()!=null) return false;
         HashSet<Session> sessions = new HashSet();
         DepartmentalInstructor instructor = null;
-        for (Iterator i=new DepartmentalInstructorDAO().
-                getSession().
-                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
+        for (DepartmentalInstructor s: DepartmentalInstructorDAO.getInstance().getSession().
+                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId", DepartmentalInstructor.class).
                 setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).
-                setCacheable(true).list().iterator();i.hasNext();) {
-            DepartmentalInstructor s = (DepartmentalInstructor)i.next();
+                setCacheable(true).list()) {
             if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
             if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
         }
         
         Student student = null;
-        for (Iterator i=new StudentDAO().
-                getSession().
-                createQuery("select s from Student s where s.externalUniqueId=:externalId").
+        for (Student s: StudentDAO.getInstance().getSession().
+                createQuery("select s from Student s where s.externalUniqueId=:externalId", Student.class).
                 setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).
-                setCacheable(true).list().iterator();i.hasNext();) {
-            Student s = (Student)i.next();
+                setCacheable(true).list()) {
             if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
             if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
@@ -228,12 +224,10 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         
         HashSet<Session> sessions = new HashSet();
         DepartmentalInstructor instructor = null;
-        for (Iterator i=new DepartmentalInstructorDAO().
-                getSession().
-                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
+        for (DepartmentalInstructor s: DepartmentalInstructorDAO.getInstance().getSession().
+                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId", DepartmentalInstructor.class).
                 setParameter("externalId", translate(externalId,Source.Staff), org.hibernate.type.StringType.INSTANCE).
-                setCacheable(true).list().iterator();i.hasNext();) {
-            DepartmentalInstructor s = (DepartmentalInstructor)i.next();
+                setCacheable(true).list()) {
             if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
             if (form.getSessionId() == null) {
@@ -244,12 +238,10 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         }
         
         Student student = null;
-        for (Iterator i=new StudentDAO().
-                getSession().
-                createQuery("select s from Student s where s.externalUniqueId=:externalId").
+        for (Student s: StudentDAO.getInstance().getSession().
+                createQuery("select s from Student s where s.externalUniqueId=:externalId", Student.class).
                 setParameter("externalId", translate(externalId,Source.Student), org.hibernate.type.StringType.INSTANCE).
-                setCacheable(true).list().iterator();i.hasNext();) {
-            Student s = (Student)i.next();
+                setCacheable(true).list()) {
             if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
             if (form.getSessionId() == null) {
@@ -298,7 +290,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
             }
             */
             studentExams.addAll(
-            		new ExamDAO().getSession().createQuery(
+            		ExamDAO.getInstance().getSession().createQuery(
                             "select distinct o from Student s inner join s.classEnrollments ce, ExamOwner o inner join o.course co "+
                             "inner join co.instructionalOffering io "+
                             "inner join io.instrOfferingConfigs ioc " +
@@ -309,7 +301,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
                             "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
                             "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                             "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
-                            ")").
+                            ")", ExamOwner.class).
                             setParameter("studentId", student.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
             for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
             	Exam exam = i.next().getExam();
@@ -1117,7 +1109,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
             for (DirectConflict conflict : exam.getDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
                 for (Long studentId : conflict.getStudents()) {
-                    Student student = new StudentDAO().get(studentId);
+                    Student student = StudentDAO.getInstance().get(studentId);
                     String id = student.getExternalUniqueId();
                     String name = student.getName(DepartmentalInstructor.sNameFormatLastFist);
                     String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";
@@ -1187,7 +1179,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
             for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
                 if (exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
                 for (Long studentId : conflict.getStudents()) {
-                    Student student = new StudentDAO().get(studentId);
+                    Student student = StudentDAO.getInstance().get(studentId);
                     String id = student.getExternalUniqueId();
                     String name = student.getName(DepartmentalInstructor.sNameFormatLastFist);
                     String classes = "", enrollment = "", seating = "", date = "", time = "", room = "", distance = "", blank="";
@@ -1249,7 +1241,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
                 for (ExamAssignment other : conflict.getOtherExams())
                     if (exam.compareTo(other)>=0 && exams.contains(other)) continue conflicts;
                 for (Long studentId : conflict.getStudents()) {
-                    Student student = new StudentDAO().get(studentId);
+                    Student student = StudentDAO.getInstance().get(studentId);
                     String id = student.getExternalUniqueId();
                     String name = student.getName(DepartmentalInstructor.sNameFormatLastFist);
                     String classes = "", enrollment = "", seating = "", date = "", time = "", room = "";

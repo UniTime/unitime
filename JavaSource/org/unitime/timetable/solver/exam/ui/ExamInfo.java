@@ -137,12 +137,12 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     
     public Exam getExam() {
         if (iExam==null)
-            iExam = new ExamDAO().get(iExamId);
+            iExam = ExamDAO.getInstance().get(iExamId);
         return iExam;
     }
     
     public Exam getExam(org.hibernate.Session hibSession) {
-        return new ExamDAO().get(iExamId, hibSession);
+        return ExamDAO.getInstance().get(iExamId, hibSession);
     }
     
     public String getExamName() {
@@ -371,7 +371,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public Integer getOwnerType() { return getOwner().getOwnerType(); }
         public ExamOwner getOwner() {
             if (iOwner==null)
-                iOwner = new ExamOwnerDAO().get(getId());
+                iOwner = ExamOwnerDAO.getInstance().get(getId());
             return iOwner;
         }
         public String getName() { return iName; }
@@ -466,7 +466,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         }
         public DepartmentalInstructor getInstructor() {
             if (iInstructor==null)
-                iInstructor = new DepartmentalInstructorDAO().get(getId());
+                iInstructor = DepartmentalInstructorDAO.getInstance().get(getId());
             return iInstructor;
         }
         public ExamInfo getExam() {

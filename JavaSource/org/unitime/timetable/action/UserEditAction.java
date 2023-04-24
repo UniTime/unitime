@@ -106,7 +106,7 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
         		Transaction tx = null;
         		
                 try {
-                	org.hibernate.Session hibSession = (new UserDAO()).getSession();
+                	org.hibernate.Session hibSession = (UserDAO.getInstance()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
@@ -144,7 +144,7 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
     		Transaction tx = null;
     		
             try {
-            	org.hibernate.Session hibSession = (new UserDAO()).getSession();
+            	org.hibernate.Session hibSession = (UserDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -193,7 +193,7 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
     			    null );
         }
         
-        List users = new UserDAO().findAll();
+        List users = UserDAO.getInstance().findAll();
 		if(users.isEmpty()) {
 		    webTable.addLine(null, new String[] {MSG.messageNoUsers()}, null);			    
 		}

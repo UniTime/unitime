@@ -181,7 +181,7 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
         
         String subjectAreaName = "";
         try {
-            subjectAreaName = new SubjectAreaDAO().get(getForm().getSubjectAreaId()).getSubjectAreaAbbreviation();
+            subjectAreaName = SubjectAreaDAO.getInstance().get(getForm().getSubjectAreaId()).getSubjectAreaAbbreviation();
         } catch (Exception e) {}
         
         if (request.getParameter("backId")!=null)

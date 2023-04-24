@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,7 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +58,6 @@ import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
 
-
-
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
@@ -85,20 +81,20 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 
 /*[CONSTRUCTOR MARKER END]*/
 
-    public static List findAll(Long sessionId) {
-        return new StudentDAO().
+    public static List<Student> findAll(Long sessionId) {
+        return StudentDAO.getInstance().
             getSession().
-            createQuery("select s from Student s where s.session.uniqueId=:sessionId").
+            createQuery("select s from Student s where s.session.uniqueId=:sessionId", Student.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             list();
     }
     
     public static Student findByExternalId(Long sessionId, String externalId) {
-        return (Student)new StudentDAO().
+        return StudentDAO.getInstance().
             getSession().
             createQuery("select s from Student s where "+
                     "s.session.uniqueId=:sessionId and "+
-                    "s.externalUniqueId=:externalId").
+                    "s.externalUniqueId=:externalId", Student.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
@@ -106,7 +102,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public static Student findByExternalIdBringBackEnrollments(org.hibernate.Session hibSession, Long sessionId, String externalId) {
-        return (Student)hibSession.
+        return hibSession.
             createQuery("select s from Student s " +
             		"left join fetch s.courseDemands as cd " +
                     "left join fetch cd.courseRequests as cr " +
@@ -115,7 +111,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
                     "left join fetch s.areaClasfMinors " +
             		"where "+
                     "s.session.uniqueId=:sessionId and "+
-                    "s.externalUniqueId=:externalId").
+                    "s.externalUniqueId=:externalId", Student.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
@@ -138,34 +134,34 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 
     @Deprecated
     public Set<Exam> getExams(Integer examType) {
-        HashSet exams = new HashSet();
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        HashSet<Exam> exams = new HashSet<Exam>();
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.type=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.type=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.type=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.type=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.type=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.type=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.type=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.type=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
@@ -175,34 +171,34 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public Set<Exam> getExams(ExamType examType) {
-        HashSet exams = new HashSet();
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        HashSet<Exam> exams = new HashSet<Exam>();
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.uniqueId=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.uniqueId=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true)
                 .list());
-        exams.addAll(new StudentDAO().getSession().createQuery(
+        exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
                 .setParameter("studentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examType", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
@@ -229,21 +225,20 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	Query q = LocationDAO.getInstance().getSession()
+    	Query<Object[]> q = LocationDAO.getInstance().getSession()
     	    .createQuery("select distinct e.clazz.uniqueId, e.student.uniqueId "+
     	        	"from StudentClassEnrollment e, ClassEvent c inner join c.meetings m, StudentClassEnrollment x "+
     	        	"where x.clazz.uniqueId=:classId and x.student=e.student and " + // only look among students of the given class 
     	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1")
+            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class)
             .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE)
             .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
             .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
     	for (int i=0; i<dates.size(); i++) {
     		q.setParameter("date"+i, dates.get(i), org.hibernate.type.DateType.INSTANCE);
     	}
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> set = table.get((Long)o[0]);
             if (set==null) {
             	set = new HashSet<Long>();

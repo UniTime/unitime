@@ -84,14 +84,14 @@ public class CourseSelectionBoxBackend {
 		public GwtRpcResponseList<CourseAssignment> execute(ListCourseOfferings request, SessionContext context) {
 			checkPermissions(request.getSessionId(), context);
 			GwtRpcResponseList<CourseAssignment> results = new GwtRpcResponseList<CourseAssignment>();
-			for (CourseOffering c: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+			for (CourseOffering c: CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and (" +
 					"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.courseNbr) like :q || '%' " +
 					(request.getQuery().length() > 2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
-					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
+					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
 					.setParameter("q", request.getQuery().toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true)
@@ -135,10 +135,10 @@ public class CourseSelectionBoxBackend {
 			CourseOffering co = CourseOfferingDAO.getInstance().get(courseId);
 			if (co != null) return co;
 		}
-		for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+		for (CourseOffering co: CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
+				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course", CourseOffering.class)
 				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).setMaxResults(1).list()) {

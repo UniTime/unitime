@@ -195,7 +195,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 							}
 						ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
 						subjIds.append(form.getSubjectAreaIds()[i]);
-						names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+						names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 					}
 			        BackTracker.markForBack(
 							request, 
@@ -303,7 +303,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 					}
 				ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
 				subjIds.append(form.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			sessionContext.setAttribute(SessionAttribute.ClassesSubjectAreas, subjIds);
 			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, form.getCourseNbr());
@@ -394,7 +394,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	}
 	
     public static Set getClasses(ClassListFormInterface form, ClassAssignmentProxy classAssignmentProxy) {
-		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
+		org.hibernate.Session hibSession = (InstructionalOfferingDAO.getInstance()).getSession();
 
 		
 		boolean doFilterManager = form.getFilterManager()!=null && form.getFilterManager().length()>0;

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -274,7 +273,7 @@ public class DistributionPref extends BaseDistributionPref {
 				}
 			} else {
 				//dObj.getPrefGroup() is a proxy -> try to load it
-				PreferenceGroup pg = (new PreferenceGroupDAO()).get(dObj.getPrefGroup().getUniqueId());
+				PreferenceGroup pg = (PreferenceGroupDAO.getInstance()).get(dObj.getPrefGroup().getUniqueId());
 				if (pg!=null && pg instanceof SchedulingSubpart)
 					ss = (SchedulingSubpart)pg;
 			}
@@ -319,7 +318,7 @@ public class DistributionPref extends BaseDistributionPref {
     	try {
     		return new TreeSet<DistributionObject>(getDistributionObjects());
     	} catch (ObjectNotFoundException ex) {
-    		(new DistributionPrefDAO()).getSession().refresh(this);
+    		(DistributionPrefDAO.getInstance()).getSession().refresh(this);
     		return new TreeSet<DistributionObject>(getDistributionObjects());
     	}
     }
@@ -338,7 +337,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return getPreferences(sessionId, ownerId, useControllingCourseOfferingManager, uniqueId, null, null);
     }
     
-    public static Collection getPreferences(Long sessionId, Long ownerId, boolean useControllingCourseOfferingManager, Long uniqueId, Long subjectAreaId, String courseNbr) {
+    public static List<DistributionPref> getPreferences(Long sessionId, Long ownerId, boolean useControllingCourseOfferingManager, Long uniqueId, Long subjectAreaId, String courseNbr) {
     	if (sessionId==null) return null;
     	StringBuffer sb = new StringBuffer();
     	sb.append("select distinct dp ");
@@ -397,9 +396,9 @@ public class DistributionPref extends BaseDistributionPref {
             sb.append(":courseNbr");
 		}
 	
-    	Query q = (new DistributionPrefDAO()).
+    	Query<DistributionPref> q = (DistributionPrefDAO.getInstance()).
 			getSession().
-			createQuery(sb.toString());
+			createQuery(sb.toString(), DistributionPref.class);
     	q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
     	if (ownerId!=null)
     		q.setParameter("ownerId", ownerId.longValue(), org.hibernate.type.LongType.INSTANCE);
@@ -412,7 +411,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return q.list();
     }
     
-    public static Collection getInstructorPreferences(Long sessionId, Long ownerId, Long subjectAreaId, String courseNbr) {
+    public static List<DistributionPref> getInstructorPreferences(Long sessionId, Long ownerId, Long subjectAreaId, String courseNbr) {
         if (sessionId==null) return null;
         StringBuffer sb = new StringBuffer();
         sb.append("select distinct dp ");
@@ -458,9 +457,9 @@ public class DistributionPref extends BaseDistributionPref {
             sb.append(" and di.department.uniqueId = :ownerId ");
         }
 
-        Query q = (new DistributionPrefDAO()).
+        Query<DistributionPref> q = (DistributionPrefDAO.getInstance()).
             getSession().
-            createQuery(sb.toString());
+            createQuery(sb.toString(), DistributionPref.class);
         q.setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null) {
             q.setParameter("subjectAreaId", subjectAreaId.longValue(), org.hibernate.type.LongType.INSTANCE);
@@ -490,11 +489,11 @@ public class DistributionPref extends BaseDistributionPref {
     }
     
     public static DistributionPref findByIdRolledForwardFrom(Long uidRolledForwardFrom, Long sessionId) {
-        return (DistributionPref)new DistributionPrefDAO().
+        return DistributionPrefDAO.getInstance().
             getSession().
             createQuery(
                 "select dp from DistributionPref dp, Department d where "+
-                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId").
+                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId", DistributionPref.class).
             setParameter("uidRolledFrom", uidRolledForwardFrom, org.hibernate.type.LongType.INSTANCE).
             setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).

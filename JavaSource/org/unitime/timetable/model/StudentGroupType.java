@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -38,8 +37,8 @@ public class StudentGroupType extends BaseStudentGroupType {
 	}
 	
 	public static StudentGroupType findByReference(String reference, org.hibernate.Session hibSession) {
-		return (StudentGroupType)(hibSession == null ? StudentGroupTypeDAO.getInstance().getSession() : hibSession).createQuery(
-				"from StudentGroupType where reference = :reference"
+		return (hibSession == null ? StudentGroupTypeDAO.getInstance().getSession() : hibSession).createQuery(
+				"from StudentGroupType where reference = :reference", StudentGroupType.class
 				).setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	

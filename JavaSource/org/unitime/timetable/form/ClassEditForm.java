@@ -150,7 +150,7 @@ public class ClassEditForm extends PreferencesForm {
                 String pl = rpl.get(i);
                 if (pl.trim().equalsIgnoreCase("1")) {
                     String roomId = rp.get(i);                    
-                    Location room = new LocationDAO().get(Long.valueOf(roomId));
+                    Location room = LocationDAO.getInstance().get(Long.valueOf(roomId));
                     int rCap = room.getCapacity().intValue();
                     if (rCap<iRoomCapacity)
         	            action.addFieldError("roomPref", MSG.errorRequiredRoomTooSmall(room.getLabel(), rCap, iRoomCapacity));
@@ -343,7 +343,7 @@ public class ClassEditForm extends PreferencesForm {
         if (!"true".equals(getInstrLead(key)) && !"on".equals(getInstrLead(key))) return false;
         String instructorId = getInstructors(key);
         if (instructorId==null || instructorId.trim().length()==0 || instructorId.equals("-")) return false;
-        DepartmentalInstructor di = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+        DepartmentalInstructor di = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
         if (di!=null && di.hasPreferences()) return true;
         return false;
     }

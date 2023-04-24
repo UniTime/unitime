@@ -26,12 +26,10 @@ import java.util.Properties;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.hibernate.criterion.Order;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -48,7 +46,7 @@ public class PermissionsExport extends BaseExport {
 
             document.addDocType("permissions", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/Permissions.dtd");
             
-    		for (Roles role: RolesDAO.getInstance().findAll(getHibSession(), Order.asc("abbv"))) {
+    		for (Roles role: getHibSession().createQuery("from Roles order by abbv", Roles.class).list()) {
     			Element r = root.addElement("role");
     			r.addAttribute("reference", role.getReference());
     			r.addAttribute("name", role.getAbbv());

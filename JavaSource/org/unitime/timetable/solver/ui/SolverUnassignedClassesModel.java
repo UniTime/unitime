@@ -26,8 +26,6 @@ import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.model.Lecture;
 import org.unitime.timetable.solver.TimetableSolver;
 
-
-
 /**
  * @author Tomas Muller
  */

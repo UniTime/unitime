@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -77,18 +76,18 @@ public class QueryLog extends BaseQueryLog {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(new Date());
 		c.add(Calendar.DAY_OF_YEAR, -days);
-		return ((Number)QueryLogDAO.getInstance().getSession().createQuery(
-				"select count(distinct q.sessionId) from QueryLog q where q.timeStamp > :date").
-				setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).uniqueResult()).intValue();
+		return (QueryLogDAO.getInstance().getSession().createQuery(
+				"select count(distinct q.sessionId) from QueryLog q where q.timeStamp > :date", Number.class).
+				setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).uniqueResult()).intValue();
 	}
 	
 	public static int getNrActiveUsers(int days) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(new Date());
 		c.add(Calendar.DAY_OF_YEAR, -days);
-		return ((Number)QueryLogDAO.getInstance().getSession().createQuery(
-				"select count(distinct q.uid) from QueryLog q where q.timeStamp > :date").
-				setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).uniqueResult()).intValue();
+		return (QueryLogDAO.getInstance().getSession().createQuery(
+				"select count(distinct q.uid) from QueryLog q where q.timeStamp > :date", Number.class).
+				setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).uniqueResult()).intValue();
 	}
 
 	public static WebTable getTopQueries(int days) {
@@ -101,33 +100,33 @@ public class QueryLog extends BaseQueryLog {
 				new boolean[] {true, false, false, false, false, false, false, false});
 		DecimalFormat df = new DecimalFormat("#,##0.00");
 		HashMap<String, Integer> errors = new HashMap<String, Integer>();
-		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
+		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri").setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
 			errors.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> overMinutes = new HashMap<String, Integer>();
-		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
+		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri").setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
 			overMinutes.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over100mss = new HashMap<String, Integer>();
-		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
+		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri").setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
 			over100mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over10mss = new HashMap<String, Integer>();
-		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
+		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri").setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
 			over10mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 
-		for (Object[] o: (List<Object[]>)QueryLogDAO.getInstance().getSession().createQuery(
+		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q), avg(q.timeSpent), max(q.timeSpent) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri").setParameter("date", c.getTime(), org.hibernate.type.TimestampType.INSTANCE).list()) {
+				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime(), org.hibernate.type.DateType.INSTANCE).list()) {
 			Integer nrErrors = errors.get((String)o[0]);
 			if (nrErrors == null) nrErrors = 0;
 			Integer overMinute = overMinutes.get((String)o[0]);
@@ -221,7 +220,7 @@ public class QueryLog extends BaseQueryLog {
 						"QueryLog where " + iOracleCondition + " group by " + iOracleFormat;
 			}
 			Map<String, int[]> ret = new HashMap<String, int[]>();
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+			for (Object[] o: hibSession.createQuery(query, Object[].class).list()) {
 				String dt = (String)o[0];
 				int users = ((Number)o[1]).intValue();
 				int sessions = ((Number)o[2]).intValue();
@@ -240,7 +239,7 @@ public class QueryLog extends BaseQueryLog {
 						"QueryLog where " + iOracleCondition + " group by type, " + iOracleFormat;
 			}
 			Map<String, int[]> ret = new HashMap<String, int[]>();
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+			for (Object[] o: hibSession.createQuery(query, Object[].class).list()) {
 				String dt = (String)o[0];
 				int type = ((Number)o[1]).intValue();
 				int queries = ((Number)o[2]).intValue();
@@ -265,7 +264,7 @@ public class QueryLog extends BaseQueryLog {
 						"QueryLog where " + iOracleCondition + " group by type, " + iOracleFormat;
 			}
 			Map<String, double[]> ret = new HashMap<String, double[]>();
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+			for (Object[] o: hibSession.createQuery(query, Object[].class).list()) {
 				String dt = (String)o[0];
 				int type = ((Number)o[1]).intValue();
 				int cnt = ((Number)o[2]).intValue();

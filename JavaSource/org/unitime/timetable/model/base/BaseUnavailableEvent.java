@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
-
 import javax.persistence.MappedSuperclass;
+
+import java.io.Serializable;
 
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.UnavailableEvent;

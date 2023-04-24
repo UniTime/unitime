@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -41,8 +40,8 @@ public class InstructorCourseRequirementType extends BaseInstructorCourseRequire
 	
 	@Transient
 	public static List<InstructorCourseRequirementType> getInstructorCourseRequirementTypes() {
-		return (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorCourseRequirementType order by sortOrder")
+		return InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder", InstructorCourseRequirementType.class)
 				.setCacheable(true).list();
 	}
 

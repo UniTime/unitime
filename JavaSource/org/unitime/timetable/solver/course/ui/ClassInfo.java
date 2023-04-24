@@ -24,7 +24,6 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -188,22 +187,22 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 	public static Map<ClassAssignment, Set<Long>> findAllRelatedAssignments(Long classId, boolean useRealStudents) {
 		Map<Long, ClassAssignment> assignments = new HashMap<Long, ClassAssignment>();
 		Map<ClassAssignment, Set<Long>> conflicts = new HashMap<ClassAssignment, Set<Long>>();
-		Query q = null;
+		Query<Object[]> q = null;
 		if (!useRealStudents) {			
 			q = LocationDAO.getInstance().getSession()
 		    	    .createQuery("select e.clazz.committedAssignment, e.studentId "+
 		    	        	"from StudentEnrollment e, StudentEnrollment x "+
 		    	        	"where x.clazz.uniqueId = :classId and x.studentId = e.studentId and e.clazz != x.clazz and " + 
-		    	        	"e.solution.commited = true and x.solution.commited = true and x.solution.owner.session = e.solution.owner.session")
+		    	        	"e.solution.commited = true and x.solution.commited = true and x.solution.owner.session = e.solution.owner.session", Object[].class)
 		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
 		} else {
 			q = LocationDAO.getInstance().getSession()
 		    	    .createQuery("select e.clazz.committedAssignment, e.student.uniqueId "+
 		    	        	"from StudentClassEnrollment e, StudentClassEnrollment x "+
-		    	        	"where x.clazz.uniqueId = :classId and x.student = e.student and e.clazz != x.clazz ")
+		    	        	"where x.clazz.uniqueId = :classId and x.student = e.student and e.clazz != x.clazz ", Object[].class)
 		            .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE);
 		}
-		for (Object[] line:(List<Object[]>) q.setCacheable(true).list()) {
+		for (Object[] line: q.setCacheable(true).list()) {
 			Assignment assignment = (Assignment) line[0];
 			Long studentId = (Long) line[1];
 			ClassAssignment ca = assignments.get(assignment.getClassId());

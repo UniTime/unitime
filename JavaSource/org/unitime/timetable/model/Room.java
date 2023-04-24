@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.query.Query;
-import org.hibernate.type.StringType;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoom;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
@@ -143,8 +141,8 @@ public class Room extends BaseRoom {
 	}
     
     public static Room findByBldgIdRoomNbr(Long bldgId, String roomNbr, Long sessionId) {
-        return (Room)new RoomDAO().getSession().createQuery(
-                "select r from Room r where r.building.uniqueId=:bldgId and r.roomNumber=:roomNbr and r.session.uniqueId=:sessionId").
+        return RoomDAO.getInstance().getSession().createQuery(
+                "select r from Room r where r.building.uniqueId=:bldgId and r.roomNumber=:roomNbr and r.session.uniqueId=:sessionId", Room.class).
                 setParameter("bldgId", bldgId, org.hibernate.type.LongType.INSTANCE).
                 setParameter("roomNbr", roomNbr, org.hibernate.type.StringType.INSTANCE).
                 setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).
@@ -154,7 +152,7 @@ public class Room extends BaseRoom {
 	public void addExternalRoomDept(ExternalRoomDepartment externalRoomDept, Set externalRoomDepts){
 		Department dept = Department.findByDeptCode(externalRoomDept.getDepartmentCode(), this.getSession().getUniqueId());
 		RoomDept roomDept = null;
-		RoomDeptDAO rdDao = new RoomDeptDAO();
+		RoomDeptDAO rdDao = RoomDeptDAO.getInstance();
 		if (dept != null){
 			roomDept = new RoomDept();
 			roomDept.setRoom(this);
@@ -179,11 +177,11 @@ public class Room extends BaseRoom {
 			query += " and er.classification in :classifications";
 		}
 		org.hibernate.Session hibSession = ExternalRoomDAO.getInstance().getSession();
-		Query q = hibSession.createQuery(query).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE);
+		Query<ExternalRoom> q = hibSession.createQuery(query, ExternalRoom.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE);
 		if (classifications != null && !classifications.isEmpty()) {
-			q.setParameterList("classifications", classifications.split(","), new StringType());
+			q.setParameterList("classifications", classifications.split(","), org.hibernate.type.StringType.INSTANCE);
 		}
-		for (ExternalRoom er: (List<ExternalRoom>)q.list()) {
+		for (ExternalRoom er: q.list()) {
 			Building b = Building.findByExternalIdAndSession(er.getBuilding().getExternalUniqueId(), session);
 			if (b == null) {
 				b = new Building();
@@ -202,8 +200,8 @@ public class Room extends BaseRoom {
 				b.setName(er.getBuilding().getDisplayName());
 				hibSession.saveOrUpdate(b);
 			}
-			Room r = (Room)hibSession.createQuery(
-					"from Room r where r.building.session.uniqueId = :sessionId and r.externalUniqueId = :externalId")
+			Room r = hibSession.createQuery(
+					"from Room r where r.building.session.uniqueId = :sessionId and r.externalUniqueId = :externalId", Room.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("externalId", er.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 					.uniqueResult();
@@ -304,7 +302,7 @@ public class Room extends BaseRoom {
     	Set<Long> futureSessionIds = new HashSet<Long>();
     	Set<Long> blackListedSessionIds = new HashSet<Long>();
 
-    	for (Location location: (List<Location>)LocationDAO.getInstance().getSession().createQuery(
+    	for (Location location: LocationDAO.getInstance().getSession().createQuery(
     			"select f from Room l, Room f where " +
     			"l.uniqueId = :uniqueId and " +
     			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
@@ -314,7 +312,7 @@ public class Room extends BaseRoom {
     			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.building.abbreviation = l.building.abbreviation and f.roomNumber = l.roomNumber and f.capacity = l.capacity)))) " + // name & capacity match
-    			"order by f.session.sessionBeginDateTime"
+    			"order by f.session.sessionBeginDateTime", Location.class
     			).setParameter("uniqueId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);

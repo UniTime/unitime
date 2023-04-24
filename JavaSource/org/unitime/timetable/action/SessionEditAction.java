@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -196,7 +195,7 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             Session sessn = form.getSession();
             
             if (form.getSessionId()!=null && !sessn.getSessionId().equals(0l)) 
-                sessn = (new SessionDAO()).get(form.getSessionId(),hibSession);
+                sessn = (SessionDAO.getInstance()).get(form.getSessionId(),hibSession);
             else 
                 sessn.setSessionId(null);
             
@@ -213,7 +212,7 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             }
 
             if (form.getDefaultDatePatternId() != null && form.getDefaultDatePatternId() >= 0) {
-                DatePattern d = new DatePatternDAO().get(form.getDefaultDatePatternId());
+                DatePattern d = DatePatternDAO.getInstance().get(form.getDefaultDatePatternId());
                 sessn.setDefaultDatePattern(d);
             } else {
             	sessn.setDefaultDatePattern(null);;
@@ -279,9 +278,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             			"delete ClassEvent where clazz in (from Class_ c where c.committedAssignment.solution.owner.session.uniqueId = :sessionId)")
             			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
             } else {
-            	for (Assignment assignment: (List<Assignment>)hibSession.createQuery(
+            	for (Assignment assignment: hibSession.createQuery(
             			"select a from Class_ c inner join c.assignments a inner join a.solution s where s.commited = true and s.owner.session.uniqueId = :sessionId " +
-            			"and c.uniqueId not in (select e.clazz.uniqueId from ClassEvent e where e.clazz.controllingDept.session.uniqueId = :sessionId)")
+            			"and c.uniqueId not in (select e.clazz.uniqueId from ClassEvent e where e.clazz.controllingDept.session.uniqueId = :sessionId)",
+            			Assignment.class)
             			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		ClassEvent event = assignment.generateCommittedEvent(null,true);
             		if (event != null && !event.getMeetings().isEmpty()) {
@@ -291,9 +291,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
         		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
         		    	hibSession.delete(event);
             	}
-            	for (Exam exam: (List<Exam>)hibSession.createQuery(
+            	for (Exam exam: hibSession.createQuery(
             			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null " +
-            			"and x.uniqueId not in (select e.exam.uniqueId from ExamEvent e where e.exam.session.uniqueId = :sessionId)")
+            			"and x.uniqueId not in (select e.exam.uniqueId from ExamEvent e where e.exam.session.uniqueId = :sessionId)",
+            			Exam.class)
             			.setParameter("sessionId", sessn.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		ExamEvent event = exam.generateEvent(null, true);
                     if (event!=null) {

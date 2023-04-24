@@ -38,7 +38,6 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
-import org.hibernate.type.LongType;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -147,10 +146,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	
 	Map<Long, Integer> getClassSnapshots(Long courseId, OnlineSectioningHelper helper) {
 		Map<Long, Integer> ret = new HashMap<Long, Integer>();
-		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+		for (Object[] o: helper.getHibSession().createQuery(
 				"select c.uniqueId, c.snapshotLimit from " +
 				"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-				"co.uniqueId = :courseId").setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				"co.uniqueId = :courseId", Object[].class).setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Long classId = (Long)o[0];
 			Integer limit = (Integer)o[1];
 			ret.put(classId, limit);
@@ -164,10 +163,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		for (XCourseId courseId: courseIds) {
 			ids.add(courseId.getOfferingId());
 			if (ids.size() == 1000) {
-				for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+				for (Object[] o: helper.getHibSession().createQuery(
 						"select io.uniqueId, io.snapshotLimit from " +
 						"InstructionalOffering io where " +
-						"io.uniqueId in :ids").setParameterList("ids", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						"io.uniqueId in :ids", Object[].class).setParameterList("ids", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					Long classId = (Long)o[0];
 					Integer limit = (Integer)o[1];
 					ret.put(classId, limit);
@@ -176,10 +175,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			}
 		}
 		if (!ids.isEmpty()) {
-			for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
+			for (Object[] o: helper.getHibSession().createQuery(
 					"select io.uniqueId, io.snapshotLimit from " +
 					"InstructionalOffering io where " +
-					"io.uniqueId in :ids").setParameterList("ids", ids, LongType.INSTANCE).setCacheable(true).list()) {
+					"io.uniqueId in :ids", Object[].class).setParameterList("ids", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Long classId = (Long)o[0];
 				Integer limit = (Integer)o[1];
 				ret.put(classId, limit);

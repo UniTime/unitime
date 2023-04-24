@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.rooms;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.hibernate.Transaction;
 import org.unitime.timetable.events.EventAction.EventContext;
@@ -53,14 +52,14 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
 
 		Transaction tx = null;
         try {
-            org.hibernate.Session hibSession = new RoomDeptDAO().getSession();
+            org.hibernate.Session hibSession = RoomDeptDAO.getInstance().getSession();
             tx = hibSession.beginTransaction();
 
     		if (request.hasDepartment()) {
     			Department department = DepartmentDAO.getInstance().get(request.getDepartment().getId(), hibSession);
     			context.checkPermission(department, Right.EditRoomDepartments);
     			if (request.hasAddLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getAddLocations()).list()) {
+    				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getAddLocations()).list()) {
     					RoomDept rd = null;
                         for (Iterator j = location.getRoomDepts().iterator(); rd==null && j.hasNext(); ) {
                             RoomDept x = (RoomDept)j.next();
@@ -79,7 +78,7 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.CREATE, null, department);
     				}
     			if (request.hasDropLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getDropLocations()).list()) {
+    				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getDropLocations()).list()) {
     					RoomDept rd = null;
                         for (Iterator j = location.getRoomDepts().iterator(); rd==null && j.hasNext(); ) {
                             RoomDept x = (RoomDept)j.next();
@@ -97,13 +96,13 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
     			context.checkPermission(Right.EditRoomDepartmentsExams);
     			ExamType type = ExamTypeDAO.getInstance().get(request.getExamType().getId(), hibSession);
     			if (request.hasAddLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getAddLocations()).list()) {
+    				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getAddLocations()).list()) {
     					location.setExamEnabled(type, true);
     					hibSession.saveOrUpdate(location);
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);
     				}
     			if (request.hasDropLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getDropLocations()).list()) {
+    				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getDropLocations()).list()) {
     					location.setExamEnabled(type, false);
     					hibSession.saveOrUpdate(location);
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);

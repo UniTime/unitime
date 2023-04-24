@@ -62,8 +62,8 @@ public class CourseCreditTypes implements AdminTable {
 		data.setSortBy(0, 1, 2);
 		for (CourseCreditType credit: CourseCreditTypeDAO.getInstance().findAll()) {
 			int used =
-				((Number)hibSession.createQuery(
-						"select count(c) from CourseCreditUnitConfig c where c.creditType.uniqueId = :uniqueId")
+				(hibSession.createQuery(
+						"select count(c) from CourseCreditUnitConfig c where c.creditType.uniqueId = :uniqueId", Number.class)
 						.setParameter("uniqueId", credit.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			Record r = data.addRecord(credit.getUniqueId(), used == 0);
 			r.setField(0, credit.getReference());

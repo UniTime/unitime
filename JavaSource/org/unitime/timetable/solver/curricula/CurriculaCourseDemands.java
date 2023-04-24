@@ -120,7 +120,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 			if (nrCourses > 0 && nrCourses <= 1000) {
 				Set<Curriculum> curriculaSet = new HashSet<Curriculum>(hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
-						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				// include children curricula
 				curriculaSet.addAll(
@@ -128,7 +128,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 							"select distinct d from CurriculumCourse cc inner join cc.classification.curriculum c, Curriculum d " +
 							"where c.academicArea = d.academicArea and d.multipleMajors = true and size(c.majors) <= 1 and size(c.majors) < size(d.majors) and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = c.uniqueId and m not in elements(d.majors)) = 0 and " +
-							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()
 						);
 				// include parent curricula
@@ -137,7 +137,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 							"select distinct d from CurriculumCourse cc inner join cc.classification.curriculum c, Curriculum d " +
 							"where c.multipleMajors = true and size(c.majors) >= 1 and size(c.majors) > size(d.majors) and c.academicArea = d.academicArea and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = d.uniqueId and m not in elements(c.majors)) = 0 and " +
-							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				curricula = new ArrayList<Curriculum>(curriculaSet);
 			}
@@ -145,7 +145,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands, NeedsStuden
 		
 		if (curricula == null) {
 			curricula = hibSession.createQuery(
-					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
+					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId", Curriculum.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 		}
 

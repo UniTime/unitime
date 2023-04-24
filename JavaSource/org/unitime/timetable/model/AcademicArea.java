@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -36,8 +35,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.unitime.timetable.model.base.BaseAcademicArea;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
-
-
 
 
 /**
@@ -72,7 +69,7 @@ public class AcademicArea extends BaseAcademicArea {
 	 */
 	@Transient
 	public static ArrayList getAll() throws HibernateException {
-		return (ArrayList) (new AcademicAreaDAO()).findAll();
+		return (ArrayList) (AcademicAreaDAO.getInstance()).findAll();
 	}
 
 	/**
@@ -81,15 +78,11 @@ public class AcademicArea extends BaseAcademicArea {
 	 * @param sessionId academic session
 	 * @return Vector of AcademicArea objects
 	 */
-	public static List getAcademicAreaList(Long sessionId) throws HibernateException {
-	    
-	    AcademicAreaDAO adao = new AcademicAreaDAO();
-	    Session hibSession = adao.getSession();
-	    List l = hibSession.createQuery(
-	    		"select a from AcademicArea as a where a.session.uniqueId=:sessionId " +
-	    		"order by a.academicAreaAbbreviation").
-	    	setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
-		return l;
+	public static List<AcademicArea> getAcademicAreaList(Long sessionId) throws HibernateException {
+		return AcademicAreaDAO.getInstance().getSession().createQuery(
+				"select a from AcademicArea as a where a.session.uniqueId=:sessionId " +
+	    		"order by a.academicAreaAbbreviation", AcademicArea.class).
+				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
     /**
@@ -120,15 +113,15 @@ public class AcademicArea extends BaseAcademicArea {
 	}
     
     public static AcademicArea findByAbbv(Long sessionId, String abbv) {
-    	return(findByAbbv(new AcademicAreaDAO().getSession(), sessionId, abbv));
+    	return(findByAbbv(AcademicAreaDAO.getInstance().getSession(), sessionId, abbv));
     }
     
     public static AcademicArea findByAbbv(Session hibSession, Long sessionId, String abbv) {
-        return (AcademicArea)hibSession.
+        return hibSession.
             createQuery(
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
-                    "a.academicAreaAbbreviation=:abbv").
+                    "a.academicAreaAbbreviation=:abbv", AcademicArea.class).
              setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
              setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
@@ -136,15 +129,15 @@ public class AcademicArea extends BaseAcademicArea {
     }
     
     public static AcademicArea findByExternalId(Long sessionId, String externalId) {
-    	return(findByExternalId(new AcademicAreaDAO().getSession(), sessionId, externalId));
+    	return(findByExternalId(AcademicAreaDAO.getInstance().getSession(), sessionId, externalId));
     }
 
     public static AcademicArea findByExternalId(Session hibSession, Long sessionId, String externalId) {
-        return (AcademicArea)hibSession.
+        return hibSession.
             createQuery(
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
-                    "a.externalUniqueId=:externalId").
+                    "a.externalUniqueId=:externalId", AcademicArea.class).
              setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
              setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
@@ -160,8 +153,8 @@ public class AcademicArea extends BaseAcademicArea {
     }
     
     public boolean isUsed(org.hibernate.Session hibSession) {
-    	return ((Number)(hibSession == null ? AcademicAreaDAO.getInstance().getSession() : hibSession).createQuery(
-    			"select count(c) from Curriculum c inner join c.academicArea a where a.uniqueId = :areaId")
+    	return ((hibSession == null ? AcademicAreaDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from Curriculum c inner join c.academicArea a where a.uniqueId = :areaId", Number.class)
     			.setParameter("areaId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 }

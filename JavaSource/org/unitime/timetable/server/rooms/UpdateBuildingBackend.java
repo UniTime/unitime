@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.rooms;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
@@ -101,7 +100,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
                     null);
             
             if (updateRoomCoordinates) {
-            	for (Room room: (List<Room>)hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId").setParameter("buildingId", building.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            	for (Room room: hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		if (!ToolBox.equals(room.getCoordinateX(), building.getCoordinateX()) || !ToolBox.equals(room.getCoordinateY(), building.getCoordinateY())) {
             			room.setCoordinateX(building.getCoordinateX());
             			room.setCoordinateY(building.getCoordinateY());

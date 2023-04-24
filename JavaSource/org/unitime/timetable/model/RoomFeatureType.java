@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -54,49 +53,49 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 		if (sessionId == null)
 			return !RoomFeatureTypeDAO.getInstance().findAll().isEmpty();
 		
-		if (((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select count(distinct featureType) from GlobalRoomFeature where session.uniqueId = :sessionId")
+		if ((RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"select count(distinct featureType) from GlobalRoomFeature where session.uniqueId = :sessionId", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
-		return ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select count(distinct featureType) from DepartmentRoomFeature where department.session.uniqueId = :sessionId")
+		return (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"select count(distinct featureType) from DepartmentRoomFeature where department.session.uniqueId = :sessionId", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, boolean includeDepartmental) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select distinct f.featureType from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is not null")
+				"select distinct f.featureType from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is not null", RoomFeatureType.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		if (includeDepartmental) {
 			types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-					"select distinct f.featureType from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is not null")
+					"select distinct f.featureType from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is not null", RoomFeatureType.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		}
 		return types;
 	}
 	
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, boolean includeDepartmental) {
-		if (((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select count(f) from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is null")
+		if ((RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"select count(f) from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is null", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
-		return includeDepartmental && ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select count(f) from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is null")
+		return includeDepartmental && (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"select count(f) from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is null", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, Long examTypeId) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select distinct f.featureType from GlobalRoomFeature f inner join f.rooms l, ExamType t where f.session.uniqueId = :sessionId and f.featureType is not null and t.uniqueId = :examTypeId and t in elements(l.examTypes)")
+				"select distinct f.featureType from GlobalRoomFeature f inner join f.rooms l, ExamType t where f.session.uniqueId = :sessionId and f.featureType is not null and t.uniqueId = :examTypeId and t in elements(l.examTypes)", RoomFeatureType.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		return types;
 	}
 
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, Long examTypeId) {
-		return ((Number)RoomFeatureTypeDAO.getInstance().getSession().createQuery(
-				"select count(distinct f) from GlobalRoomFeature f inner join f.rooms l, ExamType t where l.session.uniqueId = :sessionId and f.featureType is null and t.uniqueId = :examTypeId and t in elements(l.examTypes)")
+		return (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"select count(distinct f) from GlobalRoomFeature f inner join f.rooms l, ExamType t where l.session.uniqueId = :sessionId and f.featureType is null and t.uniqueId = :examTypeId and t in elements(l.examTypes)", Number.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 }

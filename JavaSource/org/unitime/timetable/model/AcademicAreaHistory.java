@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -28,8 +27,6 @@ import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.unitime.timetable.model.base.BaseAcademicAreaHistory;
-
-
 
 
 /**

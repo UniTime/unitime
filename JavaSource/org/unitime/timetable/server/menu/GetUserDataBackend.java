@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.menu;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -46,8 +44,8 @@ public class GetUserDataBackend implements GwtRpcImplementation<GetUserDataRpcRe
 		if (user == null) return null;
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
-			for (UserData u: (List<UserData>)hibSession.createQuery(
-					"from UserData u where u.externalUniqueId = :externalUniqueId and u.name in :names")
+			for (UserData u: hibSession.createQuery(
+					"from UserData u where u.externalUniqueId = :externalUniqueId and u.name in :names", UserData.class)
 					.setParameter("externalUniqueId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE)
 					.setParameterList("names", request)
 					.setCacheable(true).list()) {

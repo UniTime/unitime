@@ -21,7 +21,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -37,8 +36,6 @@ import org.unitime.timetable.model.base.BaseEventContact;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
-
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
@@ -64,16 +61,16 @@ public class EventContact extends BaseEventContact implements NameInterface {
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {
-	    return (EventContact)new EventContactDAO().getSession().
-	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId").
+	    return EventContactDAO.getInstance().getSession().
+	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId", EventContact.class).
 	        setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).
 	        setHibernateFlushMode(FlushMode.MANUAL).
 	        uniqueResult();
 	}
 
 	public static EventContact findByEmail(String email) {
-	    List<EventContact> ec = (List<EventContact>)new EventContactDAO().getSession().
-	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress").
+	    List<EventContact> ec = EventContactDAO.getInstance().getSession().
+	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress", EventContact.class).
 	        setParameter("emailAddress", email, org.hibernate.type.StringType.INSTANCE).list();
 	    if (ec.isEmpty()) return null; 
 	    else return ec.get(0);

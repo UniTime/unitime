@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -30,8 +29,6 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.unitime.timetable.model.base.BaseConstraintInfo;
-
-
 
 
 /**

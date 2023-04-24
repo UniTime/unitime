@@ -41,7 +41,7 @@ public class CourseOfferingCheckExistsBackend implements GwtRpcImplementation<Co
 		CourseOfferingCheckExistsInterface response = new CourseOfferingCheckExistsInterface();
 
 		Boolean isEdit = request.getIsEdit();
-		SubjectArea sa = new SubjectAreaDAO().get(request.getSubjectAreaId());
+		SubjectArea sa = SubjectAreaDAO.getInstance().get(request.getSubjectAreaId());
 		CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), request.getCourseNumber());
 		if (!isEdit && co != null) {
 			response.setResponseText(MSG.errorCourseCannotBeCreated());

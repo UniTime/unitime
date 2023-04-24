@@ -63,8 +63,8 @@ public class InstructorRequirementsBackend implements GwtRpcImplementation<Instr
 		InstructorRequirementData response = new InstructorRequirementData();
 		response.setCrossList(io.getCourseOfferings().size() > 1);
 		response.setAdmin(context.hasPermission(io.getDepartment(), Right.InstructorSurveyAdmin));
-		List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorCourseRequirementType order by sortOrder").list();
+		List<InstructorCourseRequirementType> types = InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder", InstructorCourseRequirementType.class).list();
 		Map<Long, CustomField> customFields = new HashMap<Long, CustomField>();
 		for (InstructorCourseRequirementType type: types) {
 			CustomField cf = new CustomField(type.getUniqueId(), type.getReference(), type.getLength());

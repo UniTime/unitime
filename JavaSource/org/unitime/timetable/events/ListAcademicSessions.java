@@ -93,7 +93,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			});
 		}
 		
-		for (Session session: (List<Session>)hibSession.createQuery("select s from Session s").list()) {
+		for (Session session: hibSession.createQuery("select s from Session s", Session.class).list()) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			if (!context.hasPermissionAnyAuthority(permission, new SimpleQualifier("Session", session.getUniqueId()))) continue;
 			sessions.add(session);
@@ -173,7 +173,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		} catch (NumberFormatException e) {}
 		List<Session> sessions = hibSession.createQuery("select s from Session s where " +
 				"s.academicTerm || s.academicYear = :term or " +
-				"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+				"s.academicTerm || s.academicYear || s.academicInitiative = :term", Session.class).
 				setParameter("term", term, org.hibernate.type.StringType.INSTANCE).list();
 		if (!sessions.isEmpty()) {
 			for (Session session: sessions) {
@@ -183,7 +183,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		}
 		if ("current".equalsIgnoreCase(term)) {
 			sessions = hibSession.createQuery("select s from Session s where " +
-					"s.eventBeginDate <= :today and s.eventEndDate >= :today").
+					"s.eventBeginDate <= :today and s.eventEndDate >= :today", Session.class).
 					setParameter("today", new Date(), org.hibernate.type.DateType.INSTANCE).list();
 			if (!sessions.isEmpty()) {
 				for (Session session: sessions) {

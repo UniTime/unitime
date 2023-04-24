@@ -34,17 +34,17 @@ public class DefaultExternalClassLookup implements ExternalClassLookupInterface 
 	
 	@Override
 	public CourseOffering findCourseByExternalId(Long sessionId, String externalId) {
-		return (CourseOffering) CourseOfferingDAO.getInstance().getSession().createQuery(
+		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
-				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId and co.isControl = true"
+				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId and co.isControl = true", CourseOffering.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
 
 	@Override
 	public List<Class_> findClassesByExternalId(Long sessionId, String externalId) {
-		return (List<Class_>) CourseOfferingDAO.getInstance().getSession().createQuery(
+		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
-				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId"
+				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId", Class_.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
 	}
 	

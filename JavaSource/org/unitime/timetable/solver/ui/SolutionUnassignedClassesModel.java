@@ -59,11 +59,11 @@ public class SolutionUnassignedClassesModel extends UnassignedClassesModel {
 							instructors.add(ci.getInstructor().getName(instructorFormat));
 					}
 				}	
-				int nrStudents = ((Number)hibSession.
-						createQuery("select count(s) from StudentEnrollment as s where s.clazz.uniqueId=:classId and s.solution.uniqueId=:solutionId").
+				int nrStudents = hibSession.
+						createQuery("select count(s) from StudentEnrollment as s where s.clazz.uniqueId=:classId and s.solution.uniqueId=:solutionId", Number.class).
 						setParameter("classId", clazz.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 						setParameter("solutionId", solution.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-						uniqueResult()).intValue();
+						uniqueResult().intValue();
 				rows().add(new UnassignedClassRow(clazz.getUniqueId(), name, instructors, nrStudents, null, clazz));
 			}
 		}

@@ -338,12 +338,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 
 					break;			
 				case CURRICULUM:
-					curriculum = (Curriculum)hibSession.createQuery(
-							"select distinct c from CurriculumClassification f inner join f.curriculum c where c.uniqueId = :resourceId or f.uniqueId = :resourceId")
+					curriculum = hibSession.createQuery(
+							"select distinct c from CurriculumClassification f inner join f.curriculum c where c.uniqueId = :resourceId or f.uniqueId = :resourceId", Curriculum.class)
 							.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 					if (!curriculum.isMultipleMajors() || curriculum.getMajors().isEmpty()) {
-						curriculumCourses = (List<Long>)hibSession.createQuery(
-								"select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+						curriculumCourses = hibSession.createQuery(
+								"select cc.course.uniqueId from CurriculumCourse cc where cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId", Long.class)
 								.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE).list();
 						
 						meetings = new ArrayList<Meeting>();
@@ -358,14 +358,15 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.query(hibSession).list());
 						
 						restrictions = new Hashtable<Long, Set<Long>[]>();
-						for (Object[] o: (List<Object[]>)hibSession.createQuery(
+						for (Object[] o: hibSession.createQuery(
 								"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
 								"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 								"left outer join r.majors rm left outer join r.classifications rc, " +
 								"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
 								"where (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
 								"and cc.course.instructionalOffering = r.instructionalOffering and ra = cc.classification.curriculum.academicArea "+
-								"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
+								"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)",
+								Object[].class)
 								.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 							Long offeringId = (Long)o[0];
 							Long configId = (Long)o[1];
@@ -462,9 +463,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.query(hibSession).list());
 					} else {
 						curriculumCourses = new HashSet<Long>();
-						List<Curriculum> parents = (List<Curriculum>)hibSession.createQuery(
+						List<Curriculum> parents = hibSession.createQuery(
 								"select distinct x from Curriculum x, Curriculum c inner join c.majors m where " +
-								"c.uniqueId = :curriculumId and x.uniqueId != c.uniqueId and c.academicArea = x.academicArea and (x.majors is empty or m in elements(x.majors))")
+								"c.uniqueId = :curriculumId and x.uniqueId != c.uniqueId and c.academicArea = x.academicArea and (x.majors is empty or m in elements(x.majors))",
+								Curriculum.class)
 								.setParameter("curriculumId", curriculum.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 						for (CurriculumClassification clasf: curriculum.getClassifications()) {
 							if (!curriculum.getUniqueId().equals(request.getResourceId()) && !clasf.getUniqueId().equals(request.getResourceId())) continue;
@@ -497,14 +499,15 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.query(hibSession).list());
 
 						restrictions = new Hashtable<Long, Set<Long>[]>();
-						for (Object[] o: (List<Object[]>)hibSession.createQuery(
+						for (Object[] o: hibSession.createQuery(
 								"select distinct r.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
 								"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 								"left outer join r.majors rm left outer join r.classifications rc, " +
 								"CurriculumClassification f inner join f.curriculum c inner join c.majors cm, CourseOffering co " +
 								"where (f.uniqueId = :resourceId or c.uniqueId = :resourceId) and co.uniqueId in (:courses) " +
 								"and co.instructionalOffering = r.instructionalOffering and ra = c.academicArea "+
-								"and (rm is null or rm = cm) and (rc is null or rc = f.academicClassification)")
+								"and (rm is null or rm = cm) and (rc is null or rc = f.academicClassification)",
+								Object[].class)
 								.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE).setParameterList("courses", curriculumCourses).setCacheable(true).list()) {
 							Long offeringId = (Long)o[0];
 							Long configId = (Long)o[1];
@@ -695,7 +698,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					boolean coordinator = (roles != null && (roles.contains("coordinator") || roles.contains("Coordinator")));
 					Set<Long> excludeSessionIds = null;
 					if (allSessions && student) {
-						for (Student s: (List<Student>)hibSession.createQuery("from Student where externalUniqueId = :externalId")
+						for (Student s: hibSession.createQuery("from Student where externalUniqueId = :externalId", Student.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 							StudentSectioningStatus status = (s == null ? null : s.getEffectiveStatus());
 							if (status != null && status.hasOption(StudentSectioningStatus.Option.noschedule)) {
@@ -714,41 +717,41 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					curriculumClasses = new HashSet<Long>();
 					if (allSessions) {
 						if (student) {
-							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
+							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId", Long.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId", Long.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 						if (instructor) {
-							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from ClassInstructor i inner join i.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where i.instructor.externalUniqueId = :externalId and co.isControl = true")
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from ClassInstructor i inner join i.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where i.instructor.externalUniqueId = :externalId and co.isControl = true", Long.class)
 									.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId", Long.class)
 									.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 						if (coordinator) {
-							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId")
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId", Long.class)
 									.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId", Long.class)
 									.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 					} else {
 						if (student) {
-							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select e.clazz.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 						if (instructor) {
 							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from ClassInstructor i inner join i.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
-									"where i.instructor.externalUniqueId = :externalId and co.isControl = true and i.instructor.department.session.uniqueId = :sessionId")
+									"where i.instructor.externalUniqueId = :externalId and co.isControl = true and i.instructor.department.session.uniqueId = :sessionId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId and i.instructor.department.session.uniqueId = :sessionId")
+							curriculumClasses.addAll(hibSession.createQuery("select i.classInstructing.uniqueId from ClassInstructor i where i.instructor.externalUniqueId = :externalId and i.instructor.department.session.uniqueId = :sessionId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 						if (coordinator) {
-							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+							curriculumCourses.addAll(hibSession.createQuery("select co.uniqueId from OfferingCoordinator c inner join c.offering.courseOfferings co where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId")
+							curriculumClasses.addAll(hibSession.createQuery("select z.uniqueId from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators c where c.instructor.externalUniqueId = :externalId and c.instructor.department.session.uniqueId = :sessionId", Long.class)
 									.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).list());
 						}						
 					}
@@ -1338,20 +1341,20 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					
 					if (allSessions) {
 						if (group.getExternalUniqueId() != null) {
-							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId")
+							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId", Long.class)
 									.setParameter("externalId", group.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId")
+							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId", Long.class)
 									.setParameter("externalId", group.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).list());
 						} else {
-							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation")
+							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation", Long.class)
 									.setParameter("abbreviation", group.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE).list());
-							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation")
+							curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation", Long.class)
 									.setParameter("abbreviation", group.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE).list());
 						}
 					} else {
-						curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId")
+						curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId", Long.class)
 								.setParameter("resourceId", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
-						curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId")
+						curriculumClasses.addAll(hibSession.createQuery("select distinct e.clazz.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId", Long.class)
 								.setParameter("resourceId", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 					}
 					meetings = new ArrayList<Meeting>();
@@ -2611,12 +2614,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					case COURSE:
 						arrageHourClasses = hibSession.createQuery(
 								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where c.committedAssignment is null and c.cancelled = false and " +
-								(request.getResourceType() == ResourceType.SUBJECT ? "co.subjectArea.uniqueId = :resourceId" : "co.uniqueId = :resourceId")).setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE)
+								(request.getResourceType() == ResourceType.SUBJECT ? "co.subjectArea.uniqueId = :resourceId" : "co.uniqueId = :resourceId"), Class_.class)
+								.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list();
 						break;
 					case DEPARTMENT:
 						arrageHourClasses = hibSession.createQuery(
-								"select c from Class_ c inner join c.managingDept d where c.committedAssignment is null and c.cancelled = false and d.uniqueId = :resourceId").setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE)
+								"select c from Class_ c inner join c.managingDept d where c.committedAssignment is null and c.cancelled = false and d.uniqueId = :resourceId", Class_.class)
+						.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list();
 						break;
 					case CURRICULUM:
@@ -2624,13 +2629,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							if (curriculumCourses.isEmpty()) break;
 							arrageHourClasses = hibSession.createQuery(
 									"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
-									"where c.committedAssignment is null and c.cancelled = false and co.uniqueId in (:courses)")
+									"where c.committedAssignment is null and c.cancelled = false and co.uniqueId in (:courses)", Class_.class)
 									.setParameterList("courses", curriculumCourses)
 									.setCacheable(true).list();
 						} else {
 							arrageHourClasses = hibSession.createQuery(
 									"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc " +
-									"where c.committedAssignment is null and c.cancelled = false and co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId)")
+									"where c.committedAssignment is null and c.cancelled = false and co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId)",
+									Class_.class)
 									.setParameter("resourceId", request.getResourceId(), org.hibernate.type.LongType.INSTANCE)
 									.setCacheable(true).list();
 						}
@@ -2644,19 +2650,22 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						
 						if (student)
 							arrageHourClasses.addAll(hibSession.createQuery(
-								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId",
+								Class_.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list());
 						
 						if (instructor)
 							arrageHourClasses.addAll(
-								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and c.cancelled = false and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
+								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and c.cancelled = false and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId",
+										Class_.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list());
 
 						if (coordinator)
 							arrageHourClasses.addAll(
-								hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators cc where c.committedAssignment is null and c.cancelled = false and cc.instructor.department.session.uniqueId = :sessionId and cc.instructor.externalUniqueId = :externalId")
+								hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.offeringCoordinators cc where c.committedAssignment is null and c.cancelled = false and cc.instructor.department.session.uniqueId = :sessionId and cc.instructor.externalUniqueId = :externalId",
+										Class_.class)
 								.setParameter("externalId", request.getResourceExternalId(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list());
 						break;
@@ -2672,13 +2681,15 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						arrageHourClasses = new ArrayList<Class_>();
 						if (minEnrollment == null)
 							arrageHourClasses.addAll(hibSession.createQuery(
-								"select distinct c from StudentGroup g inner join g.students s inner join s.classEnrollments e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and g.uniqueId = :resourceId")
+								"select distinct c from StudentGroup g inner join g.students s inner join s.classEnrollments e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and g.uniqueId = :resourceId",
+								Class_.class)
 								.setParameter("resourceId", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true).list());
 						else
 							arrageHourClasses.addAll(hibSession.createQuery(
 									"select distinct c from StudentGroup g inner join g.students s inner join s.classEnrollments e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and g.uniqueId = :resourceId "+
-									"and (select count(x) from StudentClassEnrollment x inner join x.student.groups y where y.uniqueId = g.uniqueId and x.clazz.uniqueId = e.clazz.uniqueId) >= :minEnrl")
+									"and (select count(x) from StudentClassEnrollment x inner join x.student.groups y where y.uniqueId = g.uniqueId and x.clazz.uniqueId = e.clazz.uniqueId) >= :minEnrl",
+									Class_.class)
 									.setParameter("resourceId", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 									.setParameter("minEnrl", minEnrollment, org.hibernate.type.IntegerType.INSTANCE)
 									.setCacheable(true).list());

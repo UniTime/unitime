@@ -61,7 +61,7 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 
 		Transaction tx = null;
         try {
-            org.hibernate.Session hibSession = new RoomDeptDAO().getSession();
+            org.hibernate.Session hibSession = RoomDeptDAO.getInstance().getSession();
             tx = hibSession.beginTransaction();
 
             RoomGroup g = null;
@@ -115,14 +115,14 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 		if (original == null) return null;
 		if (future) {
 			if (original.isDepartmental())
-				return (RoomGroup)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +
-					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false")
+					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false", RoomGroup.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
-				return (RoomGroup)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.session.uniqueId = :sessionId " +
-					"and g.abbv = o.abbv and g.global = true")
+					"and g.abbv = o.abbv and g.global = true", RoomGroup.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomGroupDAO.getInstance().get(original.getId(), hibSession);
@@ -132,14 +132,14 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 	protected RoomGroup lookupGroup(org.hibernate.Session hibSession, Long groupId, boolean future, Long sessionId) {
 		if (groupId == null) return null;
 		if (future) {
-			RoomGroup group = (RoomGroup)hibSession.createQuery(
+			RoomGroup group = hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +
-					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false")
+					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false", RoomGroup.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", groupId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			if (group == null)
-				group = (RoomGroup)hibSession.createQuery(
+				group = hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.session.uniqueId = :sessionId " +
-					"and g.abbv = o.abbv and g.global = true")
+					"and g.abbv = o.abbv and g.global = true", RoomGroup.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", groupId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			return group;
 		} else {
@@ -152,7 +152,7 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 		if (future) {
 			return Location.lookupFutureLocations(hibSession, ids, sessionId);
 		} else {
-			return (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", ids).list();
+			return hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", ids).list();
 		}
 	}
 	
@@ -269,7 +269,7 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
         	hibSession.saveOrUpdate(location);
         }
         
-        for (RoomGroupPref p: (List<RoomGroupPref>)hibSession.createQuery("from RoomGroupPref p where p.roomGroup.uniqueId = :id")
+        for (RoomGroupPref p: hibSession.createQuery("from RoomGroupPref p where p.roomGroup.uniqueId = :id", RoomGroupPref.class)
 					.setParameter("id", rg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				p.getOwner().getPreferences().remove(p);
 				hibSession.delete(p);

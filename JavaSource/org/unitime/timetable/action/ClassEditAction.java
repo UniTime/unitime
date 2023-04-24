@@ -279,7 +279,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
                     String instrId = instructors.get(i).toString();
                     if (Preference.BLANK_PREF_VALUE.equals(instrId)) continue;
                     boolean lead = "on".equals(instrLead.get(i)) || "true".equals(instrLead.get(i));
-                    if (lead) leadInstructors.add((new DepartmentalInstructorDAO()).get(Long.valueOf(instrId)));
+                    if (lead) leadInstructors.add((DepartmentalInstructorDAO.getInstance()).get(Long.valueOf(instrId)));
                 }
         		op="init";
         	} catch (NumberFormatException e) {}
@@ -459,7 +459,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
         if (form.getDatePattern()==null || form.getDatePattern().intValue()<0)
         	c.setDatePattern(null);
         else
-        	c.setDatePattern(new DatePatternDAO().get(form.getDatePattern()));
+        	c.setDatePattern(DatePatternDAO.getInstance().get(form.getDatePattern()));
         c.setNbrRooms(form.getNbrRooms());
         c.setNotes(form.getNotes());
 	    c.setSchedulePrintNote(form.getSchedulePrintNote());
@@ -493,7 +493,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             boolean lead = "on".equals(instrLead.get(i)) || "true".equals(instrLead.get(i));
             String resp = instrResponsibility.get(i).toString();
 
-            DepartmentalInstructor deptInstr = new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
+            DepartmentalInstructor deptInstr = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instrId));
             
             ClassInstructor classInstr = null;
             for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {

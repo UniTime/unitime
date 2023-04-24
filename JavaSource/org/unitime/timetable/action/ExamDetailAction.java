@@ -129,7 +129,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
         
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
-        Exam exam = new ExamDAO().get(Long.valueOf(examId));
+        Exam exam = ExamDAO.getInstance().get(Long.valueOf(examId));
         
         //After delete -> one more back
         if (exam==null && BackTracker.hasBack(request, 1)) {
@@ -168,7 +168,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
         
         if ("Delete".equals(op) || EXMSG.accessExamDelete().equals(op)) {
         	sessionContext.checkPermission(exam, Right.ExaminationDelete);
-            org.hibernate.Session hibSession = new ExamDAO().getSession();
+            org.hibernate.Session hibSession = ExamDAO.getInstance().getSession();
             Transaction tx = null;
             try {
                 tx = hibSession.beginTransaction();

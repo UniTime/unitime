@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.curricula;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
@@ -50,10 +49,10 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 	
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+		for (Object[] o: hibSession.createQuery(
 				"select distinct e.courseOffering, s " +
 				"from StudentClassEnrollment e inner join e.student s left join fetch s.areaClasfMajors where " +
-				"e.courseOffering.subjectArea.session.uniqueId = :sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+				"e.courseOffering.subjectArea.session.uniqueId = :sessionId", Object[].class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			CourseOffering course = (CourseOffering)o[0];
 			Student student = (Student)o[1];
 			Set<WeightedStudentId> students = iDemands.get(course.getUniqueId());

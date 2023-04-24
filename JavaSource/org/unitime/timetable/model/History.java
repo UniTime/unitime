@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -35,8 +34,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseHistory;
 import org.unitime.timetable.model.dao.HistoryDAO;
-
-
 
 
 /**

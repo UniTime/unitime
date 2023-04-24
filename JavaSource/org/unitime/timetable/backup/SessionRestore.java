@@ -42,6 +42,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import javax.persistence.Column;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -61,7 +62,6 @@ import org.dom4j.io.SAXReader;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
-import org.hibernate.type.DateType;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -355,7 +355,7 @@ public class SessionRestore implements SessionRestoreInterface {
 					value = Double.valueOf(element.getValue(0));
 				} else if (String.class.isAssignableFrom(type)) {
 					value = element.getValue(0);
-					javax.persistence.Column col = ((AnnotatedElement) attribute.getJavaMember()).getAnnotation(javax.persistence.Column.class);
+					Column col = ((AnnotatedElement) attribute.getJavaMember()).getAnnotation(Column.class);
 					if (col != null && col.length() > 0 && col.length() != 255 && value.toString().length() > col.length()) {
 						message("Value is too long, truncated (property " + meta.getName() + "." + attribute.getName() +", length " + col.length() +")", record.getId());
 						value = value.toString().substring(0, col.length());
@@ -369,8 +369,8 @@ public class SessionRestore implements SessionRestoreInterface {
 						} catch (ParseException q) {
 							try {
 								value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
-							} catch (ParseException e) {
-								value  = new DateType().fromStringValue(element.getValue(0));
+							} catch (ParseException r) {
+								message("Falied to parse a date " + element.getValue(0) + " (property " + meta.getName() + "." + attribute.getName() + ", class " + type.getSimpleName() + ")", record.getId());
 							}
 						}
 					}
@@ -468,7 +468,8 @@ public class SessionRestore implements SessionRestoreInterface {
 			SolverParameterGroup group = (SolverParameterGroup)get(SolverParameterGroup.class, element.getValue(0));
 			if (group != null && group.getUniqueId() != null) {
 				List<SolverParameterDef> list = iHibSession.createQuery(
-						"from SolverParameterDef where name = :name and group.uniqueId = :groupId"
+						"from SolverParameterDef where name = :name and group.uniqueId = :groupId",
+						SolverParameterDef.class
 						).setParameter("name", def.getName())
 						.setParameter("groupId", group.getUniqueId()).list();
 				if (!list.isEmpty()) {
@@ -503,7 +504,7 @@ public class SessionRestore implements SessionRestoreInterface {
 			itype.setItype(Integer.valueOf(entity.getId()));
 		}
 		if (entity.getObject() instanceof DistributionType) {
-			int maxReqId = ((Number)iHibSession.createQuery("select max(requirementId) from DistributionType").uniqueResult()).intValue();
+			int maxReqId = iHibSession.createQuery("select max(requirementId) from DistributionType", Number.class).uniqueResult().intValue();
 			int distReqId = 0;
 			for (Entity e: iEntities.get(DistributionType.class.getName()).values())
 				if (e.getId().compareTo(entity.getId()) <= 0 && ((DistributionType)e.getObject()).getUniqueId() == null) distReqId ++;

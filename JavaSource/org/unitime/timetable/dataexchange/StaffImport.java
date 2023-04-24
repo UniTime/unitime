@@ -159,16 +159,16 @@ public class StaffImport extends BaseImport {
 	private Staff findByExternalId(String externalId, String deptCode) {
 		if (deptCode != null)
 			return
-				(Staff)getHibSession().
-				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId and a.dept=:deptCode").
+				getHibSession().
+				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId and a.dept=:deptCode", Staff.class).
 				setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 				setParameter("deptCode", deptCode, org.hibernate.type.StringType.INSTANCE).
 				setCacheable(true).
 				uniqueResult();
 		else
 			return
-				(Staff)getHibSession().
-				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId").
+				getHibSession().
+				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId", Staff.class).
 				setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 				setCacheable(true).
 				uniqueResult();

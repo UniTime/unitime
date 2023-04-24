@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -38,8 +37,6 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BasePreferenceLevel;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.util.Constants;
-
-
 
 
 /**
@@ -187,12 +184,12 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	
     public static synchronized List<PreferenceLevel> getPreferenceLevelList(boolean includeNotAvailable) {
     	if (includeNotAvailable) {
-    		return (List<PreferenceLevel>)PreferenceLevelDAO.getInstance().getSession().createQuery(
-    				"from PreferenceLevel order by prefId")
+    		return PreferenceLevelDAO.getInstance().getSession().createQuery(
+    				"from PreferenceLevel order by prefId", PreferenceLevel.class)
     				.setCacheable(true).list();
     	} else {
-    		return (List<PreferenceLevel>)PreferenceLevelDAO.getInstance().getSession().createQuery(
-    				"from PreferenceLevel where prefProlog != :na order by prefId")
+    		return PreferenceLevelDAO.getInstance().getSession().createQuery(
+    				"from PreferenceLevel where prefProlog != :na order by prefId", PreferenceLevel.class)
     				.setParameter("na", sNotAvailable, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     	}
     }

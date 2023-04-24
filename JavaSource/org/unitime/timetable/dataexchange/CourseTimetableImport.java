@@ -130,9 +130,9 @@ public class CourseTimetableImport extends BaseImport {
 	    	iName2class = new HashMap<String, Class_>();
 
 	    	info("Loading classes...");
-	 		for (Object[] o: (List<Object[]>)getHibSession().createQuery(
+	 		for (Object[] o: getHibSession().createQuery(
 	 				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-    				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+    				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Object[].class)
     				.setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 			Class_ clazz = (Class_)o[0];
 	 			CourseOffering course = (CourseOffering)o[1];
@@ -147,8 +147,8 @@ public class CourseTimetableImport extends BaseImport {
 	 		
 	 		if ("update".equals(action)) {
 	 			info("Loading solutions...");
-	 			for (Solution solution: (List<Solution>)getHibSession().createQuery(
-	 					"select s from Solution s where s.commited = true and s.owner.session.uniqueId = :sessionId")
+	 			for (Solution solution: getHibSession().createQuery(
+	 					"select s from Solution s where s.commited = true and s.owner.session.uniqueId = :sessionId", Solution.class)
 	 					.setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 				iOwnerId2solution.put(solution.getOwner().getUniqueId(), solution);
 	 			}
@@ -157,8 +157,8 @@ public class CourseTimetableImport extends BaseImport {
 	 		info("Loading rooms...");
 	 		iExtId2room = new HashMap<String, Room>();
 	 		iName2room = new HashMap<String, Room>();
-	 		for (Room room: (List<Room>)getHibSession().createQuery(
-	 				"select r from Room r where r.session.uniqueId = :sessionId")
+	 		for (Room room: getHibSession().createQuery(
+	 				"select r from Room r where r.session.uniqueId = :sessionId", Room.class)
 	 				.setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 			if (room.getExternalUniqueId() != null && !room.getExternalUniqueId().isEmpty())
 	 				iExtId2room.put(room.getExternalUniqueId(), room);
@@ -167,8 +167,8 @@ public class CourseTimetableImport extends BaseImport {
 	 		
 	 		iExtId2location = new HashMap<String, Location>();
 	 		iName2location = new HashMap<String, Location>();
-	 		for (Location location: (List<Location>)getHibSession().createQuery(
-	 				"select r from Location r where r.session.uniqueId = :sessionId")
+	 		for (Location location: getHibSession().createQuery(
+	 				"select r from Location r where r.session.uniqueId = :sessionId", Location.class)
 	 				.setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 			if (location.getExternalUniqueId() != null && !location.getExternalUniqueId().isEmpty())
 	 				iExtId2location.put(location.getExternalUniqueId(), location);
@@ -784,16 +784,16 @@ public class CourseTimetableImport extends BaseImport {
 	}
 	
 	protected DepartmentalInstructor findDepartmentalInstructorWithExternalUniqueId(String externalId, Department department) {		
-		return (DepartmentalInstructor)getHibSession().createQuery(
-				"select distinct di from DepartmentalInstructor di where di.externalUniqueId=:externalId and di.department.uniqueId=:departmentId")
+		return getHibSession().createQuery(
+				"select distinct di from DepartmentalInstructor di where di.externalUniqueId=:externalId and di.department.uniqueId=:departmentId", DepartmentalInstructor.class)
 				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	protected Staff findStaffMember(String id) {
-		return (Staff)getHibSession().createQuery(
-				"select distinct s from Staff s where s.externalUniqueId=:externalId")
+		return getHibSession().createQuery(
+				"select distinct s from Staff s where s.externalUniqueId=:externalId", Staff.class)
 				.setParameter("externalId", id, org.hibernate.type.StringType.INSTANCE)
 				.setMaxResults(1).setCacheable(true).uniqueResult();
 	}

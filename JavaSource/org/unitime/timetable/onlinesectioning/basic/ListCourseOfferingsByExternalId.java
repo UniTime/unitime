@@ -54,12 +54,12 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 		Map<Long, CourseAssignment> courses = null;
 		if (iQuery != null && iQuery.length() >= 3) {
 			try {
-				for (Object[] courseClassId: (List<Object[]>)helper.getHibSession().createQuery(
+				for (Object[] courseClassId: helper.getHibSession().createQuery(
 						"select distinct c.uniqueId, z.uniqueId " +
 						"from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings c " +
 						"where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true " +
 						"and ((lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' ' || z.classSuffix) like :q || '%' and :q like lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' %')) or lower(z.classSuffix) like :q || '%') " +
-						"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr, z.classSuffix"
+						"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr, z.classSuffix", Object[].class
 						).setParameter("q", iQuery, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					Long courseId = (Long)courseClassId[0];
 					Long sectionId = (Long)courseClassId[1];

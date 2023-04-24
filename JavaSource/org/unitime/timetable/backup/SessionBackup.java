@@ -580,14 +580,16 @@ public class SessionBackup implements SessionBackupInterface {
 							select += (i > 0 ? ", " : "") + hqlName() + "." + id.getName() + "." + getIdAttribute(meta).getName();
 						i++;
 					}
-					for (Object[] id: (List<Object[]>)iHibSession.createQuery(
-							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere()
+					for (Object[] id: iHibSession.createQuery(
+							"select distinct " + select +  " from " + hqlFrom() + " where " + hqlWhere(),
+							Object[].class
 							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						if (ids.add(new CompositeId(id))) size++;
 					}
 				} else {
-					for (Serializable id: (List<Serializable>)iHibSession.createQuery(
-							"select distinct " + hqlName() + "." + getIdAttribute(meta()).getName() + " from " + hqlFrom() + " where " + hqlWhere()
+					for (Serializable id: iHibSession.createQuery(
+							"select distinct " + hqlName() + "." + getIdAttribute(meta()).getName() + " from " + hqlFrom() + " where " + hqlWhere(),
+							Serializable.class
 							).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						if (ids.add(id)) size++;
 					}
@@ -623,7 +625,8 @@ public class SessionBackup implements SessionBackupInterface {
 			if (ConstraintInfo.class.getName().equals(name())) return null;
 			if (ChangeLog.class.getName().equals(name())) return null;
 			return iHibSession.createQuery(
-					"select " + (distinct() ? "" : "distinct ") + hqlName() + " from " + hqlFrom() + " where " + hqlWhere()
+					"select " + (distinct() ? "" : "distinct ") + hqlName() + " from " + hqlFrom() + " where " + hqlWhere(),
+					Object.class
 					).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
 		}
 		
@@ -699,7 +702,7 @@ public class SessionBackup implements SessionBackupInterface {
 								q += " and " + hqlName() + "." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName() + " = x." + idatts.get(i).getName() + "." + getIdAttribute(meta).getName();
 						}	
 					}
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						Object[] cid = new Object[idatts.size()];
 						for (int i = 0; i < idatts.size(); i++)
 							cid[i] = o[i];
@@ -726,7 +729,7 @@ public class SessionBackup implements SessionBackupInterface {
 								" from " + hqlFrom() + ", " + m.getName() + " x inner join x." + property + " p where " + hqlWhere() + 
 								" and " + hqlName() + "." + idattr.getName() + " = x." + idattr.getName();
 					}
-					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
+					for (Object[] o: (List<Object[]>)iHibSession.createQuery(q, Object[].class).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list()) {
 						List<Object> list = relation.get((Serializable)o[0]);
 						if (list == null) {
 							list = new ArrayList<Object>();

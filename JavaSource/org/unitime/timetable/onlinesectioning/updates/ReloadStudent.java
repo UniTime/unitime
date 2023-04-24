@@ -21,7 +21,6 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -79,9 +78,9 @@ public class ReloadStudent extends ReloadAllData {
 					.setUniqueId(studentId)
 					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
 			
-			Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
+			Lock lock = server.lockStudent(studentId, helper.getHibSession().createQuery(
 					"select distinct e.courseOffering.instructionalOffering.uniqueId from StudentClassEnrollment e where "+
-            		"e.student.uniqueId = :studentId").setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list(), name());
+            		"e.student.uniqueId = :studentId", Long.class).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list(), name());
 			try {
 				
 				helper.beginTransaction();

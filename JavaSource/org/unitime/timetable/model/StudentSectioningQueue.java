@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -76,33 +75,33 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		if (sessionId != null) {
 			if (lastTimeStamp == null) {
 				return new TreeSet<StudentSectioningQueue>(
-						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId")
+						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId", StudentSectioningQueue.class)
 						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list());
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
-						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId and q.timeStamp > :timeStamp")
+						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId and q.timeStamp > :timeStamp", StudentSectioningQueue.class)
 						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.TimestampType.INSTANCE).list());
+						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.DateType.INSTANCE).list());
 			}
 		} else {
 			if (lastTimeStamp == null) {
 				return new TreeSet<StudentSectioningQueue>(
-						hibSession.createQuery("select q from StudentSectioningQueue q").list());
+						hibSession.createQuery("select q from StudentSectioningQueue q", StudentSectioningQueue.class).list());
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
-						hibSession.createQuery("select q from StudentSectioningQueue q where q.timeStamp > :timeStamp")
-						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.TimestampType.INSTANCE).list());
+						hibSession.createQuery("select q from StudentSectioningQueue q where q.timeStamp > :timeStamp", StudentSectioningQueue.class)
+						.setParameter("timeStamp", lastTimeStamp, org.hibernate.type.DateType.INSTANCE).list());
 			}
 		}
 	}
 	
 	public static Date getLastTimeStamp(org.hibernate.Session hibSession, Long sessionId) {
 		if (sessionId != null)
-			return (Date) hibSession.createQuery(
-						"select max(q.timeStamp) from StudentSectioningQueue q where q.sessionId = :sessionId"
+			return  hibSession.createQuery(
+						"select max(q.timeStamp) from StudentSectioningQueue q where q.sessionId = :sessionId", Date.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).uniqueResult();
 		else
-			return (Date) hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q").uniqueResult();
+			return  hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q", Date.class).uniqueResult();
 			
 	}
 	

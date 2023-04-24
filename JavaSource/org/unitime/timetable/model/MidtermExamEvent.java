@@ -20,14 +20,11 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
 import org.unitime.timetable.model.base.BaseMidtermExamEvent;
-
-
 
 /**
  * @author Tomas Muller

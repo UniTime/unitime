@@ -118,7 +118,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction2<Scheduling
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
         // If subpart id is not null - load subpart info
-        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
+        SchedulingSubpartDAO sdao = SchedulingSubpartDAO.getInstance();
         SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
 
         // Edit Preference - Redirect to prefs edit screen

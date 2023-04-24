@@ -20,22 +20,17 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
-
 import java.util.List;
 
 import org.hibernate.Session;
 import org.unitime.timetable.model.base.BaseStudentGroup;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
-
-
 
 
 /**
@@ -78,12 +73,12 @@ public class StudentGroup extends BaseStudentGroup {
     }
 
     public static StudentGroup findByAbbv(Long sessionId, String abbv) {
-        return (StudentGroup)new StudentGroupDAO().
+        return StudentGroupDAO.getInstance().
             getSession().
             createQuery(
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId=:sessionId and "+
-                    "a.groupAbbreviation=:abbv").
+                    "a.groupAbbreviation=:abbv", StudentGroup.class).
              setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
              setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
@@ -92,11 +87,11 @@ public class StudentGroup extends BaseStudentGroup {
     
     public static StudentGroup findByExternalId(Session hibSession, String externalId, Long acadSessionId) {
     	 
-        return (StudentGroup)hibSession.
+        return hibSession.
             createQuery(
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId = :acadSessionId and "+
-                    "externalUniqueId=:eId ").
+                    "externalUniqueId=:eId ", StudentGroup.class).
              setParameter("acadSessionId", acadSessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
              setParameter("eId", externalId, org.hibernate.type.StringType.INSTANCE).
              setCacheable(true).
@@ -105,7 +100,7 @@ public class StudentGroup extends BaseStudentGroup {
     
     public static List<StudentGroup> findByType(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		if (typeId == null)
-			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
-		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("typeId", typeId, org.hibernate.type.LongType.INSTANCE).list();
+			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null", StudentGroup.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
+		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId", StudentGroup.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("typeId", typeId, org.hibernate.type.LongType.INSTANCE).list();
 	}
 }

@@ -167,7 +167,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
         		Transaction tx = null;
         		
                 try {
-                	org.hibernate.Session hibSession = (new TimePatternDAO()).getSession();
+                	org.hibernate.Session hibSession = (TimePatternDAO.getInstance()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
@@ -198,7 +198,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	addFieldError("form.uniqueId", MSG.errorRequiredField("Id"));
                 return "list";
             } else {
-            	TimePattern pattern = (new TimePatternDAO()).get(Long.valueOf(id));
+            	TimePattern pattern = (TimePatternDAO.getInstance()).get(Long.valueOf(id));
             	form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
             	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
                 if(pattern==null) {
@@ -215,7 +215,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
     		Transaction tx = null;
     		
             try {
-            	org.hibernate.Session hibSession = (new TimePatternDAO()).getSession();
+            	org.hibernate.Session hibSession = (TimePatternDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -234,7 +234,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
     		Transaction tx = null;
     		
     		try {
-            	org.hibernate.Session hibSession = (new TimePatternDAO()).getSession();
+            	org.hibernate.Session hibSession = (TimePatternDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -250,7 +250,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	
             	List timePrefs = 
             			hibSession.
-                		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
+                		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid", TimePref.class).
         				setParameter("uniqueid", tp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 		list();
             	
@@ -426,7 +426,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
         	HashSet refresh = new HashSet();
 
         	try {
-            	org.hibernate.Session hibSession = (new TimePatternDAO()).getSession();
+            	org.hibernate.Session hibSession = (TimePatternDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -516,7 +516,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
     		Transaction tx = null;
     		
     		try {
-            	org.hibernate.Session hibSession = (new TimePatternDAO()).getSession();
+            	org.hibernate.Session hibSession = (TimePatternDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	

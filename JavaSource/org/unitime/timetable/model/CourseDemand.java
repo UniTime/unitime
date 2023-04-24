@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -115,9 +114,9 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     	return findAll(CourseDemandDAO.getInstance().getSession(), sessionId);
     }
     
-    public static List findAll(org.hibernate.Session hibSession, Long sessionId) {
+    public static List<CourseDemand> findAll(org.hibernate.Session hibSession, Long sessionId) {
         return hibSession.
-            createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId").
+            createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId", CourseDemand.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             list(); 
     }

@@ -66,7 +66,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 	
 	public void rollForwardInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
 			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
@@ -80,7 +80,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 	}
 	public void rollForwardExpiredInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		String query = "select co from CourseOffering co"
 				+ " where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "'"
 				+ "  and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId().longValue()
@@ -110,7 +110,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 	
 	public void rollForwardInstructionalOfferingForACourseOffering(CourseOffering co, Session fromSession, Session toSession){
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		
 		if (co != null){
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
@@ -121,7 +121,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	
 	public void addNewInstructionalOfferingsForASubjectArea(
 			String subjectAreaAbbreviation, Session toSession) {
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		if (sessionHasCourseCatalog(toSession)){
 		    String query = "select cc2 from CourseCatalog cc2";
 			query += " where cc2.session.uniqueId=:sessionId";
@@ -133,7 +133,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			query += "  and cc.session.uniqueId=:sessionId";
 			query += "  and cc.subject=:subjectAbbv";
 			query += "  and cc.courseNumber = co.courseNbr)";
-		    List l = coDao.getSession().createQuery(query)
+		    List<CourseCatalog> l = coDao.getSession().createQuery(query, CourseCatalog.class)
 				.setParameter("subjectAbbv", subjectAreaAbbreviation, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", toSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.list();
@@ -164,7 +164,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			if (instructionalOffering.getInstrOfferingPermId() == null){
 				instructionalOffering.generateInstrOfferingPermId();
 			}
-			InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
+			InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
 			ioDao.saveOrUpdate(instructionalOffering);
 			ioDao.getSession().flush();
 			ioDao.getSession().evict(instructionalOffering);
@@ -172,7 +172,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 
 	public void rollForwardInstructionalOfferingsForACourseOffering(String subjectAreaAbbreviation, String courseNumber, Session fromSession, Session toSession){
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
 		+ "' and co.getCourseNbr = '" + courseNumber
 		+ "' and co.isControl = true"
@@ -188,7 +188,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 
 	public void rollForwardInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session fromSession, Session toSession){
-		InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
+		InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
 		org.hibernate.Session hibSession = ioDao.getSession();
 		iLog.info("Rolling " + fromInstructionalOffering.getCourseNameWithTitle());
 		Transaction trns = null;
@@ -556,7 +556,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if(courseCatalogEntry.getSubparts() != null  && !courseCatalogEntry.getSubparts().isEmpty()){
 			CourseSubpartCredit courseSubpartCredit = null;
 			SchedulingSubpart schedSupart = null;
-			ItypeDescDAO itDao = new ItypeDescDAO();
+			ItypeDescDAO itDao = ItypeDescDAO.getInstance();
 			for (Iterator cscIt = courseCatalogEntry.getSubparts().iterator(); cscIt.hasNext();){
 				courseSubpartCredit = (CourseSubpartCredit) cscIt.next();
 				schedSupart = new SchedulingSubpart();

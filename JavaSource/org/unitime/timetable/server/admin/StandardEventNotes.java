@@ -75,7 +75,7 @@ public class StandardEventNotes implements AdminTable {
 
 		boolean editGlobal = context.hasPermission(Right.StandardEventNotesGlobalEdit);
 		if (editGlobal) appliesTo.add(new ListItem("_global", MESSAGES.levelGlobal()));
-		for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteGlobal order by reference").setCacheable(true).list()) {
+		for (StandardEventNote note: hibSession.createQuery("from StandardEventNoteGlobal order by reference", StandardEventNote.class).setCacheable(true).list()) {
 			Record r = data.addRecord(note.getUniqueId());
 			r.setField(0, note.getReference(), editGlobal);
 			r.setField(1, note.getNote(), editGlobal);
@@ -89,8 +89,8 @@ public class StandardEventNotes implements AdminTable {
 		if (editSession)
 			appliesTo.add(new ListItem("_session", data.getSessionName()));
 		
-		for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery(
-				"from StandardEventNoteSession where session.uniqueId = :sessionId order by reference").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+		for (StandardEventNote note: hibSession.createQuery(
+				"from StandardEventNoteSession where session.uniqueId = :sessionId order by reference", StandardEventNote.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Record r = data.addRecord(note.getUniqueId());
 			r.setField(0, note.getReference(), editSession);
 			r.setField(1, note.getNote(), editSession);
@@ -108,8 +108,8 @@ public class StandardEventNotes implements AdminTable {
 				data.setEditable(true);
 			}
 			
-			for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery(
-					"from StandardEventNoteDepartment where department.uniqueId = :deptId order by reference").setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+			for (StandardEventNote note: hibSession.createQuery(
+					"from StandardEventNoteDepartment where department.uniqueId = :deptId order by reference", StandardEventNote.class).setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Record r = data.addRecord(note.getUniqueId());
 				r.setField(0, note.getReference(), editDept);
 				r.setField(1, note.getNote(), editDept);
@@ -127,7 +127,7 @@ public class StandardEventNotes implements AdminTable {
 		Long sessionId = context.getUser().getCurrentAcademicSessionId();
 		
 		if (context.hasPermission(Right.StandardEventNotesGlobalEdit))
-			for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteGlobal").setCacheable(true).list()) {
+			for (StandardEventNote note: hibSession.createQuery("from StandardEventNoteGlobal", StandardEventNote.class).setCacheable(true).list()) {
 				Record r = data.getRecord(note.getUniqueId());
 				if (r == null)
 					delete(note, context, hibSession);
@@ -136,7 +136,7 @@ public class StandardEventNotes implements AdminTable {
 			}
 		
 		if (context.hasPermission(sessionId, "Session", Right.StandardEventNotesSessionEdit))
-			for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteSession where session.uniqueId = :sessionId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+			for (StandardEventNote note: hibSession.createQuery("from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNote.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Record r = data.getRecord(note.getUniqueId());
 				if (r == null)
 					delete(note, context, hibSession);
@@ -148,7 +148,7 @@ public class StandardEventNotes implements AdminTable {
 			if (!department.isAllowEvents()) continue;
 			if (!context.hasPermission(department, Right.StandardEventNotesDepartmentEdit)) continue;
 			
-			for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteDepartment where department.uniqueId = :deptId").setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+			for (StandardEventNote note: hibSession.createQuery("from StandardEventNoteDepartment where department.uniqueId = :deptId", StandardEventNote.class).setParameter("deptId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Record r = data.getRecord(note.getUniqueId());
 				if (r == null)
 					delete(note, context, hibSession);

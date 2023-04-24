@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,8 +33,6 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.base.BaseSolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
-
-
 
 /**
  * @author Tomas Muller

@@ -135,7 +135,7 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                     if (form.getDescription() == null || form.getDescription().isEmpty())
                     	form.setDescription(ApplicationProperty.getDescription(form.getKey()));
                     form.setAllSessions(false);
-                    List<Long> sessionIds = SessionConfigDAO.getInstance().getSession().createQuery("select session.uniqueId from SessionConfig where key = :key and value = :value")
+                    List<Long> sessionIds = SessionConfigDAO.getInstance().getSession().createQuery("select session.uniqueId from SessionConfig where key = :key and value = :value", Long.class)
                     		.setParameter("key", id, org.hibernate.type.StringType.INSTANCE).setParameter("value", sessionConfig.getValue(), org.hibernate.type.StringType.INSTANCE).list();
                     Long[] sessionIdsArry = new Long[sessionIds.size()];
                     for (int i = 0; i < sessionIds.size(); i++)
@@ -184,7 +184,9 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 	if (form.isAllSessions()) {
                 		if (wasSession) { // there was a session config for the current session
                 			if (update) { // update --> delete all with the same value
-                        		for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery("from SessionConfig where key = :key and value = :value").setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).setParameter("value", oldValue, org.hibernate.type.StringType.INSTANCE).list()) {
+                        		for (SessionConfig config: hibSession.createQuery(
+                        				"from SessionConfig where key = :key and value = :value", SessionConfig.class)
+                        				.setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).setParameter("value", oldValue, org.hibernate.type.StringType.INSTANCE).list()) {
                         			getSolverServerService().setApplicationProperty(config.getSession().getUniqueId(), form.getKey(), null);
                         			hibSession.delete(config);
                         		}
@@ -221,8 +223,8 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 		Set<Long> updatedSessionIds = new HashSet<Long>();
                 		
                 		for (Long sessionId: form.getSessions()) {
-                			SessionConfig config = (SessionConfig)hibSession.createQuery(
-                					"from SessionConfig where key = :key and session.uniqueId = :sessionId")
+                			SessionConfig config = hibSession.createQuery(
+                					"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class)
                 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
                 			if (config == null) {
                 				config = new SessionConfig();
@@ -241,8 +243,8 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 		
                 		if (update && oldValue != null) {
                 			// update --> delete old session values
-                			for (SessionConfig other: (List<SessionConfig>)hibSession.createQuery(
-                					"from SessionConfig where key = :key and value = :value")
+                			for (SessionConfig other: hibSession.createQuery(
+                					"from SessionConfig where key = :key and value = :value", SessionConfig.class)
                 					.setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).setParameter("value", oldValue, org.hibernate.type.StringType.INSTANCE).list()) {
                 				if (!updatedSessionIds.contains(other.getSession().getUniqueId())) {
                 					getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
@@ -274,8 +276,8 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 	
                 	SessionConfig sessionConfig = null;
                 	if (sessionContext.getUser().getCurrentAcademicSessionId() != null) {
-                		sessionConfig = (SessionConfig)hibSession.createQuery(
-        					"from SessionConfig where key = :key and session.uniqueId = :sessionId")
+                		sessionConfig = hibSession.createQuery(
+        					"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class)
         					.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
                 	}
                 	
@@ -290,8 +292,8 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 		hibSession.delete(sessionConfig);
                 		getSolverServerService().setApplicationProperty(sessionContext.getUser().getCurrentAcademicSessionId(), form.getKey(), null);
             			
-            			for (SessionConfig other: (List<SessionConfig>)hibSession.createQuery(
-            					"from SessionConfig where key = :key and value = :value")
+            			for (SessionConfig other: hibSession.createQuery(
+            					"from SessionConfig where key = :key and value = :value", SessionConfig.class)
             					.setParameter("key", form.getKey(), org.hibernate.type.StringType.INSTANCE).setParameter("value", oldValue, org.hibernate.type.StringType.INSTANCE).list()) {
             				getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
             				hibSession.delete(other);

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -30,8 +29,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 
 import org.unitime.timetable.model.base.BaseRoomTypeOption;
-
-
 
 /**
  * @author Tomas Muller

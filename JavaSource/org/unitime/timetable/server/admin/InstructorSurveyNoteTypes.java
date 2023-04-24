@@ -57,8 +57,8 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 	}
 	
 	protected List<InstructorCourseRequirementType> getInstructorCourseRequirementTypes() {
-		return (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorCourseRequirementType order by sortOrder").list();
+		return InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder", InstructorCourseRequirementType.class).list();
 	}
 
 	@Override

@@ -23,7 +23,6 @@ package org.unitime.timetable.reports.pointintimedata;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.Session;
@@ -98,7 +97,7 @@ public class WSCHByDepartmentDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOf
 		
 		HashSet<Long> processedClasses = new HashSet<Long>();
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
-			for (Object[] result : (List<Object[]>) hibSession.createQuery(sb.toString())
+			for (Object[] result : hibSession.createQuery(sb.toString(), Object[].class)
 									.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 									.setParameter("saId", subjectArea.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 									.setCacheable(true)

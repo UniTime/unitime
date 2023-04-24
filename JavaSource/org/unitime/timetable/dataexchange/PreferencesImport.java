@@ -153,8 +153,9 @@ public class PreferencesImport  extends BaseImport {
     private List<Department> iDepartments = null;
     protected Department lookupDepartment(Element element) {
     	if (iDepartments == null)
-    		iDepartments = (List<Department>)getHibSession().createQuery(
-	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId")
+    		iDepartments = getHibSession().createQuery(
+	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId",
+	        		Department.class)
 	        		.setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
     	String deptCode = element.attributeValue("code", "not-set");
     	for (Iterator<Department> i = iDepartments.iterator(); i.hasNext(); ) {
@@ -168,8 +169,9 @@ public class PreferencesImport  extends BaseImport {
     private List<DepartmentalInstructor> iInstructors = null;
     protected DepartmentalInstructor lookupInstructor(Element element) {
     	if (iInstructors == null)
-    		iInstructors = (List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+    		iInstructors = getHibSession().createQuery(
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
+	        		DepartmentalInstructor.class
     				).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
     	String externalId = element.attributeValue("externalId");
     	String deptCode = element.attributeValue("department", "not-set");
@@ -200,8 +202,9 @@ public class PreferencesImport  extends BaseImport {
     
     protected DepartmentalInstructor lookupInstructor(String externalId, String deptCode) {
     	if (iInstructors == null)
-    		iInstructors = (List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+    		iInstructors = getHibSession().createQuery(
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
+	        		DepartmentalInstructor.class
     				).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
     	for (Iterator<DepartmentalInstructor> i = iInstructors.iterator(); i.hasNext(); ) {
     		DepartmentalInstructor instructor = i.next();
@@ -216,8 +219,9 @@ public class PreferencesImport  extends BaseImport {
     protected DatePattern lookupDatePattern(String name) {
     	if (iDatePatterns == null) {
     		iDatePatterns = new HashMap<String, DatePattern>();
-    		for (DatePattern pattern: (List<DatePattern>)getHibSession().createQuery(
-    				"from DatePattern where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (DatePattern pattern: getHibSession().createQuery(
+    				"from DatePattern where session.uniqueId = :sessionId",
+    				DatePattern.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iDatePatterns.put(pattern.getName(), pattern);
     	}
     	return iDatePatterns.get(name);
@@ -226,7 +230,7 @@ public class PreferencesImport  extends BaseImport {
     private List<SchedulingSubpart> iSubparts = null;
     protected SchedulingSubpart lookupSubpart(Element element) {
     	if (iSubparts == null) {
-    		iSubparts = (List<SchedulingSubpart>)getHibSession().createQuery(
+    		iSubparts = getHibSession().createQuery(
 	        		"select distinct ss from SchedulingSubpart ss " +
 	        		"left join fetch ss.instrOfferingConfig as ioc " +
 	        		"left join fetch ioc.instructionalOffering as io " +
@@ -234,7 +238,8 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
+	        		SchedulingSubpart.class
 	        		).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)
@@ -264,7 +269,7 @@ public class PreferencesImport  extends BaseImport {
     private List<Class_> iClasses = null;
     protected Class_ lookupClass(Element element) {
     	if (iClasses == null) {
-    		iSubparts = (List<SchedulingSubpart>)getHibSession().createQuery(
+    		iSubparts = getHibSession().createQuery(
 	        		"select distinct ss from SchedulingSubpart ss " +
 	        		"left join fetch ss.instrOfferingConfig as ioc " +
 	        		"left join fetch ioc.instructionalOffering as io " +
@@ -272,7 +277,8 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
+	        		SchedulingSubpart.class
 	        		).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)
@@ -331,8 +337,9 @@ public class PreferencesImport  extends BaseImport {
     protected TimePattern lookupTimePattern(String name) {
     	if (iTimePatterns == null) {
     		iTimePatterns = new HashMap<String, TimePattern>();
-    		for (TimePattern pattern: (List<TimePattern>)getHibSession().createQuery(
-    				"from TimePattern where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (TimePattern pattern: getHibSession().createQuery(
+    				"from TimePattern where session.uniqueId = :sessionId",
+    				TimePattern.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iTimePatterns.put(pattern.getName(), pattern);
     	}
     	TimePattern tp = iTimePatterns.get(name);
@@ -344,8 +351,9 @@ public class PreferencesImport  extends BaseImport {
     protected Building lookupBuilding(String abbv) {
     	if (iBuildings == null) {
     		iBuildings = new HashMap<String, Building>();
-    		for (Building building: (List<Building>)getHibSession().createQuery(
-    				"from Building where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (Building building: getHibSession().createQuery(
+    				"from Building where session.uniqueId = :sessionId",
+    				Building.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iBuildings.put(building.getAbbreviation(), building);
     	}
     	Building b = iBuildings.get(abbv);
@@ -357,8 +365,9 @@ public class PreferencesImport  extends BaseImport {
     protected Room lookupRoom(String buildingAbbv, String roomNbr) {
     	if (iRooms == null) {
     		iRooms = new HashMap<String, Room>();
-    		for (Room room: (List<Room>)getHibSession().createQuery(
-    				"from Room where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (Room room: getHibSession().createQuery(
+    				"from Room where session.uniqueId = :sessionId",
+    				Room.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iRooms.put(room.getBuildingAbbv() + " " + room.getRoomNumber(), room);
     	}
     	Room r = iRooms.get(buildingAbbv + " " + roomNbr);
@@ -370,8 +379,9 @@ public class PreferencesImport  extends BaseImport {
     protected Location lookupLocation(String label, String deptCode) {
     	if (iLocations == null) {
     		iLocations = new HashMap<String, Location>();
-    		for (Location location: (List<Location>)getHibSession().createQuery(
-    				"from NonUniversityLocation where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (Location location: getHibSession().createQuery(
+    				"from NonUniversityLocation where session.uniqueId = :sessionId",
+    				Location.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			for (RoomDept rd: location.getRoomDepts()) {
     				iLocations.put(location.getLabel() + "|" + rd.getDepartment().getDeptCode(), location);
     			}
@@ -385,8 +395,9 @@ public class PreferencesImport  extends BaseImport {
     protected RoomGroup lookupRoomGroup(String name, String deptCode) {
     	if (iRoomGroups == null) {
     		iRoomGroups = new HashMap<String, RoomGroup>();
-    		for (RoomGroup group: (List<RoomGroup>)getHibSession().createQuery(
-    				"from RoomGroup where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (RoomGroup group: getHibSession().createQuery(
+    				"from RoomGroup where session.uniqueId = :sessionId",
+    				RoomGroup.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			if (group.isGlobal())
     				iRoomGroups.put(group.getAbbv(), group);
     			else
@@ -402,11 +413,13 @@ public class PreferencesImport  extends BaseImport {
     protected RoomFeature lookupRoomFeature(String name, String deptCode) {
     	if (iRoomFeatures == null) {
     		iRoomFeatures = new HashMap<String, RoomFeature>();
-    		for (GlobalRoomFeature feature: (List<GlobalRoomFeature>)getHibSession().createQuery(
-    				"from GlobalRoomFeature where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (GlobalRoomFeature feature: getHibSession().createQuery(
+    				"from GlobalRoomFeature where session.uniqueId = :sessionId",
+    				GlobalRoomFeature.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iRoomFeatures.put(feature.getAbbv(), feature);
-    		for (DepartmentRoomFeature feature: (List<DepartmentRoomFeature>)getHibSession().createQuery(
-    				"from DepartmentRoomFeature where department.session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (DepartmentRoomFeature feature: getHibSession().createQuery(
+    				"from DepartmentRoomFeature where department.session.uniqueId = :sessionId",
+    				DepartmentRoomFeature.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iRoomFeatures.put(feature.getAbbv() + "|" + feature.getDepartment().getDeptCode(), feature);
     	}
     	RoomFeature f = iRoomFeatures.get(name);
@@ -419,8 +432,8 @@ public class PreferencesImport  extends BaseImport {
     protected DistributionType lookupDistributionType(String name) {
     	if (iDistributionTypes == null) {
     		iDistributionTypes = new HashMap<String, DistributionType>();
-    		for (DistributionType type: (List<DistributionType>)getHibSession().createQuery(
-    				"from DistributionType").list())
+    		for (DistributionType type: getHibSession().createQuery(
+    				"from DistributionType", DistributionType.class).list())
     			iDistributionTypes.put(type.getReference(), type);
     	}
     	DistributionType type = iDistributionTypes.get(name);
@@ -432,8 +445,9 @@ public class PreferencesImport  extends BaseImport {
     protected CourseOffering lookupCourse(String subjectAbbv, String courseNbr) {
     	if (iCourseOfferings == null) {
     		iCourseOfferings = new HashMap<String, CourseOffering>();
-    		for (CourseOffering course: (List<CourseOffering>)getHibSession().createQuery(
-    				"from CourseOffering co where co.instructionalOffering.session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    		for (CourseOffering course: getHibSession().createQuery(
+    				"from CourseOffering co where co.instructionalOffering.session.uniqueId = :sessionId",
+    				CourseOffering.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			iCourseOfferings.put(course.getSubjectAreaAbbv() + "|" + course.getCourseNbr(), course);
     	}
     	CourseOffering course = iCourseOfferings.get(subjectAbbv + "|" + courseNbr);
@@ -446,7 +460,8 @@ public class PreferencesImport  extends BaseImport {
     	if (iInstructorAttributes == null) {
     		iInstructorAttributes = new HashMap<String, InstructorAttribute>();
     		for (InstructorAttribute attribute: (List<InstructorAttribute>)getHibSession().createQuery(
-    				"from InstructorAttribute where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
+    				"from InstructorAttribute where session.uniqueId = :sessionId",
+    				InstructorAttribute.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list())
     			if (attribute.getDepartment() == null)
     				iInstructorAttributes.put(attribute.getCode(), attribute);
     			else
@@ -463,7 +478,8 @@ public class PreferencesImport  extends BaseImport {
     	if (iExamPeriods == null) {
     		iExamPeriods = new HashMap<String, ExamPeriod>();
     		for (ExamPeriod period: (List<ExamPeriod>)getHibSession().createQuery(
-    				"from ExamPeriod where session.uniqueId = :sessionId").setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+    				"from ExamPeriod where session.uniqueId = :sessionId",
+    				ExamPeriod.class).setParameter("sessionId", iSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
     			iExamPeriods.put(iDateFormat.format(period.getStartDate()) + "|" + iTimeFormat.format(period.getStartTime()), period);
     			iExamPeriods.put(iDateFormat.format(period.getStartDate()) + "|" + iTimeFormat.format(period.getStartTime()) + "|" + period.getExamType().getReference(), period);
     		}

@@ -131,7 +131,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         if (MSG.actionAddRole().equals(op)) {
         	form.validate(this);
         	if (!hasFieldErrors() && !form.getRoles().contains(form.getRole())) {
-                Roles role = new RolesDAO().get(form.getRole());
+                Roles role = RolesDAO.getInstance().get(form.getRole());
                 form.addToRoles(role); 
                 if (form.getRoles().size()==1)
                     form.setPrimaryRole(role.getRoleId());
@@ -143,7 +143,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         if (MSG.actionAddDepartment().equals(op)) {
         	form.validate(this);
         	if (!hasFieldErrors() && !form.getDepts().contains(form.getDept())) {
-                Department dept = new DepartmentDAO().get(form.getDept());            
+                Department dept = DepartmentDAO.getInstance().get(form.getDept());            
                 form.addToDepts(dept);    
             }
         }
@@ -152,7 +152,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         if (MSG.actionAddSolverGroup().equals(op)) {
         	form.validate(this);
         	if (!hasFieldErrors() && !form.getSolverGrs().contains(form.getSolverGr())) {
-                SolverGroup sg = new SolverGroupDAO().get(form.getSolverGr());            
+                SolverGroup sg = SolverGroupDAO.getInstance().get(form.getSolverGr());            
                 form.addToSolverGrs(sg);    
             }
         }
@@ -319,10 +319,10 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
     	
         lookupManager();
         
-        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-        RolesDAO rDao = new RolesDAO();
-        DepartmentDAO dDao = new DepartmentDAO();
-        SolverGroupDAO sgDao = new SolverGroupDAO();
+        TimetableManagerDAO mgrDao = TimetableManagerDAO.getInstance();
+        RolesDAO rDao = RolesDAO.getInstance();
+        DepartmentDAO dDao = DepartmentDAO.getInstance();
+        SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
         
         Session hibSession = mgrDao.getSession();
         
@@ -394,10 +394,10 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
     	
         lookupManager();
         
-        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-        RolesDAO rDao = new RolesDAO();
-        DepartmentDAO dDao = new DepartmentDAO();
-        SolverGroupDAO sgDao = new SolverGroupDAO();
+        TimetableManagerDAO mgrDao = TimetableManagerDAO.getInstance();
+        RolesDAO rDao = RolesDAO.getInstance();
+        DepartmentDAO dDao = DepartmentDAO.getInstance();
+        SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
         
         Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
         
@@ -592,7 +592,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
     private void deleteManager() {
     	sessionContext.checkPermission(form.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
         
-        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
+        TimetableManagerDAO mgrDao = TimetableManagerDAO.getInstance();
         Session hibSession = mgrDao.getSession();
         TimetableManager mgr = mgrDao.get(form.getUniqueId());
 

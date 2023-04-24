@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -36,8 +35,6 @@ import org.hibernate.HibernateException;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.base.BaseSolverParameterDef;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
-
-
 
 
 /**
@@ -68,7 +65,7 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	 */
 	@Transient
 	public static ArrayList getAll() throws HibernateException {
-		return (ArrayList) (new SolverParameterDefDAO().findAll());
+		return (ArrayList) (SolverParameterDefDAO.getInstance().findAll());
 	}
 
 	/**
@@ -77,7 +74,7 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	 * @throws HibernateException
 	 */
 	public static SolverParameterDef getSolverParameterDefById(Long id) throws HibernateException {
-		return (new SolverParameterDefDAO()).get(id);
+		return (SolverParameterDefDAO.getInstance()).get(id);
 	}
 	
 	/**
@@ -85,7 +82,7 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	 * @throws HibernateException
 	 */
 	public void saveOrUpdate() throws HibernateException {
-		(new SolverParameterDefDAO()).saveOrUpdate(this);
+		(SolverParameterDefDAO.getInstance()).saveOrUpdate(this);
 	}
 	
 	@Deprecated
@@ -103,8 +100,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	}
 
 	public static SolverParameterDef findByNameGroup(org.hibernate.Session hibSession, String name, String group) {
-		List<SolverParameterDef> list = (List<SolverParameterDef>)hibSession.createQuery(
-				"from SolverParameterDef where name = :name and group.name = :group")
+		List<SolverParameterDef> list = hibSession.createQuery(
+				"from SolverParameterDef where name = :name and group.name = :group", SolverParameterDef.class)
 				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("group", group, org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).list();
@@ -116,8 +113,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	}
 	
 	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, SolverType type) {
-		List<SolverParameterDef> list = (List<SolverParameterDef>)hibSession.createQuery(
-				"from SolverParameterDef where name = :name and group.type = :type")
+		List<SolverParameterDef> list = hibSession.createQuery(
+				"from SolverParameterDef where name = :name and group.type = :type", SolverParameterDef.class)
 				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("type", type.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
 				.setCacheable(true).list();

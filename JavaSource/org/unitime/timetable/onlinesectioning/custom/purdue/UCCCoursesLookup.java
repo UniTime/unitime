@@ -36,8 +36,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
-import org.hibernate.type.BigDecimalType;
-import org.hibernate.type.LongType;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -144,7 +142,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		if (cache == null || !cache.isActive(getCourseAttributesTTL())) {
 			Map<String, CourseAttribute> attributes = new HashMap<String, CourseAttribute>();
 			String term = getBannerTerm(session);
-			for (Object[] data: (List<Object[]>)(hibSession == null ? new _RootDAO().getSession() : hibSession).createNativeQuery(getListAttributesSQL())
+			for (Object[] data: (hibSession == null ? new _RootDAO().getSession() : hibSession).createNativeQuery(getListAttributesSQL(), Object[].class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("term", term, org.hibernate.type.StringType.INSTANCE)
 					.list()) {
@@ -213,20 +211,20 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		} else {
-			for (Object courseId: helper.getHibSession().createNativeQuery(getCourseLookupFullSQL())
+			for (Long courseId: helper.getHibSession().createNativeQuery(getCourseLookupFullSQL(), Long.class)
 					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
-				XCourse course = server.getCourse(((Number)courseId).longValue());
+				XCourse course = server.getCourse(courseId);
 				if (course != null)
 					ret.add(course);
 			}
 			if (allowPartialMatch && ret.isEmpty()) {
-				for (Object courseId: helper.getHibSession().createNativeQuery(getCourseLookupPartialSQL())
+				for (Long courseId: helper.getHibSession().createNativeQuery(getCourseLookupPartialSQL(), Long.class)
 						.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
-					XCourse course = server.getCourse(((Number)courseId).longValue());
+					XCourse course = server.getCourse(courseId);
 					if (course != null)
 						ret.add(course);
 				}
@@ -256,22 +254,22 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
-			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
-					.setParameterList("courseIds", courseIds, LongType.INSTANCE).setCacheable(true).list();
+			return hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr", CourseOffering.class)
+					.setParameterList("courseIds", courseIds, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else {
-			List courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL())
+			List<Long> courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL(), Long.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
-				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL())
+				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL(), Long.class)
 						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
-			return (List<CourseOffering>)hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr")
-					.setParameterList("courseIds", courseIds, BigDecimalType.INSTANCE).setCacheable(true).list();
+			return hibSession.createQuery("from CourseOffering where uniqueId in :courseIds order by subjectAreaAbbv, courseNbr", CourseOffering.class)
+					.setParameterList("courseIds", courseIds, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 	}
 	
@@ -294,20 +292,18 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 		} else {
 			if (hibSession == null)
 				hibSession = new _RootDAO().getSession();
-			List courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL())
+			List<Long> courseIds = hibSession.createNativeQuery(getCourseLookupFullSQL(), Long.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			if (allowPartialMatch && (courseIds == null || courseIds.isEmpty())) {
-				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL())
+				courseIds = hibSession.createNativeQuery(getCourseLookupPartialSQL(), Long.class)
 						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("term", getBannerTerm(session), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list();
 			}
 			if (courseIds == null || courseIds.isEmpty()) return null;
-			Set<Long> ret = new HashSet<Long>();
-			for (Object courseId: courseIds)
-				ret.add(((Number)courseId).longValue());
+			Set<Long> ret = new HashSet<Long>(courseIds);
 			return ret;
 		}
 	}
@@ -389,7 +385,7 @@ public class UCCCoursesLookup implements CustomCourseLookup {
 				}
 			}
 		} else {
-			for (Object[] data: (List<Object[]>)helper.getHibSession().createNativeQuery(getSuggestionSQL())
+			for (Object[] data: helper.getHibSession().createNativeQuery(getSuggestionSQL(), Object[].class)
 					.setParameter("term", getBannerTerm(server.getAcademicSession()), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("query", q, org.hibernate.type.StringType.INSTANCE).list()) {
 				String course_attribute = (String)data[0];

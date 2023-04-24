@@ -227,7 +227,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 
 				List<EnrollmentRequest> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper, checkErrors);
 				
-				Student student = (Student)helper.getHibSession().createQuery(
+				Student student = helper.getHibSession().createQuery(
 						"select s from Student s " +
 						"left join fetch s.courseDemands as cd " +
 	                    "left join fetch cd.courseRequests as cr " +
@@ -239,7 +239,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	                    "left join fetch e.clazz as c " +
 	                    "left join fetch c.managingDept as cmd " +
 	                    "left join fetch c.schedulingSubpart as ss " +
-						"where s.uniqueId = :studentId").setParameter("studentId", getStudentId(), org.hibernate.type.LongType.INSTANCE).uniqueResult();
+						"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId(), org.hibernate.type.LongType.INSTANCE).uniqueResult();
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				wlMode = student.getWaitListMode();
 				

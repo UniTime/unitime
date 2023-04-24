@@ -37,7 +37,7 @@ public class UniTimeUserDetailService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		org.hibernate.Session hibSession = UserDAO.getInstance().createNewSession();
 		try {
-			User user = (User) hibSession.createQuery("from User where username=:userName")
+			User user =  hibSession.createQuery("from User where username=:userName", User.class)
 					.setParameter("userName", username, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 
 			if (user == null)

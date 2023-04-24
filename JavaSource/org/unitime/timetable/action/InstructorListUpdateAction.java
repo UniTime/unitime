@@ -177,7 +177,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 		if (selectedNotAssigned.length != 0)
 			for (String id: selectedNotAssigned) s2.add(id); 
 		
-		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+		DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
 		HashSet<Class_> updatedClasses = new HashSet<Class_>(); 
@@ -237,7 +237,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 						inst.setEmail(staff.getEmail());
 						
 						String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
-						Department d = new DepartmentDAO().get(Long.valueOf(deptId));
+						Department d = DepartmentDAO.getInstance().get(Long.valueOf(deptId));
 						inst.setDepartment(d);
 						d.getInstructors().add(inst);
 						
@@ -294,7 +294,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 	private Collection getAvailable() throws Exception {
 		if (request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
-			Department d = new DepartmentDAO().get(Long.valueOf(deptId));
+			Department d = DepartmentDAO.getInstance().get(Long.valueOf(deptId));
 			List available = Staff.getStaffByDept(d.getDeptCode().trim(), sessionContext.getUser().getCurrentAcademicSessionId());			
 			Collections.sort(available, new StaffComparator(StaffComparator.COMPARE_BY_POSITION));
 			return available;
@@ -321,7 +321,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 		String deptId = (String)request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
 		if (deptId != null) {
 			try {
-				Department d = new DepartmentDAO().get(Long.valueOf(deptId));
+				Department d = DepartmentDAO.getInstance().get(Long.valueOf(deptId));
 				if (d != null) {
 					form.setDeptName(d.getName().trim());
 				}

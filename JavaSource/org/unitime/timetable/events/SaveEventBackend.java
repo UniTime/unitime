@@ -182,8 +182,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						for (EventContact x: existingContacts)
 							if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
 						if (contact == null) {
-							contact = (EventContact)hibSession.createQuery(
-									"from EventContact where externalUniqueId = :externalId")
+							contact = hibSession.createQuery(
+									"from EventContact where externalUniqueId = :externalId", EventContact.class)
 									.setParameter("externalId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 						}
 						if (contact == null) {
@@ -233,8 +233,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			
 			EventContact main = event.getMainContact();
 			if (main == null || main.getExternalUniqueId() == null || !main.getExternalUniqueId().equals(request.getEvent().getContact().getExternalId())) {
-				main = (EventContact)hibSession.createQuery(
-						"from EventContact where externalUniqueId = :externalId")
+				main = hibSession.createQuery(
+						"from EventContact where externalUniqueId = :externalId", EventContact.class)
 						.setParameter("externalId", request.getEvent().getContact().getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 				if (main == null) {
 					main = new EventContact();
@@ -383,8 +383,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							for (EventContact x: existingContacts)
 								if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
 							if (contact == null) {
-								contact = (EventContact)hibSession.createQuery(
-										"from EventContact where externalUniqueId = :externalId")
+								contact = hibSession.createQuery(
+										"from EventContact where externalUniqueId = :externalId", EventContact.class)
 										.setParameter("externalId", c.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 							}
 							if (contact == null) {
@@ -674,10 +674,11 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 	
 	private List<MeetingConflictInterface> computeConflicts(org.hibernate.Session hibSession, MeetingInterface meeting, Long eventId) {
 		List<MeetingConflictInterface> conflicts = new ArrayList<EventInterface.MeetingConflictInterface>();
-		for (Meeting m: (List<Meeting>)hibSession.createQuery(
+		for (Meeting m: hibSession.createQuery(
 				"select m from Meeting m, Location l "+
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and l.ignoreRoomCheck = false and " +
-				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1")
+				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1",
+				Meeting.class)
 				.setParameter("startTime", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("stopTime", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
 				.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)

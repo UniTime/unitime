@@ -52,7 +52,7 @@ public class ExactTimeEditForm implements UniTimeForm {
 	public void save() throws Exception {
 		Transaction tx = null;
         try {
-            org.hibernate.Session hibSession = (new ExactTimeMinsDAO()).getSession();
+            org.hibernate.Session hibSession = (ExactTimeMinsDAO.getInstance()).getSession();
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 tx = hibSession.beginTransaction();
             for (ExactTimeMins ex: iExactTimeMins) {

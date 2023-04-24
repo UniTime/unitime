@@ -102,8 +102,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 		if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
 			gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 		
-		for (CourseRequest request: (List<CourseRequest>)helper.getHibSession().createQuery(
-				"from CourseRequest where courseOffering.uniqueId = :courseId"
+		for (CourseRequest request: helper.getHibSession().createQuery(
+				"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class
 				).setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse(), isMyStudent(request.getCourseDemand().getStudent()), helper.getStudentNameFormat(), lookup);
 			if (classId() != null) {

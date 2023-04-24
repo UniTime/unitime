@@ -110,7 +110,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                     	TreeSet<SubjectArea> subjectAreas = new TreeSet<SubjectArea>();
                     	String subjAbbvs = "";
                         for (int j=0;j<form.getSubjects().length;j++) {
-                            SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(form.getSubjects()[j]));
+                            SubjectArea subject = SubjectAreaDAO.getInstance().get(Long.valueOf(form.getSubjects()[j]));
                             if (subjAbbvs.length() == 0){
                             	subjAbbvs = subject.getSubjectAreaAbbreviation();
                         	}else if (subjAbbvs.length() < 40) {

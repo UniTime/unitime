@@ -166,7 +166,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
         }
         
         // If subpart id is not null - load subpart info
-	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+	    DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 	    DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
         LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
         
@@ -400,10 +400,11 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 						
 				org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 				Map<Event, Set<Meeting>> unavailabilities = new HashMap<Event, Set<Meeting>>();
-				for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
+				for (Meeting meeting: hibSession.createQuery(
 						"select distinct m from Event e inner join e.meetings m left outer join e.additionalContacts c, Session s " +
 						"where type(e) in (CourseEvent, SpecialEvent, UnavailableEvent) and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate " +
-						"and s.uniqueId = :sessionId and (e.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and m.approvalStatus = 1"
+						"and s.uniqueId = :sessionId and (e.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and m.approvalStatus = 1",
+						Meeting.class
 						)
 						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("user", inst.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
@@ -505,9 +506,10 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 			
 			if (inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
 				List<IdValue> departments = new ArrayList<IdValue>();
-				for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				for (DepartmentalInstructor di: DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 						"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
-						"order by i.department.deptCode").setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+						"order by i.department.deptCode", DepartmentalInstructor.class)
+						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("externalId", inst.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 					if (sessionContext.hasPermission(di, Right.InstructorDetail)) {
 						departments.add(new IdValue(di.getUniqueId(), di.getDepartment().getLabel()));

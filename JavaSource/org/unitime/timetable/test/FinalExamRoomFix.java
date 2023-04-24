@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.test;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.hibernate.Session;
@@ -40,8 +39,8 @@ public class FinalExamRoomFix {
             
             ExamType type = ExamType.findByReference("final");
             
-            for(Location location: (List<Location>)hibSession.createQuery(
-            		"select distinct p.location from ExamLocationPref p where p.examPeriod.examType.uniqueId = :type"
+            for(Location location: hibSession.createQuery(
+            		"select distinct p.location from ExamLocationPref p where p.examPeriod.examType.uniqueId = :type", Location.class
             		).setParameter("type", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");
@@ -50,8 +49,8 @@ public class FinalExamRoomFix {
             	}
             }
 
-            for(Location location: (List<Location>)hibSession.createQuery(
-            		"select distinct r from Exam x inner join x.assignedRooms r where x.examType.uniqueId = :type"
+            for(Location location: hibSession.createQuery(
+            		"select distinct r from Exam x inner join x.assignedRooms r where x.examType.uniqueId = :type", Location.class
             		).setParameter("type", type.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");

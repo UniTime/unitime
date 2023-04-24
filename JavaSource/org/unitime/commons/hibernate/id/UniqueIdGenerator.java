@@ -38,7 +38,7 @@ import org.hibernate.type.Type;
  * @author Tomas Muller
  */
 public class UniqueIdGenerator implements IdentifierGenerator {
-    IdentifierGenerator iGenerator = null;
+	IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
     

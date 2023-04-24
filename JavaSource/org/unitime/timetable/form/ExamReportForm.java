@@ -69,7 +69,7 @@ public class ExamReportForm implements UniTimeForm {
 	public void setShowSections(boolean showSections) { iShowSections = showSections; }
 	
 	public Long getSubjectArea() { return iSubjectArea; }
-	public String getSubjectAreaAbbv() { return new SubjectAreaDAO().get(iSubjectArea).getSubjectAreaAbbreviation(); }
+	public String getSubjectAreaAbbv() { return SubjectAreaDAO.getInstance().get(iSubjectArea).getSubjectAreaAbbreviation(); }
 	public void setSubjectArea(Long subjectArea) { iSubjectArea = subjectArea; } 
 	public Collection getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }

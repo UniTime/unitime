@@ -236,7 +236,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         }
         
         if (op.equals(MSG.actionLockIO())) {
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+		    InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	    	sessionContext.checkPermission(io, Right.OfferingCanLock);
@@ -247,7 +247,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         }
 		
         if (op.equals(MSG.actionUnlockIO())) {
-	    	InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	    	InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	    	sessionContext.checkPermission(io, Right.OfferingCanUnlock);
@@ -283,7 +283,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         Transaction tx = null;
         
         try {
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+		    InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 
 	        hibSession = idao.getSession();
@@ -349,7 +349,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
     private void doLoad() throws Exception {
         
         // Load Instr Offering
-        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+        InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
         InstructionalOffering io = idao.get(instrOfferingId);
         Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
         
@@ -549,7 +549,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
         org.hibernate.Session hibSession = null;
         
         try {
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+		    InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 		    hibSession = idao.getSession();
 	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
 	        
@@ -627,7 +627,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
     	org.hibernate.Session hibSession = null;
         
         try {
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+		    InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 		    hibSession = idao.getSession();
 	        InstructionalOffering io = idao.get(form.getInstrOfferingId());
             

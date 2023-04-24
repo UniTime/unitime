@@ -23,7 +23,6 @@ import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
@@ -66,13 +65,13 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	
 	protected Hashtable<Long, Set<WeightedStudentId>> loadDemandsForSubjectArea(SubjectArea subjectArea) {
 		Hashtable<Long, Set<WeightedStudentId>> demands = new Hashtable<Long, Set<WeightedStudentId>>();
-		for (Object[] o: (List<Object[]>) iHibSession.createQuery(
+		for (Object[] o: iHibSession.createQuery(
 					"select distinct s, r.courseOffering.uniqueId, r.courseDemand.priority, r.courseDemand.alternative" +
 					(iIncludeAlternatives ? ", r.order, " +
 						"(select max(x.order) from CourseRequest x where x.courseDemand = r.courseDemand)," +
 						"(select x.courseOffering.instructionalOffering.uniqueId from CourseRequest x where x.courseDemand = r.courseDemand and x.order = 0)" : "") +
 					" from CourseRequest r inner join r.courseDemand.student s left join fetch s.areaClasfMajors where " +
-					"r.courseOffering.subjectArea.uniqueId = :subjectId" + (iIncludeAlternatives ? "" : " and r.order = 0"))
+					"r.courseOffering.subjectArea.uniqueId = :subjectId" + (iIncludeAlternatives ? "" : " and r.order = 0"), Object[].class)
 					.setParameter("subjectId", subjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Student s = (Student)o[0];
 			Long courseId = (Long)o[1];
@@ -105,13 +104,13 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
 		if (iStudentRequests == null) {
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
-			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
+			for (Object[] o : iHibSession.createQuery(
 					"select distinct d.student.uniqueId, c, d.priority, d.alternative" +
 					(iIncludeAlternatives ? ", r.order, " +
 							"(select max(x.order) from CourseRequest x where x.courseDemand = r.courseDemand), " +
 							"(select x.courseOffering.instructionalOffering.uniqueId from CourseRequest x where x.courseDemand = r.courseDemand and x.order = 0)" : "") +
 					" from CourseRequest r inner join r.courseOffering c inner join r.courseDemand d where d.student.session.uniqueId = :sessionId" +
-					(iIncludeAlternatives ? "" : " and r.order = 0"))
+					(iIncludeAlternatives ? "" : " and r.order = 0"), Object[].class)
 					.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Long sid = (Long)o[0];
 				CourseOffering co = (CourseOffering)o[1];

@@ -132,7 +132,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             if (!hasFieldErrors()) {
             	Transaction tx = null;
             	try {
-            		SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+            		SolverPredefinedSettingDAO dao = SolverPredefinedSettingDAO.getInstance();
             		org.hibernate.Session hibSession = dao.getSession();
                     if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     	tx = hibSession.beginTransaction();
@@ -151,7 +151,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             			params = new HashSet();
             			setting.setParameters(params);
             		}
-            		for (Iterator i=(new SolverParameterDefDAO()).findAll(hibSession).iterator();i.hasNext();) {
+            		for (Iterator i=(SolverParameterDefDAO.getInstance()).findAll(hibSession).iterator();i.hasNext();) {
             			SolverParameterDef def = (SolverParameterDef)i.next();
             			SolverParameter param = null;
             			for (Iterator j=params.iterator();j.hasNext();) {
@@ -211,7 +211,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             } else {
             	Transaction tx = null;
             	try {
-            		SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+            		SolverPredefinedSettingDAO dao = SolverPredefinedSettingDAO.getInstance();
             		org.hibernate.Session hibSession = dao.getSession();
                     if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     	tx = hibSession.beginTransaction();
@@ -249,7 +249,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
         	if (form.getUniqueId() == null) {
             	addFieldError("form.uniqueId", MSG.errorRequiredField("Id"));
             } else {
-                SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+                SolverPredefinedSettingDAO dao = SolverPredefinedSettingDAO.getInstance();
                 org.hibernate.Session hibSession = dao.getSession();
             
                 SolverPredefinedSetting setting = dao.get(form.getUniqueId(), hibSession);
@@ -323,7 +323,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
         	Transaction tx = null;
     		
             try {
-            	SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+            	SolverPredefinedSettingDAO dao = SolverPredefinedSettingDAO.getInstance();
             	org.hibernate.Session hibSession = dao.getSession();
                 if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 	tx = hibSession.beginTransaction();
@@ -361,7 +361,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
 			    null );
         
         try {
-        	SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+        	SolverPredefinedSettingDAO dao = SolverPredefinedSettingDAO.getInstance();
         	org.hibernate.Session hibSession = dao.getSession();
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             	tx = hibSession.beginTransaction();
@@ -398,8 +398,8 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
 	
     
     public List<SolverParameterGroup> getSolverParameterGroups() {
-    	return (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
-    			"from SolverParameterGroup order by order").list();
+    	return SolverParameterGroupDAO.getInstance().getSession().createQuery(
+    			"from SolverParameterGroup order by order", SolverParameterGroup.class).list();
     }
 
 }

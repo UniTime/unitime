@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.Session;
@@ -116,7 +115,7 @@ public class WSCHByBuildingDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOfDa
 		
 		HashSet<Long> processedClasses = new HashSet<Long>();
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
-			for (PitClass pc : (List<PitClass>) hibSession.createQuery(sb.toString())
+			for (PitClass pc : hibSession.createQuery(sb.toString(), PitClass.class)
 								.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 								.setParameter("saId", subjectArea.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 								.setCacheable(true)

@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -114,7 +113,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime(), getPictureType(p.getType())));
 
 			boolean samePast = true, sameFuture = true;
-			for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
+			for (Location other: hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId", Location.class)
 					.setParameter("uniqueId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				if (!samePictures(location, other)) {
 					if (other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime())) {
@@ -170,7 +169,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			}
 			hibSession.saveOrUpdate(location);
 			if (request.getApply() != Apply.THIS_SESSION_ONLY) {
-				for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
+				for (Location other: hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId", Location.class)
 						.setParameter("uniqueId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					
 					if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))

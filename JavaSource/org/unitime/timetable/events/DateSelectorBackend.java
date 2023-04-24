@@ -62,16 +62,16 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		Calendar calendar = Calendar.getInstance();
 
 		List<Date> finals = new ArrayList<Date>();
-		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
-				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType and examType.highlightInEvents = true")
+		for (Number dateOffset: SessionDAO.getInstance().getSession().createQuery(
+				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType and examType.highlightInEvents = true", Number.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("finalType", ExamType.sExamTypeFinal, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    finals.add(calendar.getTime());
 		}
 		List<Date> midterms = new ArrayList<Date>();
-		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
-				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :midtermType and examType.highlightInEvents = true")
+		for (Number dateOffset: SessionDAO.getInstance().getSession().createQuery(
+				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :midtermType and examType.highlightInEvents = true", Number.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("midtermType", ExamType.sExamTypeMidterm, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());

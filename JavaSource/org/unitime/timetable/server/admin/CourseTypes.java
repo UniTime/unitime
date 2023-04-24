@@ -65,8 +65,8 @@ public class CourseTypes implements AdminTable {
 			r.setField(0, ctype.getReference());
 			r.setField(1, ctype.getLabel());
 			int used =
-					((Number)hibSession.createQuery(
-							"select count(c) from CourseOffering c where c.courseType.uniqueId = :uniqueId")
+					(hibSession.createQuery(
+							"select count(c) from CourseOffering c where c.courseType.uniqueId = :uniqueId", Number.class)
 							.setParameter("uniqueId", ctype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}

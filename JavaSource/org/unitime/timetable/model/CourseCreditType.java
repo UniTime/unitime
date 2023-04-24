@@ -20,19 +20,15 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import java.util.List;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseCourseCreditType;
 import org.unitime.timetable.model.dao.CourseCreditTypeDAO;
 import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
-
-
 
 
 /**
@@ -60,14 +56,16 @@ public class CourseCreditType extends BaseCourseCreditType {
 	public static String COURSE_CREDIT_TYPE_ATTR_NAME = "courseCreditTypeList";
 	
 	@Transient
-	public static synchronized List<CourseCreditType> getCourseCreditTypeList() {
-		return CourseCreditTypeDAO.getInstance().findAll(Order.asc("label"));
+	public static List<CourseCreditType> getCourseCreditTypeList() {
+		return CourseCreditTypeDAO.getInstance().getSession().createQuery(
+				"from CourseCreditType order by label", CourseCreditType.class)
+				.setCacheable(true).list();
 	}
 	
 	public static CourseCreditType getCourseCreditTypeForReference(String referenceString){
 		if (referenceString == null || referenceString.isEmpty()) return null;
-		return (CourseCreditType)CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
-				"from CourseCreditType where reference = :reference")
+		return CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
+				"from CourseCreditType where reference = :reference", CourseCreditType.class)
 				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 

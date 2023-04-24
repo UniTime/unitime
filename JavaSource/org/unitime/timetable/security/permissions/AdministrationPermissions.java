@@ -91,10 +91,10 @@ public class AdministrationPermissions {
 			if (source.getSolverGroup() != null)
 				return false;
 			
-			int nrOffered = ((Number)DepartmentDAO.getInstance().getSession().
+			int nrOffered = DepartmentDAO.getInstance().getSession().
                     createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
-                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = false").
-                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = false", Number.class).
+                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
             
 			return nrOffered == 0;
 		}
@@ -113,9 +113,9 @@ public class AdministrationPermissions {
 				return false;
 			
 			if (source.isExternalManager()) {
-	            int nrExtManaged = ((Number)DepartmentDAO.getInstance().getSession().
-	                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId").
-	                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+	            int nrExtManaged = DepartmentDAO.getInstance().getSession().
+	                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId", Number.class).
+	                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
 	            
 	            return nrExtManaged == 0;
 			} else {
@@ -241,16 +241,16 @@ public class AdministrationPermissions {
 
 		@Override
 		public boolean check(UserContext user, ItypeDesc source) {
-	        int nrUsed = ((Number)ItypeDescDAO.getInstance().getSession().
-	        		createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype").
+	        int nrUsed = ItypeDescDAO.getInstance().getSession().
+	        		createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype", Number.class).
 	                setParameter("itype", source.getItype(), org.hibernate.type.IntegerType.INSTANCE).
 	                setCacheable(true).
-	                uniqueResult()).intValue();
-	        int nrChildren = ((Number)ItypeDescDAO.getInstance().getSession().
-	        		createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype").
+	                uniqueResult().intValue();
+	        int nrChildren = ItypeDescDAO.getInstance().getSession().
+	        		createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype", Number.class).
 	        		setParameter("itype", source.getItype(), org.hibernate.type.IntegerType.INSTANCE).
 	        		setCacheable(true).
-	                uniqueResult()).intValue();
+	                uniqueResult().intValue();
 	        
 	        return nrUsed == 0 && nrChildren == 0;
 		}
@@ -433,17 +433,17 @@ public class AdministrationPermissions {
 			if (!source.isAllowEvents())
 				return false;
 
-			int nrRooms = ((Number)DepartmentDAO.getInstance().getSession().
+			int nrRooms = DepartmentDAO.getInstance().getSession().
                     createQuery("select count(r) from Room r " +
-                    		"where r.eventDepartment.uniqueId=:deptId").
-                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                    		"where r.eventDepartment.uniqueId=:deptId", Number.class).
+                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
 			
 			if (nrRooms > 0) return true;
 			
-			int nrLocations = ((Number)DepartmentDAO.getInstance().getSession().
+			int nrLocations = DepartmentDAO.getInstance().getSession().
                     createQuery("select count(r) from NonUniversityLocation r " +
-                    		"where r.eventDepartment.uniqueId=:deptId").
-                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+                    		"where r.eventDepartment.uniqueId=:deptId", Number.class).
+                    setParameter("deptId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
 			
 			return nrLocations > 0;
 		}
@@ -506,9 +506,9 @@ public class AdministrationPermissions {
 			if (!permissionSession.check(user, source))
 				return false;
 			
-			int nrCommitted = ((Number)SessionDAO.getInstance().getSession().
-                    createQuery("select count(s) from Solution s where s.owner.session.uniqueId = :sessionId and s.commited = true").
-                    setParameter("sessionId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue();
+			int nrCommitted = SessionDAO.getInstance().getSession().
+                    createQuery("select count(s) from Solution s where s.owner.session.uniqueId = :sessionId and s.commited = true", Number.class).
+                    setParameter("sessionId", source.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().intValue();
             
 			return nrCommitted == 0;
 		}

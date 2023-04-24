@@ -178,8 +178,8 @@ public abstract class AbstractSolverServer implements SolverServer {
 		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
 		try {
 			SessionFactory hibSessionFactory = hibSession.getSessionFactory();
-	    	List<Long> classIds = (List<Long>)hibSession.createQuery(
-	    			"select distinct c.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
+	    	List<Long> classIds = hibSession.createQuery(
+	    			"select distinct c.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false", Long.class)
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long classId: classIds) {
 	            hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
@@ -193,8 +193,8 @@ public abstract class AbstractSolverServer implements SolverServer {
 	            hibSessionFactory.getCache().evictEntityData(DepartmentalInstructor.class, instructorId);
 	            hibSessionFactory.getCache().evictCollectionData(DepartmentalInstructor.class.getName()+".classes", instructorId);
 	    	}
-	    	List<Long> requestIds = (List<Long>)hibSession.createQuery(
-	    			"select distinct r.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
+	    	List<Long> requestIds = hibSession.createQuery(
+	    			"select distinct r.uniqueId from Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false", Long.class)
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long requestId: requestIds) {
 	            hibSessionFactory.getCache().evictEntityData(TeachingRequest.class, requestId);

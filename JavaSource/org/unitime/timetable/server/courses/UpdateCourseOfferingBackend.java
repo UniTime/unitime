@@ -172,7 +172,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	        		String responsibilityId = coordinatorObject.getResponsibilityId();
 			    	String percShare = coordinatorObject.getPercShare();
 	
-	    			DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+	    			DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
 	    			TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
 	    			if (instructor != null) {
 	    				OfferingCoordinator coordinator = null;
@@ -234,7 +234,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			
     			if (courseOffering.getCourseNbr() != null && !courseOffering.getCourseNbr().equals(crsNbr) && courseOffering.getPermId() == null){
     				LastLikeCourseDemand llcd = null;
-    				String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), courseOffering).toString();
+    				String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), courseOffering).toString();
     				for(Iterator it = courseOffering.getCourseOfferingDemands().iterator(); it.hasNext();){
     					llcd = (LastLikeCourseDemand)it.next();
     					if (llcd.getCoursePermId() == null){
@@ -434,7 +434,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             courseOffering.setDemand(Integer.valueOf(0));
             courseOffering.setNbrExpectedStudents(Integer.valueOf(0));
             courseOffering.setIsControl(Boolean.valueOf(true));
-            courseOffering.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), courseOffering).toString());
+            courseOffering.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), courseOffering).toString());
             subjArea.getCourseOfferings().add(courseOffering);
 
 		    io.setNotOffered(Boolean.valueOf(false));
@@ -471,7 +471,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 		    	String responsibilityId = coordinatorObject.getResponsibilityId();
 		    	String percShare = coordinatorObject.getPercShare();
 		    		    
-    		    DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+    		    DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
     			TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
     			if (instructor != null) {
     				OfferingCoordinator coordinator = new OfferingCoordinator();

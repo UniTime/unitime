@@ -39,8 +39,6 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 
-
-
 /**
  * @author Tomas Muller
  */

@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.admin;
 
-import java.util.List;
-
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -130,7 +128,7 @@ public class SponsoringOrganizations implements AdminTable {
 	protected void delete(SponsoringOrganization sponsor, SessionContext context, Session hibSession) {
 		if (sponsor == null) return;
 		context.checkPermission(sponsor, Right.SponsoringOrganizationDelete);
-		for (Event event: (List<Event>)hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId").setParameter("orgId", sponsor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+		for (Event event: hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId", Event.class).setParameter("orgId", sponsor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
     		event.setSponsoringOrganization(null);
     		hibSession.update(event);
     	}

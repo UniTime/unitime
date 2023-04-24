@@ -66,7 +66,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 		Transaction tx = null;
 		RoomFeature f = null;
         try {
-            org.hibernate.Session hibSession = new RoomDeptDAO().getSession();
+            org.hibernate.Session hibSession = RoomDeptDAO.getInstance().getSession();
             tx = hibSession.beginTransaction();
 
             if (request.hasFeature()) {
@@ -126,14 +126,14 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 		if (original == null) return null;
 		if (future) {
 			if (original.isDepartmental())
-				return (DepartmentRoomFeature)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
-					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode")
+					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode", DepartmentRoomFeature.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
-				return (GlobalRoomFeature)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
-					"and f.abbv = o.abbv")
+					"and f.abbv = o.abbv", GlobalRoomFeature.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomFeatureDAO.getInstance().get(original.getId(), hibSession);
@@ -143,14 +143,14 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 	protected RoomFeature lookupFeature(org.hibernate.Session hibSession, Long featureId, boolean future, Long sessionId) {
 		if (featureId == null) return null;
 		if (future) {
-			RoomFeature feature = (DepartmentRoomFeature)hibSession.createQuery(
+			RoomFeature feature = hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
-					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode")
+					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode", DepartmentRoomFeature.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", featureId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			if (feature == null)
-				feature = (GlobalRoomFeature)hibSession.createQuery(
+				feature = hibSession.createQuery(
 					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
-					"and f.abbv = o.abbv")
+					"and f.abbv = o.abbv", GlobalRoomFeature.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", featureId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			return feature;
 		} else {
@@ -163,7 +163,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 		if (future) {
 			return Location.lookupFutureLocations(hibSession, ids, sessionId);
 		} else {
-			return (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", ids).list();
+			return hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", ids).list();
 		}
 	}
 	
@@ -270,7 +270,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
         	hibSession.saveOrUpdate(location);
         }
         
-        for (RoomFeaturePref p: (List<RoomFeaturePref>)hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id").setParameter("id", rf.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        for (RoomFeaturePref p: hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id", RoomFeaturePref.class).setParameter("id", rf.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				p.getOwner().getPreferences().remove(p);
 				hibSession.delete(p);
 				hibSession.saveOrUpdate(p.getOwner());

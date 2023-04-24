@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -39,12 +38,12 @@ public class InstructionalMethod extends BaseInstructionalMethod {
 	}
 
 	public static List<InstructionalMethod> findAll() {
-		return (List<InstructionalMethod>)InstructionalMethodDAO.getInstance().getSession().createQuery("from InstructionalMethod order by label").setCacheable(true).list();
+		return InstructionalMethodDAO.getInstance().getSession().createQuery("from InstructionalMethod order by label", InstructionalMethod.class).setCacheable(true).list();
 	}
 	
 	public static InstructionalMethod findByReference(String reference, org.hibernate.Session hibSession) {
-		return (InstructionalMethod) (hibSession == null ? InstructionalMethodDAO.getInstance().getSession() : hibSession).createQuery(
-				"from InstructionalMethod where reference = :reference")
+		return  (hibSession == null ? InstructionalMethodDAO.getInstance().getSession() : hibSession).createQuery(
+				"from InstructionalMethod where reference = :reference", InstructionalMethod.class)
 				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).uniqueResult();
 	}

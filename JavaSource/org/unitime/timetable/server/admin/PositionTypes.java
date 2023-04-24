@@ -66,11 +66,11 @@ public class PositionTypes implements AdminTable {
 		DecimalFormat df = new DecimalFormat("0000");
 		for (PositionType position: PositionTypeDAO.getInstance().findAll()) {
 			int used =
-				((Number)hibSession.createQuery(
-						"select count(f) from Staff f where f.positionType.uniqueId = :uniqueId")
+				(hibSession.createQuery(
+						"select count(f) from Staff f where f.positionType.uniqueId = :uniqueId", Number.class)
 						.setParameter("uniqueId", position.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() +
-				((Number)hibSession.createQuery(
-						"select count(f) from DepartmentalInstructor f where f.positionType.uniqueId = :uniqueId")
+				(hibSession.createQuery(
+						"select count(f) from DepartmentalInstructor f where f.positionType.uniqueId = :uniqueId", Number.class)
 						.setParameter("uniqueId", position.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			Record r = data.addRecord(position.getUniqueId(), used == 0);
 			r.setField(0, position.getReference());

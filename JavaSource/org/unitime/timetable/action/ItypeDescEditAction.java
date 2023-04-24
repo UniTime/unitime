@@ -96,7 +96,7 @@ public class ItypeDescEditAction extends UniTimeAction<ItypeDescEditForm> {
 						sessionContext.checkPermission(form.getUniqueId(), "ItypeDesc", Right.InstructionalTypeEdit);
 
 					try {
-						org.hibernate.Session hibSession = (new ItypeDescDAO()).getSession();
+						org.hibernate.Session hibSession = (ItypeDescDAO.getInstance()).getSession();
 						if (hibSession.getTransaction() == null || !hibSession.getTransaction().isActive())
 							tx = hibSession.beginTransaction();
 
@@ -122,7 +122,7 @@ public class ItypeDescEditAction extends UniTimeAction<ItypeDescEditForm> {
 				if (id == null) {
 					throw new Exception(MSG.errorRequiredField(MSG.fieldIType()));
 				} else {
-					ItypeDesc itype = new ItypeDescDAO().get(Integer.valueOf(id));
+					ItypeDesc itype = ItypeDescDAO.getInstance().get(Integer.valueOf(id));
 
 					if (itype == null) {
 						return "back";
@@ -139,7 +139,7 @@ public class ItypeDescEditAction extends UniTimeAction<ItypeDescEditForm> {
 				sessionContext.checkPermission(form.getUniqueId(), "ItypeDesc", Right.InstructionalTypeDelete);
 
 				try {
-					org.hibernate.Session hibSession = (new ItypeDescDAO()).getSession();
+					org.hibernate.Session hibSession = (ItypeDescDAO.getInstance()).getSession();
 					if (hibSession.getTransaction() == null || !hibSession.getTransaction().isActive())
 						tx = hibSession.beginTransaction();
 

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -62,8 +61,8 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	
 	@Transient
 	public static List<TeachingResponsibility> getInstructorTeachingResponsibilities() {
-		return (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
-				"from TeachingResponsibility where instructor = true order by label"
+		return TeachingResponsibilityDAO.getInstance().getSession().createQuery(
+				"from TeachingResponsibility where instructor = true order by label", TeachingResponsibility.class
 				).setCacheable(true).list();
     }
 	
@@ -76,8 +75,8 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	
 	@Transient
 	public static List<TeachingResponsibility> getCoordinatorTeachingResponsibilities() {
-		return (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
-				"from TeachingResponsibility where coordinator = true order by label"
+		return TeachingResponsibilityDAO.getInstance().getSession().createQuery(
+				"from TeachingResponsibility where coordinator = true order by label", TeachingResponsibility.class
 				).setCacheable(true).list();
     }
 	
@@ -90,8 +89,8 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
     
 	public static TeachingResponsibility getTeachingResponsibility(String reference, org.hibernate.Session hibSession) {
 		if (reference == null || reference.isEmpty()) return null;
-		return (TeachingResponsibility)hibSession.createQuery(
-				"from TeachingResponsibility where reference = :reference")
+		return hibSession.createQuery(
+				"from TeachingResponsibility where reference = :reference", TeachingResponsibility.class)
 				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
@@ -128,9 +127,9 @@ public class TeachingResponsibility extends BaseTeachingResponsibility {
 	
 	@Transient
 	public boolean isUsed() {
-		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId")
+		if ((TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(ci) from ClassInstructor ci where ci.responsibility.uniqueId = :responsibilityId", Number.class)
 			.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
-		if (((Number)TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId")
+		if ((TeachingResponsibilityDAO.getInstance().getSession().createQuery("select count(oc) from OfferingCoordinator oc where oc.responsibility.uniqueId = :responsibilityId", Number.class)
 				.setParameter("responsibilityId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
 		return false;
 	}

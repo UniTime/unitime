@@ -108,7 +108,7 @@ public class DistributionPrefsTableBuilder {
 		Long subjAreaId = null;
 		if (subjectAreaId!=null && subjectAreaId.length()>0) {
 			subjAreaId = Long.valueOf(subjectAreaId);
-			SubjectArea area = (new SubjectAreaDAO()).get(subjAreaId);
+			SubjectArea area = (SubjectAreaDAO.getInstance()).get(subjAreaId);
 			title = area.getSubjectAreaAbbreviation()+(courseNbr==null?"":" "+courseNbr);
 		}
 		
@@ -139,7 +139,7 @@ public class DistributionPrefsTableBuilder {
 		Long subjAreaId = null;
 		if (subjectAreaId!=null && subjectAreaId.length()>0) {
 			subjAreaId = Long.valueOf(subjectAreaId);
-			SubjectArea area = (new SubjectAreaDAO()).get(subjAreaId);
+			SubjectArea area = (SubjectAreaDAO.getInstance()).get(subjAreaId);
 			title = area.getSubjectAreaAbbreviation()+(courseNbr==null?"":" "+courseNbr);
 		}
 		

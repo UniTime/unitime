@@ -70,14 +70,14 @@ public class ExamDistributionPrefsTableBuilder {
 		query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
 	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
-	    Query q = new DistributionPrefDAO().getSession().createQuery(query)
+	    Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
 	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 	    		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
 	    if (subjectAreaId!=null)
 	        q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
 	    if (courseNbr!=null && !courseNbr.trim().isEmpty())
 	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
-	    List distPrefs = q.setCacheable(true).list();
+	    List<DistributionPref> distPrefs = q.setCacheable(true).list();
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
 
@@ -94,14 +94,14 @@ public class ExamDistributionPrefsTableBuilder {
     	query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
-        Query q = new DistributionPrefDAO().getSession().createQuery(query)
+        Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
                 .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null)
             q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
             q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
-        List distPrefs = q.setCacheable(true).list();
+        List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toPdfTable(out, request, context, distPrefs, examTypeId); 
     }
@@ -119,14 +119,14 @@ public class ExamDistributionPrefsTableBuilder {
     	query += (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
-        Query q = new DistributionPrefDAO().getSession().createQuery(query)
+        Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
                 .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE);
         if (subjectAreaId!=null)
             q.setParameter("subjectAreaId", subjectAreaId, org.hibernate.type.LongType.INSTANCE);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
             q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), org.hibernate.type.StringType.INSTANCE);
-        List distPrefs = q.setCacheable(true).list();
+        List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toCsvTable(out, request, context, distPrefs, examTypeId); 
     }

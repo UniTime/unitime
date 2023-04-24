@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,8 +33,6 @@ import java.util.Set;
 import org.unitime.timetable.model.base.BaseNonUniversityLocation;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
-
-
 
 
 /**
@@ -128,7 +125,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
     	Set<Long> futureSessionIds = new HashSet<Long>();
     	Set<Long> blackListedSessionIds = new HashSet<Long>();
 
-    	for (Location location: (List<Location>)LocationDAO.getInstance().getSession().createQuery(
+    	for (Location location: LocationDAO.getInstance().getSession().createQuery(
     			"select f from NonUniversityLocation l, NonUniversityLocation f where " +
     			"l.uniqueId = :uniqueId and " +
     			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
@@ -138,7 +135,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
     			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
-    			"order by f.session.sessionBeginDateTime"
+    			"order by f.session.sessionBeginDateTime", Location.class
     			).setParameter("uniqueId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);

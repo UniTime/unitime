@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 

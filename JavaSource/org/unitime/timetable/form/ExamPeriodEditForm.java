@@ -375,7 +375,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 	    int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
 	    ep.setStartSlot(slot);
 	    ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
-	    ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
+	    ep.setPrefLevel(PreferenceLevelDAO.getInstance().get(iPrefLevel));
 	    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 	    ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 	    ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
@@ -393,7 +393,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
         int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
         ep.setStartSlot(slot);
         ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
-        ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
+        ep.setPrefLevel(PreferenceLevelDAO.getInstance().get(iPrefLevel));
         ep.setExamType(ExamTypeDAO.getInstance().get(iType));
         ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
@@ -506,7 +506,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 		} else {
 			ExamPeriod ep = null;
 			if (getUniqueId().longValue()>=0)
-				ep = (new ExamPeriodDAO()).get(getUniqueId());
+				ep = (ExamPeriodDAO.getInstance()).get(getUniqueId());
 			if (ep==null)
 				ep = create(context, hibSession);
 			else 
@@ -517,7 +517,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 	
 	public void delete(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().longValue()<0) return;
-		ExamPeriod ep = (new ExamPeriodDAO()).get(getUniqueId(), hibSession);
+		ExamPeriod ep = (ExamPeriodDAO.getInstance()).get(getUniqueId(), hibSession);
 		for (Exam exam: hibSession.createQuery(
 		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
 		        .setParameter("periodId", ep.getUniqueId(), org.hibernate.type.LongType.INSTANCE)

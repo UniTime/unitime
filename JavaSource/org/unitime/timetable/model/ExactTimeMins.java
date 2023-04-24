@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -32,8 +31,6 @@ import org.hibernate.FlushMode;
 import org.unitime.timetable.model.base.BaseExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 import org.unitime.timetable.util.Constants;
-
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -59,10 +56,9 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 /*[CONSTRUCTOR MARKER END]*/
 
 	public static ExactTimeMins findByMinPerMtg(int minPerMtg) {
-		return (ExactTimeMins)
-			(new ExactTimeMinsDAO()).
-			getSession().
-			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax").
+		return
+			ExactTimeMinsDAO.getInstance().getSession().
+			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax", ExactTimeMins.class).
 			setParameter("minPerMtg", minPerMtg, org.hibernate.type.IntegerType.INSTANCE).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).

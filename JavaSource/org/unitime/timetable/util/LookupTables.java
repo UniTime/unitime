@@ -30,7 +30,6 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.query.Query;
-import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
@@ -39,6 +38,7 @@ import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -312,7 +312,7 @@ public class LookupTables {
 		query.append(" where i.department.session.uniqueId = :acadSessionId ");
 		query.append(clause);
         
-        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+        DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 		org.hibernate.Session hibSession = idao.getSession();
 
 		Query q = hibSession.createQuery(query.toString());
@@ -431,7 +431,8 @@ public class LookupTables {
     }
     
     public static void setupCourseTypes(HttpServletRequest request) {
-    	request.setAttribute("courseTypes", CourseTypeDAO.getInstance().findAll(Order.asc("reference")));
+    	request.setAttribute("courseTypes", CourseTypeDAO.getInstance().getSession().createQuery(
+    			"from CourseType order by reference", CourseType.class).setCacheable(true).list());
     }
     
     public static void setupInstructorTeachingResponsibilities(HttpServletRequest request) {

@@ -33,11 +33,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.hibernate.type.BooleanType;
-import org.hibernate.type.DateType;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -552,25 +547,25 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
-							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.LongType.INSTANCE);
 						else if (!list.isEmpty() && list.get(0) instanceof String)
-							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.StringType.INSTANCE);
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
 					}
 				}
 			}
@@ -618,27 +613,30 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			}
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
-				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true);				for (Map.Entry<String, Object> param: iParams.entrySet()) {
+				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
+				query.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE);
+				query.setCacheable(true);
+				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
-							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.LongType.INSTANCE);
 						else if (!list.isEmpty() && list.get(0) instanceof String)
-							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.StringType.INSTANCE);
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
 					}
 				}
 				if (iLimit != null)

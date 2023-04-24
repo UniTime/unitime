@@ -26,7 +26,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesDefinitions;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.hibernate.criterion.Order;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -122,7 +121,7 @@ public class ManagerSettingsAction extends UniTimeAction<ManagerSettingsForm> {
 			    new String[] {"left", "left"},
 			    null );
         
-        for (Settings s: SettingsDAO.getInstance().findAll(Order.asc("key"))) {
+        for (Settings s: SettingsDAO.getInstance().getSession().createQuery("from Settings order by key", Settings.class).setCacheable(true).list()) {
         	String onClick = "onClick=\"document.location='managerSettings.action?op=Edit&id=" + s.getUniqueId() + "';\"";
         	String value = sessionContext.getUser().getProperty(s.getKey(), s.getDefaultValue());
         	String label = value;

@@ -80,7 +80,7 @@ public abstract class WSCHByDepartment extends BasePointInTimeDataReports {
 	@Override
 	protected void runReport(org.hibernate.Session hibSession) {
 		PointInTimeData pitd = (PointInTimeData)hibSession
-				.createQuery("from PointInTimeData pitd where pitd.uniqueId = :uid")
+				.createQuery("from PointInTimeData pitd where pitd.uniqueId = :uid", PointInTimeData.class)
 				.setParameter("uid", getPointInTimeDataUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				.uniqueResult();
 		createWeeklyStudentContactHoursByDepartmentReportFor(pitd, hibSession);

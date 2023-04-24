@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.dataexchange;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.dom4j.Document;
@@ -46,8 +45,8 @@ public class StudentEnrollmentExport extends BaseExport {
 	        root.addAttribute("term", session.getAcademicTerm());
 	        document.addDocType("studentEnrollments", "-//UniTime//UniTime Student Enrollments DTD/EN", "http://www.unitime.org/interface/StudentEnrollment.dtd");
 	        
-	        for (Student student: (List<Student>)getHibSession().createQuery(
-	        		"select s from Student s where s.session.uniqueId = :sessionId")
+	        for (Student student: getHibSession().createQuery(
+	        		"select s from Student s where s.session.uniqueId = :sessionId", Student.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	if (student.getClassEnrollments().isEmpty()) continue;
 	        	Element studentEl = root.addElement("student");

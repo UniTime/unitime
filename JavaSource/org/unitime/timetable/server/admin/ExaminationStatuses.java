@@ -72,11 +72,11 @@ public class ExaminationStatuses implements AdminTable {
 		Long sessionId = context.getUser().getCurrentAcademicSessionId();
 		List<ListItem> managers = new ArrayList<ListItem>();
 		NameFormat nf = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
-		for (TimetableManager m: (List<TimetableManager>)ExamStatusDAO.getInstance().getSession().createQuery(
+		for (TimetableManager m: ExamStatusDAO.getInstance().getSession().createQuery(
 				"select distinct m from TimetableManager m inner join m.departments d inner join m.managerRoles mr " +
 				"where d.session.uniqueId = :sessionId and mr.role.enabled = true "+
 				"and :prmExMgr in elements(mr.role.rights) and :prmAdmin not in elements(mr.role.rights) " +
-				"order by m.lastName, m.firstName")
+				"order by m.lastName, m.firstName", TimetableManager.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setParameter("prmExMgr", Right.ExaminationSolver.name(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("prmAdmin", Right.StatusIndependent.name(), org.hibernate.type.StringType.INSTANCE)

@@ -142,7 +142,7 @@ public class RoomsConnector extends ApiConnector {
 			List<Location> futureLocations = helper.getHibSession().createQuery(
 					"select l from Location l, Session s where " +
 					"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-					"order by l.session.sessionBeginDateTime")
+					"order by l.session.sessionBeginDateTime", Location.class)
 					.setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 			for (Location loc: futureLocations)
 				updatePicture(helper, loc, file);
@@ -195,7 +195,7 @@ public class RoomsConnector extends ApiConnector {
 			List<Location> futureLocations = helper.getHibSession().createQuery(
 					"select l from Location l, Session s where " +
 					"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-					"order by l.session.sessionBeginDateTime")
+					"order by l.session.sessionBeginDateTime", Location.class)
 					.setParameter("permanentId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 			for (Location loc: futureLocations)
 				request.setFutureFlag(loc.getUniqueId(), FutureOperation.getFlagAllEnabled());
@@ -278,7 +278,7 @@ public class RoomsConnector extends ApiConnector {
 				List<Location> futureLocations = helper.getHibSession().createQuery(
 						"select l from Location l, Location o where " +
 						"o.uniqueId = :uniqueId and l.permanentId = o.permanentId and o.session.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-						"order by l.session.sessionBeginDateTime")
+						"order by l.session.sessionBeginDateTime", Location.class)
 						.setParameter("uniqueId", room.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 				for (Location loc: futureLocations)
 					request.setFutureFlag(loc.getUniqueId(), f);
@@ -286,7 +286,7 @@ public class RoomsConnector extends ApiConnector {
 				List<Long> futureSessionIds = helper.getHibSession().createQuery(
 						"select f.uniqueId from Session f, Session s where " +
 						"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
-						"order by f.sessionBeginDateTime")
+						"order by f.sessionBeginDateTime", Long.class)
 						.setParameter("sessionId", room.getSessionId(), org.hibernate.type.LongType.INSTANCE).list();
 				for (Long id: futureSessionIds)
 					request.setFutureFlag(-id, f);

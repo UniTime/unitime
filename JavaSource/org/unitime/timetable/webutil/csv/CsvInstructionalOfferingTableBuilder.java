@@ -1413,7 +1413,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             Comparator classComparator) throws Exception{
     	
     	if (instructionalOfferingId != null && context != null){
-	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	        InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = idao.get(instructionalOfferingId);
 	        Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
 	        

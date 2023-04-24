@@ -55,18 +55,18 @@ public class ItypeDescEditForm implements UniTimeForm {
                     action.addFieldError("form.id", MSG.errorRequiredField(MSG.fieldIType()));
                 } else {
                     Integer id = Integer.valueOf(iId);
-                    ItypeDesc itype = new ItypeDescDAO().get(id);
+                    ItypeDesc itype = ItypeDescDAO.getInstance().get(id);
                     if (itype!=null && (iUniqueId==null || iUniqueId<0 || itype.equals(iUniqueId)))
                         action.addFieldError("form.id", MSG.errorAlreadyExists(iId));
                     
-                    itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
-                    		"from ItypeDesc x where x.abbv = :abbv and x.id != :id")
+                    itype = ItypeDescDAO.getInstance().getSession().createQuery(
+                    		"from ItypeDesc x where x.abbv = :abbv and x.id != :id", ItypeDesc.class)
                     		.setParameter("abbv", iAbbreviation, org.hibernate.type.StringType.INSTANCE).setParameter("id", id, org.hibernate.type.IntegerType.INSTANCE).setMaxResults(1).uniqueResult();
                     if (itype != null)
                     	action.addFieldError("abbreviation", MSG.errorAlreadyExists(iAbbreviation));
                     		
-                    itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
-                    		"from ItypeDesc x where x.desc = :name and x.id != :id")
+                    itype = ItypeDescDAO.getInstance().getSession().createQuery(
+                    		"from ItypeDesc x where x.desc = :name and x.id != :id", ItypeDesc.class)
                     		.setParameter("name", iName, org.hibernate.type.StringType.INSTANCE).setParameter("id", id, org.hibernate.type.IntegerType.INSTANCE).setMaxResults(1).uniqueResult();
                     if (itype != null)
                     	action.addFieldError("form.name", MSG.errorAlreadyExists(iName));
@@ -123,20 +123,20 @@ public class ItypeDescEditForm implements UniTimeForm {
     
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         ItypeDesc itype = null;
-        if (getUniqueId()!=null) itype = new ItypeDescDAO().get(getUniqueId());
+        if (getUniqueId()!=null) itype = ItypeDescDAO.getInstance().get(getUniqueId());
         if (itype==null) itype = new ItypeDesc();
         itype.setItype(Integer.valueOf(getId()));
         itype.setAbbv(getAbbreviation());
         itype.setDesc(getName());
         itype.setSis_ref(getReference());
         itype.setBasic(getBasicType() == 1);
-        itype.setParent(getParent()==null?null:new ItypeDescDAO().get(getParent()));
+        itype.setParent(getParent()==null?null:ItypeDescDAO.getInstance().get(getParent()));
         itype.setOrganized(getOrganized());
         hibSession.saveOrUpdate(itype);
     }
     
     public void delete(org.hibernate.Session hibSession) {
-        ItypeDesc itype = new ItypeDescDAO().get(getUniqueId());
+        ItypeDesc itype = ItypeDescDAO.getInstance().get(getUniqueId());
         if (itype!=null) hibSession.delete(itype);
     }
 }

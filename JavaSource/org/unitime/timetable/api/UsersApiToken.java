@@ -93,7 +93,7 @@ public class UsersApiToken implements ApiToken {
 			org.hibernate.Session hibSession = null;
 			try {
 				hibSession = new _RootDAO().createNewSession();
-				User user = (User)hibSession.createQuery("select u from User u where u.externalUniqueId=:externalId")
+				User user = hibSession.createQuery("select u from User u where u.externalUniqueId=:externalId", User.class)
 						.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true)
 						.setMaxResults(1)

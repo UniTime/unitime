@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -40,7 +39,7 @@ public class Degree extends BaseDegree {
 	
 	public static List<Degree> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? DegreeDAO.getInstance().getSession() : hibSession).createQuery(
-				"from Degree x where x.session.uniqueId = :sessionId order by x.reference")
+				"from Degree x where x.session.uniqueId = :sessionId order by x.reference", Degree.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
 	}
 	

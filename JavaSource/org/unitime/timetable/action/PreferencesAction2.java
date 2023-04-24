@@ -310,17 +310,17 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
         	if (form.getTimePatterns()==null)
         		form.setTimePatterns(new Vector());
         	form.getTimePatterns().add(form.getTimePattern());
-        	TimePattern tp = (new TimePatternDAO()).get(Long.valueOf(form.getTimePattern()));
+        	TimePattern tp = (TimePatternDAO.getInstance()).get(Long.valueOf(form.getTimePattern()));
         	if (tp.getTimePatternModel().isExactTime()) {
         		for (Iterator i=form.getTimePatterns().iterator();i.hasNext();) {
         			String patternId = (String)i.next();
-        			TimePattern tpx = (new TimePatternDAO()).get(Long.valueOf(patternId));
+        			TimePattern tpx = (TimePatternDAO.getInstance()).get(Long.valueOf(patternId));
         			if (!tpx.getTimePatternModel().isExactTime()) i.remove();
         		}
         	} else {
         		for (Iterator i=form.getTimePatterns().iterator();i.hasNext();) {
         			String patternId = (String)i.next();
-        			TimePattern tpx = (new TimePatternDAO()).get(Long.valueOf(patternId));
+        			TimePattern tpx = (TimePatternDAO.getInstance()).get(Long.valueOf(patternId));
         			if (tpx.getTimePatternModel().isExactTime()) i.remove();
         		}
         	}
@@ -355,7 +355,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
      */
     protected void doCancel(String subpartId ) {
         
-        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
+        SchedulingSubpartDAO sdao = SchedulingSubpartDAO.getInstance();
         SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
         InstructionalOffering io = ss.getInstrOfferingConfig().getInstructionalOffering();
         CourseOffering co = io.getControllingCourseOffering();
@@ -532,7 +532,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Room: " + id + ": " + pref);
 
-        		LocationDAO rdao = new LocationDAO();
+        		LocationDAO rdao = LocationDAO.getInstance();
         	    Location room = rdao.get(Long.valueOf(id));
                 
                 RoomPref rp = new RoomPref();
@@ -578,7 +578,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Bldg: " + id + ": " + pref);
 
-                BuildingDAO bdao = new BuildingDAO();
+                BuildingDAO bdao = BuildingDAO.getInstance();
         	    Building bldg = bdao.get(Long.valueOf(id));
                 
                 BuildingPref bp = new BuildingPref();
@@ -623,7 +623,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Dist: " + id + ": " + pref);
 
-                DistributionTypeDAO ddao = new DistributionTypeDAO();
+                DistributionTypeDAO ddao = DistributionTypeDAO.getInstance();
                 DistributionType dist = ddao.get(Long.valueOf(id));
                 
                 DistributionPref dp = new DistributionPref();
@@ -698,7 +698,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Room Feat: " + id + ": " + pref);
 
-                RoomFeatureDAO rfdao = new RoomFeatureDAO();
+                RoomFeatureDAO rfdao = RoomFeatureDAO.getInstance();
         	    RoomFeature rf = rfdao.get(Long.valueOf(id));
                 
                 RoomFeaturePref rfp = new RoomFeaturePref();
@@ -744,7 +744,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Roomgr: " + id + ": " + pref);
 
-                RoomGroupDAO gdao = new RoomGroupDAO();
+                RoomGroupDAO gdao = RoomGroupDAO.getInstance();
                 RoomGroup gr = gdao.get(Long.valueOf(id));
                 
                 RoomGroupPref gp = new RoomGroupPref();
@@ -790,7 +790,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Datepattern: " + id + ": " + pref);
 
-                DatePatternDAO dpdao = new DatePatternDAO();
+                DatePatternDAO dpdao = DatePatternDAO.getInstance();
                 DatePattern dp = dpdao.get(Long.valueOf(id));           
                 
                DatePatternPref dpp = new DatePatternPref();
@@ -838,7 +838,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Course: " + id + ": " + pref);
 
-                CourseOfferingDAO cdao = new CourseOfferingDAO();
+                CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
                 CourseOffering course = cdao.get(Long.valueOf(id));
                 
                 InstructorCoursePref cp = new InstructorCoursePref();
@@ -863,7 +863,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Attribute: " + id + ": " + pref);
 
-                InstructorAttributeDAO adao = new InstructorAttributeDAO();
+                InstructorAttributeDAO adao = InstructorAttributeDAO.getInstance();
                 InstructorAttribute attribute = adao.get(Long.valueOf(id));
                 
                 InstructorAttributePref ap = new InstructorAttributePref();
@@ -909,7 +909,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 String pref = (String) lstL.get(i);
                 Debug.debug("Instructor: " + id + ": " + pref);
 
-                DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+                DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
                 DepartmentalInstructor instructor = idao.get(Long.valueOf(id));
                 
                 InstructorPref ip = new InstructorPref();
@@ -948,8 +948,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     
     protected void updateInstructorCoursePreferences(org.hibernate.Session hibSession, PreferenceGroup pg, CourseOffering course) {
     	Map<Long, InstructorCoursePref> prefs = new HashMap<Long, InstructorCoursePref>();
-    	for (InstructorCoursePref pref: (List<InstructorCoursePref>)hibSession.createQuery(
-				"from InstructorCoursePref where course.uniqueId = :courseId")
+    	for (InstructorCoursePref pref: hibSession.createQuery(
+				"from InstructorCoursePref where course.uniqueId = :courseId", InstructorCoursePref.class)
     			.setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		prefs.put(pref.getOwner().getUniqueId(), pref);
     	}
@@ -991,7 +991,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     protected void addToTimePref(PreferenceGroup owner, String tpat, Set prefs, int idx,
             boolean timeVertical, Set parentTimePrefs) throws Exception {
         
-		TimePatternDAO timePatternDao = new TimePatternDAO();
+		TimePatternDAO timePatternDao = TimePatternDAO.getInstance();
 		TimePattern timePattern = (tpat.equals("-1")?null:timePatternDao.get(Long.valueOf(tpat)));
 
 		// Generate grid prefs
@@ -1153,7 +1153,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				String tp = (String)i.next();
 
 				// Load TimePattern Object
-				TimePatternDAO timePatternDao = new TimePatternDAO();
+				TimePatternDAO timePatternDao = TimePatternDAO.getInstance();
 				TimePattern timePattern = (tp.equals("-1")?null:timePatternDao.get(Long.valueOf(tp)));
 
 			// 	Display time grid

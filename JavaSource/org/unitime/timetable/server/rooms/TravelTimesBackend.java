@@ -90,12 +90,12 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 		TreeSet<Location> locations = new TreeSet<Location>(
 				hibSession.createQuery(
 						"select distinct l from Location l " +
-						"where l.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and l.uniqueId in (" + ids + ")"))
+						"where l.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and l.uniqueId in (" + ids + ")"), Location.class)
 						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		
 		List<TravelTime> times = (List<TravelTime>)hibSession.createQuery(
 				"select t from TravelTime t " + 
-				"where t.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and t.location1Id in (" + ids + ") and t.location1Id in (" + ids + ")"))
+				"where t.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and t.location1Id in (" + ids + ") and t.location1Id in (" + ids + ")"), TravelTime.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		
 		for (Location location: locations) {

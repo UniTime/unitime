@@ -29,7 +29,6 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
-import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
@@ -94,7 +93,8 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	public SimpleEditInterface load(String[] filter, SessionContext context, Session hibSession) {
 		List<ListItem> types = new ArrayList<ListItem>();
 		types.add(new ListItem("", MESSAGES.itemNoStudentGroupType()));
-		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
+		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().getSession().createQuery(
+				"from StudentGroupType order by label", StudentGroupType.class).setCacheable(true).list()) {
 			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
 		}
 		String defaultType = null;
@@ -157,15 +157,15 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	}
 
 	protected void save(Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
-		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
-                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv").
+		StudentGroup g1 = hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv", StudentGroup.class).
 				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
 				setParameter("abbv", record.getField(1), org.hibernate.type.StringType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
-		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
-                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name").
+		StudentGroup g2 = hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name", StudentGroup.class).
 				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
 				setParameter("name", record.getField(2), org.hibernate.type.StringType.INSTANCE).
 				setMaxResults(1).uniqueResult();
@@ -222,16 +222,16 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	
 	protected void update(StudentGroup group, Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
 		if (group == null) return;
-		StudentGroup g1 = (StudentGroup)hibSession.createQuery(
-                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv and a.uniqueId!=:gid").
+		StudentGroup g1 = hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv and a.uniqueId!=:gid", StudentGroup.class).
 				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
 				setParameter("abbv", record.getField(1), org.hibernate.type.StringType.INSTANCE).
 				setParameter("gid", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
-		StudentGroup g2 = (StudentGroup)hibSession.createQuery(
-                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name and a.uniqueId!=:gid").
+		StudentGroup g2 = hibSession.createQuery(
+                "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name and a.uniqueId!=:gid", StudentGroup.class).
 				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).
 				setParameter("name", record.getField(2), org.hibernate.type.StringType.INSTANCE).
 				setParameter("gid", group.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
@@ -357,7 +357,8 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 		List<ListItem> types = new ArrayList<ListItem>();
 		types.add(new ListItem("", MESSAGES.itemAll()));
 		types.add(new ListItem("null", MESSAGES.itemNoStudentGroupType()));
-		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(Order.asc("label"))) {
+		for (StudentGroupType type: hibSession.createQuery(
+				"from StudentGroupType order by label", StudentGroupType.class).setCacheable(true).list()) {
 			types.add(new ListItem(type.getUniqueId().toString(), type.getLabel()));
 		}
 		SimpleEditInterface.Filter filter = new SimpleEditInterface.Filter(new Field(MESSAGES.fieldStudentGroupType(), FieldType.list, 100, types));

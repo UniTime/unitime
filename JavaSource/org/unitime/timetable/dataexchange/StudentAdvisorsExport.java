@@ -20,7 +20,6 @@
 package org.unitime.timetable.dataexchange;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 
 import org.dom4j.Document;
@@ -47,8 +46,8 @@ public class StudentAdvisorsExport extends BaseExport {
 	        
 	        document.addDocType("studentAdvisors", "-//UniTime//UniTime Student Advisors DTD/EN", "http://www.unitime.org/interface/StudentAdvisors.dtd");
 	        
-	        for (Advisor advisor: (List<Advisor>)getHibSession().createQuery(
-	        		"from Advisor a where a.session.uniqueId = :sessionId order by a.lastName, a.firstName, a.externalUniqueId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+	        for (Advisor advisor: getHibSession().createQuery(
+	        		"from Advisor a where a.session.uniqueId = :sessionId order by a.lastName, a.firstName, a.externalUniqueId", Advisor.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Element advisorEl = root.addElement("studentAdvisor");
 	        	advisorEl.addAttribute("externalId", advisor.getExternalUniqueId());
 	        	if (advisor.getFirstName() != null)

@@ -150,7 +150,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
     	try {
-    		TimetableManagerDAO dao = new TimetableManagerDAO();
+    		TimetableManagerDAO dao = TimetableManagerDAO.getInstance();
     		hibSession = dao.getSession();
     		hibSession.setCacheMode(CacheMode.IGNORE);
     		hibSession.setHibernateFlushMode(FlushMode.COMMIT);
@@ -170,7 +170,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			setPhase(MSG.phaseCommittingSolution(), 2*solutionIds.length);
     			tx = hibSession.beginTransaction();
     			for (int i=0;i<solutionIds.length;i++) {
-    				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
+    				Solution solution = (SolutionDAO.getInstance()).get(solutionIds[i]);
     				Solution committedSolution = solution.getOwner().getCommittedSolution();
     				if (committedSolution!=null) {
     					committedSolution.uncommitSolution(hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
@@ -181,7 +181,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				incProgress();
     			}
     			for (int i=0;i<solutionIds.length;i++) {
-    				Solution solution = (new SolutionDAO()).get(solutionIds[i]);
+    				Solution solution = (SolutionDAO.getInstance()).get(solutionIds[i]);
     				List<String> messages = new ArrayList<String>();
     				solution.commitSolution(messages,hibSession, getModel().getProperties().getProperty("General.OwnerPuid"), iSolverGroupId);
     				touchedSolutions.add(solution);
@@ -227,7 +227,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			
     			for (int i=0;i<solutionIds.length;i++) {
         			tx = hibSession.beginTransaction();
-        			Solution solution = (new SolutionDAO()).get(solutionIds[i]);
+        			Solution solution = (SolutionDAO.getInstance()).get(solutionIds[i]);
         			LogInfo lInfo = new LogInfo();
         			lInfo.setLog(iProgress.getLog());
         			SolutionInfo logInfo = new SolutionInfo();
@@ -275,7 +275,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		if (!iCreateNew && iSolutionId!=null && iSolutionId.length>=0) {
     			for (int i=0;i<iSolverGroupId.length;i++) {
     				if (i<iSolutionId.length && iSolutionId[i]!=null) {
-    					Solution solution = (new SolutionDAO()).get(iSolutionId[i], hibSession);
+    					Solution solution = (SolutionDAO.getInstance()).get(iSolutionId[i], hibSession);
     					if (solution==null) {
     						iProgress.warn(MSG.fatalUnableToLoadSolution(iSolutionId[i]));
     						continue;
@@ -366,7 +366,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			HashSet rooms = new HashSet();
         			if (placement.isMultiRoom()) {
         				for (RoomLocation r: placement.getRoomLocations()) {
-            				Location room = (new LocationDAO()).get(r.getId(), hibSession);
+            				Location room = (LocationDAO.getInstance()).get(r.getId(), hibSession);
             				if (room==null) {
                					iProgress.warn(MSG.warnUnableToSaveClassAssignmentRoomNotExist(lecture.getName(), placement.getLongName(iUseAmPm), r.getId()));
                					continue;
@@ -376,7 +376,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         				if (rooms.size()!=placement.getRoomLocations().size())
         					continue;
         			} else {
-        				Location room = (new LocationDAO()).get(placement.getRoomLocation().getId(), hibSession);
+        				Location room = (LocationDAO.getInstance()).get(placement.getRoomLocation().getId(), hibSession);
         				if (room==null) {
            					iProgress.warn(MSG.warnUnableToSaveClassAssignmentRoomNotExist(lecture.getName(), placement.getLongName(iUseAmPm), placement.getRoomLocation().getId()));
            					continue;
@@ -390,12 +390,12 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             			if (ic.getPuid()!=null && ic.getPuid().length()>0) {
             				instructor = DepartmentalInstructor.findByPuidDepartmentId(ic.getPuid(), clazz.getControllingDept().getUniqueId()); 
             			} else if (ic.getResourceId()!=null) {
-        					instructor = (new DepartmentalInstructorDAO()).get(ic.getResourceId(), hibSession);
+        					instructor = (DepartmentalInstructorDAO.getInstance()).get(ic.getResourceId(), hibSession);
         				}
             			if (instructor!=null) instructors.add(instructor);
         			}
     				
-    				TimePattern pattern = (new TimePatternDAO()).get(placement.getTimeLocation().getTimePatternId(),hibSession);
+    				TimePattern pattern = (TimePatternDAO.getInstance()).get(placement.getTimeLocation().getTimePatternId(),hibSession);
     				if (pattern==null) {
        					iProgress.warn(MSG.warnUnableToSaveClassAssignmentTimePatternNotExist(lecture.getName(), placement.getLongName(iUseAmPm), placement.getTimeLocation().getTimePatternId()));
        					continue;
@@ -728,7 +728,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				Map.Entry entry = (Map.Entry)i2.next();
     				Integer assignmentId = (Integer)entry.getKey();
     				JenrlInfo jInfo = (JenrlInfo)entry.getValue();
-    				Assignment other = (new AssignmentDAO()).get(assignmentId,hibSession);
+    				Assignment other = (AssignmentDAO.getInstance()).get(assignmentId,hibSession);
     				if (other==null) continue;
         			ConstraintInfo constraintInfo = new ConstraintInfo();
         			constraintInfo.setDefinition(defJenrlInfo);

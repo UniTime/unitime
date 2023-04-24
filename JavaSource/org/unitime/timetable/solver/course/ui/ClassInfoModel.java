@@ -1004,7 +1004,7 @@ public class ClassInfoModel implements Serializable {
     	return (PreferenceLevel)roomPreferencesThisDept.get(locationId);
     }
     
-    protected List findAllRooms(Long sessionId, boolean roomDepts) {
+    protected List<Location> findAllRooms(Long sessionId, boolean roomDepts) {
 		String a = "", b = "";
 		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
 			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
@@ -1035,7 +1035,7 @@ public class ClassInfoModel implements Serializable {
         } else {
         	query = "select r from Location r " + a + " where r.session.uniqueId = :sessionId " + b;
         }
-        return LocationDAO.getInstance().getSession().createQuery(query).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+        return LocationDAO.getInstance().getSession().createQuery(query, Location.class).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
     
     protected Vector<ClassRoomInfo> findRooms(ClassTimeInfo period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts, RoomBase showAllRooms) {

@@ -53,10 +53,10 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 		try {
 			helper.info("Checking for expired reservations..."); 
 			Hashtable<XOffering, List<XReservation>> reservations2expire = new Hashtable<XOffering, List<XReservation>>();
-			for (org.unitime.timetable.model.Reservation expiredReservation: (List<org.unitime.timetable.model.Reservation>)helper.getHibSession().createQuery(
+			for (org.unitime.timetable.model.Reservation expiredReservation: helper.getHibSession().createQuery(
 					"select r from Reservation r where " +
 					"r.instructionalOffering.session.uniqueId = :sessionId and " +
-					"r.expirationDate is not null and r.expirationDate < current_timestamp()")
+					"r.expirationDate is not null and r.expirationDate < current_timestamp()", org.unitime.timetable.model.Reservation.class)
 					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				XOffering offering = server.getOffering(expiredReservation.getInstructionalOffering().getUniqueId());
 				if (offering == null) continue;

@@ -181,8 +181,6 @@ public class SchedulingSubpartTableBuilder {
     }
 
 
-
-
     /**
      * Recursive function generates the html code for displaying the config
      * @param request Http Request object
@@ -424,7 +422,7 @@ public class SchedulingSubpartTableBuilder {
         if (md==Constants.MANAGED_BY_MULTIPLE_DEPTS)
             return "Multiple Departments";
 
-        Department d = new DepartmentDAO().get(Long.valueOf(md));
+        Department d = DepartmentDAO.getInstance().get(Long.valueOf(md));
         if (d!=null) {
             if (d.isExternalManager().booleanValue())
                 return d.getExternalMgrLabel();
@@ -434,8 +432,6 @@ public class SchedulingSubpartTableBuilder {
             
         return "Not Found";
     }
-
-
 
 
     /**

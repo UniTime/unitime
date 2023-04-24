@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.rooms;
 
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
@@ -148,8 +147,8 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 		    			provider.setDepartmentId(p.getDepartment().getUniqueId());
 		    		response.addService(provider);
 		    	}
-		    	for (EventServiceProvider p: (List<EventServiceProvider>)LocationDAO.getInstance().getSession().createQuery(
-		    		"from EventServiceProvider where visible = true and allRooms = true and (session is null or session = :sessionId) and (department is null or department = :departmentId)"
+		    	for (EventServiceProvider p: LocationDAO.getInstance().getSession().createQuery(
+		    		"from EventServiceProvider where visible = true and allRooms = true and (session is null or session = :sessionId) and (department is null or department = :departmentId)", EventServiceProvider.class
 		    		).setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", location.getEventDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();
 		    		provider.setId(p.getUniqueId());

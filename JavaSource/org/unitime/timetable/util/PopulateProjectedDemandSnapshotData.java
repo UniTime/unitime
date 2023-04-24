@@ -68,7 +68,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" ( select io.uniqueId from InstructionalOffering io where io.session.uniqueId = :sessId ) " );
 		hibSession
 			.createQuery(courseOfferingUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 	}
@@ -82,7 +82,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" where io.session.uniqueId = :sessId ");
 		hibSession
 			.createQuery(instructionalOfferingUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 	}
@@ -98,7 +98,7 @@ public class PopulateProjectedDemandSnapshotData {
 	    	.append("  ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessId ) " );
 		hibSession
 			.createQuery(classUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 	
@@ -114,7 +114,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" ( select aa.uniqueId from AcademicArea aa where aa.session.uniqueId = :sessId ) " );
 		hibSession
 			.createQuery(curriculumProjectionRuleUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 
@@ -130,7 +130,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" ( select c.uniqueId from Curriculum c where c.academicArea.session.uniqueId = :sessId ) " );
 		hibSession
 			.createQuery(curriculumClassificationUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 
@@ -146,7 +146,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" ( select cc.uniqueId from CurriculumClassification cc where cc.curriculum.academicArea.session.uniqueId = :sessId ) " );
 		hibSession
 			.createQuery(curriculumClassificationUpdateSb.toString())
-			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.TimestampType.INSTANCE)
+			.setParameter("snapshotDate", snapshotDate, org.hibernate.type.DateType.INSTANCE)
 			.setParameter("sessId", acadSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.executeUpdate();
 

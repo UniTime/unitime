@@ -21,7 +21,6 @@ package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -94,20 +93,19 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
             print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
         }
-        List courseNumbers = new CourseOfferingDAO().
+        List<Object[]> courseNumbers = CourseOfferingDAO.getInstance().
             getSession().
             createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                     "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false " +
-                    "order by co.courseNbr ").
+                    "order by co.courseNbr ", Object[].class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE).
             list();
         if (courseNumbers.isEmpty()) print(out, "-1", EXMSG.examOwnerNotApplicable());
         if (courseNumbers.size()>1) print(out, "-1", "-");
-        for (Iterator i=courseNumbers.iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o: courseNumbers) {
             print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;"))));
         }
     }
@@ -117,7 +115,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
             print(out, "0", EXMSG.examOwnerNotApplicable());
             return;
         }
-        CourseOffering course = new CourseOfferingDAO().get(Long.parseLong(courseOfferingId));
+        CourseOffering course = CourseOfferingDAO.getInstance().get(Long.parseLong(courseOfferingId));
         if (course==null) {
             print(out, "0", EXMSG.examOwnerNotApplicable());
             return;
@@ -125,37 +123,35 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
         if (course.isIsControl()) print(out,String.valueOf(Long.MIN_VALUE+1), EXMSG.examTypeOffering());
         print(out, String.valueOf(Long.MIN_VALUE), EXMSG.examTypeCourse());
         if (!course.isIsControl()) return;
-        TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(null));
-        configs.addAll(new InstrOfferingConfigDAO().
+        TreeSet<InstrOfferingConfig> configs = new TreeSet<InstrOfferingConfig>(new InstrOfferingConfigComparator(null));
+        configs.addAll(InstrOfferingConfigDAO.getInstance().
             getSession().
             createQuery("select distinct c from " +
                     "InstrOfferingConfig c inner join c.instructionalOffering.courseOfferings co "+
-                    "where co.uniqueId = :courseOfferingId").
+                    "where co.uniqueId = :courseOfferingId", InstrOfferingConfig.class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
             list());
-        TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
-        subparts.addAll(new SchedulingSubpartDAO().
+        TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator(null));
+        subparts.addAll(SchedulingSubpartDAO.getInstance().
             getSession().
             createQuery("select distinct s from " +
                     "SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co "+
-                    "where co.uniqueId = :courseOfferingId").
+                    "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
             list());
         if (!configs.isEmpty()) {
             print(out, String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeConfigurations());
-            for (Iterator i=configs.iterator();i.hasNext();) {
-                InstrOfferingConfig c = (InstrOfferingConfig)i.next();
+            for (InstrOfferingConfig c: configs) {
                 print(out,String.valueOf(-c.getUniqueId()), c.getName() + (c.getInstructionalMethod() == null ? "" : " (" + c.getInstructionalMethod().getLabel() + ")"));
             }
         }
         if (!configs.isEmpty() && !subparts.isEmpty())
             print(out,String.valueOf(Long.MIN_VALUE+2),EXMSG.sctOwnerTypeSubparts());
-        for (Iterator i=subparts.iterator();i.hasNext();) {
-            SchedulingSubpart s = (SchedulingSubpart)i.next();
+        for (SchedulingSubpart s: subparts) {
             String id = s.getUniqueId().toString();
             String name = s.getItype().getAbbv();
             String sufix = s.getSchedulingSubpartSuffix();
@@ -174,7 +170,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
             print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
         }
-        SchedulingSubpart subpart = (Long.parseLong(schedulingSubpartId)>0?new SchedulingSubpartDAO().get(Long.valueOf(schedulingSubpartId)):null);
+        SchedulingSubpart subpart = (Long.parseLong(schedulingSubpartId)>0?SchedulingSubpartDAO.getInstance().get(Long.valueOf(schedulingSubpartId)):null);
         if (subpart==null) {
             print(out, "-1", EXMSG.examOwnerNotApplicable());
             return;
@@ -183,19 +179,18 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
         if (courseId != null && !courseId.isEmpty()) {
         	co = CourseOfferingDAO.getInstance().get(Long.valueOf(courseId));
         }
-        TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        TreeSet<Class_> classes = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         classes.addAll(new Class_DAO().
             getSession().
             createQuery("select distinct c from Class_ c "+
-                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
+                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), org.hibernate.type.LongType.INSTANCE).
             list());
         if (classes.size()>1)
             print(out, "-1", "-");
-        for (Iterator i=classes.iterator();i.hasNext();) {
-            Class_ c = (Class_)i.next();
+        for (Class_ c: classes) {
             String extId = c.getClassSuffix(co);
             print(out, c.getUniqueId().toString(), c.getSectionNumberString() + (extId == null || extId.isEmpty() || extId.equalsIgnoreCase(c.getSectionNumberString()) ? "" : " - " + extId)); 
         }

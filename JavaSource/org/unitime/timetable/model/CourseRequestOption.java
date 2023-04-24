@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -33,8 +32,6 @@ import org.unitime.timetable.model.base.BaseCourseRequestOption;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-
-
 
 /**
  * @author Tomas Muller

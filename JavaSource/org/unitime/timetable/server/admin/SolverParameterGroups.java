@@ -68,13 +68,13 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 	protected List<SolverParameterGroup> getSolverParameterGroups(String[] filter, SessionContext context) {
 		if (filter == null || filter[0] == null || filter[0].isEmpty() || filter[0].equals("null")) {
 			context.getUser().setProperty("Admin.SolverParamGroup.FilterType", null);
-			return (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
-					"from SolverParameterGroup order by order, name"
+			return SolverParameterGroupDAO.getInstance().getSession().createQuery(
+					"from SolverParameterGroup order by order, name", SolverParameterGroup.class
 					).list();
 		} else {
 			context.getUser().setProperty("Admin.SolverParamGroup.FilterType", filter[0]);
-			return (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
-					"from SolverParameterGroup where type = :type order by order, name"
+			return SolverParameterGroupDAO.getInstance().getSession().createQuery(
+					"from SolverParameterGroup where type = :type order by order, name", SolverParameterGroup.class
 					).setParameter("type", Integer.valueOf(filter[0]), org.hibernate.type.IntegerType.INSTANCE).list();
 		}
 		
@@ -146,8 +146,8 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 	public void save(String[] filter, SimpleEditInterface data, SessionContext context, Session hibSession) {
 		Set<Integer> ords = new HashSet<Integer>();
 		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
-			for (SolverParameterGroup group: (List<SolverParameterGroup>)SolverParameterGroupDAO.getInstance().getSession().createQuery(
-					"from SolverParameterGroup where type != :type"
+			for (SolverParameterGroup group: SolverParameterGroupDAO.getInstance().getSession().createQuery(
+					"from SolverParameterGroup where type != :type", SolverParameterGroup.class
 					).setParameter("type", Integer.valueOf(filter[0]), org.hibernate.type.IntegerType.INSTANCE).list()) {
 				ords.add(group.getOrder());
 			}

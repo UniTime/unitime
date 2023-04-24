@@ -208,8 +208,8 @@ public class LocalSolverServer extends AbstractSolverServer {
 					if (session.getStatusType().isTestSession()) continue;
 					if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 					
-					int nrSolutions = ((Number)hibSession.createQuery(
-							"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
+					int nrSolutions = (hibSession.createQuery(
+							"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId", Number.class)
 							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 					if (nrSolutions == 0) continue;
 					

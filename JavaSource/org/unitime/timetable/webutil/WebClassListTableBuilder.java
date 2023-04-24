@@ -268,7 +268,7 @@ public class WebClassListTableBuilder extends
         setBackId(backId);
 
         if (schedulingSubpartId != null) {
-	    	SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
+	    	SchedulingSubpartDAO ssDao = SchedulingSubpartDAO.getInstance();
 	    	SchedulingSubpart ss = ssDao.get(schedulingSubpartId);
 	        TreeSet ts = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 	        if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ClassesKeepSort))) {

@@ -59,7 +59,7 @@ public class HQLImport extends BaseImport {
 			error("Attribute name is not provided.");
 			return;
 		}
-		SavedHQL report = (SavedHQL) getHibSession().createQuery("from SavedHQL where name = :name")
+		SavedHQL report =  getHibSession().createQuery("from SavedHQL where name = :name", SavedHQL.class)
 				.setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (report == null) {
 			report = new SavedHQL();

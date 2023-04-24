@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 

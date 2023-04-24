@@ -22,7 +22,6 @@ package org.unitime.timetable.dataexchange;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -54,8 +53,8 @@ public class StudentExport extends BaseExport {
 	        
 	        document.addDocType("students", "-//UniTime//UniTime Students DTD/EN", "http://www.unitime.org/interface/Student.dtd");
 	        
-	        for (Student student: (List<Student>)getHibSession().createQuery(
-	        		"select s from Student s where s.session.uniqueId = :sessionId")
+	        for (Student student: getHibSession().createQuery(
+	        		"select s from Student s where s.session.uniqueId = :sessionId", Student.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	
 	        	Element studentEl = root.addElement("student");

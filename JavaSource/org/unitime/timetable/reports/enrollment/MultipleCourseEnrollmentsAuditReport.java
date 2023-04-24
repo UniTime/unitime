@@ -81,7 +81,7 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		for (SubjectArea sa : subjects){
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
-				 .getSession().createQuery(query)
+				 .getSession().createQuery(query, Object[].class)
 				 .setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				 .setParameter("subjectId", sa.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				 .list());

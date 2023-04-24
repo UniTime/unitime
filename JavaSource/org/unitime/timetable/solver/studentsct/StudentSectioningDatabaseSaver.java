@@ -314,9 +314,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     public void save(Session session, org.hibernate.Session hibSession) {
         iClasses = new Hashtable<Long, Class_>();
         setPhase("Loading classes...", 1);
-        for (Class_ clazz: (List<Class_>)hibSession.createQuery(
+        for (Class_ clazz: hibSession.createQuery(
         		"select distinct c from Class_ c where " +
-        		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+        		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Class_.class)
         		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
@@ -325,8 +325,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         if (iIncludeCourseDemands && !iProjections) {
             iCourses = new Hashtable<Long, CourseOffering>();
             setPhase("Loading courses...", 1);
-            for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
-            		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
+            for (CourseOffering course: hibSession.createQuery(
+            		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
             		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 iCourses.put(course.getUniqueId(), course);
             }
@@ -334,13 +334,13 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
 
             iStudents = new Hashtable<Long, org.unitime.timetable.model.Student>();
             setPhase("Loading students...", 1);
-            for (org.unitime.timetable.model.Student student: (List<org.unitime.timetable.model.Student>)hibSession.createQuery(
+            for (org.unitime.timetable.model.Student student: hibSession.createQuery(
             		"select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
-            		"where s.session.uniqueId = :sessionId")
+            		"where s.session.uniqueId = :sessionId", org.unitime.timetable.model.Student.class)
             		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	iStudents.put(student.getUniqueId(), student);
             }
@@ -349,12 +349,12 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
             iRequests = new Hashtable<String, org.unitime.timetable.model.CourseRequest>();
             setPhase("Loading course demands...", 1);
-            for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
+            for (CourseDemand demand: hibSession.createQuery(
             		"select distinct c from CourseDemand c " +
             		"left join fetch c.courseRequests r " +
             		"left join fetch r.courseOffering as co " +
             		"left join fetch co.instructionalOffering as io " +
-            		"where c.student.session.uniqueId=:sessionId")
+            		"where c.student.session.uniqueId=:sessionId", CourseDemand.class)
             		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 for (org.unitime.timetable.model.CourseRequest request: demand.getCourseRequests()) {
                     iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
@@ -391,7 +391,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             
         	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
         	List<SectioningInfo> infos = hibSession.createQuery(
-        			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+        			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", SectioningInfo.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
         			.list();
         	for (SectioningInfo info : infos)

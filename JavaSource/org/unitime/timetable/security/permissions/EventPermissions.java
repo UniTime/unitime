@@ -163,7 +163,7 @@ public class EventPermissions {
 			for (Serializable id: mgrDeptIds)
 				mgrDept = (mgrDept == null ? "" : mgrDept + ",") + id;
 			
-			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
+			return SessionDAO.getInstance().getSession().createQuery(
 					"select distinct l.uniqueId " +
 					"from Location l, RoomTypeOption o " +
 					"where l.eventDepartment.allowEvents = true and l.session.uniqueId = :sessionId and (" +
@@ -178,7 +178,7 @@ public class EventPermissions {
 							: mgrDept == null ? ""
 							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment)) and l.eventDepartment.uniqueId in (" + mgrDept + "))"
 					) +
-					")")
+					")", Long.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 	}

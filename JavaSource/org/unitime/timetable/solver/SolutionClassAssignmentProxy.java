@@ -68,7 +68,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 	public SolutionClassAssignmentProxy(Collection solutionIds) {
 		super();
 		for (Iterator i=solutionIds.iterator();i.hasNext();) {
-			Solution solution = (new SolutionDAO()).get((Long)i.next());
+			Solution solution = (SolutionDAO.getInstance()).get((Long)i.next());
 			if (solution==null) continue;
 			iSolutionIds.add(solution.getUniqueId());
 			for (Iterator j=solution.getOwner().getDepartments().iterator();j.hasNext();)
@@ -172,8 +172,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				            	}
 			            	}
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
-								for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
-									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+								for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
+									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
 									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 									.setCacheable(true).list()) {
@@ -291,8 +291,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 	            	}
             	}
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
-					for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
-						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+					for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
+						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
 						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true).list()) {

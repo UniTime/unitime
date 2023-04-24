@@ -104,8 +104,8 @@ public class ReadLearningCommunities {
                 sLog.info("Session: "+session);
             }
             
-            DistributionType linkedSections = (DistributionType)hibSession.createQuery(
-			"select d from DistributionType d where d.reference = :type").setParameter("type", "LINKED_SECTIONS", org.hibernate.type.StringType.INSTANCE).uniqueResult();
+            DistributionType linkedSections = hibSession.createQuery(
+			"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "LINKED_SECTIONS", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 
             BufferedReader r = new BufferedReader(new FileReader(ApplicationProperties.getProperty("file", "/Users/muller/Downloads/Fall 2011 LC Course Matrix.csv")));
             Document document = DocumentHelper.createDocument();
@@ -171,8 +171,8 @@ public class ReadLearningCommunities {
                 	classes.clear();
             	}
             	String crn = cols[2].trim();
-            	Class_ clazz = (Class_)hibSession.createQuery("from Class_ c where c.classSuffix like :crn and " +
-            			"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            	Class_ clazz = hibSession.createQuery("from Class_ c where c.classSuffix like :crn and " +
+            			"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Class_.class)
             		.setParameter("crn", crn + "%", org.hibernate.type.StringType.INSTANCE)
             		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             		.setMaxResults(1).uniqueResult();

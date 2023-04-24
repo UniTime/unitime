@@ -319,8 +319,8 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 		int appearance = SolverPredefinedSetting.Appearance.TIMETABLES.ordinal();
 		String defaultConfig = "Interactive";
 
-		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverPredefinedSetting s where s.appearance = :appearance"
+		List<SolverPredefinedSetting> configs = SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
+				"from SolverPredefinedSetting s where s.appearance = :appearance", SolverPredefinedSetting.class
 				).setParameter("appearance", appearance, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
 		
 		for (SolverPredefinedSetting config: configs) {
@@ -352,7 +352,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			List<Serializable> solverGroupIds = new ArrayList<Serializable>();
 			for (Qualifiable owner: context.getUser().getCurrentAuthority().getQualifiers("SolverGroup"))
 				solverGroupIds.add(owner.getQualifierId());
-			solutions = SolutionDAO.getInstance().getSession().createQuery("from Solution where owner.uniqueId in :solverGroupIds").setParameterList("solverGroupIds", solverGroupIds).list();
+			solutions = SolutionDAO.getInstance().getSession().createQuery("from Solution where owner.uniqueId in :solverGroupIds", Solution.class).setParameterList("solverGroupIds", solverGroupIds).list();
 		}
 		
 		if (solutions == null || solutions.isEmpty()) {

@@ -40,7 +40,6 @@ import java.util.Vector;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.query.Query;
-import org.hibernate.type.LongType;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventLookupBackend;
@@ -646,7 +645,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		String ownerIds = "";
 		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
 			Long solutionId = Long.valueOf(s.nextToken());
-			Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
+			Solution solution = (SolutionDAO.getInstance()).get(solutionId, hibSession);
 			if (solution==null) continue;
 			if (firstSolution==null) firstSolution = solution;
 			if (ownerIds.length()>0) ownerIds += ",";
@@ -776,21 +775,21 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
 
-		Query q = hibSession.createQuery("select distinct a from CurriculumClassification cc inner join cc.courses cx, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+		Query<Assignment> q = hibSession.createQuery("select distinct a from CurriculumClassification cc inner join cc.courses cx, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and cc.uniqueId=:resourceId and " +
-				"cx.course = co");
+				"cx.course = co", Assignment.class);
 		q.setCacheable(true);
 		q.setParameter("resourceId", cc.getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-		List assignments = q.list();
+		List<Assignment> assignments = q.list();
 		Map<Long, Set<Long>[]> restrictions = new Hashtable<Long, Set<Long>[]>();
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+		for (Object[] o: hibSession.createQuery(
 				"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
 				"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 				"left outer join r.majors rm left outer join r.classifications rc, " +
 				"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
 				"where cc.classification.uniqueId = :resourceId " +
 				"and cc.course.instructionalOffering = r.instructionalOffering and ra = cc.classification.curriculum.academicArea "+
-				"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
+				"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)", Object[].class)
 				.setParameter("resourceId", cc.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Long offeringId = (Long)o[0];
 			Long configId = (Long)o[1];
@@ -824,17 +823,17 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
 
-    	Query q = hibSession.createQuery(
+    	Query<Assignment> q = hibSession.createQuery(
 				"select distinct a from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
-				"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering and r.group.uniqueId=:resourceId");
+				"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering and r.group.uniqueId=:resourceId", Assignment.class);
 		q.setCacheable(true);
 		q.setParameter("resourceId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE);
-		List assignments = q.list();
+		List<Assignment> assignments = q.list();
 		Map<Long, Set<Long>[]> restrictions = new Hashtable<Long, Set<Long>[]>();
-		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+		for (Object[] o: hibSession.createQuery(
 				"select distinct r.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
 				"from StudentGroupReservation r left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
-				"where r.group.uniqueId = :resourceId")
+				"where r.group.uniqueId = :resourceId", Object[].class)
 				.setParameter("resourceId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			Long offeringId = (Long)o[0];
 			Long configId = (Long)o[1];
@@ -875,7 +874,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		
 		Query q = hibSession.createQuery(
 				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.classId in (:classIds)");
-		q.setParameterList("classIds", classIds, new LongType());
+		q.setParameterList("classIds", classIds, org.hibernate.type.LongType.INSTANCE);
 		q.setCacheable(true);
 		List assignments = q.list();
 		model.setSize((int)Math.round(g.countStudentWeights()));

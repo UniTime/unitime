@@ -50,8 +50,8 @@ public class StudentGroupsConnector extends ApiConnector {
 		helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveStudentGroups);
 		
 		List<StudentGroupInfo> response = new ArrayList<StudentGroupInfo>();
-		for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
-				"from StudentGroup g where g.session.uniqueId = :sessionId")
+		for (StudentGroup g: StudentGroupDAO.getInstance().getSession().createQuery(
+				"from StudentGroup g where g.session.uniqueId = :sessionId", StudentGroup.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list())
 			response.add(new StudentGroupInfo(g));
 			

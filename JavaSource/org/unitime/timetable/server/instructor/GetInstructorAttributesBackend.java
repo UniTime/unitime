@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.List;
-
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -55,8 +53,8 @@ public class GetInstructorAttributesBackend implements GwtRpcImplementation<GetI
 		boolean sortByLastName = CommonValues.SortByLastName.eq(UserProperty.SortNames.get(context.getUser()));
 
 		GwtRpcResponseList<AttributeInterface> response = new GwtRpcResponseList<AttributeInterface>();
-		for (InstructorAttribute attribute: (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name"
+		for (InstructorAttribute attribute: InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name", InstructorAttribute.class
 				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", request.getDepartmentId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			AttributeInterface a = new AttributeInterface();
 			a.setId(attribute.getUniqueId());

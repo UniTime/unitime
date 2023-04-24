@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -44,8 +43,6 @@ import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Formats;
-
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -290,7 +287,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             if (hibSession!=null)
                 hibSession.saveOrUpdate(chl);
             else
-                new ChangeLogDAO().saveOrUpdate(chl); 
+                ChangeLogDAO.getInstance().saveOrUpdate(chl); 
             
         } catch (Exception e) {
             Debug.error(e);
@@ -365,7 +362,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     
     public static ChangeLog findLastChange(String objectType, Number objectUniqueId, Source source) {
         try {
-            org.hibernate.Session hibSession = new ChangeLogDAO().getSession(); 
+            org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
             Query q = hibSession.createQuery(
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
@@ -390,7 +387,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     
     public static ChangeLog findLastChange(String objectType, Collection<Long> objectUniqueIds, Source source) {
         try {
-            org.hibernate.Session hibSession = new ChangeLogDAO().getSession();
+            org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession();
             ChangeLog changeLog = null;
 
             StringBuffer ids = new StringBuffer(); int idx = 0;
@@ -454,7 +451,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         try {
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
-            org.hibernate.Session hibSession = new ChangeLogDAO().getSession(); 
+            org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
             Query q = hibSession.createQuery(
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
@@ -476,7 +473,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     @SuppressWarnings("unchecked")
 	public static List<ChangeLog> findLastNChanges(Long sessionId, Long managerId, Long subjAreaId, Long departmentId, int n) {
         try {
-            org.hibernate.Session hibSession = new ChangeLogDAO().getSession(); 
+            org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
             Query q = hibSession.createQuery(
                         "select ch from ChangeLog ch where " +
                         "ch.session.uniqueId=:sessionId " +

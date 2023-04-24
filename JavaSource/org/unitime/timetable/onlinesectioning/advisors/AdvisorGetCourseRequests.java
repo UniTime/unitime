@@ -226,7 +226,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 		
 		List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
-				"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
+				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
 				).setParameter("studentId", iStudentId, org.hibernate.type.LongType.INSTANCE).list();
 		
 		if (student != null && iCheckExistingDemands) {
@@ -512,7 +512,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		request.setStudentId(studentId);
 		
 		List<AdvisorCourseRequest> acrs = hibSession.createQuery(
-				"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
+				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
 				).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list();
 		
 		fillCourseRequests(request, acrs);

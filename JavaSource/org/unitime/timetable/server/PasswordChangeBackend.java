@@ -24,7 +24,6 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -70,17 +69,17 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 		if (request.isReset()) {
 			try {
 				Set<String> userIds = new HashSet<String>();
-				userIds.addAll((List<String>)hibSession.createQuery(
-						"select distinct externalUniqueId from TimetableManager where lower(emailAddress) = :email and externalUniqueId is not null")
+				userIds.addAll(hibSession.createQuery(
+						"select distinct externalUniqueId from TimetableManager where lower(emailAddress) = :email and externalUniqueId is not null", String.class)
 						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
-				userIds.addAll((List<String>)hibSession.createQuery(
-						"select distinct externalUniqueId from Staff where lower(email) = :email and externalUniqueId is not null")
+				userIds.addAll(hibSession.createQuery(
+						"select distinct externalUniqueId from Staff where lower(email) = :email and externalUniqueId is not null", String.class)
 						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
-				userIds.addAll((List<String>)hibSession.createQuery(
-						"select distinct externalUniqueId from DepartmentalInstructor where lower(email) = :email and externalUniqueId is not null")
+				userIds.addAll(hibSession.createQuery(
+						"select distinct externalUniqueId from DepartmentalInstructor where lower(email) = :email and externalUniqueId is not null", String.class)
 						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
-				userIds.addAll((List<String>)hibSession.createQuery(
-						"select distinct externalUniqueId from Student where lower(email) = :email and externalUniqueId is not null")
+				userIds.addAll(hibSession.createQuery(
+						"select distinct externalUniqueId from Student where lower(email) = :email and externalUniqueId is not null", String.class)
 						.setParameter("email", request.getEmail().toLowerCase(), org.hibernate.type.StringType.INSTANCE).list());
 
 				if (userIds.isEmpty())
@@ -163,8 +162,8 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				
 				String username = (request.hasUsername() ? request.getUsername() : context.getUser().getUsername());
 				
-				User user = (User)hibSession.createQuery(
-						"from User where username = :username and password = :password")
+				User user = hibSession.createQuery(
+						"from User where username = :username and password = :password", User.class)
 						.setParameter("username", username, org.hibernate.type.StringType.INSTANCE)
 						.setParameter("password", encode(request.getOldPassword()), org.hibernate.type.StringType.INSTANCE)
 						.setMaxResults(1).uniqueResult();

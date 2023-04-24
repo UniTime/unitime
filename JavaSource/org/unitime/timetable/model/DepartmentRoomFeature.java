@@ -20,18 +20,14 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.model.base.BaseDepartmentRoomFeature;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
-
-
-
 
 /**
  * @author Tomas Muller
@@ -84,16 +80,16 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
         return getLabel();
     }
     
-	public static Collection getAllRoomFeaturesForSession(Session session){
+	public static List<DepartmentRoomFeature> getAllRoomFeaturesForSession(Session session){
 		if (session == null){
 			return(null);
 		}
-		return((new DepartmentRoomFeatureDAO()).
+		return  DepartmentRoomFeatureDAO.getInstance().
 				getSession().
-				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId order by label").
+				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId order by label", DepartmentRoomFeature.class).
 				setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
-				list());
+				list();
 	}
 
     

@@ -89,7 +89,7 @@ public class TimetableManagerBuilder {
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
         	
-	    TimetableManagerDAO empDao = new TimetableManagerDAO();
+	    TimetableManagerDAO empDao = TimetableManagerDAO.getInstance();
 		hibSession = empDao.getSession();
 
 		List<TimetableManager> empList = hibSession.createQuery("from TimetableManager order by lastName, firstName", TimetableManager.class).list();

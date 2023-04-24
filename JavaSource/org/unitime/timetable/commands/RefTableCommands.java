@@ -44,19 +44,19 @@ public class RefTableCommands {
      }
 
     public static List validLabels(Class refClass){
-        Session hSession = (new RefTableEntryDAO()).getSession();
+        Session hSession = (RefTableEntryDAO.getInstance()).getSession();
         return hSession.createQuery("select ref.label from " + refClass.getName() + " ref").list();
     }
 
     public static List validReferences(Class refClass){
-        Session hSession = (new RefTableEntryDAO()).getSession();
+        Session hSession = (RefTableEntryDAO.getInstance()).getSession();
         return hSession.createQuery("select ref.reference from " + refClass.getName() + " ref").list();
     }
     
     public static String referenceForLabel(Class refClass, String label){
         String ref;
         
-        Session hSession = (new RefTableEntryDAO()).getSession();
+        Session hSession = (RefTableEntryDAO.getInstance()).getSession();
         ArrayList list = (ArrayList) hSession.createQuery("select ref.reference from " + refClass.getName() + " ref where ref.label = '" + label + "'").list();
         if (list.size() != 1){
             ref = null;          
@@ -83,7 +83,7 @@ public class RefTableCommands {
     public static String labelForReference(Class refClass, String reference){
         String label;
         
-        Session hSession = (new RefTableEntryDAO()).getSession();
+        Session hSession = (RefTableEntryDAO.getInstance()).getSession();
         ArrayList list = (ArrayList) hSession.createQuery("select ref.label from " + refClass.getName() + " ref where ref.reference = '" + reference + "'").list();
         if (list.size() != 1){
             label = null;          

@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.server.admin;
 
-
-import java.util.List;
-
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,8 +62,8 @@ public class ContactCategories implements AdminTable {
 				new Field(MESSAGES.fieldEmailAddress(), FieldType.textarea, 50, 3, 1000)
 				);
 		data.setSortBy(0);
-		for (ContactCategory cc: (List<ContactCategory>)ContactCategoryDAO.getInstance().getSession().createQuery(
-				"from ContactCategory order by reference").list()) {
+		for (ContactCategory cc: ContactCategoryDAO.getInstance().getSession().createQuery(
+				"from ContactCategory order by reference", ContactCategory.class).list()) {
 			Record r = data.addRecord(cc.getUniqueId());
 			r.setField(0, cc.getReference());
 			r.setField(1, cc.getLabel());

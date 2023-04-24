@@ -312,7 +312,7 @@ public class SolverGroupEditForm implements UniTimeForm {
 	public void delete(org.hibernate.Session hibSession, SessionContext context) throws Exception {
 		if (iUniqueId < 0) return;
 		if (!iDepartmentsEditable) return;
-		SolverGroup group = (new SolverGroupDAO()).get(iUniqueId);
+		SolverGroup group = (SolverGroupDAO.getInstance()).get(iUniqueId);
 		if (group == null) return;
 		for (Department dept: group.getDepartments()) {
 			dept.setSolverGroup(null);

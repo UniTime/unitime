@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-
-
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -33,8 +30,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.unitime.timetable.model.base.BaseCurriculumCourse;
-
-
 
 /**
  * @author Tomas Muller

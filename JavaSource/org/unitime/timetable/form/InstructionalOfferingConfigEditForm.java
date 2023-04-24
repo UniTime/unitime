@@ -102,7 +102,7 @@ public class InstructionalOfferingConfigEditForm implements UniTimeForm {
             Collection<SimpleItypeConfig> sp = (Collection<SimpleItypeConfig>)webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
             // Check that config name doesn't already exist
-            InstructionalOffering io = new InstructionalOfferingDAO().get( Long.valueOf(this.getInstrOfferingId()) );
+            InstructionalOffering io = InstructionalOfferingDAO.getInstance().get( Long.valueOf(this.getInstrOfferingId()) );
             if (io.existsConfig(this.getName(), this.getConfigId())) {
             	action.addFieldError("form.subparts", MSG.errorConfigurationAlreadyExists());
             }

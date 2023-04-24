@@ -159,7 +159,7 @@ public class ExamPeriodEditAction extends UniTimeAction<ExamPeriodEditForm> {
             } else {
         		Transaction tx = null;
                 try {
-                	org.hibernate.Session hibSession = (new ExamPeriodDAO()).getSession();
+                	org.hibernate.Session hibSession = (ExamPeriodDAO.getInstance()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
@@ -195,7 +195,7 @@ public class ExamPeriodEditAction extends UniTimeAction<ExamPeriodEditForm> {
             	addFieldError("form.uniqueId", MSG.errorExaminationIdNotProvided());
                 return "list";
             } else {
-            	ExamPeriod ep = (new ExamPeriodDAO()).get(Long.valueOf(id));
+            	ExamPeriod ep = (ExamPeriodDAO.getInstance()).get(Long.valueOf(id));
                 if(ep==null) {
                 	addFieldError("form.uniqueId", MSG.errorExaminationIdNotProvided());
                     return "list";
@@ -210,11 +210,11 @@ public class ExamPeriodEditAction extends UniTimeAction<ExamPeriodEditForm> {
     		Transaction tx = null;
     		
             try {
-            	org.hibernate.Session hibSession = (new ExamPeriodDAO()).getSession();
+            	org.hibernate.Session hibSession = (ExamPeriodDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-                ExamPeriod ep = (new ExamPeriodDAO()).get(form.getUniqueId(), hibSession);
+                ExamPeriod ep = (ExamPeriodDAO.getInstance()).get(form.getUniqueId(), hibSession);
                 ChangeLog.addChange(
                         hibSession, 
                         sessionContext, 

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -52,8 +51,6 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
-
-
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
@@ -242,7 +239,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	        boolean fetchReservations,
 	        String filterWaitList) {
 
-		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
+		org.hibernate.Session hibSession = (InstructionalOfferingDAO.getInstance()).getSession();
 
 		StringBuffer query = new StringBuffer();
 		query.append("select distinct io ");
@@ -421,7 +418,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	Long nextId = Navigation.getNext(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
     	if (nextId!=null) {
     		if (nextId.longValue()<0) return null;
-    		return (new InstructionalOfferingDAO()).get(nextId);
+    		return (InstructionalOfferingDAO.getInstance()).get(nextId);
     	}
     	InstructionalOffering next = null;
 		SubjectArea area = getControllingCourseOffering().getSubjectArea();
@@ -449,7 +446,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	Long previousId = Navigation.getPrevious(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
     	if (previousId!=null) {
     		if (previousId.longValue()<0) return null;
-    		return (new InstructionalOfferingDAO()).get(previousId);
+    		return (InstructionalOfferingDAO.getInstance()).get(previousId);
     	}
     	InstructionalOffering previous = null;
 		SubjectArea area = getControllingCourseOffering().getSubjectArea();
@@ -505,11 +502,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return false;
     }
 
-    public static List findAll(Long sessionId) {
-    	return (new InstructionalOfferingDAO()).
+    public static List<InstructionalOffering> findAll(Long sessionId) {
+    	return (InstructionalOfferingDAO.getInstance()).
     		getSession().
     		createQuery("select distinct io from InstructionalOffering io where " +
-    				"io.session.uniqueId=:sessionId").
+    				"io.session.uniqueId=:sessionId", InstructionalOffering.class).
     		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     		list();
     }
@@ -598,7 +595,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	}
     
     public void generateInstrOfferingPermId() throws HibernateException {
-        setInstrOfferingPermId((Long)InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new InstructionalOfferingDAO().getSession(), this));
+        setInstrOfferingPermId((Long)InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)InstructionalOfferingDAO.getInstance().getSession(), this));
     }
 
 	/**
@@ -692,9 +689,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	}
 
     public static InstructionalOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
-        return (InstructionalOffering)new InstructionalOfferingDAO().
+        return InstructionalOfferingDAO.getInstance().
             getSession().
-            createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstructionalOffering.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).

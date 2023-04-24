@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -72,8 +71,8 @@ public class InstructorSchedulingSolverService implements SolverService<Instruct
 		}
 		
 		// Load properties
-		for (SolverParameterDef def: (List<SolverParameterDef>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef where group.type = :type").setParameter("type", SolverParameterGroup.SolverType.INSTRUCTOR.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list()) {
+		for (SolverParameterDef def: SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
+				"from SolverParameterDef where group.type = :type", SolverParameterDef.class).setParameter("type", SolverParameterGroup.SolverType.INSTRUCTOR.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list()) {
 			if (def.getDefault() != null) properties.put(def.getName(), def.getDefault());
 			if (options != null && options.containsKey(def.getUniqueId()))
 				properties.put(def.getName(), options.get(def.getUniqueId()));

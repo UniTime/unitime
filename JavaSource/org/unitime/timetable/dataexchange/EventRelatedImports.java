@@ -33,6 +33,7 @@ import java.util.Vector;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
@@ -118,9 +119,8 @@ public abstract class EventRelatedImports extends BaseImport {
 	}
 
 	protected Session findSession(String academicInitiative, String academicYear, String academicTerm){ 		
-		return(Session) this.
-		getHibSession().
-		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.academicYear = :academicYear  and s.academicTerm = :academicTerm").
+		return getHibSession().
+		createQuery("from Session as s where s.academicInitiative = :academicInititive and s.academicYear = :academicYear  and s.academicTerm = :academicTerm", Session.class).
 		setParameter("academicInititive", academicInitiative, org.hibernate.type.StringType.INSTANCE).
 		setParameter("academicYear", academicYear, org.hibernate.type.StringType.INSTANCE).
 		setParameter("academicTerm", academicTerm, org.hibernate.type.StringType.INSTANCE).
@@ -128,37 +128,34 @@ public abstract class EventRelatedImports extends BaseImport {
 		uniqueResult();
 	}
 	
-	protected List findNonUniversityLocationsWithIdOrName(String id, String name){
+	protected List<NonUniversityLocation> findNonUniversityLocationsWithIdOrName(String id, String name){
 		if (id != null) {
-			return(this.
-			getHibSession().
-			createQuery("select distinct l from NonUniversityLocation as l where l.externalUniqueId=:id and l.session.uniqueId=:sessionId").
+			return getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.externalUniqueId=:id and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
 			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			setParameter("id", id, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			list());
+			list();
 		}
 		if (name != null) {
-			return(this.
-			getHibSession().
-			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
+			return getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
 			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			list());
+			list();
 		}
 		return(new ArrayList());
 	}
 	
-	protected List findNonUniversityLocationsWithName(String name){
+	protected List<NonUniversityLocation> findNonUniversityLocationsWithName(String name){
 		if (name != null) {
-			return(this.
-			getHibSession().
-			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
+			return getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId", NonUniversityLocation.class).
 			setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
-			list());
+			list();
 		}
 		return(new ArrayList());
 	}

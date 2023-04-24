@@ -29,12 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.SingularAttribute;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -44,11 +38,8 @@ import org.dom4j.Document;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.exception.SQLGrammarException;
-import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
-import org.hibernate.hql.spi.QueryTranslator;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -63,6 +54,12 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
+
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
 
 
 /** 
@@ -189,6 +186,8 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        	q = hibSession.createQuery(query);
 		        }
 		        
+		        //FIXME: How to get the generated SQL???
+		        /*
 		        try {
 		        	String hqlQueryString = q.getQueryString();
 		        	ASTQueryTranslatorFactory queryTranslatorFactory = new ASTQueryTranslatorFactory();
@@ -198,6 +197,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        } catch (Exception e) {
 		        	Debug.error(e);
 		        }
+		        */
 		        
 		        q.setFirstResult(form.getStart());
 		        if (limit > 0) q.setMaxResults(limit + 1);

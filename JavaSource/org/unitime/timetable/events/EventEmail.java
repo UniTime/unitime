@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -43,7 +42,6 @@ import javax.mail.internet.InternetAddress;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.type.LongType;
 import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
@@ -201,10 +199,11 @@ public class EventEmail {
 				}
 				org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 				NameFormat nf = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
-				for (TimetableManager m: (List<TimetableManager>)hibSession.createQuery(
+				for (TimetableManager m: hibSession.createQuery(
 						"select distinct m from Location l inner join l.eventDepartment.timetableManagers m inner join m.managerRoles r where " +
-						"l.uniqueId in :locationIds and m.emailAddress is not null and r.receiveEmails = true and :permission in elements (r.role.rights)")
-						.setParameterList("locationIds", locationIds, new LongType())
+						"l.uniqueId in :locationIds and m.emailAddress is not null and r.receiveEmails = true and :permission in elements (r.role.rights)",
+						TimetableManager.class)
+						.setParameterList("locationIds", locationIds, org.hibernate.type.LongType.INSTANCE)
 						.setParameter("permission", Right.EventLookupContact.name(), org.hibernate.type.StringType.INSTANCE)
 						.list()) {
 					email.addRecipientCC(m.getEmailAddress(), nf.format(m));

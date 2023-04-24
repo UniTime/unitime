@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -41,7 +40,7 @@ public class Program extends BaseProgram {
 
 	public static List<Program> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? ProgramDAO.getInstance().getSession() : hibSession).createQuery(
-				"from Program x where x.session.uniqueId = :sessionId order by x.reference")
+				"from Program x where x.session.uniqueId = :sessionId order by x.reference", Program.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
 	}
 	

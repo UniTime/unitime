@@ -40,15 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.dom4j.Document;
-import org.hibernate.type.BooleanType;
-import org.hibernate.type.ByteType;
-import org.hibernate.type.DateType;
-import org.hibernate.type.DoubleType;
-import org.hibernate.type.FloatType;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.ShortType;
-import org.hibernate.type.StringType;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -108,7 +99,7 @@ public class SavedHqlExportToCSV implements Exporter {
 			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
 		} catch (NumberFormatException e) {}
 		if (hql == null)
-			hql = (SavedHQL)SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name").setParameter("name", report, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
+			hql = SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name", SavedHQL.class).setParameter("name", report, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();
@@ -250,25 +241,25 @@ public class SavedHqlExportToCSV implements Exporter {
 					for (SavedHQLInterface.IdValue v: options)
 						if (parameter.getName().equals(v.getValue())) { value = v.getText(); break; }
 					if (parameter.getType().equalsIgnoreCase("boolean")) {
-						q.setParameter(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)), BooleanType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)), org.hibernate.type.BooleanType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("long")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value), LongType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value), org.hibernate.type.LongType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("slot") || parameter.getType().equalsIgnoreCase("time")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value), IntegerType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value), org.hibernate.type.IntegerType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("double")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value), DoubleType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value), org.hibernate.type.DoubleType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("float")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value), FloatType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value), org.hibernate.type.FloatType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("short")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value), ShortType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value), org.hibernate.type.ShortType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("byte")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value), ByteType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value), org.hibernate.type.ByteType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("date")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), DateType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), org.hibernate.type.DateType.INSTANCE);
 					} else if (parameter.getType().equalsIgnoreCase("datetime") || parameter.getType().equalsIgnoreCase("timestamp")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), DateType.INSTANCE);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), org.hibernate.type.DateType.INSTANCE);
 					} else {
 						for (SavedHQL.Option option: SavedHQL.Option.values()) {
 							if (parameter.getType().equalsIgnoreCase(option.name())) {
@@ -296,12 +287,12 @@ public class SavedHqlExportToCSV implements Exporter {
 									} catch (NumberFormatException e) {
 										id  =  option.lookupValue(user, value);
 									}
-									q.setParameter(parameter.getName(), id == null ? -1l : id, LongType.INSTANCE);
+									q.setParameter(parameter.getName(), id == null ? -1l : id, org.hibernate.type.LongType.INSTANCE);
 								}
 								continue parameters;
 							}
 						}
-						q.setParameter(parameter.getName(), value, StringType.INSTANCE);
+						q.setParameter(parameter.getName(), value, org.hibernate.type.StringType.INSTANCE);
 					}
 				}
 			}

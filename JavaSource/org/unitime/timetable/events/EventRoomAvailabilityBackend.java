@@ -89,24 +89,24 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
 					locations += (locations.isEmpty() ? "" : ",") + ":l" + i;
 				
-				Query query = EventDAO.getInstance().getSession().createQuery(
+				Query<Object[]> roomsQuery = EventDAO.getInstance().getSession().createQuery(
 						"select m, l.permanentId from Meeting m, Location x, Location l " +
 						"where m.startPeriod<:stopTime and m.stopPeriod>:startTime and m.approvalStatus <= 1 and " +
 						"l.session.uniqueId = :sessionId and l.permanentId in (" + locations + ") and l.ignoreRoomCheck = false and " +
 						"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and " +
-						"m.locationPermanentId = x.permanentId and m.meetingDate in ("+dates+")");
+						"m.locationPermanentId = x.permanentId and m.meetingDate in ("+dates+")", Object[].class);
 				
-				query.setParameter("startTime", request.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE);
-				query.setParameter("stopTime", request.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE);
-				query.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE);
+				roomsQuery.setParameter("startTime", request.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE);
+				roomsQuery.setParameter("stopTime", request.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE);
+				roomsQuery.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE);
 				for (int i = 0; i < request.getDates().size(); i++) {
 					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
-					query.setParameter("d" + i, date, org.hibernate.type.DateType.INSTANCE);
+					roomsQuery.setParameter("d" + i, date, org.hibernate.type.DateType.INSTANCE);
 				}
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					query.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
+					roomsQuery.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
 				
-				for (Object[] o: (List<Object[]>)query.list()) {
+				for (Object[] o: roomsQuery.list()) {
 					Meeting m = (Meeting)o[0];
 					Long permId = (Long)o[1];
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
@@ -217,12 +217,12 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), permId, conflict);
 				}
 				
-				query = EventDAO.getInstance().getSession().createQuery(
-						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")");
+				Query<Location> locationsQuery = EventDAO.getInstance().getSession().createQuery(
+						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")", Location.class);
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					query.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
+					locationsQuery.setParameter("l" + i, request.getLocations().get(idx + i), org.hibernate.type.LongType.INSTANCE);
 
-				for (Location location: (List<Location>)query.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+				for (Location location: locationsQuery.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					if (context.hasPermission(location, request.getEventType() == EventType.Unavailabile ? Right.EventLocationUnavailable : Right.EventLocation)) {
 						Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
 						if (conflicts != null && !conflicts.isEmpty())
@@ -332,11 +332,12 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				}
 				
 				if (!location.isIgnoreRoomCheck())
-					for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
+					for (Meeting m: EventDAO.getInstance().getSession().createQuery(
 							"select m from Meeting m, Location x, Location l "+
 							"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
 							"m.locationPermanentId = x.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and "+
-							"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and l.ignoreRoomCheck = false")
+							"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and l.ignoreRoomCheck = false",
+							Meeting.class)
 							.setParameter("startTime", meeting.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
 							.setParameter("stopTime", meeting.getEndSlot(), org.hibernate.type.IntegerType.INSTANCE)
 							.setParameter("meetingDate", meeting.getMeetingDate(), org.hibernate.type.DateType.INSTANCE)

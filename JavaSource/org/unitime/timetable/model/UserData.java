@@ -20,27 +20,20 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseUserData;
 import org.unitime.timetable.model.base.UserDataId;
 import org.unitime.timetable.model.dao.UserDataDAO;
-
-
-
 
 /**
  * @author Tomas Muller
@@ -65,7 +58,7 @@ public class UserData extends BaseUserData {
 
 	public static void setProperty(String externalUniqueId, String name, String value) {
 		try {
-			UserDataDAO dao = new UserDataDAO();
+			UserDataDAO dao = UserDataDAO.getInstance();
 			UserData userData = dao.get(new UserDataId(externalUniqueId, name));
 			if (value!=null && value.length()==0) value=null;
 			if (userData==null && value==null) return;
@@ -84,7 +77,7 @@ public class UserData extends BaseUserData {
 	}
 	
 	public static String getProperty(String externalUniqueId, String name) {
-		UserDataDAO dao = new UserDataDAO();
+		UserDataDAO dao = UserDataDAO.getInstance();
 		UserData userData = dao.get(new UserDataId(externalUniqueId, name));
 		return (userData==null?null:userData.getValue());
 	}
@@ -106,7 +99,7 @@ public class UserData extends BaseUserData {
 		}
 		q += ")";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;
@@ -115,7 +108,7 @@ public class UserData extends BaseUserData {
 	public static HashMap<String,String> getProperties(String externalUniqueId) {
 		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: (List<UserData>)UserDataDAO.getInstance().getSession().createQuery(q).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;

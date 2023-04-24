@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -29,8 +28,6 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
 import org.unitime.timetable.model.base.BaseRefTableEntry;
-
-
 
 /**
  * @author Tomas Muller

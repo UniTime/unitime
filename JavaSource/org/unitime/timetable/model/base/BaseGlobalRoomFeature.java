@@ -19,12 +19,12 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+
+import java.io.Serializable;
 
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;

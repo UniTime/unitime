@@ -94,8 +94,8 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		org.hibernate.Session hibSession = InstructorSurveyDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			InstructorSurvey is = (InstructorSurvey)hibSession.createQuery(
-					"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
+			InstructorSurvey is = hibSession.createQuery(
+					"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("externalId", survey.getExternalId(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			if (is == null && !request.isChanged()) {
@@ -130,8 +130,8 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 				is.setChangedBy(context.getUser().getTrueExternalUserId());
 				
 				if (survey.hasCourses()) {
-					List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)hibSession.createQuery(
-							"from InstructorCourseRequirementType order by sortOrder").list();
+					List<InstructorCourseRequirementType> types = hibSession.createQuery(
+							"from InstructorCourseRequirementType order by sortOrder", InstructorCourseRequirementType.class).list();
 					for (Course ci: survey.getCourses()) {
 						if (!ci.hasCustomFields()) continue;
 						CourseOffering co = null;

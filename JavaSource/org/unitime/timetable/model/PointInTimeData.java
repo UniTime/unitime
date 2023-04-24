@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -66,7 +65,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 			hibSess = PointInTimeDataDAO.getInstance().getSession();
 		}
 		return((ArrayList<PointInTimeData>) hibSess
-				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId")
+				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId", PointInTimeData.class)
 				.setParameter("sessionId", acadSessionUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE)
 				.list());
 	}
@@ -83,7 +82,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		}
 		
 		return((ArrayList<PointInTimeData>) hibSess
-				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId and savedSuccessfully = true")
+				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId and savedSuccessfully = true", PointInTimeData.class)
 				.setParameter("sessionId", acadSessionUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE)
 				.list());
 	}

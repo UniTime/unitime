@@ -46,7 +46,7 @@ public class SubjectAreaEditForm implements UniTimeForm {
 	@Override
 	public void validate(UniTimeAction action) {
         if (UniTimeAction.stripAccessKey(MSG.buttonDelete()).equals(action.getOp())) {
-            SubjectArea sa = new SubjectAreaDAO().get(getUniqueId());
+            SubjectArea sa = SubjectAreaDAO.getInstance().get(getUniqueId());
 			if (sa.hasOfferedCourses()) {
 				action.addFieldError("form.uniqueId", MSG.errorCannotDeleteSubjectAreaWithClasses());
 			}

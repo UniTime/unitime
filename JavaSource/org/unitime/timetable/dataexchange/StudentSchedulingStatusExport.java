@@ -20,7 +20,6 @@
 package org.unitime.timetable.dataexchange;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 
 import org.dom4j.Document;
@@ -54,8 +53,8 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        
 	        document.addDocType("studentStatuses", "-//UniTime//UniTime Student Scheduling Statuses DTD/EN", "http://www.unitime.org/interface/StudentStatuses.dtd");
 	        
-	        for (StudentSectioningStatus status: (List<StudentSectioningStatus>)getHibSession().createQuery(
-	        		"from StudentSectioningStatus where session is null or session = :sessionId order by reference"
+	        for (StudentSectioningStatus status: getHibSession().createQuery(
+	        		"from StudentSectioningStatus where session is null or session = :sessionId order by reference", StudentSectioningStatus.class
 	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Element statusElement = root.addElement("status");
 	        	statusElement.addAttribute("reference", status.getReference());

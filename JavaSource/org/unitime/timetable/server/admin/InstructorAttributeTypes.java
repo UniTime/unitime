@@ -69,8 +69,8 @@ public class InstructorAttributeTypes implements AdminTable {
 			r.setField(2, atype.isConjunctive() ? "true" : "false");
 			r.setField(3, atype.isRequired() ? "true" : "false");
 			int used =
-					((Number)hibSession.createQuery(
-							"select count(a) from InstructorAttribute a where a.type.uniqueId = :uniqueId")
+					(hibSession.createQuery(
+							"select count(a) from InstructorAttribute a where a.type.uniqueId = :uniqueId", Number.class)
 							.setParameter("uniqueId", atype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}

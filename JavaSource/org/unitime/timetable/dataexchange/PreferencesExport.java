@@ -21,7 +21,6 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -91,8 +90,9 @@ public class PreferencesExport extends BaseExport{
 	        root.addAttribute("timeFormat", sTimeFormat.toPattern());
 	        root.addAttribute("created", new Date().toString());
 	        
-	        for (Department department: (List<Department>)getHibSession().createQuery(
-	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId")
+	        for (Department department: getHibSession().createQuery(
+	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId",
+	        		Department.class)
 	        		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				exportPrefGroup(root, department);
 			}
@@ -106,8 +106,9 @@ public class PreferencesExport extends BaseExport{
 					return i1.getUniqueId().compareTo(i2.getUniqueId());
 				}
 			});
-	        instructors.addAll((List<DepartmentalInstructor>)getHibSession().createQuery(
-	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId"
+	        instructors.addAll(getHibSession().createQuery(
+	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
+	        		DepartmentalInstructor.class
 	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 	        for (DepartmentalInstructor instructor: instructors) {
 				exportPrefGroup(root, instructor);
@@ -122,7 +123,7 @@ public class PreferencesExport extends BaseExport{
 					return s1.getUniqueId().compareTo(s2.getUniqueId());
 				}
 			});
-	        subparts.addAll((List<SchedulingSubpart>)getHibSession().createQuery(
+	        subparts.addAll(getHibSession().createQuery(
 	        		"select distinct ss from SchedulingSubpart ss " +
 	        		"left join fetch ss.instrOfferingConfig as ioc " +
 	        		"left join fetch ioc.instructionalOffering as io " +
@@ -130,7 +131,8 @@ public class PreferencesExport extends BaseExport{
 	        		"left join fetch ss.classes c " +
 	        		"left join fetch ss.preferences sp " +
 	        		"left join fetch c.preferences cp " +
-	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true"
+	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
+	        		SchedulingSubpart.class
 	        		).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 	        for (SchedulingSubpart subpart: subparts) {
 				exportPrefGroup(root, subpart);

@@ -21,7 +21,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -35,8 +34,6 @@ import java.util.Collection;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.base.BaseEventNote;
 import org.unitime.timetable.util.Formats;
-
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova

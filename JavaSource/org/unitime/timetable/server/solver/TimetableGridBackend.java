@@ -152,8 +152,8 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         	String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
         	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
         		if (ApplicationProperty.TimeGridShowAllCommitted.isTrue()) {
-        			for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
-            				"select s.uniqueId from Solution s where s.commited = true and s.owner.session = :sessionId")
+        			for (Long id: SolutionDAO.getInstance().getSession().createQuery(
+            				"select s.uniqueId from Solution s where s.commited = true and s.owner.session = :sessionId", Long.class)
             				.setParameter("sessionId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
             			if (solutionIdsStr == null)
             				solutionIdsStr = id.toString();
@@ -162,8 +162,8 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
             		}
         		} else {
         			for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
-                		for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
-                				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId")
+                		for (Long id: SolutionDAO.getInstance().getSession().createQuery(
+                				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId", Long.class)
                 				.setParameter("groupId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                 			if (solutionIdsStr == null)
                 				solutionIdsStr = id.toString();
@@ -178,7 +178,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     		
     		Transaction tx = null;
     		try {
-    			SolutionDAO dao = new SolutionDAO();
+    			SolutionDAO dao = SolutionDAO.getInstance();
     			org.hibernate.Session hibSession = dao.getSession();
     			if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
     				tx = hibSession.beginTransaction();
@@ -439,10 +439,10 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
 				response.addAssignedLegend(TimetableGridHelper.percentage2color(percentage), MESSAGES.legendStudentGroups(String.valueOf(percentage)));
 			break;
 		case InstructionalType:
-			for (ItypeDesc it: (List<ItypeDesc>)ItypeDescDAO.getInstance().getSession().createQuery(
+			for (ItypeDesc it: ItypeDescDAO.getInstance().getSession().createQuery(
     				"from ItypeDesc where " +
     				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session = :sessionId) " +
-    				"and parent is null order by itype"
+    				"and parent is null order by itype", ItypeDesc.class
     				).setParameter("sessionId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				response.addAssignedLegend(cx.getInstructionalTypeColor(it.getItype()), it.getDesc());
 			}

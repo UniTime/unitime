@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -31,11 +30,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.hibernate.LazyInitializationException;
 import org.hibernate.query.Query;
@@ -52,8 +49,6 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
-
-
 
 
 /**
@@ -125,11 +120,11 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 * @return List object with matching course offering
 	 */
 	public static CourseOffering findBySessionSubjAreaIdCourseNbr(Long acadSessionId, Long subjAreaId, String courseNbr) {
-		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
+		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"from CourseOffering co " +
 				"where co.subjectArea.uniqueId = :subjArea " +
 				"and co.courseNbr = :crsNbr " +
-				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
+				"and co.instructionalOffering.session.uniqueId = :acadSessionId", CourseOffering.class)
 				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("subjArea", subjAreaId, org.hibernate.type.LongType.INSTANCE)
 				.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE)
@@ -137,11 +132,11 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	}
 	
     public static CourseOffering findBySessionSubjAreaAbbvCourseNbr(Long acadSessionId, String subjAreaAbbv, String courseNbr) {
-		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
+		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"from CourseOffering co " +
 				"where co.subjectArea.subjectAreaAbbreviation = :subjArea " +
 				"and co.courseNbr = :crsNbr " +
-				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
+				"and co.instructionalOffering.session.uniqueId = :acadSessionId", CourseOffering.class)
 				.setParameter("crsNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("subjArea", subjAreaAbbv, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("acadSessionId", acadSessionId, org.hibernate.type.LongType.INSTANCE)
@@ -150,7 +145,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	
     public static CourseOffering findBySessionSubjAreaAbbvCourseNbrTitle(Long acadSessionId, String subjAreaAbbv, String courseNbr, String title) {
 
-        InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
+        InstructionalOfferingDAO iDao = InstructionalOfferingDAO.getInstance();
         org.hibernate.Session hibSession = iDao.getSession();
         
         String sql = " from CourseOffering co " +
@@ -178,7 +173,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	public static synchronized CourseOffering addNew(Long subjAreaId, String courseNbr) throws Exception {
 	    
 	    CourseOffering co = null; 
-	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	    InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	    Session hibSession = idao.getSession();
 	    try {
             /*
@@ -197,10 +192,10 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             */
 		    
 		    // Add new Course Offering
-		    SubjectArea subjArea = new SubjectAreaDAO().get(subjAreaId);
+		    SubjectArea subjArea = SubjectAreaDAO.getInstance().get(subjAreaId);
 		    org.unitime.timetable.model.Session acadSession = subjArea.getSession();
 		    
-		    CourseOfferingDAO cdao = new CourseOfferingDAO();
+		    CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
 		    co = new CourseOffering();
 		    co.setSubjectArea(subjArea);
 		    co.setCourseNbr(courseNbr);
@@ -208,7 +203,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             co.setDemand(Integer.valueOf(0));
 		    co.setNbrExpectedStudents(Integer.valueOf(0));
 		    co.setIsControl(Boolean.valueOf(true));
-		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
+		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), co).toString());
 		    
 		    HashSet s = new HashSet();
 		    s.add(co);
@@ -252,16 +247,13 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 * @return Vector containing ComboBoxLookup objects
 	 * @see ComboBoxLookup
 	 */
-	public static Vector getControllingCourses(Long sessionId) {
-        
-        Vector l = new Vector();
-        for (Iterator i=new CourseOfferingDAO().getSession().createQuery(
-                "select co.uniqueId, co.subjectAreaAbbv, co.courseNbr from CourseOffering co where co.isControl=true and co.subjectArea.session.uniqueId=:sessionId").
-                setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
-            l.addElement(new ComboBoxLookup(o[0].toString(), o[1]+" "+o[2]));
+	public static List<ComboBoxLookup> getControllingCourses(Long sessionId) {
+		List<ComboBoxLookup> l = new ArrayList<ComboBoxLookup>();
+        for (Object[] o: CourseOfferingDAO.getInstance().getSession().createQuery(
+                "select co.uniqueId, co.subjectAreaAbbv, co.courseNbr from CourseOffering co where co.isControl=true and co.subjectArea.session.uniqueId=:sessionId", Object[].class).
+                setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+            l.add(new ComboBoxLookup(o[0].toString(), o[1]+" "+o[2]));
         }
-        
 		return l;
 	}
 	
@@ -299,19 +291,19 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	}
 	
 	@Transient
-    public List getCourseOfferingDemands() {
+    public List<LastLikeCourseDemand> getCourseOfferingDemands() {
         if (getPermId()!=null)
-            return (new CourseOfferingDAO()).
+            return (CourseOfferingDAO.getInstance()).
                 getSession().
-                createQuery("select d from LastLikeCourseDemand d where d.coursePermId=:permId and d.subjectArea.session.uniqueId=:sessionId").
+                createQuery("select d from LastLikeCourseDemand d where d.coursePermId=:permId and d.subjectArea.session.uniqueId=:sessionId", LastLikeCourseDemand.class).
                 setParameter("permId", getPermId(), org.hibernate.type.StringType.INSTANCE).
                 setParameter("sessionId", getSubjectArea().getSessionId(), org.hibernate.type.LongType.INSTANCE).
                 setCacheable(true).
                 list();
         else 
-            return (new CourseOfferingDAO()).
+            return (CourseOfferingDAO.getInstance()).
     		    getSession().
-    		    createQuery("select d from LastLikeCourseDemand d where d.subjectArea.uniqueId=:subjectAreaId and d.courseNbr=:courseNbr").
+    		    createQuery("select d from LastLikeCourseDemand d where d.subjectArea.uniqueId=:subjectAreaId and d.courseNbr=:courseNbr", LastLikeCourseDemand.class).
     		    setParameter("subjectAreaId", getSubjectArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE).
     		    setParameter("courseNbr", getCourseNbr(), org.hibernate.type.StringType.INSTANCE).
     		    setCacheable(true).
@@ -348,22 +340,22 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     //End
     
-    public static List findAll(Long sessionId) {
-        return new CourseOfferingDAO().
+    public static List<CourseOffering> findAll(Long sessionId) {
+        return CourseOfferingDAO.getInstance().
             getSession().
-            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId").
+            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId", CourseOffering.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             list(); 
     }
     
     public static CourseOffering findBySubjectAreaCourseNbr(Long sessionId, String subjectAreaAbbv, String courseNbr) {
-        return (CourseOffering)new CourseOfferingDAO().
+        return CourseOfferingDAO.getInstance().
             getSession().
             createQuery(
                 "select c from CourseOffering c where "+
                 "c.subjectArea.session.uniqueId=:sessionId and "+
                 "c.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and "+
-                "c.courseNbr=:courseNbr").
+                "c.courseNbr=:courseNbr", CourseOffering.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("subjectAreaAbbv", subjectAreaAbbv, org.hibernate.type.StringType.INSTANCE).
             setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE).
@@ -372,9 +364,9 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     
     public static CourseOffering findByExternalId(Long sessionId, String externalId) {
-        return (CourseOffering)new CourseOfferingDAO().
+        return CourseOfferingDAO.getInstance().
             getSession().
-            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.externalUniqueId=:externalId").
+            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.externalUniqueId=:externalId", CourseOffering.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
             setCacheable(true).
@@ -382,17 +374,17 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     
     public static CourseOffering findByUniqueId(Long uniqueId) {
-        return (CourseOffering)new CourseOfferingDAO().get(uniqueId);
+        return CourseOfferingDAO.getInstance().get(uniqueId);
     }
 
     public static CourseOffering findBySubjectCourseNbrInstrOffUniqueId( String subjectAreaAbbv, String courseNbr, Long instrOffrUniqueId) {
-    	return (CourseOffering)new CourseOfferingDAO().
+    	return CourseOfferingDAO.getInstance().
         getSession().
         createQuery(
             "select c from InstructionalOffering io inner join io.courseOfferings c where "+
             "io.uniqueId=:instrOffrUniqueId and "+
             "c.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and "+
-            "c.courseNbr=:courseNbr").
+            "c.courseNbr=:courseNbr", CourseOffering.class).
         setParameter("instrOffrUniqueId", instrOffrUniqueId.longValue(), org.hibernate.type.LongType.INSTANCE).
         setParameter("subjectAreaAbbv", subjectAreaAbbv, org.hibernate.type.StringType.INSTANCE).
         setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE).
@@ -401,15 +393,15 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     
     public static CourseOffering findByName(String name, Long sessionId) {
-    	return (CourseOffering)new CourseOfferingDAO().getSession().createQuery(
-    			"select c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name")
+    	return CourseOfferingDAO.getInstance().getSession().createQuery(
+    			"select c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name", CourseOffering.class)
     			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
     }
     
     public static CourseOffering findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
-        return (CourseOffering)new CourseOfferingDAO().
+        return CourseOfferingDAO.getInstance().
             getSession().
-            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            createQuery("select c from CourseOffering c where c.subjectArea.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", CourseOffering.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).

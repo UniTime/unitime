@@ -166,7 +166,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 					}
 					ids.append("&subjectAreaIds="+id);
 					subjIds.append(id);
-					names.append(((new SubjectAreaDAO()).get(Long.valueOf(id))).getSubjectAreaAbbreviation());
+					names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(id))).getSubjectAreaAbbreviation());
 				}
 				
 
@@ -219,7 +219,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 							request, 
 							"instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds="+form.getSubjectAreaIds()[0]+"&courseNbr="+(form.getCourseNbr() == null ? "" : URLEncoder.encode(form.getCourseNbr(), "utf-8")), 
 							"Instructional Offerings ("+
-								(form.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():form.getSubjectAreaAbbv())+
+								(form.getSubjectAreaAbbv()==null?((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():form.getSubjectAreaAbbv())+
 								(form.getCourseNbr()==null || form.getCourseNbr().length()==0?"":" "+form.getCourseNbr())+
 								")", 
 							true, true);
@@ -269,7 +269,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 				}
 				ids.append("&subjectAreaIds="+form.getSubjectAreaIds()[i]);
 				subjIds.append(form.getSubjectAreaIds()[i]);
-				names.append(((new SubjectAreaDAO()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+				names.append(((SubjectAreaDAO.getInstance()).get(Long.valueOf(form.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
 			
 		    // Set Session Variables

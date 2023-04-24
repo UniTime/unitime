@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.List;
-
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -44,8 +42,8 @@ public class GetInstructorAttributeParentsBackend implements GwtRpcImplementatio
 		InstructorAttribute current = (request.getAttributeId() == null ? null : InstructorAttributeDAO.getInstance().get(request.getAttributeId()));
 		
 		GwtRpcResponseList<AttributeInterface> response = new GwtRpcResponseList<AttributeInterface>();
-		for (InstructorAttribute attribute: (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) and a.type.uniqueId = :typeId"
+		for (InstructorAttribute attribute: InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) and a.type.uniqueId = :typeId", InstructorAttribute.class
 				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", request.getDepartmentId() == null ? -1l : request.getDepartmentId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("typeId", request.getTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (current == null || (!current.equals(attribute) && !current.isParentOf(attribute))) {

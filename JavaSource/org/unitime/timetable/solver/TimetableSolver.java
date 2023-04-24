@@ -72,7 +72,6 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.type.LongType;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -739,7 +738,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     	iDepartmentIds = new HashSet();
     	Long ownerId[] = getOwnerId();
     	for (int i=0;i<ownerId.length;i++) {
-    		SolverGroup sg = (new SolverGroupDAO()).get(ownerId[i]);
+    		SolverGroup sg = (SolverGroupDAO.getInstance()).get(ownerId[i]);
     		for (Iterator j=sg.getDepartments().iterator();j.hasNext();) {
     			iDepartmentIds.add(((Department)j.next()).getUniqueId());
     		}
@@ -781,21 +780,21 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		HashSet rooms = new HashSet();
     		if (placement.isMultiRoom()) {
     			for (RoomLocation r: placement.getRoomLocations()) {
-    				Location room = (new LocationDAO()).get(r.getId());
+    				Location room = (LocationDAO.getInstance()).get(r.getId());
     				if (room!=null) rooms.add(room);
     			}
     		} else {
-    			Location room = (new LocationDAO()).get(placement.getRoomLocation().getId());
+    			Location room = (LocationDAO.getInstance()).get(placement.getRoomLocation().getId());
     			if (room!=null) rooms.add(room);
     		}
     		assignment.setRooms(rooms);
-    		TimePattern pattern = (new TimePatternDAO()).get(placement.getTimeLocation().getTimePatternId());
+    		TimePattern pattern = (TimePatternDAO.getInstance()).get(placement.getTimeLocation().getTimePatternId());
     		assignment.setTimePattern(pattern);
     		HashSet instructors = new HashSet();
     		for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
     			DepartmentalInstructor instructor = null;
     			if (ic.getResourceId()!=null) {
-					instructor = (new DepartmentalInstructorDAO()).get(ic.getResourceId());
+					instructor = (DepartmentalInstructorDAO.getInstance()).get(ic.getResourceId());
 				}
     			if (instructor!=null) instructors.add(instructor);
     			
@@ -955,12 +954,12 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
-			Session hibSession = (new SolutionDAO()).getSession();
+			Session hibSession = (SolutionDAO.getInstance()).getSession();
 			Transaction tx = null;
 			List<RecordedAssignment> ret = new ArrayList<RecordedAssignment>();
 			try {
 				tx = hibSession.beginTransaction();
-				Solution solution = (new SolutionDAO()).get(solutionId, hibSession);
+				Solution solution = (SolutionDAO.getInstance()).get(solutionId, hibSession);
 				if (solution==null) return null;
 				Long ownerId = solution.getOwner().getUniqueId();
 				Long[] ownerIds = getOwnerId();
@@ -1323,9 +1322,9 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			if (model.getDepartmentSpreadConstraints().isEmpty()) {
     				org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = currentSolution().getAssignment();
     				Map<Department, Set<Long>> dept2class = new HashMap<Department, Set<Long>>();
-    				for (Object[] pair: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
-    						"select c.controllingDept, c.uniqueId from Class_ c where c.managingDept.solverGroup.uniqueId in :solverGroupIds"
-    						).setParameterList("solverGroupIds", getOwnerId(), new LongType()).list()) {
+    				for (Object[] pair: DepartmentDAO.getInstance().getSession().createQuery(
+    						"select c.controllingDept, c.uniqueId from Class_ c where c.managingDept.solverGroup.uniqueId in :solverGroupIds", Object[].class
+    						).setParameterList("solverGroupIds", getOwnerId(), org.hibernate.type.LongType.INSTANCE).list()) {
     					Department dept = (Department)pair[0];
     					Long classId = (Long)pair[1];
     					Set<Long> classIds = dept2class.get(dept);
@@ -1388,9 +1387,9 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		case SUBJECT_AREA:
     			org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = currentSolution().getAssignment();
 				Map<SubjectArea, Set<Long>> sa2class = new HashMap<SubjectArea, Set<Long>>();
-				for (Object[] pair: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
-						"select co.subjectArea, c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and c.managingDept.solverGroup.uniqueId in :solverGroupIds"
-						).setParameterList("solverGroupIds", getOwnerId(), new LongType()).list()) {
+				for (Object[] pair: DepartmentDAO.getInstance().getSession().createQuery(
+						"select co.subjectArea, c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and c.managingDept.solverGroup.uniqueId in :solverGroupIds", Object[].class
+						).setParameterList("solverGroupIds", getOwnerId(), org.hibernate.type.LongType.INSTANCE).list()) {
 					SubjectArea sa = (SubjectArea)pair[0];
 					Long classId = (Long)pair[1];
 					Set<Long> classIds = sa2class.get(sa);

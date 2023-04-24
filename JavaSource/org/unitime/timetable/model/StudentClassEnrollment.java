@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,8 +33,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseStudentClassEnrollment;
 import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
-
-
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -74,26 +71,26 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 		public String getName() { return iName; }
 	}
 
-	public static List findAll(Long sessionId) {
-	    return new StudentClassEnrollmentDAO().getSession().createQuery(
+	public static List<StudentClassEnrollment> findAll(Long sessionId) {
+	    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 	            "select e from StudentClassEnrollment e where "+
-	            "e.student.session.uniqueId=:sessionId").
+	            "e.student.session.uniqueId=:sessionId", StudentClassEnrollment.class).
 	            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).list();
 	}
 
-    public static Iterator findAllForStudent(Long studentId) {
-        return new StudentClassEnrollmentDAO().getSession().createQuery(
+    public static Iterator<StudentClassEnrollment> findAllForStudent(Long studentId) {
+        return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
                 "select e from StudentClassEnrollment e where "+
-                "e.student.uniqueId=:studentId").
+                "e.student.uniqueId=:studentId", StudentClassEnrollment.class).
                 setParameter("studentId", studentId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();
     }
 
 	public static boolean sessionHasEnrollments(Long sessionId) {
 		if (sessionId != null) {
-		    return(((Number) new StudentClassEnrollmentDAO().getSession().createQuery(
+		    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 		            "select count(e) from StudentClassEnrollment e where "+
-		            "e.student.session.uniqueId=:sessionId").
-		            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0);
+		            "e.student.session.uniqueId=:sessionId", Number.class).
+		            setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue() > 0;
 		}
 		return false;
 	}

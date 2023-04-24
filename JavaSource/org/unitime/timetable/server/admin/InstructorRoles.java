@@ -82,8 +82,8 @@ public class InstructorRoles implements AdminTable {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
 			departments.add(new ListItem(department.getUniqueId().toString(), department.getLabel()));
-			for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
-					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName")
+			for (DepartmentalInstructor instructor: hibSession.createQuery(
+					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName", DepartmentalInstructor.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				if (deptIndep && instructor.getRole() == null) continue;
 				Record r = data.addRecord(instructor.getUniqueId(), false);
@@ -110,8 +110,8 @@ public class InstructorRoles implements AdminTable {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
 			
-			List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
-					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName")
+			List<DepartmentalInstructor> instructors = hibSession.createQuery(
+					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName", DepartmentalInstructor.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 			
 			for (DepartmentalInstructor instructor: instructors) {

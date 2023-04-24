@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -93,15 +92,15 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	}
 	
 	public static SubjectArea findByAbbv(org.hibernate.Session hibSession, Long sessionId, String subjectAreaAbbr) {
-		return (SubjectArea)(hibSession == null ? SubjectAreaDAO.getInstance().getSession() : hibSession).createQuery(
-				"from SubjectArea where session.uniqueId = :sessionId and subjectAreaAbbreviation = :subjectAreaAbbr"
+		return (hibSession == null ? SubjectAreaDAO.getInstance().getSession() : hibSession).createQuery(
+				"from SubjectArea where session.uniqueId = :sessionId and subjectAreaAbbreviation = :subjectAreaAbbr", SubjectArea.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("subjectAreaAbbr", subjectAreaAbbr, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 	}
 	
 	public static SubjectArea findUsingInitiativeYearTermSubjectAbbreviation(String academicInitiative, String academicYear, String term, String subjectAreaAbbreviation,
 	org.hibernate.Session hibSession) {
 		
-		return (SubjectArea) hibSession.createQuery("from SubjectArea sa where sa.session.academicInitiative = :campus and sa.session.academicYear = :year and sa.session.academicTerm = :term and sa.subjectAreaAbbreviation = :subj")
+		return  hibSession.createQuery("from SubjectArea sa where sa.session.academicInitiative = :campus and sa.session.academicYear = :year and sa.session.academicTerm = :term and sa.subjectAreaAbbreviation = :subj", SubjectArea.class)
          .setParameter("campus", academicInitiative, org.hibernate.type.StringType.INSTANCE)
          .setParameter("year", academicYear, org.hibernate.type.StringType.INSTANCE)
          .setParameter("term", term, org.hibernate.type.StringType.INSTANCE)
@@ -190,7 +189,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	@SuppressWarnings("unchecked")
 	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
 		return new TreeSet<SubjectArea>(
-				SubjectAreaDAO.getInstance().getSession().createQuery("from SubjectArea where session.uniqueId = :sessionId")
+				SubjectAreaDAO.getInstance().getSession().createQuery("from SubjectArea where session.uniqueId = :sessionId", SubjectArea.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 	

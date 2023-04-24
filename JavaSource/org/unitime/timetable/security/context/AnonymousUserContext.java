@@ -43,7 +43,7 @@ public class AnonymousUserContext extends AbstractUserContext {
 		try {
 			TreeSet<Session> sessions = new TreeSet<Session>();
 			
-			for (Settings setting: (List<Settings>)hibSession.createQuery("from Settings").list()) {
+			for (Settings setting: hibSession.createQuery("from Settings", Settings.class).list()) {
 				if (setting.getDefaultValue() != null)
 					setProperty(setting.getKey(), setting.getDefaultValue());
 			}

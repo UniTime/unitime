@@ -21,7 +21,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -39,7 +38,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -123,11 +121,10 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
     public abstract Set<DepartmentalInstructor> getInstructors();
 
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
-        for (Iterator i=hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
-                "r.ownerType=:ownerType and r.ownerId=:ownerId")
+        for (RelatedCourseInfo relatedCourse: hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
+                "r.ownerType=:ownerType and r.ownerId=:ownerId", RelatedCourseInfo.class)
                 .setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE)
-                .setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).list().iterator();i.hasNext();) {
-            RelatedCourseInfo relatedCourse = (RelatedCourseInfo)i.next();
+                .setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).list()) {
             CourseEvent event = relatedCourse.getEvent();
             event.getRelatedCourses().remove(relatedCourse);
             relatedCourse.setOwnerId(null);
@@ -171,7 +168,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	}
 
 	public static List findAll() {
-	    return new EventDAO().getSession().createQuery(
+	    return EventDAO.getInstance().getSession().createQuery(
 	            "select e from Event e"
 	            )
 	            .setCacheable(true)
@@ -308,15 +305,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
         	nrStudents++;
         	if (nrStudents == 1000) {
                 //class events
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select e, s.student.uniqueId from "+
                         "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
-                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")")
+                        "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")", Object[].class)
                         .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
                     Set<Long> conf = ret.get(event);
@@ -325,14 +321,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                 }
                 
                 //examination events
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select e, s.student.uniqueId from "+
                         "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
                         "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
                         .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
@@ -340,8 +336,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
                     Set<Long> conf = ret.get(event);
@@ -350,14 +345,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                 }
                 
                 //course events with required attendance
-                for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+                for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                         "select e, s.student.uniqueId from "+
                         "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
                         "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                        "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
                         .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                         .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
@@ -365,8 +360,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                         .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                        .setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                        .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
                     Set<Long> conf = ret.get(event);
@@ -379,15 +373,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
         
         if (nrStudents > 0) {
             //class events
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select e, s.student.uniqueId from "+
                     "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
-                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")")
+                    "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")", Object[].class)
                     .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];
                 Set<Long> conf = ret.get(event);
@@ -396,14 +389,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             }
             
             //examination events
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select e, s.student.uniqueId from "+
                     "ExamEvent e inner join e.meetings m inner join e.exam.owners o, StudentClassEnrollment s where "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
                     "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                    "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                    "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
                     .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
@@ -411,8 +404,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];
                 Set<Long> conf = ret.get(event);
@@ -421,14 +413,14 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             }
             
             //course events with required attendance
-            for (Iterator i=EventDAO.getInstance().getSession().createQuery(
+            for (Object[] o: EventDAO.getInstance().getSession().createQuery(
                     "select e, s.student.uniqueId from "+
                     "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and ("+
                     "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
-                    "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))")
+                    "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
                     .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("endSlot", endSlot, org.hibernate.type.IntegerType.INSTANCE)
@@ -436,8 +428,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];
                 Set<Long> conf = ret.get(event);

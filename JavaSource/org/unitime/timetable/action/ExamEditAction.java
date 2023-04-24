@@ -156,7 +156,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         if (op==null || op.trim().isEmpty()) 
         	throw new Exception(EXMSG.errorNoExamId());
         
-        Exam exam = (examId==null || examId.trim().isEmpty() ? null: new ExamDAO().get(Long.valueOf(examId)));
+        Exam exam = (examId==null || examId.trim().isEmpty() ? null: ExamDAO.getInstance().get(Long.valueOf(examId)));
 
         if (exam != null) {
         	sessionContext.checkPermission(examId, "Exam", Right.ExaminationEdit);
@@ -187,7 +187,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
             Set s = exam.getPreferences();
             s.clear();
             exam.setPreferences(s);            
-            new ExamDAO().update(exam);
+            ExamDAO.getInstance().update(exam);
             op = "init";                
             
             ChangeLog.addChange(
@@ -360,26 +360,26 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
                 form.getItype().add(clazz.getSchedulingSubpart().getUniqueId());
                 form.getClassNumber().add(clazz.getUniqueId());
             } else if ("SchedulingSubpart".equals(firstType)) {
-                SchedulingSubpart subpart = new SchedulingSubpartDAO().get(firstId);
+                SchedulingSubpart subpart = SchedulingSubpartDAO.getInstance().get(firstId);
                 InstrOfferingConfig config = subpart.getInstrOfferingConfig();
                 form.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 form.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
                 form.getItype().add(-config.getUniqueId());
                 form.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstrOfferingConfig".equals(firstType)) {
-                InstrOfferingConfig config = new InstrOfferingConfigDAO().get(firstId);
+                InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(firstId);
                 form.getSubjectArea().add(config.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 form.getCourseNbr().add(config.getControllingCourseOffering().getUniqueId());
                 form.getItype().add(-config.getUniqueId());
                 form.getClassNumber().add(Long.valueOf(-1));
             } else if ("InstructionalOffering".equals(firstType)) {
-                InstructionalOffering offering = new InstructionalOfferingDAO().get(firstId);
+                InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(firstId);
                 form.getSubjectArea().add(offering.getControllingCourseOffering().getSubjectArea().getUniqueId());
                 form.getCourseNbr().add(offering.getControllingCourseOffering().getUniqueId());
                 form.getItype().add(Long.MIN_VALUE+1);
                 form.getClassNumber().add(Long.valueOf(-1));
             } else if ("CourseOffering".equals(firstType)) {
-                CourseOffering course = new CourseOfferingDAO().get(firstId);
+                CourseOffering course = CourseOfferingDAO.getInstance().get(firstId);
                 form.getSubjectArea().add(course.getSubjectArea().getUniqueId());
                 form.getCourseNbr().add(course.getUniqueId());
                 form.getItype().add(Long.MIN_VALUE);
@@ -478,7 +478,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         for (Iterator i=form.getInstructors().iterator();i.hasNext();) {
             String instructorId = (String)i.next();
             if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
-                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+                DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
                 if (instructor!=null) {
                     exam.getInstructors().add(instructor);
                     instructor.getExams().add(exam);
@@ -507,7 +507,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         
         exam.generateDefaultPreferences(false);
         
-        new ExamDAO().saveOrUpdate(exam);
+        ExamDAO.getInstance().saveOrUpdate(exam);
         
                 ChangeLog.addChange(
                 null, 

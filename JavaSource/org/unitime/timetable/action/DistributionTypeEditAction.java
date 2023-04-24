@@ -106,7 +106,7 @@ public class DistributionTypeEditAction extends UniTimeAction<DistributionTypeEd
                 distType.setVisible(x.isVisible() == null ? Boolean.FALSE : x.isVisible());
                 HashSet<Department> oldDepts = new HashSet<Department>(distType.getDepartments());
                 for (Long departmentId: form.getDepartmentIds()) {
-                    Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+                    Department d = (DepartmentDAO.getInstance()).get(departmentId,hibSession);
                     if (d==null) continue;
                     if (oldDepts.remove(d)) {
                         //not changed -> do nothing

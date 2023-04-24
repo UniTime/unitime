@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -28,12 +27,10 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -44,9 +41,6 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.util.duration.MinutesPerWeek;
-
-
-
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
@@ -294,9 +288,9 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     }
     
     public static InstrOfferingConfig findByIdRolledForwardFrom(Long sessionId, Long uniqueIdRolledForwardFrom) {
-        return (InstrOfferingConfig)new InstrOfferingConfigDAO().
+        return InstrOfferingConfigDAO.getInstance().
             getSession().
-            createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom").
+            createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstrOfferingConfig.class).
             setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
             setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), org.hibernate.type.LongType.INSTANCE).
             setCacheable(true).
@@ -355,7 +349,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	public TreeSet<Department> findPossibleFundingDepts(org.hibernate.Session hibSession){
 		TreeSet<Department> deptSet = new TreeSet<>();
 		String query = "from Department d where d.externalFundingDept = true and d.session.uniqueId = :sessId";
-		deptSet.addAll((List<Department>)(hibSession.createQuery(query).setParameter("sessId", this.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()));
+		deptSet.addAll(hibSession.createQuery(query, Department.class).setParameter("sessId", this.getSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		for (CourseOffering co : this.getInstructionalOffering().getCourseOfferings()){
 			deptSet.add(co.getDepartment());
 			deptSet.add(co.getEffectiveFundingDept());

@@ -35,11 +35,6 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
-import org.hibernate.type.BooleanType;
-import org.hibernate.type.DateType;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StringType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -93,7 +88,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			userDepts = new HashSet<Long>(
 					TimetableManagerDAO.getInstance().getSession().createQuery(
 							"select d.uniqueId from TimetableManager m inner join m.departments d where " +
-							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId")
+							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId", Long.class)
 							.setParameter("sessionId", request.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("user", request.getOption("user"), org.hibernate.type.StringType.INSTANCE)
 							.setCacheable(true).list()
@@ -278,10 +273,10 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				coord.add(new Coordinates(location));
 
 			if (coord.isEmpty()) {
-				for (Building b: (List<Building>)hibSession.createQuery("select b from Building b where" +
-						" b.session.uniqueId = :sessionId and b.abbreviation in :building")
+				for (Building b: hibSession.createQuery("select b from Building b where" +
+						" b.session.uniqueId = :sessionId and b.abbreviation in :building", Building.class)
 						.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
-						.setParameterList("building", building, new StringType())
+						.setParameterList("building", building, org.hibernate.type.StringType.INSTANCE)
 						.list()) {
 					coord.add(new Coordinates(-b.getUniqueId(), b.getCoordinateX(), b.getCoordinateY()));
 				}
@@ -779,25 +774,25 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
-							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.LongType.INSTANCE);
 						else if (!list.isEmpty() && list.get(0) instanceof String)
-							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.StringType.INSTANCE);
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
 					}
 				}
 			}
@@ -853,28 +848,30 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				// System.out.println("Q: " + query());
-				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true);
+				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
+				query.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE);
+				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), IntegerType.INSTANCE);
+						query.setParameter(param.getKey(), (Integer)param.getValue(), org.hibernate.type.IntegerType.INSTANCE);
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), LongType.INSTANCE);
+						query.setParameter(param.getKey(), (Long)param.getValue(), org.hibernate.type.LongType.INSTANCE);
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), (String)param.getValue(), org.hibernate.type.StringType.INSTANCE);
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), BooleanType.INSTANCE);
+						query.setParameter(param.getKey(), (Boolean)param.getValue(), org.hibernate.type.BooleanType.INSTANCE);
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), DateType.INSTANCE);
+						query.setParameter(param.getKey(), (Date)param.getValue(), org.hibernate.type.DateType.INSTANCE);
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
-							query.setParameterList(param.getKey(), list, LongType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.LongType.INSTANCE);
 						else if (!list.isEmpty() && list.get(0) instanceof String)
-							query.setParameterList(param.getKey(), list, StringType.INSTANCE);
+							query.setParameterList(param.getKey(), list, org.hibernate.type.StringType.INSTANCE);
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), StringType.INSTANCE);
+						query.setParameter(param.getKey(), param.getValue().toString(), org.hibernate.type.StringType.INSTANCE);
 					}
 				}
 				if (iLimit != null)

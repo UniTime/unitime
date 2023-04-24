@@ -76,7 +76,7 @@ public class MakeCurriculaFromLastlikeDemands {
     
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadLastLikeCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
-        List demands = (List)hibSession.createQuery(
+        List<Object[]> demands = hibSession.createQuery(
                 "select a2, f2, m2, c, d.student.uniqueId from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm, CourseOffering c," +
                 "AcademicArea a2, AcademicClassification f2, PosMajor m2 where "+
                 "a2.session.uniqueId=:sessionId and a2.academicAreaAbbreviation=acm.academicArea.academicAreaAbbreviation and "+
@@ -84,7 +84,7 @@ public class MakeCurriculaFromLastlikeDemands {
                 "m2.session.uniqueId=:sessionId and m2.code=acm.major.code and " +
                 "d.subjectArea.session.uniqueId=:sessionId and c.subjectArea=d.subjectArea and "+
                 "((d.coursePermId=null and c.courseNbr=d.courseNbr) or "+
-                " (d.coursePermId!=null and d.coursePermId=c.permId))")
+                " (d.coursePermId!=null and d.coursePermId=c.permId))", Object[].class)
                 .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setFetchSize(1000)
                 .list();
@@ -123,10 +123,10 @@ public class MakeCurriculaFromLastlikeDemands {
     
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadRealCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
-        List demands = (List)hibSession.createQuery(
+        List<Object[]> demands = hibSession.createQuery(
         		"select distinct a, c, s.uniqueId from CourseRequest r inner join r.courseDemand.student s inner join s.areaClasfMajors a " +
                 "inner join r.courseOffering c where "+
-                "s.session.uniqueId=:sessionId")
+                "s.session.uniqueId=:sessionId", Object[].class)
                 .setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
                 .setFetchSize(1000)
                 .list();
@@ -175,8 +175,8 @@ public class MakeCurriculaFromLastlikeDemands {
     
 	private Hashtable<String,Hashtable<String, Float>> getRules(org.hibernate.Session hibSession, Long acadAreaId) {
 		Hashtable<String,Hashtable<String, Float>> clasf2major2proj = new Hashtable<String, Hashtable<String,Float>>();
-		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
-				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
+		for (CurriculumProjectionRule rule: hibSession.createQuery(
+				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
 				.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
@@ -203,7 +203,7 @@ public class MakeCurriculaFromLastlikeDemands {
 
 	public void update(org.hibernate.Session hibSession, boolean lastLike) {
     	sLog.info("Deleting existing curricula...");
-    	for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId").
+    	for (Iterator<Curriculum> i = hibSession.createQuery("select c from Curriculum c where c.department.session=:sessionId", Curriculum.class).
         	setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list().iterator(); i.hasNext(); ) {
     		hibSession.delete(i.next());
     	}

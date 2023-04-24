@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -43,8 +42,6 @@ import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
-
-
 
 /**
  * @author Tomas Muller
@@ -108,17 +105,17 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     
     public static Set<SolverGroup> findBySessionId(Long sessionId) {
     	return new TreeSet<SolverGroup>(
-    			(new SolverGroupDAO()).
+    			(SolverGroupDAO.getInstance()).
     			getSession().
-    			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId").
+    			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId", SolverGroup.class).
     			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     			setCacheable(true).list());
     }
     
     public static SolverGroup findBySessionIdName(Long sessionId, String name) {
-    	List groups = (new SolverGroupDAO()).
+    	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
-			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.name=:name").
+			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.name=:name", SolverGroup.class).
 			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setParameter("name", name, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).
@@ -128,9 +125,9 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     }
     
     public static SolverGroup findBySessionIdAbbv(Long sessionId, String abbv) {
-    	List groups = (new SolverGroupDAO()).
+    	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
-			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.abbv=:abbv").
+			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.abbv=:abbv", SolverGroup.class).
 			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setParameter("abbv", abbv, org.hibernate.type.StringType.INSTANCE).
 			setCacheable(true).

@@ -76,7 +76,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
     public void save() {
     	ApplicationProperties.setSessionId(iSessionId);
         iProgress.setStatus("Saving solution ...");
-        org.hibernate.Session hibSession = new ExamDAO().getSession();
+        org.hibernate.Session hibSession = ExamDAO.getInstance().getSession();
         hibSession.setCacheMode(CacheMode.IGNORE);
         Transaction tx = null;
         try {
@@ -184,7 +184,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                 }
                 continue;
             }
-            ExamPeriod period = new ExamPeriodDAO().get(placement.getPeriod().getId());
+            ExamPeriod period = ExamPeriodDAO.getInstance().get(placement.getPeriod().getId());
             if (period==null) {
                 iProgress.warn("Examination period "+placement.getPeriod().getDayStr()+" "+placement.getPeriod().getTimeStr()+" not found.");
                 if (oldAssignment.getPeriodId()!=null) {
@@ -211,7 +211,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
             exam.setAssignedPeriod(period);
             for (Iterator j=placement.getRoomPlacements().iterator();j.hasNext();) {
                 ExamRoomPlacement room = (ExamRoomPlacement)j.next();
-                Location location = new LocationDAO().get(room.getId());
+                Location location = LocationDAO.getInstance().get(room.getId());
                 if (location==null) {
                     iProgress.warn("Location "+room.getName()+" (id:"+room.getId()+") not found.");
                     continue;
@@ -413,7 +413,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
         if (studentIds==null || studentIds.isEmpty()) return students;
         for (Iterator i=studentIds.iterator();i.hasNext();) {
             Long studentId = (Long)i.next();
-            Student student = new StudentDAO().get(studentId, hibSession);
+            Student student = StudentDAO.getInstance().get(studentId, hibSession);
             if (student!=null) students.add(student);
         }
         return students;
@@ -424,7 +424,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
         if (instructorIds==null || instructorIds.isEmpty()) return instructors;
         for (Iterator i=instructorIds.iterator();i.hasNext();) {
             Long instructorId = (Long)i.next();
-            DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(instructorId, hibSession);
+            DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(instructorId, hibSession);
             if (instructor!=null) instructors.add(instructor);
         }
         return instructors;

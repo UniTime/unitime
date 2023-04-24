@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -31,8 +30,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseManagerSettings;
 import org.unitime.timetable.model.dao.ManagerSettingsDAO;
 import org.unitime.timetable.model.dao.SettingsDAO;
-
-
 
 /**
  * @author Tomas Muller
@@ -60,8 +57,8 @@ public class ManagerSettings extends BaseManagerSettings {
 	
 	public static String getValue(TimetableManager mgr, String name, String defaultValue) {
 		if (mgr == null) {
-			Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
-					"select s from Settings s where s.key = :key"
+			Settings s = SettingsDAO.getInstance().getSession().createQuery(
+					"select s from Settings s where s.key = :key", Settings.class
 					).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
 			return (s == null ? defaultValue : s.getDefaultValue());
 		}
@@ -74,12 +71,12 @@ public class ManagerSettings extends BaseManagerSettings {
 	
 	public static String getValue(Long managerId, String name, String defaultValue) {
 		if (managerId == null) return defaultValue;
-		Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
-				"select s from Settings s where s.key = :key"
+		Settings s = SettingsDAO.getInstance().getSession().createQuery(
+				"select s from Settings s where s.key = :key", Settings.class
 				).setParameter("key", name, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
 		if (s == null) return defaultValue;
-		ManagerSettings m = (ManagerSettings)ManagerSettingsDAO.getInstance().getSession().createQuery(
-				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId"
+		ManagerSettings m = ManagerSettingsDAO.getInstance().getSession().createQuery(
+				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId", ManagerSettings.class
 				).setParameter("managerId", managerId, org.hibernate.type.LongType.INSTANCE).setParameter("settingsId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 		return (m == null? s.getDefaultValue() : m.getValue());
 	}

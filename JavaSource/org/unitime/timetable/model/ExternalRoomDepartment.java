@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -33,8 +32,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseExternalRoomDepartment;
-
-
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller

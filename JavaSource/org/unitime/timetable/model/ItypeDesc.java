@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -34,8 +33,6 @@ import java.util.TreeSet;
 import org.hibernate.Session;
 import org.unitime.timetable.model.base.BaseItypeDesc;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
-
-
 
 
 /**
@@ -65,7 +62,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     @SuppressWarnings("unchecked")
 	public static TreeSet<ItypeDesc> findAll(boolean basic) {
         return new TreeSet<ItypeDesc>(
-                new ItypeDescDAO().
+                ItypeDescDAO.getInstance().
                 getSession().
                 createQuery("select i from ItypeDesc i"+(basic?" where i.basic = true":"")).
                 setCacheable(true).
@@ -84,7 +81,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     
     public static ItypeDesc findForReference(String reference, Session hibSession) {
     	return((ItypeDesc) hibSession
-    			.createQuery("from ItypeDesc i where i.sis_ref = :ref")
+    			.createQuery("from ItypeDesc i where i.sis_ref = :ref", ItypeDesc.class)
     			.setParameter("ref", reference, org.hibernate.type.StringType.INSTANCE)
     			.setCacheable(true)
     			.uniqueResult());

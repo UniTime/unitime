@@ -22,7 +22,6 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -194,7 +193,7 @@ public class ExamEditForm extends PreferencesForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {
-            for (Object[] o: new CourseOfferingDAO().
+            for (Object[] o: CourseOfferingDAO.getInstance().
                     getSession().
                     createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                             "where co.subjectArea.uniqueId = :subjectAreaId "+
@@ -217,7 +216,7 @@ public class ExamEditForm extends PreferencesForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getCourseNbr(idx)>=0) {
-            CourseOffering course = new CourseOfferingDAO().get(getCourseNbr(idx));
+            CourseOffering course = CourseOfferingDAO.getInstance().get(getCourseNbr(idx));
             if (course.isIsControl())
                 ret.add(new IdValue(Long.MIN_VALUE+1,"Offering"));
             ret.add(new IdValue(Long.MIN_VALUE,"Course"));
@@ -225,38 +224,36 @@ public class ExamEditForm extends PreferencesForm {
                 setItype(idx, Long.MIN_VALUE);
                 return ret;
             }
-            TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(null));
-            configs.addAll(new InstrOfferingConfigDAO().
+            TreeSet<InstrOfferingConfig> configs = new TreeSet<InstrOfferingConfig>(new InstrOfferingConfigComparator(null));
+            configs.addAll(InstrOfferingConfigDAO.getInstance().
                 getSession().
                 createQuery("select distinct c from " +
                         "InstrOfferingConfig c inner join c.instructionalOffering.courseOfferings co "+
-                        "where co.uniqueId = :courseOfferingId").
+                        "where co.uniqueId = :courseOfferingId", InstrOfferingConfig.class).
                 setFetchSize(200).
                 setCacheable(true).
                 setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list());
             if (!configs.isEmpty()) {
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Configurations --"));
-                for (Iterator i=configs.iterator();i.hasNext();) {
-                    InstrOfferingConfig c = (InstrOfferingConfig)i.next();
+                for (InstrOfferingConfig c: configs) {
                     if (c.getUniqueId().equals(getItype(idx))) contains = true;
                     ret.add(new IdValue(-c.getUniqueId(), c.getName() + (c.getInstructionalMethod() == null ? "" : " (" + c.getInstructionalMethod().getLabel() + ")")));
                 }
             }
-            TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
-            subparts.addAll(new SchedulingSubpartDAO().
+            TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator(null));
+            subparts.addAll(SchedulingSubpartDAO.getInstance().
                 getSession().
                 createQuery("select distinct s from " +
                         "SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co "+
-                        "where co.uniqueId = :courseOfferingId").
+                        "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
                 setFetchSize(200).
                 setCacheable(true).
                 setParameter("courseOfferingId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list());
             if (!configs.isEmpty() && !subparts.isEmpty())
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Subparts --"));
-            for (Iterator i=subparts.iterator();i.hasNext();) {
-                SchedulingSubpart s = (SchedulingSubpart)i.next();
+            for (SchedulingSubpart s: subparts) {
                 Long sid = s.getUniqueId();
                 String name = s.getItype().getAbbv();
                 String sufix = s.getSchedulingSubpartSuffix();
@@ -278,7 +275,7 @@ public class ExamEditForm extends PreferencesForm {
     
     public ExamOwner getExamOwner(int idx) {
         if (getSubjectArea(idx)<0 || getCourseNbr(idx)<0) return null;
-        CourseOffering course = new CourseOfferingDAO().get(getCourseNbr(idx));
+        CourseOffering course = CourseOfferingDAO.getInstance().get(getCourseNbr(idx));
         if (course==null) return null;
         if (getItype(idx)==Long.MIN_VALUE) { //course
             ExamOwner owner = new ExamOwner();
@@ -289,7 +286,7 @@ public class ExamEditForm extends PreferencesForm {
             owner.setOwner(course.getInstructionalOffering());
             return owner;
         } else if (getItype(idx)<0) { //config
-            InstrOfferingConfig config = new InstrOfferingConfigDAO().get(-getItype(idx));
+            InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(-getItype(idx));
             if (config==null) return null;
             ExamOwner owner = new ExamOwner();
             owner.setOwner(config);
@@ -319,20 +316,19 @@ public class ExamEditForm extends PreferencesForm {
     public Collection getClassNumbers(int idx) {
         Vector ret = new Vector();
         boolean contains = false;
-        SchedulingSubpart subpart = (getItype(idx)>0?new SchedulingSubpartDAO().get(getItype(idx)):null);
-        CourseOffering co = (getItype(idx)>0?new CourseOfferingDAO().get(getCourseNbr(idx)):null);
+        SchedulingSubpart subpart = (getItype(idx)>0?SchedulingSubpartDAO.getInstance().get(getItype(idx)):null);
+        CourseOffering co = (getItype(idx)>0?CourseOfferingDAO.getInstance().get(getCourseNbr(idx)):null);
         if (subpart!=null) {
-            TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+            TreeSet<Class_> classes = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
             classes.addAll(new Class_DAO().
                 getSession().
                 createQuery("select distinct c from Class_ c "+
-                        "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
+                        "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
                 setFetchSize(200).
                 setCacheable(true).
                 setParameter("schedulingSubpartId", getItype(idx), org.hibernate.type.LongType.INSTANCE).
                 list());
-            for (Iterator i=classes.iterator();i.hasNext();) {
-                Class_ c = (Class_)i.next();
+            for (Class_ c: classes) {
                 if (c.getUniqueId().equals(getClassNumber(idx))) contains = true;
                 String extId = c.getClassSuffix(co);
                 ret.add(new IdValue(c.getUniqueId(), c.getSectionNumberString() +
@@ -358,7 +354,7 @@ public class ExamEditForm extends PreferencesForm {
     public void setAvgPeriod(String avgPeriod) { this.avgPeriod = avgPeriod; }
     
     public String getEmail(String instructorId) {
-        DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+        DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
         return (instructor.getEmail()==null?"":instructor.getEmail());
     }
     

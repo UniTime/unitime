@@ -75,11 +75,11 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     public int getCapacity(ExamInfo exam) { return (exam.getSeatingType()==Exam.sSeatingTypeExam?getExamCapacity():getCapacity());}
     public boolean isHard() { return iHard; }
     public Location getLocation() {
-        if (iLocation==null) iLocation = new LocationDAO().get(getLocationId());
+        if (iLocation==null) iLocation = LocationDAO.getInstance().get(getLocationId());
         return iLocation;
     }
     public Location getLocation(org.hibernate.Session hibSession) {
-        return new LocationDAO().get(getLocationId(), hibSession);
+        return LocationDAO.getInstance().get(getLocationId(), hibSession);
     }
     
     

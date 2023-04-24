@@ -90,8 +90,8 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 		GetRequestsRpcResponse response = new GetRequestsRpcResponse();
 		response.setOffering(ReservationServlet.convert(offering, null, InstructionalOfferingDAO.getInstance().getSession(), null, context, classAssignmentService.getAssignment()));
 		
-		for (InstructorAttribute attribute: (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name"
+		for (InstructorAttribute attribute: InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name", InstructorAttribute.class
 				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("departmentId", offering.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			AttributeInterface a = new AttributeInterface();
 			a.setId(attribute.getUniqueId());
@@ -126,8 +126,8 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 		
 		NameFormat instructorNameFormat = NameFormat.fromReference(UserProperty.NameFormat.get(context.getUser()));
 		boolean sortByLastName = CommonValues.SortByLastName.eq(UserProperty.SortNames.get(context.getUser()));
-		for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId").setParameter("departmentId", offering.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
+		for (DepartmentalInstructor instructor: DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId", DepartmentalInstructor.class).setParameter("departmentId", offering.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			InstructorInterface i = new InstructorInterface();
 			i.setId(instructor.getUniqueId());
 			i.setFirstName(instructor.getFirstName());
@@ -157,8 +157,8 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 		}
 		
 		Map<Long, Responsibility> responsibilities = new HashMap<Long, Responsibility>();
-		for (TeachingResponsibility responsibility: (List<TeachingResponsibility>)TeachingResponsibilityDAO.getInstance().getSession().createQuery(
-				"from TeachingResponsibility order by label").setCacheable(true).list()) {
+		for (TeachingResponsibility responsibility: TeachingResponsibilityDAO.getInstance().getSession().createQuery(
+				"from TeachingResponsibility order by label", TeachingResponsibility.class).setCacheable(true).list()) {
 			Responsibility r = new Responsibility();
 			r.setId(responsibility.getUniqueId());
 			r.setAbbv(responsibility.getAbbreviation());

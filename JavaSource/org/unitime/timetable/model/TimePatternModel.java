@@ -43,8 +43,6 @@ import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
-
-
 /**
  * @author Tomas Muller
  */

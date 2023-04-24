@@ -21,8 +21,6 @@ package org.unitime.timetable.solver.curricula;
 
 import java.util.Collection;
 import java.util.Hashtable;
-import java.util.List;
-
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
@@ -44,8 +42,8 @@ public class ProjectedStudentCourseDemands extends LastLikeStudentCourseDemands 
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
 		super.init(hibSession, progress, session, offerings);
 		progress.setPhase("Loading curriculum projections", 1);
-		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
-				"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId")
+		for (CurriculumProjectionRule rule: hibSession.createQuery(
+				"select r from CurriculumProjectionRule r where r.academicArea.session.uniqueId=:sessionId", CurriculumProjectionRule.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String areaAbbv = rule.getAcademicArea().getAcademicAreaAbbreviation();
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());

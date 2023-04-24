@@ -20,7 +20,6 @@
 package org.unitime.timetable.server;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -94,7 +93,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
         	if (sessionId == null)
         		sessionId = (context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null);
         	if (sessionId != null)
-            	for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+            	for (CourseOffering co: hibSession.createQuery(
             			"select co from CourseOffering co " + 
             			"where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subjectAbbv " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
@@ -102,7 +101,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
-            			: "and co.courseNbr like :q") + " order by co.courseNbr")
+            			: "and co.courseNbr like :q") + " order by co.courseNbr", CourseOffering.class)
             			.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
             			.setParameter("subjectAbbv", params.get("subjectAbbv"), org.hibernate.type.StringType.INSTANCE)
             			.setParameter("q", request.getQuery() + "%", org.hibernate.type.StringType.INSTANCE)
@@ -117,7 +116,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
         		subjectId = Long.parseLong(params.get("subjectId"));
         	} catch (NumberFormatException e) {}
         	if (subjectId != null) {
-            	for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+            	for (CourseOffering co: hibSession.createQuery(
             			"select co from CourseOffering co " + 
             			"where co.subjectArea.uniqueId = :subjectId " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
@@ -125,7 +124,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
-            			: "and co.courseNbr like :q") + " order by co.courseNbr")
+            			: "and co.courseNbr like :q") + " order by co.courseNbr", CourseOffering.class)
             			.setParameter("subjectId", subjectId, org.hibernate.type.LongType.INSTANCE)
             			.setParameter("q", request.getQuery() + "%", org.hibernate.type.StringType.INSTANCE)
             			.setCacheable(true).setMaxResults(request.getLimit()).list()) {
@@ -151,7 +150,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             query.append("       and co.courseNbr like :courseNbr ");
             query.append(" order by co.courseNbr ");
     
-            CourseOfferingDAO cdao = new CourseOfferingDAO();
+            CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
             Session hibSession = cdao.getSession();
     
             Query q = hibSession.createQuery(query.toString());
@@ -190,7 +189,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        //query.append(" 		 and co.isControl = true ");
 	        query.append(" order by co.courseNbr ");
 	
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
+	        CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
 	        Session hibSession = cdao.getSession();
 	
 	        Query q = hibSession.createQuery(query.toString());
@@ -217,7 +216,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        query.append(" 		 and co.instructionalOffering.notOffered = false ");
 	        query.append(" order by co.courseNbr ");
 	
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
+	        CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
 	        Session hibSession = cdao.getSession();
 	
 	        Query q = hibSession.createQuery(query.toString());
@@ -245,7 +244,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
 	        //query.append(" 		 and co.isControl = true ");
 	        query.append(" order by co.courseNbr ");
 	
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
+	        CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
 	        Session hibSession = cdao.getSession();
 	
 	        Query q = hibSession.createQuery(query.toString());

@@ -29,7 +29,6 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.hibernate.query.Query;
-import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -201,7 +200,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			query.append(" where i.department.session.uniqueId = :acadSessionId ");
 			query.append(queryClause);
 	        
-	        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+	        DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 			org.hibernate.Session hibSession = idao.getSession();
 
 			Query q = hibSession.createQuery(query.toString());
@@ -272,7 +271,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		    query2.append(" where i.session.uniqueId = :acadSessionId ");
 		    query2.append(queryClause2);
 	        
-	        DepartmentDAO departmentDao = new DepartmentDAO();
+	        DepartmentDAO departmentDao = DepartmentDAO.getInstance();
 	        org.hibernate.Session hibSession2 = departmentDao.getSession();
 
 			Query q2 = hibSession2.createQuery(query2.toString());
@@ -366,7 +365,8 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 			}
 		}
 
-		for (CourseType courseType: CourseTypeDAO.getInstance().findAll(Order.asc("reference"))) {
+		for (CourseType courseType: CourseTypeDAO.getInstance().getSession().createQuery(
+				"from CourseType order by reference", CourseType.class).setCacheable(true).list()) {
 			CourseTypeInterface courseTypeObject = new CourseTypeInterface();
 			courseTypeObject.setId(courseType.getUniqueId());
 			courseTypeObject.setLabel(courseType.getLabel());

@@ -74,7 +74,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 	}
 	
     protected void fillStaffInfo() throws Exception {
-        Staff staff = new StaffDAO().get(Long.valueOf(form.getSearchSelect()));
+        Staff staff = StaffDAO.getInstance().get(Long.valueOf(form.getSearchSelect()));
         form.setPuId(staff.getExternalUniqueId());
         form.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
         form.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
@@ -152,7 +152,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 	 */
 	protected void doUpdate() throws Exception {
 	    
-		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+		DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
 		
@@ -163,7 +163,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 			String instrId = form.getInstructorId();
 			
 			if (instrId!=null && instrId.trim().length()>0) {
-			    inst = new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
+			    inst = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instrId));
 			}
 			else {    
 			    inst = new DepartmentalInstructor();
@@ -223,7 +223,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 			//get department
 			if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
 				String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
-				d = new DepartmentDAO().get(Long.valueOf(deptId));
+				d = DepartmentDAO.getInstance().get(Long.valueOf(deptId));
 				inst.setDepartment(d);
 				d.getInstructors().add(inst);
 			}
@@ -269,7 +269,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
             query += " and uniqueId!=:uniqueId";
         }
         
-        DepartmentalInstructorDAO ddao = new DepartmentalInstructorDAO();
+        DepartmentalInstructorDAO ddao = DepartmentalInstructorDAO.getInstance();
         org.hibernate.Session hibSession = ddao.getSession();
         
 		String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);

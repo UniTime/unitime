@@ -90,9 +90,9 @@ public class StudentEnrollmentImport extends BaseImport {
 	    	HashMap<Long, Set<CourseOffering>> class2courses = new HashMap<Long, Set<CourseOffering>>();
 	    	
 	    	info("Loading classes...");
-	 		for (Object[] o: (List<Object[]>)getHibSession().createQuery(
+	 		for (Object[] o: getHibSession().createQuery(
 	 				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-    				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+    				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Object[].class)
     				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	 			Class_ clazz = (Class_)o[0];
 	 			CourseOffering course = (CourseOffering)o[1];
@@ -133,12 +133,12 @@ public class StudentEnrollmentImport extends BaseImport {
          
 	        info("Loading students...");
 	        Hashtable<String, Student> students = new Hashtable<String, Student>();
-	        for (Student student: (List<Student>)getHibSession().createQuery(
+	        for (Student student: getHibSession().createQuery(
                     "select distinct s from Student s " +
                     "left join fetch s.courseDemands as cd " +
                     "left join fetch cd.courseRequests as cr " +
                     "left join fetch s.classEnrollments as e " +
-                    "where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
+                    "where s.session.uniqueId=:sessionId and s.externalUniqueId is not null", Student.class).
                     setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) { 
 	        	students.put(student.getExternalUniqueId(), student);
 	        }

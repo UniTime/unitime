@@ -148,7 +148,7 @@ public class CalendarServlet extends HttpServlet {
 			try {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
-						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
 						setParameter("term", params.getParameter("term"), org.hibernate.type.StringType.INSTANCE).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
@@ -229,8 +229,8 @@ public class CalendarServlet extends HttpServlet {
             	}
             }
             if (userId != null && !userId.isEmpty()) {
-                for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery("select i from DepartmentalInstructor i " +
-                		"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId").
+                for (DepartmentalInstructor instructor: hibSession.createQuery("select i from DepartmentalInstructor i " +
+                		"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId", DepartmentalInstructor.class).
                 		setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {
@@ -250,8 +250,8 @@ public class CalendarServlet extends HttpServlet {
                         }
                     }
                 }
-                for (Student student: (List<Student>)hibSession.createQuery("select s from Student s where " +
-                		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId").
+                for (Student student: hibSession.createQuery("select s from Student s where " +
+                		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId", Student.class).
                 		setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("externalId", userId, org.hibernate.type.StringType.INSTANCE).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -35,8 +34,6 @@ import org.hibernate.query.Query;
 import org.hibernate.Session;
 import org.unitime.timetable.model.base.BasePosMajor;
 import org.unitime.timetable.model.dao.PosMajorDAO;
-
-
 
 
 /**
@@ -72,7 +69,7 @@ public class PosMajor extends BasePosMajor {
 	 * @return Vector of PosMajor objects
 	 */
     public static List getPosMajorList(Long sessionId) {
-	    Session hibSession = new PosMajorDAO().getSession();
+	    Session hibSession = PosMajorDAO.getInstance().getSession();
 	    String query = "from PosMajor where academicArea.sessionId=:acadSessionId order by name";
 	    Query q = hibSession.createQuery(query);
 	    q.setParameter("acadSessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE);
@@ -99,12 +96,12 @@ public class PosMajor extends BasePosMajor {
     }
 
     public static PosMajor findByCode(Long sessionId, String code) {
-        return (PosMajor)new PosMajorDAO().
+        return PosMajorDAO.getInstance().
         getSession().
         createQuery(
                 "select a from PosMajor a where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.code=:code").
+                "a.code=:code", PosMajor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
@@ -112,16 +109,16 @@ public class PosMajor extends BasePosMajor {
     }
 
     public static PosMajor findByExternalIdAcadAreaExternalId(Long sessionId, String externalId, String academicArea) {
-    	return(findByExternalIdAcadAreaExternalId(new PosMajorDAO().getSession(), sessionId, externalId, academicArea));
+    	return(findByExternalIdAcadAreaExternalId(PosMajorDAO.getInstance().getSession(), sessionId, externalId, academicArea));
     }
 
     public static PosMajor findByExternalIdAcadAreaExternalId(Session hibSession, Long sessionId, String externalId, String academicArea) {
-        return (PosMajor)hibSession.
+        return hibSession.
         createQuery(
                 "select a from PosMajor a inner join a.academicAreas as areas where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.externalUniqueId=:externalUniqueId and " +
-                "areas.externalUniqueId = :academicArea").
+                "areas.externalUniqueId = :academicArea", PosMajor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("externalUniqueId", externalId, org.hibernate.type.StringType.INSTANCE).
          setParameter("academicArea", academicArea, org.hibernate.type.StringType.INSTANCE).
@@ -130,12 +127,12 @@ public class PosMajor extends BasePosMajor {
     }
     public static PosMajor findByCodeAcadAreaId(Long sessionId, String code, Long areaId) {
         if (areaId==null) return findByCode(sessionId, code);
-        return (PosMajor)new PosMajorDAO().
+        return PosMajorDAO.getInstance().
         getSession().
         createQuery(
                 "select p from PosMajor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
-                "a.uniqueId=:areaId and p.code=:code").
+                "a.uniqueId=:areaId and p.code=:code", PosMajor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("areaId", areaId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
@@ -144,16 +141,16 @@ public class PosMajor extends BasePosMajor {
     }
 
     public static PosMajor findByCodeAcadAreaAbbv(Long sessionId, String code, String areaAbbv) {
-    	return(findByCodeAcadAreaAbbv(new PosMajorDAO().getSession(), sessionId, code, areaAbbv));
+    	return(findByCodeAcadAreaAbbv(PosMajorDAO.getInstance().getSession(), sessionId, code, areaAbbv));
     }
     
     public static PosMajor findByCodeAcadAreaAbbv(Session hibSession, Long sessionId, String code, String areaAbbv) {
         if (areaAbbv==null || areaAbbv.trim().length()==0) return findByCode(sessionId, code);
-        return (PosMajor)hibSession.
+        return hibSession.
         createQuery(
                 "select p from PosMajor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
-                "a.academicAreaAbbreviation=:areaAbbv and p.code=:code").
+                "a.academicAreaAbbreviation=:areaAbbv and p.code=:code", PosMajor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("areaAbbv", areaAbbv, org.hibernate.type.StringType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
@@ -170,8 +167,8 @@ public class PosMajor extends BasePosMajor {
     }
     
     public boolean isUsed(org.hibernate.Session hibSession) {
-    	return ((Number)(hibSession == null ? PosMajorDAO.getInstance().getSession() : hibSession).createQuery(
-    			"select count(c) from Curriculum c inner join c.majors m where m.uniqueId = :majorId")
+    	return ((hibSession == null ? PosMajorDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from Curriculum c inner join c.majors m where m.uniqueId = :majorId", Number.class)
     			.setParameter("majorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 }

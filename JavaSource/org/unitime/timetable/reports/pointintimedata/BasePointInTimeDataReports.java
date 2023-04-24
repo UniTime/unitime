@@ -521,11 +521,11 @@ public abstract class BasePointInTimeDataReports {
 		  .append(" and pco.isControl = true")
 		  .append(" and pco.subjectArea.department.uniqueId = :deptUid");
 
-		return((List<Long>)hibSession.createQuery(sb.toString())
+		return hibSession.createQuery(sb.toString(), Long.class)
 		          .setParameter("pitdUid", pointInTimeData.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 		          .setParameter("deptUid", departmentId.longValue(), org.hibernate.type.LongType.INSTANCE)
 		          .setCacheable(true)
-		          .list());
+		          .list();
 
 	}
 	
@@ -547,7 +547,7 @@ public abstract class BasePointInTimeDataReports {
 		  .append(" and pc.pitClassEvents is not empty");
 	
 		ArrayList<PitClass> pitClasses = new ArrayList<PitClass>();
-			pitClasses.addAll((List<PitClass>)hibSession.createQuery(sb.toString())
+			pitClasses.addAll(hibSession.createQuery(sb.toString(), PitClass.class)
 		          .setParameter("offrId", pitOfferingId.longValue(), org.hibernate.type.LongType.INSTANCE)
 		          .setCacheable(true)
 		          .list());

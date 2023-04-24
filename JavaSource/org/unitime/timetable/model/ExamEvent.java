@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
@@ -29,8 +28,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseExamEvent;
-
-
 
 /**
  * @author Tomas Muller

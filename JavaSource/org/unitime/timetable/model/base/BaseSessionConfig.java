@@ -37,8 +37,6 @@ public abstract class BaseSessionConfig extends SessionConfigId {
 	private String iValue;
 	private String iDescription;
 
-
-
 	@Column(name = "value", nullable = true, length = 4000)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }

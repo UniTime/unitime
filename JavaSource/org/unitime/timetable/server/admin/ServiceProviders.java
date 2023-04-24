@@ -94,8 +94,8 @@ public class ServiceProviders implements AdminTable {
 			}
 		}
 		
-		for (EventServiceProvider provider: (List<EventServiceProvider>)EventServiceProviderDAO.getInstance().getSession().createQuery(
-				"from EventServiceProvider where session is null or session = :sessionId")
+		for (EventServiceProvider provider: EventServiceProviderDAO.getInstance().getSession().createQuery(
+				"from EventServiceProvider where session is null or session = :sessionId", EventServiceProvider.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (provider.getSession() == null) { // global
 				Record r = data.addRecord(provider.getUniqueId());
@@ -135,8 +135,8 @@ public class ServiceProviders implements AdminTable {
 	
 	@Override
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
-		for (EventServiceProvider provider: (List<EventServiceProvider>)EventServiceProviderDAO.getInstance().getSession().createQuery(
-				"from EventServiceProvider where session is null or session = :sessionId")
+		for (EventServiceProvider provider: EventServiceProviderDAO.getInstance().getSession().createQuery(
+				"from EventServiceProvider where session is null or session = :sessionId", EventServiceProvider.class)
 				.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (provider.getSession() == null) { // global
 				if (!context.hasPermission(Right.EventServiceProviderEditGlobal)) continue;

@@ -610,11 +610,12 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	// overlaps
     	Map<Long, Set<Meeting>> overlaps = new HashMap<Long, Set<Meeting>>();
     	if (e.getUniqueId() != null) {
-    		for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
+    		for (Object[] o: EventDAO.getInstance().getSession().createQuery(
     				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o " +
     				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
     				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and m.approvalStatus <= 1 and o.approvalStatus <= 1 and " +
-    				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
+    				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate",
+    				Object[].class)
     				.setParameter("eventId", e.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     				.list()) {
     			Long meetingId = (Long)o[0];
@@ -626,12 +627,13 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 	    		}
 	    		overlapsThisMeeting.add(overlap);
 			}
-    		for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
+    		for (Object[] o: EventDAO.getInstance().getSession().createQuery(
     				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o, Room r1, Room r2 " +
     				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
     				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and m.approvalStatus <= 1 and o.approvalStatus <= 1 and " +
     				"m.locationPermanentId = r1.permanentId and o.locationPermanentId = r2.permanentId and m.meetingDate = o.meetingDate and " +
-    				"r1.session = :sessionId and (r1.parentRoom = r2 or r2.parentRoom = r1)")
+    				"r1.session = :sessionId and (r1.parentRoom = r2 or r2.parentRoom = r1)",
+    				Object[].class)
     				.setParameter("eventId", e.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     				.list()) {

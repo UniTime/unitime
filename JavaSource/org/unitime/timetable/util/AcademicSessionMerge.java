@@ -350,15 +350,15 @@ public class AcademicSessionMerge {
 	public void copyMergeConfigurationToSession(Session fromSession, String defaultPrefix) {
         org.hibernate.Session hibSession = SessionConfigDAO.getInstance().getSession();
         // remove old configuration
-        for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
-        		"from SessionConfig where session.uniqueId = :sessionId"
+        for (SessionConfig config: hibSession.createQuery(
+        		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class
         		).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	hibSession.delete(config);
         }
         
         // create new configuration
-        for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
-        		"from SessionConfig where session.uniqueId = :sessionId"
+        for (SessionConfig config: hibSession.createQuery(
+        		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class
         		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	
         	SessionConfig newConfig = new SessionConfig();
@@ -371,21 +371,21 @@ public class AcademicSessionMerge {
         }
         
         // remove old notes
-        for (StandardEventNoteSession note: (List<StandardEventNoteSession>)hibSession.createQuery(
-        		"from StandardEventNoteSession where session.uniqueId = :sessionId"
+        for (StandardEventNoteSession note: hibSession.createQuery(
+        		"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNoteSession.class
         		).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	hibSession.delete(note);
         }
         
-        for (StandardEventNoteDepartment note: (List<StandardEventNoteDepartment>)hibSession.createQuery(
-        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId"
+        for (StandardEventNoteDepartment note: hibSession.createQuery(
+        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNoteDepartment.class
         		).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	hibSession.delete(note);
         }
         
         // create new notes
-        for (StandardEventNoteSession note: (List<StandardEventNoteSession>)hibSession.createQuery(
-        		"from StandardEventNoteSession where session.uniqueId = :sessionId"
+        for (StandardEventNoteSession note: hibSession.createQuery(
+        		"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNoteSession.class
         		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	StandardEventNoteSession newNote = new StandardEventNoteSession();
         	newNote.setNote(note.getNote());
@@ -394,8 +394,8 @@ public class AcademicSessionMerge {
         	newNote.setUniqueId((Long)hibSession.save(newNote));
         }
         
-        for (StandardEventNoteDepartment note: (List<StandardEventNoteDepartment>)hibSession.createQuery(
-        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId"
+        for (StandardEventNoteDepartment note: hibSession.createQuery(
+        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNoteDepartment.class
         		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	Department newDepartment = findToDepartment(note.getDepartment(), defaultPrefix);
         	if (newDepartment != null) {
@@ -408,15 +408,15 @@ public class AcademicSessionMerge {
         }
         
         // remove room type options
-        for (RoomTypeOption option: (List<RoomTypeOption>)hibSession.createQuery(
-        		"from RoomTypeOption where department.session.uniqueId = :sessionId"
+        for (RoomTypeOption option: hibSession.createQuery(
+        		"from RoomTypeOption where department.session.uniqueId = :sessionId", RoomTypeOption.class
         		).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	hibSession.delete(option);
         }
         
         // create new room type options
-        for (RoomTypeOption option: (List<RoomTypeOption>)hibSession.createQuery(
-        		"from RoomTypeOption where department.session.uniqueId = :sessionId"
+        for (RoomTypeOption option: hibSession.createQuery(
+        		"from RoomTypeOption where department.session.uniqueId = :sessionId", RoomTypeOption.class
         		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	Department newDepartment = findToDepartment(option.getDepartment(), defaultPrefix);
         	if (newDepartment != null) {
@@ -431,15 +431,15 @@ public class AcademicSessionMerge {
         }
         
         // remove old service providers
-        for (EventServiceProvider provider: (List<EventServiceProvider>)hibSession.createQuery(
-        		"from EventServiceProvider where session.uniqueId = :sessionId"
+        for (EventServiceProvider provider: hibSession.createQuery(
+        		"from EventServiceProvider where session.uniqueId = :sessionId", EventServiceProvider.class
         		).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	hibSession.delete(provider);
         }
         
         // create new service providers
-        for (EventServiceProvider provider: (List<EventServiceProvider>)hibSession.createQuery(
-        		"from EventServiceProvider where session.uniqueId = :sessionId"
+        for (EventServiceProvider provider: hibSession.createQuery(
+        		"from EventServiceProvider where session.uniqueId = :sessionId", EventServiceProvider.class
         		).setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	if (!provider.isVisible()) continue; // do not roll-forward providers that are marked as not visible
         	EventServiceProvider newProvider = new EventServiceProvider();
@@ -468,7 +468,7 @@ public class AcademicSessionMerge {
 	
 	public void copyMergeDepartmentsToSession(Session fromSession, String defaultPrefix) throws Exception {
 		Department toDepartment = null;
-		DepartmentDAO dDao = new DepartmentDAO();
+		DepartmentDAO dDao = DepartmentDAO.getInstance();
 		SolverGroup sg = null;
 		String prefix = null;
 
@@ -508,13 +508,13 @@ public class AcademicSessionMerge {
 						}
 						sg.getDepartments().add(toDepartment);
 						toDepartment.setSolverGroup(sg);
-						SolverGroupDAO sgDao = new SolverGroupDAO();
+						SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
 						sgDao.saveOrUpdate(sg);
 					}
 				}
 
 				dDao.saveOrUpdate(toDepartment);
-				DistributionTypeDAO dtDao = new DistributionTypeDAO();
+				DistributionTypeDAO dtDao = DistributionTypeDAO.getInstance();
 				@SuppressWarnings("unchecked")
 				List<DistributionType> l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
 				if (l != null && !l.isEmpty()){
@@ -559,8 +559,8 @@ public class AcademicSessionMerge {
 	public void copyMergeTimetableManagersToSession(Session fromSession, String defaultPrefix) {
 
 		Department toDepartment = null;
-		TimetableManagerDAO tmDao = new TimetableManagerDAO();
-		SolverGroupDAO sgDao = new SolverGroupDAO();
+		TimetableManagerDAO tmDao = TimetableManagerDAO.getInstance();
+		SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
 		try {
 			List<Department> departments = DepartmentDAO.getInstance().findBySession(tmDao.getSession(), fromSession.getUniqueId());
 			for(Department fromDepartment : departments){
@@ -606,21 +606,23 @@ public class AcademicSessionMerge {
 	
 	private DepartmentRoomFeature findToDeptRoomFeature(DepartmentRoomFeature fromDeptRoomFeature, String defaultPrefix) {
 		Department toDepartment = findToDepartment(fromDeptRoomFeature.getDepartment(), defaultPrefix);
-		String query = "from RoomFeature rf where rf.department.uniqueId = :deptId and rf.label = :label";
-		return (DepartmentRoomFeature)DepartmentRoomFeatureDAO.getInstance().getSession().createQuery(query).setParameter("deptId", toDepartment.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("label", fromDeptRoomFeature.getLabel(), org.hibernate.type.StringType.INSTANCE).uniqueResult();	
+		String query = "from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId and rf.label = :label";
+		return DepartmentRoomFeatureDAO.getInstance().getSession().createQuery(query, DepartmentRoomFeature.class)
+				.setParameter("deptId", toDepartment.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("label", fromDeptRoomFeature.getLabel(), org.hibernate.type.StringType.INSTANCE).uniqueResult();	
 	}
 	
 	private RoomGroup findToDeptRoomGroup(RoomGroup fromDeptRoomGroup, String defaultPrefix) {
 		Department toDepartment = findToDepartment(fromDeptRoomGroup.getDepartment(), defaultPrefix);
 		String query = "from RoomGroup rg where rg.global = false and rg.department.uniqueId = :deptId and rg.name = :name";
-		return (RoomGroup)DepartmentRoomFeatureDAO.getInstance().getSession().createQuery(query).setParameter("deptId", toDepartment.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("name", fromDeptRoomGroup.getName(), org.hibernate.type.StringType.INSTANCE).uniqueResult();	
+		return DepartmentRoomFeatureDAO.getInstance().getSession().createQuery(query, RoomGroup.class)
+				.setParameter("deptId", toDepartment.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("name", fromDeptRoomGroup.getName(), org.hibernate.type.StringType.INSTANCE).uniqueResult();	
 	}
 
 	
 	private RoomFeatureType getCampusRoomFeatureType() {
 		if (iCampusRoomFeatureType == null) {
 			RoomFeatureTypeDAO rftDao = RoomFeatureTypeDAO.getInstance();
-			iCampusRoomFeatureType = (RoomFeatureType) rftDao.getSession().createQuery("from RoomFeatureType rft where rft.reference = 'campus'").uniqueResult();
+			iCampusRoomFeatureType =  rftDao.getSession().createQuery("from RoomFeatureType rft where rft.reference = 'campus'", RoomFeatureType.class).uniqueResult();
 			if (iCampusRoomFeatureType == null) {
 				iCampusRoomFeatureType = new RoomFeatureType();
 				iCampusRoomFeatureType.setReference("campus");
@@ -656,7 +658,7 @@ public class AcademicSessionMerge {
 
 		DepartmentRoomFeature fromRoomFeature = null;
 		DepartmentRoomFeature toRoomFeature = null;
-		RoomFeatureDAO rfDao = new RoomFeatureDAO();
+		RoomFeatureDAO rfDao = RoomFeatureDAO.getInstance();
 		Collection fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
 		try{
 			if (fromRoomFeatures != null && !fromRoomFeatures.isEmpty()){
@@ -692,7 +694,7 @@ public class AcademicSessionMerge {
 	public void copyMergeRoomGroupsToSession(Session fromSession, String defaultPrefix) {
 
 		RoomGroup toRoomGroup = null;
-		RoomGroupDAO rgDao = new RoomGroupDAO();
+		RoomGroupDAO rgDao = RoomGroupDAO.getInstance();
 		Collection<RoomGroup> fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
 		try {
 			if (fromRoomGroups != null && !fromRoomGroups.isEmpty()){
@@ -725,7 +727,7 @@ public class AcademicSessionMerge {
 	
 	public void copyMergeBuildingsToSession(Session fromSession){
 
-		BuildingDAO bDao = new BuildingDAO();
+		BuildingDAO bDao = BuildingDAO.getInstance();
 		List<Building> fromBuildings = bDao.findBySession(bDao.getSession(), fromSession.getUniqueId());
 		bDao.getSession().refresh(iMergedSession);
 		if (fromBuildings != null && !fromBuildings.isEmpty()){
@@ -903,7 +905,7 @@ public class AcademicSessionMerge {
 	private void copyMergeRoomDept(RoomDept fromRoomDept, Location toLocation, Location fromLocation, String defaultPrefix){		
 		Department toDept = findToDepartment(fromRoomDept.getDepartment(), defaultPrefix);
 		RoomDept toRoomDept = null;
-		RoomDeptDAO rdDao = new RoomDeptDAO();
+		RoomDeptDAO rdDao = RoomDeptDAO.getInstance();
 		if (toDept != null){
 			toRoomDept = new RoomDept();
 			toRoomDept.setRoom(toLocation);
@@ -928,8 +930,8 @@ public class AcademicSessionMerge {
 
 		Room fromRoom = null;
 		Room toRoom = null;
-		RoomDAO rDao = new RoomDAO();
-		DepartmentDAO dDao = new DepartmentDAO();
+		RoomDAO rDao = RoomDAO.getInstance();
+		DepartmentDAO dDao = DepartmentDAO.getInstance();
 		Building toBuilding = null;
 		Department toDept = null;
 		Department fromDept = null;
@@ -1050,7 +1052,7 @@ public class AcademicSessionMerge {
 				}
 				rDao.saveOrUpdate(toRoom);
 				
-				RoomPictureDAO rpDao = new RoomPictureDAO();
+				RoomPictureDAO rpDao = RoomPictureDAO.getInstance();
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toRoom);
@@ -1090,8 +1092,8 @@ public class AcademicSessionMerge {
 	private void copyMergeNonUniversityLocationToSession(Location location, String defaultPrefix) {
 		NonUniversityLocation fromNonUniversityLocation = null;
 		NonUniversityLocation toNonUniversityLocation = null;
-		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
-		DepartmentDAO dDao = new DepartmentDAO();
+		NonUniversityLocationDAO nulDao = NonUniversityLocationDAO.getInstance();
+		DepartmentDAO dDao = DepartmentDAO.getInstance();
 		Department toDept = null;
 		Department fromDept = null;
 		HashMap<RoomFeature, RoomFeature> roomFeatureCache = new HashMap<RoomFeature, RoomFeature>();
@@ -1132,7 +1134,7 @@ public class AcademicSessionMerge {
 				copyMergeRoomGroupsForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomGroupCache);
 				toNonUniversityLocation.setUniqueId(nulDao.save(toNonUniversityLocation));
 				
-				NonUniversityLocationPictureDAO nulpDao = new NonUniversityLocationPictureDAO();
+				NonUniversityLocationPictureDAO nulpDao = NonUniversityLocationPictureDAO.getInstance();
 				for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
 					NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toNonUniversityLocation);
@@ -1175,12 +1177,12 @@ public class AcademicSessionMerge {
 	}
 	
 	private Location findLocation(Long locationId, Long sessionId) {
-		TravelTimeDAO dao = new TravelTimeDAO();
+		TravelTimeDAO dao = TravelTimeDAO.getInstance();
 		
-		Room room = (Room)dao.getSession().createQuery(
+		Room room = dao.getSession().createQuery(
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
 				"((r1.externalUniqueId is not null and r1.externalUniqueId = r2.externalUniqueId) or " +
-				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))")
+				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setParameter("locationId", locationId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
@@ -1189,9 +1191,9 @@ public class AcademicSessionMerge {
 		
 		if (room != null) return room;
 				
-		return (NonUniversityLocation)dao.getSession().createQuery(
+		return dao.getSession().createQuery(
 				"select r2 from NonUniversityLocation r1, NonUniversityLocation r2 where r1.uniqueId = :locationId and r2.session.uniqueId=:sessionId "
-				+"and r1.name = r2.name")
+				+"and r1.name = r2.name", NonUniversityLocation.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setParameter("locationId", locationId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
@@ -1201,9 +1203,9 @@ public class AcademicSessionMerge {
 
 
 	private void copyMergeTravelTimesToSession(Session fromSession) {
-		TravelTimeDAO dao = new TravelTimeDAO();
-		for (TravelTime travel: (List<TravelTime>)dao.getSession().createQuery(
-    			"from TravelTime where session.uniqueId = :sessionId")
+		TravelTimeDAO dao = TravelTimeDAO.getInstance();
+		for (TravelTime travel: dao.getSession().createQuery(
+    			"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
     			.setParameter("sessionId", fromSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 						
 			Location from = findLocation(travel.getLocation1Id(), iMergedSession.getUniqueId());
@@ -1213,7 +1215,8 @@ public class AcademicSessionMerge {
 			
 			TravelTime time = null;
 			String query = "from TravelTime where session.uniqueId = :sessionId and location1Id = :loc1Id and location2Id = :loc2Id";
-			time = (TravelTime)dao.getSession().createQuery(query).setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("loc1Id", from.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("loc2Id", to.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult();
+			time = dao.getSession().createQuery(query, TravelTime.class)
+					.setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("loc1Id", from.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("loc2Id", to.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult();
 			if (time == null) {
 				time = new TravelTime();
 				time.setSession(iMergedSession);
@@ -1248,7 +1251,7 @@ public class AcademicSessionMerge {
 	public void copyMergeDatePatternsToSession(Session fromSession, String defaultPrefix) {
 		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
 		DatePattern toDatePattern = null;
-		DatePatternDAO dpDao = new DatePatternDAO();
+		DatePatternDAO dpDao = DatePatternDAO.getInstance();
 		dpDao.getSession().refresh(fromSession);
 		dpDao.getSession().refresh(iMergedSession);
 		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
@@ -1281,7 +1284,7 @@ public class AcademicSessionMerge {
 				DatePattern defDp = DatePattern.findByName(iMergedSession, fromSession.getDefaultDatePattern().getName());
 				if (defDp != null){
 					iMergedSession.setDefaultDatePattern(defDp);
-					SessionDAO sDao = new SessionDAO();
+					SessionDAO sDao = SessionDAO.getInstance();
 					sDao.update(iMergedSession);
 				}
 			}
@@ -1314,7 +1317,7 @@ public class AcademicSessionMerge {
 	public void copyMergeTimePatternsToSession(Session fromSession, String defaultPrefix) {
 		List<TimePattern> fromDatePatterns = TimePattern.findAll(fromSession, null);
 		TimePattern toTimePattern = null;
-		TimePatternDAO tpDao = new TimePatternDAO();
+		TimePatternDAO tpDao = TimePatternDAO.getInstance();
 		try {
 			for(TimePattern fromTimePattern : fromDatePatterns){
 				if (fromTimePattern != null){
@@ -1338,7 +1341,7 @@ public class AcademicSessionMerge {
 	public void copyMergeLearningManagementSystemInfoToSession(Session fromSession) {
 		List<LearningManagementSystemInfo> fromLearningManagementSystems = LearningManagementSystemInfo.findAll(fromSession.getUniqueId());
 		LearningManagementSystemInfo toLms = null;
-		LearningManagementSystemInfoDAO lmsDao = new LearningManagementSystemInfoDAO();
+		LearningManagementSystemInfoDAO lmsDao = LearningManagementSystemInfoDAO.getInstance();
 		try {
 			for(LearningManagementSystemInfo fromLms : fromLearningManagementSystems){
 				if (fromLms != null){
@@ -1367,7 +1370,8 @@ public class AcademicSessionMerge {
 			query.append("select distinct c.managingDept")
 				 .append(" from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co")
 				 .append(" where co.subjectArea.uniqueId = :subjId");
-			for (Department managingDept : (ArrayList<Department>)DepartmentDAO.getInstance().getSession().createQuery(query.toString()).setParameter("subjId", fromSubjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+			for (Department managingDept : DepartmentDAO.getInstance().getSession().createQuery(query.toString(), Department.class)
+					.setParameter("subjId", fromSubjectArea.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				String prefix = defaultPrefix;
 				if (iDepartmentCodesWithDifferentPrefix != null && iDepartmentCodesWithDifferentPrefix.containsKey(managingDept.getDeptCode())) {
 					prefix = iDepartmentCodesWithDifferentPrefix.get(managingDept.getDeptCode());
@@ -1410,13 +1414,15 @@ public class AcademicSessionMerge {
 			String prefix) {
 		SubjectArea toSubjectArea = null;
 		Department toDepartment = null;
-		SubjectAreaDAO sDao = new SubjectAreaDAO();
+		SubjectAreaDAO sDao = SubjectAreaDAO.getInstance();
 		sDao.getSession().refresh(iMergedSession);
 		try {
 			if (iSessionRollForward.sessionHasCourseCatalog(iMergedSession)) {
 				SubjectArea fromSubjectArea = null;
-				CourseCatalogDAO ccDao = new CourseCatalogDAO();
-				List<Object[]> subjects = (List<Object[]>)ccDao.getSession().createQuery("select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null")
+				CourseCatalogDAO ccDao = CourseCatalogDAO.getInstance();
+				List<Object[]> subjects = ccDao.getSession().createQuery(
+						"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null",
+						Object[].class)
 					.setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.list();
 				if (subjects != null){
@@ -1465,7 +1471,7 @@ public class AcademicSessionMerge {
 					}
 				}
 
-				List<String> newSubjects = (List<String>)ccDao.getSession().createQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)")
+				List<String> newSubjects = ccDao.getSession().createQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)", String.class)
 					.setParameter("sessionId", iMergedSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.list();
 				toDepartment = Department.findByDeptCode("TEMP", iMergedSession.getUniqueId());
@@ -2185,19 +2191,19 @@ public class AcademicSessionMerge {
 	
 	public void copyMergeInstructorDataToSession(Session fromSession, String defaultPrefix) {
 		DepartmentalInstructor toInstructor = null;
-		DepartmentalInstructorDAO iDao = new DepartmentalInstructorDAO();
+		DepartmentalInstructorDAO iDao = DepartmentalInstructorDAO.getInstance();
 		try {
 			if (fromSession.getDepartments() != null){
 				Department primaryToDepartment = null;
 				String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
-				ArrayList<String> existingInstructors = (ArrayList<String>) iDao.getSession()
-						.createQuery(existingQuery)
+				List<String> existingInstructors = iDao.getSession()
+						.createQuery(existingQuery, String.class)
 						.setParameter("sessionId", iMergedSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 						.list();
 				
 				String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
-				ArrayList<String> existingNoExtIdInstructors = (ArrayList<String>) iDao.getSession()
-						.createQuery(existingNoExtIdQuery)
+				List<String> existingNoExtIdInstructors = iDao.getSession()
+						.createQuery(existingNoExtIdQuery, String.class)
 						.setParameter("sessionId", iMergedSession.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 						.list();
 				
@@ -3106,8 +3112,8 @@ public class AcademicSessionMerge {
 	public void mergeInstructionalOfferingToSession(InstructionalOffering fromInstructionalOffering, Session fromSession, boolean mergeWaitListsProhibitedOverrides,
 			boolean isClassMerge, boolean isSubpartTimePrefMerge, boolean isSubpartLocationPrefMerge, boolean isClassPrefsPushUp, 
 			DistributionMode distributionPrefMode, CancelledClassAction cancelledClassAction, String defaultPrefix){
-		InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
-		InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+		InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
+		InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
 		iLog.info("Merging " + fromInstructionalOffering.getCourseNameWithTitle());
 		Transaction trns = null;
 		try {
@@ -3190,7 +3196,7 @@ public class AcademicSessionMerge {
 			DistributionMode distributionPrefMode, 
 			CancelledClassAction cancelledClassAction,
 			String prefix){
-		CourseOfferingDAO coDao = new CourseOfferingDAO();
+		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectArea.getSubjectAreaAbbreviation()
 			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();

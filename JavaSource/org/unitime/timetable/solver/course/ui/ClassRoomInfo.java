@@ -73,11 +73,11 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     public boolean hasNote() { return iNote != null; }
     public String getNote() { return iNote; }
     public Location getLocation() {
-        if (iLocation==null) iLocation = new LocationDAO().get(getLocationId());
+        if (iLocation==null) iLocation = LocationDAO.getInstance().get(getLocationId());
         return iLocation;
     }
     public Location getLocation(org.hibernate.Session hibSession) {
-        return new LocationDAO().get(getLocationId(), hibSession);
+        return LocationDAO.getInstance().get(getLocationId(), hibSession);
     }
     
     

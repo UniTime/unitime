@@ -351,7 +351,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SessionContext context, Long assignmentId, boolean includeConstraints) {
-		AssignmentDAO dao = new AssignmentDAO();
+		AssignmentDAO dao = AssignmentDAO.getInstance();
 		org.hibernate.Session hibSession = dao.getSession();
 		Assignment assignment = dao.get(assignmentId, hibSession);
 		if (assignment==null) return null;
@@ -382,7 +382,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		Class_ clazz = (new Class_DAO()).get(classId);
 		if (clazz==null) return null;
 
-		SolutionDAO dao = new SolutionDAO();
+		SolutionDAO dao = SolutionDAO.getInstance();
 		org.hibernate.Session hibSession = dao.getSession();
 
 		String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);

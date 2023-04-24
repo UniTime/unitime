@@ -36,8 +36,6 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.dao._RootDAO;
 
 
-
-
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
  *

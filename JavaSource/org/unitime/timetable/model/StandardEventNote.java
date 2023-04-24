@@ -21,7 +21,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -37,8 +36,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseStandardEventNote;
 import org.unitime.timetable.model.dao.StandardEventNoteDAO;
-
-
 
 /**
  * @author Stephanie Schluttenhofer, Zuzana Mullerova, Tomas Muller
@@ -66,7 +63,7 @@ public class StandardEventNote extends BaseStandardEventNote {
 /*[CONSTRUCTOR MARKER END]*/
 
    public static List findAll() {
-        return new StandardEventNoteDAO().getSession().createQuery(
+        return StandardEventNoteDAO.getInstance().getSession().createQuery(
                 "select sen from StandardEventNote sen order by sen.reference"
                 ).setCacheable(true).list();
     }	

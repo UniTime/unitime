@@ -242,12 +242,12 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
         
         // class events
         for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
-        	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+        	for (Object[] o: hibSession.createQuery(
         			"select s1.student.uniqueId, m1" +
         			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
         			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
-        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod")
+        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod", Object[].class)
         			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
         			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
         			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent, org.hibernate.type.IntegerType.INSTANCE)
@@ -266,12 +266,12 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
     	// course events
         for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
             for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
-            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            	for (Object[] o: hibSession.createQuery(
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
             			" where e2.uniqueId = :examId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1", Object[].class)
             			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
             			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
             			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)
@@ -290,12 +290,12 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
         // exam events of different type
         for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
             for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
-            	for (Object[] o: (List<Object[]>)hibSession.createQuery(
+            	for (Object[] o: hibSession.createQuery(
             			"select s1.student.uniqueId, m1" +
             			" from StudentClassEnrollment s1, ExamEvent e1 inner join e1.meetings m1 inner join e1.exam.owners o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
             			" where e2.uniqueId = :examId and s1.student = s2.student and e1.exam.examType.uniqueId != :examTypeId " +
             			where(t1, 1) + where(t2, 2) +
-            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and m1.approvalStatus = 1")
+            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and m1.approvalStatus = 1", Object[].class)
             			.setParameter("examId", examId, org.hibernate.type.LongType.INSTANCE)
             			.setParameter("meetingDate", period.getStartDate(), org.hibernate.type.DateType.INSTANCE)
             			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, org.hibernate.type.IntegerType.INSTANCE)

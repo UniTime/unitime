@@ -101,7 +101,7 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
         		Transaction tx = null;
         		
                 try {
-                	org.hibernate.Session hibSession = (new DepartmentStatusTypeDAO()).getSession();
+                	org.hibernate.Session hibSession = (DepartmentStatusTypeDAO.getInstance()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
@@ -136,7 +136,7 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
     		Transaction tx = null;
     		
             try {
-            	org.hibernate.Session hibSession = (new DepartmentStatusTypeDAO()).getSession();
+            	org.hibernate.Session hibSession = (DepartmentStatusTypeDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -156,11 +156,11 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
             Transaction tx = null;
             
             try {
-                org.hibernate.Session hibSession = (new DepartmentStatusTypeDAO()).getSession();
+                org.hibernate.Session hibSession = (DepartmentStatusTypeDAO.getInstance()).getSession();
                 if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                     tx = hibSession.beginTransaction();
                 
-                DepartmentStatusType curStatus = (new DepartmentStatusTypeDAO()).get(id);
+                DepartmentStatusType curStatus = (DepartmentStatusTypeDAO.getInstance()).get(id);
                 
                 if ("Move Up".equals(op)) {
                     boolean found = false;

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -36,8 +35,6 @@ import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
-
-
 
 
 /**
@@ -76,8 +73,8 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public static String ROLES_ATTR_NAME = "rolesList";
     
     public static Roles getRole(String roleRef, org.hibernate.Session hibSession) {
-    	return (Roles)hibSession.createQuery(
-    			"from Roles where reference = :reference")
+    	return hibSession.createQuery(
+    			"from Roles where reference = :reference", Roles.class)
     			.setParameter("reference", roleRef, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
     }
 
@@ -91,8 +88,8 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     
 	@Transient
     public boolean isUsed() {
-    	return ((Number)RolesDAO.getInstance().getSession().createQuery(
-    			"select count(m) from ManagerRole m where m.role.roleId = :roleId")
+    	return (RolesDAO.getInstance().getSession().createQuery(
+    			"select count(m) from ManagerRole m where m.role.roleId = :roleId", Number.class)
     			.setParameter("roleId", getRoleId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0;
     }
     

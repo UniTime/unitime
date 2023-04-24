@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -132,7 +131,7 @@ public class SavedHQL extends BaseSavedHQL {
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
 						"select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
-						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
 						setParameter("term", value, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 
@@ -162,7 +161,7 @@ public class SavedHQL extends BaseSavedHQL {
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from Department d1, Department d2 where d1.uniqueId = :id and d1.deptCode = d2.deptCode and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from Department d1, Department d2 where d1.uniqueId = :id and d1.deptCode = d2.deptCode and d1.session = :s1 and d2.session = :s2", Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -188,7 +187,7 @@ public class SavedHQL extends BaseSavedHQL {
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from SubjectArea d1, SubjectArea d2 where d1.uniqueId = :id and d1.subjectAreaAbbreviation = d2.subjectAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from SubjectArea d1, SubjectArea d2 where d1.uniqueId = :id and d1.subjectAreaAbbreviation = d2.subjectAreaAbbreviation and d1.session = :s1 and d2.session = :s2", Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -215,7 +214,7 @@ public class SavedHQL extends BaseSavedHQL {
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from Building d1, Building d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from Building d1, Building d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2", Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -243,7 +242,7 @@ public class SavedHQL extends BaseSavedHQL {
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from Room d1, Room d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from Room d1, Room d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2", Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -271,7 +270,7 @@ public class SavedHQL extends BaseSavedHQL {
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from Location d1, Location d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from Location d1, Location d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session = :s1 and d2.session = :s2", Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -319,7 +318,7 @@ public class SavedHQL extends BaseSavedHQL {
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
 						"select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
-						"s.academicTerm || s.academicYear || s.academicInitiative = :term").
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
 						setParameter("term", value, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 			
@@ -333,7 +332,7 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (StudentGroup g: (List<StudentGroup>)SessionDAO.getInstance().getSession().createQuery(
-						"from StudentGroup where session.uniqueId = :sessionId").
+						"from StudentGroup where session.uniqueId = :sessionId", StudentGroup.class).
 						setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ret.put(g.getUniqueId(), g.getGroupAbbreviation() + " - " + g.getGroupName());
 				}
@@ -342,14 +341,16 @@ public class SavedHQL extends BaseSavedHQL {
 			@Override
 			public Long lookupValue(UserContext user, String value) {
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
-						"select uniqueId from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value"
+						"select uniqueId from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("value", value, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from StudentGroup d1, StudentGroup d2 where d1.uniqueId = :id and d1.groupAbbreviation = d2.groupAbbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery(
+						"select d2.uniqueId from StudentGroup d1, StudentGroup d2 where d1.uniqueId = :id and d1.groupAbbreviation = d2.groupAbbreviation and d1.session = :s1 and d2.session = :s2"
+						,Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -359,7 +360,7 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (AcademicArea a: (List<AcademicArea>)SessionDAO.getInstance().getSession().createQuery(
-						"from AcademicArea where session.uniqueId = :sessionId").
+						"from AcademicArea where session.uniqueId = :sessionId", AcademicArea.class).
 						setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ret.put(a.getUniqueId(), a.getAcademicAreaAbbreviation() + " - " + a.getTitle());
 				}
@@ -368,14 +369,15 @@ public class SavedHQL extends BaseSavedHQL {
 			@Override
 			public Long lookupValue(UserContext user, String value) {
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
-						"select uniqueId from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value"
+						"select uniqueId from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("value", value, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
 			
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from AcademicArea d1, AcademicArea d2 where d1.uniqueId = :id and d1.academicAreaAbbreviation = d2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from AcademicArea d1, AcademicArea d2 where d1.uniqueId = :id and d1.academicAreaAbbreviation = d2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2",
+						Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -385,7 +387,7 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (PosMajor m: (List<PosMajor>)SessionDAO.getInstance().getSession().createQuery(
-						"from PosMajor where session.uniqueId = :sessionId").
+						"from PosMajor where session.uniqueId = :sessionId", PosMajor.class).
 						setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					for (AcademicArea a: m.getAcademicAreas())
 						ret.put(m.getUniqueId(), a.getAcademicAreaAbbreviation() + " " + m.getCode() + " - " + m.getName());
@@ -396,17 +398,19 @@ public class SavedHQL extends BaseSavedHQL {
 			public Long lookupValue(UserContext user, String value) {
 				Long id = (Long)SessionDAO.getInstance().getSession().createQuery(
 						"select m.uniqueId from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and (a.academicAreaAbbreviation || ' ' || m.code) = :value"
+						,Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("value", value, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 				if (id != null) return id;
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
-						"select m.uniqueId from PosMajor m where m.session.uniqueId = :sessionId and m.code = :value"
+						"select m.uniqueId from PosMajor m where m.session.uniqueId = :sessionId and m.code = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("value", value, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from PosMajor d1 inner join d1.academicAreas a1, PosMajor d2 inner join d2.academicAreas a2 where d1.uniqueId = :id and d1.code = d2.code and a1.academicAreaAbbreviation = a2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from PosMajor d1 inner join d1.academicAreas a1, PosMajor d2 inner join d2.academicAreas a2 where d1.uniqueId = :id and d1.code = d2.code and a1.academicAreaAbbreviation = a2.academicAreaAbbreviation and d1.session = :s1 and d2.session = :s2"
+						,Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -416,7 +420,7 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				for (StudentAccomodation a: (List<StudentAccomodation>)SessionDAO.getInstance().getSession().createQuery(
-						"from StudentAccomodation where session.uniqueId = :sessionId").
+						"from StudentAccomodation where session.uniqueId = :sessionId", StudentAccomodation.class).
 						setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ret.put(a.getUniqueId(), a.getAbbreviation() + " - " + a.getName());
 				}
@@ -425,13 +429,14 @@ public class SavedHQL extends BaseSavedHQL {
 			@Override
 			public Long lookupValue(UserContext user, String value) {
 				return (Long)SessionDAO.getInstance().getSession().createQuery(
-						"select uniqueId from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value"
+						"select uniqueId from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("value", value, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
-				return (Long)hibSession.createQuery("select d2.uniqueId from StudentAccomodation d1, StudentAccomodation d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2")
+				return (Long)hibSession.createQuery("select d2.uniqueId from StudentAccomodation d1, StudentAccomodation d2 where d1.uniqueId = :id and d1.abbreviation = d2.abbreviation and d1.session = :s1 and d2.session = :s2",
+						Long.class)
 						.setParameter("id", originalId, org.hibernate.type.LongType.INSTANCE).setParameter("s1", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("s2", newSessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			}
 		}),
@@ -533,12 +538,12 @@ public class SavedHQL extends BaseSavedHQL {
 	public static List<SavedHQL> listAll(org.hibernate.Session hibSession, Flag appearance, boolean admin) {
 		if (admin) {
 			return (List<SavedHQL>)(hibSession == null ? SavedHQLDAO.getInstance().getSession() : hibSession).createQuery(
-					"from SavedHQL q where bit_and(q.type, :flag) > 0 order by q.name")
+					"from SavedHQL q where bit_and(q.type, :flag) > 0 order by q.name", SavedHQL.class)
 					.setParameter("flag", appearance.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setCacheable(true).list();
 		} else {
 			return (List<SavedHQL>)(hibSession == null ? SavedHQLDAO.getInstance().getSession() : hibSession).createQuery(
-					"from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0 order by q.name")
+					"from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0 order by q.name", SavedHQL.class)
 					.setParameter("flag", appearance.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setParameter("admin", Flag.ADMIN_ONLY.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setCacheable(true).list();
@@ -548,12 +553,12 @@ public class SavedHQL extends BaseSavedHQL {
 	public static boolean hasQueries(Flag appearance, boolean admin) {
 		if (admin) {
 			return ((Number)SavedHQLDAO.getInstance().getSession().createQuery(
-					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0")
+					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0", Number.class)
 					.setParameter("flag", appearance.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setCacheable(true).uniqueResult()).intValue() > 0;
 		} else {
 			return ((Number)SavedHQLDAO.getInstance().getSession().createQuery(
-					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0")
+					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0", Number.class)
 					.setParameter("flag", appearance.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setParameter("admin", Flag.ADMIN_ONLY.flag(), org.hibernate.type.IntegerType.INSTANCE)
 					.setCacheable(true).uniqueResult()).intValue() > 0;

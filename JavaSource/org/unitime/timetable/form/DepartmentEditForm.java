@@ -263,7 +263,7 @@ public class DepartmentEditForm implements UniTimeForm {
 	}
 
 	public void save(SessionContext context) throws Exception {
-		DepartmentDAO dao = new DepartmentDAO();
+		DepartmentDAO dao = DepartmentDAO.getInstance();
 		org.hibernate.Session session = dao.getSession();
 		Department department;
 		Session acadSession = null;

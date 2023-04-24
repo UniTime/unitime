@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
+
+import java.io.Serializable;
 
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RoomFeatureType;

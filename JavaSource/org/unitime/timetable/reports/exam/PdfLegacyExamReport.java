@@ -62,6 +62,8 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -791,47 +793,45 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         sLog.info("Loading exams...");
         long t0 = System.currentTimeMillis();
         Hashtable<Long, Exam> exams = new Hashtable();
-        for (Iterator i=new ExamDAO().getSession().createQuery(
-                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
-                ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-            Exam exam = (Exam)i.next();
+        for (Exam exam: ExamDAO.getInstance().getSession().createQuery(
+                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", Exam.class
+                ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
             exams.put(exam.getUniqueId(), exam);
         }
         
 		sLog.info("  Fetching related objects (class)...");
-        new ExamDAO().getSession().createQuery(
-                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
+        ExamDAO.getInstance().getSession().createQuery(
+                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class_.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         sLog.info("  Fetching related objects (config)...");
-        new ExamDAO().getSession().createQuery(
-                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
+        ExamDAO.getInstance().getSession().createQuery(
+                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", InstrOfferingConfig.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         sLog.info("  Fetching related objects (course)...");
-        new ExamDAO().getSession().createQuery(
-                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+        ExamDAO.getInstance().getSession().createQuery(
+                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", CourseOffering.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         sLog.info("  Fetching related objects (offering)...");
-        new ExamDAO().getSession().createQuery(
-                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+        ExamDAO.getInstance().getSession().createQuery(
+                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", InstructionalOffering.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
         
 		sLog.info("  Fetching related class events...");
         Hashtable<Long, ClassEvent> classEvents = new Hashtable();
-        for (Iterator i=
-        	ExamDAO.getInstance().getSession().createQuery(
-        			"select c from ClassEvent c left join fetch c.meetings m, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.clazz.uniqueId=o.ownerId")
+        for (ClassEvent ce: ExamDAO.getInstance().getSession().createQuery(
+        			"select c from ClassEvent c left join fetch c.meetings m, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.clazz.uniqueId=o.ownerId",
+        			ClassEvent.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
-                .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list().iterator(); i.hasNext();) {
-        	ClassEvent ce = (ClassEvent)i.next();
+                .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list()) {
         	classEvents.put(ce.getClazz().getUniqueId(), ce);
         }
         
@@ -840,15 +840,15 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
         if (assgn) {
             sLog.info("  Loading students (class)...");
-            for (Iterator i=
-                new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                 "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                "o.ownerId=c.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
+                "o.ownerId=c.uniqueId", Object[].class)
+            	.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+            	.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                     Long examId = (Long)o[0];
                     Long ownerId = (Long)o[1];
                     Long studentId = (Long)o[2];
@@ -878,16 +878,16 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     studentsOfCourse.add(studentId);
                 }
             sLog.info("  Loading students (config)...");
-            for (Iterator i=
-                new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                         "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.clazz c " +
                         "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                        "o.ownerId=ioc.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                        "o.ownerId=ioc.uniqueId", Object[].class)
+            		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -917,15 +917,15 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 studentsOfCourse.add(studentId);
             }
             sLog.info("  Loading students (course)...");
-            for (Iterator i=
-                new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                         "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering co " +
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                        "o.ownerId=co.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                        "o.ownerId=co.uniqueId", Object[].class)
+            		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -955,15 +955,15 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 studentsOfCourse.add(studentId);
             }
             sLog.info("  Loading students (offering)...");
-            for (Iterator i=
-                new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                         "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                        "o.ownerId=io.uniqueId").setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                        "o.ownerId=io.uniqueId", Object[].class)
+            		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
+            		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -997,14 +997,13 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         ExamType type = ExamTypeDAO.getInstance().get(examTypeId);
         if (assgn && eventConf && ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(type.getReference())) {
             sLog.info("  Loading overlapping class meetings...");
-            for (Iterator i=new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                     "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
@@ -1014,14 +1013,13 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 meetings.add(meeting);
             }
             sLog.info("  Loading overlapping course meetings...");
-            for (Iterator i=new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                     "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
@@ -1031,14 +1029,13 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 meetings.add(meeting);
             }
             sLog.info("  Loading overlapping examinations of different problems...");
-            for (Iterator i=new ExamDAO().getSession().createQuery(
+            for (Object[] o: ExamDAO.getInstance().getSession().createQuery(
                     "select p.uniqueId, m from ExamEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.exam.examType.uniqueId != :examTypeId and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Meeting> meetings  = period2meetings.get(periodId);
@@ -1101,7 +1098,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 for (StringTokenizer s=new StringTokenizer(System.getProperty("subject"),",");s.hasMoreTokens();)
                     inSubjects += "'"+s.nextToken()+"'"+(s.hasMoreTokens()?",":"");
                 subjects.addAll(new _RootDAO().getSession().createQuery(
-                        "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")"
+                        "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")", SubjectArea.class
                         ).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
             }
             TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType.getUniqueId(), assgn, ignempty, true);

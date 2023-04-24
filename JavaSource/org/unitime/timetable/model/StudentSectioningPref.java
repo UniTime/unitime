@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -32,7 +31,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
 import java.util.HashSet;
-import java.util.List;
 
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
@@ -59,7 +57,7 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 		Transaction tx = hibSession.beginTransaction();
 		try {
 			boolean first = true;
-			for (CourseRequestOption option: (List<CourseRequestOption>)hibSession.createQuery("from CourseRequestOption where optionType = :type"
+			for (CourseRequestOption option: hibSession.createQuery("from CourseRequestOption where optionType = :type", CourseRequestOption.class
 					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber(), org.hibernate.type.IntegerType.INSTANCE).list()) {
 				if (first) {
 					Debug.info(" - Updating student scheduling preferences ...");
@@ -110,11 +108,11 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 				} catch (Exception e) {}
 				hibSession.update(cr);
 			}
-			for (StudentInstrMthPref p: (List<StudentInstrMthPref>)hibSession.createQuery("from StudentInstrMthPref where label is null and instructionalMethod.label is not null").list()) {
+			for (StudentInstrMthPref p: hibSession.createQuery("from StudentInstrMthPref where label is null and instructionalMethod.label is not null", StudentInstrMthPref.class).list()) {
 				p.setLabel(p.getInstructionalMethod().getLabel());
 				hibSession.update(p);
 			}
-			for (StudentClassPref p: (List<StudentClassPref>)hibSession.createQuery("from StudentClassPref where label is null").list()) {
+			for (StudentClassPref p: hibSession.createQuery("from StudentClassPref where label is null", StudentClassPref.class).list()) {
 				p.setLabel(p.getClazz().getClassPrefLabel(p.getCourseRequest().getCourseOffering()));
 				hibSession.update(p);
 			}

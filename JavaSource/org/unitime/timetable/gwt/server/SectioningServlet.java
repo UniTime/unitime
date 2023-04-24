@@ -39,8 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.Placement;
 import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
-import org.hibernate.type.LongType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -155,7 +153,6 @@ import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
-import org.unitime.timetable.model.dao.OverrideTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
@@ -384,12 +381,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
 			if (!matcher.isAllCourseTypes() && !matcher.isNoCourseType() && types.isEmpty()) throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 
-			List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(hibSession, Order.asc("label"));
+			List<OverrideType> overrides = hibSession.createQuery("from OverrideType order by label", OverrideType.class).setCacheable(true).list();
 
 			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
-			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
+			for (CourseOffering c: hibSession.createQuery(
 					"select c from CourseOffering c left outer join c.courseType ct where " +
 					(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
@@ -401,7 +398,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in (" + types + ")) " : " and ct.reference in (" + types + ") ") +
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
-					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
+					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
 					.setParameter("q", query.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("sessionId", cx.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true).setMaxResults(limit == null || limit <= 0 || parent != null ? Integer.MAX_VALUE : limit).list()) {
@@ -584,10 +581,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			CourseOffering courseOffering = null;
-			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
+			for (CourseOffering c: hibSession.createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
-					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
+					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)",
+					CourseOffering.class)
 					.setParameter("course", course.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("sessionId", cx.getSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true).setMaxResults(1).list()) {
@@ -929,23 +927,25 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public static CourseOffering lookupCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, String courseName, CourseMatcher courseMatcher) {
 		boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 		if (studentId != null) {
-			for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+			for (CourseOffering co: hibSession.createQuery(
 					"select cr.courseOffering from CourseRequest cr where " +
 					"cr.courseDemand.student.uniqueId = :studentId and " +
 					(excludeNotOffered ? "cr.courseOffering.instructionalOffering.notOffered is false and " : "") +
 					"(lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr) = :course or " +
-					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr || ' - ' || cr.courseOffering.title) = :course)")
+					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr || ' - ' || cr.courseOffering.title) = :course)",
+					CourseOffering.class)
 					.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true).setMaxResults(1).list()) {
 				return co;
 			}
 		}
-		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+		for (CourseOffering co: hibSession.createQuery(
 				"select c from CourseOffering c where " +
 				(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") + 
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
-				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
+				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)",
+				CourseOffering.class)
 				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).setMaxResults(1).list()) {
@@ -1037,7 +1037,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			getSessionContext().checkPermissionAnySession(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
-				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setParameter("uid", password, org.hibernate.type.StringType.INSTANCE).list();
+				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", password, org.hibernate.type.StringType.INSTANCE).list();
 				if (!student.isEmpty()) {
 					UserContext user = getSessionContext().getUser();
 					UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), password, user.getTrueName());
@@ -1330,11 +1330,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					boolean canShowExtIds = sessionContext.hasPermission(Right.EnrollmentsShowExternalId);
 					boolean canRegister = sessionContext.hasPermission(Right.CourseRequests);
 					boolean canUseAssistant = sessionContext.hasPermission(Right.SchedulingAssistant);
-					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
+					for (StudentClassEnrollment enrollment: hibSession.createQuery(
 							clazz == null ?
 								"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId" :
 								"select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.student.uniqueId in " +
-								"(select f.student.uniqueId from StudentClassEnrollment f where f.clazz.uniqueId = " + clazz.getUniqueId() + ")"
+								"(select f.student.uniqueId from StudentClassEnrollment f where f.clazz.uniqueId = " + clazz.getUniqueId() + ")", StudentClassEnrollment.class
 							).setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).list()) {
 						ClassAssignmentInterface.Enrollment e = student2enrollment.get(enrollment.getStudent().getUniqueId());
 						if (e == null) {
@@ -1416,15 +1416,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (enrollment.getApprovedBy() != null) {
 									String name = approvedBy2name.get(enrollment.getApprovedBy());
 									if (name == null) {
-										TimetableManager mgr = (TimetableManager)hibSession.createQuery(
-												"from TimetableManager where externalUniqueId = :externalId")
+										TimetableManager mgr = hibSession.createQuery(
+												"from TimetableManager where externalUniqueId = :externalId", TimetableManager.class)
 												.setParameter("externalId", enrollment.getApprovedBy(), org.hibernate.type.StringType.INSTANCE)
 												.setMaxResults(1).uniqueResult();
 										if (mgr != null) {
 											name = mgr.getName();
 										} else {
-											DepartmentalInstructor instr = (DepartmentalInstructor)hibSession.createQuery(
-													"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
+											DepartmentalInstructor instr = hibSession.createQuery(
+													"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
 													.setParameter("externalId", enrollment.getApprovedBy(), org.hibernate.type.StringType.INSTANCE)
 													.setParameter("sessionId", enrollment.getStudent().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 													.setMaxResults(1).uniqueResult();
@@ -1452,8 +1452,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						c.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim());
 					}
 					if (classOrOfferingId >= 0)
-						for (CourseRequest request: (List<CourseRequest>)hibSession.createQuery(
-							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId").setParameter("offeringId", classOrOfferingId, org.hibernate.type.LongType.INSTANCE).list()) {
+						for (CourseRequest request: hibSession.createQuery(
+							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId", CourseRequest.class).setParameter("offeringId", classOrOfferingId, org.hibernate.type.LongType.INSTANCE).list()) {
 							ClassAssignmentInterface.Enrollment e = student2enrollment.get(request.getCourseDemand().getStudent().getUniqueId());
 							if (e != null) continue;
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
@@ -1600,7 +1600,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
 						Set<StudentClassEnrollment> enrollments = new TreeSet<StudentClassEnrollment>(cmp);
 						enrollments.addAll(hibSession.createQuery(
-								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
+								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr", StudentClassEnrollment.class
 								).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list());
 						CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 						StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(student, null, getSessionContext()));
@@ -1705,8 +1705,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							if (clazz.getParentSection() == null)
 								clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());
 						}
-						demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
-								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
+						demands: for (CourseDemand demand: hibSession.createQuery(
+								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority", CourseDemand.class
 								).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).list()) {
 							if (demand.getFreeTime() != null) {
 								CourseAssignment course = new CourseAssignment();
@@ -1972,7 +1972,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc where " +
-				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and oc.instructor.externalUniqueId = :extId")
+				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and oc.instructor.externalUniqueId = :extId", Long.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("extId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 		
 		return courseIds;
@@ -2003,20 +2003,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType.reference = :reference and " +
-				"oc.instructor.externalUniqueId = :extId"
+				"oc.instructor.externalUniqueId = :extId", Long.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("reference", "IN", org.hibernate.type.StringType.INSTANCE).setParameter("extId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 		
 		if (!user.getCurrentAuthority().hasRight(Right.HasRole)) return courseIds;
 		
 		if (user.getCurrentAuthority().hasRight(Right.SessionIndependent))
 			return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
-					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null"
+					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null", Long.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		
 		for (Department d: Department.getUserDepartments(user)) {
 			courseIds.addAll(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select distinct c.uniqueId from CourseOffering c where " +
-					"c.subjectArea.department.uniqueId = :departmentId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null"
+					"c.subjectArea.department.uniqueId = :departmentId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null", Long.class
 					).setParameter("departmentId", d.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		}
 		
@@ -2030,7 +2030,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select s.uniqueId from Advisor a inner join a.students s where " +
-				"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId"
+				"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId", Long.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("user", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setParameter("role", user.getCurrentAuthority().getRole(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list());
 	}
 	
@@ -2706,7 +2706,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
-				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
+				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference", CourseType.class
 				).setParameter("sessionId", getStatusPageSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
 		boolean advisor = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
@@ -3179,8 +3179,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				properties.setEmailOptionalToggleDefault(email.isOptionCheckedByDefault());
 			}
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
-				for (StudentGroup g: (List<StudentGroup>)StudentGroupDAO.getInstance().getSession().createQuery(
-						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation"
+				for (StudentGroup g: StudentGroupDAO.getInstance().getSession().createQuery(
+						"from StudentGroup g where g.type.advisorsCanSet = true and g.session = :sessionId order by g.groupAbbreviation", StudentGroup.class
 						).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					properties.addEditableGroup(new StudentGroupInfo(g.getUniqueId(), g.getGroupAbbreviation(), g.getGroupName(), g.getType() == null ? null: g.getType().getReference()));
 				}
@@ -3512,8 +3512,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		try {
 			
 			org.hibernate.Session hibSession = CourseDemandDAO.getInstance().getSession();
-			CourseDemand cd = (CourseDemand)hibSession.createQuery(
-					"select cr.courseDemand from CourseRequest cr where cr.courseOffering = :courseId and cr.courseDemand.student = :studentId"
+			CourseDemand cd = hibSession.createQuery(
+					"select cr.courseDemand from CourseRequest cr where cr.courseOffering = :courseId and cr.courseDemand.student = :studentId", CourseDemand.class
 					).setParameter("studentId", studentId, org.hibernate.type.LongType.INSTANCE).setParameter("courseId", courseId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 			if (cd == null) return null;
 			
@@ -3642,7 +3642,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ret.setCanRequire(getSessionContext().hasPermissionAnySession(student, Right.StudentSchedulingCanRequirePreferences));
 		
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
-				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference"
+				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session = :sessionId order by t.reference", CourseType.class
 				).setParameter("sessionId", getStatusPageSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		boolean adv = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
 		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
@@ -3790,8 +3790,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		ExternalTermProvider extTerm = getExternalTermProvider();
 		Set<Long> sessionIds = new HashSet<Long>();
-		for (Student student: (List<Student>)StudentDAO.getInstance().getSession().createQuery(
-				"from Student where externalUniqueId = :id")
+		for (Student student: StudentDAO.getInstance().getSession().createQuery(
+				"from Student where externalUniqueId = :id", Student.class)
 				.setParameter("id", studentExternalId, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
 			Session session = student.getSession();
 			if (session.getStatusType().isTestSession()) continue;
@@ -3810,8 +3810,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				sessionIds.add(session.getUniqueId());
 			}
 		}
-		for (Student student: (List<Student>)StudentDAO.getInstance().getSession().createQuery(
-				"from Student s where s.externalUniqueId = :id and s.advisorCourseRequests is not empty")
+		for (Student student: StudentDAO.getInstance().getSession().createQuery(
+				"from Student s where s.externalUniqueId = :id and s.advisorCourseRequests is not empty", Student.class)
 				.setParameter("id", studentExternalId, org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).list()) {
 			Session session = student.getSession();
@@ -3881,11 +3881,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		String defaultNote = ApplicationProperty.AdvisorCourseRequestsDefaultNote.valueOfSession(cx.getAcademicSessionId());
 		Student student = (cx.getStudentId() == null ? null : StudentDAO.getInstance().get(cx.getStudentId()));
 		
-		List<Object[]> notes = (List<Object[]>)AdvisorCourseRequestDAO.getInstance().getSession().createQuery(
+		List<Object[]> notes = AdvisorCourseRequestDAO.getInstance().getSession().createQuery(
 				"select replace(acr.notes, acr.student.pin, '$PIN$'), count(acr), max(acr.timestamp) " +
 				"from AdvisorCourseRequest acr where acr.priority = -1 and acr.changedBy = :externalId and acr.student.session = :sessionId " +
 				"group by replace(acr.notes, acr.student.pin, '$PIN$') " +
-				"order by max(acr.timestamp) desc")
+				"order by max(acr.timestamp) desc", Object[].class)
 				.setParameter("externalId", sessionContext.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", cx.getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(false).setMaxResults(50).list();
@@ -3934,9 +3934,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Map<Long, String> getChangeLogTexts(Collection<Long> logIds) throws SectioningException, PageAccessException {
 		getSessionContext().checkPermission(Right.SchedulingDashboard);
 		Map<Long, String> ret = new HashMap<Long, String>();
-		for (Object[] o: (List<Object[]>)OnlineSectioningLogDAO.getInstance().getSession().createQuery(
-				"select uniqueId, action from OnlineSectioningLog where uniqueId in :logIds"
-				).setParameterList("logIds", logIds, LongType.INSTANCE).list()) {
+		for (Object[] o: OnlineSectioningLogDAO.getInstance().getSession().createQuery(
+				"select uniqueId, action from OnlineSectioningLog where uniqueId in :logIds", Object[].class
+				).setParameterList("logIds", logIds, org.hibernate.type.LongType.INSTANCE).list()) {
 			Long id = (Long)o[0];
 			try {
 				OnlineSectioningLog.Action action = OnlineSectioningLog.Action.parseFrom((byte[])o[1]);
@@ -4092,7 +4092,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (server == null || server instanceof DatabaseServer) {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			List<OverrideType> overrides = OverrideTypeDAO.getInstance().findAll(hibSession, Order.asc("label"));
+			List<OverrideType> overrides = hibSession.createQuery("from OverrideType order by label", OverrideType.class).setCacheable(true).list();
 			
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			

@@ -94,7 +94,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(course.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
-					"from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId"
+					"from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId", StudentClassEnrollment.class
 					).setParameter("courseId", course.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 		String offeringId = helper.getParameter("offeringId");
@@ -106,7 +106,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(offering.getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
-					"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId"
+					"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class
 					).setParameter("offeringId", offering.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 		String configurationId = helper.getParameter("configurationId");
@@ -118,7 +118,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(config.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
-					"from StudentClassEnrollment e where e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId"
+					"from StudentClassEnrollment e where e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId", StudentClassEnrollment.class
 					).setParameter("configId", config.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()));
 		}
 	}

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -48,7 +47,6 @@ import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.query.Query;
-import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -325,7 +323,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @throws HibernateException
 	 */
 	public void saveOrUpdate() throws HibernateException {
-		(new LocationDAO()).saveOrUpdate(this);
+		(LocationDAO.getInstance()).saveOrUpdate(this);
 	}
 	
 	/**
@@ -420,12 +418,11 @@ public abstract class Location extends BaseLocation implements Comparable {
             }
 		}
 		hibSession.saveOrUpdate(department);
-		List roomPrefs = hibSession.
-			createQuery("select distinct rp from RoomPref rp where rp.room.uniqueId=:locationId").
+		List<RoomPref> roomPrefs = hibSession.
+			createQuery("select distinct rp from RoomPref rp where rp.room.uniqueId=:locationId", RoomPref.class).
 			setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			list();
-		for (Iterator i=roomPrefs.iterator();i.hasNext();) {
-			RoomPref rp = (RoomPref)i.next();
+		for (RoomPref rp: roomPrefs) {
 			if (rp.getOwner() instanceof Class_) {
 				Class_ c = (Class_)rp.getOwner();
 				if (department.equals(c.getManagingDept())) {
@@ -454,12 +451,11 @@ public abstract class Location extends BaseLocation implements Comparable {
 		
 		if (this instanceof Room) {
 			Building bldg = ((Room)this).getBuilding();
-			List bldgPrefs = hibSession.
-			createQuery("select distinct bp from BuildingPref bp where bp.building.uniqueId=:bldgId").
+			List<BuildingPref> bldgPrefs = hibSession.
+			createQuery("select distinct bp from BuildingPref bp where bp.building.uniqueId=:bldgId", BuildingPref.class).
 			setParameter("bldgId", bldg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 			list();
-			for (Iterator i=bldgPrefs.iterator();i.hasNext();) {
-				BuildingPref bp = (BuildingPref)i.next();
+			for (BuildingPref bp: bldgPrefs) {
 				if (bp.getOwner() instanceof Class_) {
 					Class_ c = (Class_)bp.getOwner();
 					if (!c.getAvailableBuildings().contains(bldg) && department.equals(c.getManagingDept())) {
@@ -539,7 +535,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (examTypeId.equals(pref.getExamPeriod().getExamType().getUniqueId())) {
-                new ExamLocationPrefDAO().getSession().delete(pref);
+                ExamLocationPrefDAO.getInstance().getSession().delete(pref);
                 i.remove();
             }
         }
@@ -551,11 +547,11 @@ public abstract class Location extends BaseLocation implements Comparable {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (pref.getExamPeriod().equals(period)) {
                 if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) {
-                    new ExamLocationPrefDAO().getSession().delete(pref);
+                    ExamLocationPrefDAO.getInstance().getSession().delete(pref);
                     i.remove();
                 } else {
                     pref.setPrefLevel(preference);
-                    new ExamLocationPrefDAO().getSession().update(pref);
+                    ExamLocationPrefDAO.getInstance().getSession().update(pref);
                 }
                 return; 
             }
@@ -566,7 +562,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         pref.setPrefLevel(preference);
         pref.setLocation(this);
         getExamPreferences().add(pref);
-        new ExamLocationPrefDAO().getSession().save(pref);
+        ExamLocationPrefDAO.getInstance().getSession().save(pref);
     }
     
     public void addExamPreference(ExamPeriod period, PreferenceLevel preference) {
@@ -576,7 +572,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         pref.setPrefLevel(preference);
         pref.setLocation(this);
         getExamPreferences().add(pref);
-        new ExamLocationPrefDAO().getSession().save(pref);
+        ExamLocationPrefDAO.getInstance().getSession().save(pref);
     }
 
     public String getExamPreferencesHtml(ExamType examType) {
@@ -638,35 +634,34 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return findAllExamLocations(sessionId, examType == null ? null : examType.getUniqueId());
     }
 
-    public static TreeSet findAllExamLocations(Long sessionId, Long examTypeId) {
+    public static TreeSet<Location> findAllExamLocations(Long sessionId, Long examTypeId) {
     	if (examTypeId == null) {
-    		return new TreeSet(
-                    (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examTypes is not empty")
+    		return new TreeSet<Location>(
+                    (LocationDAO.getInstance()).getSession()
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examTypes is not empty", Location.class)
                     .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     	} else {
-    		return new TreeSet(
-                    (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room inner join room.examTypes as type where room.session.uniqueId = :sessionId and type.uniqueId = :typeId")
+    		return new TreeSet<Location>(
+                    (LocationDAO.getInstance()).getSession()
+                    .createQuery("select room from Location as room inner join room.examTypes as type where room.session.uniqueId = :sessionId and type.uniqueId = :typeId", Location.class)
                     .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("typeId", examTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     	}
     }
     
-    public static TreeSet findNotAvailableExamLocations(Long periodId) {
-        return new TreeSet(
-                (new LocationDAO()).getSession()
-                .createQuery("select distinct r from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
+    public static TreeSet<Location> findNotAvailableExamLocations(Long periodId) {
+        return new TreeSet<Location>(
+                (LocationDAO.getInstance()).getSession()
+                .createQuery("select distinct r from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId", Location.class)
                 .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list());
     }
     
     public static Hashtable<Long, Set<Long>> findExamLocationTable(Long periodId) {
         Hashtable<Long,Set<Long>> table = new Hashtable();
-        for (Iterator i = (new LocationDAO()).getSession()
-                    .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
+        for (Object[] o: (LocationDAO.getInstance()).getSession()
+                    .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId", Object[].class)
                     .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
             Set<Long> exams = table.get((Long)o[0]);
             if (exams == null) { exams = new HashSet<Long>(); table.put((Long)o[0], exams); }
             exams.add((Long)o[1]);
@@ -676,24 +671,24 @@ public abstract class Location extends BaseLocation implements Comparable {
     
 	@Transient
     public Collection<Assignment> getCommitedAssignments() {
-    	return new LocationDAO().getSession().createQuery(
+    	return LocationDAO.getInstance().getSession().createQuery(
                 "select a from Assignment a inner join a.rooms r where " +
-                "a.solution.commited=true and r.uniqueId=:locationId")
+                "a.solution.commited=true and r.uniqueId=:locationId", Assignment.class)
                 .setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
     }
     
     public Collection<Assignment> getAssignments(Solution solution) {
-    	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
+    	List<Assignment> ret = new ArrayList<Assignment>(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
-    			"r.uniqueId = :locationId and a.solution.uniqueId = :solutionId")
+    			"r.uniqueId = :locationId and a.solution.uniqueId = :solutionId", Assignment.class)
     			.setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("solutionId", solution.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list());
-    	ret.addAll(new LocationDAO().getSession().createQuery(
+    	ret.addAll(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a, Solution x inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
-    			"x.uniqueId = :solutionId and a.solution.owner != x.owner")
+    			"x.uniqueId = :solutionId and a.solution.owner != x.owner", Assignment.class)
     			.setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("solutionId", solution.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list());
@@ -702,18 +697,18 @@ public abstract class Location extends BaseLocation implements Comparable {
     
     public Collection<Assignment> getAssignments(Collection<Long> solutionId) {
     	if (solutionId.isEmpty()) return getCommitedAssignments();
-    	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
+    	List<Assignment> ret = new ArrayList<Assignment>(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
-    			"r.uniqueId = :locationId and a.solution.uniqueId in (:solutionIds)")
+    			"r.uniqueId = :locationId and a.solution.uniqueId in (:solutionIds)", Assignment.class)
     			.setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setParameterList("solutionIds", solutionId, org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).list());
-    	ret.addAll(new LocationDAO().getSession().createQuery(
+    	ret.addAll(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
-    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in (:solutionIds))")
+    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in (:solutionIds))", Assignment.class)
     			.setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setParameterList("solutionIds", solutionId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list());
     	return ret;
     }
@@ -748,9 +743,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public List<Exam> getExams(Long periodId) {
-        return new LocationDAO().getSession().createQuery(
+        return LocationDAO.getInstance().getSession().createQuery(
                 "select x from Exam x inner join x.assignedRooms r where "+
-                "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId")
+                "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId", Exam.class)
                 .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("locationId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
@@ -792,26 +787,26 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public static List<Location> findAll(Long sessionId) {
-        return (List<Location>)new LocationDAO().getSession().createQuery(
-                "select l from Location l where l.session.uniqueId=:sessionId"
+        return LocationDAO.getInstance().getSession().createQuery(
+                "select l from Location l where l.session.uniqueId=:sessionId", Location.class
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
     public static List<Location> findAllEventRooms(Long departmentId) {
-        return (List<Location>)new LocationDAO().getSession().createQuery(
-                "select l from Location l where l.eventDepartment.uniqueId=:departmentId"
+        return LocationDAO.getInstance().getSession().createQuery(
+                "select l from Location l where l.eventDepartment.uniqueId=:departmentId", Location.class
                 ).setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
     public static List<Room> findAllRooms(Long sessionId) {
-        return (List<Room>)new LocationDAO().getSession().createQuery(
-                "select l from Room l where l.session.uniqueId=:sessionId"
+        return LocationDAO.getInstance().getSession().createQuery(
+                "select l from Room l where l.session.uniqueId=:sessionId", Room.class
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
     
     public static List<NonUniversityLocation> findAllNonUniversityLocations(Long sessionId) {
-        return (List<NonUniversityLocation>) new LocationDAO().getSession().createQuery(
-                "select l from NonUniversityLocation l where l.session.uniqueId=:sessionId"
+        return  LocationDAO.getInstance().getSession().createQuery(
+                "select l from NonUniversityLocation l where l.session.uniqueId=:sessionId", NonUniversityLocation.class
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 
@@ -826,20 +821,19 @@ public abstract class Location extends BaseLocation implements Comparable {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	Query q = LocationDAO.getInstance().getSession()
+    	Query<Object[]> q = LocationDAO.getInstance().getSession()
     	    .createQuery("select distinct r.uniqueId, e.clazz.uniqueId from " +
     	    		"ClassEvent e inner join e.meetings m, Location r where " +
             		"r.session.uniqueId=:sessionId and r.permanentId=m.locationPermanentId and " + // link Location r with Meeting m
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")")
+            		"m.meetingDate in ("+datesStr+")", Object[].class)
             .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
             .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
             .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
     	for (int i=0; i<dates.size(); i++) {
     		q.setParameter("date"+i, dates.elementAt(i), org.hibernate.type.DateType.INSTANCE);
     	}
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> ids = table.get((Long)o[0]);
             if (ids==null) {
             	ids = new HashSet<Long>();
@@ -856,12 +850,12 @@ public abstract class Location extends BaseLocation implements Comparable {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	Query q = LocationDAO.getInstance().getSession()
+    	Query<Long> q = LocationDAO.getInstance().getSession()
     	    .createQuery("select distinct e.clazz.uniqueId from " +
     	    		"ClassEvent e inner join e.meetings m where " +
             		"m.locationPermanentId=:permanentId and " +
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-            		"m.meetingDate in ("+datesStr+")") // and date
+            		"m.meetingDate in ("+datesStr+")", Long.class) // and date
             .setParameter("permanentId", getPermanentId(), org.hibernate.type.LongType.INSTANCE)
             .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
             .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
@@ -891,19 +885,18 @@ public abstract class Location extends BaseLocation implements Comparable {
 	    		permIds += permanentId;
 	    		cntPermIds++;
 	    	}
-	    	Query q = LocationDAO.getInstance().getSession()
+	    	Query<Object[]> q = LocationDAO.getInstance().getSession()
 	    	    .createQuery("select distinct m.locationPermanentId, e.clazz.uniqueId from " +
 	    	    		"ClassEvent e inner join e.meetings m where " +
 	            		"m.locationPermanentId in ("+permIds+") and " +
 	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1") // and date
+	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class) // and date
 	            .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
 	            .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
 	    	for (int i=0; i<dates.size(); i++) {
 	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)), org.hibernate.type.DateType.INSTANCE);
 	    	}
-	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-	            Object[] o = (Object[])i.next();
+	        for (Object[] o: q.setCacheable(true).list()) {
 	            Set<Long> ids = table.get((Long)o[0]);
 	            if (ids==null) {
 	            	ids = new HashSet<Long>();
@@ -937,20 +930,19 @@ public abstract class Location extends BaseLocation implements Comparable {
 	    		cntPermIds++;
 	    	}
 	
-	    	Query q = LocationDAO.getInstance().getSession()
+	    	Query<Object[]> q = LocationDAO.getInstance().getSession()
 	    	    .createQuery("select distinct m.locationPermanentId, e from " +
 	    	    		"Event e inner join e.meetings m where " +
 	    	    		"type(e)!=ClassEvent and "+
 	            		"m.locationPermanentId in ("+permIds+") and " +
 	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1") // and date
+	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class) // and date
 	            .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
 	            .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
 	    	for (int i=0; i<dates.size(); i++) {
 	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)), org.hibernate.type.DateType.INSTANCE);
 	    	}
-	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-	            Object[] o = (Object[])i.next();
+	        for (Object[] o: q.setCacheable(true).list()) {
 	            Set<Event> events = table.get((Long)o[0]);
 	            if (events==null) {
 	            	events = new HashSet<Event>();
@@ -1051,10 +1043,10 @@ public abstract class Location extends BaseLocation implements Comparable {
     
 	@Transient
     public boolean isUsed() {
-    	Number nrMeetings = (Number)LocationDAO.getInstance().getSession().createQuery(
+    	Number nrMeetings = LocationDAO.getInstance().getSession().createQuery(
     			"select count(m) from Meeting m, Location l where " +
     			"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
-    			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate and m.approvalStatus <= 1") // and m.approvedDate is not null
+    			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate and m.approvalStatus <= 1", Number.class) // and m.approvedDate is not null
     			.setParameter("locId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
     			.setCacheable(true).uniqueResult();
     	return nrMeetings.intValue() > 0;
@@ -1118,13 +1110,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     public abstract Set<? extends LocationPicture> getRoomPictures();
     
     public static Location findByName(org.hibernate.Session hibSession, Long sessionId, String name) {
-    	Room room = (Room)hibSession.createQuery(
-    			"from Room r where r.session.uniqueId = :sessionId and (r.buildingAbbv || ' ' || r.roomNumber) = :name"
+    	Room room = hibSession.createQuery(
+    			"from Room r where r.session.uniqueId = :sessionId and (r.buildingAbbv || ' ' || r.roomNumber) = :name", Room.class
     			).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
     			.setMaxResults(1).setCacheable(true).uniqueResult();
     	if (room != null) return room;
-    	return (NonUniversityLocation)hibSession.createQuery(
-    			"from NonUniversityLocation l where l.session.uniqueId = :sessionId and l.name = :name"
+    	return hibSession.createQuery(
+    			"from NonUniversityLocation l where l.session.uniqueId = :sessionId and l.name = :name", NonUniversityLocation.class
     			).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
     			.setMaxResults(1).setCacheable(true).uniqueResult();
     }
@@ -1141,7 +1133,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		Map<Long, Location> locations = new HashMap<Long, Location>();
 		Set<Long> blacklist = new HashSet<Long>();
 		
-		for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
+		for (Object[] o: LocationDAO.getInstance().getSession().createQuery(
     			"select l.uniqueId, f from Room l, Room f where " +
     			"l.uniqueId in :ids and f.session.uniqueId = :sessionId and " +
     			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
@@ -1151,13 +1143,13 @@ public abstract class Location extends BaseLocation implements Comparable {
     			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.building.abbreviation = l.building.abbreviation and f.roomNumber = l.roomNumber and f.capacity = l.capacity)))) " + // name & capacity match
-    			"order by f.session.sessionBeginDateTime"
+    			"order by f.session.sessionBeginDateTime", Object[].class
     			).setParameterList("ids", ids).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (locations.put((Long)o[0], (Location)o[1]) != null)
     			blacklist.add((Long)o[0]);
     	}
 		
-		for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
+		for (Object[] o: LocationDAO.getInstance().getSession().createQuery(
     			"select l.uniqueId, f from NonUniversityLocation l, NonUniversityLocation f where " +
     			"l.uniqueId in :ids and f.session.uniqueId = :sessionId and " +
     			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
@@ -1167,7 +1159,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
-    			"order by f.session.sessionBeginDateTime"
+    			"order by f.session.sessionBeginDateTime", Object[].class
     			).setParameterList("ids", ids).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
     		if (locations.put((Long)o[0], (Location)o[1]) != null)
     			blacklist.add((Long)o[0]);
@@ -1193,8 +1185,8 @@ public abstract class Location extends BaseLocation implements Comparable {
 	public abstract void setAllowedServices(Set<EventServiceProvider> services);
 	
 	public static List<Location> findAllLocations(Long sessionId) {
-        return (List<Location>)new LocationDAO().getSession().createQuery(
-                "select l from Location l where l.session.uniqueId=:sessionId"
+        return LocationDAO.getInstance().getSession().createQuery(
+                "select l from Location l where l.session.uniqueId=:sessionId", Location.class
                 ).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     }
 	

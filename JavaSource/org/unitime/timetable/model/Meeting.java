@@ -21,7 +21,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -126,15 +125,15 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 			session = getEvent().getSession();
 		}
 		if (session!=null) {
-		    location = (Location)RoomDAO.getInstance().getSession().createQuery(
-		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId")
+		    location = RoomDAO.getInstance().getSession().createQuery(
+		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
 		            .setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 		            .setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
 		            .setCacheable(true)
 		            .uniqueResult();
 		    if (location==null)
-		        location = (Location)RoomDAO.getInstance().getSession().createQuery(
-		            "select r from NonUniversityLocation r where r.permanentId = :permId and r.session.uniqueId=:sessionId")
+		        location = RoomDAO.getInstance().getSession().createQuery(
+		            "select r from NonUniversityLocation r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
 		            .setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 		            .setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
 		            .setCacheable(true)
@@ -142,8 +141,8 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		    return location;
 		}
 		long distance = -1;
-		List<Location> locations = (List<Location>)LocationDAO.getInstance().getSession().createQuery(
-				"from Location where permanentId = :permId").
+		List<Location> locations = LocationDAO.getInstance().getSession().createQuery(
+				"from Location where permanentId = :permId", Location.class).
 				setParameter("permId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).list();
 		if (!locations.isEmpty()) {
@@ -172,7 +171,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	    if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
 		return (MeetingDAO.getInstance()).getSession().createQuery(
 		        "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1")
+		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Meeting.class)
 		        .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
 		        .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
 		        .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
@@ -186,7 +185,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus = 1")
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus = 1", Meeting.class)
                 .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
                 .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
@@ -198,7 +197,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     public static List<Meeting> findOverlaps(Date meetingDate, int startPeriod, int stopPeriod, Long locationPermId){
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId and m.approvalStatus <= 1")
+                "m.locationPermanentId = :locPermId and m.approvalStatus <= 1", Meeting.class)
                 .setParameter("meetingDate", meetingDate, org.hibernate.type.DateType.INSTANCE)
                 .setParameter("stopPeriod", stopPeriod, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("startPeriod", startPeriod, org.hibernate.type.IntegerType.INSTANCE)
@@ -207,15 +206,15 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     }
 
     public boolean hasTimeRoomOverlaps(){
-        return ((Number)MeetingDAO.getInstance().getSession().createQuery(
+        return MeetingDAO.getInstance().getSession().createQuery(
                 "select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1")
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Number.class)
                 .setParameter("meetingDate", getMeetingDate(), org.hibernate.type.DateType.INSTANCE)
                 .setParameter("stopPeriod", getStopPeriod(), org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("startPeriod", getStartPeriod(), org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("locPermId", getLocationPermanentId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("uniqueId", this.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-                .uniqueResult()).longValue()>0;
+                .uniqueResult().longValue()>0;
 	}
 	
 	public String toString() {

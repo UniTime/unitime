@@ -22,7 +22,6 @@ package org.unitime.timetable.dataexchange;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Element;
@@ -54,8 +53,8 @@ public class PosMajorImport extends BaseImport {
             
             Map<String, PosMajor> id2major = new Hashtable<String, PosMajor>();
             Map<String, PosMajor> code2major = new Hashtable<String, PosMajor>();
-            for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
-            		"from PosMajor where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (PosMajor major: getHibSession().createQuery(
+            		"from PosMajor where session.uniqueId=:sessionId", PosMajor.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (major.getExternalUniqueId() != null)
             		id2major.put(major.getExternalUniqueId(), major);
             	for (AcademicArea area: major.getAcademicAreas())
@@ -63,8 +62,8 @@ public class PosMajorImport extends BaseImport {
             }
             
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
-            for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-            		"from AcademicArea where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (AcademicArea area: getHibSession().createQuery(
+            		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
             }
             

@@ -1549,7 +1549,7 @@ public abstract class RoomSummaryReportsHelper {
 	public List<List<Object>> getUtilQueryResultsForQuery(String query, ArrayList<Object> headerRow) {
 		ArrayList<List<Object>> headerPlusResults = new ArrayList<List<Object>>();
 		headerPlusResults.add(headerRow);
-		RoomDAO rdao = new RoomDAO();
+		RoomDAO rdao = RoomDAO.getInstance();
 		org.hibernate.Session hibSession = rdao.getSession();
 		headerPlusResults.addAll((List<List<Object>>) hibSession.createNativeQuery(query).list());
 		return headerPlusResults;

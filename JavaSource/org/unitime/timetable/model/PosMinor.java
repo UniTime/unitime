@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-
-
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -30,8 +27,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import org.unitime.timetable.model.base.BasePosMinor;
 import org.unitime.timetable.model.dao.PosMinorDAO;
-
-
 
 /**
  * @author Tomas Muller
@@ -57,12 +52,12 @@ public class PosMinor extends BasePosMinor {
 /*[CONSTRUCTOR MARKER END]*/
 
     public static PosMinor findByCode(Long sessionId, String code) {
-        return (PosMinor)new PosMinorDAO().
+        return PosMinorDAO.getInstance().
         getSession().
         createQuery(
                 "select a from PosMinor a where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.code=:code").
+                "a.code=:code", PosMinor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
@@ -71,12 +66,12 @@ public class PosMinor extends BasePosMinor {
     
     public static PosMinor findByCodeAcadAreaId(Long sessionId, String code, Long areaId) {
         if (areaId==null) return findByCode(sessionId, code);
-        return (PosMinor)new PosMinorDAO().
+        return PosMinorDAO.getInstance().
         getSession().
         createQuery(
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
-                "a.uniqueId=:areaId and p.code=:code").
+                "a.uniqueId=:areaId and p.code=:code", PosMinor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("areaId", areaId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
@@ -86,12 +81,12 @@ public class PosMinor extends BasePosMinor {
 
     public static PosMinor findByCodeAcadAreaAbbv(Long sessionId, String code, String areaAbbv) {
         if (areaAbbv==null || areaAbbv.trim().length()==0) return findByCode(sessionId, code);
-        return (PosMinor)new PosMinorDAO().
+        return PosMinorDAO.getInstance().
         getSession().
         createQuery(
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
-                "a.academicAreaAbbreviation=:areaAbbv and p.code=:code").
+                "a.academicAreaAbbreviation=:areaAbbv and p.code=:code", PosMinor.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("areaAbbv", areaAbbv, org.hibernate.type.StringType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).

@@ -143,6 +143,4 @@ public class OccupancyHelper extends RoomSummaryReportsHelper {
 	      .append(label);
 	}
 
-
-
 }

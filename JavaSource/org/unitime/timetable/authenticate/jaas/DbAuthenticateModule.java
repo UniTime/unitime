@@ -155,7 +155,7 @@ public class DbAuthenticateModule extends AuthenticateModule {
 		String p = (String) userProps.get("password");
 
 		// Check username/password with DB
-		User u = new UserDAO().get(n);
+		User u = UserDAO.getInstance().get(n);
 		if (u != null) {
 			String pwd = u.getPassword();
 

@@ -235,10 +235,10 @@ public class TimetableGridContext implements Serializable {
 		if (id == null) return null;
     	if (iInstructionalTypeColors == null) {
     		iInstructionalTypeColors = new HashMap<Integer, String>();
-    		List<ItypeDesc> itypes = (List<ItypeDesc>)ItypeDescDAO.getInstance().getSession().createQuery(
+    		List<ItypeDesc> itypes = ItypeDescDAO.getInstance().getSession().createQuery(
     				"from ItypeDesc where " +
     				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session = :sessionId) " +
-    				"order by itype"
+    				"order by itype", ItypeDesc.class
     				).setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE).list();
     		for (ItypeDesc it: itypes) {
     			if (it.getParent() == null) {

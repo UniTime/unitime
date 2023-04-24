@@ -49,7 +49,7 @@ public class RolesConnector extends ApiConnector {
 		helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiRetrieveRoles);
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		List<Session> sessions = helper.getHibSession().createQuery("from Session order by academicInitiative, sessionBeginDateTime").list();
+		List<Session> sessions = helper.getHibSession().createQuery("from Session order by academicInitiative, sessionBeginDateTime", Session.class).list();
 		List<SessionInfo> response = new ArrayList<SessionInfo>();
 
 		String externalId = helper.getParameter("id");

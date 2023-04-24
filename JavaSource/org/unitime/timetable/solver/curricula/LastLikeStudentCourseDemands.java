@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.curricula;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
@@ -77,10 +76,10 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 	protected Hashtable<String, Set<WeightedStudentId>> loadSubject(SubjectArea subject) {
 		Hashtable<String, Set<WeightedStudentId>> demandsForCourseNbr = new Hashtable<String, Set<WeightedStudentId>>();
 		iDemandsForSubjectCourseNbr.put(subject.getUniqueId(), demandsForCourseNbr);
-		for (Object[] d: (List<Object[]>)iHibSession.createQuery(
+		for (Object[] d: iHibSession.createQuery(
 				"select distinct d.courseNbr, d.coursePermId, s, d.priority " +
 				"from LastLikeCourseDemand d inner join d.student s left join fetch s.areaClasfMajors where " +
-				"d.subjectArea.uniqueId = :subjectAreaId")
+				"d.subjectArea.uniqueId = :subjectAreaId", Object[].class)
 				.setParameter("subjectAreaId", subject.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String courseNbr = (String)d[0];
 			String coursePermId = (String)d[1];
@@ -161,9 +160,9 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 					"x.subjectArea.session.uniqueId = :sessionId and co.demandOffering.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.demandOffering.courseNbr=x.courseNbr"
 			};
 			for (String where: checks) {
-				for (Object[] o : (List<Object[]>)iHibSession.createQuery(
+				for (Object[] o : iHibSession.createQuery(
 						"select distinct s, co " +
-						"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " + where)
+						"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " + where, Object[].class)
 						.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).list()) {
 					Student student = (Student)o[0];

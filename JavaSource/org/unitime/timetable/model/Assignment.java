@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -54,8 +53,6 @@ import org.unitime.timetable.model.dao.ConstraintInfoDAO;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
-
-
 
 
 /**
@@ -114,7 +111,7 @@ public class Assignment extends BaseAssignment {
 					}
 				}
 			} catch (LazyInitializationException e) {
-				org.hibernate.Session session = (new AssignmentInfoDAO()).getSession();
+				org.hibernate.Session session = (AssignmentInfoDAO.getInstance()).getSession();
 				SolverInfoDef def = SolverInfoDef.findByName(session,name);
 				if (def==null) return null;
 				AssignmentInfo info = session.createQuery(
@@ -154,7 +151,7 @@ public class Assignment extends BaseAssignment {
 					}
 				}
 			} catch (LazyInitializationException e) {
-				org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
+				org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 				Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 						"c.definition.name=:name and a.uniqueId=:assignmentId");
 				q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
@@ -184,7 +181,7 @@ public class Assignment extends BaseAssignment {
 				}
 			}
 		} catch (LazyInitializationException e) {
-			org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
+			org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 			Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 					"c.definition.name=:name and a.uniqueId=:assignmentId");
 			q.setParameter("assignmentId", getUniqueId(), org.hibernate.type.LongType.INSTANCE);
@@ -323,7 +320,7 @@ public class Assignment extends BaseAssignment {
 		try {
 			return super.getRooms();
 		} catch (LazyInitializationException e) {
-			(new AssignmentDAO()).getSession().merge(this);
+			(AssignmentDAO.getInstance()).getSession().merge(this);
 			return super.getRooms();
 		}
 	}

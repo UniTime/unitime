@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -38,7 +37,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseTimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -80,7 +78,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 	}
 	
 	public static TimetableManager getWithUniqueId(Long uniqueId){
-		TimetableManagerDAO tmDao = new TimetableManagerDAO();
+		TimetableManagerDAO tmDao = TimetableManagerDAO.getInstance();
 		return(tmDao.get(uniqueId));
 	}
 		
@@ -213,15 +211,10 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
      * @return Vector of TimetableManager objects
      */
 	@Transient
-    public static synchronized Vector getManagerList() {
-        
-        TimetableManagerDAO tdao = new TimetableManagerDAO();
-        
-        List l = tdao.findAll(Order.asc("lastName"), Order.asc("firstName"));
-        if (l!=null)
-            return new Vector(l);
-        
-        return null;
+    public static List<TimetableManager> getManagerList() {
+		return TimetableManagerDAO.getInstance().getSession().createQuery(
+				"from TimetableManager order by lastName, firstName", TimetableManager.class)
+				.setCacheable(true).list();
     }
     
 	@Transient

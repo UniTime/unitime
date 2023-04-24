@@ -75,8 +75,8 @@ public class AttachmentTypes implements AdminTable {
 			r.setField(5, AttachmentType.VisibilityFlag.SHOW_ROOMS_TABLE.in(atype.getVisibility()) ? "true" : "false");
 			r.setField(6, AttachmentType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(atype.getVisibility()) ? "true" : "false");
 			int used =
-					((Number)hibSession.createQuery(
-							"select count(p) from LocationPicture p where p.type.uniqueId = :uniqueId")
+					(hibSession.createQuery(
+							"select count(p) from LocationPicture p where p.type.uniqueId = :uniqueId", Number.class)
 							.setParameter("uniqueId", atype.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}

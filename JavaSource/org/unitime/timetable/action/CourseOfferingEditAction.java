@@ -265,8 +265,8 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         Transaction tx = null;
 
         try {
-            OfferingConsentTypeDAO odao = new OfferingConsentTypeDAO();
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
+            OfferingConsentTypeDAO odao = OfferingConsentTypeDAO.getInstance();
+	        CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
             hibSession = cdao.getSession();
             tx = hibSession.beginTransaction();
 
@@ -305,7 +305,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		            String percShare = form.getPercentShares(idx);
 		            idx++;
 		            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
-		                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+		                DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
 		                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
 		                if (instructor != null) {
 		                	OfferingCoordinator coordinator = null;
@@ -350,7 +350,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        if (!limitedEdit) {
 		        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
 		        	LastLikeCourseDemand llcd = null;
-		        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString();
+		        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), co).toString();
 		        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
 		        		llcd = (LastLikeCourseDemand)it.next();
 		        		if (llcd.getCoursePermId() == null){
@@ -542,7 +542,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
             co.setDemand(Integer.valueOf(0));
 		    co.setNbrExpectedStudents(Integer.valueOf(0));
 		    co.setIsControl(Boolean.valueOf(true));
-		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
+		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), co).toString());
 		    subjArea.getCourseOfferings().add(co);
 
 	        // Add new Instructional Offering
@@ -569,7 +569,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	            String percShare = form.getPercentShares(idx);
 	            idx++;
 	            if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
-	                DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
+	                DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instructorId));
 	                TeachingResponsibility responsibility = (Constants.BLANK_OPTION_VALUE.equals(responsibilityId) || Preference.BLANK_PREF_VALUE.equals(responsibilityId) ? null : TeachingResponsibilityDAO.getInstance().get(Long.valueOf(responsibilityId)));
 	                if (instructor != null) {
 	                	OfferingCoordinator coordinator = new OfferingCoordinator();
@@ -702,7 +702,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         // Load Course Offering
         Long courseOfferingId = Long.valueOf(crsOfferingId);
 
-        CourseOfferingDAO cdao = new CourseOfferingDAO();
+        CourseOfferingDAO cdao = CourseOfferingDAO.getInstance();
         final CourseOffering co = cdao.get(courseOfferingId);
 
         InstructionalOffering io = co.getInstructionalOffering();
@@ -895,7 +895,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         LookupTables.setupCourseCreditTypes(request); //Course Credit Types
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
 
-        final CourseOffering co = new CourseOfferingDAO().get(form.getCourseOfferingId());
+        final CourseOffering co = CourseOfferingDAO.getInstance().get(form.getCourseOfferingId());
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {

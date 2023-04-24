@@ -40,8 +40,6 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.security.UserContext;
 
-
-
 /**
  * Various constants used in timetabling project.
  * @author Tomas Muller, Stephanie Schluttenhofer

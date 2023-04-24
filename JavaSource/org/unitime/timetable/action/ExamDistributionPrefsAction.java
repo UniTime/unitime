@@ -186,12 +186,12 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 	        	form.setSubjectArea(0, Long.valueOf(request.getAttribute("subjectAreaId").toString()));
 	        }
 	        if (request.getAttribute("courseOffrId")!=null) {
-	            CourseOffering course = new CourseOfferingDAO().get(Long.valueOf(request.getAttribute("courseOffrId").toString()));
+	            CourseOffering course = CourseOfferingDAO.getInstance().get(Long.valueOf(request.getAttribute("courseOffrId").toString()));
 	            form.setSubjectArea(0, course.getSubjectArea().getUniqueId());
 	            form.setCourseNbr(0, course.getUniqueId());
 	        }
 	        if (request.getParameter("examId")!=null) {
-	            Exam exam = new ExamDAO().get(Long.valueOf(request.getParameter("examId")));
+	            Exam exam = ExamDAO.getInstance().get(Long.valueOf(request.getParameter("examId")));
 	            form.getExam().add(exam.getUniqueId());
 	            form.getSubjectArea().add(exam.firstSubjectArea().getUniqueId());
                 form.getCourseNbr().add(exam.firstCourseOffering().getUniqueId());
@@ -257,7 +257,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 
         if (form.getDistType()!=null && !form.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(form.getDistType())));
+        	DistributionType dist = (DistributionTypeDAO.getInstance().get(Long.valueOf(form.getDistType())));
         	form.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
@@ -359,7 +359,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
     	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDetail);
     	
         // Get distribution pref info
-        DistributionPref dp = new DistributionPrefDAO().get(Long.valueOf(distPrefId));
+        DistributionPref dp = DistributionPrefDAO.getInstance().get(Long.valueOf(distPrefId));
         form.setDistType(dp.getDistributionType().getUniqueId().toString());
         form.setDescription(dp.getDistributionType().getDescr());
         form.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
@@ -390,7 +390,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
         
         // Create distribution preference
         DistributionPref dp = null;
-        DistributionPrefDAO dpDao = new DistributionPrefDAO();
+        DistributionPrefDAO dpDao = DistributionPrefDAO.getInstance();
         Transaction tx = null;
         org.hibernate.Session hibSession = dpDao.getSession();
         HashSet relatedExams = new HashSet();
@@ -412,7 +412,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
     			dp.setDistributionObjects(s);
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(form.getDistType()), hibSession));
+            dp.setDistributionType(DistributionTypeDAO.getInstance().get( Long.valueOf(form.getDistType()), hibSession));
             dp.setGrouping(-1);
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(form.getPrefLevel()) ));
         
@@ -425,7 +425,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
         	    Long examId = (o instanceof Long ? (Long) o : Long.valueOf(o.toString()));
         	    if (examId<0) continue;
         	    
-        	    Exam exam = new ExamDAO().get(examId, hibSession);
+        	    Exam exam = ExamDAO.getInstance().get(examId, hibSession);
         	    if (exam==null) continue;
         	    if (!addedExams.add(exam)) continue;
         	    relatedExams.add(exam);
@@ -475,7 +475,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 
         try {
             
-	        DistributionPrefDAO dpDao = new DistributionPrefDAO();
+	        DistributionPrefDAO dpDao = DistributionPrefDAO.getInstance();
 	        org.hibernate.Session hibSession = dpDao.getSession();
 	        tx = hibSession.getTransaction();
 	        if (tx==null || !tx.isActive())

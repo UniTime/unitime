@@ -67,8 +67,8 @@ public class InstructionalMethods implements AdminTable {
 			r.setField(1, im.getLabel());
 			r.setField(2, im.isVisible() ? "true" : "false");
 			int used =
-					((Number)hibSession.createQuery(
-							"select count(c) from InstrOfferingConfig c where c.instructionalMethod.uniqueId = :uniqueId")
+					(hibSession.createQuery(
+							"select count(c) from InstrOfferingConfig c where c.instructionalMethod.uniqueId = :uniqueId", Number.class)
 							.setParameter("uniqueId", im.getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}

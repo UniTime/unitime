@@ -20,19 +20,15 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import java.util.List;
 
-import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseCourseCreditFormat;
 import org.unitime.timetable.model.dao.CourseCreditFormatDAO;
 import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
-
-
 
 
 /**
@@ -60,14 +56,16 @@ public class CourseCreditFormat extends BaseCourseCreditFormat {
 	public static String COURSE_CREDIT_FORMAT_ATTR_NAME = "courseCreditFormatList";
 	
 	@Transient
-	public synchronized static List<CourseCreditFormat> getCourseCreditFormatList() {
-		return CourseCreditFormatDAO.getInstance().findAll(Order.asc("label"));
+	public static List<CourseCreditFormat> getCourseCreditFormatList() {
+		return CourseCreditFormatDAO.getInstance().getSession().createQuery(
+				"from CourseCreditFormat order by label", CourseCreditFormat.class)
+				.setCacheable(true).list();
 	}
 	
 	public static CourseCreditFormat getCourseCreditForReference(String referenceString){
 		if (referenceString == null || referenceString.isEmpty()) return null;
-		return (CourseCreditFormat)CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
-				"from CourseCreditFormat where reference = :reference")
+		return CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
+				"from CourseCreditFormat where reference = :reference", CourseCreditFormat.class)
 				.setParameter("reference", referenceString, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	

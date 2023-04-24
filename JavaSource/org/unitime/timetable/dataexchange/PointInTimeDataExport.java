@@ -22,7 +22,6 @@ package org.unitime.timetable.dataexchange;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -365,8 +364,8 @@ public class PointInTimeDataExport extends BaseExport {
 		TreeSet<InstructionalOffering> offerings = new TreeSet<InstructionalOffering>(new InstructionalOfferingComparator(null));
 		for(SubjectArea sa : acadSession.getSubjectAreas()){
 			info("Fetching Instructional Offerings for Subject Area:  " + sa.getSubjectAreaAbbreviation());
-			for (Object[] objects : (List<Object[]>) getHibSession()
-					.createQuery(querySb.toString())
+			for (Object[] objects : getHibSession()
+					.createQuery(querySb.toString(), Object[].class)
 					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
@@ -391,8 +390,8 @@ public class PointInTimeDataExport extends BaseExport {
 		
 		ArrayList<AcademicArea> academicAreas = new ArrayList<AcademicArea>();
 		info("Fetching AcademicArea");
-		academicAreas.addAll((List<AcademicArea>) getHibSession()
-			.createQuery(querySb.toString())
+		academicAreas.addAll(getHibSession()
+			.createQuery(querySb.toString(), AcademicArea.class)
 			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
@@ -413,8 +412,8 @@ public class PointInTimeDataExport extends BaseExport {
 		
 		ArrayList<TimePattern> timePatterns = new ArrayList<TimePattern>();
 		info("Fetching Time Patterns");
-		timePatterns.addAll((List<TimePattern>) getHibSession()
-			.createQuery(querySb.toString())
+		timePatterns.addAll(getHibSession()
+			.createQuery(querySb.toString(), TimePattern.class)
 			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
@@ -447,14 +446,14 @@ public class PointInTimeDataExport extends BaseExport {
 
 		ArrayList<Location> locations = new ArrayList<Location>();
 		info("Fetching Rooms");
-		locations.addAll((List<Location>) getHibSession()
-			.createQuery(querySb1.toString())
+		locations.addAll(getHibSession()
+			.createQuery(querySb1.toString(), Location.class)
 			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
 		info("Fetching Non Unversity Locations");
-		locations.addAll((List<Location>) getHibSession()
-			.createQuery(querySb2.toString())
+		locations.addAll(getHibSession()
+			.createQuery(querySb2.toString(), Location.class)
 			.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 			.setFetchSize(1000)
 			.list());
@@ -490,8 +489,8 @@ public class PointInTimeDataExport extends BaseExport {
 		ArrayList<StudentClassEnrollment> students = new ArrayList<StudentClassEnrollment>();
 		for(SubjectArea sa : acadSession.getSubjectAreas()){
 				info("Fetching Student Class Enrollments for Subject Area:  " + sa.getSubjectAreaAbbreviation());
-				students.addAll((List<StudentClassEnrollment>) getHibSession()
-					.createQuery(querySb.toString())
+				students.addAll(getHibSession()
+					.createQuery(querySb.toString(), StudentClassEnrollment.class)
 					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
@@ -546,14 +545,14 @@ public class PointInTimeDataExport extends BaseExport {
 		ArrayList<Object[]> events = new ArrayList<Object[]>();
 		for(SubjectArea sa : acadSession.getSubjectAreas()){
 			info("Fetching Class Events for Subject Area:  " + sa.getSubjectAreaAbbreviation());
-			events.addAll((List<Object[]>) getHibSession()
-					.createQuery(querySb1.toString())
+			events.addAll(getHibSession()
+					.createQuery(querySb1.toString(), Object[].class)
 					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
 					.list());
-			events.addAll((List<Object[]>) getHibSession()
-					.createQuery(querySb2.toString())
+			events.addAll(getHibSession()
+					.createQuery(querySb2.toString(), Object[].class)
 					.setParameter("sessId", acadSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("saId", sa.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setFetchSize(1000)
@@ -1212,8 +1211,6 @@ public class PointInTimeDataExport extends BaseExport {
 		}
 
 	}
-
-
 
 	private void exportClassMeeting(Element meetingElement, Meeting meeting, Class_ clazz, Location location) {
 		int calcMinutesPerMeeting = calcTotalMinPerMeeting(meeting); 

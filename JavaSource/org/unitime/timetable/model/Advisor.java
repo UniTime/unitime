@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -59,8 +58,8 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
     }
 	
 	public static Advisor findByExternalId(String externalId, Long sessionId) {
-		return (Advisor) AdvisorDAO.getInstance().getSession().createQuery(
-				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId"
+		return  AdvisorDAO.getInstance().getSession().createQuery(
+				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId", Advisor.class
 				).setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
     

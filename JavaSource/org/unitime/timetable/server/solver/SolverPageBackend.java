@@ -204,8 +204,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
         	if (request.hasParameters()) {
-        		for (SolverParameterDef parameter: (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
-	        			"from SolverParameterDef where uniqueId in :uniqueIds")
+        		for (SolverParameterDef parameter: SolverParameterDefDAO.getInstance().getSession().createQuery(
+	        			"from SolverParameterDef where uniqueId in :uniqueIds", SolverParameterDef.class)
 	        			.setParameterList("uniqueIds", request.getParameters().keySet()).list()) {
         			String value = request.getParameter(parameter.getUniqueId());
         			if (parameter.getName().startsWith("Save.")) {
@@ -242,8 +242,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			if (solver == null) throw new GwtRpcException(MESSAGES.warnSolverNotStarted());
         	if (solver.isWorking()) throw new GwtRpcException(MESSAGES.warnSolverIsWorking());
         	if (request.hasParameters()) {
-        		for (SolverParameterDef parameter: (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
-	        			"from SolverParameterDef where uniqueId in :uniqueIds")
+        		for (SolverParameterDef parameter: SolverParameterDefDAO.getInstance().getSession().createQuery(
+	        			"from SolverParameterDef where uniqueId in :uniqueIds", SolverParameterDef.class)
 	        			.setParameterList("uniqueIds", request.getParameters().keySet()).list()) {
         			String value = request.getParameter(parameter.getUniqueId());
         			if (parameter.getName().startsWith("Save.")) {
@@ -439,8 +439,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		default:
 			 throw new IllegalArgumentException(MESSAGES.errorSolverInvalidType(request.getType().name()));
 		}
-		List<SolverParameterDef> parameters = (List<SolverParameterDef>)SolverParameterDefDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef d where d.visible = true and d.group.type = :type and d.group.name = :group order by d.order")
+		List<SolverParameterDef> parameters = SolverParameterDefDAO.getInstance().getSession().createQuery(
+				"from SolverParameterDef d where d.visible = true and d.group.type = :type and d.group.name = :group order by d.order", SolverParameterDef.class)
 				.setParameter("type", type.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setParameter("group", group, org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
 		for (SolverParameterDef def: parameters) {
 			SolverParameter p = new SolverParameter();
@@ -453,8 +453,8 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				p.setValue(request.getParameter(p.getId()));
 			response.addParameter(p);
 		}
-		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverPredefinedSetting s where s.appearance = :appearance"
+		List<SolverPredefinedSetting> configs = SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
+				"from SolverPredefinedSetting s where s.appearance = :appearance", SolverPredefinedSetting.class
 				).setParameter("appearance", appearance.ordinal(), org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
 		
 		response.setConfigurationId(request.getConfigurationId());

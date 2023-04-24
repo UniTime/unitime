@@ -104,8 +104,8 @@ public class EventStatuses implements AdminTable {
 		long id = 0;
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
-			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+			for (RoomType roomType: hibSession.createQuery(
+					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
@@ -118,8 +118,8 @@ public class EventStatuses implements AdminTable {
 				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
 				for (int i = 0; i < extra.size(); i++)
 					r.setField(7 + i, MESSAGES.notApplicable(), false);
-				for (Room room: (List<Room>)hibSession.createQuery(
-						"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber")
+				for (Room room: hibSession.createQuery(
+						"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber", Room.class)
 						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("roomTypeId", roomType.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					r = data.addRecord(room.getUniqueId(), false);
 					r.setField(0, String.valueOf(id));
@@ -136,8 +136,8 @@ public class EventStatuses implements AdminTable {
 					}
 				}
 			}
-			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+			for (RoomType roomType: hibSession.createQuery(
+					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
@@ -150,8 +150,8 @@ public class EventStatuses implements AdminTable {
 				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
 				for (int i = 0; i < extra.size(); i++)
 					r.setField(7 + i, MESSAGES.notApplicable(), false);
-				for (NonUniversityLocation room: (List<NonUniversityLocation>)hibSession.createQuery(
-						"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name")
+				for (NonUniversityLocation room: hibSession.createQuery(
+						"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name", NonUniversityLocation.class)
 						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("roomTypeId", roomType.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					r = data.addRecord(room.getUniqueId(), false);
 					r.setField(0, String.valueOf(id));
@@ -178,8 +178,8 @@ public class EventStatuses implements AdminTable {
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
-			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+			for (RoomType roomType: hibSession.createQuery(
+					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
@@ -208,8 +208,8 @@ public class EventStatuses implements AdminTable {
 					}
 				}
 			}
-			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+			for (RoomType roomType: hibSession.createQuery(
+					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
@@ -238,8 +238,8 @@ public class EventStatuses implements AdminTable {
 					}
 				}
 			}
-			for (Location location: (List<Location>)hibSession.createQuery(
-					"from Location where eventDepartment.uniqueId = :departmentId")
+			for (Location location: hibSession.createQuery(
+					"from Location where eventDepartment.uniqueId = :departmentId", Location.class)
 					.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Record r = data.getRecord(location.getUniqueId());
 				if (r != null)
@@ -324,8 +324,8 @@ public class EventStatuses implements AdminTable {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
 			if (record.getField(1).equals(department.getLabel())) {
-				for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-						"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+				for (RoomType roomType: hibSession.createQuery(
+						"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);
@@ -353,8 +353,8 @@ public class EventStatuses implements AdminTable {
 						return;
 					}
 				}
-				for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-						"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
+				for (RoomType roomType: hibSession.createQuery(
+						"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label", RoomType.class)
 						.setParameter("departmentId", department.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);

@@ -192,9 +192,9 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 				} else {
 					info.addAvailableCredit(credLo.floatValue());
 				}
-				for (DepartmentalInstructor di: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
+				for (DepartmentalInstructor di: helper.getHibSession().createQuery(
 						"select i from DepartmentalInstructor i inner join i.department.subjectAreas sa where " +
-						"i.department.session = :sessionId and sa.subjectAreaAbbreviation = :subject and i.externalUniqueId is not null"
+						"i.department.session = :sessionId and sa.subjectAreaAbbreviation = :subject and i.externalUniqueId is not null", DepartmentalInstructor.class
 						).setCacheable(true).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("subject", subject, org.hibernate.type.StringType.INSTANCE).list()) {
 					info.addInstructor(di.getUniqueId(), nameFormat.format(di));
 				}

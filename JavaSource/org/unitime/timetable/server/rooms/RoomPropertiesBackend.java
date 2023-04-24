@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.server.rooms;
 
-import java.util.List;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DistanceMetric;
@@ -241,10 +240,10 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setLeafletMapAttribution(ApplicationProperty.RoomUseLeafletMapAttribution.value());
 		
 		if (response.getAcademicSession() != null) {
-			for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
+			for (Session session: SessionDAO.getInstance().getSession().createQuery(
 					"select f from Session f, Session s where " +
 					"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
-					"order by f.sessionBeginDateTime")
+					"order by f.sessionBeginDateTime", Session.class)
 					.setParameter("sessionId", response.getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				AcademicSessionInterface s = new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear());
 				EventContext cx = new EventContext(context, context.getUser(), session.getUniqueId());

@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.type.LongType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -108,8 +107,8 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		if (solver == null) {
 	    	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
 	    		for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
-	        		for (Long id: (List<Long>)SolutionDAO.getInstance().getSession().createQuery(
-	        				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId")
+	        		for (Long id: SolutionDAO.getInstance().getSession().createQuery(
+	        				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId", Long.class)
 	        				.setParameter("groupId", g.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 	        			if (solutionIdsStr == null)
 	        				solutionIdsStr = id.toString();
@@ -303,9 +302,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		}
 		if (id2row.isEmpty()) return;
 		if (id2row.size() <= 1000) {
-			for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 					"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", id2row.keySet(), LongType.INSTANCE).setCacheable(true).list()) {
+					"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
+					.setParameterList("classIds", id2row.keySet(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
 				TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -317,9 +317,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 			for (Long id: id2row.keySet()) {
 				ids.add(id);
 				if (ids.size() == 1000) {
-					for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+					for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 							"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+							"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
+							.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
 						TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
@@ -330,9 +331,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 				}
 			}
 			if (!ids.isEmpty()) {
-				for (Object[] o: (List<Object[]>)Class_DAO.getInstance().getSession().createQuery(
+				for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
 						"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr").setParameterList("classIds", ids, LongType.INSTANCE).setCacheable(true).list()) {
+						"co.isControl = false and c.uniqueId in :classIds order by co.subjectAreaAbbv, co.courseNbr", Object[].class)
+						.setParameterList("classIds", ids, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
 					TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());

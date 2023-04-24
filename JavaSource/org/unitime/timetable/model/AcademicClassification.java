@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -28,16 +27,12 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
 import java.util.HashMap;
 import java.util.List;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.unitime.timetable.model.base.BaseAcademicClassification;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
-
-
 
 
 /**
@@ -74,16 +69,11 @@ public class AcademicClassification extends BaseAcademicClassification {
 	 * @param sessionId academic session
 	 * @return Vector of AcademicClassification objects
 	 */
- 	public static List getAcademicClassificationList(Long sessionId) 
- 			throws HibernateException {
-	    
- 	    AcademicClassificationDAO adao = new AcademicClassificationDAO();
-	    Session hibSession = adao.getSession();
-	    List l = hibSession.createQuery(
+ 	public static List<AcademicClassification> getAcademicClassificationList(Long sessionId) {
+ 		return AcademicClassificationDAO.getInstance().getSession().createQuery(
 	    		"select c from AcademicClassification as c where c.session.uniqueId=:sessionId " +
-	    		"order by c.name").
-	    	setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
-		return l;
+	    		"order by c.name", AcademicClassification.class).
+ 				setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
     /**
@@ -140,15 +130,15 @@ public class AcademicClassification extends BaseAcademicClassification {
 	}
     
     public static AcademicClassification findByCode(Long sessionId, String code) {
-    	return (findByCode(new AcademicClassificationDAO().getSession(), sessionId, code));
+    	return (findByCode(AcademicClassificationDAO.getInstance().getSession(), sessionId, code));
     }
     
     public static AcademicClassification findByCode(Session hibSession, Long sessionId, String code) {
-        return (AcademicClassification)hibSession.
+        return hibSession.
         createQuery(
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.code=:code").
+                "a.code=:code", AcademicClassification.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("code", code, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
@@ -156,15 +146,15 @@ public class AcademicClassification extends BaseAcademicClassification {
     }
 
     public static AcademicClassification findByExternalId(Long sessionId, String externalId) {
-    	return(findByExternalId(new AcademicClassificationDAO().getSession(), sessionId, externalId));
+    	return(findByExternalId(AcademicClassificationDAO.getInstance().getSession(), sessionId, externalId));
     }
 
     public static AcademicClassification findByExternalId(Session hibSession, Long sessionId, String externalId) {
-        return (AcademicClassification)hibSession.
+        return hibSession.
         createQuery(
                 "select a from AcademicClassification a where "+
                 "a.session.uniqueId=:sessionId and "+
-                "a.externalUniqueId=:externalUniqueId").
+                "a.externalUniqueId=:externalUniqueId", AcademicClassification.class).
          setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
          setParameter("externalUniqueId", externalId, org.hibernate.type.StringType.INSTANCE).
          setCacheable(true).
@@ -180,8 +170,8 @@ public class AcademicClassification extends BaseAcademicClassification {
     }
     
     public boolean isUsed(org.hibernate.Session hibSession) {
-    	return ((Number)(hibSession == null ? AcademicClassificationDAO.getInstance().getSession() : hibSession).createQuery(
-    			"select count(c) from CurriculumClassification c inner join c.academicClassification f where f.uniqueId = :clasfId")
+    	return ((hibSession == null ? AcademicClassificationDAO.getInstance().getSession() : hibSession).createQuery(
+    			"select count(c) from CurriculumClassification c inner join c.academicClassification f where f.uniqueId = :clasfId", Number.class)
     			.setParameter("clasfId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     

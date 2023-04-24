@@ -2151,7 +2151,7 @@ public class WebInstructionalOfferingTableBuilder {
             Comparator classComparator){
     	
     	if (instructionalOfferingId != null) {
-	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	        InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        InstructionalOffering io = idao.get(instructionalOfferingId);
 	        Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
 	        

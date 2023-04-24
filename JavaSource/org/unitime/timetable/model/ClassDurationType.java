@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -56,19 +55,19 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	
 	@SuppressWarnings("unchecked")
 	public static List<ClassDurationType> findAll() {
-		return (List<ClassDurationType>)ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType order by label").setCacheable(true).list();
+		return ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType order by label", ClassDurationType.class).setCacheable(true).list();
 	}
 	
 	public static ClassDurationType findByReference(String reference, org.hibernate.Session hibSession) {
-		return (ClassDurationType) (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
-				"from ClassDurationType where reference = :reference")
+		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
+				"from ClassDurationType where reference = :reference", ClassDurationType.class)
 				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).uniqueResult();
 	}
 	
 	public static ClassDurationType findDefaultType(Long sessionId, org.hibernate.Session hibSession) {
-		return (ClassDurationType) (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
-				"select t from Session s inner join s.defaultClassDurationType t where s.uniqueId = :sessionId")
+		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
+				"select t from Session s inner join s.defaultClassDurationType t where s.uniqueId = :sessionId", ClassDurationType.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).uniqueResult();
 	}
@@ -76,7 +75,7 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	public static Set<ClassDurationType> findAllVisible(ClassDurationType include) {
 		@SuppressWarnings("unchecked")
 		Set<ClassDurationType> ret = new TreeSet<ClassDurationType>(
-				ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType where visible = true order by label").setCacheable(true).list());
+				ClassDurationTypeDAO.getInstance().getSession().createQuery("from ClassDurationType where visible = true order by label", ClassDurationType.class).setCacheable(true).list());
 		if (include != null && !ret.contains(include))
 			ret.add(include);
 		return ret;

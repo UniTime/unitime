@@ -89,13 +89,13 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 	examType = ExamType.findByReference(excludeType);
                 }
             }
-            for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
                     "select m from Meeting m inner join m.event e where m.locationPermanentId=:locPermId and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
-                    exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""))
+                    exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""), Meeting.class)
                     .setParameter("locPermId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("endDate", time.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -108,11 +108,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             }
             if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && excludeType != null) {
             	if (ClassEvent.class.isAssignableFrom(exclude)) {
-            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            		for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
                             "select m from ClassEvent e inner join e.meetings m where m.locationPermanentId=:locPermId and "+
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
                             .setParameter("locPermId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)
@@ -125,12 +125,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                         	ret.add(block);
                     }
             	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
-            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            		for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
                             "select m from " + exclude.getSimpleName() + " e inner join e.meetings m where m.locationPermanentId=:locPermId and "+
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Meeting.class)
                             .setParameter("locPermId", location.getPermanentId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("sessionId", location.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)
@@ -235,7 +235,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
-                    	exclude == null ? "" : " and type(e)!=" + exclude.getSimpleName()))
+                    	exclude == null ? "" : " and type(e)!=" + exclude.getSimpleName()), Meeting.class)
                     .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("startSlot", iTime.getStartSlot(), org.hibernate.type.IntegerType.INSTANCE)
@@ -248,7 +248,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "select m from ClassEvent e inner join e.meetings m where m.locationPermanentId in (select l.permanentId from Location l where l.session = :sessionId) and "+
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
                             .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                             .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -261,7 +261,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
-                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Meeting.class)
                             .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                             .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -279,7 +279,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                          "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                          "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                          (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
-                        	 exclude!=null?" and type(e)!="+exclude.getSimpleName():""))
+                        	 exclude!=null?" and type(e)!="+exclude.getSimpleName():""), Object[].class)
                          .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                          .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
                          .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
@@ -292,7 +292,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                                 "select m, ci.instructor.externalUniqueId from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors ci where "+
                                 "ci.lead = true and m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                                 "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                                "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Object[].class)
                                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                                 .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -305,7 +305,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                                 "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                                 "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                                 "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
-                                (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
+                                (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Object[].class)
                                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("startDate", iTime.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                                 .setParameter("endDate", iTime.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -518,14 +518,14 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 	examType = ExamType.findByReference(excludeType);
                 }
             }
-            for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
             		"select m from Meeting m inner join m.event e left outer join m.event.additionalContacts c where " +
             		"(m.event.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and "+
             		"m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
-                    	exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""))
+                    	exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""), Meeting.class)
                     .setParameter("user", instructor.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                     .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)
                     .setParameter("endDate", time.getEndDate(), org.hibernate.type.DateType.INSTANCE)
@@ -538,12 +538,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             }
             if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && excludeType != null) {
             	if (ClassEvent.class.isAssignableFrom(exclude)) {
-            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            		for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
                             "select m from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors ci where "+
                             "ci.instructor.externalUniqueId = :user and ci.lead = true and "+
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
-                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot")
+                            "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
             				.setParameter("user", instructor.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                             .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)
@@ -556,13 +556,13 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                         	ret.add(block);
                     }
             	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
-            		for (Meeting m: (List<Meeting>)LocationDAO.getInstance().getSession().createQuery(
+            		for (Meeting m: LocationDAO.getInstance().getSession().createQuery(
                             "select m from " + exclude.getSimpleName() + " e inner join e.meetings m inner join e.exam.instructors di where  "+
                             "di.externalUniqueId = :user and "+
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
-                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""))
+                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Meeting.class)
             				.setParameter("user", instructor.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                             .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                             .setParameter("startDate", time.getStartDate(), org.hibernate.type.DateType.INSTANCE)

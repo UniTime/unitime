@@ -22,7 +22,6 @@ package org.unitime.timetable.test;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -151,18 +150,18 @@ public class MasarykDefaultPreferences {
             
             Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
             
-			DistributionType sameDaysType = (DistributionType)hibSession.createQuery(
-			"select d from DistributionType d where d.reference = :type").setParameter("type", "SAME_DAYS", org.hibernate.type.StringType.INSTANCE).uniqueResult();
+			DistributionType sameDaysType = hibSession.createQuery(
+			"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "SAME_DAYS", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 
             
-			TimePattern tp2h = (TimePattern)hibSession.createQuery(
-					"select p from TimePattern as p where p.session.uniqueId=:sessionId and p.name=:name").
+			TimePattern tp2h = hibSession.createQuery(
+					"select p from TimePattern as p where p.session.uniqueId=:sessionId and p.name=:name", TimePattern.class).
 					setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
 					setParameter("name", "2h", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 			
-            for (SchedulingSubpart ss: (List<SchedulingSubpart>)hibSession.createQuery(
+            for (SchedulingSubpart ss: hibSession.createQuery(
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-            		"co.subjectArea.department.session.uniqueId = :sessionId")
+            		"co.subjectArea.department.session.uniqueId = :sessionId", SchedulingSubpart.class)
             		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	
             	boolean hasPreferences = false;
@@ -466,8 +465,8 @@ public class MasarykDefaultPreferences {
             hibSession.flush();
             
             if (addMeetWith) {
-    			DistributionType meetWithType = (DistributionType)hibSession.createQuery(
-				"select d from DistributionType d where d.reference = :type").setParameter("type", "MEET_WITH", org.hibernate.type.StringType.INSTANCE).uniqueResult();
+    			DistributionType meetWithType = hibSession.createQuery(
+				"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "MEET_WITH", org.hibernate.type.StringType.INSTANCE).uniqueResult();
 
             for (Set<Class_> classes: meetWith.values()) {
             	if (classes.size() <= 1) continue;

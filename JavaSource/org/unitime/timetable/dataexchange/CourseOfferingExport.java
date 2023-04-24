@@ -38,7 +38,6 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.hibernate.type.LongType;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -120,12 +119,16 @@ public class CourseOfferingExport extends BaseExport {
             
             if (iExportAssignments && ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
             	iClassEvents = new HashMap<Long, ClassEvent>();
-            	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery(
+            			"from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId",
+            			ClassEvent.class)
             			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		iClassEvents.put(e.getClazz().getUniqueId(), e);
             	}
             	iMeetingLocations = new HashMap<Long, Location>();
-                for (Location l: (List<Location>)getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId")
+                for (Location l: (List<Location>)getHibSession().createQuery(
+                		"from Location l where l.session.uniqueId = :sessionId",
+                		Location.class)
                 		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 	iMeetingLocations.put(l.getPermanentId(), l);
             	}
@@ -156,7 +159,7 @@ public class CourseOfferingExport extends BaseExport {
                             "left join fetch ss.classes as c "+
                             "where " +
                             "io.session.uniqueId=:sessionId "+
-                            "order by sa.subjectAreaAbbreviation, co.courseNbr").
+                            "order by sa.subjectAreaAbbreviation, co.courseNbr", InstructionalOffering.class).
                             setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setFetchSize(1000).list();
                 } else {
@@ -172,9 +175,9 @@ public class CourseOfferingExport extends BaseExport {
                             "where " +
                             "io.session.uniqueId=:sessionId "+
                             "and io.uniqueId in (select x.instructionalOffering.uniqueId from CourseOffering x where x.isControl = true and x.subjectArea.uniqueId in (:subjects)) " +
-                            "order by sa.subjectAreaAbbreviation, co.courseNbr").
+                            "order by sa.subjectAreaAbbreviation, co.courseNbr", InstructionalOffering.class).
                             setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
-                            setParameterList("subjects", subjectIds, LongType.INSTANCE).
+                            setParameterList("subjects", subjectIds, org.hibernate.type.LongType.INSTANCE).
                             setFetchSize(1000).list();
                 }
                 
@@ -184,7 +187,8 @@ public class CourseOfferingExport extends BaseExport {
                             "select x from Exam x left join fetch x.owners o " +
                             "where x.session.uniqueId=:sessionId"+
                             ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeMidterm:"")+
-                            ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeFinal:"")
+                            ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeFinal:""),
+                            Exam.class
                             ).
                             setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setFetchSize(1000).list();

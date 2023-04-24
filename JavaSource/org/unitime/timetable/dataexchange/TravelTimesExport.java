@@ -52,8 +52,8 @@ public class TravelTimesExport extends BaseExport {
 	        document.addDocType("traveltimes", "-//UniTime//UniTime Travel Times DTD/EN", "http://www.unitime.org/interface/TravelTimes.dtd");
 	        
 	        Map<Long, Map<Long, Integer>> matrix = new HashMap<Long, Map<Long,Integer>>();
-	        for (TravelTime travel: (List<TravelTime>)getHibSession().createQuery(
-    			"from TravelTime where session.uniqueId = :sessionId")
+	        for (TravelTime travel: getHibSession().createQuery(
+    			"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
     			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 	        	Map<Long, Integer> m = matrix.get(travel.getLocation1Id());
 	        	if (m == null) {

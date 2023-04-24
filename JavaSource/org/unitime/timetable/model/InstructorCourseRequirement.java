@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -86,22 +85,22 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 	}
 	
 	public static List<InstructorCourseRequirement> getRequirementsForOffering(InstructionalOffering io) {
-		return (List<InstructorCourseRequirement>)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+		return InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
 				"select r from InstructorCourseRequirement r, CourseOffering co " +
 				"where co.instructionalOffering = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
-				"r.instructorSurvey.submitted is not null"
+				"r.instructorSurvey.submitted is not null", InstructorCourseRequirement.class
 				).setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list();
 	}
 	
 	public static boolean hasRequirementsForOffering(InstructionalOffering io) {
-		return ((Number)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+		return InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
 				"select count(r) from InstructorCourseRequirement r, CourseOffering co " +
 				"where co.instructionalOffering = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
-				"r.instructorSurvey.submitted is not null"
+				"r.instructorSurvey.submitted is not null", Number.class
 				).setParameter("offeringId", io.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
-				.setCacheable(true).uniqueResult()).intValue() > 0;
+				.setCacheable(true).uniqueResult().intValue() > 0;
 	}
 }

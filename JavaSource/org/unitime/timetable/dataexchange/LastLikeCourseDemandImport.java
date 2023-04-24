@@ -33,7 +33,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 
 /**
  * 
@@ -136,9 +135,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	}
 
 	Student fetchStudent(String externalId, Long sessionId) {
-		return (Student) this.
-		getHibSession().
-		createQuery("select distinct a from Student as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId").
+		return getHibSession().
+		createQuery("select distinct a from Student as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId", Student.class).
 		setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 		setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).
 		setCacheable(true).
@@ -190,9 +188,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 
 	private void loadSubjectAreas(Long sessionId) {
 		List areas = new ArrayList();
-		areas = new SubjectAreaDAO().
-			getSession().
-			createQuery("select distinct a from SubjectArea as a where a.session.uniqueId=:sessionId").
+		areas = getHibSession().
+			createQuery("select distinct a from SubjectArea as a where a.session.uniqueId=:sessionId", SubjectArea.class).
 			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setCacheable(true).
 			list();

@@ -120,7 +120,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 			if (nrCourses > 0 && nrCourses <= 1000) {
 				Set<Curriculum> curriculaSet = new HashSet<Curriculum>(hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
-						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 						.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				// include children curricula
 				curriculaSet.addAll(
@@ -128,7 +128,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 							"select distinct d from CurriculumCourse cc inner join cc.classification.curriculum c, Curriculum d " +
 							"where c.academicArea = d.academicArea and d.multipleMajors = true and size(c.majors) <= 1 and size(c.majors) < size(d.majors) and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = c.uniqueId and m not in elements(d.majors)) = 0 and " +
-							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()
 						);
 				// include parent curricula
@@ -137,7 +137,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 							"select distinct d from CurriculumCourse cc inner join cc.classification.curriculum c, Curriculum d " +
 							"where c.multipleMajors = true and size(c.majors) >= 1 and size(c.majors) > size(d.majors) and c.academicArea = d.academicArea and " +
 							"(select count(m) from Curriculum x inner join x.majors m where x.uniqueId = d.uniqueId and m not in elements(c.majors)) = 0 and " +
-							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
+							"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")", Curriculum.class)
 							.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list());
 				curricula = new ArrayList<Curriculum>(curriculaSet);
 			}
@@ -145,7 +145,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 		
 		if (curricula == null) {
 			curricula = hibSession.createQuery(
-					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId")
+					"select c from Curriculum c where c.academicArea.session.uniqueId = :sessionId", Curriculum.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 		}
 
@@ -187,7 +187,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 			if (cc.getCurriculum().getMajors().isEmpty()) {
 				// students with no major
 				if (!cc.getCurriculum().isMultipleMajors())
-					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+					lines = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
 						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE)
@@ -197,7 +197,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 				for (PosMajor major: cc.getCurriculum().getMajors())
 					codes.add(major.getCode());
 				// students with one major
-				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.code in :majorCodes")
+				lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + " and a.major.code in :majorCodes", Object[].class)
 						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE)
@@ -217,7 +217,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands, Nee
 					params.put("m" + idx, major.getCode());
 					idx ++;
 				}
-				org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
+				org.hibernate.query.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where, Object[].class)
 						.setParameter("sessionId", cc.getCurriculum().getAcademicArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("acadAbbv", cc.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("clasfCode", cc.getAcademicClassification().getCode(), org.hibernate.type.StringType.INSTANCE);

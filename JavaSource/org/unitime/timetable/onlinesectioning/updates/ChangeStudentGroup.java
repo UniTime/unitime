@@ -63,7 +63,7 @@ public class ChangeStudentGroup implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		StudentGroup group = (StudentGroup)helper.getHibSession().createQuery("from StudentGroup where uniqueId = :groupId").setParameter("groupId", iGroupId, org.hibernate.type.LongType.INSTANCE).uniqueResult();
+		StudentGroup group = helper.getHibSession().createQuery("from StudentGroup where uniqueId = :groupId", StudentGroup.class).setParameter("groupId", iGroupId, org.hibernate.type.LongType.INSTANCE).uniqueResult();
 		if (group == null || group.getType() == null || !group.getType().isAdvisorsCanSet()) return false;
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());

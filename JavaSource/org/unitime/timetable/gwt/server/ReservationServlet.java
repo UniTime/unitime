@@ -125,8 +125,8 @@ public class ReservationServlet implements ReservationService {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
 				List<ReservationInterface.IdName> classifications = new ArrayList<ReservationInterface.IdName>();
-				for (AcademicClassification classification: (List<AcademicClassification>)hibSession.createQuery(
-						"select c from AcademicClassification c where c.session.uniqueId = :sessionId order by c.code, c.name")
+				for (AcademicClassification classification: hibSession.createQuery(
+						"select c from AcademicClassification c where c.session.uniqueId = :sessionId order by c.code, c.name", AcademicClassification.class)
 						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.IdName clasf = new ReservationInterface.IdName();
 					clasf.setId(classification.getUniqueId());
@@ -134,8 +134,8 @@ public class ReservationServlet implements ReservationService {
 					clasf.setAbbv(classification.getCode());
 					classifications.add(clasf);
 				}
-				for (AcademicArea area: (List<AcademicArea>)hibSession.createQuery(
-						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title")
+				for (AcademicArea area: hibSession.createQuery(
+						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title", AcademicArea.class)
 						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.Area curriculum = new ReservationInterface.Area();
 					curriculum.setAbbv(area.getAcademicAreaAbbreviation());
@@ -309,10 +309,10 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	private CourseOffering getCourse(org.hibernate.Session hibSession, String courseName) {
-		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
+		for (CourseOffering co: hibSession.createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
+				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course", CourseOffering.class)
 				.setParameter("course", courseName.toLowerCase(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).setMaxResults(1).list()) {
@@ -344,8 +344,8 @@ public class ReservationServlet implements ReservationService {
 	
 	private Hashtable<String,HashMap<String, Float>> getRules(org.hibernate.Session hibSession, Long acadAreaId) {
 		Hashtable<String,HashMap<String, Float>> clasf2major2proj = new Hashtable<String, HashMap<String,Float>>();
-		for (CurriculumProjectionRule rule: (List<CurriculumProjectionRule>)hibSession.createQuery(
-				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId")
+		for (CurriculumProjectionRule rule: hibSession.createQuery(
+				"select r from CurriculumProjectionRule r where r.academicArea.uniqueId=:acadAreaId", CurriculumProjectionRule.class)
 				.setParameter("acadAreaId", acadAreaId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			String majorCode = (rule.getMajor() == null ? "" : rule.getMajor().getCode());
 			String clasfCode = rule.getAcademicClassification().getCode();
@@ -409,11 +409,11 @@ public class ReservationServlet implements ReservationService {
 				}
 			});
 			if (!sId.isEmpty()) {
-				Number enrollment = (Number)hibSession.createQuery(
+				Number enrollment = hibSession.createQuery(
 						"select count(distinct e.student) " +
 						"from StudentClassEnrollment e where " +
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
-						"and e.student.uniqueId in (" + sId + ")")
+						"and e.student.uniqueId in (" + sId + ")", Number.class)
 						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue());
@@ -541,7 +541,7 @@ public class ReservationServlet implements ReservationService {
 			});
 			((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
 			if (!mjIds.isEmpty() || mnIds.isEmpty()) {
-				Number enrollment = (Number)hibSession.createQuery(
+				Number enrollment = hibSession.createQuery(
 						"select count(distinct e.student) " +
 						"from StudentClassEnrollment e inner join e.student.areaClasfMajors a inner join a.major m " +
 								(ccIds.isEmpty() ? "" : "left outer join a.concentration c ") + "where " +
@@ -549,26 +549,26 @@ public class ReservationServlet implements ReservationService {
 						(mjIds.isEmpty() ? "" : " and m.uniqueId in (" + mjIds + ")") +
 						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
 						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")") +
-						(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))"))
+						(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))"), Number.class)
 						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue());
 			}
 			if (!mnIds.isEmpty()) {
-				Number enrollment = (Number)hibSession.createQuery(
+				Number enrollment = hibSession.createQuery(
 						"select count(distinct e.student) " +
 						"from StudentClassEnrollment e inner join e.student.areaClasfMinors a inner join a.minor m where " +
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId and m.uniqueId in (" + mnIds + ")" +
 						(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")") +
-						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")"))
+						(aaIds.isEmpty() ? "" : " and a.academicArea.uniqueId in (" + aaIds + ")"), Number.class)
 						.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue() + (r.getEnrollment() == null ? 0 : r.getEnrollment().intValue()));
 			}
 			/*
-			Number lastLike = (Number)hibSession.createQuery(
+			Number lastLike = hibSession.createQuery(
 					"select count(distinct s) from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 					"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co where " +
@@ -577,7 +577,7 @@ public class ReservationServlet implements ReservationService {
 					"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr)) " +
 					"and r.academicAreaAbbreviation = :areaAbbv" +
 					(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
-					(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")"))
+					(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")"), Number.class)
 					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("areaAbbv", cr.getArea().getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
@@ -588,7 +588,7 @@ public class ReservationServlet implements ReservationService {
 			if (!mjIds.isEmpty() || mnIds.isEmpty())
 				for (AcademicArea area: cr.getAreas()) {
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, area.getUniqueId());
-					for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					for (Object[] o: hibSession.createQuery(
 							"select count(distinct x.student), m.code, f.code from " +
 							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.major m " +
 							"inner join a.academicClassification f inner join a.academicArea r"+
@@ -601,7 +601,7 @@ public class ReservationServlet implements ReservationService {
 							(mjCodes.isEmpty() ? "" : " and m.code in (" + mjCodes + ")") +
 							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
 							(ccIds.isEmpty() ? "" : " and (c is null or c.uniqueId in (" + ccIds + "))") +
-							" group by m.code, f.code")
+							" group by m.code, f.code", Object[].class)
 							.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("areaAbbv", area.getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
@@ -612,7 +612,7 @@ public class ReservationServlet implements ReservationService {
 				}
 			if (!mnIds.isEmpty())
 				for (AcademicArea area: cr.getAreas()) {
-					for (Object[] o: (List<Object[]>)hibSession.createQuery(
+					for (Object[] o: hibSession.createQuery(
 							"select count(distinct x.student), m.code, f.code from " +
 							"LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMinors a inner join a.minor m " +
 							"inner join a.academicClassification f inner join a.academicArea r, CourseOffering co left outer join co.demandOffering do where " +
@@ -622,7 +622,7 @@ public class ReservationServlet implements ReservationService {
 							"and r.academicAreaAbbreviation = :areaAbbv" +
 							(mnCodes.isEmpty() ? "" : " and m.code in (" + mnCodes + ")") +
 							(cfCodes.isEmpty() ? "" : " and f.code in (" + cfCodes + ")") +
-							" group by m.code, f.code")
+							" group by m.code, f.code", Object[].class)
 							.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("areaAbbv", area.getAcademicAreaAbbreviation(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list()) {
@@ -656,23 +656,23 @@ public class ReservationServlet implements ReservationService {
 			course.setLimit(co.getReservation());
 			((ReservationInterface.LCReservation) r).setCourse(course);
 			
-			Number enrollment = (Number)hibSession.createQuery(
+			Number enrollment = hibSession.createQuery(
 					"select count(distinct e.student) " +
 					"from StudentClassEnrollment e inner join e.student.groups g where " +
 					"e.courseOffering.uniqueId = :courseId " +
-					"and g.uniqueId = :groupId")
+					"and g.uniqueId = :groupId", Number.class)
 					.setParameter("courseId", course.getId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("groupId", sg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 
-			Number lastLike = (Number)hibSession.createQuery(
+			Number lastLike = hibSession.createQuery(
 					"select count(distinct x.student) from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.uniqueId = :courseId and "+
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
-					"and g.groupAbbreviation = :groupAbbv")
+					"and g.groupAbbreviation = :groupAbbv", Number.class)
 					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("courseId", course.getId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("groupAbbv", sg.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE)
@@ -688,22 +688,22 @@ public class ReservationServlet implements ReservationService {
 			group.setAbbv(sg.getGroupAbbreviation());
 			group.setLimit(sg.getStudents().size());
 			((ReservationInterface.GroupReservation) r).setGroup(group);
-			Number enrollment = (Number)hibSession.createQuery(
+			Number enrollment = hibSession.createQuery(
 					"select count(distinct e.student) " +
 					"from StudentClassEnrollment e inner join e.student.groups g where " +
 					"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
-					"and g.uniqueId = :groupId")
+					"and g.uniqueId = :groupId", Number.class)
 					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("groupId", sg.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
-			Number lastLike = (Number)hibSession.createQuery(
+			Number lastLike = hibSession.createQuery(
 					"select count(distinct x.student) from " +
 					"LastLikeCourseDemand x inner join x.student s inner join s.groups g, CourseOffering co left outer join co.demandOffering do where " +
 					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
 					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
 					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))"+
-					"and g.groupAbbreviation = :groupAbbv")
+					"and g.groupAbbreviation = :groupAbbv", Number.class)
 					.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("groupAbbv", sg.getGroupAbbreviation(), org.hibernate.type.StringType.INSTANCE)
@@ -772,8 +772,8 @@ public class ReservationServlet implements ReservationService {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			String nameFormat = UserProperty.NameFormat.get(getSessionContext().getUser());
 			try {
-				for (Reservation reservation: (List<Reservation>)hibSession.createQuery(
-						"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId")
+				for (Reservation reservation: hibSession.createQuery(
+						"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId", Reservation.class)
 						.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface r = convert(reservation, nameFormat, hibSession);
 					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
@@ -806,8 +806,8 @@ public class ReservationServlet implements ReservationService {
 			List<ReservationInterface.IdName> results = new ArrayList<ReservationInterface.IdName>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
-				for (StudentGroup sg: (List<StudentGroup>)hibSession.createQuery(
-						"select g from StudentGroup g where g.session.uniqueId = :sessionId order by g.groupName")
+				for (StudentGroup sg: hibSession.createQuery(
+						"select g from StudentGroup g where g.session.uniqueId = :sessionId order by g.groupName", StudentGroup.class)
 						.setParameter("sessionId", getAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 					ReservationInterface.IdName group = new ReservationInterface.IdName();
 					group.setId(sg.getUniqueId());
@@ -1137,8 +1137,8 @@ public class ReservationServlet implements ReservationService {
 			List<ReservationInterface.Curriculum> results = new ArrayList<ReservationInterface.Curriculum>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
-				for (Curriculum c : (List<Curriculum>)hibSession.createQuery(
-						"select distinct c.classification.curriculum from CurriculumCourse c where c.course.instructionalOffering = :offeringId ")
+				for (Curriculum c : hibSession.createQuery(
+						"select distinct c.classification.curriculum from CurriculumCourse c where c.course.instructionalOffering = :offeringId ", Curriculum.class)
 						.setParameter("offeringId", offeringId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 
 					ReservationInterface.Curriculum curriculum = new ReservationInterface.Curriculum();

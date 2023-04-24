@@ -278,7 +278,7 @@ public class MakeAssignmentsForClassEvents {
             HibernateUtil.configureHibernate(new Properties());
             
             org.hibernate.Session hibSession = new _RootDAO().getSession();
-            List subjects = new SubjectAreaDAO().findAll();
+            List subjects = SubjectAreaDAO.getInstance().findAll();
             
             boolean excludeCommittedAssignments = !"true".equals(System.getProperty("redo"));
             
@@ -291,7 +291,7 @@ public class MakeAssignmentsForClassEvents {
                 try {
                     tx = hibSession.beginTransaction();
                     
-                    MakeAssignmentsForClassEvents m = new MakeAssignmentsForClassEvents(new SessionDAO().get(sa.getSession().getUniqueId()), hibSession);
+                    MakeAssignmentsForClassEvents m = new MakeAssignmentsForClassEvents(SessionDAO.getInstance().get(sa.getSession().getUniqueId()), hibSession);
                     
                     for (ClassEvent e: hibSession.createQuery(
                             "select e from ClassEvent e inner join e.clazz c " +

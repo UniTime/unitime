@@ -20,14 +20,11 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-
 
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -35,8 +32,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseExternalBuilding;
 import org.unitime.timetable.model.dao.ExternalBuildingDAO;
-
-
 
 
 /**
@@ -70,7 +65,7 @@ public class ExternalBuilding extends BaseExternalBuilding {
 	 */
 	public static Hashtable getBuildings(Long sessionId) {
 		
-		List bldgs = (new ExternalBuildingDAO()).getSession().createQuery(
+		List bldgs = (ExternalBuildingDAO.getInstance()).getSession().createQuery(
 				"from ExternalBuilding as b " + 
 				"where b.session.uniqueId = " + sessionId.longValue()).
 				list();
@@ -95,8 +90,6 @@ public class ExternalBuilding extends BaseExternalBuilding {
 				.setMaxResults(1)
 				.uniqueResult();
 	}
-
-
 
 	/**
 	 * Retrieve an external building for a given abbreviation and academic session

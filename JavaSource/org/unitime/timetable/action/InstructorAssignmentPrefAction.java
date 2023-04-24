@@ -106,7 +106,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction2<Instructo
         form.setScreenName("instructorPref");
         
         // If subpart id is not null - load subpart info
-        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+        DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
         DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));
         LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
         
@@ -221,7 +221,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction2<Instructo
 	
 	protected void doUpdate() throws Exception {
 	    
-		DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+		DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
 		

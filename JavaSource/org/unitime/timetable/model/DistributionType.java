@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -33,8 +32,6 @@ import org.unitime.timetable.model.base.BaseDistributionType;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-
-
 
 
 /**

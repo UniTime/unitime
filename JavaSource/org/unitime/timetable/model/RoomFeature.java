@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -70,19 +69,19 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	}
 	
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId) throws HibernateException {
-		return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
-				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label"
+		return RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label", GlobalRoomFeature.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId, Long featureTypeId) throws HibernateException {
 		if (featureTypeId == null || featureTypeId < 0) {
-			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
-					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType is null order by label"
+			return RoomFeatureDAO.getInstance().getSession().createQuery(
+					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType is null order by label", GlobalRoomFeature.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		} else {
-			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
-					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label"
+			return RoomFeatureDAO.getInstance().getSession().createQuery(
+					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label", GlobalRoomFeature.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("featureTypeId", featureTypeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		}
 	}
@@ -93,14 +92,14 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		
 	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeatures(Department dept) throws HibernateException {
 		if (dept==null) return null;
-		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
-				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label"
+		return RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label", DepartmentRoomFeature.class
 				).setParameter("deptId", dept.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
 	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeaturesInSession(Long sessionId) throws HibernateException {
-		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
-				"from DepartmentRoomFeature rf where rf.department.session.uniqueId = :sessionId order by label"
+		return RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from DepartmentRoomFeature rf where rf.department.session.uniqueId = :sessionId order by label", DepartmentRoomFeature.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
@@ -111,11 +110,11 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	 * @throws HibernateException
 	 */
 	public static RoomFeature getRoomFeatureById(Long id) throws HibernateException {
-		return (RoomFeature) (new RoomFeatureDAO()).get(id);
+		return (RoomFeature) (RoomFeatureDAO.getInstance()).get(id);
 	}
 	
 	public void saveOrUpdate() throws HibernateException {
-		(new RoomFeatureDAO()).saveOrUpdate(this);
+		(RoomFeatureDAO.getInstance()).saveOrUpdate(this);
 	}
 
     /** Request attribute name for available room features **/
@@ -172,17 +171,17 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
     
     public RoomFeature findSameFeatureInSession(Session session) {
 		if (session == null) return null;
-		List matchingFeatures = null;
+		List<RoomFeature> matchingFeatures = null;
 		if (this instanceof DepartmentRoomFeature) {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
-				"select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode")
+				"select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode", RoomFeature.class)
 				.setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("deptCode", ((DepartmentRoomFeature)this).getDeptCode(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("label", getLabel(), org.hibernate.type.StringType.INSTANCE)
 				.setCacheable(true).list();
 		} else {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
-			"select g from GlobalRoomFeature g where g.session.uniqueId=:sessionId and g.label=:label")
+			"select g from GlobalRoomFeature g where g.session.uniqueId=:sessionId and g.label=:label", RoomFeature.class)
 			.setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE)
 			.setParameter("label", getLabel(), org.hibernate.type.StringType.INSTANCE)
 			.setCacheable(true).list();

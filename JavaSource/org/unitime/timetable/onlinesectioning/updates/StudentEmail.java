@@ -406,10 +406,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							helper.logOption("message", getMessage());
 						
 						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
-							TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setParameter("id", helper.getUser().getExternalId(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
+							TimetableManager manager = helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id", TimetableManager.class).setParameter("id", helper.getUser().getExternalId(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 							Advisor advisor = null;
 							if (manager == null || manager.getEmailAddress() == null)
-								advisor = (Advisor)helper.getHibSession().createQuery("from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId")
+								advisor = helper.getHibSession().createQuery("from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId", Advisor.class)
 										.setParameter("externalId", helper.getUser().getExternalId(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", server.getAcademicSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(1).uniqueResult();
 							if (manager != null && manager.getEmailAddress() != null) {
 								email.setReplyTo(manager.getEmailAddress(), helper.getInstructorNameFormat().format(manager));

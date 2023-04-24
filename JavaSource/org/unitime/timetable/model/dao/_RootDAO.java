@@ -20,20 +20,18 @@
 package org.unitime.timetable.model.dao;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
 import org.hibernate.query.Query;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 
 /**
@@ -168,43 +166,12 @@ public class _RootDAO<T, K extends Serializable> {
 	 * @param s the Session
 	 */
 	public List<T> findAll (Session s) {
-   		return findAll(s, getDefaultOrder());
-	}
-
-	/**
-	 * Return all objects related to the implementation of this DAO with no filter.
-	 * The results are ordered by the order specified
-	 * Use the session given.
-	 */
-	public List<T> findAll (Order... orders) {
-		return findAll(getSession(), orders);
-	}
-
-
-	/**
-	 * Return all objects related to the implementation of this DAO with no filter.
-	 * Use the session given.
-	 */
-	@SuppressWarnings("unchecked")
-	public List<T> findAll (Session s, Order... orders) {
 		CriteriaBuilder cb = s.getCriteriaBuilder();
 		CriteriaQuery<T> cr = cb.createQuery(getReferenceClass());
 		Root<T> root = cr.from(getReferenceClass());
 		cr.select(root);
-		if (orders != null && orders.length > 0) {
-			List<javax.persistence.criteria.Order> x = new ArrayList<javax.persistence.criteria.Order>();
-			for (Order o: orders)
-				if (o != null)
-					x.add(o.isAscending() ? cb.asc(root.get(o.getPropertyName())) : cb.desc(root.get(o.getPropertyName())));
-			if (!x.isEmpty())
-				cr.orderBy(x);
-		}
 		Query<T> query = s.createQuery(cr);
 		return query.getResultList();
-	}
-
-	protected Order getDefaultOrder () {
-		return null;
 	}
 
 	/**

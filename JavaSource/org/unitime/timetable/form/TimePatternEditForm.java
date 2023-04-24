@@ -201,8 +201,8 @@ public class TimePatternEditForm implements UniTimeForm {
 			}
 			if (tp.getSession() != null & tp.getSession().getStatusType().isAllowRollForward()){
 				if (oldDays != tp.getDays().size() || oldTimes != tp.getTimes().size()) {
-					for (TimePref tpref: (List<TimePref>)hibSession.createQuery(
-							"from TimePref tp where tp.timePattern.uniqueId = :tpid")
+					for (TimePref tpref: hibSession.createQuery(
+							"from TimePref tp where tp.timePattern.uniqueId = :tpid", TimePref.class)
 							.setParameter("tpid", tp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 						tpref.setPreference(null);
 						hibSession.update(tpref);
@@ -212,7 +212,7 @@ public class TimePatternEditForm implements UniTimeForm {
 		}
 		HashSet oldDepts = new HashSet(tp.getDepartments());
 		for (Long departmentId: iDepartmentIds) {
-			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+			Department d = (DepartmentDAO.getInstance()).get(departmentId,hibSession);
 			if (d==null) continue;
 			if (oldDepts.remove(d)) {
 				//not changed -> do nothing
@@ -253,7 +253,7 @@ public class TimePatternEditForm implements UniTimeForm {
 		}
 		HashSet newDepts = new HashSet();
 		for (Long departmentId: iDepartmentIds) {
-			Department d = (new DepartmentDAO()).get(departmentId,hibSession);
+			Department d = (DepartmentDAO.getInstance()).get(departmentId,hibSession);
 			if (d==null) continue;
 			newDepts.add(d);
 		}
@@ -271,7 +271,7 @@ public class TimePatternEditForm implements UniTimeForm {
 	public TimePattern saveOrUpdate(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		TimePattern tp = null;
 		if (getUniqueId().intValue()>=0)
-			tp = (new TimePatternDAO()).get(getUniqueId());
+			tp = (TimePatternDAO.getInstance()).get(getUniqueId());
 		if (tp==null) {
 			tp = create(context, hibSession);
             ChangeLog.addChange(
@@ -301,7 +301,7 @@ public class TimePatternEditForm implements UniTimeForm {
 			return;
 		if (!getEditable())
 			return;
-		TimePattern tp = (new TimePatternDAO()).get(getUniqueId(), hibSession);
+		TimePattern tp = (TimePatternDAO.getInstance()).get(getUniqueId(), hibSession);
 		for (Iterator i=tp.getDepartments().iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getTimePatterns().remove(tp);

@@ -213,7 +213,7 @@ public class PdfWorksheet {
 				query += " and co.instructionalOffering.waitlistMode = 2 and co.instructionalOffering.notOffered = false ";
 		}
         
-        Query q = new SessionDAO().getSession().createQuery(query);
+        Query q = SessionDAO.getInstance().getSession().createQuery(query);
         q.setParameterList("subjectIds", subjectIds);
         if (courseNumber != null && !courseNumber.trim().isEmpty())
         	q.setParameter("courseNbr", ApplicationProperty.CourseOfferingNumberUpperCase.isTrue()? courseNumber.trim().replace('*', '%').toUpperCase() : courseNumber.trim().replace('*', '%'));
@@ -669,7 +669,7 @@ public class PdfWorksheet {
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
             
             Long sessionId = Long.valueOf(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.session", "165924"));
-            Session session = new SessionDAO().get(sessionId);
+            Session session = SessionDAO.getInstance().get(sessionId);
             if (session==null) {
                 System.err.println("Academic session "+sessionId+" not found, use property tmtbl.pdf.worksheet.session to set academic session.");
                 System.exit(0);

@@ -20,15 +20,12 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseBuildingPref;
-
-
 
 
 /**

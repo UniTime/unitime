@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -115,8 +114,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				try {
 					sessionId = Long.valueOf(request.getSession());
 				} catch (NumberFormatException e) {
-					Number id = (Number)SessionDAO.getInstance().getSession().createQuery(
-							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session"
+					Number id = SessionDAO.getInstance().getSession().createQuery(
+							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session", Number.class
 							).setParameter("session", request.getSession(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
 					sessionId = id.longValue();
@@ -131,8 +130,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			externalId = request.getExternalId();
 		}
 		boolean editable = true;
-		InstructorSurvey is = (InstructorSurvey)InstructorSurveyDAO.getInstance().getSession().createQuery(
-				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId"
+		InstructorSurvey is = InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"from InstructorSurvey where session = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setParameter("externalId", externalId, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).uniqueResult();
 
@@ -166,9 +165,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				}
 			}
 			if (!sessionIds.isEmpty()) {
-				for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
-						"from Session where uniqueId in :ids order by academicInitiative, sessionBeginDateTime")
-						.setParameterList("ids", sessionIds, LongType.INSTANCE)
+				for (Session session: SessionDAO.getInstance().getSession().createQuery(
+						"from Session where uniqueId in :ids order by academicInitiative, sessionBeginDateTime", Session.class)
+						.setParameterList("ids", sessionIds, org.hibernate.type.LongType.INSTANCE)
 						.setCacheable(true).list()) {
 					survey.addSession(new AcademicSessionInfo(
 							session.getUniqueId(), session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
@@ -214,8 +213,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			}
 		}
 		
-		List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId")
+		List<DepartmentalInstructor> instructors = DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId", DepartmentalInstructor.class)
 				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list();
@@ -261,8 +260,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		if (!survey.hasEmail())
 			survey.setEmail(context.getUser().getEmail());
 		
-		List<InstructorCourseRequirementType> types = (List<InstructorCourseRequirementType>)InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorCourseRequirementType order by sortOrder").list();
+		List<InstructorCourseRequirementType> types = InstructorCourseRequirementTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorCourseRequirementType order by sortOrder", InstructorCourseRequirementType.class).list();
 		Map<Long, CustomField> customFields = new HashMap<Long, CustomField>();
 		for (InstructorCourseRequirementType type: types) {
 			CustomField cf = new CustomField(type.getUniqueId(), type.getReference(), type.getLength());
@@ -475,12 +474,12 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				survey.addCourse(ci);
 			}
 		}
-		for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
+		for (CourseOffering co: CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct co from " +
 				"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 				"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
 				"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
-				"and ci.lead = true and c.schedulingSubpart.itype.organized = true"
+				"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 				)
 				.setParameter("id", externalId, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)

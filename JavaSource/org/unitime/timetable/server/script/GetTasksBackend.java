@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.script;
 
 import java.util.Collections;
-import java.util.List;
 
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -52,8 +51,8 @@ public class GetTasksBackend implements GwtRpcImplementation<GetTasksRpcRequest,
 		
 		GwtRpcResponseList<TaskInterface> tasks = new GwtRpcResponseList<TaskInterface>();
 		
-		for (PeriodicTask t: (List<PeriodicTask>)PeriodicTaskDAO.getInstance().getSession().createQuery(
-				"from PeriodicTask where session.uniqueId = :sessionId").setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+		for (PeriodicTask t: PeriodicTaskDAO.getInstance().getSession().createQuery(
+				"from PeriodicTask where session.uniqueId = :sessionId", PeriodicTask.class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			tasks.add(getTask(t, context));
 		}

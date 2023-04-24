@@ -157,11 +157,11 @@ public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
 		
 		sessionContext.checkPermission(form.getId(), "Department", Right.DepartmentDelete);
 		
-        org.hibernate.Session hibSession = new DepartmentDAO().getSession();
+        org.hibernate.Session hibSession = DepartmentDAO.getInstance().getSession();
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
-            Department department = new DepartmentDAO().get(form.getId(), hibSession);
+            Department department = DepartmentDAO.getInstance().get(form.getId(), hibSession);
             if (department.isExternalManager().booleanValue()) {
                 for (Class_ clazz: hibSession.
                         createQuery("select c from Class_ c where c.managingDept.uniqueId=:deptId", Class_.class).

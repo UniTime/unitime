@@ -187,9 +187,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 		// Admins and advisors go to the scheduling dashboard
 		if (sessionContext.hasPermission(Right.SchedulingDashboard)) {
 			if (!sessionContext.hasPermission(Right.StudentSchedulingAdmin)) {
-				Number myStudents = (Number)CourseOfferingDAO.getInstance().getSession().createQuery(
+				Number myStudents = CourseOfferingDAO.getInstance().getSession().createQuery(
 						"select count(s) from Advisor a inner join a.students s where " +
-						"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId"
+						"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId", Number.class
 						).setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("user", sessionContext.getUser().getExternalUserId(), org.hibernate.type.StringType.INSTANCE)
 						.setParameter("role", sessionContext.getUser().getCurrentAuthority().getRole(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();

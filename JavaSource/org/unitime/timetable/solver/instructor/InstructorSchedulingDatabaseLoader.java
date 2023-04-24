@@ -126,8 +126,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     
     protected void load(org.hibernate.Session hibSession) throws Exception {
     	iProgress.setStatus("Loading input data ...");
-    	List<Department> departments = (List<Department>)hibSession.createQuery(
-    			"from Department d where d.solverGroup.uniqueId in :solverGroupId"
+    	List<Department> departments = hibSession.createQuery(
+    			"from Department d where d.solverGroup.uniqueId in :solverGroupId", Department.class
     			).setParameterList("solverGroupId", iSolverGroupId).list();
     	if (departments.size() > 1) {
     		Attribute.Type dt = new Attribute.Type(-1, "Department", false, false);
@@ -147,14 +147,14 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     public static boolean isCommitted(org.hibernate.Session hibSession, Set<Long> solverGroupIds) {
-		Number oc = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+		Number oc = DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
-				"oc.instructor.department.solverGroup.uniqueId in :solverGroupId").setParameterList("solverGroupId", solverGroupIds).
+				"oc.instructor.department.solverGroup.uniqueId in :solverGroupId", Number.class).setParameterList("solverGroupId", solverGroupIds).
 				setCacheable(true).uniqueResult();
 		if (oc.intValue() > 0) return true;
-		Number ci = (Number)DepartmentDAO.getInstance().getSession().createQuery(
+		Number ci = DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
-				"ci.instructor.department.solverGroup.uniqueId in :solverGroupId").setParameterList("solverGroupId", solverGroupIds).
+				"ci.instructor.department.solverGroup.uniqueId in :solverGroupId", Number.class).setParameterList("solverGroupId", solverGroupIds).
 				setCacheable(true).uniqueResult();
 		return ci.intValue() > 0;
     }
@@ -246,8 +246,8 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     public static List<EnrolledClass> loadUnavailability(org.hibernate.Session hibSession, DepartmentalInstructor di) {
     	List<EnrolledClass> ret = new ArrayList<EnrolledClass>();
     	if (di.getExternalUniqueId() != null) {
-    		List<StudentClassEnrollment> enrollments = (List<StudentClassEnrollment>)hibSession.createQuery(
-    				"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId and e.clazz.cancelled = false"
+    		List<StudentClassEnrollment> enrollments = hibSession.createQuery(
+    				"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId and e.clazz.cancelled = false", StudentClassEnrollment.class
     				).setParameter("sessionId", di.getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", di.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
     		for (StudentClassEnrollment enrollment: enrollments) {
     			org.unitime.timetable.model.Assignment assignment = enrollment.getClazz().getCommittedAssignment();
@@ -277,9 +277,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     						));
     			}
     		}
-    		List<ClassInstructor> classInstructors = (List<ClassInstructor>)hibSession.createQuery(
+    		List<ClassInstructor> classInstructors = hibSession.createQuery(
     				"from ClassInstructor ci where ci.instructor.externalUniqueId = :externalId and ci.instructor.department.session.uniqueId = :sessionId and " +
-    				"ci.instructor.department.uniqueId != :departmentId and ci.lead = true and ci.classInstructing.cancelled = false"
+    				"ci.instructor.department.uniqueId != :departmentId and ci.lead = true and ci.classInstructing.cancelled = false", ClassInstructor.class
     				).setParameter("sessionId", di.getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("externalId", di.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE).setParameter("departmentId", di.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
@@ -351,9 +351,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected void loadInstructors(org.hibernate.Session hibSession) throws Exception {
-    	List<DepartmentalInstructor> list = (List<DepartmentalInstructor>)hibSession.createQuery(
+    	List<DepartmentalInstructor> list = hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
-    			"g.uniqueId in :solverGroupId and i.department = d and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+    			"g.uniqueId in :solverGroupId and i.department = d and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0", DepartmentalInstructor.class
     			).setParameterList("solverGroupId", iSolverGroupId).setParameter("prohibited", PreferenceLevel.sProhibited, org.hibernate.type.StringType.INSTANCE).list();
     	iProgress.setPhase("Loading instructors...", list.size());
     	for (DepartmentalInstructor i: list) {
@@ -477,8 +477,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     protected void loadRequests(org.hibernate.Session hibSession) throws Exception {
-    	List<org.unitime.timetable.model.TeachingRequest> requests = (List<org.unitime.timetable.model.TeachingRequest>)hibSession.createQuery(
-    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId")
+    	List<org.unitime.timetable.model.TeachingRequest> requests = hibSession.createQuery(
+    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId",
+    			org.unitime.timetable.model.TeachingRequest.class)
     			.setParameterList("solverGroupId", iSolverGroupId).list();
     	iProgress.setPhase("Loading requests...", requests.size());
     	for (org.unitime.timetable.model.TeachingRequest request: requests) {

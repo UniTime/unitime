@@ -25,7 +25,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.SessionFactoryImpl;
-import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -44,7 +43,9 @@ public class InstrOfferingPermIdGenerator {
         try {
             if (sGenerator!=null) return sGenerator;
             UniqueIdGenerator idGen = new UniqueIdGenerator();
-            Type type = LongType.INSTANCE;
+            Type type = org.hibernate.type.LongType.INSTANCE;
+            // Hibernate 6:
+            // Type type = ((MetadataImplementor)HibernateUtil.getHibernateContext().getMetadata()).getTypeConfiguration().getBasicTypeForJavaType(Long.class);
             Properties params = new Properties();
             params.put(SequenceStyleGenerator.SEQUENCE_PARAM, sSequence);
             idGen.configure(type, params, HibernateUtil.getHibernateContext().getServiceRegistry());

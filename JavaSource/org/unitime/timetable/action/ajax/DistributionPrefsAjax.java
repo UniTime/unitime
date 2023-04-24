@@ -114,7 +114,7 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
     
     protected void computePreferenceLevels(String distTypeId, PrintWriter out) throws Exception {
         if (distTypeId==null || distTypeId.length()==0 || distTypeId.equals(Preference.BLANK_PREF_VALUE)) return;
-        DistributionType dist = new DistributionTypeDAO().get(Long.valueOf(distTypeId));
+        DistributionType dist = DistributionTypeDAO.getInstance().get(Long.valueOf(distTypeId));
         print(out, "desc", dist.getDescr().replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
         for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
             if (dist.isAllowed(pref))
@@ -125,36 +125,34 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
     
     protected void coumputeCourseNumbers(String subjectAreaId, PrintWriter out) throws Exception {
         if (subjectAreaId==null || subjectAreaId.length()==0 || subjectAreaId.equals(Preference.BLANK_PREF_VALUE)) return;
-        List courseNumbers = new CourseOfferingDAO().
+        List<Object[]> courseNumbers = CourseOfferingDAO.getInstance().
             getSession().
             createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                     "where co.subjectArea.uniqueId = :subjectAreaId "+
                     "and co.instructionalOffering.notOffered = false and co.isControl = true " +
-                    "order by co.courseNbr ").
+                    "order by co.courseNbr ", Object[].class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("subjectAreaId", Long.parseLong(subjectAreaId), org.hibernate.type.LongType.INSTANCE).
             list();
-        for (Iterator i=courseNumbers.iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o : courseNumbers) {
             print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2])));
         }
     }
     
     protected void coumputeSubparts(String courseOfferingId, PrintWriter out) throws Exception {
         if (courseOfferingId==null || courseOfferingId.length()==0 || courseOfferingId.equals(Preference.BLANK_PREF_VALUE)) return;
-        TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));
-        subparts.addAll(new SchedulingSubpartDAO().
+        TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator(null));
+        subparts.addAll(SchedulingSubpartDAO.getInstance().
             getSession().
             createQuery("select distinct s from " +
                     "SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co "+
-                    "where co.uniqueId = :courseOfferingId").
+                    "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("courseOfferingId", Long.parseLong(courseOfferingId), org.hibernate.type.LongType.INSTANCE).
             list());
-        for (Iterator i=subparts.iterator();i.hasNext();) {
-            SchedulingSubpart s = (SchedulingSubpart)i.next();
+        for (SchedulingSubpart s: subparts) {
             String id = s.getUniqueId().toString();
             String name = s.getItype().getAbbv();
             String sufix = s.getSchedulingSubpartSuffix();
@@ -170,19 +168,18 @@ public class DistributionPrefsAjax extends UniTimeAction<BlankForm> {
     
     protected void coumputeClasses(String schedulingSubpartId, PrintWriter out) throws Exception {
         if (schedulingSubpartId==null || schedulingSubpartId.length()==0 || schedulingSubpartId.equals(Preference.BLANK_PREF_VALUE)) return;
-        TreeSet classes = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        TreeSet<Class_> classes = new TreeSet<Class_>(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         classes.addAll(new Class_DAO().
             getSession().
             createQuery("select distinct c from Class_ c "+
-                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId").
+                    "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
             setFetchSize(200).
             setCacheable(true).
             setParameter("schedulingSubpartId", Long.parseLong(schedulingSubpartId), org.hibernate.type.LongType.INSTANCE).
             list());
         print(out, "-1", MSG.dropDistrPrefAll());
         boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
-        for (Iterator i=classes.iterator();i.hasNext();) {
-            Class_ c = (Class_)i.next();
+        for (Class_ c: classes) {
             if (suffix) {
             	String extId = c.getClassSuffix(c.getSchedulingSubpart().getControllingCourseOffering());
             	print(out, c.getUniqueId().toString(), c.getSectionNumberString() + (extId == null || extId.isEmpty() || extId.equalsIgnoreCase(c.getSectionNumberString()) ? "" : " - " + extId));

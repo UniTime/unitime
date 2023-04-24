@@ -212,13 +212,13 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public ExamPeriod getPeriod() {
         if (iPeriod==null) {
             if (getPeriodId()==null) return null;
-            iPeriod = new ExamPeriodDAO().get(getPeriodId());
+            iPeriod = ExamPeriodDAO.getInstance().get(getPeriodId());
         }
         return iPeriod;
     }
     
     public ExamPeriod getPeriod(org.hibernate.Session hibSession) {
-        return new ExamPeriodDAO().get(getPeriodId(), hibSession);
+        return ExamPeriodDAO.getInstance().get(getPeriodId(), hibSession);
     }
 
     public Comparable getPeriodOrd() {

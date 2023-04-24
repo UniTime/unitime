@@ -2561,7 +2561,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch ss.classes as c "+
                 "left join fetch io.reservations as r "+
                 "where " +
-                "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true").
+                "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true", InstructionalOffering.class).
                 setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
                 setFetchSize(1000).list();
         setPhase("Loading course offerings...", offerings.size());
@@ -2573,7 +2573,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         
         List<DistributionPref> distPrefs = hibSession.createQuery(
         		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
-        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+        		" and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
         		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), org.hibernate.type.StringType.INSTANCE)
         		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, org.hibernate.type.StringType.INSTANCE)
         		.setParameter("pref", PreferenceLevel.sRequired, org.hibernate.type.StringType.INSTANCE)
@@ -2604,7 +2604,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Map<String, Student> ext2student = new HashMap<String, Student>();
         Set<Student> onlineOnlyStudents = new HashSet<Student>();
         if (iIncludeCourseDemands || iProjections) {
-            List students = hibSession.createQuery(
+            List<org.unitime.timetable.model.Student> students = hibSession.createQuery(
                     "select distinct s from Student s " +
 /*                    "left join fetch s.courseDemands as cd "+
                     "left join fetch cd.courseRequests as cr "+
@@ -2612,7 +2612,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
                     (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +*/
-                    "where s.session.uniqueId=:sessionId").
+                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
                     setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).
                     setFetchSize(1000).list();
             if (iValidateOverrides && iValidationProvider != null) {
@@ -2867,11 +2867,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             Hashtable<Long, Set<Long>> classAssignments = null;
             if (iIncludeUseCommittedAssignments && !iStudentCourseDemands.isMakingUpStudents()) {
                 classAssignments = new Hashtable();
-                List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
-                    "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
+                List<Object[]> enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
+                    "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId", Object[].class).
                     setParameter("sessionId", session.getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).setFetchSize(1000).list();
                 setPhase("Loading projected class assignments...", enrollments.size());
-                for (Iterator i=enrollments.iterator();i.hasNext();) {
+                for (Iterator<Object[]> i=enrollments.iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next(); incProgress();
                     Long studentId = (Long)o[0];
                     Long classId = (Long)o[1];
@@ -3012,7 +3012,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
-				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", SectioningInfo.class)
 				.setParameter("sessionId", iSessionId, org.hibernate.type.LongType.INSTANCE)
 				.list();
         	setPhase("Loading sectioning infos...", infos.size());

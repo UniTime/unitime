@@ -44,8 +44,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
-
-
 @GwtRpcImplements(UpdateDepartmentRequest.class)
 public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepartmentRequest, DepartmentInterface>{
 
@@ -187,7 +185,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 		Transaction tx = null;
         try { 
         	tx = hibSession.beginTransaction();
-        	Department department = new DepartmentDAO().get(DepartmentInterface.getId(), hibSession);
+        	Department department = DepartmentDAO.getInstance().get(DepartmentInterface.getId(), hibSession);
         	
         	 if (department.isExternalManager().booleanValue()) {
         		 for (Class_ clazz: hibSession.createQuery(

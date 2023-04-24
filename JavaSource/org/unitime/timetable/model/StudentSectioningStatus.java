@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -104,19 +103,19 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	
 	public static StudentSectioningStatus getStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
 		if (reference != null) {
-			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session is null")
+			StudentSectioningStatus status = hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session is null", StudentSectioningStatus.class)
 					.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null)
 				return status;
 			if (sessionId != null) {
-				status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session = :sessionId")
+				status = hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session = :sessionId", StudentSectioningStatus.class)
 						.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 				if (status != null)
 					return status;
 			}
 		}
 		if (sessionId != null) {
-			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId")
+			StudentSectioningStatus status = hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId", StudentSectioningStatus.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null) return status;
 		}
@@ -240,12 +239,12 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	
 	public static List<StudentSectioningStatus> findAll(org.hibernate.Session hibSession, Long sessionId) {
 		if (sessionId == null)
-			return (List<StudentSectioningStatus>)(hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
-					"from StudentSectioningStatus where session is null order by label"
+			return (hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
+					"from StudentSectioningStatus where session is null order by label", StudentSectioningStatus.class
 					).setCacheable(true).list();
 		else
-			return (List<StudentSectioningStatus>)(hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
-					"from StudentSectioningStatus where session is null or session = :sessionId order by label"
+			return (hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
+					"from StudentSectioningStatus where session is null or session = :sessionId order by label", StudentSectioningStatus.class
 					).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	

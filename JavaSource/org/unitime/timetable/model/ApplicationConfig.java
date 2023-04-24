@@ -20,17 +20,13 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
-
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
@@ -40,8 +36,6 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.base.BaseApplicationConfig;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
-
-
 
 
 /**
@@ -90,9 +84,9 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	    //return defaultValue if hibernate is not yet initialized
         if (!HibernateUtil.isConfigured()) return defaultValue;
         
-        String value = (String)new ApplicationConfigDAO().
+        String value = ApplicationConfigDAO.getInstance().
             getSession().
-            createQuery("select c.value from ApplicationConfig c where c.key=:key").
+            createQuery("select c.value from ApplicationConfig c where c.key=:key", String.class).
             setParameter("key", key, org.hibernate.type.StringType.INSTANCE).setCacheable(true).uniqueResult();
         
         return (value==null?defaultValue:value);
@@ -119,7 +113,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
     	
         org.hibernate.Session hibSession = ApplicationConfigDAO.getInstance().createNewSession();
         try {
-        	for (ApplicationConfig config: (List<ApplicationConfig>)hibSession.createQuery("from ApplicationConfig where key like 'log4j.logger.%'").list()) {
+        	for (ApplicationConfig config: hibSession.createQuery("from ApplicationConfig where key like 'log4j.logger.%'", ApplicationConfig.class).list()) {
         		Level level = Level.getLevel(config.getValue());
         		boolean root = "log4j.logger.root".equals(config.getKey());
         		if (root)

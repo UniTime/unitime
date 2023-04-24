@@ -44,7 +44,7 @@ public class GetRoomsOfABuildingBackend implements GwtRpcImplementation<GetRooms
 		GwtRpcResponseList response = new GwtRpcResponseList();
 		for (Room room: (List<Room>)
 				RoomDAO.getInstance().getSession().createQuery(
-						"from Room r where r.building = :buildingId order by r.roomNumber")
+						"from Room r where r.building = :buildingId order by r.roomNumber", Room.class)
 					.setParameter("buildingId", request.getBuildingId(), org.hibernate.type.LongType.INSTANCE)
 					.setCacheable(true).list()) {
 			response.add(

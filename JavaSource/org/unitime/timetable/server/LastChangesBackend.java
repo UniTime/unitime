@@ -111,7 +111,7 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 		
 		String query = "select l from " + from + " where " + where + (groupBy == null ? "" : " group by " + groupBy ) + " order by " + orderBy;
 		
-		Query q = ChangeLogDAO.getInstance().getSession().createQuery(query);
+		Query<ChangeLog> q = ChangeLogDAO.getInstance().getSession().createQuery(query, ChangeLog.class);
 		
 		if (request.hasOption("limit"))
 			q.setMaxResults(Integer.valueOf(request.getOption("limit")));
@@ -131,7 +131,10 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 			q.setParameter("locType", NonUniversityLocation.class.getName(), org.hibernate.type.StringType.INSTANCE);
 		}
 
-		return q.setParameter("type", request.getObjectType(), org.hibernate.type.StringType.INSTANCE).setParameter("id", request.getObjectId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
+		q.setParameter("type", request.getObjectType(), org.hibernate.type.StringType.INSTANCE);
+		q.setParameter("id", request.getObjectId(), org.hibernate.type.LongType.INSTANCE);
+		q.setCacheable(true);
+		return q.list();
 	}
 
 }

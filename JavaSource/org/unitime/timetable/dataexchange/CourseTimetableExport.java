@@ -65,21 +65,21 @@ public class CourseTimetableExport extends CourseOfferingExport {
             
             if (ApplicationProperty.DataExchangeIncludeMeetings.isTrue()) {
             	iClassEvents = new HashMap<Long, ClassEvent>();
-            	for (ClassEvent e: (List<ClassEvent>)getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+            	for (ClassEvent e: getHibSession().createQuery("from ClassEvent e where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", ClassEvent.class)
             			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             		iClassEvents.put(e.getClazz().getUniqueId(), e);
             	}
             	iMeetingLocations = new HashMap<Long, Location>();
-                for (Location l: (List<Location>)getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId")
+                for (Location l: getHibSession().createQuery("from Location l where l.session.uniqueId = :sessionId", Location.class)
                 		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
                 	iMeetingLocations.put(l.getPermanentId(), l);
             	}
             }
             
-            List<CourseOffering> courses = (List<CourseOffering>)getHibSession().createQuery(
+            List<CourseOffering> courses = getHibSession().createQuery(
                     "select c from CourseOffering as c where " +
                     "c.subjectArea.session.uniqueId=:sessionId " + 
-                    "order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr").
+                    "order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class).
                     setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                     setFetchSize(1000).list();
             

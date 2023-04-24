@@ -117,7 +117,7 @@ public class ExamInfoAction extends UniTimeAction<ExamInfoForm> {
         model.setSolver(WebSolver.getExamSolver(request.getSession()));
         
         if (examId != null) {
-            model.setExam(new ExamDAO().get(examId));
+            model.setExam(ExamDAO.getInstance().get(examId));
             form.save(request.getSession());
         }
         

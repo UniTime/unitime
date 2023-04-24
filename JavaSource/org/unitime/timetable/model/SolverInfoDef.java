@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -30,8 +29,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import org.unitime.timetable.model.base.BaseSolverInfoDef;
 import org.unitime.timetable.model.dao.SolverInfoDefDAO;
-
-
 
 
 /**
@@ -66,6 +63,6 @@ public class SolverInfoDef extends BaseSolverInfoDef {
 	}
 
 	public static SolverInfoDef findByName(String name) {
-		return findByName((new SolverInfoDefDAO()).getSession(), name);
+		return findByName((SolverInfoDefDAO.getInstance()).getSession(), name);
 	}	
 }

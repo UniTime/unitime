@@ -45,9 +45,13 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.form.ExamPdfReportForm.RegisteredReport;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -99,7 +103,7 @@ public class PdfExamReportQueueItem extends QueueItem {
         if (!iForm.getAll()) {
         	iName += " (";
             for (int i=0;i<iForm.getSubjects().length;i++) {
-                SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
+                SubjectArea subject = SubjectAreaDAO.getInstance().get(Long.valueOf(iForm.getSubjects()[i]));
                 if (i > 0) iName += ", ";
                 iName += subject.getSubjectAreaAbbreviation();
             }
@@ -129,43 +133,44 @@ public class PdfExamReportQueueItem extends QueueItem {
                     if (ApplicationProperty.ExaminationPdfReportsPreloadCrosslistedExams.isTrue()) {
                 		setStatus("  " + MSG.statusFetchingExams());
                 		hibSession.createQuery(
-                                "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
+                                "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", ExamOwner.class
                                 ).setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
                 		setStatus("  " + MSG.statusFetchingRelatedClasses());
                         hibSession.createQuery(
-                                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class_.class)
                                 .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("classType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedConfigs());
                         hibSession.createQuery(
-                                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", InstrOfferingConfig.class)
                                 .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("configType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedCourses());
                         hibSession.createQuery(
-                                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", CourseOffering.class)
                                 .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("courseType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
                         setStatus("  " + MSG.statusFetchingRelatedOfferings());
                         hibSession.createQuery(
-                                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", InstructionalOffering.class)
                                 .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE)
                                 .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
                         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
                         setStatus("  " + MSG.statusLoadingStudentsFromClasses());
-                        for (Iterator i=
+                        for (Object[] o:
                             hibSession.createQuery(
                             "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                             "Exam x inner join x.owners o, "+
                             "StudentClassEnrollment e inner join e.clazz c "+
                             "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                            "o.ownerId=c.uniqueId").setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                                Object[] o = (Object[])i.next();
+                            "o.ownerId=c.uniqueId", Object[].class)
+                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                                 Long ownerId = (Long)o[0];
                                 Long studentId = (Long)o[1];
                                 Long courseId = (Long)o[2];
@@ -182,7 +187,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 studentsOfCourse.add(studentId);
                         }
                         setStatus("  " + MSG.statusLoadingStudentsFromConfigs());
-                        for (Iterator i=
+                        for (Object o[]:
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
@@ -190,8 +195,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                                    "o.ownerId=ioc.uniqueId").setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                            Object[] o = (Object[])i.next();
+                                    "o.ownerId=ioc.uniqueId", Object[].class)
+                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];
@@ -208,15 +214,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                             studentsOfCourse.add(studentId);
                         }
                         setStatus("  " + MSG.statusLoadingStudentsFromCourses());
-                        for (Iterator i=
+                        for (Object[] o:
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering co " +
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                                    "o.ownerId=co.uniqueId").setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                            Object[] o = (Object[])i.next();
+                                    "o.ownerId=co.uniqueId", Object[].class)
+                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];
@@ -233,15 +240,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                             studentsOfCourse.add(studentId);
                         }
                         setStatus("  " + MSG.statusLoadingStudentsFromOfferings());
-                        for (Iterator i=
+                        for (Object[] o:
                             hibSession.createQuery(
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
                                     "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                                    "o.ownerId=io.uniqueId").setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE).setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list().iterator();i.hasNext();) {
-                            Object[] o = (Object[])i.next();
+                                    "o.ownerId=io.uniqueId", Object[].class)
+                            .setParameter("sessionId", iExamSolver.getSessionId(), org.hibernate.type.LongType.INSTANCE)
+                            .setParameter("examTypeId", iExamSolver.getExamTypeId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
                             Long courseId = (Long)o[2];
@@ -272,7 +280,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                 }
             } else {
                 for (int i=0;i<iForm.getSubjects().length;i++) {
-                    SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[i]));
+                    SubjectArea subject = SubjectAreaDAO.getInstance().get(Long.valueOf(iForm.getSubjects()[i]));
                     TreeSet<ExamAssignmentInfo> examsThisSubject = new TreeSet();
                     for (Iterator j=Exam.findExamsOfSubjectArea(subject.getUniqueId(), iForm.getExamType()).iterator();j.hasNext();) {
                         examsThisSubject.add(new ExamAssignmentInfo((Exam)j.next()));
@@ -301,7 +309,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                         getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                        newInstance(iForm.getReportMode().ordinal(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
+                        newInstance(iForm.getReportMode().ordinal(), file, SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
                     report.setDirect(iForm.getDirect());
                     report.setM2d(iForm.getM2d());
                     report.setBtb(iForm.getBtb());
@@ -327,7 +335,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     }
                 } else {
                     for (int j=0;j<iForm.getSubjects().length;j++) {
-                        SubjectArea subject = new SubjectAreaDAO().get(Long.valueOf(iForm.getSubjects()[j]));
+                        SubjectArea subject = SubjectAreaDAO.getInstance().get(Long.valueOf(iForm.getSubjects()[j]));
                         File file = ApplicationProperties.getTempFile(name+"_"+subject.getSubjectAreaAbbreviation(), PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
                         int nrExams = 0;
                         for (ExamAssignmentInfo exam : exams) {
@@ -337,7 +345,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         List<SubjectArea> subjects = new ArrayList<SubjectArea>(); subjects.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                            newInstance(iForm.getReportMode().ordinal(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
+                            newInstance(iForm.getReportMode().ordinal(), file, SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
                         report.setDirect(iForm.getDirect());
                         report.setM2d(iForm.getM2d());
                         report.setBtb(iForm.getBtb());

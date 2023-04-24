@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -53,14 +52,14 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 	
 	public static EventServiceProvider getEventServiceProvider(String reference, org.hibernate.Session hibSession) {
 		if (reference == null || reference.isEmpty()) return null;
-		return (EventServiceProvider)hibSession.createQuery(
-				"from EventServiceProvider where reference = :reference")
+		return hibSession.createQuery(
+				"from EventServiceProvider where reference = :reference", EventServiceProvider.class)
 				.setParameter("reference", reference, org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
 	@Transient
 	public boolean isUsed() {
-		if (((Number)EventServiceProviderDAO.getInstance().getSession().createQuery("select count(e) from Event e inner join e.requestedServices p where p.uniqueId = :providerId")
+		if ((EventServiceProviderDAO.getInstance().getSession().createQuery("select count(e) from Event e inner join e.requestedServices p where p.uniqueId = :providerId", Number.class)
 			.setParameter("providerId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).uniqueResult()).intValue() > 0) return true;
 		return false;
 	}
@@ -75,20 +74,20 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 	public static TreeSet<EventServiceProvider> getServiceProviders(UserContext user) {
 		TreeSet<EventServiceProvider> providers = new TreeSet<EventServiceProvider>();
 		providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-				"from EventServiceProvider where visible = true and session is null"
+				"from EventServiceProvider where visible = true and session is null", EventServiceProvider.class
 				).setCacheable(true).list());
 		if (user == null || user.getCurrentAuthority() == null) return providers;
 		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
 			providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"from EventServiceProvider where visible = true and session = :sessionId"
+					"from EventServiceProvider where visible = true and session = :sessionId", EventServiceProvider.class
 					).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		} else {
 			providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"from EventServiceProvider where visible = true and session = :sessionId and department is null"
+					"from EventServiceProvider where visible = true and session = :sessionId and department is null", EventServiceProvider.class
 					).setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			for (UserQualifier q: user.getCurrentAuthority().getQualifiers("Department"))
 				providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-						"from EventServiceProvider where visible = true and department = :departmentId"
+						"from EventServiceProvider where visible = true and department = :departmentId", EventServiceProvider.class
 						).setParameter("departmentId", (Long)q.getQualifierId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 		}
 		return providers;
@@ -100,12 +99,12 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 		if (getSession() == null) {
 			return this;
 		} else if (getDepartment() == null) {
-			return (EventServiceProvider)hibSession.createQuery(
-					"from EventServiceProvider where session = :sessionId and department is null and reference = :reference")
+			return hibSession.createQuery(
+					"from EventServiceProvider where session = :sessionId and department is null and reference = :reference", EventServiceProvider.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("reference", getReference(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 		} else {
-			return (EventServiceProvider)hibSession.createQuery(
-					"from EventServiceProvider where session = :sessionId and department.deptCode = :deptCode and reference = :reference")
+			return hibSession.createQuery(
+					"from EventServiceProvider where session = :sessionId and department.deptCode = :deptCode and reference = :reference", EventServiceProvider.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("deptCode", getDepartment().getDeptCode(), org.hibernate.type.StringType.INSTANCE).setParameter("reference", getReference(), org.hibernate.type.StringType.INSTANCE).setMaxResults(1).setCacheable(true).uniqueResult();
 		}
 	}
@@ -115,8 +114,8 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 	}
 	
 	public static List<EventServiceProvider> findAll(Long sessionId) {
-		return (List<EventServiceProvider>)EventServiceProviderDAO.getInstance().getSession().createQuery(
-				"from EventServiceProvider where visible = true and (session is null or session = :sessionId)")
+		return EventServiceProviderDAO.getInstance().getSession().createQuery(
+				"from EventServiceProvider where visible = true and (session is null or session = :sessionId)", EventServiceProvider.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
@@ -124,33 +123,33 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 		if (getSession() == null) {
 			if (isAllRooms()) return null;
 			HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId")
+					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId")
+					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			return ids;
 		} else if (getDepartment() == null) {
 			if (isAllRooms()) return null;
 			HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId")
+					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
 					.setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId")
+					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
 					.setParameter("sessionId", getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			return ids;
 		} else {
 			if (isAllRooms()) {
 				return new HashSet<Long>(
 						EventServiceProviderDAO.getInstance().getSession().createQuery(
-						"select l.uniqueId from Location l where l.eventDepartment = :departmentId")
+						"select l.uniqueId from Location l where l.eventDepartment = :departmentId", Long.class)
 						.setParameter("departmentId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 			} else {
 				HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
-						"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department")
+						"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department", Long.class)
 						.setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 				ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
-						"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department")
+						"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department", Long.class)
 						.setParameter("serviceId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 				return ids;	
 			}

@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.curricula;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.DataProperties;
@@ -49,11 +48,11 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 		iCouseRequests.init(hibSession, progress, session, offerings);
 		super.init(hibSession, progress, session, offerings);
 		
-		for (Object[] o : (List<Object[]>)hibSession.createQuery(
+		for (Object[] o : hibSession.createQuery(
 				"select a.academicAreaAbbreviation, m.code, f.code, sum(ac.weight) from LastLikeCourseDemand x inner join x.student s " +
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where x.subjectArea.session.uniqueId = :sessionId " +
-				"group by a.academicAreaAbbreviation, m.code, f.code")
+				"group by a.academicAreaAbbreviation, m.code, f.code", Object[].class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			String area = (String)o[0];
@@ -73,11 +72,11 @@ public class CourseRequestsWithProjectedLastLikes extends ProjectedStudentCourse
 			major2ll.put(major, students);
 		}
 		
-		for (Object[] o : (List<Object[]>)hibSession.createQuery(
+		for (Object[] o : hibSession.createQuery(
 				"select a.academicAreaAbbreviation, m.code, f.code, sum(ac.weight) from CourseRequest x inner join x.courseDemand.student s " +
 				"inner join s.areaClasfMajors ac inner join ac.academicClassification f inner join ac.academicArea a " +
 				"inner join ac.major m where s.session.uniqueId = :sessionId " +
-				"group by a.academicAreaAbbreviation, m.code, f.code")
+				"group by a.academicAreaAbbreviation, m.code, f.code", Object[].class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list()) {
 			String area = (String)o[0];

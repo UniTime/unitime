@@ -292,7 +292,7 @@ public class InstructorSchedulingBackendHelper {
     			InstructorInfo i = context.getSolver().getInstructorInfo(instructor.getUniqueId());
     			info.setAssignedLoad(i == null ? 0f : i.getAssignedLoad());
     		} else {
-        		Number load = ((Number)hibSession.createQuery("select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+        		Number load = (hibSession.createQuery("select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId", Number.class)
         				.setParameter("instructorId", instructor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult());
             	info.setAssignedLoad(load == null ? 0f : load.floatValue());
     		}
@@ -403,7 +403,7 @@ public class InstructorSchedulingBackendHelper {
 			info.setTeachingPreference(instructor.getTeachingPreference().getPrefProlog());
 		}
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
-		for (TeachingRequest tr: (List<TeachingRequest>)hibSession.createQuery("select r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+		for (TeachingRequest tr: hibSession.createQuery("select r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId", TeachingRequest.class)
 				.setParameter("instructorId", instructor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (tr.isCancelled()) continue;
 			TeachingRequestInfo request = getRequest(tr, info, context.getNameFormat(), unavailability);
@@ -632,8 +632,8 @@ public class InstructorSchedulingBackendHelper {
 			InstructorInfo i = context.getSolver().getInstructorInfo(instructor.getUniqueId());
 			info.setAssignedLoad(i == null ? 0f : i.getAssignedLoad());
 		} else {
-    		Number load = ((Number)TeachingRequestDAO.getInstance().getSession().createQuery(
-    				"select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+    		Number load = (TeachingRequestDAO.getInstance().getSession().createQuery(
+    				"select sum(r.teachingLoad) from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId", Number.class)
     				.setParameter("instructorId", instructor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult());
         	info.setAssignedLoad(load == null ? 0f : load.floatValue());
 		}
@@ -653,9 +653,9 @@ public class InstructorSchedulingBackendHelper {
 		List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 		Collections.sort(current);
 		DepartmentalInstructor oldInstructor = (index < current.size() ? current.get(index) : null);
-		List<DepartmentalInstructor> list = (List<DepartmentalInstructor>)hibSession.createQuery(
+		List<DepartmentalInstructor> list = hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i where " +
-    			"i.department.uniqueId = :deptId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0"
+    			"i.department.uniqueId = :deptId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0", DepartmentalInstructor.class
     			).setParameter("deptId", tr.getOffering().getControllingCourseOffering().getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("prohibited", PreferenceLevel.sProhibited, org.hibernate.type.StringType.INSTANCE).list();
 		Collections.sort(list);
 		for (DepartmentalInstructor instructor: list) {
@@ -669,8 +669,8 @@ public class InstructorSchedulingBackendHelper {
 	
 	public void computeDomainForInstructor(SuggestionsResponse response, DepartmentalInstructor instructor, TeachingRequest selected, Context context) {
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
-		List<TeachingRequest> requests = (List<TeachingRequest>)hibSession.createQuery(
-				"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.uniqueId = :deptId order by co.subjectAreaAbbv, co.courseNbr")
+		List<TeachingRequest> requests = hibSession.createQuery(
+				"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.uniqueId = :deptId order by co.subjectAreaAbbv, co.courseNbr", TeachingRequest.class)
 				.setParameter("deptId", instructor.getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 		InstructorAssignment selectedAssignment = null;
 		if (selected != null) {
@@ -710,7 +710,7 @@ public class InstructorSchedulingBackendHelper {
 		Context(SessionContext cx, InstructorSchedulingProxy solver) {
 			iSessionContext = cx;
 			iNameFormat = (cx == null ? solver.getProperties().getProperty("General.InstructorFormat", NameFormat.LAST_FIRST.reference()) : UserProperty.NameFormat.get(cx.getUser()));
-			iAttributeTypes =  (List<InstructorAttributeType>)InstructorAttributeTypeDAO.getInstance().getSession().createQuery("from InstructorAttributeType").setCacheable(true).list();
+			iAttributeTypes =  InstructorAttributeTypeDAO.getInstance().getSession().createQuery("from InstructorAttributeType", InstructorAttributeType.class).setCacheable(true).list();
 			iSolver = solver;
 		}
 		
@@ -840,8 +840,8 @@ public class InstructorSchedulingBackendHelper {
 		if (suggested != null)
 			for (InstructorAssignment a: suggested)
 				if (instructor.equals(a.getAssigment())) ret.add(a);
-		tr: for (TeachingRequest tr: (List<TeachingRequest>)TeachingRequestDAO.getInstance().getSession().createQuery(
-				"select distinct r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId")
+		tr: for (TeachingRequest tr: TeachingRequestDAO.getInstance().getSession().createQuery(
+				"select distinct r from TeachingRequest r inner join r.assignedInstructors i where i.uniqueId = :instructorId", TeachingRequest.class)
 				.setParameter("instructorId", instructor.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()) {
 			if (tr.isCancelled()) continue;
 			if (suggested != null)

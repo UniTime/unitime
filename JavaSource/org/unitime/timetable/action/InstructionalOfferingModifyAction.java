@@ -193,7 +193,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         }
 
         if (form.getInstrOfferingId()!=null) {
-        	InstructionalOffering io = (new InstructionalOfferingDAO()).get(form.getInstrOfferingId());
+        	InstructionalOffering io = (InstructionalOfferingDAO.getInstance()).get(form.getInstrOfferingId());
         	if (io!=null)
         		LookupTables.setupDatePatterns(request, sessionContext.getUser(), MSG.dropDefaultDatePattern(), null, io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()); // Facility Groups
         }
@@ -217,7 +217,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 		sessionContext.checkPermission(instrOffrConfigId, "InstrOfferingConfig", Right.MultipleClassSetup);
 
         // Load details
-        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
+        InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
         InstrOfferingConfig ioc = iocDao.get(Long.valueOf(instrOffrConfigId));
         InstructionalOffering io = ioc.getInstructionalOffering();
 
@@ -304,7 +304,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
      */
     private void doUpdate() throws Exception {
         // Get Instructional Offering Config
-        InstrOfferingConfigDAO iocdao = new InstrOfferingConfigDAO();
+        InstrOfferingConfigDAO iocdao = InstrOfferingConfigDAO.getInstance();
         InstrOfferingConfig ioc = iocdao.get(form.getInstrOffrConfigId());
         Session hibSession = iocdao.getSession();
     	// Get default room group
@@ -604,15 +604,15 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 
     private HashMap addClasses(InstrOfferingConfig ioc, Session hibSession){
     	HashMap tmpClsToRealClass = new HashMap();
-		SchedulingSubpartDAO ssdao = new SchedulingSubpartDAO();
+		SchedulingSubpartDAO ssdao = SchedulingSubpartDAO.getInstance();
 		SchedulingSubpart ss = null;
 		Class_DAO cdao = new Class_DAO();
 		Class_ parentClass = null;
-		DepartmentDAO deptdao = new DepartmentDAO();
+		DepartmentDAO deptdao = DepartmentDAO.getInstance();
 		Department managingDept = null;
-		DatePatternDAO dpdao = new DatePatternDAO();
+		DatePatternDAO dpdao = DatePatternDAO.getInstance();
 		DatePattern dp = null;
-		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
+		LearningManagementSystemInfoDAO lmsdao = LearningManagementSystemInfoDAO.getInstance();
 		LearningManagementSystemInfo lms = null;
 
 		Iterator it1 = form.getClassIds().listIterator();
@@ -733,11 +733,11 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 
     private void modifyClasses(InstrOfferingConfig ioc, Session hibSession, RoomGroup rg, HashMap tmpClassIdsToRealClasses){
 		Class_DAO cdao = new Class_DAO();
-		DepartmentDAO deptdao = new DepartmentDAO();
+		DepartmentDAO deptdao = DepartmentDAO.getInstance();
 		Department managingDept = null;
-		DatePatternDAO dpdao = new DatePatternDAO();
+		DatePatternDAO dpdao = DatePatternDAO.getInstance();
 		DatePattern dp = null;
-		LearningManagementSystemInfoDAO lmsdao = new LearningManagementSystemInfoDAO();
+		LearningManagementSystemInfoDAO lmsdao = LearningManagementSystemInfoDAO.getInstance();
 		LearningManagementSystemInfo lms = null;
 
 		Iterator it1 = form.getClassIds().listIterator();

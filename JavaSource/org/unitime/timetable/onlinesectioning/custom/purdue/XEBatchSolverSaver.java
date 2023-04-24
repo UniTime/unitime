@@ -263,9 +263,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 	public void save(Session session, org.hibernate.Session hibSession) {
 		setPhase("Loading classes...", 1);
 		iClasses = new Hashtable<Long, Class_>();
-        for (Class_ clazz: (List<Class_>)hibSession.createQuery(
+        for (Class_ clazz: hibSession.createQuery(
         		"select distinct c from Class_ c where " +
-        		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+        		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Class_.class)
         		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
@@ -273,8 +273,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
         
         iCourses = new Hashtable<Long, CourseOffering>();
         setPhase("Loading courses...", 1);
-        for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
-        		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId")
+        for (CourseOffering course: hibSession.createQuery(
+        		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
         		.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             iCourses.put(course.getUniqueId(), course);
         }

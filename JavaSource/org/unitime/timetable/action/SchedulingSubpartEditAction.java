@@ -145,7 +145,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
             throw new Exception (MSG.errorSubpartInfoNotSupplied());
 
         // If subpart id is not null - load subpart info
-        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
+        SchedulingSubpartDAO sdao = SchedulingSubpartDAO.getInstance();
         SchedulingSubpart ss = sdao.get(Long.valueOf(subpartId));
 
         // Cancel - Go back to Instructional Offering Screen
@@ -391,12 +391,12 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
         if (form.getDatePattern()==null || form.getDatePattern().intValue()<0)
         	ss.setDatePattern(null);
         else
-        	ss.setDatePattern(new DatePatternDAO().get(form.getDatePattern()));
+        	ss.setDatePattern(DatePatternDAO.getInstance().get(form.getDatePattern()));
         
         if (form.getInstructionalType() == null || form.getInstructionalType().length() == 0){
         	// do nothing
         } else {
-        	ItypeDesc newItype = new ItypeDescDAO().get(Integer.valueOf(form.getInstructionalType()));
+        	ItypeDesc newItype = ItypeDescDAO.getInstance().get(Integer.valueOf(form.getInstructionalType()));
         	if (newItype != null){
         		ss.setItype(newItype);
         	}

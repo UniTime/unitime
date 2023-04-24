@@ -200,7 +200,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
             		color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
-        Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
+        Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());
         Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
         Formats.Format<Date> timeFormat = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
         String ts = null;
@@ -282,7 +282,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
             table.addLine(new String[] {color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
-        Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
+        Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());
         Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
         Formats.Format<Date> timeFormat = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
         String ts = null;
@@ -300,13 +300,13 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
                     exams = examAssignment.getExamsOfRoom(location.getUniqueId());
                 else {
                     exams = new TreeSet();
-                    for (Iterator j=new ExamDAO().getSession().createQuery(
-                            "select x from Exam x inner join x.assignedRooms r where x.examType.uniqueId=:examTypeId and r.uniqueId=:locationId").
+                    for (Exam x: ExamDAO.getInstance().getSession().createQuery(
+                            "select x from Exam x inner join x.assignedRooms r where x.examType.uniqueId=:examTypeId and r.uniqueId=:locationId", Exam.class).
                             setParameter("examTypeId", form.getExamType(), org.hibernate.type.LongType.INSTANCE).
                             setParameter("locationId", location.getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                             setCacheable(true).
-                            list().iterator();j.hasNext();) {
-                        exams.add(new ExamAssignment((Exam)j.next()));
+                            list()) {
+                        exams.add(new ExamAssignment(x));
                     }
                 }
                 if (exams==null) exams = new TreeSet();

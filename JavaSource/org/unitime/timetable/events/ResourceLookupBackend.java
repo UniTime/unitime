@@ -80,7 +80,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					if (ApplicationProperty.EventRoomTimetableAllRooms.isTrue()) {
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
 								"where r.session.uniqueId = :sessionId and r.eventDepartment.allowEvents = true and (" +
-								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
+								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)", Room.class)
 								.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.list();
@@ -94,8 +94,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							return ret;
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
-								"where l.session.uniqueId = :sessionId and l.name = :name and l.eventDepartment.allowEvents = true"
-								)
+								"where l.session.uniqueId = :sessionId and l.name = :name and l.eventDepartment.allowEvents = true",
+								NonUniversityLocation.class)
 								.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.list();
@@ -111,7 +111,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					} else {
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
 								"where r.session.uniqueId = :sessionId and (" +
-								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
+								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)",
+								Room.class)
 								.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.list();
@@ -125,8 +126,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							return ret;
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
-								"where l.session.uniqueId = :sessionId and l.name = :name"
-								)
+								"where l.session.uniqueId = :sessionId and l.name = :name",
+								NonUniversityLocation.class)
 								.setParameter("name", name, org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.list();
@@ -143,7 +144,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and " +
-							"lower(s.subjectAreaAbbreviation) = :name")
+							"lower(s.subjectAreaAbbreviation) = :name", SubjectArea.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!subjects.isEmpty()) {
 						SubjectArea subject = subjects.get(0);
@@ -156,7 +157,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					}
 				case COURSE:
 					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and " +
-							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name and c.instructionalOffering.notOffered = false")
+							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name and c.instructionalOffering.notOffered = false",
+							CourseOffering.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!courses.isEmpty()) {
 						CourseOffering course = courses.get(0);
@@ -170,7 +172,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case CURRICULUM:
 					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and " +
-							"lower(c.abbv) = :name or lower(c.name) = :name")
+							"lower(c.abbv) = :name or lower(c.name) = :name", Curriculum.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!curricula.isEmpty()) {
 						Curriculum curriculum = curricula.get(0);
@@ -191,7 +193,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							"lower(c.abbv || ' ' || f.academicClassification.name) = :name or lower(c.name || ' ' || f.academicClassification.name) = :name or " +
 							"lower(c.abbv || f.name) = :name or lower(c.name || f.name) = :name or " +
 							"lower(c.abbv || f.academicClassification.code) = :name or lower(c.name || f.academicClassification.code) = :name or " + 
-							"lower(c.abbv || f.academicClassification.name) = :name or lower(c.name || f.academicClassification.name) = :name)")
+							"lower(c.abbv || f.academicClassification.name) = :name or lower(c.name || f.academicClassification.name) = :name)",
+							CurriculumClassification.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!classifications.isEmpty()) {
 						CurriculumClassification classification = classifications.get(0);
@@ -205,7 +208,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case DEPARTMENT:
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and " +
-							"(lower(d.deptCode) = :name or lower(d.abbreviation) = :name)")
+							"(lower(d.deptCode) = :name or lower(d.abbreviation) = :name)", Department.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!departments.isEmpty()) {
 						Department department = departments.get(0);
@@ -219,7 +222,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case PERSON:
 					List<Student> students = hibSession.createQuery("select s from Student s where s.session.uniqueId = :sessionId and " +
-							"s.externalUniqueId = :name")
+							"s.externalUniqueId = :name", Student.class)
 							.setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!students.isEmpty()) {
 						Student student = students.get(0);
@@ -232,7 +235,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						return ret;
 					}
 					List<DepartmentalInstructor> instructors = hibSession.createQuery("select i from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and " +
-							"i.externalUniqueId = :name")
+							"i.externalUniqueId = :name", DepartmentalInstructor.class)
 							.setParameter("name", name, org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!instructors.isEmpty()) {
 						DepartmentalInstructor instructor = instructors.get(0);
@@ -245,7 +248,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						return ret;
 					}
 					List<EventContact> contacts = hibSession.createQuery("select c from EventContact c where " +
-							"c.externalUniqueId = :name")
+							"c.externalUniqueId = :name", EventContact.class)
 							.setParameter("name", name, org.hibernate.type.StringType.INSTANCE).list();
 					if (!contacts.isEmpty()) {
 						EventContact contact = contacts.get(0);
@@ -265,7 +268,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					return ret;
 				case GROUP:
 					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and " +
-							"(lower(g.groupName) = :name or lower(g.groupAbbreviation) = :name)")
+							"(lower(g.groupName) = :name or lower(g.groupAbbreviation) = :name)", StudentGroup.class)
 							.setParameter("name", name.toLowerCase(), org.hibernate.type.StringType.INSTANCE).setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 					if (!groups.isEmpty()) {
 						StudentGroup group = groups.get(0);
@@ -306,7 +309,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"r.eventDepartment.allowEvents = true and " + 
 								"o.status != 0 and o.roomType = r.roomType and o.department = r.eventDepartment and (" +
 								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
-								"order by r.buildingAbbv, r.roomNumber")
+								"order by r.buildingAbbv, r.roomNumber", Room.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setMaxResults(limit).list();
@@ -326,7 +329,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l, " +
 								"RoomTypeOption o where l.eventDepartment.allowEvents = true and " + 
 								"l.session.uniqueId = :sessionId and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment and lower(l.name) like :name " +
-								"order by l.name")
+								"order by l.name", NonUniversityLocation.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setMaxResults(limit).list();
@@ -351,7 +354,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
 								"where r.session.uniqueId = :sessionId and (" +
 								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
-								"order by r.buildingAbbv, r.roomNumber")
+								"order by r.buildingAbbv, r.roomNumber", Room.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setMaxResults(limit).list();
@@ -370,7 +373,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l where " +
 								"l.session.uniqueId = :sessionId and lower(l.name) like :name " +
-								"order by l.name")
+								"order by l.name", NonUniversityLocation.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setMaxResults(limit).list();
@@ -396,7 +399,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
 							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title) " +
-							"order by s.subjectAreaAbbreviation")
+							"order by s.subjectAreaAbbreviation", SubjectArea.class)
 							.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "% " + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 							.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 					for (SubjectArea subject: subjects) {
@@ -421,7 +424,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					} else if (subjects.isEmpty()) {
 						List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
 								"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
-								"order by s.subjectAreaAbbreviation, c.courseNbr")
+								"order by s.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "% " + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 						for (CourseOffering course: courses) {
@@ -438,7 +441,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case COURSE:
 					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
 							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
-							"order by s.subjectAreaAbbreviation, c.courseNbr")
+							"order by s.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
 							.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "% " + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 							.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 					for (CourseOffering course: courses) {
@@ -453,7 +456,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					break;
 				case CURRICULUM:
 					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and (" +
-							"lower(c.abbv) like :name or lower(c.name) like :title) order by c.abbv")
+							"lower(c.abbv) like :name or lower(c.name) like :title) order by c.abbv", Curriculum.class)
 							.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "%" + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 							.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 					for (Curriculum curriculum: curricula) {
@@ -486,7 +489,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"lower(c.abbv || f.name) like :name or lower(c.name || f.name) like :title or " +
 								"lower(c.abbv || f.academicClassification.code) like :name or lower(c.name || f.academicClassification.code) like :title or " + 
 								"lower(c.abbv || f.academicClassification.name) like :name or lower(c.name || f.academicClassification.name) like :title) " +
-								"order by c.abbv, f.academicClassification.code")
+								"order by c.abbv, f.academicClassification.code",
+								CurriculumClassification.class)
 								.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "%" + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 								.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 								.setMaxResults(limit - resources.size()).list();
@@ -506,7 +510,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case DEPARTMENT:
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and (" +
 							"lower(d.deptCode) like :name or lower(d.abbreviation) like :name or lower(d.name) like :title) " +
-							"order by d.abbreviation, d.deptCode")
+							"order by d.abbreviation, d.deptCode", Department.class)
 							.setParameter("name", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("title", "%" + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 							.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 					for (Department department: departments) {
@@ -521,7 +525,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case GROUP:
 					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and (" +
 							"lower(g.groupAbbreviation) like :abbv or lower(g.groupName) like :name) " +
-							"order by g.groupAbbreviation, g.groupName")
+							"order by g.groupAbbreviation, g.groupName", StudentGroup.class)
 							.setParameter("abbv", query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE).setParameter("name", "%" + query.toLowerCase() + "%", org.hibernate.type.StringType.INSTANCE)
 							.setParameter("sessionId", academicSession.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setMaxResults(limit).list();
 					for (StudentGroup group: groups) {

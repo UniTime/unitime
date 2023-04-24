@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -58,14 +57,14 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
 
 	public static List<Curriculum> findAll(Long sessionId) {
 	    return CurriculumDAO.getInstance().getSession()
-	        .createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId")
+	        .createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class)
 	        .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 	        .setCacheable(true).list();
 	}
 
     public static List<Curriculum> findByDepartment(Long deptId) {
         return CurriculumDAO.getInstance().getSession()
-            .createQuery("select c from Curriculum c where c.department.uniqueId=:deptId")
+            .createQuery("select c from Curriculum c where c.department.uniqueId=:deptId", Curriculum.class)
             .setParameter("deptId", deptId, org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
     }

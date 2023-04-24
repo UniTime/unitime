@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.server.instructor;
 
-import java.util.List;
-
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -57,8 +55,8 @@ public class InstructorAttributePropertiesBackend implements GwtRpcImplementatio
 			response.addDepartment(d);
 		}
 		
-		for (InstructorAttributeType type: (List<InstructorAttributeType>)InstructorAttributeTypeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttributeType order by label").setCacheable(true).list()) {
+		for (InstructorAttributeType type: InstructorAttributeTypeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttributeType order by label", InstructorAttributeType.class).setCacheable(true).list()) {
 			AttributeTypeInterface t = new AttributeTypeInterface();
 			t.setId(type.getUniqueId());
 			t.setAbbreviation(type.getReference());

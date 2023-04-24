@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.hibernate.query.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.Session;
@@ -155,8 +156,9 @@ protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
 protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 	String query = createQueryString(subjectAreas);
-	return(StudentClassEnrollmentDAO.getInstance().getSession().createQuery(query).setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE).list());
-
+	Query q = StudentClassEnrollmentDAO.getInstance().getSession().createQuery(query);
+	q.setParameter("sessId", getSession().getUniqueId().longValue(), org.hibernate.type.LongType.INSTANCE);
+	return q.list();
 }
 
 protected Line buildBaseAuditLine(EnrollmentAuditResult result) {

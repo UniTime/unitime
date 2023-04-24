@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -33,8 +32,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCourseCatalog;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-
-
 
 
 /**
@@ -75,13 +72,13 @@ public class CourseCatalog extends BaseCourseCatalog {
 		if (courseOffering.getPermId() != null && Integer.parseInt(courseOffering.getPermId()) > 0){
 			query += "  and cc.permanentId = '" + courseOffering.getPermId() + "'";
 		}
-		List l = SubjectAreaDAO.getInstance().getSession().createQuery(query)
+		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
 					.list();
 		if (l != null && l.size() == 1){
-			return((CourseCatalog) l.get(0));
+			return l.get(0);
 		}
 		if (l != null && l.size() > 1){
 			CourseCatalog cc = null;
@@ -109,7 +106,7 @@ public class CourseCatalog extends BaseCourseCatalog {
 		query += " where cc.session.uniqueId=:sessionId";
 		query += "  and cc.subject=:subjectAbbv";
 		query += "  and cc.courseNumber=:courseNbr";
-		List l = SubjectAreaDAO.getInstance().getSession().createQuery(query)
+		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("courseNbr", courseOffering.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)

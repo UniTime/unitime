@@ -30,9 +30,6 @@ import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
-import javax.persistence.Entity;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -73,6 +70,10 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao._RootDAO;
 
+import javax.persistence.Entity;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+
 /**
  * @author Tomas Muller
  */
@@ -101,10 +102,12 @@ public class HibernateUtil {
     
     public static void fixSchemaInFormulas(Metadata meta, String schema, Class dialect) throws ClassNotFoundException {
     	for (PersistentClass pc: meta.getEntityBindings()) {
+    		// Hiberbate 6: for (Property p : pc.getProperties())
     		for (Iterator j=pc.getPropertyIterator();j.hasNext();) {
-                Property p = (Property)j.next();
-                for (Iterator k=p.getColumnIterator();k.hasNext();) {
-                    Selectable c = (Selectable)k.next();
+    			Property p = (Property)j.next();
+    			// Hibernate 6: for (Selectable c: p.getSelectables())
+    			for (Iterator k=p.getColumnIterator();k.hasNext();) {
+    				Selectable c = (Selectable)k.next();
                     if (c instanceof Formula) {
                         Formula f = (Formula)c;
                         boolean updated = false;
@@ -456,11 +459,21 @@ public class HibernateUtil {
     		builder.applySqlFunction(
     				"bit_and",
     				new SQLFunctionTemplate(IntegerType.INSTANCE, "cast(?1 as int) & cast(?2 as int)")
+    				/* // Hibernate 6: SQLFunctionTemplate >> PatternBasedSqmFunctionDescriptor
+    				new PatternBasedSqmFunctionDescriptor(
+    						new PatternRenderer("cast(?1 as int) & cast(?2 as int)"),
+    						null,
+    						null,
+    						null,
+    						null,
+    						FunctionKind.NORMAL,
+    						null
+    						)*/
     				);
     		builder.applySqlFunction(
     				"adddate",
     				new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 + (?2) * interval '1 day'")
-    				);	
+    				);
         } else {
         	builder.applySqlFunction(
     				"bit_and",

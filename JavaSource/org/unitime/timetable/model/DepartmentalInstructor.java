@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -65,8 +64,6 @@ import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
-
-
 
 
 /**
@@ -248,7 +245,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     public Set<Location> getAvailableRooms() {
     	return new TreeSet<Location>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r from RoomDept rd inner join rd.room r inner join rd.department d " +
-    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))"
+    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))", Location.class
     			).setParameter("sessionId", getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("deptId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     }
@@ -257,7 +254,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     public Set<Building> getAvailableBuildings() {
     	return new TreeSet<Building>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r.building from Room r inner join r.roomDepts rd inner join rd.department d " +
-    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))"
+    			"where r.session = :sessionId and (d = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))", Building.class
     			).setParameter("sessionId", getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
     			.setParameter("deptId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
     }
@@ -295,9 +292,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			ret.add(DepartmentalInstructorDAO.getInstance().get(di.getUniqueId()));
 			return ret;
 		}
-		return (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+		return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 						"from DepartmentalInstructor where externalUniqueId=:puid and " +
-						"department.session.uniqueId=:sessionId")
+						"department.session.uniqueId=:sessionId", DepartmentalInstructor.class)
 				.setParameter("puid", di.getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true).list();
@@ -308,16 +305,16 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 	
 	public static List<DepartmentalInstructor> findInstructorsForDepartment(Long departmentId) {
-		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor where department.uniqueId = :departmentId order by lastName, firstName, middleName")
+		return  DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where department.uniqueId = :departmentId order by lastName, firstName, middleName", DepartmentalInstructor.class)
 				.setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
 				.list();
 	}
 	
 	public static List<DepartmentalInstructor> findInstructorsForSession(Long sessionId) {
-		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor where department.session.uniqueId = :sessionId order by lastName, firstName, middleName")
+		return  DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where department.session.uniqueId = :sessionId order by lastName, firstName, middleName", DepartmentalInstructor.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
 				.setCacheable(true)
 				.list();
@@ -349,13 +346,13 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 	
 	public static DepartmentalInstructor findByPuidDepartmentId(String puid, Long deptId) {
-		return(findByPuidDepartmentId(puid, deptId, (new DepartmentalInstructorDAO()).getSession()));
+		return(findByPuidDepartmentId(puid, deptId, (DepartmentalInstructorDAO.getInstance()).getSession()));
 	}
 	
 	public static DepartmentalInstructor findByPuidDepartmentId(String puid, Long deptId, org.hibernate.Session hibSession) {
 		try {
-		return (DepartmentalInstructor)hibSession.
-			createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId").
+		return hibSession.
+			createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId", DepartmentalInstructor.class).
 			setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
 			setParameter("deptId", deptId.longValue(), org.hibernate.type.LongType.INSTANCE).
 			setCacheable(true).
@@ -363,8 +360,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			uniqueResult();
 		} catch (NonUniqueResultException e) {
 			Debug.warning("There are two or more instructors with puid "+puid+" for department "+deptId+" -- returning the first one.");
-			return (DepartmentalInstructor)hibSession.
-				createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId").
+			return hibSession.
+				createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId", DepartmentalInstructor.class).
 				setParameter("puid", puid, org.hibernate.type.StringType.INSTANCE).
 				setParameter("deptId", deptId.longValue(), org.hibernate.type.LongType.INSTANCE).
 				setCacheable(true).
@@ -374,7 +371,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 
 	public DepartmentalInstructor findThisInstructorInSession(Long sessionId){
-		return findThisInstructorInSession(sessionId, (new DepartmentalInstructorDAO()).getSession());
+		return findThisInstructorInSession(sessionId, (DepartmentalInstructorDAO.getInstance()).getSession());
 	}
 	
 	public DepartmentalInstructor findThisInstructorInSession(Long sessionId, org.hibernate.Session hibSession){
@@ -460,9 +457,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(newDepartmentalInstructor);
 	}
 	
-    public static List findAllExamInstructors(Long sessionId, Long examTypeId) {
-        return (new DepartmentalInstructorDAO()).getSession()
-                .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
+    public static List<DepartmentalInstructor> findAllExamInstructors(Long sessionId, Long examTypeId) {
+        return (DepartmentalInstructorDAO.getInstance()).getSession()
+                .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", DepartmentalInstructor.class)
                 .setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
@@ -470,18 +467,18 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     
     public List<Exam> getExams(Integer examType) {
         if (getExternalUniqueId()!=null) {
-            return (new DepartmentalInstructorDAO()).getSession()
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
-                		"and x.examType.type=:examType")
+                		"and x.examType.type=:examType", Exam.class)
                 .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("sessionId", getDepartment().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("externalId", getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                 .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
                 .setCacheable(true).list();
         } else {
-            return (new DepartmentalInstructorDAO()).getSession()
-            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType=:examType")
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType=:examType", Exam.class)
             .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             .setParameter("examType", examType, org.hibernate.type.IntegerType.INSTANCE)
             .setCacheable(true).list();
@@ -491,18 +488,18 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     
     public List<Exam> getExams(ExamType examType) {
         if (getExternalUniqueId()!=null) {
-            return (new DepartmentalInstructorDAO()).getSession()
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
-                		"and x.examType.uniqueId=:examTypeId")
+                		"and x.examType.uniqueId=:examTypeId", Exam.class)
                 .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("sessionId", getDepartment().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("externalId", getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                 .setParameter("examTypeId", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
         } else {
-            return (new DepartmentalInstructorDAO()).getSession()
-            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType.uniqueId=:examTypeId")
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType.uniqueId=:examTypeId", Exam.class)
             .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             .setParameter("examTypeId", examType.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
@@ -513,16 +510,16 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	@Transient
     public List<Exam> getAllExams() {
         if (getExternalUniqueId()!=null) {
-            return (new DepartmentalInstructorDAO()).getSession()
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
-                		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId))")
+                		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId))", Exam.class)
                 .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("sessionId", getDepartment().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("externalId", getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
                 .setCacheable(true).list();
         } else {
-            return (new DepartmentalInstructorDAO()).getSession()
-            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId")
+            return (DepartmentalInstructorDAO.getInstance()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId", Exam.class)
             .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
             .setCacheable(true).list();
             
@@ -531,9 +528,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     
 	@Transient
     public Collection<Assignment> getCommitedAssignments() {
-    	return new DepartmentalInstructorDAO().getSession().createQuery(
+    	return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
                 "select a from Assignment a inner join a.instructors i where " +
-                "a.solution.commited=true and i.uniqueId=:instructorId")
+                "a.solution.commited=true and i.uniqueId=:instructorId", Assignment.class)
                 .setParameter("instructorId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setCacheable(true).list();
     }
@@ -568,7 +565,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     public Set<CourseOffering> getAvailableCourses() {
     	return new TreeSet<CourseOffering>(
     			DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-    					"from CourseOffering c where c.subjectArea.department.uniqueId = :departmentId and c.isControl = true and c.instructionalOffering.notOffered = false"
+    					"from CourseOffering c where c.subjectArea.department.uniqueId = :departmentId and c.isControl = true and c.instructionalOffering.notOffered = false", CourseOffering.class
     				).setParameter("departmentId", getDepartment().getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).list()
     			);
     }
@@ -649,9 +646,10 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	
 	public static List<DepartmentalInstructor> getUserInstructors(UserContext user) {
 		if (user == null || user.getCurrentAcademicSessionId() == null || user.getExternalUserId() == null) return null;
-		return (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+		return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
-				"order by i.department.deptCode").setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
+				"order by i.department.deptCode", DepartmentalInstructor.class)
+				.setParameter("sessionId", user.getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("externalId", user.getExternalUserId(), org.hibernate.type.StringType.INSTANCE).setCacheable(true).list();
 	}
 	

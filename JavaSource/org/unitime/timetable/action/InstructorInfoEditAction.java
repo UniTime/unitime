@@ -166,7 +166,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	private void doDelete() throws Exception {
 
 	    String instructorId = form.getInstructorId();
-	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+	    DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 	    
 		sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete);
 
@@ -249,7 +249,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	private void doLoad() {
 
 	    String instructorId = form.getInstructorId();
-	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
+	    DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
         DepartmentalInstructor inst = idao.get(Long.valueOf(instructorId));      
 	    
         // populate form

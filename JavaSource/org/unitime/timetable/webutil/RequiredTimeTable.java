@@ -35,8 +35,6 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
-
-
 /** This class provides a time pattern HTML table.
  *
  * @author Tomas Muller

@@ -21,7 +21,6 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Element;
@@ -53,8 +52,8 @@ public class StudentGroupImport extends BaseImport {
             
             Map<String, StudentGroup> id2group = new Hashtable<String, StudentGroup>();
             Map<String, StudentGroup> code2group = new Hashtable<String, StudentGroup>();
-            for (StudentGroup group: (List<StudentGroup>)getHibSession().createQuery(
-            		"from StudentGroup where session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            for (StudentGroup group: getHibSession().createQuery(
+            		"from StudentGroup where session.uniqueId=:sessionId", StudentGroup.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (group.getExternalUniqueId() != null)
             		id2group.put(group.getExternalUniqueId(), group);
             	code2group.put(group.getGroupAbbreviation(), group);

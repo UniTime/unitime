@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -104,7 +103,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	}
 	
 	public static TreeSet findAll() {
-		return new TreeSet((new DepartmentStatusTypeDAO().findAll()));
+		return new TreeSet((DepartmentStatusTypeDAO.getInstance().findAll()));
 	}
 	
 	public static TreeSet<DepartmentStatusType> findAll(int apply) {

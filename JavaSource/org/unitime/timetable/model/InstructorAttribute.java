@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -57,14 +56,14 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 	}
 	
 	public static List<InstructorAttribute> getAllGlobalAttributes(Long sessionId) throws HibernateException {
-		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null order by name"
+		return InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null order by name", InstructorAttribute.class
 				).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static List<InstructorAttribute> getAllDepartmentalAttributes(Long departmentId) throws HibernateException {
-		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
-				"from InstructorAttribute ia where ia.department.uniqueId = :departmentId order by name"
+		return InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute ia where ia.department.uniqueId = :departmentId order by name", InstructorAttribute.class
 				).setParameter("departmentId", departmentId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list();
 	}
 	
@@ -73,13 +72,13 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 		if (getDepartment() != null) {
 			Department d = getDepartment().findSameDepartmentInSession(session);
 			if (d == null) return null;
-			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
-					"from InstructorAttribute ia where ia.department.uniqueId = :departmentId and ia.code = :code")
+			return InstructorAttributeDAO.getInstance().getSession().createQuery(
+					"from InstructorAttribute ia where ia.department.uniqueId = :departmentId and ia.code = :code", InstructorAttribute.class)
 					.setParameter("departmentId", d.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("code", getCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		} else {
-			return (InstructorAttribute)InstructorAttributeDAO.getInstance().getSession().createQuery(
-					"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null and ia.code = :code")
+			return InstructorAttributeDAO.getInstance().getSession().createQuery(
+					"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null and ia.code = :code", InstructorAttribute.class)
 					.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("code", getCode(), org.hibernate.type.StringType.INSTANCE).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		}

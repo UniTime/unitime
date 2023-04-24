@@ -149,7 +149,7 @@ public class InstructorSearchAction extends UniTimeAction<BlankForm> {
 						);
 			}
 		} else if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
-			Department d = (new DepartmentDAO()).get(Long.valueOf(sessionContext.getAttribute(SessionAttribute.DepartmentId).toString()));
+			Department d = (DepartmentDAO.getInstance()).get(Long.valueOf(sessionContext.getAttribute(SessionAttribute.DepartmentId).toString()));
 			if (d!=null) {
 				BackTracker.markForBack(
 						request,

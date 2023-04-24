@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.action.UniTimeAction;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
 import org.unitime.timetable.reports.enrollment.MissingCourseEnrollmentsAuditReport;
@@ -121,9 +122,9 @@ public class EnrollmentAuditPdfReportForm implements UniTimeForm {
  	    setSubjectArea(context.getAttribute("EnrollmentAuditPdfReport.subjectArea")==null?null:(Long)context.getAttribute("EnrollmentAuditPdfReport.subjectArea"));
 	    try {
 	        iSubjectAreas = new TreeSet(
-	                new SubjectAreaDAO().getSession().createQuery(
+	                SubjectAreaDAO.getInstance().getSession().createQuery(
 	                        "select distinct co.subjectArea from CourseOffering co where "+
-	                        "co.subjectArea.session.uniqueId=:sessionId")
+	                        "co.subjectArea.session.uniqueId=:sessionId", SubjectArea.class)
 	                        .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE)
 	                        .setCacheable(true).list());
 	    } catch (Exception e) {}

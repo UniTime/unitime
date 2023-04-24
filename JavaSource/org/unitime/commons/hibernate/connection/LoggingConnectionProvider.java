@@ -25,14 +25,13 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
-import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.exception.spi.Configurable;
+import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Stoppable;
 
 /**
@@ -197,7 +196,7 @@ public class LoggingConnectionProvider implements ConnectionProvider, Stoppable,
 	}
 
 	@Override
-	public void configure(Properties properties) throws HibernateException {
+	public void configure(Map properties) {
 		if (iConnectionProvider instanceof Configurable)
 			((Configurable)iConnectionProvider).configure(properties);
 	}

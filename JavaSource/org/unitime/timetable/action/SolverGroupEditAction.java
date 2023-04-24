@@ -111,7 +111,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
         		Transaction tx = null;
         		
                 try {
-                	org.hibernate.Session hibSession = (new SolverGroupDAO()).getSession();
+                	org.hibernate.Session hibSession = (SolverGroupDAO.getInstance()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
@@ -151,7 +151,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
     		Transaction tx = null;
     		
             try {
-            	org.hibernate.Session hibSession = (new SolverGroupDAO()).getSession();
+            	org.hibernate.Session hibSession = (SolverGroupDAO.getInstance()).getSession();
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
@@ -174,7 +174,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	    		Transaction tx = null;
 	    		
 	            try {
-	            	org.hibernate.Session hibSession = (new SolverGroupDAO()).getSession();
+	            	org.hibernate.Session hibSession = (SolverGroupDAO.getInstance()).getSession();
 	            	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 	            		tx = hibSession.beginTransaction();
 	            	
@@ -208,7 +208,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	    		Transaction tx = null;
 	    		
 	            try {
-	            	org.hibernate.Session hibSession = (new SolverGroupDAO()).getSession();
+	            	org.hibernate.Session hibSession = (SolverGroupDAO.getInstance()).getSession();
 	            	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 	            		tx = hibSession.beginTransaction();
 	            	
@@ -343,7 +343,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 		    webTable.addLine(null, new String[] {MSG.infoNoSolverGroupInThisSession()}, null, null );			    
 		}
 
-		org.hibernate.Session hibSession = (new SolverGroupDAO()).getSession();
+		org.hibernate.Session hibSession = (SolverGroupDAO.getInstance()).getSession();
         for (Iterator<SolverGroup> i=solverGroups.iterator();i.hasNext();) {
         	SolverGroup group = i.next();
         	if (group.getDepartments()==null || group.getTimetableManagers()==null)

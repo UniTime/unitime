@@ -30,7 +30,6 @@ import java.util.Set;
 
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
@@ -102,7 +101,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingStatusTypes')")
 	public SimpleEditInterface load(SessionContext context, org.hibernate.Session hibSession) {
-		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
+				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
 		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 9 + StatusOption.values().length : 10 + StatusOption.values().length + courseTypes.size()];
 		int idx = 0;
 		fields[idx++] = new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE);
@@ -177,7 +177,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		for (int i = 0; i < StatusOption.values().length; i++)
 			if ("true".equals(record.getField(2 + i))) value += StatusOption.values()[i].getOption().toggle();
 		status.setTypes(new HashSet<CourseType>());
-		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
+				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
 		if (!courseTypes.isEmpty()) {
 			for (int i = 0; i < courseTypes.size(); i++)
 				if ("true".equals(record.getField(3 + StatusOption.values().length + i))) status.getTypes().add(courseTypes.get(i));
@@ -226,7 +227,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		for (int i = 0; i < StatusOption.values().length; i++)
 			if ("true".equals(record.getField(2 + i))) value += StatusOption.values()[i].getOption().toggle();
 		Set<CourseType> types = new HashSet<CourseType>();
-		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
+				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
 		if (!courseTypes.isEmpty()) {
 			for (int i = 0; i < courseTypes.size(); i++)
 				if ("true".equals(record.getField(3 + StatusOption.values().length + i))) types.add(courseTypes.get(i));
@@ -284,9 +286,9 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		if (session) {
 			// session --> check other sessions with the same status, break it up if needed
 			Map<Long, StudentSectioningStatus> others = new HashMap<Long, StudentSectioningStatus>();
-			for (Session s: (List<Session>)hibSession.createQuery("select distinct s.session from Student s where s.sectioningStatus = :uniqueId and s.session != :sessionId"
+			for (Session s: hibSession.createQuery("select distinct s.session from Student s where s.sectioningStatus = :uniqueId and s.session != :sessionId", Session.class
 					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", status.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
-				StudentSectioningStatus other = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference")
+				StudentSectioningStatus other = hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference", StudentSectioningStatus.class)
 						.setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 				if (other == null) {
 					System.out.println("Creating " + status.getReference() + " for " + s.getLabel());
@@ -309,11 +311,11 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 				hibSession.createQuery("update Student set sectioningStatus = :newId where sectioningStatus = :oldId and session = :sessionId"
 						).setParameter("newId", other.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("oldId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).executeUpdate();
 			}
-			for (Session s: (List<Session>)hibSession.createQuery("from Session where defaultSectioningStatus = :uniqueId and uniqueId != :sessionId"
+			for (Session s: hibSession.createQuery("from Session where defaultSectioningStatus = :uniqueId and uniqueId != :sessionId", Session.class
 					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", status.getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 				StudentSectioningStatus other = others.get(s.getUniqueId());
 				if (other == null)
-					other = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference")
+					other = hibSession.createQuery("from StudentSectioningStatus where session = :sessionId and reference = :reference", StudentSectioningStatus.class)
 						.setParameter("sessionId", s.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).uniqueResult();
 				if (other == null) {
 					System.out.println("Creating " + status.getReference() + " for " + s.getLabel());
@@ -336,7 +338,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			}
 		} else {
 			// global -> there should be only one status with this reference (merge others if needed)
-			for (StudentSectioningStatus other: (List<StudentSectioningStatus>)hibSession.createQuery("from StudentSectioningStatus where uniqueId != :uniqueId and reference = :reference"
+			for (StudentSectioningStatus other: hibSession.createQuery("from StudentSectioningStatus where uniqueId != :uniqueId and reference = :reference", StudentSectioningStatus.class
 					).setParameter("uniqueId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("reference", status.getReference(), org.hibernate.type.StringType.INSTANCE).list()) {
 				System.out.println("Removing " + other.getReference() + " from " + (other.getSession() == null ? "GLOBAL" : other.getSession().getLabel()));
 				hibSession.createQuery("update Student set sectioningStatus = :newId where sectioningStatus = :oldId"
@@ -356,8 +358,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 
 	protected void delete(StudentSectioningStatus status, SessionContext context, org.hibernate.Session hibSession) {
 		if (status == null) return;
-		for (StudentSectioningStatus s: (List<StudentSectioningStatus>)hibSession.createQuery(
-				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId").setParameter("statusId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+		for (StudentSectioningStatus s: hibSession.createQuery(
+				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId", StudentSectioningStatus.class).setParameter("statusId", status.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
 			s.setFallBackStatus(null); hibSession.saveOrUpdate(s);
 		}
 		ChangeLog.addChange(hibSession,

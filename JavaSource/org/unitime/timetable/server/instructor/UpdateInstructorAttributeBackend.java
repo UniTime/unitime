@@ -159,14 +159,14 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
 		if (original == null) return null;
 		if (future) {
 			if (original.isDepartmental())
-				return (InstructorAttribute)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select f from InstructorAttribute f, InstructorAttribute o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
-					"and f.code = o.code and f.department.deptCode = o.department.deptCode")
+					"and f.code = o.code and f.department.deptCode = o.department.deptCode", InstructorAttribute.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
-				return (InstructorAttribute)hibSession.createQuery(
+				return hibSession.createQuery(
 					"select f from InstructorAttribute f, InstructorAttribute o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
-					"and f.code = o.code and f.department is null")
+					"and f.code = o.code and f.department is null", InstructorAttribute.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", original.getId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return InstructorAttributeDAO.getInstance().get(original.getId(), hibSession);
@@ -176,14 +176,14 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
 	protected InstructorAttribute lookupAttribute(org.hibernate.Session hibSession, Long attributeId, boolean future, Long sessionId) {
 		if (attributeId == null) return null;
 		if (future) {
-			InstructorAttribute attribute = (InstructorAttribute)hibSession.createQuery(
+			InstructorAttribute attribute = hibSession.createQuery(
 					"select f from InstructorAttribute f, InstructorAttribute o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
-					"and f.code = o.code and f.department.deptCode = o.department.deptCode")
+					"and f.code = o.code and f.department.deptCode = o.department.deptCode", InstructorAttribute.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", attributeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			if (attribute == null)
-				attribute = (InstructorAttribute)hibSession.createQuery(
+				attribute = hibSession.createQuery(
 					"select f from InstructorAttribute f, InstructorAttribute o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
-					"and f.code = o.code and f.department is null")
+					"and f.code = o.code and f.department is null", InstructorAttribute.class)
 					.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setParameter("originalId", attributeId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 			return attribute;
 		} else {
@@ -194,13 +194,13 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
 	protected Collection<DepartmentalInstructor> lookupInstructors(org.hibernate.Session hibSession, List<Long> ids, boolean future, Long sessionId) {
 		if (ids == null || ids.isEmpty()) return new ArrayList<DepartmentalInstructor>();
 		if (future) {
-			return (List<DepartmentalInstructor>)hibSession.createQuery(
+			return hibSession.createQuery(
 					"select f from DepartmentalInstructor f, DepartmentalInstructor o where o.uniqueId in :ids and " +
 					"o.externalUniqueId is not null and f.externalUniqueId = o.externalUniqueId and " +
-					"f.department.deptCode = o.department.deptCode and f.department.session.uniqueId = :sessionId")
+					"f.department.deptCode = o.department.deptCode and f.department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
 					.setParameterList("ids", ids).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).list();
 		} else {
-			return (List<DepartmentalInstructor>)hibSession.createQuery("from DepartmentalInstructor where uniqueId in :ids").setParameterList("ids", ids).list();
+			return hibSession.createQuery("from DepartmentalInstructor where uniqueId in :ids", DepartmentalInstructor.class).setParameterList("ids", ids).list();
 		}
 	}
 
@@ -322,7 +322,7 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
         	hibSession.saveOrUpdate(ch);
         }
         
-        for (InstructorAttributePref p: (List<InstructorAttributePref>)hibSession.createQuery("from InstructorAttributePref p where p.attribute.uniqueId = :id").setParameter("id", ia.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        for (InstructorAttributePref p: hibSession.createQuery("from InstructorAttributePref p where p.attribute.uniqueId = :id", InstructorAttributePref.class).setParameter("id", ia.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         	p.getOwner().getPreferences().remove(p);
         	hibSession.delete(p);
         	hibSession.saveOrUpdate(p.getOwner());

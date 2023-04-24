@@ -20,15 +20,11 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-
-import java.util.List;
 
 
 import org.cpsolver.ifs.util.DistanceMetric;
@@ -49,8 +45,8 @@ public class TravelTime extends BaseTravelTime {
 	}
 	
 	public static void populateTravelTimes(DistanceMetric metric, Long sessionId, org.hibernate.Session hibSession) {
-		for (TravelTime time: (List<TravelTime>)hibSession.createQuery(
-				"from TravelTime where session.uniqueId = :sessionId")
+		for (TravelTime time: hibSession.createQuery(
+				"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list())
 			metric.addTravelTime(time.getLocation1Id(), time.getLocation2Id(), time.getDistance());
 	}
@@ -62,7 +58,7 @@ public class TravelTime extends BaseTravelTime {
 	}
 	
 	public static void populateTravelTimes(DistanceMetric metric, org.hibernate.Session hibSession) {
-		for (TravelTime time: (List<TravelTime>)hibSession.createQuery("from TravelTime").setCacheable(true).list())
+		for (TravelTime time: hibSession.createQuery("from TravelTime", TravelTime.class).setCacheable(true).list())
 			metric.addTravelTime(time.getLocation1Id(), time.getLocation2Id(), time.getDistance());
 	}
 	

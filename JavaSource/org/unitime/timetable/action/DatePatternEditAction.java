@@ -291,7 +291,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
                 request.setAttribute("pattern", form.getDatePattern(request).getPatternHtml(true, form.getUniqueId()));
                 return "list";
             } else {
-            	DatePattern pattern = (new DatePatternDAO()).get(Long.valueOf(id));
+            	DatePattern pattern = (DatePatternDAO.getInstance()).get(Long.valueOf(id));
             	form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
             	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, Long.valueOf(id)));
             	
@@ -314,7 +314,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-                DatePattern dp = (new DatePatternDAO()).get(form.getUniqueId(), hibSession);
+                DatePattern dp = (DatePatternDAO.getInstance()).get(form.getUniqueId(), hibSession);
                 ChangeLog.addChange(
                         hibSession, 
                         sessionContext, 
@@ -357,12 +357,12 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		
             		List classes =
        					hibSession.
-       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId").
+       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId", Class_.class).
        					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		List subparts = 
     					hibSession.
-    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId").
+    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId", SchedulingSubpart.class).
     					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		Vector allClasses = new Vector(classes);
@@ -555,7 +555,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		            	
             	List subparts =
    					hibSession.
-   					createQuery("select distinct c.schedulingSubpart from Class_ as c inner join c.datePattern as dp where dp.session.uniqueId=:sessionId").
+   					createQuery("select distinct c.schedulingSubpart from Class_ as c inner join c.datePattern as dp where dp.session.uniqueId=:sessionId", SchedulingSubpart.class).
    					setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), org.hibernate.type.LongType.INSTANCE).list();
 
             	for (Iterator i=subparts.iterator();i.hasNext();) {
@@ -630,12 +630,12 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		
             		List classes =
        					hibSession.
-       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId").
+       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId", Class_.class).
        					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		List subparts = 
     					hibSession.
-    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId").
+    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId", SchedulingSubpart.class).
     					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		HashSet depts = new HashSet();
@@ -737,12 +737,12 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		
             		List classes =
        					hibSession.
-       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId").
+       					createQuery("select distinct c from Class_ as c inner join c.datePattern as dp where dp.uniqueId=:uniqueId", Class_.class).
        					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		List subparts = 
     					hibSession.
-    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId").
+    					createQuery("select distinct s from SchedulingSubpart as s inner join s.datePattern as dp where dp.uniqueId=:uniqueId", SchedulingSubpart.class).
     					setParameter("uniqueId", dp.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
             		
             		TreeSet allClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));

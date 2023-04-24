@@ -22,7 +22,6 @@ package org.unitime.timetable.onlinesectioning.updates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -78,10 +77,10 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 				continue;
 			}
 			Lock lock = server.lockOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId(),
-					(List<Long>)helper.getHibSession().createQuery(
+					helper.getHibSession().createQuery(
 							"select e.student.uniqueId from StudentClassEnrollment e where "+
-			                "e.clazz.uniqueId = :classId").setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE).list(),
-			                name());
+			                "e.clazz.uniqueId = :classId", Long.class)
+					.setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE).list(), name());
 			try {
 				helper.beginTransaction();
 				try {

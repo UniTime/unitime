@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.hibernate.Transaction;
-import org.hibernate.type.TimestampType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,9 +69,9 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		org.hibernate.Session hibSession = PeriodicTaskDAO.getInstance().createNewSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			List<TaskExecution> executions = (List<TaskExecution>)hibSession.createQuery(
-					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now"
-					).setParameter("now", new Date(), TimestampType.INSTANCE).setParameter("status", ExecutionStatus.QUEUED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
+			List<TaskExecution> executions = hibSession.createQuery(
+					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
+					).setParameter("now", new Date(), org.hibernate.type.DateType.INSTANCE).setParameter("status", ExecutionStatus.QUEUED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
 			for (TaskExecution execution: executions) {
 				if (solverServerService.getQueueProcessor().getByExecutionId(execution.getUniqueId()) != null) continue;
 				try {
@@ -106,9 +105,9 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		org.hibernate.Session hibSession = PeriodicTaskDAO.getInstance().createNewSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			List<TaskExecution> executions = (List<TaskExecution>)hibSession.createQuery(
-					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now"
-					).setParameter("now", new Date(), TimestampType.INSTANCE).setParameter("status", ExecutionStatus.CREATED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
+			List<TaskExecution> executions = hibSession.createQuery(
+					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
+					).setParameter("now", new Date(), org.hibernate.type.DateType.INSTANCE).setParameter("status", ExecutionStatus.CREATED.ordinal(), org.hibernate.type.IntegerType.INSTANCE).list();
 			for (TaskExecution execution: executions) {
 				try {
 					TaskExecutionItem item = new TaskExecutionItem(execution, unitimePermissionCheck);

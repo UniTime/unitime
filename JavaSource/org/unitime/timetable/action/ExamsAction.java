@@ -161,7 +161,7 @@ public class ExamsAction extends UniTimeAction<ExamsForm> {
         WebTable.setOrder(sessionContext,"exams.order",request.getParameter("ord"),1);
         
         if (form.getSession()!=null && form.getSubjectArea()!=null && form.getSubjectArea().length()>0 && form.getExamType() != null) {
-            org.unitime.timetable.model.Session session = new SessionDAO().get(form.getSession());
+            org.unitime.timetable.model.Session session = SessionDAO.getInstance().get(form.getSession());
             ExamStatus status = ExamStatus.findStatus(form.getSession(), form.getExamType());
             DepartmentStatusType type = (status == null || status.getStatus() == null ? session.getStatusType() : status.getStatus());
             if (type != null && type.can(form.isFinals() ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm)) {

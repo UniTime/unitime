@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -36,8 +35,6 @@ import javax.persistence.Transient;
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseCourseCreditUnitConfig;
-
-
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller

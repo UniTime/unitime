@@ -146,7 +146,7 @@ public class ClassInstructorAssignmentAction extends UniTimeAction<ClassInstruct
             	try {
             		form.updateClasses();
 
-                    InstrOfferingConfig cfg = new InstrOfferingConfigDAO().get(form.getInstrOffrConfigId());
+                    InstrOfferingConfig cfg = InstrOfferingConfigDAO.getInstance().get(form.getInstrOffrConfigId());
 
                     org.hibernate.Session hibSession = InstructionalOfferingDAO.getInstance().getSession();
                     ChangeLog.addChange(

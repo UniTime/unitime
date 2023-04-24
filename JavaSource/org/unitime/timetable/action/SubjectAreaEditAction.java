@@ -144,7 +144,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	 */
 	private void doLoad() throws Exception {
     	sessionContext.checkPermission(id, "SubjectArea", Right.SubjectAreaEdit);
-        SubjectArea sa = new SubjectAreaDAO().get(id);
+        SubjectArea sa = SubjectAreaDAO.getInstance().get(id);
         form.setUniqueId(id);
         form.setAbbv(sa.getSubjectAreaAbbreviation()!=null ? sa.getSubjectAreaAbbreviation() : "");        
         form.setDepartment(sa.getDepartment()!=null ? sa.getDepartment().getUniqueId() : null);
@@ -162,7 +162,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 		sessionContext.checkPermission(form.getUniqueId(), "SubjectArea", Right.SubjectAreaDelete);
 		
 		try {
-			SubjectAreaDAO sdao = new SubjectAreaDAO();
+			SubjectAreaDAO sdao = SubjectAreaDAO.getInstance();
 			hibSession = sdao.getSession();
 			tx = hibSession.beginTransaction();
 
@@ -228,8 +228,8 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 			sessionContext.checkPermission(form.getUniqueId(), "SubjectArea", Right.SubjectAreaEdit);
 		
 		try {
-			SubjectAreaDAO sdao = new SubjectAreaDAO();
-			DepartmentDAO ddao = new DepartmentDAO();
+			SubjectAreaDAO sdao = SubjectAreaDAO.getInstance();
+			DepartmentDAO ddao = DepartmentDAO.getInstance();
 			
 			SubjectArea sa = null;
 			Department oldDept = null;

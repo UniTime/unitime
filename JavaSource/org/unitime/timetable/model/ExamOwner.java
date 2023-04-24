@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -28,11 +27,9 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -79,9 +76,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	public static String[] sOwnerTypes = new String[] {"Offering", "Course", "Config", "Class"};
 	
 	public static ExamOwner findByOwnerIdType(Long ownerId, Integer ownerType) {
-	    return (ExamOwner)new ExamOwnerDAO().
+	    return ExamOwnerDAO.getInstance().
 	        getSession().
-	        createQuery("select o from ExamOwner o where o.ownerId=:ownerId and o.ownerType=:ownerType").
+	        createQuery("select o from ExamOwner o where o.ownerId=:ownerId and o.ownerType=:ownerType", ExamOwner.class).
 	        setParameter("ownerId", ownerId, org.hibernate.type.LongType.INSTANCE).
 	        setParameter("ownerType", ownerType, org.hibernate.type.IntegerType.INSTANCE).
 	        setCacheable(true).uniqueResult();
@@ -97,13 +94,13 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	            iOwnerObject = new Class_DAO().get(getOwnerId());
 	            return iOwnerObject;
 	        case sOwnerTypeConfig : 
-	            iOwnerObject = new InstrOfferingConfigDAO().get(getOwnerId());
+	            iOwnerObject = InstrOfferingConfigDAO.getInstance().get(getOwnerId());
 	            return iOwnerObject;
 	        case sOwnerTypeCourse : 
-	            iOwnerObject = new CourseOfferingDAO().get(getOwnerId());
+	            iOwnerObject = CourseOfferingDAO.getInstance().get(getOwnerId());
 	            return iOwnerObject;
 	        case sOwnerTypeOffering : 
-	            iOwnerObject = new InstructionalOfferingDAO().get(getOwnerId());
+	            iOwnerObject = InstructionalOfferingDAO.getInstance().get(getOwnerId());
 	            return iOwnerObject;
 	        default : throw new RuntimeException("Unknown owner type "+getOwnerType());
 	    }
@@ -171,37 +168,37 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
 	@Transient
-    public List getStudents() {
+    public List<Student> getStudents() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.uniqueId = :examOwnerId")
+                    "where c.uniqueId = :examOwnerId", Student.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Student.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.uniqueId = :examOwnerId")
+                    "where co.uniqueId = :examOwnerId", Student.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    "where co.instructionalOffering.uniqueId = :examOwnerId", Student.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
@@ -213,28 +210,28 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public Collection<StudentClassEnrollment> getStudentClassEnrollments() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
-        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+        			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
                     .setParameter("classId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
-            		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student")
+            		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
                     .setParameter("configId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
-            return new ExamOwnerDAO().getSession().createQuery(
-                    "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId")
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId", StudentClassEnrollment.class)
                     .setParameter("courseId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
-            return new ExamOwnerDAO().getSession().createQuery(
-                    "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId")
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
+                    "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class)
                     .setParameter("offeringId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
@@ -243,37 +240,37 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
 	@Transient
-    public List getStudentIds() {
+    public List<Long> getStudentIds() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.uniqueId = :examOwnerId")
+                    "where c.uniqueId = :examOwnerId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.uniqueId = :examOwnerId")
+                    "where co.uniqueId = :examOwnerId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    "where co.instructionalOffering.uniqueId = :examOwnerId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
@@ -281,40 +278,40 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         }
     }
     
-    public List getStudentIds(CourseOffering co) {
+    public List<Long> getStudentIds(CourseOffering co) {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
-            return new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
@@ -326,60 +323,56 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     protected void computeStudentExams(Hashtable<Long, Set<Exam>> studentExams) {
         switch (getOwnerType()) {
         case sOwnerTypeClass :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                 .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
@@ -388,60 +381,56 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeConfig :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
@@ -450,60 +439,56 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeCourse :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and  " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
@@ -512,60 +497,56 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeOffering :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeClass, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
                 if (exams==null) { exams = new HashSet(); studentExams.put(studentId, exams); }
                 exams.add(exam);
             }
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
                     .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("examTypeId", getExam().getExamType().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
                 Set<Exam> exams  = studentExams.get(studentId);
@@ -579,13 +560,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     protected void computeStudentAssignments(Hashtable<Assignment, Set<Long>> studentAssignments) {
         switch (getOwnerType()) {
         case sOwnerTypeClass :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                 "where c.uniqueId = :examOwnerId and " +
-                "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
                 .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
                 Set<Long> students  = studentAssignments.get(assignment);
@@ -594,13 +574,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeConfig :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
-                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
                 Set<Long> students  = studentAssignments.get(assignment);
@@ -609,13 +588,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeCourse :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and " +
-                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
                 Set<Long> students  = studentAssignments.get(assignment);
@@ -624,13 +602,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeOffering :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and " +
-                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true")
+                    "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
                 Set<Long> students  = studentAssignments.get(assignment);
@@ -644,16 +621,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     protected void computeOverlappingStudentMeetings(Hashtable<Meeting, Set<Long>> studentMeetings, Long periodId) {
         switch (getOwnerType()) {
         case sOwnerTypeClass :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and "+
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
                 .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                 .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                 .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
-                .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Long> students  = studentMeetings.get(meeting);
@@ -662,16 +638,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeConfig :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.clazz c, ExamPeriod p " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Long> students  = studentMeetings.get(meeting);
@@ -680,16 +655,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeCourse :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Long> students  = studentMeetings.get(meeting);
@@ -698,16 +672,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             }
             break;
         case sOwnerTypeOffering :
-            for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
+            for (Object[] o: ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e.student.uniqueId, m from ClassEvent ce inner join ce.meetings m inner join ce.clazz.studentEnrollments f, StudentClassEnrollment e inner join e.courseOffering co, ExamPeriod p " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), org.hibernate.type.IntegerType.INSTANCE)
                     .setParameter("periodId", periodId, org.hibernate.type.LongType.INSTANCE)
-                    .setCacheable(true).list().iterator(); i.hasNext();) {
-                Object[] o = (Object[])i.next();
+                    .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
                 Set<Long> students  = studentMeetings.get(meeting);
@@ -721,37 +694,37 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public int countStudents() {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.uniqueId = :examOwnerId")
+                    "where c.uniqueId = :examOwnerId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeConfig : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId")
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeCourse : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.uniqueId = :examOwnerId")
+                    "where co.uniqueId = :examOwnerId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeOffering : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId")
+                    "where co.instructionalOffering.uniqueId = :examOwnerId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }
@@ -759,41 +732,41 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public int countStudents(CourseOffering co) {
         switch (getOwnerType()) {
         case sOwnerTypeClass : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeConfig : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
-                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeCourse : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         case sOwnerTypeOffering : 
-            return ((Number)new ExamOwnerDAO().getSession().createQuery(
+            return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
-                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId")
+                    "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
                     .setParameter("examOwnerId", getOwnerId(), org.hibernate.type.LongType.INSTANCE)
                     .setParameter("courseOfferingId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
                     .setCacheable(true)
-                    .uniqueResult()).intValue();
+                    .uniqueResult().intValue();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
         }
     }

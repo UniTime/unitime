@@ -351,20 +351,20 @@ public class ExportPreferences {
 	}
 	
 	public void exportInstructors(Element parent, Department dept) {
-		List ids = (new DepartmentDAO()).
+		List<DepartmentalInstructor> ids = (DepartmentDAO.getInstance()).
 			getSession().
-			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId").
+			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId", DepartmentalInstructor.class).
 			setParameter("deptCode", dept.getDeptCode(), org.hibernate.type.StringType.INSTANCE).
 			setParameter("sessionId", dept.getSessionId().longValue(), org.hibernate.type.LongType.INSTANCE).
 			list();
-		for (Iterator i=ids.iterator();i.hasNext();) {
-			DepartmentalInstructor id = (DepartmentalInstructor)i.next();
+		for (Iterator<DepartmentalInstructor> i=ids.iterator();i.hasNext();) {
+			DepartmentalInstructor id = i.next();
 			exportInstructor(parent, id);
 		}
 	}
 	
 	public void exportAll(Long solverGroupId, File outFile) throws Exception {
-		SolverGroup solverGroup = (new SolverGroupDAO()).get(solverGroupId);
+		SolverGroup solverGroup = (SolverGroupDAO.getInstance()).get(solverGroupId);
 		Session session = solverGroup.getSession();
 		Document document = DocumentHelper.createDocument();
 		Element root = document.addElement("export");

@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 
 import org.dom4j.Element;
@@ -78,9 +77,9 @@ public class ReservationImport  extends BaseImport {
             }
             
         	info("Deleting existing reservations...");
-        	for (Iterator<Reservation> i = getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session=:sessionId").
-            	setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator(); i.hasNext(); ) {
-        		getHibSession().delete(i.next());
+        	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session=:sessionId", Reservation.class).
+            	setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+        		getHibSession().delete(r);
         	}
         	flush(false);
         	
@@ -88,8 +87,8 @@ public class ReservationImport  extends BaseImport {
         	
         	Hashtable<String, AcademicArea> areasByAbbv = new Hashtable<String, AcademicArea>();
         	Hashtable<String, AcademicArea> areasByExtId = new Hashtable<String, AcademicArea>();
-        	for (AcademicArea area: (List<AcademicArea>)getHibSession().createQuery(
-        			"select a from AcademicArea a where a.session.uniqueId = :sessionId")
+        	for (AcademicArea area: getHibSession().createQuery(
+        			"select a from AcademicArea a where a.session.uniqueId = :sessionId", AcademicArea.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		areasByAbbv.put(area.getAcademicAreaAbbreviation(), area);
         		if (area.getExternalUniqueId() != null)
@@ -98,8 +97,8 @@ public class ReservationImport  extends BaseImport {
            
         	Hashtable<String, StudentGroup> groupsByCode = new Hashtable<String, StudentGroup>();
         	Hashtable<String, StudentGroup> groupsByExtId = new Hashtable<String, StudentGroup>();
-        	for (StudentGroup group: (List<StudentGroup>)getHibSession().createQuery(
-        			"select a from StudentGroup a where a.session.uniqueId = :sessionId")
+        	for (StudentGroup group: getHibSession().createQuery(
+        			"select a from StudentGroup a where a.session.uniqueId = :sessionId", StudentGroup.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		groupsByCode.put(group.getGroupAbbreviation(), group);
         		if (group.getExternalUniqueId() != null)
@@ -108,8 +107,8 @@ public class ReservationImport  extends BaseImport {
 
         	Hashtable<String, PosMajor> majorsByCode = new Hashtable<String, PosMajor>();
         	Hashtable<String, PosMajor> majorsByExtId = new Hashtable<String, PosMajor>();
-        	for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
-        			"select a from PosMajor a where a.session.uniqueId = :sessionId")
+        	for (PosMajor major: getHibSession().createQuery(
+        			"select a from PosMajor a where a.session.uniqueId = :sessionId", PosMajor.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		for (AcademicArea area: major.getAcademicAreas())
         			majorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + major.getCode(), major);
@@ -119,8 +118,8 @@ public class ReservationImport  extends BaseImport {
         	
         	Hashtable<String, PosMinor> minorsByCode = new Hashtable<String, PosMinor>();
         	Hashtable<String, PosMinor> minorsByExtId = new Hashtable<String, PosMinor>();
-        	for (PosMinor minor: (List<PosMinor>)getHibSession().createQuery(
-        			"select a from PosMinor a where a.session.uniqueId = :sessionId")
+        	for (PosMinor minor: getHibSession().createQuery(
+        			"select a from PosMinor a where a.session.uniqueId = :sessionId", PosMinor.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		for (AcademicArea area: minor.getAcademicAreas())
         			minorsByCode.put(area.getAcademicAreaAbbreviation() + "|" + minor.getCode(), minor);
@@ -130,8 +129,8 @@ public class ReservationImport  extends BaseImport {
 
         	Hashtable<String, AcademicClassification> clasfsByCode = new Hashtable<String, AcademicClassification>();
         	Hashtable<String, AcademicClassification> clasfsByExtId = new Hashtable<String, AcademicClassification>();
-        	for (AcademicClassification clasf: (List<AcademicClassification>)getHibSession().createQuery(
-        			"select a from AcademicClassification a where a.session.uniqueId = :sessionId")
+        	for (AcademicClassification clasf: getHibSession().createQuery(
+        			"select a from AcademicClassification a where a.session.uniqueId = :sessionId", AcademicClassification.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		clasfsByCode.put(clasf.getCode(), clasf);
         		if (clasf.getExternalUniqueId() != null)
@@ -141,8 +140,8 @@ public class ReservationImport  extends BaseImport {
         	info("Loading courses...");
         	Hashtable<String, CourseOffering> corusesByExtId = new Hashtable<String, CourseOffering>();
         	Hashtable<String, CourseOffering> corusesBySubjectCourseNbr = new Hashtable<String, CourseOffering>();
-        	for (CourseOffering course: (List<CourseOffering>)getHibSession().createQuery(
-        			"select a from CourseOffering a where a.subjectArea.session.uniqueId = :sessionId")
+        	for (CourseOffering course: getHibSession().createQuery(
+        			"select a from CourseOffering a where a.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
         			.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
         		corusesBySubjectCourseNbr.put(course.getSubjectArea().getSubjectAreaAbbreviation() + "|" + course.getCourseNbr(), course);
         		if (course.getExternalUniqueId() != null)

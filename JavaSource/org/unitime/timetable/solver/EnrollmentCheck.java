@@ -158,7 +158,7 @@ public class EnrollmentCheck {
     }
     
     private String getSubpartLabel(Long subpartId) {
-        SchedulingSubpart subpart = (new SchedulingSubpartDAO()).get(subpartId);
+        SchedulingSubpart subpart = (SchedulingSubpartDAO.getInstance()).get(subpartId);
         if (subpart!=null) {
             String suffix = subpart.getSchedulingSubpartSuffix();
             return "<A href='schedulingSubpartDetail.action?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
@@ -167,7 +167,7 @@ public class EnrollmentCheck {
     }
     
     private String getOfferingLabel(Long offeringId) {
-        InstructionalOffering offering = (new InstructionalOfferingDAO()).get(offeringId);
+        InstructionalOffering offering = (InstructionalOfferingDAO.getInstance()).get(offeringId);
         if (offering!=null)
             return "<A href='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
         else

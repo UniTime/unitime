@@ -53,70 +53,70 @@ public class DegreeWorksImportTest {
 	private static Log sLog = LogFactory.getLog(DegreeWorksImportTest.class);
 	
 	public static int guessEnrollmentFromLastLike(org.hibernate.Session hibSession, Session session, String area, String major, String classification) {
-		return ((Number)hibSession.createQuery(
+		return hibSession.createQuery(
 				"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 				"where d.subjectArea.session = :sessionId and " +
-				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf", Number.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
-				.uniqueResult()).intValue();
+				.uniqueResult().intValue();
 	}
 	
 	public static int guessEnrollmentFromReal(org.hibernate.Session hibSession, Session session, String area, String major, String classification) {
-		return ((Number)hibSession.createQuery(
+		return hibSession.createQuery(
 				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
 				"where e.student.session = :sessionId and " +
-				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf", Number.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
-				.uniqueResult()).intValue();
+				.uniqueResult().intValue();
 	}
 
 	public static int guessEnrollmentFromLastLike(org.hibernate.Session hibSession, CourseOffering co, String area, String major, String classification) {
 		if (co.getPermId() == null)
-			return ((Number)hibSession.createQuery(
+			return hibSession.createQuery(
 					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 					"where d.subjectArea.uniqueId = :subjectId and d.courseNbr = :courseNbr and "+
-					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
+					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf", Number.class)
 					.setParameter("subjectId", co.getSubjectArea().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("courseNbr", co.getCourseNbr(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
 					.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
 					.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
-					.uniqueResult()).intValue();
+					.uniqueResult().intValue();
 		else
-			return ((Number)hibSession.createQuery(
+			return hibSession.createQuery(
 					"select count(distinct d.student) from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm " +
 					"where d.subjectArea.session.uniqueId = :subjectId and d.coursePermId = :permId and " +
-					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
+					"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf", Number.class)
 					.setParameter("sessionId", co.getSubjectArea().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("permId", co.getPermId(), org.hibernate.type.StringType.INSTANCE)
 					.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
 					.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
 					.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
-					.uniqueResult()).intValue();
+					.uniqueResult().intValue();
 	}
 	
 	public static int guessEnrollmentFromReal(org.hibernate.Session hibSession, CourseOffering co, String area, String major, String classification) {
-		return ((Number)hibSession.createQuery(
+		return hibSession.createQuery(
 				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.areaClasfMajors acm " +
 				"where e.courseOffering.uniqueId = :courseId and " +
-				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf")
+				"acm.major.code=:major and acm.academicArea.academicAreaAbbreviation = :area and acm.academicClassification.code = :clasf", Number.class)
 				.setParameter("courseId", co.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("area", area, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("major", major, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("clasf", classification, org.hibernate.type.StringType.INSTANCE)
-				.uniqueResult()).intValue();
+				.uniqueResult().intValue();
 	}
 	
 	public static List<CourseOffering> getCourses(org.hibernate.Session hibSession, Session session, String subject, String courseNbr) {
-		List<CourseOffering> courses = (List<CourseOffering>)hibSession.createQuery(
+		List<CourseOffering> courses = hibSession.createQuery(
 				"from CourseOffering co where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subject " +
-				"and co.courseNbr like :courseNbr || '%' order by co.courseNbr")
+				"and co.courseNbr like :courseNbr || '%' order by co.courseNbr", CourseOffering.class)
 				.setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 				.setParameter("subject", subject, org.hibernate.type.StringType.INSTANCE)
 				.setParameter("courseNbr", courseNbr, org.hibernate.type.StringType.INSTANCE)
@@ -142,7 +142,7 @@ public class DegreeWorksImportTest {
 			
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
-            final org.hibernate.Session hibSession = new SessionDAO().getSession();
+            final org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
             
             Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "PWL"),

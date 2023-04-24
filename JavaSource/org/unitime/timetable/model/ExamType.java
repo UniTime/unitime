@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -59,20 +58,20 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	}
 	
 	public static ExamType findByReference(String ref) {
-		return (ExamType)ExamTypeDAO.getInstance().getSession().createQuery(
-				"from ExamType where reference = :ref")
+		return ExamTypeDAO.getInstance().getSession().createQuery(
+				"from ExamType where reference = :ref", ExamType.class)
 				.setParameter("ref", ref, org.hibernate.type.StringType.INSTANCE).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
 	
 	public static List<ExamType> findAllOfType(int type) {
-		return (List<ExamType>)ExamTypeDAO.getInstance().getSession().createQuery(
-				"from ExamType where type = :type order by type, label")
+		return ExamTypeDAO.getInstance().getSession().createQuery(
+				"from ExamType where type = :type order by type, label", ExamType.class)
 				.setParameter("type", type, org.hibernate.type.IntegerType.INSTANCE).setCacheable(true).list();
 	}
 
 	public static TreeSet<ExamType> findAllUsed(Long sessionId) {
 		return new TreeSet<ExamType>(ExamTypeDAO.getInstance().getSession().createQuery(
-				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId")
+				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId", ExamType.class)
 				.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).list());
 	}
 
@@ -119,19 +118,19 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	}
 
 	public static List<ExamType> findAll(org.hibernate.Session hibSession) {
-		return (List<ExamType>)(hibSession != null ? hibSession : ExamTypeDAO.getInstance().getSession()).createQuery(
-				"from ExamType order by type, label")
+		return (hibSession != null ? hibSession : ExamTypeDAO.getInstance().getSession()).createQuery(
+				"from ExamType order by type, label", ExamType.class)
 				.setCacheable(true).list();
 	}
 	
 	public boolean isUsed(Long sessionId) {
 		if (sessionId == null) {
-			return ((Number)ExamTypeDAO.getInstance().getSession().createQuery(
-					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId")
+			return (ExamTypeDAO.getInstance().getSession().createQuery(
+					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId", Number.class)
 					.setParameter("typeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0;
 		} else {
-			return ((Number)ExamTypeDAO.getInstance().getSession().createQuery(
-					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId and p.session.uniqueId = :sessionId")
+			return (ExamTypeDAO.getInstance().getSession().createQuery(
+					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId and p.session.uniqueId = :sessionId", Number.class)
 					.setParameter("typeId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue() > 0;
 		}
 	}
@@ -139,8 +138,8 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	public static void refreshSolution(Long sessionId, Long examTypeId) {
         org.hibernate.Session hibSession = ExamTypeDAO.getInstance().getSession(); 
         SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
-        for (Long examId: (List<Long>)hibSession.createQuery(
-        		"select x.uniqueId from Exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId")
+        for (Long examId: hibSession.createQuery(
+        		"select x.uniqueId from Exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId", Long.class)
         		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
         		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
         		.setCacheable(true).list()) {
@@ -148,8 +147,8 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
             hibSessionFactory.getCache().evictCollectionData(Exam.class.getName()+".assignedRooms", examId);
             hibSessionFactory.getCache().evictCollectionData(Exam.class.getName()+".conflicts", examId);
         }
-        for (Long eventId: (List<Long>)hibSession.createQuery(
-        		"select e.uniqueId from ExamEvent e inner join e.exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId")
+        for (Long eventId: hibSession.createQuery(
+        		"select e.uniqueId from ExamEvent e inner join e.exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId", Long.class)
         		.setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE)
         		.setParameter("examTypeId", examTypeId, org.hibernate.type.LongType.INSTANCE)
         		.setCacheable(true).list()) {

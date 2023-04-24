@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -37,8 +36,6 @@ import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
-
-
 
 
 /**

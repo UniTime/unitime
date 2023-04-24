@@ -476,7 +476,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     @Override
     public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getAssignedExams();
-        String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
+        String sa = SubjectAreaDAO.getInstance().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
@@ -502,7 +502,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     @Override
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getUnassignedExams();
-        String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
+        String sa = SubjectAreaDAO.getInstance().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
         try {
@@ -583,7 +583,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     
     @Override
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId) {
-        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
+        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? SubjectAreaDAO.getInstance().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();
@@ -611,7 +611,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     
     @Override
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId) {
-        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
+        String sa = (subjectAreaId!=null && subjectAreaId>=0 ? SubjectAreaDAO.getInstance().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();

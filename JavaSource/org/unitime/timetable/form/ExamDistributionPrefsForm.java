@@ -161,7 +161,7 @@ public class ExamDistributionPrefsForm implements UniTimeForm {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {
-            for (Object[] o: new CourseOfferingDAO().
+            for (Object[] o: CourseOfferingDAO.getInstance().
                     getSession().
                     createQuery("select co.uniqueId, co.courseNbr, co.title from CourseOffering co "+
                             "where co.subjectArea.uniqueId = :subjectAreaId "+

@@ -21,7 +21,6 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -120,8 +119,8 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 							enrollment.setApproval(new XApproval(approval[1], approvedDate, approval[2]));
 							XCourseRequest r = server.assign(request, enrollment);
 							if (r != null && r.getEnrollment() != null) {
-								for (StudentClassEnrollment e: (List<StudentClassEnrollment>)helper.getHibSession().createQuery(
-										"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering = :offeringId")
+								for (StudentClassEnrollment e: helper.getHibSession().createQuery(
+										"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering = :offeringId", StudentClassEnrollment.class)
 										.setParameter("studentId", enrollment.getStudentId(), org.hibernate.type.LongType.INSTANCE)
 										.setParameter("offeringId", getOfferingId(), org.hibernate.type.LongType.INSTANCE)
 										.list()) {

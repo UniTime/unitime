@@ -58,9 +58,9 @@ public class AssignFirstAvailableTimePattern {
                 sLog.info("Session: "+session);
             }
             
-            for (SchedulingSubpart s: (List<SchedulingSubpart>)hibSession.createQuery(
+            for (SchedulingSubpart s: hibSession.createQuery(
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
-            		"co.subjectArea.department.session.uniqueId = :sessionId").setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
+            		"co.subjectArea.department.session.uniqueId = :sessionId", SchedulingSubpart.class).setParameter("sessionId", session.getUniqueId(), org.hibernate.type.LongType.INSTANCE).list()) {
             	if (s.getTimePreferences().isEmpty()) {
             		List<TimePattern> patterns = TimePattern.findApplicable(session, false, false, false, s.getMinutesPerWk(), s.effectiveDatePattern(), s.getInstrOfferingConfig().getDurationModel(), null);
             		if (patterns.isEmpty()) continue;

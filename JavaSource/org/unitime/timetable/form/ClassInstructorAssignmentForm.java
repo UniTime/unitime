@@ -268,7 +268,7 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	                Boolean lead = getLeadFlags().get(i);
 	                String responsibility = (String) getResponsibilities().get(i);
 	                
-	                DepartmentalInstructor deptInstr =  new DepartmentalInstructorDAO().get(Long.valueOf(instrId));
+	                DepartmentalInstructor deptInstr =  DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instrId));
 	                
 	                ClassInstructor classInstr = null;
 	                for (Iterator<ClassInstructor> j = classInstrs.iterator(); j.hasNext();) {

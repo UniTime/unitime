@@ -126,7 +126,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 			else if (o instanceof Department)
 				mgr = (Department)o;
 			else if (o instanceof Long) 
-				mgr = (new DepartmentDAO()).get((Long)o);
+				mgr = (DepartmentDAO.getInstance()).get((Long)o);
 			if (mgr==null) throw new RuntimeException("Department "+o+" not found.");
 			iDepartmentAbbvs[idx] = mgr.getShortLabel();
 			iDepartmentNames[idx] = mgr.getDeptCode()+"-"+mgr.getName();

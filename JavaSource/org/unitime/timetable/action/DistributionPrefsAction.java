@@ -313,7 +313,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 
         if (form.getDistType()!=null && !form.getDistType().equals(Preference.BLANK_PREF_VALUE)) {
         	Vector prefs = new Vector();
-        	DistributionType dist = (new DistributionTypeDAO().get(Long.valueOf(form.getDistType())));
+        	DistributionType dist = (DistributionTypeDAO.getInstance().get(Long.valueOf(form.getDistType())));
         	form.setDescription(dist.getDescr());
         	boolean containsPref = false; 
         	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
@@ -436,7 +436,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
                     query.append("       and co.isControl = true ");
                     query.append(" order by co.courseNbr ");
                     
-	                InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	                InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        		org.hibernate.Session hibSession = idao.getSession();
 
 	        		Query q = hibSession.createQuery(query.toString());
@@ -581,7 +581,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
     private void doLoad(String distPrefId ) {
  
         // Get distribution pref info
-        DistributionPrefDAO dpDao = new DistributionPrefDAO();
+        DistributionPrefDAO dpDao = DistributionPrefDAO.getInstance();
         DistributionPref dp = dpDao.get(Long.valueOf(distPrefId));
         form.setDistType(dp.getDistributionType().getUniqueId().toString());
         form.setStructure(dp.getStructure());
@@ -623,7 +623,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         // Create distribution preference
         DistributionPref dp = null;
         Department oldOwner = null;
-        DistributionPrefDAO dpDao = new DistributionPrefDAO();
+        DistributionPrefDAO dpDao = DistributionPrefDAO.getInstance();
         Transaction tx = null;
         org.hibernate.Session hibSession = dpDao.getSession();
         HashSet relatedInstructionalOfferings = new HashSet();
@@ -649,7 +649,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             	}
             } else dp = new DistributionPref();
             
-            dp.setDistributionType(new DistributionTypeDAO().get( Long.valueOf(form.getDistType()), hibSession));
+            dp.setDistributionType(DistributionTypeDAO.getInstance().get( Long.valueOf(form.getDistType()), hibSession));
             dp.setStructure(form.getStructure());
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(form.getPrefLevel()) ));
         
@@ -664,7 +664,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             
 	            // Subpart
     	        if(cl.equals(DistributionPrefsForm.ALL_CLASSES_SELECT)) {
-        	    	SchedulingSubpart subpart = new SchedulingSubpartDAO().get(Long.valueOf(su), hibSession);
+        	    	SchedulingSubpart subpart = SchedulingSubpartDAO.getInstance().get(Long.valueOf(su), hibSession);
 	            	if (owningDept==null) owningDept = subpart.getManagingDept();
     	        	else if (!owningDept.getUniqueId().equals(subpart.getManagingDept().getUniqueId())) {
     	        		if (owningDept.getDistributionPrefPriority().intValue()<subpart.getManagingDept().getDistributionPrefPriority().intValue())
@@ -794,7 +794,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 
         try {
             
-	        DistributionPrefDAO dpDao = new DistributionPrefDAO();
+	        DistributionPrefDAO dpDao = DistributionPrefDAO.getInstance();
 	        org.hibernate.Session hibSession = dpDao.getSession();
 	        tx = hibSession.getTransaction();
 	        if (tx==null || !tx.isActive())

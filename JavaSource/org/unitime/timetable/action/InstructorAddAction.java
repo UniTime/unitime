@@ -60,7 +60,7 @@ public class InstructorAddAction extends InstructorAction {
 		//get department
 		if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
 			String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
-			Department d = new DepartmentDAO().get(Long.valueOf(deptId));
+			Department d = DepartmentDAO.getInstance().get(Long.valueOf(deptId));
 			form.setDeptName(d.getName().trim());
 			form.setDeptCode(d.getDeptCode());
 		}

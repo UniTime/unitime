@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hibernate.criterion.Order;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.action.UniTimeAction;
@@ -117,7 +116,7 @@ public class CourseOfferingEditForm implements UniTimeForm {
 
 			
 	    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()){
-				SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
+				SubjectArea sa = SubjectAreaDAO.getInstance().get(subjectAreaId);
 				CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
 				if (add && co != null) {
 					action.addFieldError("form.courseNbr", MSG.errorCourseCannotBeCreated());
@@ -422,7 +421,8 @@ public class CourseOfferingEditForm implements UniTimeForm {
     public Set<String> getCourseOverrides() { return overrides; }
     
     public List<OverrideType> getOverrideTypes() {
-    	return OverrideTypeDAO.getInstance().findAll(Order.asc("reference"));
+    	return OverrideTypeDAO.getInstance().getSession().createQuery(
+    			"from OverrideType order by reference", OverrideType.class).setCacheable(true).list();
     }
     
     public List<ComboBoxLookup> getWaitListOptions() {

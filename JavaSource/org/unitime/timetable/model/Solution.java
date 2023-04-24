@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -55,7 +54,6 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.hibernate.query.Query;
 import org.hibernate.SessionFactory;
-import org.hibernate.type.LongType;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
@@ -165,8 +163,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			cal.set(Calendar.MILLISECOND, 0);
 			Date today = cal.getTime();
 			
-			List<ClassEvent> events = (List<ClassEvent>)hibSession.createQuery(
-					"select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
+			List<ClassEvent> events = hibSession.createQuery(
+					"select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).list();
 			for (ClassEvent event: events) {
 	        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
@@ -253,7 +251,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     }
 
 	public boolean commitSolution(List<String> messages, org.hibernate.Session hibSession, String sendNotificationPuid, Long[] ownerIds) {
-		List<Solution> solutions = hibSession.createQuery("from Solution where owner.uniqueId = :ownerId").setParameter("ownerId", getOwner().getUniqueId()).list();
+		List<Solution> solutions = hibSession.createQuery("from Solution where owner.uniqueId = :ownerId", Solution.class).setParameter("ownerId", getOwner().getUniqueId()).list();
 		Solution uncommittedSolution = null;
 		for (Iterator i=solutions.iterator();i.hasNext();) {
 			Solution s = (Solution)i.next();
@@ -269,12 +267,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if (ApplicationProperty.CourseTimetablingCommitSkipChecking.isTrue()) {
 			// skip conflict checking
 		} else if (ownerIds != null && ownerIds.length > 1 && ownerIds.length <= 1000) {
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
+					.setParameterList("ownerIds", ownerIds, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
 					.list()) {
@@ -286,12 +284,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					isOK=false;
 				}
 			}
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Room r inner join r.assignments a1 inner join r.parentRoom.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
+					.setParameterList("ownerIds", ownerIds, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
 					.list()) {
@@ -303,12 +301,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					isOK=false;
 				}
 			}
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Room r inner join r.parentRoom.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-					.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
+					.setParameterList("ownerIds", ownerIds, org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
 					.list()) {
@@ -321,15 +319,15 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				}
 			}
 			
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
 							"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
 							"i1.department.solverGroup != i2.department.solverGroup and i2.department.session = :sessionId and " +
 							"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
 							"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId not in :ownerIds and " +
 							"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
-							.setParameterList("ownerIds", ownerIds, LongType.INSTANCE)
+							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
+							.setParameterList("ownerIds", ownerIds, org.hibernate.type.LongType.INSTANCE)
 							.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("sessionId", getOwner().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
@@ -343,11 +341,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				}
 			}
 		} else {
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameter("ownerId", getOwner().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
@@ -360,11 +358,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					isOK=false;
 				}
 			}
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Room r inner join r.assignments a1 inner join r.parentRoom.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameter("ownerId", getOwner().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
@@ -377,11 +375,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					isOK=false;
 				}
 			}
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select r, a1, a2 from Room r inner join r.parentRoom.assignments a1 inner join r.assignments a2 "+
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameter("ownerId", getOwner().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), org.hibernate.type.IntegerType.INSTANCE)
@@ -395,14 +393,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				}
 			}
 			
-			for (Object[] o: (List<Object[]>)hibSession.createQuery(
+			for (Object[] o: hibSession.createQuery(
 					"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
 							"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
 							"i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
 							"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
 							"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 							"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
-							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 							.setParameter("ownerId", getOwner().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE)
 							.setParameter("sessionId", getOwner().getSession().getUniqueId(), org.hibernate.type.LongType.INSTANCE)
@@ -427,7 +425,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		/*
 		SolverInfoDef defJenrlInfo = SolverInfoDef.findByName(hibSession,"JenrlInfo");
 		Hashtable solverInfos = new Hashtable();
-		AssignmentDAO adao = new AssignmentDAO(); 
+		AssignmentDAO adao = AssignmentDAO.getInstance(); 
 		q = hibSession.createQuery(
 				"select a.uniqueId, oa.uniqueId, count(*) from "+
 				"Solution s inner join s.assignments a inner join s.studentEnrollments as e, "+
@@ -781,7 +779,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
 	
 	private void deleteObjects(org.hibernate.Session hibSession, String objectName, String idQuery) {
-		Iterator idIterator = hibSession.createQuery(idQuery).setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();
+		Iterator<Long> idIterator = hibSession.createQuery(idQuery, Long.class).setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).list().iterator();
 		StringBuffer ids = new StringBuffer();
 		int idx = 0;
 		while (idIterator.hasNext()) {
@@ -1002,7 +1000,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		SolverInfoDef defJenrlInfo = SolverInfoDef.findByName(hibSession,"JenrlInfo");
 		Hashtable solverInfos = new Hashtable();
-		AssignmentDAO adao = new AssignmentDAO(); 
+		AssignmentDAO adao = AssignmentDAO.getInstance(); 
 		Query q = hibSession.createQuery(
 				"select a.uniqueId, oa.uniqueId, count(*) from "+
 				"Solution s inner join s.assignments a inner join s.studentEnrollments as e, "+
@@ -1037,10 +1035,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return getOwner().getSession();
 	}
 	
-    public static Collection findBySessionId(Long sessionId) {
-    	return (new SolutionDAO()).
+    public static List<Solution> findBySessionId(Long sessionId) {
+    	return (SolutionDAO.getInstance()).
     			getSession().
-    			createQuery("select s from Solution s where s.owner.session.uniqueId=:sessionId").
+    			createQuery("select s from Solution s where s.owner.session.uniqueId=:sessionId", Solution.class).
     			setParameter("sessionId", sessionId.longValue(), org.hibernate.type.LongType.INSTANCE).
     			//setCacheable(true).
     			list();
@@ -1070,10 +1068,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     
     public void createDivSecNumbers(org.hibernate.Session hibSession, Vector messages) {
     	Vector assignments = new Vector(getAssignments());
-        assignments.addAll(new SolutionDAO().getSession().createQuery(
+        assignments.addAll(SolutionDAO.getInstance().getSession().createQuery(
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
-                "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)").
+                "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)", Class_.class).
                 setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list());
         HashSet relatedOfferings = new HashSet();
@@ -1294,7 +1292,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         /*
         lastSubpart = null;
         TreeSet otherClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-        otherClasses.addAll(new SolutionDAO().getSession().createQuery(
+        otherClasses.addAll(SolutionDAO.getInstance().getSession().createQuery(
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
                 "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a) order by c.schedulingSubpart.uniqueId, c.sectionNumberCache").
@@ -1350,14 +1348,13 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             hibSession.update(clazz);
     	}
     	
-        List otherClasses = new SolutionDAO().getSession().createQuery(
+        List<Class_> otherClasses = SolutionDAO.getInstance().getSession().createQuery(
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
-                "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)").
+                "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)", Class_.class).
                 setParameter("solutionId", getUniqueId(), org.hibernate.type.LongType.INSTANCE).
                 list();
-        for (Iterator i=otherClasses.iterator();i.hasNext();) {
-            Class_ clazz = (Class_)i.next();
+        for (Class_ clazz: otherClasses) {
             if (clazz.getClassSuffix()==null) continue;
             clazz.setClassSuffix(null);
             
@@ -1470,7 +1467,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
     
     public static void refreshSolution(Long solutionId) {
-        SolutionDAO dao = new SolutionDAO();
+        SolutionDAO dao = SolutionDAO.getInstance();
         org.hibernate.Session hibSession = dao.getSession(); 
         SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
         hibSessionFactory.getCache().evictEntityData(Solution.class, solutionId);
@@ -1483,15 +1480,15 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
             hibSessionFactory.getCache().evictCollectionData(Class_.class.getName()+".assignments", classId);
         }
-        hibSessionFactory.getCache().evictCollectionData(SolverGroup.class.getName()+".solutions", (Long)hibSession.createQuery("select owner.uniqueId from Solution s where s.uniqueId=:solutionId").setParameter("solutionId", solutionId, org.hibernate.type.LongType.INSTANCE).uniqueResult());
+        hibSessionFactory.getCache().evictCollectionData(SolverGroup.class.getName()+".solutions", hibSession.createQuery("select owner.uniqueId from Solution s where s.uniqueId=:solutionId", Long.class).setParameter("solutionId", solutionId, org.hibernate.type.LongType.INSTANCE).uniqueResult());
    }
     
     public static boolean hasTimetable(Long sessionId) {
-        return ((Number)new SolutionDAO().getSession().
+        return SolutionDAO.getInstance().getSession().
                 createQuery("select count(s) from Solution s " +
                         "where s.owner.session.uniqueId=:sessionId and " +
-                        "s.commited = true").
-                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult()).longValue()>0;
+                        "s.commited = true", Number.class).
+                setParameter("sessionId", sessionId, org.hibernate.type.LongType.INSTANCE).setCacheable(true).uniqueResult().longValue()>0;
     }
     
 	@Override
@@ -1540,8 +1537,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				            	}
 			            	}
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
-								for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
-									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+								for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
+									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
 									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 									.setCacheable(true).list()) {
@@ -1617,8 +1614,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	            	}
             	}
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
-					for (Class_ c: (List<Class_>)Class_DAO.getInstance().getSession().createQuery(
-						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId")
+					for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
+						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
 						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), org.hibernate.type.LongType.INSTANCE)
 						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), org.hibernate.type.StringType.INSTANCE)
 						.setCacheable(true).list()) {
@@ -1674,22 +1671,21 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     		if (i>0) datesStr += ", ";
     		datesStr += ":date"+i;
     	}
-    	Query q = LocationDAO.getInstance().getSession()
+    	Query<Object[]> q = LocationDAO.getInstance().getSession()
     	    .createQuery("select distinct e.clazz.uniqueId, e.studentId "+
     	        	"from StudentEnrollment e, ClassEvent c inner join c.meetings m, StudentEnrollment x "+
     	        	"where x.clazz.uniqueId=:classId and x.studentId=e.studentId and " + // only look among students of the given class 
     	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
     	        	"e.solution.commited=true and x.solution.commited = true and " +
-            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1")
+            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class)
             .setParameter("classId", classId, org.hibernate.type.LongType.INSTANCE)
             .setParameter("startSlot", startSlot, org.hibernate.type.IntegerType.INSTANCE)
             .setParameter("endSlot", startSlot + length, org.hibernate.type.IntegerType.INSTANCE);
     	for (int i=0; i<dates.size(); i++) {
     		q.setParameter("date"+i, dates.get(i), org.hibernate.type.DateType.INSTANCE);
     	}
-        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
-            Object[] o = (Object[])i.next();
+        for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> set = table.get((Long)o[0]);
             if (set==null) {
             	set = new HashSet<Long>();
