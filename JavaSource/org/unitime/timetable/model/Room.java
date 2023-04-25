@@ -143,9 +143,9 @@ public class Room extends BaseRoom {
     public static Room findByBldgIdRoomNbr(Long bldgId, String roomNbr, Long sessionId) {
         return RoomDAO.getInstance().getSession().createQuery(
                 "select r from Room r where r.building.uniqueId=:bldgId and r.roomNumber=:roomNbr and r.session.uniqueId=:sessionId", Room.class).
-                setParameter("bldgId", bldgId, Long.class).
-                setParameter("roomNbr", roomNbr, String.class).
-                setParameter("sessionId", sessionId, Long.class).
+                setParameter("bldgId", bldgId).
+                setParameter("roomNbr", roomNbr).
+                setParameter("sessionId", sessionId).
                 uniqueResult();
     }
     
@@ -177,7 +177,7 @@ public class Room extends BaseRoom {
 			query += " and er.classification in :classifications";
 		}
 		org.hibernate.Session hibSession = ExternalRoomDAO.getInstance().getSession();
-		Query<ExternalRoom> q = hibSession.createQuery(query, ExternalRoom.class).setParameter("sessionId", session.getUniqueId(), Long.class);
+		Query<ExternalRoom> q = hibSession.createQuery(query, ExternalRoom.class).setParameter("sessionId", session.getUniqueId());
 		if (classifications != null && !classifications.isEmpty()) {
 			q.setParameterList("classifications", classifications.split(","), String.class);
 		}
@@ -202,8 +202,8 @@ public class Room extends BaseRoom {
 			}
 			Room r = hibSession.createQuery(
 					"from Room r where r.building.session.uniqueId = :sessionId and r.externalUniqueId = :externalId", Room.class)
-					.setParameter("sessionId", session.getUniqueId(), Long.class)
-					.setParameter("externalId", er.getExternalUniqueId(), String.class)
+					.setParameter("sessionId", session.getUniqueId())
+					.setParameter("externalId", er.getExternalUniqueId())
 					.uniqueResult();
 			if (r == null) {
 				r = new Room();
@@ -279,7 +279,7 @@ public class Room extends BaseRoom {
 						} else {
 							rd.getDepartment().getRoomDepts().remove(rd);
 							i.remove();
-							hibSession.delete(rd);
+							hibSession.remove(rd);
 						}
 					}
 					for (ExternalRoomDepartment erd: code2extRoomDept.values())
@@ -308,7 +308,7 @@ public class Room extends BaseRoom {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.building.abbreviation = l.building.abbreviation and f.roomNumber = l.roomNumber and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime", Location.class
-    			).setParameter("uniqueId", getUniqueId(), Long.class).setCacheable(true).list()) {
+    			).setParameter("uniqueId", getUniqueId()).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);
     		else

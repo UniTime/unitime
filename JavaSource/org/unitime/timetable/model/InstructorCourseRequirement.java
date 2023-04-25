@@ -34,7 +34,7 @@ import org.unitime.timetable.model.base.BaseInstructorCourseRequirement;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "instr_crsreq")
 public class InstructorCourseRequirement extends BaseInstructorCourseRequirement implements Comparable<InstructorCourseRequirement> {
 	private static final long serialVersionUID = 3076787808984760805L;
@@ -90,7 +90,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 				"where co.instructionalOffering.uniqueId = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null", InstructorCourseRequirement.class
-				).setParameter("offeringId", io.getUniqueId(), Long.class)
+				).setParameter("offeringId", io.getUniqueId())
 				.setCacheable(true).list();
 	}
 	
@@ -100,7 +100,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 				"where co.instructionalOffering.uniqueId = :offeringId and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null", Number.class
-				).setParameter("offeringId", io.getUniqueId(), Long.class)
+				).setParameter("offeringId", io.getUniqueId())
 				.setCacheable(true).uniqueResult().intValue() > 0;
 	}
 }

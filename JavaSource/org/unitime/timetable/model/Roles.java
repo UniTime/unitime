@@ -41,7 +41,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "roles")
 public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
 
@@ -75,7 +75,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public static Roles getRole(String roleRef, org.hibernate.Session hibSession) {
     	return hibSession.createQuery(
     			"from Roles where reference = :reference", Roles.class)
-    			.setParameter("reference", roleRef, String.class).setCacheable(true).uniqueResult();
+    			.setParameter("reference", roleRef).setCacheable(true).uniqueResult();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public boolean isUsed() {
     	return (RolesDAO.getInstance().getSession().createQuery(
     			"select count(m) from ManagerRole m where m.role.roleId = :roleId", Number.class)
-    			.setParameter("roleId", getRoleId(), Long.class).uniqueResult()).intValue() > 0;
+    			.setParameter("roleId", getRoleId()).uniqueResult()).intValue() > 0;
     }
     
     public static Set<Roles> findAll(boolean managerOnly) {

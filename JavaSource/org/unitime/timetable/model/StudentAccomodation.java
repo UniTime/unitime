@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.StudentAccomodationDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_accomodation")
 public class StudentAccomodation extends BaseStudentAccomodation {
 	private static final long serialVersionUID = 1L;
@@ -67,8 +67,8 @@ public class StudentAccomodation extends BaseStudentAccomodation {
                     "select a from StudentAccomodation a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.abbreviation=:abbv", StudentAccomodation.class).
-             setParameter("sessionId", sessionId.longValue(), Long.class).
-             setParameter("abbv", abbv, String.class).
+             setParameter("sessionId", sessionId.longValue()).
+             setParameter("abbv", abbv).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -80,7 +80,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name", Object[].class)
-    			.setParameter("offeringId", offering.getUniqueId(), Long.class)
+    			.setParameter("offeringId", offering.getUniqueId())
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -94,7 +94,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     			"where e.clazz.uniqueId = :classId " +
     			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
     			"order by count(a) desc, a.name", Object[].class)
-    			.setParameter("classId", clazz.getUniqueId(), Long.class)
+    			.setParameter("classId", clazz.getUniqueId())
     			.setCacheable(true).list()) {
     		ret.add(new AccommodationCounter((StudentAccomodation)line[0], ((Number)line[1]).intValue()));
     	}
@@ -125,7 +125,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
         			"where " + query + " " +
         			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
         			"order by count(a) desc, a.name", Object[].class)
-        			.setParameter("examOwnerId", owner.getOwnerId(), Long.class)
+        			.setParameter("examOwnerId", owner.getOwnerId())
         			.setCacheable(true).list()) {
             	StudentAccomodation a = (StudentAccomodation)line[0];
             	int count = ((Number)line[1]).intValue();

@@ -302,8 +302,8 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
                     exams = new TreeSet();
                     for (Exam x: ExamDAO.getInstance().getSession().createQuery(
                             "select x from Exam x inner join x.assignedRooms r where x.examType.uniqueId=:examTypeId and r.uniqueId=:locationId", Exam.class).
-                            setParameter("examTypeId", form.getExamType(), Long.class).
-                            setParameter("locationId", location.getUniqueId(), Long.class).
+                            setParameter("examTypeId", form.getExamType()).
+                            setParameter("locationId", location.getUniqueId()).
                             setCacheable(true).
                             list()) {
                         exams.add(new ExamAssignment(x));

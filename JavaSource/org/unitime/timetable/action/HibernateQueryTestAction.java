@@ -36,8 +36,29 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.dom4j.Document;
 import org.hibernate.query.Query;
+import org.hibernate.query.internal.ParameterMetadataImpl;
+import org.hibernate.query.internal.QueryParameterBindingsImpl;
+import org.hibernate.query.spi.QueryOptions;
+import org.hibernate.query.spi.SqmQuery;
+import org.hibernate.query.sqm.internal.DomainParameterXref;
+import org.hibernate.query.sqm.sql.SqmTranslation;
+import org.hibernate.query.sqm.sql.StandardSqmTranslatorFactory;
+import org.hibernate.query.sqm.tree.SqmStatement;
+import org.hibernate.query.sqm.tree.delete.SqmDeleteStatement;
+import org.hibernate.query.sqm.tree.insert.SqmInsertStatement;
+import org.hibernate.query.sqm.tree.select.SqmSelectStatement;
+import org.hibernate.query.sqm.tree.update.SqmUpdateStatement;
+import org.hibernate.sql.ast.spi.SqlAstCreationContext;
+import org.hibernate.sql.ast.tree.delete.DeleteStatement;
+import org.hibernate.sql.ast.tree.insert.InsertStatement;
+import org.hibernate.sql.ast.tree.select.SelectStatement;
+import org.hibernate.sql.ast.tree.update.UpdateStatement;
+import org.hibernate.sql.exec.spi.JdbcParameterBindings;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.spi.LoadQueryInfluencers;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.exception.SQLGrammarException;
 import org.unitime.commons.Debug;
@@ -186,18 +207,63 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        	q = hibSession.createQuery(query);
 		        }
 		        
-		        //FIXME: How to get the generated SQL???
-		        /*
 		        try {
-		        	String hqlQueryString = q.getQueryString();
-		        	ASTQueryTranslatorFactory queryTranslatorFactory = new ASTQueryTranslatorFactory();
-		        	QueryTranslator queryTranslator = queryTranslatorFactory.createQueryTranslator("", hqlQueryString, java.util.Collections.EMPTY_MAP, (SessionFactoryImplementor) hibSession.getSessionFactory(), null);
-		        	queryTranslator.compile(java.util.Collections.EMPTY_MAP, false);
-		        	request.setAttribute("sql", queryTranslator.getSQLString());
+		        	SqmStatement sqm = ((SqmQuery)q).getSqmStatement();
+		        	SessionFactoryImplementor sfi = (SessionFactoryImplementor)hibSession.getSessionFactory();
+		        	Dialect dialect = sfi.getJdbcServices().getDialect();
+		        	if (sqm instanceof SqmSelectStatement) {
+			        	SqmTranslation tr = new StandardSqmTranslatorFactory().createSelectTranslator(
+			        			(SqmSelectStatement)sqm,
+			        			QueryOptions.NONE,
+			        			DomainParameterXref.from(sqm),
+			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
+			        			LoadQueryInfluencers.NONE,
+			        			(SqlAstCreationContext)hibSession.getSessionFactory(),
+			        			false).translate();
+			        	String sql = dialect.getSqlAstTranslatorFactory()
+			        			.buildSelectTranslator(sfi, (SelectStatement)tr.getSqlAst())
+			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
+			        	request.setAttribute("sql", sql);
+		        	} else if (sqm instanceof SqmDeleteStatement) {
+		        		SqmTranslation tr = new StandardSqmTranslatorFactory().createSimpleDeleteTranslator(
+			        			(SqmDeleteStatement)sqm,
+			        			QueryOptions.NONE,
+			        			DomainParameterXref.from(sqm),
+			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
+			        			LoadQueryInfluencers.NONE,
+			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
+			        	String sql = dialect.getSqlAstTranslatorFactory()
+			        			.buildDeleteTranslator(sfi, (DeleteStatement)tr.getSqlAst())
+			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
+			        	request.setAttribute("sql", sql);
+		        	} else if (sqm instanceof SqmInsertStatement) {
+		        		SqmTranslation tr = new StandardSqmTranslatorFactory().createInsertTranslator(
+			        			(SqmInsertStatement)sqm,
+			        			QueryOptions.NONE,
+			        			DomainParameterXref.from(sqm),
+			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
+			        			LoadQueryInfluencers.NONE,
+			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
+			        	String sql = dialect.getSqlAstTranslatorFactory()
+			        			.buildInsertTranslator(sfi, (InsertStatement)tr.getSqlAst())
+			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
+			        	request.setAttribute("sql", sql);
+		        	} else if (sqm instanceof SqmUpdateStatement) {
+		        		SqmTranslation tr = new StandardSqmTranslatorFactory().createSimpleUpdateTranslator(
+			        			(SqmUpdateStatement)sqm,
+			        			QueryOptions.NONE,
+			        			DomainParameterXref.from(sqm),
+			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
+			        			LoadQueryInfluencers.NONE,
+			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
+			        	String sql = dialect.getSqlAstTranslatorFactory()
+			        			.buildUpdateTranslator(sfi, (UpdateStatement)tr.getSqlAst())
+			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
+			        	request.setAttribute("sql", sql);
+		        	}
 		        } catch (Exception e) {
 		        	Debug.error(e);
 		        }
-		        */
 		        
 		        q.setFirstResult(form.getStart());
 		        if (limit > 0) q.setMaxResults(limit + 1);

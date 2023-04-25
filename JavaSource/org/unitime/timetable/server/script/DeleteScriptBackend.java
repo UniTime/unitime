@@ -40,7 +40,7 @@ public class DeleteScriptBackend implements GwtRpcImplementation<DeleteScriptRpc
 		org.hibernate.Session hibSession = ScriptDAO.getInstance().getSession();
 		
 		Script script = ScriptDAO.getInstance().get(request.getScriptId(), hibSession);
-		hibSession.delete(script);
+		hibSession.remove(script);
 		
 		hibSession.flush();
 		

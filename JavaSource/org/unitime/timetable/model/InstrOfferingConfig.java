@@ -46,7 +46,7 @@ import org.unitime.timetable.util.duration.MinutesPerWeek;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "instr_offering_config")
 public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	private static final long serialVersionUID = 1L;
@@ -291,8 +291,8 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
         return InstrOfferingConfigDAO.getInstance().
             getSession().
             createQuery("select ioc from InstrOfferingConfig ioc where ioc.instructionalOffering.session.uniqueId=:sessionId and ioc.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstrOfferingConfig.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
     }
@@ -349,7 +349,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	public TreeSet<Department> findPossibleFundingDepts(org.hibernate.Session hibSession){
 		TreeSet<Department> deptSet = new TreeSet<>();
 		String query = "from Department d where d.externalFundingDept = true and d.session.uniqueId = :sessId";
-		deptSet.addAll(hibSession.createQuery(query, Department.class).setParameter("sessId", this.getSessionId(), Long.class).setCacheable(true).list());
+		deptSet.addAll(hibSession.createQuery(query, Department.class).setParameter("sessId", this.getSessionId()).setCacheable(true).list());
 		for (CourseOffering co : this.getInstructionalOffering().getCourseOfferings()){
 			deptSet.add(co.getDepartment());
 			deptSet.add(co.getEffectiveFundingDept());

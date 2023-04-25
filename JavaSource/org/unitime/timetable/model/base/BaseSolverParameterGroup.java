@@ -88,7 +88,7 @@ public abstract class BaseSolverParameterGroup implements Serializable {
 	public void setType(Integer type) { iType = type; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "group", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverParameterDef> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameterDef> parameters) { iParameters = parameters; }
 	public void addToparameters(SolverParameterDef solverParameterDef) {

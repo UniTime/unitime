@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BasePitClassMeeting;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pit_class_meeting")
 public class PitClassMeeting extends BasePitClassMeeting {
 

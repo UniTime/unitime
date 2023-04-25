@@ -125,7 +125,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 			}
 			if (courses != null && !courses.isEmpty() && courses.size() <= 1000) {
 				List<OverrideType> overrides = helper.getHibSession().createQuery(
-						"from OverrideType oder by label").setCacheable(true).list();
+						"from OverrideType order by label", OverrideType.class).setCacheable(true).list();
 				if (overrides != null && !overrides.isEmpty()) {
 					Map<Long, CourseAssignment> table = new HashMap<Long, CourseAssignment>();
 					for (CourseAssignment ca: courses)

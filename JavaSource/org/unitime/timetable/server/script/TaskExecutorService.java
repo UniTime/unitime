@@ -71,7 +71,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
-					).setParameter("now", new Date(), Date.class).setParameter("status", ExecutionStatus.QUEUED.ordinal(), Integer.class).list();
+					).setParameter("now", new Date()).setParameter("status", ExecutionStatus.QUEUED.ordinal()).list();
 			for (TaskExecution execution: executions) {
 				if (solverServerService.getQueueProcessor().getByExecutionId(execution.getUniqueId()) != null) continue;
 				try {
@@ -86,7 +86,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 					sLog.warn("Failed to execute " + execution.getTask().getName() + ": " + e.getMessage(), e);
 				}
 				
-				hibSession.update(execution);
+				hibSession.merge(execution);
 			}
 			tx.commit();
 		} catch (Exception e) {
@@ -107,7 +107,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 		try {
 			List<TaskExecution> executions = hibSession.createQuery(
 					"from TaskExecution e where e.executionStatus = :status and e.scheduledDate <= :now", TaskExecution.class
-					).setParameter("now", new Date(), Date.class).setParameter("status", ExecutionStatus.CREATED.ordinal(), Integer.class).list();
+					).setParameter("now", new Date()).setParameter("status", ExecutionStatus.CREATED.ordinal()).list();
 			for (TaskExecution execution: executions) {
 				try {
 					TaskExecutionItem item = new TaskExecutionItem(execution, unitimePermissionCheck);
@@ -121,7 +121,7 @@ public class TaskExecutorService implements InitializingBean, DisposableBean {
 					sLog.warn("Failed to execute " + execution.getTask().getName() + ": " + e.getMessage(), e);
 				}
 				
-				hibSession.update(execution);
+				hibSession.merge(execution);
 			}
 			tx.commit();
 		} catch (Exception e) {

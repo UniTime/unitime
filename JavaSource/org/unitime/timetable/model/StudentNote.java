@@ -28,7 +28,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseStudentNote;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_note")
 public class StudentNote extends BaseStudentNote implements Comparable<StudentNote> {
 	private static final long serialVersionUID = 1L;

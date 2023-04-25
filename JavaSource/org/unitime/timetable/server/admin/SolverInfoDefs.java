@@ -144,7 +144,7 @@ public class SolverInfoDefs implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(def);
+		hibSession.remove(def);
 	}
 	
 	@Override

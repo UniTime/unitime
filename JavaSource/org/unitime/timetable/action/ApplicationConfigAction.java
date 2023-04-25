@@ -136,7 +136,7 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                     	form.setDescription(ApplicationProperty.getDescription(form.getKey()));
                     form.setAllSessions(false);
                     List<Long> sessionIds = SessionConfigDAO.getInstance().getSession().createQuery("select session.uniqueId from SessionConfig where key = :key and value = :value", Long.class)
-                    		.setParameter("key", id, String.class).setParameter("value", sessionConfig.getValue(), String.class).list();
+                    		.setParameter("key", id).setParameter("value", sessionConfig.getValue()).list();
                     Long[] sessionIdsArry = new Long[sessionIds.size()];
                     for (int i = 0; i < sessionIds.size(); i++)
                     	sessionIdsArry[i] = sessionIds.get(i);
@@ -186,15 +186,15 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 			if (update) { // update --> delete all with the same value
                         		for (SessionConfig config: hibSession.createQuery(
                         				"from SessionConfig where key = :key and value = :value", SessionConfig.class)
-                        				.setParameter("key", form.getKey(), String.class).setParameter("value", oldValue, String.class).list()) {
+                        				.setParameter("key", form.getKey()).setParameter("value", oldValue).list()) {
                         			getSolverServerService().setApplicationProperty(config.getSession().getUniqueId(), form.getKey(), null);
-                        			hibSession.delete(config);
+                        			hibSession.remove(config);
                         		}
                 			} else { // create --> delete just the current one
                 				SessionConfig config = SessionConfig.getConfig(form.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
                 				if (config != null) {
                 					getSolverServerService().setApplicationProperty(config.getSession().getUniqueId(), form.getKey(), null);
-                        			hibSession.delete(config);
+                        			hibSession.remove(config);
                 				}
                 			}
                 		}
@@ -216,7 +216,7 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 			ApplicationConfig config = ApplicationConfigDAO.getInstance().get(form.getKey());
                 			if (config != null) {
                 				getSolverServerService().setApplicationProperty(null, form.getKey(), null);
-                    			hibSession.delete(config);
+                    			hibSession.remove(config);
                 			}
                 		}
                 		
@@ -225,7 +225,7 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 		for (Long sessionId: form.getSessions()) {
                 			SessionConfig config = hibSession.createQuery(
                 					"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class)
-                					.setParameter("sessionId", sessionId, Long.class).setParameter("key", form.getKey(), String.class).uniqueResult();
+                					.setParameter("sessionId", sessionId).setParameter("key", form.getKey()).uniqueResult();
                 			if (config == null) {
                 				config = new SessionConfig();
                 				config.setKey(form.getKey());
@@ -245,10 +245,10 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 			// update --> delete old session values
                 			for (SessionConfig other: hibSession.createQuery(
                 					"from SessionConfig where key = :key and value = :value", SessionConfig.class)
-                					.setParameter("key", form.getKey(), String.class).setParameter("value", oldValue, String.class).list()) {
+                					.setParameter("key", form.getKey()).setParameter("value", oldValue).list()) {
                 				if (!updatedSessionIds.contains(other.getSession().getUniqueId())) {
                 					getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
-                					hibSession.delete(other);
+                					hibSession.remove(other);
                 				}
                 			}
                 		}
@@ -278,25 +278,25 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 	if (sessionContext.getUser().getCurrentAcademicSessionId() != null) {
                 		sessionConfig = hibSession.createQuery(
         					"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class)
-        					.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), Long.class).setParameter("key", form.getKey(), String.class).uniqueResult();
+        					.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId()).setParameter("key", form.getKey()).uniqueResult();
                 	}
                 	
                 	if (sessionConfig == null) {
                 		ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(form.getKey());
                 		if (appConfig != null) {
-                			hibSession.delete(appConfig);
+                			hibSession.remove(appConfig);
                 			getSolverServerService().setApplicationProperty(null, form.getKey(), null);
                 		}
                 	} else {
                 		String oldValue = sessionConfig.getValue();
-                		hibSession.delete(sessionConfig);
+                		hibSession.remove(sessionConfig);
                 		getSolverServerService().setApplicationProperty(sessionContext.getUser().getCurrentAcademicSessionId(), form.getKey(), null);
             			
             			for (SessionConfig other: hibSession.createQuery(
             					"from SessionConfig where key = :key and value = :value", SessionConfig.class)
-            					.setParameter("key", form.getKey(), String.class).setParameter("value", oldValue, String.class).list()) {
+            					.setParameter("key", form.getKey()).setParameter("value", oldValue).list()) {
             				getSolverServerService().setApplicationProperty(other.getSession().getUniqueId(), form.getKey(), null);
-            				hibSession.delete(other);
+            				hibSession.remove(other);
             			}
                 	}
                 	

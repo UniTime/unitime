@@ -71,12 +71,12 @@ public class ExamDistributionPrefsTableBuilder {
 	            "dp.distributionType.examPref = true and "+
 	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
 	    Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
-	    		.setParameter("examTypeId", examTypeId, Long.class);
+	            .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId())
+	    		.setParameter("examTypeId", examTypeId);
 	    if (subjectAreaId!=null)
-	        q.setParameter("subjectAreaId", subjectAreaId, Long.class);
+	        q.setParameter("subjectAreaId", subjectAreaId);
 	    if (courseNbr!=null && !courseNbr.trim().isEmpty())
-	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
+	        q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
 	    List<DistributionPref> distPrefs = q.setCacheable(true).list();
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
@@ -95,12 +95,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId())
+                .setParameter("examTypeId", examTypeId);
         if (subjectAreaId!=null)
-            q.setParameter("subjectAreaId", subjectAreaId, Long.class);
+            q.setParameter("subjectAreaId", subjectAreaId);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
         List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toPdfTable(out, request, context, distPrefs, examTypeId); 
@@ -120,12 +120,12 @@ public class ExamDistributionPrefsTableBuilder {
                 "dp.distributionType.examPref = true and "+
                 "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId";
         Query<DistributionPref> q = DistributionPrefDAO.getInstance().getSession().createQuery(query, DistributionPref.class)
-                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class);
+                .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId())
+                .setParameter("examTypeId", examTypeId);
         if (subjectAreaId!=null)
-            q.setParameter("subjectAreaId", subjectAreaId, Long.class);
+            q.setParameter("subjectAreaId", subjectAreaId);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
-            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class);
+            q.setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
         List<DistributionPref> distPrefs = q.setCacheable(true).list();
 
         toCsvTable(out, request, context, distPrefs, examTypeId); 

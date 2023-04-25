@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.exams;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -84,30 +83,30 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.courseOffering co " +
 				"where o.ownerType = :type and o.ownerId = co.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
-				.setParameter("type", ExamOwner.sOwnerTypeCourse, Integer.class)
-				.setParameter("studentId", request.getStudentId(), Long.class)
-				.setParameter("examTypeId", exam.getExamType().getUniqueId(), Long.class)
+				.setParameter("type", ExamOwner.sOwnerTypeCourse)
+				.setParameter("studentId", request.getStudentId())
+				.setParameter("examTypeId", exam.getExamType().getUniqueId())
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.courseOffering.instructionalOffering io " +
 				"where o.ownerType = :type and o.ownerId = io.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
-				.setParameter("type", ExamOwner.sOwnerTypeOffering, Integer.class)
-				.setParameter("studentId", request.getStudentId(), Long.class)
-				.setParameter("examTypeId", exam.getExamType().getUniqueId(), Long.class)
+				.setParameter("type", ExamOwner.sOwnerTypeOffering)
+				.setParameter("studentId", request.getStudentId())
+				.setParameter("examTypeId", exam.getExamType().getUniqueId())
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.clazz.schedulingSubpart.instrOfferingConfig cfg " +
 				"where o.ownerType = :type and o.ownerId = cfg.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
-				.setParameter("type", ExamOwner.sOwnerTypeConfig, Integer.class)
-				.setParameter("studentId", request.getStudentId(), Long.class)
-				.setParameter("examTypeId", exam.getExamType().getUniqueId(), Long.class)
+				.setParameter("type", ExamOwner.sOwnerTypeConfig)
+				.setParameter("studentId", request.getStudentId())
+				.setParameter("examTypeId", exam.getExamType().getUniqueId())
 				.setCacheable(true).list());
 		exams.addAll(hibSession.createQuery(
 				"select o, enrl.courseOffering from ExamOwner o, StudentClassEnrollment enrl inner join enrl.clazz c " +
 				"where o.ownerType = :type and o.ownerId = c.uniqueId and enrl.student.uniqueId = :studentId and o.exam.examType.uniqueId = :examTypeId", Object[].class)
-				.setParameter("type", ExamOwner.sOwnerTypeClass, Integer.class)
-				.setParameter("studentId", request.getStudentId(), Long.class)
-				.setParameter("examTypeId", exam.getExamType().getUniqueId(), Long.class)
+				.setParameter("type", ExamOwner.sOwnerTypeClass)
+				.setParameter("studentId", request.getStudentId())
+				.setParameter("examTypeId", exam.getExamType().getUniqueId())
 				.setCacheable(true).list());
 		for (Object[] o: exams) {
 			ExamOwner owner = (ExamOwner)o[0];
@@ -205,11 +204,11 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		        			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		        			ExaminationEnrollmentsBackend.where(t2, 2) + 
 		        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod", Event.class)
-		        			.setParameter("examId", x.getUniqueId(), Long.class)
-		        			.setParameter("studentId", request.getStudentId(), Long.class)
-		        			.setParameter("meetingDate", period.getStartDate(), Date.class)
-		        			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent, Integer.class)
-		        			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent, Integer.class)
+		        			.setParameter("examId", x.getUniqueId())
+		        			.setParameter("studentId", request.getStudentId())
+		        			.setParameter("meetingDate", period.getStartDate())
+		        			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent)
+		        			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent)
 		        			.list());
 		        }
 		        
@@ -222,11 +221,11 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
 		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1", Event.class)
-		            			.setParameter("examId", x.getUniqueId(), Long.class)
-		        			.setParameter("studentId", request.getStudentId(), Long.class)
-		            			.setParameter("meetingDate", period.getStartDate(), Date.class)
-		            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, Integer.class)
-		            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, Integer.class)
+		            			.setParameter("examId", x.getUniqueId())
+		        			.setParameter("studentId", request.getStudentId())
+		            			.setParameter("meetingDate", period.getStartDate())
+		            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+		            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
 		            			.list());
 		            }
 		        }
@@ -240,12 +239,12 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
 		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
 		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.exam.examType.uniqueId != :examTypeId and m1.approvalStatus = 1", Event.class)
-		            			.setParameter("examId", x.getUniqueId(), Long.class)
-		        			.setParameter("studentId", request.getStudentId(), Long.class)
-		            			.setParameter("meetingDate", period.getStartDate(), Date.class)
-		            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, Integer.class)
-		            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, Integer.class)
-		            			.setParameter("examTypeId", period.getExamType().getUniqueId(), Long.class)
+		            			.setParameter("examId", x.getUniqueId())
+		        			.setParameter("studentId", request.getStudentId())
+		            			.setParameter("meetingDate", period.getStartDate())
+		            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+		            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+		            			.setParameter("examTypeId", period.getExamType().getUniqueId())
 		            			.list());
 		            }
 		        }

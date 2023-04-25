@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseFreeTime;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "free_time")
 public class FreeTime extends BaseFreeTime {
 	private static final long serialVersionUID = 1L;

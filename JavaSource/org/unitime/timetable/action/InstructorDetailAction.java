@@ -406,8 +406,8 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 						"and s.uniqueId = :sessionId and (e.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and m.approvalStatus = 1",
 						Meeting.class
 						)
-						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), Long.class)
-						.setParameter("user", inst.getExternalUniqueId(), String.class)
+						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
+						.setParameter("user", inst.getExternalUniqueId())
 						.setCacheable(true).list()) {
 					Set<Meeting> meetings = unavailabilities.get(meeting.getEvent());
 					if (meetings == null) {
@@ -509,8 +509,8 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 				for (DepartmentalInstructor di: DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 						"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
 						"order by i.department.deptCode", DepartmentalInstructor.class)
-						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), Long.class)
-						.setParameter("externalId", inst.getExternalUniqueId(), String.class).setCacheable(true).list()) {
+						.setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
+						.setParameter("externalId", inst.getExternalUniqueId()).setCacheable(true).list()) {
 					if (sessionContext.hasPermission(di, Right.InstructorDetail)) {
 						departments.add(new IdValue(di.getUniqueId(), di.getDepartment().getLabel()));
 					}

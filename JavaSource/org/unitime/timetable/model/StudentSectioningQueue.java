@@ -54,7 +54,7 @@ import org.unitime.timetable.security.UserContext;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "sectioning_queue")
 public class StudentSectioningQueue extends BaseStudentSectioningQueue implements Comparable<StudentSectioningQueue> {
 	private static final long serialVersionUID = 8492171207847794888L;
@@ -76,12 +76,12 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			if (lastTimeStamp == null) {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId", StudentSectioningQueue.class)
-						.setParameter("sessionId", sessionId, Long.class).list());
+						.setParameter("sessionId", sessionId).list());
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.sessionId = :sessionId and q.timeStamp > :timeStamp", StudentSectioningQueue.class)
-						.setParameter("sessionId", sessionId, Long.class)
-						.setParameter("timeStamp", lastTimeStamp, Date.class).list());
+						.setParameter("sessionId", sessionId)
+						.setParameter("timeStamp", lastTimeStamp).list());
 			}
 		} else {
 			if (lastTimeStamp == null) {
@@ -90,7 +90,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			} else {
 				return new TreeSet<StudentSectioningQueue>(
 						hibSession.createQuery("select q from StudentSectioningQueue q where q.timeStamp > :timeStamp", StudentSectioningQueue.class)
-						.setParameter("timeStamp", lastTimeStamp, Date.class).list());
+						.setParameter("timeStamp", lastTimeStamp).list());
 			}
 		}
 	}
@@ -99,7 +99,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		if (sessionId != null)
 			return  hibSession.createQuery(
 						"select max(q.timeStamp) from StudentSectioningQueue q where q.sessionId = :sessionId", Date.class
-					).setParameter("sessionId", sessionId, Long.class).uniqueResult();
+					).setParameter("sessionId", sessionId).uniqueResult();
 		else
 			return  hibSession.createQuery("select max(q.timeStamp) from StudentSectioningQueue q", Date.class).uniqueResult();
 			
@@ -153,7 +153,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 				root.addElement("id").setText(id.toString());
 		}
 		q.setMessage(d);
-		hibSession.save(q);
+		hibSession.persist(q);
 	}
 	
 	protected static void addItem(org.hibernate.Session hibSession, UserContext user, Long sessionId, Type type, Long... ids) {
@@ -172,7 +172,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 				root.addElement("id").setText(id.toString());
 		}
 		q.setMessage(d);
-		hibSession.save(q);
+		hibSession.persist(q);
 	}
 	
 	@Transient

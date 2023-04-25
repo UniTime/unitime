@@ -208,7 +208,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 				        	updatedClasses.add(ci.getClassInstructing());
 				        	ci.getClassInstructing().getClassInstructors().remove(ci);
 				        	hibSession.saveOrUpdate(ci);
-				        	hibSession.delete(ci);
+				        	hibSession.remove(ci);
 				        }
 					    
 				        for (Iterator i=inst.getAssignments().iterator();i.hasNext();) {
@@ -218,7 +218,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 				        }
 				        inst.getDepartment().getInstructors().remove(inst);
 				        
-						hibSession.delete(inst);
+						hibSession.remove(inst);
 					}
 				}
 			}
@@ -259,7 +259,7 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
                         
                         inst.setIgnoreToFar(Boolean.FALSE);
                         
-						hibSession.save(inst);
+						hibSession.persist(inst);
 
                         ChangeLog.addChange(
                                 hibSession, 

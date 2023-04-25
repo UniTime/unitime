@@ -113,7 +113,7 @@ public abstract class BaseDatePattern implements Serializable {
 	@JoinTable(name = "date_pattern_parent",
 		joinColumns = { @JoinColumn(name = "date_pattern_id") },
 		inverseJoinColumns = { @JoinColumn(name = "parent_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DatePattern> getParents() { return iParents; }
 	public void setParents(Set<DatePattern> parents) { iParents = parents; }
 	public void addToparents(DatePattern datePattern) {
@@ -122,7 +122,7 @@ public abstract class BaseDatePattern implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "datePatterns")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {

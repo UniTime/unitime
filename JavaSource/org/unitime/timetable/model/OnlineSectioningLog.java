@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseOnlineSectioningLog;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "sectioning_log")
 public class OnlineSectioningLog extends BaseOnlineSectioningLog {
 	private static final long serialVersionUID = 2284161428989084076L;

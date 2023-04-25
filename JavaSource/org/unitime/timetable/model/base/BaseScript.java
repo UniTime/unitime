@@ -92,7 +92,7 @@ public abstract class BaseScript implements Serializable {
 	public void setScript(String script) { iScript = script; }
 
 	@OneToMany(mappedBy = "script", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ScriptParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<ScriptParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(ScriptParameter scriptParameter) {

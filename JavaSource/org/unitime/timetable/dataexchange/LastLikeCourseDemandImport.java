@@ -80,7 +80,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
            
             getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.subjectArea.uniqueId in " +
                     "(select s.uniqueId from SubjectArea s where s.session.uniqueId=:sessionId)").
-                    setParameter("sessionId", session.getUniqueId(), Long.class).executeUpdate();
+                    setParameter("sessionId", session.getUniqueId()).executeUpdate();
             
             flush(true);
             
@@ -118,13 +118,13 @@ public class LastLikeCourseDemandImport extends BaseImport {
                     "(select count(distinct d.student) from LastLikeCourseDemand d where "+
                     "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
                     "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
-                    setParameter("sessionId", session.getUniqueId(), Long.class).executeUpdate();
+                    setParameter("sessionId", session.getUniqueId()).executeUpdate();
 
             getHibSession().createQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
 	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
-	                setParameter("sessionId", session.getUniqueId(), Long.class).executeUpdate();
+	                setParameter("sessionId", session.getUniqueId()).executeUpdate();
             
             commitTransaction();
 		} catch (Exception e) {
@@ -137,8 +137,8 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	Student fetchStudent(String externalId, Long sessionId) {
 		return getHibSession().
 		createQuery("select distinct a from Student as a where a.externalUniqueId=:externalId and a.session.uniqueId=:sessionId", Student.class).
-		setParameter("sessionId", sessionId.longValue(), Long.class).
-		setParameter("externalId", externalId, String.class).
+		setParameter("sessionId", sessionId.longValue()).
+		setParameter("externalId", externalId).
 		setCacheable(true).
 		uniqueResult();
 	}
@@ -190,7 +190,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 		List areas = new ArrayList();
 		areas = getHibSession().
 			createQuery("select distinct a from SubjectArea as a where a.session.uniqueId=:sessionId", SubjectArea.class).
-			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("sessionId", sessionId.longValue()).
 			setCacheable(true).
 			list();
 		for (Iterator it = areas.iterator(); it.hasNext();) {

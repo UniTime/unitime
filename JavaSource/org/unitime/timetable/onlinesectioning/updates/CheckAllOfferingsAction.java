@@ -56,7 +56,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 			offeringIds = helper.getHibSession().createQuery(
 					"select io.uniqueId from InstructionalOffering io " + 
 					"where io.session.uniqueId = :sessionId and io.notOffered = false", Long.class)
-					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).list();
+					.setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
 			helper.commitTransaction();
 		} catch (Exception e) {
 			helper.rollbackTransaction();

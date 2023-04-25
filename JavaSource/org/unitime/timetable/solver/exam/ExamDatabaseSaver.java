@@ -111,8 +111,8 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
         Hashtable<Long,ExamEvent> examEvents = new Hashtable();
         for (ExamEvent e: hibSession.createQuery(
                 "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType.uniqueId=:examTypeId", ExamEvent.class)
-                .setParameter("sessionId", iSessionId, Long.class)
-                .setParameter("examTypeId", iExamTypeId, Long.class)
+                .setParameter("sessionId", iSessionId)
+                .setParameter("examTypeId", iExamTypeId)
                 .list()) {
             examEvents.put(e.getExam().getUniqueId(),e);
         }
@@ -126,10 +126,10 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
             exam.setAssignedPreference(null);
             exam.getAssignedRooms().clear();
             ExamEvent event = examEvents.get(exam.getUniqueId());
-            if (event!=null) hibSession.delete(event);
+            if (event!=null) hibSession.remove(event);
             for (Iterator j=exam.getConflicts().iterator();j.hasNext();) {
                 ExamConflict conf = (ExamConflict)j.next();
-                hibSession.delete(conf);
+                hibSession.remove(conf);
                 j.remove();
             }
             Exam examVar = null;
@@ -264,7 +264,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setConflictType(ExamConflict.sConflictTypeDirect);
                     conf.setStudents(getStudents(hibSession, dc.getStudents()));
                     conf.setNrStudents(conf.getStudents().size());
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     exam.getConflicts().add(conf);
                     otherExam.getConflicts().add(conf);
                     iProgress.debug("Direct conflict of "+dc.getStudents().size()+" students between "+exam.getLabel()+" and "+otherExam.getLabel());
@@ -285,7 +285,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setNrStudents(conf.getStudents().size());
                     exam.getConflicts().add(conf);
                     otherExam.getConflicts().add(conf);
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     iProgress.debug("Back-to-back conflict of "+btb.getStudents().size()+" students between "+exam.getLabel()+" and "+otherExam.getLabel());
                 }
             }
@@ -308,7 +308,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                     conf.setStudents(getStudents(hibSession, m2d.getStudents()));
                     conf.setNrStudents(conf.getStudents().size());
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     for (Iterator j=confExams.iterator();j.hasNext();)
                         ((org.unitime.timetable.model.Exam)j.next()).getConflicts().add(conf);
                     iProgress.debug("More than 2 a day conflict of "+m2d.getStudents().size()+" students between "+exam.getLabel()+" and "+m2d.getOtherExams());
@@ -328,7 +328,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setConflictType(ExamConflict.sConflictTypeDirect);
                     conf.setInstructors(getInstructors(hibSession, dc.getStudents()));
                     conf.setNrInstructors(conf.getInstructors().size());
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     exam.getConflicts().add(conf);
                     otherExam.getConflicts().add(conf);
                     iProgress.debug("Direct conflict of "+dc.getStudents().size()+" instructors between "+exam.getLabel()+" and "+otherExam.getLabel());
@@ -349,7 +349,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setNrInstructors(conf.getInstructors().size());
                     exam.getConflicts().add(conf);
                     otherExam.getConflicts().add(conf);
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     iProgress.debug("Back-to-back conflict of "+btb.getStudents().size()+" instructors between "+exam.getLabel()+" and "+otherExam.getLabel());
                 }
             }
@@ -372,7 +372,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                     conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                     conf.setInstructors(getInstructors(hibSession, m2d.getStudents()));
                     conf.setNrInstructors(conf.getInstructors().size());
-                    hibSession.save(conf);
+                    hibSession.persist(conf);
                     for (Iterator j=confExams.iterator();j.hasNext();)
                         ((org.unitime.timetable.model.Exam)j.next()).getConflicts().add(conf);
                     iProgress.debug("More than 2 a day conflict of "+m2d.getStudents().size()+" instructors between "+exam.getLabel()+" and "+m2d.getOtherExams());
@@ -390,7 +390,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
             contact.setLastName(manager.getLastName());
             contact.setExternalUniqueId(manager.getExternalUniqueId());
             contact.setEmailAddress(manager.getEmailAddress());
-            hibSession.save(contact);
+            hibSession.persist(contact);
         }
         for (Exam examVar: getAssignment().assignedVariables()) {
             iProgress.incProgress();

@@ -239,7 +239,7 @@ public class TimetableGridContext implements Serializable {
     				"from ItypeDesc where " +
     				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId) " +
     				"order by itype", ItypeDesc.class
-    				).setParameter("sessionId", iSessionId, Long.class).list();
+    				).setParameter("sessionId", iSessionId).list();
     		for (ItypeDesc it: itypes) {
     			if (it.getParent() == null) {
     				String color = sBgColors[iInstructionalTypeColors.size() % sBgColors.length];

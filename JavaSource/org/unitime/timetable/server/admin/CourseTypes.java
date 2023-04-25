@@ -67,7 +67,7 @@ public class CourseTypes implements AdminTable {
 			int used =
 					(hibSession.createQuery(
 							"select count(c) from CourseOffering c where c.courseType.uniqueId = :uniqueId", Number.class)
-							.setParameter("uniqueId", ctype.getUniqueId(), Long.class).uniqueResult()).intValue();
+							.setParameter("uniqueId", ctype.getUniqueId()).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.CourseTypeEdit));
@@ -138,7 +138,7 @@ public class CourseTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 	
 	@Override

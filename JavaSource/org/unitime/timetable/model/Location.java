@@ -66,7 +66,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Location extends BaseLocation implements Comparable {
 	public static final CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -413,21 +413,21 @@ public abstract class Location extends BaseLocation implements Comparable {
 		for (Iterator iter = department.getPreferences().iterator(); iter.hasNext();) {
 			Preference p = (Preference)iter.next();
            	if (p instanceof RoomPref && ((RoomPref)p).getRoom().equals(this)) {
-           		hibSession.delete(p);
+           		hibSession.remove(p);
            		iter.remove();
             }
 		}
 		hibSession.saveOrUpdate(department);
 		List<RoomPref> roomPrefs = hibSession.
 			createQuery("select distinct rp from RoomPref rp where rp.room.uniqueId=:locationId", RoomPref.class).
-			setParameter("locationId", getUniqueId(), Long.class).
+			setParameter("locationId", getUniqueId()).
 			list();
 		for (RoomPref rp: roomPrefs) {
 			if (rp.getOwner() instanceof Class_) {
 				Class_ c = (Class_)rp.getOwner();
 				if (department.equals(c.getManagingDept())) {
 					c.getPreferences().remove(rp);
-					hibSession.delete(rp);
+					hibSession.remove(rp);
 					hibSession.saveOrUpdate(c);
 				}
 			}
@@ -435,7 +435,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				SchedulingSubpart s = (SchedulingSubpart)rp.getOwner();
 				if (department.equals(s.getManagingDept())) {
 					s.getPreferences().remove(rp);
-					hibSession.delete(rp);
+					hibSession.remove(rp);
 					hibSession.saveOrUpdate(s);
 				}
 			}
@@ -443,7 +443,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				DepartmentalInstructor d = (DepartmentalInstructor)rp.getOwner();
 				if (department.equals(d.getDepartment())) {
 					d.getPreferences().remove(rp);
-					hibSession.delete(rp);
+					hibSession.remove(rp);
 					hibSession.saveOrUpdate(d);
 				}
 			}
@@ -453,14 +453,14 @@ public abstract class Location extends BaseLocation implements Comparable {
 			Building bldg = ((Room)this).getBuilding();
 			List<BuildingPref> bldgPrefs = hibSession.
 			createQuery("select distinct bp from BuildingPref bp where bp.building.uniqueId=:bldgId", BuildingPref.class).
-			setParameter("bldgId", bldg.getUniqueId(), Long.class).
+			setParameter("bldgId", bldg.getUniqueId()).
 			list();
 			for (BuildingPref bp: bldgPrefs) {
 				if (bp.getOwner() instanceof Class_) {
 					Class_ c = (Class_)bp.getOwner();
 					if (!c.getAvailableBuildings().contains(bldg) && department.equals(c.getManagingDept())) {
 						c.getPreferences().remove(bp);
-						hibSession.delete(bp);
+						hibSession.remove(bp);
 						hibSession.saveOrUpdate(c);
 					}
 				}
@@ -468,7 +468,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 					SchedulingSubpart s = (SchedulingSubpart)bp.getOwner();
 					if (!s.getAvailableBuildings().contains(bldg) && department.equals(s.getManagingDept())) {
 						s.getPreferences().remove(bp);
-						hibSession.delete(bp);
+						hibSession.remove(bp);
 						hibSession.saveOrUpdate(s);
 					}
 				}
@@ -476,7 +476,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 					DepartmentalInstructor d = (DepartmentalInstructor)bp.getOwner();
 					if (!d.getAvailableBuildings().contains(bldg) && department.equals(d.getDepartment())) {
 						d.getPreferences().remove(bp);
-						hibSession.delete(bp);
+						hibSession.remove(bp);
 						hibSession.saveOrUpdate(d);
 					}
 				}
@@ -537,7 +537,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (examTypeId.equals(pref.getExamPeriod().getExamType().getUniqueId())) {
-                ExamLocationPrefDAO.getInstance().getSession().delete(pref);
+                ExamLocationPrefDAO.getInstance().getSession().remove(pref);
                 i.remove();
             }
         }
@@ -549,7 +549,7 @@ public abstract class Location extends BaseLocation implements Comparable {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (pref.getExamPeriod().equals(period)) {
                 if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) {
-                    ExamLocationPrefDAO.getInstance().getSession().delete(pref);
+                    ExamLocationPrefDAO.getInstance().getSession().remove(pref);
                     i.remove();
                 } else {
                     pref.setPrefLevel(preference);
@@ -641,12 +641,12 @@ public abstract class Location extends BaseLocation implements Comparable {
     		return new TreeSet<Location>(
                     (LocationDAO.getInstance()).getSession()
                     .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examTypes is not empty", Location.class)
-                    .setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+                    .setParameter("sessionId", sessionId).setCacheable(true).list());
     	} else {
     		return new TreeSet<Location>(
                     (LocationDAO.getInstance()).getSession()
                     .createQuery("select room from Location as room inner join room.examTypes as type where room.session.uniqueId = :sessionId and type.uniqueId = :typeId", Location.class)
-                    .setParameter("sessionId", sessionId, Long.class).setParameter("typeId", examTypeId, Long.class).setCacheable(true).list());
+                    .setParameter("sessionId", sessionId).setParameter("typeId", examTypeId).setCacheable(true).list());
     	}
     }
     
@@ -654,7 +654,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         return new TreeSet<Location>(
                 (LocationDAO.getInstance()).getSession()
                 .createQuery("select distinct r from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId", Location.class)
-                .setParameter("periodId", periodId, Long.class)
+                .setParameter("periodId", periodId)
                 .setCacheable(true).list());
     }
     
@@ -662,7 +662,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         Hashtable<Long,Set<Long>> table = new Hashtable();
         for (Object[] o: (LocationDAO.getInstance()).getSession()
                     .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId", Object[].class)
-                    .setParameter("periodId", periodId, Long.class)
+                    .setParameter("periodId", periodId)
                     .setCacheable(true).list()) {
             Set<Long> exams = table.get((Long)o[0]);
             if (exams == null) { exams = new HashSet<Long>(); table.put((Long)o[0], exams); }
@@ -676,7 +676,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return LocationDAO.getInstance().getSession().createQuery(
                 "select a from Assignment a inner join a.rooms r where " +
                 "a.solution.commited=true and r.uniqueId=:locationId", Assignment.class)
-                .setParameter("locationId", getUniqueId(), Long.class)
+                .setParameter("locationId", getUniqueId())
                 .setCacheable(true).list();
     }
     
@@ -684,15 +684,15 @@ public abstract class Location extends BaseLocation implements Comparable {
     	List<Assignment> ret = new ArrayList<Assignment>(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
     			"r.uniqueId = :locationId and a.solution.uniqueId = :solutionId", Assignment.class)
-    			.setParameter("locationId", getUniqueId(), Long.class)
-    			.setParameter("solutionId", solution.getUniqueId(), Long.class)
+    			.setParameter("locationId", getUniqueId())
+    			.setParameter("solutionId", solution.getUniqueId())
     			.setCacheable(true).list());
     	ret.addAll(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a, Solution x inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
     			"x.uniqueId = :solutionId and a.solution.owner != x.owner", Assignment.class)
-    			.setParameter("locationId", getUniqueId(), Long.class)
-    			.setParameter("solutionId", solution.getUniqueId(), Long.class)
+    			.setParameter("locationId", getUniqueId())
+    			.setParameter("solutionId", solution.getUniqueId())
                 .setCacheable(true).list());
     	return ret;
     }
@@ -702,14 +702,14 @@ public abstract class Location extends BaseLocation implements Comparable {
     	List<Assignment> ret = new ArrayList<Assignment>(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
     			"r.uniqueId = :locationId and a.solution.uniqueId in (:solutionIds)", Assignment.class)
-    			.setParameter("locationId", getUniqueId(), Long.class)
+    			.setParameter("locationId", getUniqueId())
     			.setParameterList("solutionIds", solutionId, Long.class)
     			.setCacheable(true).list());
     	ret.addAll(LocationDAO.getInstance().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
     			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in (:solutionIds))", Assignment.class)
-    			.setParameter("locationId", getUniqueId(), Long.class)
+    			.setParameter("locationId", getUniqueId())
     			.setParameterList("solutionIds", solutionId, Long.class)
                 .setCacheable(true).list());
     	return ret;
@@ -748,8 +748,8 @@ public abstract class Location extends BaseLocation implements Comparable {
         return LocationDAO.getInstance().getSession().createQuery(
                 "select x from Exam x inner join x.assignedRooms r where "+
                 "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId", Exam.class)
-                .setParameter("periodId", periodId, Long.class)
-                .setParameter("locationId", getUniqueId(), Long.class)
+                .setParameter("periodId", periodId)
+                .setParameter("locationId", getUniqueId())
                 .setCacheable(true).list();
     }
     
@@ -791,25 +791,25 @@ public abstract class Location extends BaseLocation implements Comparable {
     public static List<Location> findAll(Long sessionId) {
         return LocationDAO.getInstance().getSession().createQuery(
                 "select l from Location l where l.session.uniqueId=:sessionId", Location.class
-                ).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+                ).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
 
     public static List<Location> findAllEventRooms(Long departmentId) {
         return LocationDAO.getInstance().getSession().createQuery(
                 "select l from Location l where l.eventDepartment.uniqueId=:departmentId", Location.class
-                ).setParameter("departmentId", departmentId, Long.class).setCacheable(true).list();
+                ).setParameter("departmentId", departmentId).setCacheable(true).list();
     }
 
     public static List<Room> findAllRooms(Long sessionId) {
         return LocationDAO.getInstance().getSession().createQuery(
                 "select l from Room l where l.session.uniqueId=:sessionId", Room.class
-                ).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+                ).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
     
     public static List<NonUniversityLocation> findAllNonUniversityLocations(Long sessionId) {
         return  LocationDAO.getInstance().getSession().createQuery(
                 "select l from NonUniversityLocation l where l.session.uniqueId=:sessionId", NonUniversityLocation.class
-                ).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+                ).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
 
     public static Hashtable<Long,Set<Long>> findClassLocationTable(Long sessionId, int startSlot, int length, Vector<Date> dates) {
@@ -825,11 +825,11 @@ public abstract class Location extends BaseLocation implements Comparable {
             		"r.session.uniqueId=:sessionId and r.permanentId=m.locationPermanentId and " + // link Location r with Meeting m
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
             		"m.meetingDate in ("+datesStr+")", Object[].class)
-            .setParameter("sessionId", sessionId, Long.class)
-            .setParameter("startSlot", startSlot, Integer.class)
-            .setParameter("endSlot", startSlot + length, Integer.class);
+            .setParameter("sessionId", sessionId)
+            .setParameter("startSlot", startSlot)
+            .setParameter("endSlot", startSlot + length);
     	for (int i=0; i<dates.size(); i++) {
-    		q.setParameter("date"+i, dates.elementAt(i), Date.class);
+    		q.setParameter("date"+i, dates.elementAt(i));
     	}
         for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> ids = table.get((Long)o[0]);
@@ -854,11 +854,11 @@ public abstract class Location extends BaseLocation implements Comparable {
             		"m.locationPermanentId=:permanentId and " +
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
             		"m.meetingDate in ("+datesStr+")", Long.class) // and date
-            .setParameter("permanentId", getPermanentId(), Long.class)
-            .setParameter("startSlot", startSlot, Integer.class)
-            .setParameter("endSlot", startSlot + length, Integer.class);
+            .setParameter("permanentId", getPermanentId())
+            .setParameter("startSlot", startSlot)
+            .setParameter("endSlot", startSlot + length);
     	for (int i=0; i<dates.size(); i++) {
-    		q.setParameter("date"+i, dates.elementAt(i), Date.class);
+    		q.setParameter("date"+i, dates.elementAt(i));
     	}
     	return new HashSet<Long>(q.setCacheable(true).list());
     }
@@ -889,10 +889,10 @@ public abstract class Location extends BaseLocation implements Comparable {
 	            		"m.locationPermanentId in ("+permIds+") and " +
 	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
 	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class) // and date
-	            .setParameter("startSlot", startSlot, Integer.class)
-	            .setParameter("endSlot", startSlot + length, Integer.class);
+	            .setParameter("startSlot", startSlot)
+	            .setParameter("endSlot", startSlot + length);
 	    	for (int i=0; i<dates.size(); i++) {
-	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)), Date.class);
+	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)));
 	    	}
 	        for (Object[] o: q.setCacheable(true).list()) {
 	            Set<Long> ids = table.get((Long)o[0]);
@@ -935,10 +935,10 @@ public abstract class Location extends BaseLocation implements Comparable {
 	            		"m.locationPermanentId in ("+permIds+") and " +
 	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
 	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class) // and date
-	            .setParameter("startSlot", startSlot, Integer.class)
-	            .setParameter("endSlot", startSlot + length, Integer.class);
+	            .setParameter("startSlot", startSlot)
+	            .setParameter("endSlot", startSlot + length);
 	    	for (int i=0; i<dates.size(); i++) {
-	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)), Date.class);
+	    		q.setParameter("date"+i, class2eventMap.getEventDate(dates.get(i)));
 	    	}
 	        for (Object[] o: q.setCacheable(true).list()) {
 	            Set<Event> events = table.get((Long)o[0]);
@@ -1045,7 +1045,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     			"select count(m) from Meeting m, Location l where " +
     			"l.uniqueId = :locId and m.locationPermanentId = l.permanentId " +
     			"and m.meetingDate >= l.session.eventBeginDate and m.meetingDate <= l.session.eventEndDate and m.approvalStatus <= 1", Number.class) // and m.approvedDate is not null
-    			.setParameter("locId", getUniqueId(), Long.class)
+    			.setParameter("locId", getUniqueId())
     			.setCacheable(true).uniqueResult();
     	return nrMeetings.intValue() > 0;
     }
@@ -1110,12 +1110,12 @@ public abstract class Location extends BaseLocation implements Comparable {
     public static Location findByName(org.hibernate.Session hibSession, Long sessionId, String name) {
     	Room room = hibSession.createQuery(
     			"from Room r where r.session.uniqueId = :sessionId and (r.buildingAbbv || ' ' || r.roomNumber) = :name", Room.class
-    			).setParameter("sessionId", sessionId, Long.class).setParameter("name", name, String.class)
+    			).setParameter("sessionId", sessionId).setParameter("name", name)
     			.setMaxResults(1).setCacheable(true).uniqueResult();
     	if (room != null) return room;
     	return hibSession.createQuery(
     			"from NonUniversityLocation l where l.session.uniqueId = :sessionId and l.name = :name", NonUniversityLocation.class
-    			).setParameter("sessionId", sessionId, Long.class).setParameter("name", name, String.class)
+    			).setParameter("sessionId", sessionId).setParameter("name", name)
     			.setMaxResults(1).setCacheable(true).uniqueResult();
     }
     
@@ -1142,7 +1142,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.building.abbreviation = l.building.abbreviation and f.roomNumber = l.roomNumber and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime", Object[].class
-    			).setParameterList("ids", ids).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+    			).setParameterList("ids", ids).setParameter("sessionId", sessionId).setCacheable(true).list()) {
     		if (locations.put((Long)o[0], (Location)o[1]) != null)
     			blacklist.add((Long)o[0]);
     	}
@@ -1158,7 +1158,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime", Object[].class
-    			).setParameterList("ids", ids).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+    			).setParameterList("ids", ids).setParameter("sessionId", sessionId).setCacheable(true).list()) {
     		if (locations.put((Long)o[0], (Location)o[1]) != null)
     			blacklist.add((Long)o[0]);
     	}
@@ -1185,7 +1185,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	public static List<Location> findAllLocations(Long sessionId) {
         return LocationDAO.getInstance().getSession().createQuery(
                 "select l from Location l where l.session.uniqueId=:sessionId", Location.class
-                ).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+                ).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
 	
 	@Transient

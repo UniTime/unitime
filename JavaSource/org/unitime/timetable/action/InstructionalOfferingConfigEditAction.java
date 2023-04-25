@@ -747,7 +747,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             Exam.deleteFromExams(hibSession, ioc);
             // The following line was calling delete ioc for the second time (which is a problem for MySQL as
             // it returns zero number of deleted lines even when called in the same transaction).
-            //hibSession.delete(ioc);
+            //hibSession.remove(ioc);
 	        hibSession.saveOrUpdate(io);
 
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
@@ -977,7 +977,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		                    }
 		                    classes.remove(childClass);
 		                    childClass.deleteAllDependentObjects(hibSession, false);
-		                    hibSession.delete(childClass);
+		                    hibSession.remove(childClass);
     			            hibSession.saveOrUpdate(subpart);
 	                    }
 
@@ -1005,7 +1005,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	   			                    }
 	   			                    classes.remove(childClass);
 	   			                    childClass.deleteAllDependentObjects(hibSession, false);
-	   			                    hibSession.delete(childClass);
+	   			                    hibSession.remove(childClass);
 		    			            hibSession.saveOrUpdate(childClass.getSchedulingSubpart());
 	   		                    }
 
@@ -1094,7 +1094,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                 tmpSubpart.setChildSubparts(null);
 
                 deletedSubparts.put(tmpSubpart.getUniqueId(), tmpSubpart.getUniqueId());
-                hibSession.delete(tmpSubpart);
+                hibSession.remove(tmpSubpart);
                 i.remove();
             }
         }
@@ -1252,7 +1252,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		                Preference pref = (Preference) i.next();
 		                if (pref instanceof TimePref && !model.isValidCombination(mpw, subpart.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
 			                pref.setOwner(null);
-			                hibSession.delete(pref);
+			                hibSession.remove(pref);
 			                i.remove();
 		                }
 		            }
@@ -1264,7 +1264,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 			                Preference pref = (Preference) j.next();
 			                if (pref instanceof TimePref && !model.isValidCombination(mpw, c.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
 				                pref.setOwner(null);
-				                hibSession.delete(pref);
+				                hibSession.remove(pref);
 				                j.remove();
 			                }
 			            }
@@ -1774,7 +1774,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         
         if (sessionContext.hasPermission(c, Right.ClassDelete)) {
     		c.deleteAllDependentObjects(hibSession, false);
-    		hibSession.delete(c);
+    		hibSession.remove(c);
     		return true;
     	} else if (canCancel && sessionContext.hasPermission(c, Right.ClassCancel)) {
     		c.setCancelled(true);

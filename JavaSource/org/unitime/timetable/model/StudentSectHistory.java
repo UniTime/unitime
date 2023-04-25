@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseStudentSectHistory;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_sect_hist")
 public class StudentSectHistory extends BaseStudentSectHistory {
 	private static final long serialVersionUID = 1L;

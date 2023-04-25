@@ -40,7 +40,7 @@ import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "service_provider")
 public class EventServiceProvider extends BaseEventServiceProvider implements Comparable<EventServiceProvider> {
 	private static final long serialVersionUID = 1L;
@@ -54,13 +54,13 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 		if (reference == null || reference.isEmpty()) return null;
 		return hibSession.createQuery(
 				"from EventServiceProvider where reference = :reference", EventServiceProvider.class)
-				.setParameter("reference", reference, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
 	@Transient
 	public boolean isUsed() {
 		if ((EventServiceProviderDAO.getInstance().getSession().createQuery("select count(e) from Event e inner join e.requestedServices p where p.uniqueId = :providerId", Number.class)
-			.setParameter("providerId", getUniqueId(), Long.class).uniqueResult()).intValue() > 0) return true;
+			.setParameter("providerId", getUniqueId()).uniqueResult()).intValue() > 0) return true;
 		return false;
 	}
 
@@ -80,15 +80,15 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
 			providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"from EventServiceProvider where visible = true and session.uniqueId = :sessionId", EventServiceProvider.class
-					).setParameter("sessionId", user.getCurrentAcademicSessionId(), Long.class).setCacheable(true).list());
+					).setParameter("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list());
 		} else {
 			providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"from EventServiceProvider where visible = true and session.uniqueId = :sessionId and department is null", EventServiceProvider.class
-					).setParameter("sessionId", user.getCurrentAcademicSessionId(), Long.class).setCacheable(true).list());
+					).setParameter("sessionId", user.getCurrentAcademicSessionId()).setCacheable(true).list());
 			for (UserQualifier q: user.getCurrentAuthority().getQualifiers("Department"))
 				providers.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 						"from EventServiceProvider where visible = true and department.uniqueId = :departmentId", EventServiceProvider.class
-						).setParameter("departmentId", (Long)q.getQualifierId(), Long.class).setCacheable(true).list());
+						).setParameter("departmentId", (Long)q.getQualifierId()).setCacheable(true).list());
 		}
 		return providers;
 	}
@@ -101,11 +101,11 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 		} else if (getDepartment() == null) {
 			return hibSession.createQuery(
 					"from EventServiceProvider where session.uniqueId = :sessionId and department is null and reference = :reference", EventServiceProvider.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("reference", getReference(), String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("reference", getReference()).setMaxResults(1).setCacheable(true).uniqueResult();
 		} else {
 			return hibSession.createQuery(
 					"from EventServiceProvider where session.uniqueId = :sessionId and department.deptCode = :deptCode and reference = :reference", EventServiceProvider.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("deptCode", getDepartment().getDeptCode(), String.class).setParameter("reference", getReference(), String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("deptCode", getDepartment().getDeptCode()).setParameter("reference", getReference()).setMaxResults(1).setCacheable(true).uniqueResult();
 		}
 	}
 	
@@ -116,7 +116,7 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 	public static List<EventServiceProvider> findAll(Long sessionId) {
 		return EventServiceProviderDAO.getInstance().getSession().createQuery(
 				"from EventServiceProvider where visible = true and (session is null or session.uniqueId = :sessionId)", EventServiceProvider.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				.setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 	
 	public Set<Long> getLocationIds(Long sessionId) {
@@ -124,33 +124,33 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 			if (isAllRooms()) return null;
 			HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+					.setParameter("sessionId", sessionId).setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 			ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+					.setParameter("sessionId", sessionId).setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 			return ids;
 		} else if (getDepartment() == null) {
 			if (isAllRooms()) return null;
 			HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
-					.setParameter("sessionId", getSession().getUniqueId(), Long.class).setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+					.setParameter("sessionId", getSession().getUniqueId()).setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 			ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.session.uniqueId = :sessionId", Long.class)
-					.setParameter("sessionId", getSession().getUniqueId(), Long.class).setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+					.setParameter("sessionId", getSession().getUniqueId()).setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 			return ids;
 		} else {
 			if (isAllRooms()) {
 				return new HashSet<Long>(
 						EventServiceProviderDAO.getInstance().getSession().createQuery(
 						"select l.uniqueId from Location l where l.eventdepartment.uniqueId = :departmentId", Long.class)
-						.setParameter("departmentId", getDepartment().getUniqueId(), Long.class).setCacheable(true).list());
+						.setParameter("departmentId", getDepartment().getUniqueId()).setCacheable(true).list());
 			} else {
 				HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
 						"select l.uniqueId from Room l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department", Long.class)
-						.setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+						.setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 				ids.addAll(EventServiceProviderDAO.getInstance().getSession().createQuery(
 						"select l.uniqueId from NonUniversityLocation l inner join l.allowedServices s where s.uniqueId = :serviceId and l.eventDepartment = s.department", Long.class)
-						.setParameter("serviceId", getUniqueId(), Long.class).setCacheable(true).list());
+						.setParameter("serviceId", getUniqueId()).setCacheable(true).list());
 				return ids;	
 			}
 		}

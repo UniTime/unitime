@@ -41,7 +41,7 @@ import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
  * @author Tomas Muller, James Marshall, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "building")
 public class Building extends BaseBuilding implements Comparable {
 
@@ -107,8 +107,8 @@ public class Building extends BaseBuilding implements Comparable {
 	public static Building findByBldgAbbv(String bldgAbbv, Long sessionId) {
 		return BuildingDAO.getInstance().getSession().createQuery(
 				"from Building where session.uniqueId = :sessionId and abbreviation=:bldgAbbv", Building.class)
-				.setParameter("sessionId", sessionId.longValue(), Long.class)
-				.setParameter("bldgAbbv", bldgAbbv, String.class)
+				.setParameter("sessionId", sessionId.longValue())
+				.setParameter("bldgAbbv", bldgAbbv)
 				.setMaxResults(1)
 				.uniqueResult();
 	}
@@ -116,14 +116,14 @@ public class Building extends BaseBuilding implements Comparable {
 	public static Building findByBldgAbbv(org.hibernate.Session hibSession, Long sessionId, String bldgAbbv) {
 		return (hibSession == null ? BuildingDAO.getInstance().getSession() : hibSession).createQuery(
 				"from Building b where session.uniqueId=:sessionId and b.abbreviation=:bldgAbbv", Building.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("bldgAbbv", bldgAbbv, String.class).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId).setParameter("bldgAbbv", bldgAbbv).setMaxResults(1).uniqueResult();
 	}
 	
     public static Building findByName(String name, Long sessionId) {
         return (BuildingDAO.getInstance()).getSession().createQuery(
                 "select b from Building b where b.session.uniqueId=:sessionId and b.name=:name", Building.class).
-                setParameter("sessionId", sessionId.longValue(), Long.class).
-                setParameter("name", name, String.class).
+                setParameter("sessionId", sessionId.longValue()).
+                setParameter("name", name).
                 uniqueResult();
     }
 
@@ -169,7 +169,7 @@ public class Building extends BaseBuilding implements Comparable {
     public static List<Building> findAll(Long sessionId) {
 		return BuildingDAO.getInstance().getSession().createQuery(
 				"select b from Building b where b.session.uniqueId=:sessionId order by b.abbreviation", Building.class).
-				setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 
     @Deprecated

@@ -36,7 +36,7 @@ import org.unitime.timetable.model.base.BaseWaitList;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "waitlist")
 public class WaitList extends BaseWaitList implements Comparable<WaitList> {
 	private static final long serialVersionUID = 1L;

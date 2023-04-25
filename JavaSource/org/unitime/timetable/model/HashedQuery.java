@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseHashedQuery;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "hashed_queries")
 public class HashedQuery extends BaseHashedQuery {
 	private static final long serialVersionUID = 1L;

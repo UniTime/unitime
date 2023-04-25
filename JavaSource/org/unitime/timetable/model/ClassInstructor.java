@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseClassInstructor;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "class_instructor")
 public class ClassInstructor extends BaseClassInstructor implements Comparable<ClassInstructor> {
 	private static final long serialVersionUID = 1L;

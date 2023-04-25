@@ -271,7 +271,7 @@ public class DatePatternEditForm implements UniTimeForm {
 			newDepts.add(d);
 		}
 		dp.setDepartments(newDepts);
-		hibSession.save(dp);
+		hibSession.persist(dp);
 		for (Iterator i=newDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getDatePatterns().add(dp);
@@ -316,7 +316,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		}
 		dp.getParents().clear();
 		hibSession.saveOrUpdate(dp);
-		hibSession.delete(dp);
+		hibSession.remove(dp);
 	}
 	
 	public String getOp() { return iOp; }

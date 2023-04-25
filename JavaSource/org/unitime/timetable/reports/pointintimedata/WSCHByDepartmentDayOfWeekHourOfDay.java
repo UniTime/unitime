@@ -98,8 +98,8 @@ public class WSCHByDepartmentDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourOf
 		HashSet<Long> processedClasses = new HashSet<Long>();
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
 			for (Object[] result : hibSession.createQuery(sb.toString(), Object[].class)
-									.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), Long.class)
-									.setParameter("saId", subjectArea.getUniqueId().longValue(), Long.class)
+									.setParameter("sessId", pointInTimeData.getUniqueId().longValue())
+									.setParameter("saId", subjectArea.getUniqueId().longValue())
 									.setCacheable(true)
 									.list()) {
 				

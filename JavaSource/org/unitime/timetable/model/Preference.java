@@ -38,7 +38,7 @@ import org.unitime.timetable.model.base.BasePreference;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Preference extends BasePreference implements Comparable {
 	private static final long serialVersionUID = 1L;

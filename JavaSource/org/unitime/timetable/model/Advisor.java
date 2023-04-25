@@ -40,7 +40,7 @@ import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "advisor")
 public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Advisor> {
 	private static final long serialVersionUID = 1L;
@@ -60,7 +60,7 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
 	public static Advisor findByExternalId(String externalId, Long sessionId) {
 		return  AdvisorDAO.getInstance().getSession().createQuery(
 				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId", Advisor.class
-				).setParameter("externalId", externalId, String.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+				).setParameter("externalId", externalId).setParameter("sessionId", sessionId).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
     
     public int compareTo(Advisor advisor) {

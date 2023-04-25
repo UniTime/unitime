@@ -128,9 +128,9 @@ public class SponsoringOrganizations implements AdminTable {
 	protected void delete(SponsoringOrganization sponsor, SessionContext context, Session hibSession) {
 		if (sponsor == null) return;
 		context.checkPermission(sponsor, Right.SponsoringOrganizationDelete);
-		for (Event event: hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId", Event.class).setParameter("orgId", sponsor.getUniqueId(), Long.class).list()) {
+		for (Event event: hibSession.createQuery("from Event where sponsoringOrganization.uniqueId = :orgId", Event.class).setParameter("orgId", sponsor.getUniqueId()).list()) {
     		event.setSponsoringOrganization(null);
-    		hibSession.update(event);
+    		hibSession.merge(event);
     	}
 		ChangeLog.addChange(hibSession,
 				context,
@@ -140,7 +140,7 @@ public class SponsoringOrganizations implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(sponsor);
+		hibSession.remove(sponsor);
 	}
 	
 	@Override

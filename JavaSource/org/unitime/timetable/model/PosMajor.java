@@ -40,7 +40,7 @@ import org.unitime.timetable.model.dao.PosMajorDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pos_major")
 public class PosMajor extends BasePosMajor {
 	private static final long serialVersionUID = 1L;
@@ -72,7 +72,7 @@ public class PosMajor extends BasePosMajor {
 	    Session hibSession = PosMajorDAO.getInstance().getSession();
 	    String query = "from PosMajor where academicArea.sessionId=:acadSessionId order by name";
 	    Query q = hibSession.createQuery(query);
-	    q.setParameter("acadSessionId", sessionId.longValue(), Long.class);
+	    q.setParameter("acadSessionId", sessionId.longValue());
 		return q.list();
     }
 
@@ -102,8 +102,8 @@ public class PosMajor extends BasePosMajor {
                 "select a from PosMajor a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code", PosMajor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -119,9 +119,9 @@ public class PosMajor extends BasePosMajor {
                 "a.session.uniqueId=:sessionId and "+
                 "a.externalUniqueId=:externalUniqueId and " +
                 "areas.externalUniqueId = :academicArea", PosMajor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("externalUniqueId", externalId, String.class).
-         setParameter("academicArea", academicArea, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("externalUniqueId", externalId).
+         setParameter("academicArea", academicArea).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -133,9 +133,9 @@ public class PosMajor extends BasePosMajor {
                 "select p from PosMajor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.uniqueId=:areaId and p.code=:code", PosMajor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("areaId", areaId.longValue(), Long.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("areaId", areaId.longValue()).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -151,9 +151,9 @@ public class PosMajor extends BasePosMajor {
                 "select p from PosMajor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.academicAreaAbbreviation=:areaAbbv and p.code=:code", PosMajor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("areaAbbv", areaAbbv, String.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("areaAbbv", areaAbbv).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -169,6 +169,6 @@ public class PosMajor extends BasePosMajor {
     public boolean isUsed(org.hibernate.Session hibSession) {
     	return ((hibSession == null ? PosMajorDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from Curriculum c inner join c.majors m where m.uniqueId = :majorId", Number.class)
-    			.setParameter("majorId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("majorId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 }

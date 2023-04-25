@@ -95,7 +95,7 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			for (Reservation reservation: helper.getHibSession().createQuery(
 					"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId", Reservation.class)
-					.setParameter("offeringId", iOfferingId, Long.class).setCacheable(true).list()) {
+					.setParameter("offeringId", iOfferingId).setCacheable(true).list()) {
 				ReservationInterface r = convert(reservation, helper);
 				if (r != null) results.add(r);
 			}
@@ -333,34 +333,34 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 		if (reservation instanceof CourseReservation) {
 			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
-					"cr.courseOffering = :courseId", CourseRequest.class
-					).setParameter("courseId", ((CourseReservation) reservation).getCourse().getUniqueId(), Long.class).setCacheable(true).list();
+					"cr.courseOffering.uniqueId = :courseId", CourseRequest.class
+					).setParameter("courseId", ((CourseReservation) reservation).getCourse().getUniqueId()).setCacheable(true).list();
 		} else if (reservation instanceof LearningCommunityReservation) {
 			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
-					"cr.courseOffering = :courseId and s.uniqueId in " +
+					"cr.courseOffering.uniqueId = :courseId and s.uniqueId in " +
 					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)", CourseRequest.class
-					).setParameter("courseId", ((LearningCommunityReservation) reservation).getCourse().getUniqueId(), Long.class)
-					.setParameter("reservationId", reservation.getUniqueId(), Long.class).setCacheable(true).list();
+					).setParameter("courseId", ((LearningCommunityReservation) reservation).getCourse().getUniqueId())
+					.setParameter("reservationId", reservation.getUniqueId()).setCacheable(true).list();
 		} else if (reservation instanceof IndividualReservation) {
 			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering.uniqueId = :offeringId and s.uniqueId in " +
 					"(select s.uniqueId from IndividualReservation r inner join r.students s where r.uniqueId = :reservationId)", CourseRequest.class
-					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), Long.class)
-					.setParameter("reservationId", reservation.getUniqueId(), Long.class).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId())
+					.setParameter("reservationId", reservation.getUniqueId()).setCacheable(true).list();
 		} else if (reservation instanceof StudentGroupReservation) {
 			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering.uniqueId = :offeringId and s.uniqueId in " +
 					"(select s.uniqueId from StudentGroupReservation r inner join r.group.students s where r.uniqueId = :reservationId)", CourseRequest.class
-					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), Long.class)
-					.setParameter("reservationId", reservation.getUniqueId(), Long.class).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId())
+					.setParameter("reservationId", reservation.getUniqueId()).setCacheable(true).list();
 		} else {
 			requests = helper.getHibSession().createQuery(
 					"select cr from CourseRequest cr inner join fetch cr.courseDemand cd inner join fetch cd.student s where " +
 					"cr.courseOffering.instructionalOffering.uniqueId = :offeringId", CourseRequest.class
-					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId(), Long.class).setCacheable(true).list();
+					).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId()).setCacheable(true).list();
 		}
 		
 		int enrolled = 0;

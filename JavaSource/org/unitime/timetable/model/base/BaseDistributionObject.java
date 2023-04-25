@@ -79,7 +79,7 @@ public abstract class BaseDistributionObject implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pref_group_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public PreferenceGroup getPrefGroup() { return iPrefGroup; }
 	public void setPrefGroup(PreferenceGroup prefGroup) { iPrefGroup = prefGroup; }
 

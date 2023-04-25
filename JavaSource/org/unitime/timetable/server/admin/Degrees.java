@@ -140,7 +140,7 @@ public class Degrees implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(degree);		
+		hibSession.remove(degree);		
 	}
 
 	@Override

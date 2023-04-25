@@ -84,8 +84,8 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
 				 .getSession().createQuery(query, Object[].class)
-				 .setParameter("sessId", getSession().getUniqueId().longValue(), Long.class)
-				 .setParameter("subjectId", sa.getUniqueId().longValue(), Long.class)
+				 .setParameter("sessId", getSession().getUniqueId().longValue())
+				 .setParameter("subjectId", sa.getUniqueId().longValue())
 				 .list());
 		}
 		return(results);
@@ -163,8 +163,8 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.courseOffering.uniqueId = :courseId");
 			for (InstrOfferingConfig result: StudentClassEnrollmentDAO.getInstance().getSession()
 					.createQuery(sb.toString(), InstrOfferingConfig.class)
-					.setParameter("studId", studentUniqueId, Long.class)
-					.setParameter("courseId", courseId, Long.class)
+					.setParameter("studId", studentUniqueId)
+					.setParameter("courseId", courseId)
 					.list()) {
 				configs.add(result.getName());
 			}

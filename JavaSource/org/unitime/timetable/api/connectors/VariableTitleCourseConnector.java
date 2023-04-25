@@ -295,7 +295,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	private String generateCourseNumber(SubjectArea subjectArea, String courseNumber, org.hibernate.Session hibSession) {
 		HashSet<String> existingNumbers = new HashSet<String>();
 		String query = "select co.courseNbr from CourseOffering co where co.subjectArea.uniqueId = :subjId and co.courseNbr like '" + courseNumber + "%'";
-		existingNumbers.addAll(hibSession.createQuery(query, String.class).setParameter("subjId", subjectArea.getUniqueId(), Long.class).list());
+		existingNumbers.addAll(hibSession.createQuery(query, String.class).setParameter("subjId", subjectArea.getUniqueId()).list());
 		
 		char char1 = 'A', char2 = 'A';
 		boolean needSecondCharacter = false;
@@ -712,7 +712,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		  .append(" and dp.name = '")
 		  .append(generatedVariableTitleDatePatternName(variableTitleQuery))
 		  .append("'");
-		DatePattern dp = hibSession.createQuery(sb.toString(), DatePattern.class).setParameter("sessionId", s.getUniqueId(), Long.class).uniqueResult();
+		DatePattern dp = hibSession.createQuery(sb.toString(), DatePattern.class).setParameter("sessionId", s.getUniqueId()).uniqueResult();
 		if (dp == null) {
 			for (DatePattern sdp : DatePattern.findAll(s, false, null, null)) {
 				if ((sdp.getType().equals(DatePatternType.Standard.ordinal()) 

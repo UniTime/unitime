@@ -118,12 +118,12 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false", RoomGroup.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.global = true", RoomGroup.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomGroupDAO.getInstance().get(original.getId(), hibSession);
 		}
@@ -135,12 +135,12 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 			RoomGroup group = hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.department.deptCode = o.department.deptCode and g.global = false", RoomGroup.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", groupId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", groupId).setCacheable(true).setMaxResults(1).uniqueResult();
 			if (group == null)
 				group = hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.session.uniqueId = :sessionId " +
 					"and g.abbv = o.abbv and g.global = true", RoomGroup.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", groupId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", groupId).setCacheable(true).setMaxResults(1).uniqueResult();
 			return group;
 		} else {
 			return RoomGroupDAO.getInstance().get(groupId, hibSession);
@@ -270,13 +270,13 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
         }
         
         for (RoomGroupPref p: hibSession.createQuery("from RoomGroupPref p where p.roomGroup.uniqueId = :id", RoomGroupPref.class)
-					.setParameter("id", rg.getUniqueId(), Long.class).list()) {
+					.setParameter("id", rg.getUniqueId()).list()) {
 				p.getOwner().getPreferences().remove(p);
-				hibSession.delete(p);
+				hibSession.remove(p);
 				hibSession.saveOrUpdate(p.getOwner());
 			}
         
-        hibSession.delete(rg);
+        hibSession.remove(rg);
         return true;
 	}
 }

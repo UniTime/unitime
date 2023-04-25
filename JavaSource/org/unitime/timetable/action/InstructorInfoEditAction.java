@@ -194,7 +194,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        	updatedClasses.add(c);
 	        	c.getClassInstructors().remove(ci);
 	        	hibSession.saveOrUpdate(ci);
-	        	hibSession.delete(ci);
+	        	hibSession.remove(ci);
 	        }           
             
             for (Iterator i=inst.getExams().iterator();i.hasNext();) {
@@ -215,7 +215,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        }
 	        d.getInstructors().remove(inst);
 	        
-            hibSession.delete(inst);
+            hibSession.remove(inst);
             
 	        tx.commit();
 			

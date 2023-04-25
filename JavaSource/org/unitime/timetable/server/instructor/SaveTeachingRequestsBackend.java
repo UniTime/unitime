@@ -112,7 +112,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					} else {
 						for (Iterator<Preference> i = tr.getPreferences().iterator(); i.hasNext(); ) {
 							Preference p = i.next();
-							hibSession.delete(p); i.remove();
+							hibSession.remove(p); i.remove();
 						}
 					}
 					tr.setNbrInstructors(single.getNbrInstructors());
@@ -143,7 +143,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					for (TeachingClassRequest cr: remains) {
 						cr.getTeachingClass().getTeachingRequests().remove(cr);
 						tr.getClassRequests().remove(cr);
-						hibSession.delete(cr);
+						hibSession.remove(cr);
 					}
 					hibSession.saveOrUpdate(tr);
 					for (TeachingClassRequest tcr: tr.getClassRequests())
@@ -165,7 +165,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						} else {
 							for (Iterator<Preference> i = tr.getPreferences().iterator(); i.hasNext(); ) {
 								Preference p = i.next();
-								hibSession.delete(p); i.remove();
+								hibSession.remove(p); i.remove();
 							}
 						}
 						tr.setNbrInstructors(rc.getNbrInstructors());
@@ -200,7 +200,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						for (TeachingClassRequest cr: remains) {
 							cr.getTeachingClass().getTeachingRequests().remove(cr);
 							tr.getClassRequests().remove(cr);
-							hibSession.delete(cr);
+							hibSession.remove(cr);
 						}						
 						hibSession.saveOrUpdate(tr);
 						for (TeachingClassRequest tcr: tr.getClassRequests())
@@ -219,7 +219,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 							Debug.info(cr.getTeachingClass().getClassLabel(hibSession) + ": UNASSIGN " + ci.getInstructor().getNameLastFirst());
 							updatedInstructors.add(ci.getInstructor());
 							ci.getInstructor().getClasses().remove(ci);
-							hibSession.delete(ci);
+							hibSession.remove(ci);
 							j.remove();
 							updateConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
 							updatedClassIds.add(cr.getTeachingClass().getUniqueId());
@@ -227,11 +227,11 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					}
 					cr.getTeachingClass().getTeachingRequests().remove(cr);
 					i.remove();
-					hibSession.delete(cr);
+					hibSession.remove(cr);
 				}
 				for (Iterator<Preference> i = tr.getPreferences().iterator(); i.hasNext(); ) {
 					Preference p = i.next();
-					hibSession.delete(p); i.remove();
+					hibSession.remove(p); i.remove();
 				}
 				for (Iterator<OfferingCoordinator> i = tr.getOffering().getOfferingCoordinators().iterator(); i.hasNext(); ) {
 					OfferingCoordinator oc = i.next();
@@ -239,12 +239,12 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						Debug.info(tr.getOffering().getCourseName() + ": UNASSIGN " + oc.getInstructor().getNameLastFirst());
 						updatedInstructors.add(oc.getInstructor());
 						oc.getInstructor().getOfferingCoordinators().remove(oc);
-						hibSession.delete(oc);
+						hibSession.remove(oc);
 						i.remove();
 						updateOffering = true;
 					}
 				}
-				hibSession.delete(tr);
+				hibSession.remove(tr);
 			}
 			for (Iterator<OfferingCoordinator> i = offering.getOfferingCoordinators().iterator(); i.hasNext(); ) {
 				OfferingCoordinator oc = i.next();
@@ -252,7 +252,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					Debug.info(offering.getCourseName() + ": UNASSIGN " + oc.getInstructor().getNameLastFirst());
 					updatedInstructors.add(oc.getInstructor());
 					oc.getInstructor().getOfferingCoordinators().remove(oc);
-					hibSession.delete(oc);
+					hibSession.remove(oc);
 					i.remove();
 					updateOffering = true;
 				}
@@ -271,7 +271,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									Debug.info(clazz.getClassLabel(hibSession) + ": UNASSIGN " + ci.getInstructor().getNameLastFirst());
 									updatedInstructors.add(ci.getInstructor());
 									ci.getInstructor().getClasses().remove(ci);
-									hibSession.delete(ci);
+									hibSession.remove(ci);
 									i.remove();
 									updateConfigs.add(config);
 									updatedClassIds.add(clazz.getUniqueId());
@@ -307,7 +307,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 								oc.setPercentShare(tr.getPercentShare());
 								oc.setTeachingRequest(tr);
 								offering.getOfferingCoordinators().add(oc);
-								hibSession.save(oc);
+								hibSession.persist(oc);
 								updateOffering = true;
 							}
 						}

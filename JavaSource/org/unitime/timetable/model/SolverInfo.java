@@ -60,7 +60,7 @@ import org.unitime.timetable.solver.ui.TimetableInfoUtil;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solver_info")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.INTEGER)
@@ -169,7 +169,7 @@ public class SolverInfo extends BaseSolverInfo {
 			}
 		}
 		removeCached(getUniqueId());
-		hibSession.delete(this);
+		hibSession.remove(this);
 	}
 	
 	public static TimetableInfo getCached(Long uniqueId) {

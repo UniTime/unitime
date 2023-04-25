@@ -310,9 +310,9 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 
             for (CourseOffering co: io.getCourseOfferings()) {
             	co.getSubjectArea().getCourseOfferings().remove(co);
-            	hibSession.delete(co);
+            	hibSession.remove(co);
             }
-	        hibSession.delete(io);
+	        hibSession.remove(io);
 	        
 	        tx.commit();
             hibSession.flush();
@@ -569,13 +569,13 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
             
             for (Iterator<Reservation> i = io.getReservations().iterator(); i.hasNext(); ) {
             	Reservation r = i.next();
-            	hibSession.delete(r);
+            	hibSession.remove(r);
             	i.remove();
             }
             
             for (Iterator<TeachingRequest> i = io.getTeachingRequests().iterator(); i.hasNext(); ) {
             	TeachingRequest tr = i.next();
-            	hibSession.delete(tr);
+            	hibSession.remove(tr);
             	i.remove();
             }
             

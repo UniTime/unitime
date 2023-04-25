@@ -71,7 +71,7 @@ public class InstructorAttributeTypes implements AdminTable {
 			int used =
 					(hibSession.createQuery(
 							"select count(a) from InstructorAttribute a where a.type.uniqueId = :uniqueId", Number.class)
-							.setParameter("uniqueId", atype.getUniqueId(), Long.class).uniqueResult()).intValue();
+							.setParameter("uniqueId", atype.getUniqueId()).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.InstructorAttributeTypeEdit));
@@ -148,7 +148,7 @@ public class InstructorAttributeTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 
 	@Override

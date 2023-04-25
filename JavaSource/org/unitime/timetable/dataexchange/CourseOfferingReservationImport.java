@@ -73,8 +73,8 @@ public class CourseOfferingReservationImport extends BaseImport {
 	SubjectArea fetchSubjectArea(String subject, Long sessionId) {
 		return getHibSession().
 			createQuery("select distinct a from SubjectArea a where a.subjectAreaAbbreviation=:subject and a.session.uniqueId=:sessionId", SubjectArea.class).
-			setParameter("sessionId", sessionId.longValue(), Long.class).
-			setParameter("subject", subject, String.class).
+			setParameter("sessionId", sessionId.longValue()).
+			setParameter("subject", subject).
 			setCacheable(true).
 			uniqueResult();
 	}
@@ -82,8 +82,8 @@ public class CourseOfferingReservationImport extends BaseImport {
 	CourseOffering fetchCourseOffering(String courseNumber, Long subjectAreaId) {
 		return getHibSession().
 			createQuery("select distinct a from CourseOffering a where a.courseNumber=:courseNumber and a.subjectArea=:subjectArea", CourseOffering.class).
-			setParameter("subjectArea", subjectAreaId.longValue(), Long.class).
-			setParameter("courseNumber", courseNumber, String.class).
+			setParameter("subjectArea", subjectAreaId.longValue()).
+			setParameter("courseNumber", courseNumber).
 			setCacheable(true).
 			uniqueResult();
 	}

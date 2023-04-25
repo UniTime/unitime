@@ -95,7 +95,7 @@ public abstract class BasePosMinor implements Serializable {
 	@JoinTable(name = "pos_acad_area_minor",
 		joinColumns = { @JoinColumn(name = "minor_id") },
 		inverseJoinColumns = { @JoinColumn(name = "academic_area_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
 	public void addToacademicAreas(AcademicArea academicArea) {

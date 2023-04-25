@@ -64,7 +64,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		List<Date> finals = new ArrayList<Date>();
 		for (Number dateOffset: SessionDAO.getInstance().getSession().createQuery(
 				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType and examType.highlightInEvents = true", Number.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("finalType", ExamType.sExamTypeFinal, Integer.class).setCacheable(true).list()) {
+				.setParameter("sessionId", session.getUniqueId()).setParameter("finalType", ExamType.sExamTypeFinal).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    finals.add(calendar.getTime());
@@ -72,7 +72,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		List<Date> midterms = new ArrayList<Date>();
 		for (Number dateOffset: SessionDAO.getInstance().getSession().createQuery(
 				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :midtermType and examType.highlightInEvents = true", Number.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("midtermType", ExamType.sExamTypeMidterm, Integer.class).setCacheable(true).list()) {
+				.setParameter("sessionId", session.getUniqueId()).setParameter("midtermType", ExamType.sExamTypeMidterm).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    midterms.add(calendar.getTime());

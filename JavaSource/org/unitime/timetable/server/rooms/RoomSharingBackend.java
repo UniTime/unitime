@@ -264,7 +264,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				if (!add.remove(rd.getDepartment().getUniqueId())) {
 					rd.getDepartment().getRoomDepts().remove(rd);
 					i.remove();
-					hibSession.delete(rd);
+					hibSession.remove(rd);
 				}
 			}
 			for (Long id: add) {
@@ -366,7 +366,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		
 			Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
 			location.setEventAvailability(availability);
-			hibSession.save(location);
+			hibSession.persist(location);
 			
 			ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, location.getControllingDepartment());
 			

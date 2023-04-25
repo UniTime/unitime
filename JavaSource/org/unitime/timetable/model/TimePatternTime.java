@@ -31,7 +31,7 @@ import org.unitime.timetable.model.base.BaseTimePatternTime;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "time_pattern_time")
 public class TimePatternTime extends BaseTimePatternTime implements Comparable {
 	private static final long serialVersionUID = 1L;

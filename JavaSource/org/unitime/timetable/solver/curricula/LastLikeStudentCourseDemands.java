@@ -80,7 +80,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 				"select distinct d.courseNbr, d.coursePermId, s, d.priority " +
 				"from LastLikeCourseDemand d inner join d.student s left join fetch s.areaClasfMajors where " +
 				"d.subjectArea.uniqueId = :subjectAreaId", Object[].class)
-				.setParameter("subjectAreaId", subject.getUniqueId(), Long.class).setCacheable(true).list()) {
+				.setParameter("subjectAreaId", subject.getUniqueId()).setCacheable(true).list()) {
 			String courseNbr = (String)d[0];
 			String coursePermId = (String)d[1];
 			Student student = (Student)d[2];
@@ -163,7 +163,7 @@ public class LastLikeStudentCourseDemands implements StudentCourseDemands, Proje
 				for (Object[] o : iHibSession.createQuery(
 						"select distinct s, co " +
 						"from LastLikeCourseDemand x inner join x.student s left join fetch s.areaClasfMajors, CourseOffering co left outer join co.demandOffering do where " + where, Object[].class)
-						.setParameter("sessionId", iSessionId, Long.class)
+						.setParameter("sessionId", iSessionId)
 						.setCacheable(true).list()) {
 					Student student = (Student)o[0];
 					CourseOffering co = (CourseOffering)o[1];

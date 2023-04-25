@@ -112,7 +112,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						"and (l.result != 3 or l.operation not in ('validate-overrides', 'critical-courses', 'banner-update')) "
 					) + "order by l.uniqueId desc");
 
-			q.setParameter("sessionId", session.getUniqueId(), Long.class);
+			q.setParameter("sessionId", session.getUniqueId());
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			

@@ -74,7 +74,7 @@ public abstract class BasePreference implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public PreferenceGroup getOwner() { return iOwner; }
 	public void setOwner(PreferenceGroup owner) { iOwner = owner; }
 

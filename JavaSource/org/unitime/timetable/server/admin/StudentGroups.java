@@ -159,15 +159,15 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 	protected void save(Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
 		StudentGroup g1 = hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv", StudentGroup.class).
-				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).
-				setParameter("abbv", record.getField(1), String.class).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setParameter("abbv", record.getField(1)).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
 		StudentGroup g2 = hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name", StudentGroup.class).
-				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).
-				setParameter("name", record.getField(2), String.class).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setParameter("name", record.getField(2)).
 				setMaxResults(1).uniqueResult();
 		if (g2 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));
@@ -224,17 +224,17 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 		if (group == null) return;
 		StudentGroup g1 = hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupAbbreviation=:abbv and a.uniqueId!=:gid", StudentGroup.class).
-				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).
-				setParameter("abbv", record.getField(1), String.class).
-				setParameter("gid", group.getUniqueId(), Long.class).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setParameter("abbv", record.getField(1)).
+				setParameter("gid", group.getUniqueId()).
 				setMaxResults(1).uniqueResult();
 		if (g1 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldCode()));
 		StudentGroup g2 = hibSession.createQuery(
                 "select a from StudentGroup a where a.session.uniqueId=:sessionId and a.groupName=:name and a.uniqueId!=:gid", StudentGroup.class).
-				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).
-				setParameter("name", record.getField(2), String.class).
-				setParameter("gid", group.getUniqueId(), Long.class).
+				setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).
+				setParameter("name", record.getField(2)).
+				setParameter("gid", group.getUniqueId()).
 				setMaxResults(1).uniqueResult();
 		if (g2 != null)
 			throw new GwtRpcException(MESSAGES.errorMustBeUnique(MESSAGES.fieldName()));		
@@ -324,7 +324,7 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(group);
+		hibSession.remove(group);
 	}
 	
 	@Override

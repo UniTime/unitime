@@ -268,7 +268,7 @@ public class SimpleDefaultPreferences {
 							// These preferences do not need to be replicated on classes, remove room preferences from all the classes
 							for (Class_ clazz: subpart.getClasses()) {
 								clazz.getPreferences().removeAll(clazz.getPreferences(RoomPref.class));
-								hibSession.save(clazz);
+								hibSession.persist(clazz);
 							}
 						}
 

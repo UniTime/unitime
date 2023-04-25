@@ -149,7 +149,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
 		EventContact contact = hibSession.createQuery(
 				"from EventContact where externalUniqueId = :userId", EventContact.class
-				).setParameter("userId", user.getExternalUserId(), String.class).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
 		if (contact != null) {
 			ContactInterface c = new ContactInterface();
 			c.setFirstName(contact.getFirstName());
@@ -164,7 +164,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		TimetableManager manager = hibSession.createQuery(
 				"from TimetableManager where externalUniqueId = :userId", TimetableManager.class
-				).setParameter("userId", user.getExternalUserId(), String.class).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
 		if (manager != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(manager.getExternalUniqueId());
@@ -178,7 +178,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		DepartmentalInstructor instructor = hibSession.createQuery(
 				"from DepartmentalInstructor where department.session.uniqueId = :sessionId and externalUniqueId = :userId", DepartmentalInstructor.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("userId", user.getExternalUserId(), String.class).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId).setParameter("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
 		if (instructor != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(instructor.getExternalUniqueId());
@@ -192,7 +192,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		Staff staff = hibSession.createQuery(
 				"from Staff where externalUniqueId = :userId", Staff.class
-				).setParameter("userId", user.getExternalUserId(), String.class).setMaxResults(1).uniqueResult();
+				).setParameter("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
 		if (staff != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(staff.getExternalUniqueId());
@@ -206,7 +206,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 		Student student = hibSession.createQuery(
 				"from Student where session.uniqueId = :sessionId and externalUniqueId = :userId", Student.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("userId", user.getExternalUserId(), String.class).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId).setParameter("userId", user.getExternalUserId()).setMaxResults(1).uniqueResult();
 		if (student != null) {
 			ContactInterface c = new ContactInterface();
 			c.setExternalId(student.getExternalUniqueId());
@@ -268,7 +268,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			response.addStandardNote(n);
 		}
 		for (StandardEventNote note: StandardEventNoteSessionDAO.getInstance().getSession().createQuery(
-				"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNote.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+				"from StandardEventNoteSession where session.uniqueId = :sessionId", StandardEventNote.class).setParameter("sessionId", sessionId).setCacheable(true).list()) {
 			StandardEventNoteInterface n = new StandardEventNoteInterface();
 			n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 			response.addStandardNote(n);
@@ -285,7 +285,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			}
 			if (allDepartments) {
 				for (StandardEventNote note: StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
-						"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNote.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+						"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId", StandardEventNote.class).setParameter("sessionId", sessionId).setCacheable(true).list()) {
 					StandardEventNoteInterface n = new StandardEventNoteInterface();
 					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 					response.addStandardNote(n);

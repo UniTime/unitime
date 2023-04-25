@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "sect_pref")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="preference_type", discriminatorType = DiscriminatorType.INTEGER)
@@ -58,13 +58,13 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
 		try {
 			boolean first = true;
 			for (CourseRequestOption option: hibSession.createQuery("from CourseRequestOption where optionType = :type", CourseRequestOption.class
-					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber(), Integer.class).list()) {
+					).setParameter("type", OnlineSectioningLog.CourseRequestOption.OptionType.REQUEST_PREFERENCE.getNumber()).list()) {
 				if (first) {
 					Debug.info(" - Updating student scheduling preferences ...");
 					first = false;
 				}
 				CourseRequest cr = option.getCourseRequest();
-				hibSession.delete(option);
+				hibSession.remove(option);
 				cr.getCourseRequestOptions().remove(option);
 				if (cr.getPreferences() == null) cr.setPreferences(new HashSet<StudentSectioningPref>());
 				try {
@@ -106,15 +106,15 @@ public abstract class StudentSectioningPref extends BaseStudentSectioningPref {
     					}
                     }
 				} catch (Exception e) {}
-				hibSession.update(cr);
+				hibSession.merge(cr);
 			}
 			for (StudentInstrMthPref p: hibSession.createQuery("from StudentInstrMthPref where label is null and instructionalMethod.label is not null", StudentInstrMthPref.class).list()) {
 				p.setLabel(p.getInstructionalMethod().getLabel());
-				hibSession.update(p);
+				hibSession.merge(p);
 			}
 			for (StudentClassPref p: hibSession.createQuery("from StudentClassPref where label is null", StudentClassPref.class).list()) {
 				p.setLabel(p.getClazz().getClassPrefLabel(p.getCourseRequest().getCourseOffering()));
-				hibSession.update(p);
+				hibSession.merge(p);
 			}
 			tx.commit();
 		} catch (Exception e) {

@@ -117,7 +117,7 @@ public abstract class BaseAdvisor implements Serializable {
 	@JoinTable(name = "student_advisor",
 		joinColumns = { @JoinColumn(name = "advisor_id") },
 		inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {

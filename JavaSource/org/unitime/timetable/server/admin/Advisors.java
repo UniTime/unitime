@@ -248,7 +248,7 @@ public class Advisors implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(advisor);
+		hibSession.remove(advisor);
 	}
 	
 	@Override

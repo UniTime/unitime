@@ -183,12 +183,12 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 				io.deleteAllDistributionPreferences(hibSession);
 				io.deleteAllClasses(hibSession);
 				io.deleteAllCourses(hibSession);
-				hibSession.delete(io);
+				hibSession.remove(io);
 			}
 
 	        for (Iterator i = sa.getCourseOfferings().iterator(); i.hasNext(); ) {
 	        	CourseOffering co = (CourseOffering) i.next();
-	        	hibSession.delete(co);
+	        	hibSession.remove(co);
 	        }
 	        
             ChangeLog.addChange(
@@ -200,7 +200,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
                     null, 
                     sa.getDepartment());
             
-            hibSession.delete(sa);
+            hibSession.remove(sa);
 			
 			tx.commit();
 			hibSession.flush();
@@ -320,7 +320,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
                                         hibSession.saveOrUpdate(newInstructor);
                                     } else {
                                         m.remove();
-                                        hibSession.delete(ci);
+                                        hibSession.remove(ci);
                                     }
 	                            }
 	                            hibSession.saveOrUpdate(c);

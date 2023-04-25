@@ -47,7 +47,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "meeting")
 public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
@@ -127,15 +127,15 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		if (session!=null) {
 		    location = RoomDAO.getInstance().getSession().createQuery(
 		            "select r from Room r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
-		            .setParameter("sessionId", session.getUniqueId(), Long.class)
-		            .setParameter("permId", getLocationPermanentId(), Long.class)
+		            .setParameter("sessionId", session.getUniqueId())
+		            .setParameter("permId", getLocationPermanentId())
 		            .setCacheable(true)
 		            .uniqueResult();
 		    if (location==null)
 		        location = RoomDAO.getInstance().getSession().createQuery(
 		            "select r from NonUniversityLocation r where r.permanentId = :permId and r.session.uniqueId=:sessionId", Location.class)
-		            .setParameter("sessionId", session.getUniqueId(), Long.class)
-		            .setParameter("permId", getLocationPermanentId(), Long.class)
+		            .setParameter("sessionId", session.getUniqueId())
+		            .setParameter("permId", getLocationPermanentId())
 		            .setCacheable(true)
 		            .uniqueResult();
 		    return location;
@@ -143,7 +143,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		long distance = -1;
 		List<Location> locations = LocationDAO.getInstance().getSession().createQuery(
 				"from Location where permanentId = :permId", Location.class).
-				setParameter("permId", getLocationPermanentId(), Long.class).
+				setParameter("permId", getLocationPermanentId()).
 				setCacheable(true).list();
 		if (!locations.isEmpty()) {
 			for (Location loc: locations) {
@@ -172,11 +172,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return (MeetingDAO.getInstance()).getSession().createQuery(
 		        "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
 		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Meeting.class)
-		        .setParameter("meetingDate", getMeetingDate(), Date.class)
-		        .setParameter("stopPeriod", getStopPeriod(), Integer.class)
-		        .setParameter("startPeriod", getStartPeriod(), Integer.class)
-		        .setParameter("locPermId", getLocationPermanentId(), Long.class)
-		        .setParameter("uniqueId", this.getUniqueId(), Long.class)
+		        .setParameter("meetingDate", getMeetingDate())
+		        .setParameter("stopPeriod", getStopPeriod())
+		        .setParameter("startPeriod", getStartPeriod())
+		        .setParameter("locPermId", getLocationPermanentId())
+		        .setParameter("uniqueId", this.getUniqueId())
 		        .list();
 	}
 
@@ -186,11 +186,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus = 1", Meeting.class)
-                .setParameter("meetingDate", getMeetingDate(), Date.class)
-                .setParameter("stopPeriod", getStopPeriod(), Integer.class)
-                .setParameter("startPeriod", getStartPeriod(), Integer.class)
-                .setParameter("locPermId", getLocationPermanentId(), Long.class)
-                .setParameter("uniqueId", this.getUniqueId(), Long.class)
+                .setParameter("meetingDate", getMeetingDate())
+                .setParameter("stopPeriod", getStopPeriod())
+                .setParameter("startPeriod", getStartPeriod())
+                .setParameter("locPermId", getLocationPermanentId())
+                .setParameter("uniqueId", this.getUniqueId())
                 .list();
     }
     
@@ -198,10 +198,10 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.approvalStatus <= 1", Meeting.class)
-                .setParameter("meetingDate", meetingDate, Date.class)
-                .setParameter("stopPeriod", stopPeriod, Integer.class)
-                .setParameter("startPeriod", startPeriod, Integer.class)
-                .setParameter("locPermId", locationPermId, Long.class)
+                .setParameter("meetingDate", meetingDate)
+                .setParameter("stopPeriod", stopPeriod)
+                .setParameter("startPeriod", startPeriod)
+                .setParameter("locPermId", locationPermId)
                 .list();
     }
 
@@ -209,11 +209,11 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return MeetingDAO.getInstance().getSession().createQuery(
                 "select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
                 "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1", Number.class)
-                .setParameter("meetingDate", getMeetingDate(), Date.class)
-                .setParameter("stopPeriod", getStopPeriod(), Integer.class)
-                .setParameter("startPeriod", getStartPeriod(), Integer.class)
-                .setParameter("locPermId", getLocationPermanentId(), Long.class)
-                .setParameter("uniqueId", this.getUniqueId(), Long.class)
+                .setParameter("meetingDate", getMeetingDate())
+                .setParameter("stopPeriod", getStopPeriod())
+                .setParameter("startPeriod", getStartPeriod())
+                .setParameter("locPermId", getLocationPermanentId())
+                .setParameter("uniqueId", this.getUniqueId())
                 .uniqueResult().longValue()>0;
 	}
 	

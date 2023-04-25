@@ -399,15 +399,15 @@ public class DistributionPref extends BaseDistributionPref {
     	Query<DistributionPref> q = (DistributionPrefDAO.getInstance()).
 			getSession().
 			createQuery(sb.toString(), DistributionPref.class);
-    	q.setParameter("sessionId", sessionId.longValue(), Long.class);
+    	q.setParameter("sessionId", sessionId.longValue());
     	if (ownerId!=null)
-    		q.setParameter("ownerId", ownerId.longValue(), Long.class);
+    		q.setParameter("ownerId", ownerId.longValue());
     	if (uniqueId!=null)
-    		q.setParameter("uniqueId", uniqueId.longValue(), Long.class);
+    		q.setParameter("uniqueId", uniqueId.longValue());
     	if (subjectAreaId!=null) 
-    		q.setParameter("subjectAreaId", subjectAreaId.longValue(), Long.class);
+    		q.setParameter("subjectAreaId", subjectAreaId.longValue());
 		if (courseNbr!=null && !courseNbr.trim().isEmpty())
-		    q.setParameter("courseNbr", courseNbr, String.class);
+		    q.setParameter("courseNbr", courseNbr);
     	return q.list();
     }
     
@@ -460,15 +460,15 @@ public class DistributionPref extends BaseDistributionPref {
         Query<DistributionPref> q = (DistributionPrefDAO.getInstance()).
             getSession().
             createQuery(sb.toString(), DistributionPref.class);
-        q.setParameter("sessionId", sessionId.longValue(), Long.class);
+        q.setParameter("sessionId", sessionId.longValue());
         if (subjectAreaId!=null) {
-            q.setParameter("subjectAreaId", subjectAreaId.longValue(), Long.class);
+            q.setParameter("subjectAreaId", subjectAreaId.longValue());
         }
         if (ownerId!=null) {
-            q.setParameter("ownerId", ownerId.longValue(), Long.class);
+            q.setParameter("ownerId", ownerId.longValue());
         }
         if (courseNbr!=null && !courseNbr.isEmpty())
-            q.setParameter("courseNbr", courseNbr, String.class);
+            q.setParameter("courseNbr", courseNbr);
         return q.list();
     }
     
@@ -494,8 +494,8 @@ public class DistributionPref extends BaseDistributionPref {
             createQuery(
                 "select dp from DistributionPref dp, Department d where "+
                 "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId", DistributionPref.class).
-            setParameter("uidRolledFrom", uidRolledForwardFrom, Long.class).
-            setParameter("sessionId", sessionId, Long.class).
+            setParameter("uidRolledFrom", uidRolledForwardFrom).
+            setParameter("sessionId", sessionId).
             setCacheable(true).
             uniqueResult(); 
     }

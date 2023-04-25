@@ -71,16 +71,16 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				Set<String> userIds = new HashSet<String>();
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from TimetableManager where lower(emailAddress) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
+						.setParameter("email", request.getEmail().toLowerCase()).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from Staff where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
+						.setParameter("email", request.getEmail().toLowerCase()).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from DepartmentalInstructor where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
+						.setParameter("email", request.getEmail().toLowerCase()).list());
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from Student where lower(email) = :email and externalUniqueId is not null", String.class)
-						.setParameter("email", request.getEmail().toLowerCase(), String.class).list());
+						.setParameter("email", request.getEmail().toLowerCase()).list());
 
 				if (userIds.isEmpty())
 					throw new GwtRpcException(MESSAGES.errorEmailNotValid());
@@ -148,7 +148,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 							throw new GwtRpcException(MESSAGES.errorPasswordResetExpired());
 						
 						user.setPassword(encode(request.getNewPassword()));
-						hibSession.update(user);
+						hibSession.merge(user);
 						hibSession.flush();
 						
 						UserData.removeProperty(user.getExternalUniqueId(), "Password.TempKey");
@@ -164,8 +164,8 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				
 				User user = hibSession.createQuery(
 						"from User where username = :username and password = :password", User.class)
-						.setParameter("username", username, String.class)
-						.setParameter("password", encode(request.getOldPassword()), String.class)
+						.setParameter("username", username)
+						.setParameter("password", encode(request.getOldPassword()))
 						.setMaxResults(1).uniqueResult();
 				
 				if (user == null) {
@@ -179,7 +179,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					throw new GwtRpcException(MESSAGES.errorEnterNewPassword());
 
 				user.setPassword(encode(request.getNewPassword()));
-				hibSession.update(user);
+				hibSession.merge(user);
 				hibSession.flush();
 					
 

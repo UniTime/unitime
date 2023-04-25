@@ -73,7 +73,7 @@ public class SavedHqlExportToJSON extends SavedHqlExportToCSV {
 			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
 		} catch (NumberFormatException e) {}
 		if (hql == null)
-			hql = SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name", SavedHQL.class).setParameter("name", report, String.class).setMaxResults(1).uniqueResult();
+			hql = SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name", SavedHQL.class).setParameter("name", report).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();

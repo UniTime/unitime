@@ -34,7 +34,7 @@ import org.unitime.timetable.model.base.BaseLocationPicture;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class LocationPicture extends BaseLocationPicture implements Comparable<LocationPicture> {
 	private static final long serialVersionUID = 1L;

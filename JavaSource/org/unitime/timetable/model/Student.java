@@ -62,7 +62,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student")
 public class Student extends BaseStudent implements Comparable<Student>, NameInterface, Qualifiable {
 	private static final long serialVersionUID = 1L;
@@ -85,7 +85,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
         return StudentDAO.getInstance().
             getSession().
             createQuery("select s from Student s where s.session.uniqueId=:sessionId", Student.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
             list();
     }
     
@@ -95,8 +95,8 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
             createQuery("select s from Student s where "+
                     "s.session.uniqueId=:sessionId and "+
                     "s.externalUniqueId=:externalId", Student.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("externalId", externalId, String.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("externalId", externalId).
             setCacheable(true).
             uniqueResult();
     }
@@ -112,8 +112,8 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
             		"where "+
                     "s.session.uniqueId=:sessionId and "+
                     "s.externalUniqueId=:externalId", Student.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("externalId", externalId, String.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("externalId", externalId).
             setCacheable(true).
             uniqueResult();
     }
@@ -126,7 +126,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
        	if (!enrollments.isEmpty()) {
     		for (StudentClassEnrollment enrollment: enrollments) {
     			getClassEnrollments().remove(enrollment);
-    			hibSession.delete(enrollment);
+    			hibSession.remove(enrollment);
     		}
     	}
 
@@ -138,33 +138,33 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.type=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                .setParameter("examType", examType, Integer.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                .setParameter("examType", examType)
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.type=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                .setParameter("examType", examType, Integer.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                .setParameter("examType", examType)
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.type=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                .setParameter("examType", examType, Integer.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                .setParameter("examType", examType)
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.type=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                .setParameter("examType", examType, Integer.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                .setParameter("examType", examType)
                 .setCacheable(true)
                 .list());
         return exams;
@@ -175,33 +175,33 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                .setParameter("examType", examType.getUniqueId(), Long.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                .setParameter("examType", examType.getUniqueId())
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                .setParameter("examType", examType.getUniqueId(), Long.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                .setParameter("examType", examType.getUniqueId())
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                .setParameter("examType", examType.getUniqueId(), Long.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                .setParameter("examType", examType.getUniqueId())
                 .setCacheable(true)
                 .list());
         exams.addAll(StudentDAO.getInstance().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
                 "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examType", Exam.class)
-                .setParameter("studentId", getUniqueId(), Long.class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                .setParameter("examType", examType.getUniqueId(), Long.class)
+                .setParameter("studentId", getUniqueId())
+                .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                .setParameter("examType", examType.getUniqueId())
                 .setCacheable(true)
                 .list());
         return exams;
@@ -232,11 +232,11 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
             		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class)
-            .setParameter("classId", classId, Long.class)
-            .setParameter("startSlot", startSlot, Integer.class)
-            .setParameter("endSlot", startSlot + length, Integer.class);
+            .setParameter("classId", classId)
+            .setParameter("startSlot", startSlot)
+            .setParameter("endSlot", startSlot + length);
     	for (int i=0; i<dates.size(); i++) {
-    		q.setParameter("date"+i, dates.get(i), Date.class);
+    		q.setParameter("date"+i, dates.get(i));
     	}
         for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> set = table.get((Long)o[0]);
@@ -476,7 +476,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
     		wl.fillInNotes();
     		addTowaitlists(wl);
-    		if (hibSession != null) hibSession.save(wl);
+    		if (hibSession != null) hibSession.persist(wl);
     		return wl;
     	} else {
     		return null;
@@ -519,7 +519,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
 				wl.fillInNotes();
 				addTowaitlists(wl);
-				if (hibSession != null) hibSession.save(wl);
+				if (hibSession != null) hibSession.persist(wl);
 			}
 		}
 		for (CourseDemand cd: getCourseDemands()) {
@@ -542,7 +542,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 						wl.setSwapCourseOffering(cd.getWaitListSwapWithCourseOffering());
 						wl.fillInNotes();
 						addTowaitlists(wl);
-						if (hibSession != null) hibSession.save(wl);
+						if (hibSession != null) hibSession.persist(wl);
 					}
 				}
 			}
@@ -565,7 +565,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setSwapCourseOffering(old.getSwapCourseOffering());
 				wl.fillInNotes();
 				addTowaitlists(wl);
-				if (hibSession != null) hibSession.save(wl);
+				if (hibSession != null) hibSession.persist(wl);
 			}
 		}
     }

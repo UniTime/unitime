@@ -61,14 +61,14 @@ public class MakeEventsForAllCommitedAssignments {
 
                     for (ClassEvent e: hibSession.createQuery(
                             "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
-                            .setParameter("solutionId", s.getUniqueId(), Long.class)
+                            .setParameter("solutionId", s.getUniqueId())
                             .list()) {
-                        hibSession.delete(e);
+                        hibSession.remove(e);
                     }
                     for (Assignment a: hibSession.createQuery(
                             "select a from Assignment a "+
                             "where a.solution.uniqueId = :solutionId", Assignment.class)
-                            .setParameter("solutionId", s.getUniqueId(), Long.class)
+                            .setParameter("solutionId", s.getUniqueId())
                             .list()) {
                         ClassEvent event = a.generateCommittedEvent(null,true);
                         if (event != null && !event.getMeetings().isEmpty()) {
@@ -76,7 +76,7 @@ public class MakeEventsForAllCommitedAssignments {
                             hibSession.saveOrUpdate(event);
                         }
             		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
-            		    	hibSession.delete(event);
+            		    	hibSession.remove(event);
                     }
                     
                     tx.commit();

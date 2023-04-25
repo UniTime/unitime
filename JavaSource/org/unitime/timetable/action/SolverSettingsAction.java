@@ -163,7 +163,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             			if (!def.isVisible().booleanValue()) {
             				if (param!=null) {
             					params.remove(param);
-            					hibSession.delete(param);
+            					hibSession.remove(param);
             				}
             			} else {
                 			String value = form.getParameter(def.getUniqueId());
@@ -171,7 +171,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                 			if (useDefault) {
                 				if (param!=null) {
                 					params.remove(param);
-                					hibSession.delete(param);
+                					hibSession.remove(param);
                 				}
                 			} else {
                 				if (param==null) {
@@ -330,7 +330,7 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
     			
     			SolverPredefinedSetting setting = dao.get(form.getUniqueId(), hibSession);
 
-    			hibSession.delete(setting);
+    			hibSession.remove(setting);
     			
     			if (tx!=null) tx.commit();
     	    } catch (Exception e) {

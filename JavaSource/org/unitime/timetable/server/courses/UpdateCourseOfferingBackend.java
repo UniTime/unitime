@@ -157,7 +157,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             if (courseOffering.isIsControl()) {
             	io.setWaitlistMode(courseOfferingInterface.getWaitList());
 				if (limitedEdit)
-					hibSession.update(io);
+					hibSession.merge(io);
     		}
 
     		if ((!limitedEdit || updateCoordinators) && courseOffering.isIsControl().booleanValue()) {
@@ -208,7 +208,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			for (OfferingCoordinator coordinator: coordinators) {
     				coordinator.getInstructor().getOfferingCoordinators().remove(coordinator);
     				io.getOfferingCoordinators().remove(coordinator);
-    				hibSession.delete(coordinator);
+    				hibSession.remove(coordinator);
     			}
     			
     			Boolean coursesFundingDepartmentsEnabled = ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue();
@@ -227,7 +227,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
                 }
     			
     			if (limitedEdit)
-    				hibSession.update(io);
+    				hibSession.merge(io);
     		}
 
     		if (!limitedEdit) {
@@ -239,7 +239,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     					llcd = (LastLikeCourseDemand)it.next();
     					if (llcd.getCoursePermId() == null){
     						llcd.setCoursePermId(permId);
-    						hibSession.update(llcd);
+    						hibSession.merge(llcd);
     					}
     				}
     				courseOffering.setPermId(permId);
@@ -284,7 +284,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     				CourseCreditUnitConfig origConfig = courseOffering.getCredit();
     				if (origConfig != null){
     					courseOffering.setCredit(null);
-    					hibSession.delete(origConfig);
+    					hibSession.remove(origConfig);
     				}
     			} else {
     				if(courseOffering.getCredit() != null){
@@ -320,14 +320,14 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     						if (changed){
     							CourseCreditUnitConfig origConfig = courseOffering.getCredit();
     							courseOffering.setCredit(null);
-    							hibSession.delete(origConfig);
+    							hibSession.remove(origConfig);
     							courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     							courseOffering.getCredit().setOwner(courseOffering);
     						}
     					} else {
     						CourseCreditUnitConfig origConfig = courseOffering.getCredit();
     						courseOffering.setCredit(null);
-    						hibSession.delete(origConfig);
+    						hibSession.remove(origConfig);
     						courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
     						courseOffering.getCredit().setOwner(courseOffering);
     					}
@@ -361,7 +361,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     				}
     				io.setNotes(courseOfferingInterface.getNotes() == null || courseOfferingInterface.getNotes().length() <= 2000 ? courseOfferingInterface.getNotes() : courseOfferingInterface.getNotes().substring(0, 2000));
 
-    				hibSession.update(io);
+    				hibSession.merge(io);
     			}
     			if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue()) {
     				courseOffering.setExternalUniqueId(courseOfferingInterface.getExternalId() == null || courseOfferingInterface.getExternalId().isEmpty() ? null : courseOfferingInterface.getExternalId());
@@ -545,7 +545,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
             if (courseOffering.getUniqueId() == null) {
            	
             	if (courseOffering.getUniqueId() == null) {
-    		    	hibSession.save(io);
+    		    	hibSession.persist(io);
     		    }
             	courseOfferingInterface.setId((Long)hibSession.save(courseOffering));
             	
@@ -560,7 +560,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
                 }
 
             } else {
-            	hibSession.update(courseOffering);
+            	hibSession.merge(courseOffering);
             }
             
             ChangeLog.addChange(

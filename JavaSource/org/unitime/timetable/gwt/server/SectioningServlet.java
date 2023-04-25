@@ -388,7 +388,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: hibSession.createQuery(
 					"select c from CourseOffering c left outer join c.courseType ct where " +
-					(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") +
+					(excludeNotOffered ? "c.instructionalOffering.notOffered = false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") +
@@ -399,8 +399,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
 					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-					.setParameter("q", query.toLowerCase(), String.class)
-					.setParameter("sessionId", cx.getSessionId(), Long.class)
+					.setParameter("q", query.toLowerCase())
+					.setParameter("sessionId", cx.getSessionId())
 					.setCacheable(true).setMaxResults(limit == null || limit <= 0 || parent != null ? Integer.MAX_VALUE : limit).list()) {
 				if (parent != null && !parent.match(new XCourseId(c))) continue;
 				CourseAssignment course = new CourseAssignment();
@@ -586,8 +586,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)",
 					CourseOffering.class)
-					.setParameter("course", course.toLowerCase(), String.class)
-					.setParameter("sessionId", cx.getSessionId(), Long.class)
+					.setParameter("course", course.toLowerCase())
+					.setParameter("sessionId", cx.getSessionId())
 					.setCacheable(true).setMaxResults(1).list()) {
 				courseOffering = c; break;
 			}
@@ -930,24 +930,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (CourseOffering co: hibSession.createQuery(
 					"select cr.courseOffering from CourseRequest cr where " +
 					"cr.courseDemand.student.uniqueId = :studentId and " +
-					(excludeNotOffered ? "cr.courseOffering.instructionalOffering.notOffered is false and " : "") +
+					(excludeNotOffered ? "cr.courseOffering.instructionalOffering.notOffered = false and " : "") +
 					"(lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr) = :course or " +
 					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr || ' - ' || cr.courseOffering.title) = :course)",
 					CourseOffering.class)
-					.setParameter("course", courseName.toLowerCase(), String.class)
-					.setParameter("studentId", studentId, Long.class)
+					.setParameter("course", courseName.toLowerCase())
+					.setParameter("studentId", studentId)
 					.setCacheable(true).setMaxResults(1).list()) {
 				return co;
 			}
 		}
 		for (CourseOffering co: hibSession.createQuery(
 				"select c from CourseOffering c where " +
-				(excludeNotOffered ? "c.instructionalOffering.notOffered is false and " : "") + 
+				(excludeNotOffered ? "c.instructionalOffering.notOffered = false and " : "") + 
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
 				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)",
 				CourseOffering.class)
-				.setParameter("course", courseName.toLowerCase(), String.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("course", courseName.toLowerCase())
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true).setMaxResults(1).list()) {
 			if (courseMatcher != null && !courseMatcher.match(new XCourse(co))) continue;
 			return co;
@@ -1037,7 +1037,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			getSessionContext().checkPermissionAnySession(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
-				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", password, String.class).list();
+				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", password).list();
 				if (!student.isEmpty()) {
 					UserContext user = getSessionContext().getUser();
 					UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), password, user.getTrueName());
@@ -1207,7 +1207,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					helper.warn("Failed to lookup critical courses: " + e.getMessage(), e);
 				}
 				SaveStudentRequests.saveRequest(null, helper, student, request, true, critical);
-				hibSession.save(student);
+				hibSession.persist(student);
 				hibSession.flush();
 				return request;
 			} catch (PageAccessException e) {
@@ -1335,7 +1335,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId" :
 								"select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.student.uniqueId in " +
 								"(select f.student.uniqueId from StudentClassEnrollment f where f.clazz.uniqueId = " + clazz.getUniqueId() + ")", StudentClassEnrollment.class
-							).setParameter("offeringId", offeringId, Long.class).list()) {
+							).setParameter("offeringId", offeringId).list()) {
 						ClassAssignmentInterface.Enrollment e = student2enrollment.get(enrollment.getStudent().getUniqueId());
 						if (e == null) {
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
@@ -1418,15 +1418,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									if (name == null) {
 										TimetableManager mgr = hibSession.createQuery(
 												"from TimetableManager where externalUniqueId = :externalId", TimetableManager.class)
-												.setParameter("externalId", enrollment.getApprovedBy(), String.class)
+												.setParameter("externalId", enrollment.getApprovedBy())
 												.setMaxResults(1).uniqueResult();
 										if (mgr != null) {
 											name = mgr.getName();
 										} else {
 											DepartmentalInstructor instr = hibSession.createQuery(
 													"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
-													.setParameter("externalId", enrollment.getApprovedBy(), String.class)
-													.setParameter("sessionId", enrollment.getStudent().getSession().getUniqueId(), Long.class)
+													.setParameter("externalId", enrollment.getApprovedBy())
+													.setParameter("sessionId", enrollment.getStudent().getSession().getUniqueId())
 													.setMaxResults(1).uniqueResult();
 											if (instr != null)
 												name = instr.nameLastNameFirst();
@@ -1453,7 +1453,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 					if (classOrOfferingId >= 0)
 						for (CourseRequest request: hibSession.createQuery(
-							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId", CourseRequest.class).setParameter("offeringId", classOrOfferingId, Long.class).list()) {
+							"from CourseRequest r where r.courseOffering.instructionalOffering.uniqueId = :offeringId", CourseRequest.class).setParameter("offeringId", classOrOfferingId).list()) {
 							ClassAssignmentInterface.Enrollment e = student2enrollment.get(request.getCourseDemand().getStudent().getUniqueId());
 							if (e != null) continue;
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
@@ -1601,7 +1601,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						Set<StudentClassEnrollment> enrollments = new TreeSet<StudentClassEnrollment>(cmp);
 						enrollments.addAll(hibSession.createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr", StudentClassEnrollment.class
-								).setParameter("studentId", studentId, Long.class).list());
+								).setParameter("studentId", studentId).list());
 						CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 						StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(student, null, getSessionContext()));
 						for (StudentClassEnrollment enrollment: enrollments) {
@@ -1707,7 +1707,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						}
 						demands: for (CourseDemand demand: hibSession.createQuery(
 								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority", CourseDemand.class
-								).setParameter("studentId", studentId, Long.class).list()) {
+								).setParameter("studentId", studentId).list()) {
 							if (demand.getFreeTime() != null) {
 								CourseAssignment course = new CourseAssignment();
 								course.setAssigned(true);
@@ -1973,7 +1973,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and oc.instructor.externalUniqueId = :extId", Long.class)
-				.setParameter("sessionId", sessionId, Long.class).setParameter("extId", user.getExternalUserId(), String.class).setCacheable(true).list());
+				.setParameter("sessionId", sessionId).setParameter("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
 	}
@@ -2004,20 +2004,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.offeringCoordinators oc where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType.reference = :reference and " +
 				"oc.instructor.externalUniqueId = :extId", Long.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("reference", "IN", String.class).setParameter("extId", user.getExternalUserId(), String.class).setCacheable(true).list());
+				).setParameter("sessionId", sessionId).setParameter("reference", "IN").setParameter("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		if (!user.getCurrentAuthority().hasRight(Right.HasRole)) return courseIds;
 		
 		if (user.getCurrentAuthority().hasRight(Right.SessionIndependent))
 			return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null", Long.class
-					).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+					).setParameter("sessionId", sessionId).setCacheable(true).list());
 		
 		for (Department d: Department.getUserDepartments(user)) {
 			courseIds.addAll(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select distinct c.uniqueId from CourseOffering c where " +
 					"c.subjectArea.department.uniqueId = :departmentId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null", Long.class
-					).setParameter("departmentId", d.getUniqueId(), Long.class).setCacheable(true).list());
+					).setParameter("departmentId", d.getUniqueId()).setCacheable(true).list());
 		}
 		
 		return courseIds;
@@ -2031,7 +2031,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select s.uniqueId from Advisor a inner join a.students s where " +
 				"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId", Long.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("user", user.getExternalUserId(), String.class).setParameter("role", user.getCurrentAuthority().getRole(), String.class).setCacheable(true).list());
+				).setParameter("sessionId", sessionId).setParameter("user", user.getExternalUserId()).setParameter("role", user.getCurrentAuthority().getRole()).setCacheable(true).list());
 	}
 	
 	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException {
@@ -2707,7 +2707,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session.uniqueId = :sessionId order by t.reference", CourseType.class
-				).setParameter("sessionId", getStatusPageSessionId(), Long.class).setCacheable(true).list();
+				).setParameter("sessionId", getStatusPageSessionId()).setCacheable(true).list();
 		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
 		boolean advisor = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
 		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
@@ -3181,7 +3181,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentGroup))
 				for (StudentGroup g: StudentGroupDAO.getInstance().getSession().createQuery(
 						"from StudentGroup g where g.type.advisorsCanSet = true and g.session.uniqueId = :sessionId order by g.groupAbbreviation", StudentGroup.class
-						).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+						).setParameter("sessionId", sessionId).setCacheable(true).list()) {
 					properties.addEditableGroup(new StudentGroupInfo(g.getUniqueId(), g.getGroupAbbreviation(), g.getGroupName(), g.getType() == null ? null: g.getType().getReference()));
 				}
 		}
@@ -3514,11 +3514,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			org.hibernate.Session hibSession = CourseDemandDAO.getInstance().getSession();
 			CourseDemand cd = hibSession.createQuery(
 					"select cr.courseDemand from CourseRequest cr where cr.courseOffering = :courseId and cr.courseDemand.student = :studentId", CourseDemand.class
-					).setParameter("studentId", studentId, Long.class).setParameter("courseId", courseId, Long.class).setMaxResults(1).uniqueResult();
+					).setParameter("studentId", studentId).setParameter("courseId", courseId).setMaxResults(1).uniqueResult();
 			if (cd == null) return null;
 			
 			cd.setCriticalOverride(critical);
-			hibSession.save(cd);
+			hibSession.persist(cd);
 			hibSession.flush();
 			
 			OnlineSectioningServer server = getServerInstance(cd.getStudent().getSession().getUniqueId(), false);
@@ -3643,7 +3643,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session.uniqueId = :sessionId order by t.reference", CourseType.class
-				).setParameter("sessionId", getStatusPageSessionId(), Long.class).setCacheable(true).list();
+				).setParameter("sessionId", getStatusPageSessionId()).setCacheable(true).list();
 		boolean adv = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
 		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
 		
@@ -3792,7 +3792,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Set<Long> sessionIds = new HashSet<Long>();
 		for (Student student: StudentDAO.getInstance().getSession().createQuery(
 				"from Student where externalUniqueId = :id", Student.class)
-				.setParameter("id", studentExternalId, String.class).setCacheable(true).list()) {
+				.setParameter("id", studentExternalId).setCacheable(true).list()) {
 			Session session = student.getSession();
 			if (session.getStatusType().isTestSession()) continue;
 			if (session.getStatusType().canPreRegisterStudents() || session.getStatusType().canOnlineSectionStudents()) {
@@ -3812,7 +3812,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (Student student: StudentDAO.getInstance().getSession().createQuery(
 				"from Student s where s.externalUniqueId = :id and s.advisorCourseRequests is not empty", Student.class)
-				.setParameter("id", studentExternalId, String.class)
+				.setParameter("id", studentExternalId)
 				.setCacheable(true).list()) {
 			Session session = student.getSession();
 			if (session.getStatusType().isTestSession()) continue;
@@ -3886,8 +3886,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				"from AdvisorCourseRequest acr where acr.priority = -1 and acr.changedBy = :externalId and acr.student.session.uniqueId = :sessionId " +
 				"group by replace(acr.notes, acr.student.pin, '$PIN$') " +
 				"order by max(acr.timestamp) desc", Object[].class)
-				.setParameter("externalId", sessionContext.getUser().getExternalUserId(), String.class)
-				.setParameter("sessionId", cx.getAcademicSessionId(), Long.class)
+				.setParameter("externalId", sessionContext.getUser().getExternalUserId())
+				.setParameter("sessionId", cx.getAcademicSessionId())
 				.setCacheable(false).setMaxResults(50).list();
 		for (Object[] o: notes) {
 			String note = (String)o[0];

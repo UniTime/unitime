@@ -174,7 +174,7 @@ public class MessageLogAppender extends AbstractAppender {
 						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (MessageLog m: messagesToSave)
-								hibSession.save(m);
+								hibSession.persist(m);
 							hibSession.flush();
 							tx.commit();
 						} catch (Exception e) {

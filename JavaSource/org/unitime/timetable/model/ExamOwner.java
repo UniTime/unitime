@@ -49,7 +49,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "exam_owner")
 public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	private static final long serialVersionUID = 1L;
@@ -79,8 +79,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	    return ExamOwnerDAO.getInstance().
 	        getSession().
 	        createQuery("select o from ExamOwner o where o.ownerId=:ownerId and o.ownerType=:ownerType", ExamOwner.class).
-	        setParameter("ownerId", ownerId, Long.class).
-	        setParameter("ownerType", ownerType, Integer.class).
+	        setParameter("ownerId", ownerId).
+	        setParameter("ownerType", ownerType).
 	        setCacheable(true).uniqueResult();
 	}
 	
@@ -175,7 +175,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :examOwnerId", Student.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
@@ -183,7 +183,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Student.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
@@ -191,7 +191,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :examOwnerId", Student.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
@@ -199,7 +199,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId", Student.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -213,26 +213,26 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.uniqueId = :classId" +
         			" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
-                    .setParameter("classId", getOwnerId(), Long.class)
+                    .setParameter("classId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
             		"select distinct e from StudentClassEnrollment e, StudentClassEnrollment f where f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId" +
             		" and e.courseOffering.instructionalOffering = f.courseOffering.instructionalOffering and e.student = f.student", StudentClassEnrollment.class)
-                    .setParameter("configId", getOwnerId(), Long.class)
+                    .setParameter("configId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId", StudentClassEnrollment.class)
-                    .setParameter("courseId", getOwnerId(), Long.class)
+                    .setParameter("courseId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
             return ExamOwnerDAO.getInstance().getSession().createQuery(
                     "select e from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class)
-                    .setParameter("offeringId", getOwnerId(), Long.class)
+                    .setParameter("offeringId", getOwnerId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -247,7 +247,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :examOwnerId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
@@ -255,7 +255,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
@@ -263,7 +263,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :examOwnerId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
@@ -271,7 +271,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -285,8 +285,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeConfig : 
@@ -294,8 +294,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeCourse : 
@@ -303,8 +303,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .list();
         case sOwnerTypeOffering : 
@@ -312,8 +312,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select distinct e.student.uniqueId from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .list();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -327,9 +327,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and " +
                 "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                .setParameter("examOwnerId", getOwnerId(), Long.class)
+                .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                .setParameter("examOwnerId", getOwnerId())
                 .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -341,9 +341,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -355,9 +355,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -369,9 +369,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -385,9 +385,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -399,9 +399,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -413,9 +413,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -427,9 +427,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -443,9 +443,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -457,9 +457,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -471,9 +471,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and  " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -485,9 +485,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -501,9 +501,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeClass)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -515,9 +515,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -529,9 +529,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -543,9 +543,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
                     "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering, Integer.class)
-                    .setParameter("examTypeId", getExam().getExamType().getUniqueId(), Long.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("ownerType", ExamOwner.sOwnerTypeOffering)
+                    .setParameter("examTypeId", getExam().getExamType().getUniqueId())
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Exam exam = (Exam)o[1];
@@ -564,7 +564,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                 "where c.uniqueId = :examOwnerId and " +
                 "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
-                .setParameter("examOwnerId", getOwnerId(), Long.class)
+                .setParameter("examOwnerId", getOwnerId())
                 .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -578,7 +578,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -592,7 +592,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -606,7 +606,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select e.student.uniqueId, a from Assignment a, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and " +
                     "e.student=f.student and f.clazz = a.clazz and a.solution.commited = true", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Assignment assignment = (Assignment)o[1];
@@ -626,9 +626,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "where c.uniqueId = :examOwnerId and e.student=f.student and "+
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
-                .setParameter("examOwnerId", getOwnerId(), Long.class)
-                .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), Integer.class)
-                .setParameter("periodId", periodId, Long.class)
+                .setParameter("examOwnerId", getOwnerId())
+                .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
+                .setParameter("periodId", periodId)
                 .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -643,9 +643,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), Integer.class)
-                    .setParameter("periodId", periodId, Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
+                    .setParameter("periodId", periodId)
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -660,9 +660,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where co.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), Integer.class)
-                    .setParameter("periodId", periodId, Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
+                    .setParameter("periodId", periodId)
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -677,9 +677,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and "+
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate", Object[].class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), Integer.class)
-                    .setParameter("periodId", periodId, Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
+                    .setParameter("periodId", periodId)
                     .setCacheable(true).list()) {
                 Long studentId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -698,7 +698,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :examOwnerId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeConfig : 
@@ -706,7 +706,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeCourse : 
@@ -714,7 +714,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :examOwnerId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeOffering : 
@@ -722,7 +722,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());
@@ -736,8 +736,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeConfig : 
@@ -745,8 +745,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.clazz c  " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeCourse : 
@@ -754,8 +754,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         case sOwnerTypeOffering : 
@@ -763,8 +763,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "select count(distinct e.student) from " +
                     "StudentClassEnrollment e inner join e.courseOffering co  " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.courseOffering.uniqueId=:courseOfferingId", Number.class)
-                    .setParameter("examOwnerId", getOwnerId(), Long.class)
-                    .setParameter("courseOfferingId", co.getUniqueId(), Long.class)
+                    .setParameter("examOwnerId", getOwnerId())
+                    .setParameter("courseOfferingId", co.getUniqueId())
                     .setCacheable(true)
                     .uniqueResult().intValue();
         default : throw new RuntimeException("Unknown owner type "+getOwnerType());

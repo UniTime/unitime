@@ -96,7 +96,7 @@ public class ServiceProviders implements AdminTable {
 		
 		for (EventServiceProvider provider: EventServiceProviderDAO.getInstance().getSession().createQuery(
 				"from EventServiceProvider where session is null or session.uniqueId = :sessionId", EventServiceProvider.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+				.setParameter("sessionId", sessionId).setCacheable(true).list()) {
 			if (provider.getSession() == null) { // global
 				Record r = data.addRecord(provider.getUniqueId());
 				r.setField(0, provider.getReference(), editGlobal);
@@ -137,7 +137,7 @@ public class ServiceProviders implements AdminTable {
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		for (EventServiceProvider provider: EventServiceProviderDAO.getInstance().getSession().createQuery(
 				"from EventServiceProvider where session is null or session.uniqueId = :sessionId", EventServiceProvider.class)
-				.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).setCacheable(true).list()) {
+				.setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).setCacheable(true).list()) {
 			if (provider.getSession() == null) { // global
 				if (!context.hasPermission(Right.EventServiceProviderEditGlobal)) continue;
 			} else if (provider.getDepartment() == null) { // session
@@ -225,7 +225,7 @@ public class ServiceProviders implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(provider);
+		hibSession.remove(provider);
 	}
 	
 	@Override

@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseMessageLog;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "message_log")
 public class MessageLog extends BaseMessageLog {
 	private static final long serialVersionUID = 1L;

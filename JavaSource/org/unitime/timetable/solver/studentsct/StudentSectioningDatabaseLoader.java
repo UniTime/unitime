@@ -2562,7 +2562,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch io.reservations as r "+
                 "where " +
                 "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true", InstructionalOffering.class).
-                setParameter("sessionId", session.getUniqueId().longValue(), Long.class).
+                setParameter("sessionId", session.getUniqueId().longValue()).
                 setFetchSize(1000).list();
         setPhase("Loading course offerings...", offerings.size());
         for (InstructionalOffering io: offerings) {
@@ -2574,10 +2574,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         List<DistributionPref> distPrefs = hibSession.createQuery(
         		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
         		" and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
-        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), String.class)
-        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, String.class)
-        		.setParameter("pref", PreferenceLevel.sRequired, String.class)
-        		.setParameter("sessionId", iSessionId, Long.class)
+        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+        		.setParameter("pref", PreferenceLevel.sRequired)
+        		.setParameter("sessionId", iSessionId)
         		.list();
         if (!distPrefs.isEmpty()) {
         	setPhase("Loading distribution preferences...", distPrefs.size());
@@ -2613,7 +2613,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch s.waitlists as w " +
                     (iLoadStudentInfo ? "left join fetch s.areaClasfMajors as a left join fetch s.groups as g " : "") +*/
                     "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
-                    setParameter("sessionId", session.getUniqueId().longValue(), Long.class).
+                    setParameter("sessionId", session.getUniqueId().longValue()).
                     setFetchSize(1000).list();
             if (iValidateOverrides && iValidationProvider != null) {
             	validateOverrides(hibSession, students);
@@ -2869,7 +2869,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 classAssignments = new Hashtable();
                 List<Object[]> enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId", Object[].class).
-                    setParameter("sessionId", session.getUniqueId().longValue(), Long.class).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue()).setFetchSize(1000).list();
                 setPhase("Loading projected class assignments...", enrollments.size());
                 for (Iterator<Object[]> i=enrollments.iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next(); incProgress();
@@ -2966,7 +2966,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 classAssignments = new Hashtable();
                 List enrollments = hibSession.createQuery("select distinct se.studentId, se.clazz.uniqueId from StudentEnrollment se where "+
                     "se.solution.commited=true and se.solution.owner.session.uniqueId=:sessionId").
-                    setParameter("sessionId", session.getUniqueId().longValue(), Long.class).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue()).setFetchSize(1000).list();
                 setPhase("Loading last-like class assignments...", enrollments.size());
                 for (Iterator i=enrollments.iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next(); incProgress();
@@ -2990,7 +2990,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     " (cx.permId=null and d.subjectArea=cx.subjectArea and d.courseNbr=cx.courseNbr) or "+
                     " (cx.permId!=null and cx.permId=d.coursePermId)) "+
                     "order by s.uniqueId, d.priority, d.uniqueId").
-                    setParameter("sessionId", session.getUniqueId().longValue(), Long.class).setFetchSize(1000).list();
+                    setParameter("sessionId", session.getUniqueId().longValue()).setFetchSize(1000).list();
             setPhase("Loading last-like course requests...", enrollments.size());
             Hashtable lastLikeStudentTable = new Hashtable();
             for (Iterator i=enrollments.iterator();i.hasNext();) {
@@ -3013,7 +3013,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
 				"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", SectioningInfo.class)
-				.setParameter("sessionId", iSessionId, Long.class)
+				.setParameter("sessionId", iSessionId)
 				.list();
         	setPhase("Loading sectioning infos...", infos.size());
         	for (SectioningInfo info : infos) {
@@ -3210,13 +3210,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 			for (CourseDemand cd: s.getCourseDemands()) {
 				int crit = isCritical(cd, critical);
 				if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
-					cd.setCritical(crit); hibSession.update(cd); changed = true;
+					cd.setCritical(crit); hibSession.merge(cd); changed = true;
 				}
 			}
 			for (AdvisorCourseRequest acr: s.getAdvisorCourseRequests()) {
 				int crit = acr.isCritical(critical);
 				if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
-					acr.setCritical(crit); hibSession.update(acr);
+					acr.setCritical(crit); hibSession.merge(acr);
 				}
 			}
 			if (changed) {

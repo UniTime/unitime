@@ -150,7 +150,7 @@ public abstract class BaseCourseCatalog implements Serializable {
 
 	@OneToMany(cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@JoinColumn(name = "course_catalog_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseSubpartCredit> getSubparts() { return iSubparts; }
 	public void setSubparts(Set<CourseSubpartCredit> subparts) { iSubparts = subparts; }
 	public void addTosubparts(CourseSubpartCredit courseSubpartCredit) {

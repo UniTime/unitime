@@ -39,7 +39,7 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "settings")
 public class Settings extends BaseSettings {
 	private static final long serialVersionUID = 1L;
@@ -81,7 +81,7 @@ public class Settings extends BaseSettings {
 
 	        while (i.hasNext()) {
 	            ManagerSettings mgrSettings = (ManagerSettings) i.next();
-				hibSession.update(mgrSettings);
+				hibSession.merge(mgrSettings);
 				
 	            if(mgrSettings.getKey().getUniqueId().intValue()==keyId.intValue()) {
 	                data[0] = mgrSettings.getUniqueId().toString();

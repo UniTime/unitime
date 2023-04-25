@@ -184,7 +184,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						if (contact == null) {
 							contact = hibSession.createQuery(
 									"from EventContact where externalUniqueId = :externalId", EventContact.class)
-									.setParameter("externalId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
+									.setParameter("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
 						}
 						if (contact == null) {
 							contact = new EventContact();
@@ -195,7 +195,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							contact.setAcademicTitle(c.getAcademicTitle());
 							contact.setEmailAddress(c.getEmail());
 							contact.setPhone(c.getPhone());
-							hibSession.save(contact);
+							hibSession.persist(contact);
 						}
 						event.getAdditionalContacts().add(contact);
 					}				
@@ -235,7 +235,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			if (main == null || main.getExternalUniqueId() == null || !main.getExternalUniqueId().equals(request.getEvent().getContact().getExternalId())) {
 				main = hibSession.createQuery(
 						"from EventContact where externalUniqueId = :externalId", EventContact.class)
-						.setParameter("externalId", request.getEvent().getContact().getExternalId(), String.class).setMaxResults(1).uniqueResult();
+						.setParameter("externalId", request.getEvent().getContact().getExternalId()).setMaxResults(1).uniqueResult();
 				if (main == null) {
 					main = new EventContact();
 					main.setExternalUniqueId(request.getEvent().getContact().getExternalId());
@@ -296,7 +296,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
     						}
 							meeting.setStatus(Meeting.Status.CANCELLED);
 							meeting.setApprovalDate(now);
-							hibSession.update(meeting);
+							hibSession.merge(meeting);
 							cancelledMeetings.add(meeting);
 							response.addCancelledMeeting(m);
 						}
@@ -306,7 +306,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 								throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
 							meeting.setStartOffset(m.getStartOffset());
 							meeting.setStopOffset(m.getEndOffset());
-							hibSession.update(meeting);
+							hibSession.merge(meeting);
 							response.addUpdatedMeeting(m);
 							updatedMeetings.add(meeting);
 						}
@@ -385,7 +385,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							if (contact == null) {
 								contact = hibSession.createQuery(
 										"from EventContact where externalUniqueId = :externalId", EventContact.class)
-										.setParameter("externalId", c.getExternalId(), String.class).setMaxResults(1).uniqueResult();
+										.setParameter("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
 							}
 							if (contact == null) {
 								contact = new EventContact();
@@ -396,7 +396,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 								contact.setAcademicTitle(c.getAcademicTitle());
 								contact.setEmailAddress(c.getEmail());
 								contact.setPhone(c.getPhone());
-								hibSession.save(contact);
+								hibSession.persist(contact);
 							}
 							meeting.getMeetingContacts().add(contact);
 						}
@@ -649,14 +649,14 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			}
 			
 			if (event.getUniqueId() == null) {
-				hibSession.save(event);
+				hibSession.persist(event);
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 			} else if (event.getMeetings().isEmpty()) {
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 				response.getEvent().setId(null);
-				hibSession.delete(event);
+				hibSession.remove(event);
 			} else {
-				hibSession.update(event);
+				hibSession.merge(event);
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 			}
 			
@@ -679,12 +679,12 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and l.ignoreRoomCheck = false and " +
 				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1",
 				Meeting.class)
-				.setParameter("startTime", meeting.getStartSlot(), Integer.class)
-				.setParameter("stopTime", meeting.getEndSlot(), Integer.class)
-				.setParameter("meetingDate", meeting.getMeetingDate(), Date.class)
-				.setParameter("locationdId", meeting.getLocation().getId(), Long.class)
-				.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId(), Long.class)
-				.setParameter("eventId", eventId == null ? -1 : eventId, Long.class)
+				.setParameter("startTime", meeting.getStartSlot())
+				.setParameter("stopTime", meeting.getEndSlot())
+				.setParameter("meetingDate", meeting.getMeetingDate())
+				.setParameter("locationdId", meeting.getLocation().getId())
+				.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId())
+				.setParameter("eventId", eventId == null ? -1 : eventId)
 				.list()) {
 			
 			MeetingConflictInterface conflict = new MeetingConflictInterface();

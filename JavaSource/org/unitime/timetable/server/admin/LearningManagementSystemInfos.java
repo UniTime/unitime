@@ -147,7 +147,7 @@ public class LearningManagementSystemInfos implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(lmsInfo);
+		hibSession.remove(lmsInfo);
 	}
 
 	@Override

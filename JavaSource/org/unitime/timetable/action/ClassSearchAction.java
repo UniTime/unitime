@@ -483,12 +483,12 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	        if (form.getFilterNeedInstructor()) {
 	        	query.append(" and (select sum(tr.teachingRequest.nbrInstructors) from TeachingClassRequest tr where tr.assignInstructor = true and  tr.teachingClass = c) > 0");
 	        }
-			Query q = hibSession.createQuery(query.toString());
+			Query<Object[]> q = hibSession.createQuery(query.toString(), Object[].class);
 			q.setFetchSize(1000);
 			if (courseNbr != null && courseNbr.length() > 0) {
 				if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
 	            	courseNbr = courseNbr.toUpperCase();
-				q.setParameter("courseNbr", courseNbr.replace('*', '%'), String.class);
+				q.setParameter("courseNbr", courseNbr.replace('*', '%'));
 			}
 			q.setCacheable(true);
 	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));
@@ -518,8 +518,8 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 			// only days selected -> create time location of given days all day long (all location assigned in the given days overlap)
 			
 			Debug.debug(" --- Filter classes ---");
-			for (Iterator i=q.list().iterator();i.hasNext();) {
-				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
+			for (Object[] o: q.list()) {
+				Class_ c = (Class_)o[0];
 				if (doFilterInstructor) {
 					boolean filterLine = true;
 					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {

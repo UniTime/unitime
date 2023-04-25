@@ -67,7 +67,7 @@ public class AttachmentType extends BaseAttachmentType implements Comparable<Att
 					"from AttachmentType order by label", AttachmentType.class).setCacheable(true).list();
 		else
 			return AttachmentTypeDAO.getInstance().getSession().createQuery(
-					"from AttachmentType where bitand(visibility, :flag) = :flag order by label", AttachmentType.class).setParameter("flag", flag, Integer.class).setCacheable(true).list();
+					"from AttachmentType where bitand(visibility, :flag) = :flag order by label", AttachmentType.class).setParameter("flag", flag).setCacheable(true).list();
 	}
 	
 	public static List<AttachmentType> listTypes(VisibilityFlag... flags) {
@@ -82,7 +82,7 @@ public class AttachmentType extends BaseAttachmentType implements Comparable<Att
 		if (reference == null) return null;
 		return hibSession.createQuery(
 				"from AttachmentType t where t.reference = :reference", AttachmentType.class)
-				.setParameter("reference", reference, String.class)
+				.setParameter("reference", reference)
 				.setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 }

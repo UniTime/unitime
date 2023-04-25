@@ -140,7 +140,7 @@ public class Programs implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(program);		
+		hibSession.remove(program);		
 	}
 
 	@Override

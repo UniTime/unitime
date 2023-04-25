@@ -138,7 +138,7 @@ public class OfferingConsentTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(consent);
+		hibSession.remove(consent);
 	}
 
 	@Override

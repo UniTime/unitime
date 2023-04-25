@@ -80,12 +80,12 @@ public class SaveOrUpdateScriptBackend implements GwtRpcImplementation<SaveOrUpd
 			}
 			
 			for (ScriptParameter parameter: params.values()) {
-				hibSession.delete(parameter);
+				hibSession.remove(parameter);
 				script.getParameters().remove(parameter);
 			}
 		} else {
 			for (Iterator<ScriptParameter> i = script.getParameters().iterator(); i.hasNext(); ) {
-				hibSession.delete(i.next());
+				hibSession.remove(i.next());
 				i.remove();
 			}
 		}

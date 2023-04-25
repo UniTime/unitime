@@ -58,7 +58,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         for (Object[] o: StudentDAO.getInstance().getSession().createQuery(
         		"select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId",
         		Object[].class)
-        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		.setParameter("sessionId", session.getUniqueId()).list()) {
             if (o[2]!=null)
                 iStudentNames.put((Long)o[0], (String)o[2]+(o[3]==null?"":" "+(String)o[3])+(o[4]==null?"":" "+(String)o[4]));
             else if (o[1]!=null)

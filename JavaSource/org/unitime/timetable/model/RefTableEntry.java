@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseRefTableEntry;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class RefTableEntry extends BaseRefTableEntry {
 	private static final long serialVersionUID = 1L;

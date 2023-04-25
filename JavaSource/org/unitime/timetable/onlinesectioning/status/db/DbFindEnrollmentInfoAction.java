@@ -181,7 +181,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				
 				request: for (CourseRequest request: helper.getHibSession().createQuery(
 						"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class
-						).setParameter("courseId", course.getUniqueId(), Long.class).setCacheable(true).list()) {
+						).setParameter("courseId", course.getUniqueId()).setCacheable(true).list()) {
 					
 					if (checkOverrides && !request.isRequestApproved() && !request.isRequestNotNeeded() && request.getClassEnrollments().isEmpty()) continue;
 					
@@ -394,7 +394,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			if (offering == null) return ret;
 			List<CourseRequest> requests = helper.getHibSession().createQuery(
 					"from CourseRequest where courseOffering.instructionalOffering.uniqueId = :offeringId", CourseRequest.class
-					).setParameter("offeringId", offering.getUniqueId(), Long.class).setCacheable(true).list();
+					).setParameter("offeringId", offering.getUniqueId()).setCacheable(true).list();
 			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			boolean checkOverrides = !query().hasAttribute("override");
 			

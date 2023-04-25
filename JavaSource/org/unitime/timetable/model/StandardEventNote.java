@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.StandardEventNoteDAO;
  * @author Stephanie Schluttenhofer, Zuzana Mullerova, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "standard_event_note")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="discriminator", discriminatorType = DiscriminatorType.STRING)

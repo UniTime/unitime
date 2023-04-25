@@ -196,7 +196,7 @@ public abstract class BaseLocation implements Serializable {
 	@JoinTable(name = "room_join_room_feature",
 		joinColumns = { @JoinColumn(name = "room_id") },
 		inverseJoinColumns = { @JoinColumn(name = "feature_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomFeature> getFeatures() { return iFeatures; }
 	public void setFeatures(Set<RoomFeature> features) { iFeatures = features; }
 	public void addTofeatures(RoomFeature roomFeature) {
@@ -208,7 +208,7 @@ public abstract class BaseLocation implements Serializable {
 	@JoinTable(name = "room_exam_type",
 		joinColumns = { @JoinColumn(name = "location_id") },
 		inverseJoinColumns = { @JoinColumn(name = "exam_type_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamType> getExamTypes() { return iExamTypes; }
 	public void setExamTypes(Set<ExamType> examTypes) { iExamTypes = examTypes; }
 	public void addToexamTypes(ExamType examType) {
@@ -217,7 +217,7 @@ public abstract class BaseLocation implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamLocationPref> getExamPreferences() { return iExamPreferences; }
 	public void setExamPreferences(Set<ExamLocationPref> examPreferences) { iExamPreferences = examPreferences; }
 	public void addToexamPreferences(ExamLocationPref examLocationPref) {
@@ -226,7 +226,7 @@ public abstract class BaseLocation implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "rooms")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToassignments(Assignment assignment) {
@@ -238,7 +238,7 @@ public abstract class BaseLocation implements Serializable {
 	@JoinTable(name = "room_group_room",
 		joinColumns = { @JoinColumn(name = "room_id") },
 		inverseJoinColumns = { @JoinColumn(name = "room_group_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomGroup> getRoomGroups() { return iRoomGroups; }
 	public void setRoomGroups(Set<RoomGroup> roomGroups) { iRoomGroups = roomGroups; }
 	public void addToroomGroups(RoomGroup roomGroup) {
@@ -247,7 +247,7 @@ public abstract class BaseLocation implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "room", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
 	public void addToroomDepts(RoomDept roomDept) {

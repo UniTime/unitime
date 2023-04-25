@@ -154,7 +154,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         		if (ApplicationProperty.TimeGridShowAllCommitted.isTrue()) {
         			for (Long id: SolutionDAO.getInstance().getSession().createQuery(
             				"select s.uniqueId from Solution s where s.commited = true and s.owner.session.uniqueId = :sessionId", Long.class)
-            				.setParameter("sessionId", acadSession.getUniqueId(), Long.class).setCacheable(true).list()) {
+            				.setParameter("sessionId", acadSession.getUniqueId()).setCacheable(true).list()) {
             			if (solutionIdsStr == null)
             				solutionIdsStr = id.toString();
             			else
@@ -164,7 +164,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
         			for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
                 		for (Long id: SolutionDAO.getInstance().getSession().createQuery(
                 				"select s.uniqueId from Solution s where s.commited = true and s.owner.uniqueId = :groupId", Long.class)
-                				.setParameter("groupId", g.getUniqueId(), Long.class).setCacheable(true).list()) {
+                				.setParameter("groupId", g.getUniqueId()).setCacheable(true).list()) {
                 			if (solutionIdsStr == null)
                 				solutionIdsStr = id.toString();
                 			else
@@ -443,7 +443,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				"from ItypeDesc where " +
     				"itype in (select s.itype.itype from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId) " +
     				"and parent is null order by itype", ItypeDesc.class
-    				).setParameter("sessionId", acadSession.getUniqueId(), Long.class).list()) {
+    				).setParameter("sessionId", acadSession.getUniqueId()).list()) {
 				response.addAssignedLegend(cx.getInstructionalTypeColor(it.getItype()), it.getDesc());
 			}
         }

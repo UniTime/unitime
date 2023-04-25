@@ -38,7 +38,7 @@ import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solver_predef_setting")
 public class SolverPredefinedSetting extends BaseSolverPredefinedSetting {
 	private static final long serialVersionUID = 1L;

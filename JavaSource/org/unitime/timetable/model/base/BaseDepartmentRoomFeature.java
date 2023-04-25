@@ -52,7 +52,7 @@ public abstract class BaseDepartmentRoomFeature extends RoomFeature implements S
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "department_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 

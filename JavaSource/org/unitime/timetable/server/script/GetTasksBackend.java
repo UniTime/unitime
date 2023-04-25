@@ -52,7 +52,7 @@ public class GetTasksBackend implements GwtRpcImplementation<GetTasksRpcRequest,
 		GwtRpcResponseList<TaskInterface> tasks = new GwtRpcResponseList<TaskInterface>();
 		
 		for (PeriodicTask t: PeriodicTaskDAO.getInstance().getSession().createQuery(
-				"from PeriodicTask where session.uniqueId = :sessionId", PeriodicTask.class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
+				"from PeriodicTask where session.uniqueId = :sessionId", PeriodicTask.class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId())
 				.setCacheable(true).list()) {
 			tasks.add(getTask(t, context));
 		}

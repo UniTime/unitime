@@ -163,7 +163,7 @@ public class StudentGroupTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 	
 	@Override

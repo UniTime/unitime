@@ -143,38 +143,38 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		Transaction tx = null;
 		try {
 		    tx = hibSession.beginTransaction();
-		    for (Location loc  : hibSession.createQuery("from Location where session.uniqueId = :sessionId", Location.class).setParameter("sessionId", id, Long.class).list()) {
+		    for (Location loc  : hibSession.createQuery("from Location where session.uniqueId = :sessionId", Location.class).setParameter("sessionId", id).list()) {
                 loc.getFeatures().clear();
                 loc.getRoomGroups().clear();
-                hibSession.update(loc);
+                hibSession.merge(loc);
             }
 		    /*
-            for (Iterator i=hibSession.createQuery("from Exam where session.uniqueId=:sessionId", Exam.class).setParameter("sessionId", id, Long.class).iterate();i.hasNext();) {
+            for (Iterator i=hibSession.createQuery("from Exam where session.uniqueId=:sessionId", Exam.class).setParameter("sessionId", id).iterate();i.hasNext();) {
                 Exam x = (Exam)i.next();
                 for (Iterator j=x.getConflicts().iterator();j.hasNext();) {
                     ExamConflict conf = (ExamConflict)j.next();
-                    hibSession.delete(conf);
+                    hibSession.remove(conf);
                     j.remove();
                 }
-                hibSession.update(x);
+                hibSession.merge(x);
             }
             */
             hibSession.flush();
             hibSession.createQuery(
 	                    "delete DistributionPref p where p.owner in (select s from Session s where s.uniqueId=:sessionId)").
-	                    setParameter("sessionId", id, Long.class).
+	                    setParameter("sessionId", id).
 	                    executeUpdate();
 		    hibSession.createQuery(
                 "delete InstructionalOffering o where o.session.uniqueId=:sessionId").
-                setParameter("sessionId", id, Long.class).
+                setParameter("sessionId", id).
                 executeUpdate();
             hibSession.createQuery(
                 "delete Department d where d.session.uniqueId=:sessionId").
-                setParameter("sessionId", id, Long.class).
+                setParameter("sessionId", id).
                 executeUpdate();
 		    hibSession.createQuery(
 		            "delete Session s where s.uniqueId=:sessionId").
-		            setParameter("sessionId", id, Long.class).
+		            setParameter("sessionId", id).
                     executeUpdate();
 		    String[] a = { "DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref" };
 		    for (String str : a) {       
@@ -290,9 +290,9 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 	public static Session getSessionUsingInitiativeYearTerm(
 			String academicInitiative, String academicYear, String academicTerm, org.hibernate.Session hibSession) {
 		return  hibSession.createQuery("from Session s where s.academicInitiative = :academicInitiative and s.academicYear = :academicYear and s.academicTerm = :academicTerm", Session.class)
-			         .setParameter("academicInitiative", academicInitiative, String.class)
-			         .setParameter("academicYear", academicYear, String.class)
-			         .setParameter("academicTerm", academicTerm, String.class)
+			         .setParameter("academicInitiative", academicInitiative)
+			         .setParameter("academicYear", academicYear)
+			         .setParameter("academicTerm", academicTerm)
 			         .setCacheable(true)
 			         .uniqueResult();	
 		
@@ -688,7 +688,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
         return ExamDAO.getInstance().getSession().
                 createQuery("select count(x) from StudentClassEnrollment x " +
                         "where x.student.session.uniqueId=:sessionId", Number.class).
-                setParameter("sessionId", sessionId, Long.class).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).uniqueResult().longValue()>0;
 	}
 	
 	@Transient
@@ -785,8 +785,8 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
                 createQuery("select count(e) from FinalExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
                 		"((e.examStatus is null and bitand(s.statusType.status, :flag) > 0) or bitand(e.examStatus, :flag) > 0)",
                 		Number.class)
-                .setParameter("sessionId", getUniqueId(), Long.class)
-                .setParameter("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt(), Integer.class)
+                .setParameter("sessionId", getUniqueId())
+                .setParameter("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt())
                 .setCacheable(true).uniqueResult().longValue() > 0;
 	}
 	
@@ -795,8 +795,8 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
                 createQuery("select count(e) from MidtermExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
                 		"((e.examStatus is null and bitand(s.statusType.status, :flag) > 0) or bitand(e.examStatus, :flag) > 0)",
                 		Number.class)
-                .setParameter("sessionId", getUniqueId(), Long.class)
-                .setParameter("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt(), Integer.class)
+                .setParameter("sessionId", getUniqueId())
+                .setParameter("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt())
                 .setCacheable(true).uniqueResult().longValue() > 0;
 	}
 	
@@ -821,7 +821,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
     	return InstructionalOfferingDAO.getInstance()
 				.getSession()
 				.createQuery("select max(io.snapshotLimitDate) from InstructionalOffering io where io.session.uniqueId = :sessId", Date.class)
-				.setParameter("sessId", getUniqueId().longValue(), Long.class)
+				.setParameter("sessId", getUniqueId().longValue())
 				.uniqueResult();
     }
 }

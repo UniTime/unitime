@@ -77,8 +77,8 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		} else {
 			context.getUser().setProperty("Admin.SolverParameterDef.FilterType", filter[0]);
 			return SolverParameterGroupDAO.getInstance().getSession().createQuery(
-					"from SolverParameterDef where group = :group order by group.order, order, name", SolverParameterDef.class
-					).setParameter("group", Long.valueOf(filter[0]), Long.class).list();
+					"from SolverParameterDef where group.uniqueId = :group order by group.order, order, name", SolverParameterDef.class
+					).setParameter("group", Long.valueOf(filter[0])).list();
 		}
 		
 	}
@@ -152,8 +152,8 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 	
 	protected int nextOrd(Long groupId) {
 		List<SolverParameterDef> defs = SolverParameterGroupDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef where group = :group order by group.order, order, name", SolverParameterDef.class
-				).setParameter("group", groupId, Long.class).list();
+				"from SolverParameterDef where group.uniqueId = :group order by group.order, order, name", SolverParameterDef.class
+				).setParameter("group", groupId).list();
 		int idx = 0;
 		t: while (true) {
 			for (SolverParameterDef t: defs) {
@@ -175,8 +175,8 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		Map<Long, Set<Integer>> g2ords = new HashMap<Long, Set<Integer>>();
 		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
 			for (SolverParameterDef def: SolverParameterGroupDAO.getInstance().getSession().createQuery(
-					"from SolverParameterDef where group != :group order by group.order, order, name", SolverParameterDef.class
-					).setParameter("group", Long.valueOf(filter[0]), Long.class).list()) {
+					"from SolverParameterDef where group.uniqueId != :group order by group.order, order, name", SolverParameterDef.class
+					).setParameter("group", Long.valueOf(filter[0])).list()) {
 				Set<Integer> ords = g2ords.get(def.getGroup().getUniqueId());
 				if (ords == null) {
 					ords = new HashSet<Integer>();
@@ -285,7 +285,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(def);
+		hibSession.remove(def);
 	}
 	
 	@Override

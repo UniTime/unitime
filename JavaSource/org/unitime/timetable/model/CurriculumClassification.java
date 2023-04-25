@@ -43,7 +43,7 @@ import org.unitime.timetable.model.base.BaseCurriculumClassification;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "curriculum_clasf")
 public class CurriculumClassification extends BaseCurriculumClassification implements Comparable<CurriculumClassification> {
 	private static Log sLog = LogFactory.getLog(CurriculumClassification.class);

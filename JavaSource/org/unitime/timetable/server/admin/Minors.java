@@ -101,7 +101,7 @@ public class Minors implements AdminTable {
 						Operation.DELETE,
 						null,
 						null);
-				hibSession.delete(minor);
+				hibSession.remove(minor);
 			} else {
 				boolean changed =
 					!ToolBox.equals(minor.getExternalUniqueId(), r.getField(0)) ||
@@ -236,7 +236,7 @@ public class Minors implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(minor);		
+		hibSession.remove(minor);		
 	}
 
 	@Override

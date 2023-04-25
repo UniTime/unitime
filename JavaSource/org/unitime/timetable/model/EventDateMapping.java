@@ -45,7 +45,7 @@ import org.unitime.timetable.model.dao.EventDateMappingDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "date_mapping")
 public class EventDateMapping extends BaseEventDateMapping implements Comparable<EventDateMapping> {
 	private static final long serialVersionUID = 1L;
@@ -83,13 +83,13 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	public static List<EventDateMapping> findAll(Long sessionId) {
 		return EventDateMappingDAO.getInstance().getSession().createQuery(
 				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset", EventDateMapping.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				.setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 	
 	public static boolean hasMapping(Long sessionId) {
 		return (EventDateMappingDAO.getInstance().getSession().createQuery(
 				"select count(m) from EventDateMapping m where m.session.uniqueId = :sessionId", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Class2EventDateMap getMapping(Long sessionId) {

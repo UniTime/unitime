@@ -96,8 +96,8 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		try {
 			InstructorSurvey is = hibSession.createQuery(
 					"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
-					).setParameter("sessionId", sessionId, Long.class)
-					.setParameter("externalId", survey.getExternalId(), String.class).setMaxResults(1).uniqueResult();
+					).setParameter("sessionId", sessionId)
+					.setParameter("externalId", survey.getExternalId()).setMaxResults(1).uniqueResult();
 			if (is == null && !request.isChanged()) {
 				throw new GwtRpcException(MESSAGES.errorNoInstructorSurvey());
 			}
@@ -111,7 +111,7 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 			} else if (request.isChanged()) {
 				is.getPreferences().clear();
 				for (InstructorCourseRequirement icr: is.getCourseRequirements()) {
-					hibSession.delete(icr);
+					hibSession.remove(icr);
 				}
 				is.getCourseRequirements().clear();
 			}

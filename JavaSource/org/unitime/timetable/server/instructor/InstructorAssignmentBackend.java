@@ -223,7 +223,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 					if (request.equals(oc.getTeachingRequest()) && instructor.equals(oc.getInstructor())) {
 						Debug.info(request.getOffering().getCourseName() + ": UNASSIGN " + instructor.getNameLastFirst());
 						i.remove();
-						hibSession.delete(oc);
+						hibSession.remove(oc);
 					}
 				}
 			}
@@ -233,7 +233,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 					Debug.info(ci.getClassInstructing().getClassLabel(hibSession) + ": UNASSIGN " + instructor.getNameLastFirst());
 					ci.getClassInstructing().getClassInstructors().remove(ci);
 					i.remove();
-					hibSession.delete(ci);
+					hibSession.remove(ci);
 				}
 			}
 		}
@@ -252,7 +252,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 				oc.setTeachingRequest(request);
 				oc.setPercentShare(request.getPercentShare());
 				request.getOffering().getOfferingCoordinators().add(oc);
-				hibSession.save(oc);
+				hibSession.persist(oc);
 			}
 			for (TeachingClassRequest cr: request.getClassRequests()) {
 				if (cr.isAssignInstructor()) {

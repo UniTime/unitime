@@ -159,7 +159,7 @@ public class EventDateMappings implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(mapping);
+		hibSession.remove(mapping);
 	}
 	
 	@Override

@@ -48,7 +48,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "timetable_manager")
 public class TimetableManager extends BaseTimetableManager implements Comparable, Qualifiable, NameInterface {
 	private static final long serialVersionUID = 1L;

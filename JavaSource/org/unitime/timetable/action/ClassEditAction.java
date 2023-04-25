@@ -539,7 +539,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             instr.getClasses().remove(ci);
             c.getClassInstructors().remove(ci);
             hibSession.saveOrUpdate(instr);
-            hibSession.delete(ci);
+            hibSession.remove(ci);
         }
 
         ChangeLog.addChange(

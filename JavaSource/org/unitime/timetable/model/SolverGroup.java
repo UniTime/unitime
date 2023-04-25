@@ -47,7 +47,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solver_group")
 public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;
@@ -108,7 +108,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     			(SolverGroupDAO.getInstance()).
     			getSession().
     			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId", SolverGroup.class).
-    			setParameter("sessionId", sessionId.longValue(), Long.class).
+    			setParameter("sessionId", sessionId.longValue()).
     			setCacheable(true).list());
     }
     
@@ -116,8 +116,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.name=:name", SolverGroup.class).
-			setParameter("sessionId", sessionId.longValue(), Long.class).
-			setParameter("name", name, String.class).
+			setParameter("sessionId", sessionId.longValue()).
+			setParameter("name", name).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;
@@ -128,8 +128,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	List<SolverGroup> groups = (SolverGroupDAO.getInstance()).
 			getSession().
 			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId and sg.abbv=:abbv", SolverGroup.class).
-			setParameter("sessionId", sessionId.longValue(), Long.class).
-			setParameter("abbv", abbv, String.class).
+			setParameter("sessionId", sessionId.longValue()).
+			setParameter("abbv", abbv).
 			setCacheable(true).
 			list();
     	if (groups.isEmpty()) return null;

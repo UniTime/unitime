@@ -129,12 +129,12 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 				return hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode", DepartmentRoomFeature.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
 			else
 				return hibSession.createQuery(
 					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv", GlobalRoomFeature.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", original.getId(), Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
 		} else {
 			return RoomFeatureDAO.getInstance().get(original.getId(), hibSession);
 		}
@@ -146,12 +146,12 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 			RoomFeature feature = hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode", DepartmentRoomFeature.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", featureId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", featureId).setCacheable(true).setMaxResults(1).uniqueResult();
 			if (feature == null)
 				feature = hibSession.createQuery(
 					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
 					"and f.abbv = o.abbv", GlobalRoomFeature.class)
-					.setParameter("sessionId", sessionId, Long.class).setParameter("originalId", featureId, Long.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("sessionId", sessionId).setParameter("originalId", featureId).setCacheable(true).setMaxResults(1).uniqueResult();
 			return feature;
 		} else {
 			return RoomFeatureDAO.getInstance().get(featureId, hibSession);
@@ -270,13 +270,13 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
         	hibSession.saveOrUpdate(location);
         }
         
-        for (RoomFeaturePref p: hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id", RoomFeaturePref.class).setParameter("id", rf.getUniqueId(), Long.class).list()) {
+        for (RoomFeaturePref p: hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id", RoomFeaturePref.class).setParameter("id", rf.getUniqueId()).list()) {
 				p.getOwner().getPreferences().remove(p);
-				hibSession.delete(p);
+				hibSession.remove(p);
 				hibSession.saveOrUpdate(p.getOwner());
 			}
         
-        hibSession.delete(rf);
+        hibSession.remove(rf);
         return true;
 	}
 

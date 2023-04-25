@@ -55,7 +55,7 @@ public class StudentExport extends BaseExport {
 	        
 	        for (Student student: getHibSession().createQuery(
 	        		"select s from Student s where s.session.uniqueId = :sessionId", Student.class)
-	        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+	        		.setParameter("sessionId", session.getUniqueId()).list()) {
 	        	
 	        	Element studentEl = root.addElement("student");
 	        	exportStudent(studentEl, student);

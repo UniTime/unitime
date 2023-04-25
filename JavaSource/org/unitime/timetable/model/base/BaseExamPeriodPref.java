@@ -52,7 +52,7 @@ public abstract class BaseExamPeriodPref extends Preference implements Serializa
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "period_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public ExamPeriod getExamPeriod() { return iExamPeriod; }
 	public void setExamPeriod(ExamPeriod examPeriod) { iExamPeriod = examPeriod; }
 

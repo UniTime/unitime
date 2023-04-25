@@ -136,7 +136,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element managersEl = root.addElement("managers");
 		for (TimetableManager m: new TreeSet<TimetableManager>((List<TimetableManager>)getHibSession().createQuery(
 				"select distinct m from TimetableManager m inner join m.departments d where d.session.uniqueId = :sessionId", TimetableManager.class
-				).setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				).setParameter("sessionId", session.getUniqueId()).list())) {
 			Element managerEl = managersEl.addElement("manager");
 			managerEl.addAttribute("externalId", m.getExternalUniqueId());
 			if (m.getFirstName() != null)
@@ -218,7 +218,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportSolverGroups(Element root, Session session) {
 		Element groupsEl = root.addElement("solverGroups");
 		for (SolverGroup g: new TreeSet<SolverGroup>(getHibSession().createQuery(
-				"from SolverGroup where session.uniqueId = :sessionId", SolverGroup.class).setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				"from SolverGroup where session.uniqueId = :sessionId", SolverGroup.class).setParameter("sessionId", session.getUniqueId()).list())) {
 			Element groupEl = groupsEl.addElement("solverGroup");
 			groupEl.addAttribute("abbreviation", g.getAbbv());
 			if (g.getName() != null)
@@ -233,7 +233,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportDatePatterns(Element root, Session session) {
 		Element patternsEl = root.addElement("datePatterns");
 		for (DatePattern dp: new TreeSet<DatePattern>(getHibSession().createQuery(
-				"from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				"from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", session.getUniqueId()).list())) {
 			Element patternEl = patternsEl.addElement("datePattern");			
 			patternEl.addAttribute("name", dp.getName());
 			patternEl.addAttribute("type", dp.getDatePatternType().name());
@@ -290,7 +290,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 	protected void exportTimePatterns(Element root, Session session) {
 		Element patternsEl = root.addElement("timePatterns");
 		for (TimePattern tp: new TreeSet<TimePattern>(getHibSession().createQuery(
-				"from TimePattern where session.uniqueId = :sessionId", TimePattern.class).setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				"from TimePattern where session.uniqueId = :sessionId", TimePattern.class).setParameter("sessionId", session.getUniqueId()).list())) {
 			Element patternEl = patternsEl.addElement("timePattern");
 			patternEl.addAttribute("name", tp.getName());
 			patternEl.addAttribute("nbrMeetings", tp.getNrMeetings().toString());
@@ -314,12 +314,12 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element examinationPeriodsEl = root.addElement("examinationPeriods");
 		for (ExamType type: new TreeSet<ExamType>(getHibSession().createQuery(
 				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId", ExamType.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				.setParameter("sessionId", session.getUniqueId()).list())) {
 			Element typeEl = examinationPeriodsEl.addElement("periods");
 			typeEl.addAttribute("type", type.getReference());
 			for (ExamPeriod period: new TreeSet<ExamPeriod>(getHibSession().createQuery(
 					"from ExamPeriod p where p.session.uniqueId = :sessionId and p.examType.uniqueId = :typeId", ExamPeriod.class)
-					.setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("typeId", type.getUniqueId(), Long.class).list())) {
+					.setParameter("sessionId", session.getUniqueId()).setParameter("typeId", type.getUniqueId()).list())) {
 				Element periodEl = typeEl.addElement("period");
 				periodEl.addAttribute("date", sDateFormat.format(period.getStartDate()));
 				periodEl.addAttribute("startTime", startSlot2startTime(period.getStartSlot()));
@@ -338,7 +338,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element areasEl = root.addElement("academicAreas");
 		for (AcademicArea area: getHibSession().createQuery(
 				"from AcademicArea where session.uniqueId = :sessionId order by academicAreaAbbreviation", AcademicArea.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			Element areaEl = areasEl.addElement("academicArea");
 			if (area.getExternalUniqueId() != null)
 				areaEl.addAttribute("externalId", area.getExternalUniqueId());
@@ -353,7 +353,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element clasfsEl = root.addElement("academicClassifications");
 		for (AcademicClassification clasf: getHibSession().createQuery(
 				"from AcademicClassification where session.uniqueId = :sessionId order by code", AcademicClassification.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			Element clasfEl = clasfsEl.addElement("academicClassification");
 			if (clasf.getExternalUniqueId() != null)
 				clasfEl.addAttribute("externalId", clasf.getExternalUniqueId());
@@ -368,7 +368,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element majorsEl = root.addElement("posMajors");
 		for (AcademicArea area: getHibSession().createQuery(
 				"from AcademicArea where session.uniqueId = :sessionId order by academicAreaAbbreviation", AcademicArea.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			for (PosMajor major: area.getPosMajors()) {
 				Element majorEl = majorsEl.addElement("posMajor");
 				majorEl.addAttribute("code", major.getCode());
@@ -393,7 +393,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element minorsEl = root.addElement("posMinors");
 		for (AcademicArea area: getHibSession().createQuery(
 				"from AcademicArea where session.uniqueId = :sessionId order by academicAreaAbbreviation", AcademicArea.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			for (PosMinor minor: area.getPosMinors()) {
 				Element minorEl = minorsEl.addElement("posMinor");
 				minorEl.addAttribute("code", minor.getCode());
@@ -410,7 +410,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element degreesEl = root.addElement("degrees");
 		for (Degree degree: getHibSession().createQuery(
 				"from Degree where session.uniqueId = :sessionId order by reference", Degree.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			Element degreeEl = degreesEl.addElement("degree");
 			degreeEl.addAttribute("code", degree.getReference());
 			if (degree.getExternalUniqueId() != null)
@@ -424,7 +424,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element groupsEl = root.addElement("studentGroups");
 		for (StudentGroup group: getHibSession().createQuery(
 				"from StudentGroup where session.uniqueId = :sessionId order by groupAbbreviation", StudentGroup.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			Element groupEl = groupsEl.addElement("studentGroup");
 			if (group.getExternalUniqueId() != null)
 				groupEl.addAttribute("externalId", group.getExternalUniqueId());
@@ -441,7 +441,7 @@ public class AcademicSessionSetupExport extends BaseExport {
 		Element accomodationsEl = root.addElement("studentAccomodations");
 		for (StudentAccomodation acc: getHibSession().createQuery(
 				"from StudentAccomodation where session.uniqueId = :sessionId order by abbreviation", StudentAccomodation.class)
-				.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				.setParameter("sessionId", session.getUniqueId()).list()) {
 			Element accomodationEl = accomodationsEl.addElement("studentAccomodation");
 			if (acc.getExternalUniqueId() != null)
 				accomodationEl.addAttribute("externalId", acc.getExternalUniqueId());

@@ -82,8 +82,8 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
 				 .getSession().createQuery(query, Object[].class)
-				 .setParameter("sessId", getSession().getUniqueId().longValue(), Long.class)
-				 .setParameter("subjectId", sa.getUniqueId().longValue(), Long.class)
+				 .setParameter("sessId", getSession().getUniqueId().longValue())
+				 .setParameter("subjectId", sa.getUniqueId().longValue())
 				 .list());
 		}
 		return(results);
@@ -166,9 +166,9 @@ public class MultipleCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			  .append(" order by sce.clazz.sectionNumberCache,  sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache");
 			for (Object[] result: StudentClassEnrollmentDAO.getInstance()
 					.getSession().createQuery(sb.toString(), Object[].class)
-					.setParameter("studId", studentUniqueId, Long.class)
-					.setParameter("subpartId", subpartId, Long.class)
-					.setParameter("courseId", courseId, Long.class)
+					.setParameter("studId", studentUniqueId)
+					.setParameter("subpartId", subpartId)
+					.setParameter("courseId", courseId)
 					.list()) {
 				String className = createClassString(result[0].toString(), result[1].toString(), result[2].toString());
 				classes.add(className);

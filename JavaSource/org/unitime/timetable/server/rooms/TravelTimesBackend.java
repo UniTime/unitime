@@ -25,11 +25,13 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -91,12 +93,12 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 				hibSession.createQuery(
 						"select distinct l from Location l " +
 						"where l.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and l.uniqueId in (" + ids + ")"), Location.class)
-						.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+						.setParameter("sessionId", sessionId).setCacheable(true).list());
 		
 		List<TravelTime> times = (List<TravelTime>)hibSession.createQuery(
 				"select t from TravelTime t " + 
 				"where t.session.uniqueId = :sessionId" + (ids.isEmpty() ? "" : " and t.location1Id in (" + ids + ") and t.location1Id in (" + ids + ")"), TravelTime.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				.setParameter("sessionId", sessionId).setCacheable(true).list();
 		
 		for (Location location: locations) {
 			TravelTimes.Room room = null;
@@ -129,35 +131,39 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 		if (!request.hasRooms()) return;
 		
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
-
-		String ids = "";
-		for (TravelTimes.Room r: request.getRooms())
-			ids += (ids.isEmpty() ? "" : ",") + r.getId();
-		
-		Session session = SessionDAO.getInstance().get(sessionId);
-		
-		
-		hibSession.createQuery(
-				"delete from TravelTime where session.uniqueId = :sessionId" +
-				(ids.isEmpty() ? "" : " and location1Id in (" + ids + ") and location2Id in (" + ids + ")"))
-				.setParameter("sessionId", sessionId, Long.class)
-				.executeUpdate();
-		
-		for (TravelTimes.Room room: request.getRooms()) {
-			for (TravelTimes.Room other: request.getRooms()) {
-				if (room.getId().compareTo(other.getId()) < 0) {
-					Integer distance = room.getTravelTime(other);
-					if (distance != null) {
-						TravelTime time = new TravelTime();
-						time.setSession(session);
-						time.setLocation1Id(room.getId());
-						time.setLocation2Id(other.getId());
-						time.setDistance(distance);
-						hibSession.saveOrUpdate(time);
+		Transaction tx = hibSession.beginTransaction();
+		try {
+			String ids = "";
+			for (TravelTimes.Room r: request.getRooms())
+				ids += (ids.isEmpty() ? "" : ",") + r.getId();
+			
+			Session session = SessionDAO.getInstance().get(sessionId);
+			
+			hibSession.createMutationQuery(
+					"delete from TravelTime where session.uniqueId = :sessionId" +
+					(ids.isEmpty() ? "" : " and location1Id in (" + ids + ") and location2Id in (" + ids + ")"))
+					.setParameter("sessionId", sessionId)
+					.executeUpdate();
+			
+			for (TravelTimes.Room room: request.getRooms()) {
+				for (TravelTimes.Room other: request.getRooms()) {
+					if (room.getId().compareTo(other.getId()) < 0) {
+						Integer distance = room.getTravelTime(other);
+						if (distance != null) {
+							TravelTime time = new TravelTime();
+							time.setSession(session);
+							time.setLocation1Id(room.getId());
+							time.setLocation2Id(other.getId());
+							time.setDistance(distance);
+							hibSession.persist(time);
+						}
 					}
 				}
 			}
+			tx.commit();
+		} catch (Exception e) {
+			if (tx.isActive()) tx.rollback();
+			throw new GwtRpcException("Failed to save travel times: " + e.getMessage(), e);
 		}
-		hibSession.flush();
 	}
 }

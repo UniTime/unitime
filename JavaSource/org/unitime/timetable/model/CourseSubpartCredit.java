@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseCourseSubpartCredit;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "course_subpart_credit")
 public class CourseSubpartCredit extends BaseCourseSubpartCredit {
 	private static final long serialVersionUID = 1L;

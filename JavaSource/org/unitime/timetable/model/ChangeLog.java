@@ -48,7 +48,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "change_log")
 public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -369,11 +369,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         (source==null?"":"and ch.sourceString=:source ") +
                         "and ch.operationString != :note " +
                         "order by ch.timeStamp desc");
-            q.setParameter("objectUniqueId", objectUniqueId.longValue(), Long.class);
-            q.setParameter("objectType", objectType, String.class);
-            q.setParameter("note", Operation.NOTE.toString(), String.class);
+            q.setParameter("objectUniqueId", objectUniqueId.longValue());
+            q.setParameter("objectType", objectType);
+            q.setParameter("note", Operation.NOTE.toString());
             if (source!=null)
-                q.setParameter("source", source.name(), String.class);
+                q.setParameter("source", source.name());
             q.setMaxResults(1);
             q.setCacheable(true);
             @SuppressWarnings("unchecked")
@@ -399,8 +399,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                             "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                             (source==null?"":"and ch.sourceString=:source ") +
                             "order by ch.timeStamp desc");
-                    q.setParameter("objectType", objectType, String.class);
-                    if (source!=null) q.setParameter("source", source.name(), String.class);
+                    q.setParameter("objectType", objectType);
+                    if (source!=null) q.setParameter("source", source.name());
                     q.setMaxResults(1);
                     @SuppressWarnings("unchecked")
 					List<ChangeLog> logs = q.list();
@@ -422,8 +422,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
                         "order by ch.timeStamp desc");
-                q.setParameter("objectType", objectType, String.class);
-                if (source!=null) q.setParameter("source", source.name(), String.class);
+                q.setParameter("objectType", objectType);
+                if (source!=null) q.setParameter("source", source.name());
                 q.setMaxResults(1);
                 q.setCacheable(true);
                 @SuppressWarnings("unchecked")
@@ -457,10 +457,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
                         "order by ch.timeStamp desc");
-            q.setParameter("objectUniqueId", objectUniqueId.longValue(), Long.class);
-            q.setParameter("objectType", objectType, String.class);
+            q.setParameter("objectUniqueId", objectUniqueId.longValue());
+            q.setParameter("objectType", objectType);
             if (source!=null)
-                q.setParameter("source", source.name(), String.class);
+                q.setParameter("source", source.name());
             q.setMaxResults(n);
             q.setCacheable(true);
             return q.list();
@@ -481,10 +481,10 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
                         (subjAreaId==null?"":"and ch.subjectArea.uniqueId=:subjAreaId ") +
                         (departmentId==null?"":"and ch.department.uniqueId=:departmentId ") + 
                         "order by ch.timeStamp desc");
-            q.setParameter("sessionId", sessionId.longValue(), Long.class);
-            if (managerId!=null) q.setParameter("managerId", managerId.longValue(), Long.class);
-            if (subjAreaId!=null) q.setParameter("subjAreaId", subjAreaId.longValue(), Long.class);
-            if (departmentId!=null) q.setParameter("departmentId", departmentId.longValue(), Long.class);
+            q.setParameter("sessionId", sessionId.longValue());
+            if (managerId!=null) q.setParameter("managerId", managerId.longValue());
+            if (subjAreaId!=null) q.setParameter("subjAreaId", subjAreaId.longValue());
+            if (departmentId!=null) q.setParameter("departmentId", departmentId.longValue());
             q.setMaxResults(n);
             q.setCacheable(true);
             return q.list();

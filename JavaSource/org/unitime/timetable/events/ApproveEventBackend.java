@@ -84,7 +84,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						if (!context.hasPermission(meeting, Right.EventMeetingApprove))
     							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
     						
-    						// hibSession.delete(meeting);
+    						// hibSession.remove(meeting);
     						// i.remove();
     						meeting.setStatus(Meeting.Status.REJECTED);
     						meeting.setApprovalDate(now);
@@ -199,9 +199,9 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			if (event.getMeetings().isEmpty()) {
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 				response.getEvent().setId(null);
-				hibSession.delete(event);
+				hibSession.remove(event);
 			} else {
-				hibSession.update(event);
+				hibSession.merge(event);
 				response.setEvent(EventDetailBackend.getEventDetail(session, event, context));
 			}
 			

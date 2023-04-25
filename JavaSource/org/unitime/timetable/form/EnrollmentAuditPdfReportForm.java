@@ -125,7 +125,7 @@ public class EnrollmentAuditPdfReportForm implements UniTimeForm {
 	                SubjectAreaDAO.getInstance().getSession().createQuery(
 	                        "select distinct co.subjectArea from CourseOffering co where "+
 	                        "co.subjectArea.session.uniqueId=:sessionId", SubjectArea.class)
-	                        .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class)
+	                        .setParameter("sessionId", context.getUser().getCurrentAcademicSessionId())
 	                        .setCacheable(true).list());
 	    } catch (Exception e) {}
 

@@ -78,7 +78,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		StudentSectioningStatus status = (changeStatus() && hasStatus() ? helper.getHibSession().createQuery(
-				"from StudentSectioningStatus where reference = :ref and (session is null or session.uniqueId = :sessionId)", StudentSectioningStatus.class).setParameter("ref", getStatus(), String.class).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).uniqueResult() : null);
+				"from StudentSectioningStatus where reference = :ref and (session is null or session.uniqueId = :sessionId)", StudentSectioningStatus.class).setParameter("ref", getStatus()).setParameter("sessionId", server.getAcademicSession().getUniqueId()).uniqueResult() : null);
 		Date ts = new Date();
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());

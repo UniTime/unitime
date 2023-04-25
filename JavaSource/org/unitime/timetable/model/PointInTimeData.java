@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BasePointInTimeData;
 import org.unitime.timetable.model.dao.PointInTimeDataDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "point_in_time_data")
 public class PointInTimeData extends BasePointInTimeData implements Comparable<Object>{
 
@@ -66,7 +66,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		}
 		return((ArrayList<PointInTimeData>) hibSess
 				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId", PointInTimeData.class)
-				.setParameter("sessionId", acadSessionUniqueId.longValue(), Long.class)
+				.setParameter("sessionId", acadSessionUniqueId.longValue())
 				.list());
 	}
 
@@ -83,7 +83,7 @@ public class PointInTimeData extends BasePointInTimeData implements Comparable<O
 		
 		return((ArrayList<PointInTimeData>) hibSess
 				.createQuery("from PointInTimeData pitd where pitd.session.uniqueId = :sessionId and savedSuccessfully = true", PointInTimeData.class)
-				.setParameter("sessionId", acadSessionUniqueId.longValue(), Long.class)
+				.setParameter("sessionId", acadSessionUniqueId.longValue())
 				.list());
 	}
 

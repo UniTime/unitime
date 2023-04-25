@@ -291,7 +291,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        else
 		        	io.setWaitListMode(OfferingWaitListMode.Disabled);
 		        if (limitedEdit)
-		        	hibSession.update(io);
+		        	hibSession.merge(io);
 	        }
 
 	        if ((!limitedEdit || updateCoordinators) && co.isIsControl().booleanValue()) {
@@ -341,10 +341,10 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        for (OfferingCoordinator coordinator: coordinators) {
 		        	coordinator.getInstructor().getOfferingCoordinators().remove(coordinator);
 		        	io.getOfferingCoordinators().remove(coordinator);
-		        	hibSession.delete(coordinator);
+		        	hibSession.remove(coordinator);
 		        }
 		        if (limitedEdit)
-		        	hibSession.update(io);
+		        	hibSession.merge(io);
 	        }
 
 	        if (!limitedEdit) {
@@ -355,7 +355,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        		llcd = (LastLikeCourseDemand)it.next();
 		        		if (llcd.getCoursePermId() == null){
 			        		llcd.setCoursePermId(permId);
-			        		hibSession.update(llcd);
+			        		hibSession.merge(llcd);
 		        		}
 		        	}
 	        		co.setPermId(permId);
@@ -396,7 +396,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        	CourseCreditUnitConfig origConfig = co.getCredit();
 		        	if (origConfig != null){
 						co.setCredit(null);
-						hibSession.delete(origConfig);
+						hibSession.remove(origConfig);
 		        	}
 		        } else {
 		         	if(co.getCredit() != null){
@@ -432,14 +432,14 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        			if (changed){
 		        				CourseCreditUnitConfig origConfig = co.getCredit();
 		            			co.setCredit(null);
-		            			hibSession.delete(origConfig);
+		            			hibSession.remove(origConfig);
 		            			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
 		            			co.getCredit().setOwner(co);
 		        			}
 		        		} else {
 		        			CourseCreditUnitConfig origConfig = co.getCredit();
 		        			co.setCredit(null);
-		        			hibSession.delete(origConfig);
+		        			hibSession.remove(origConfig);
 		        			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
 		        			co.getCredit().setOwner(co);
 		        		}
@@ -472,7 +472,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 			        }
 			        io.setNotes(form.getNotes() == null || form.getNotes().length() <= 2000 ? form.getNotes() : form.getNotes().substring(0, 2000));
 
-			        hibSession.update(io);
+			        hibSession.merge(io);
 		        }
 		        
 		        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
@@ -633,9 +633,9 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        if (ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
 	        	co.setExternalUniqueId(form.getExternalId() == null || form.getExternalId().isEmpty() ? null : form.getExternalId());
 
-	        form.setInstrOfferingId((Long)hibSession.save(io));
+	        hibSession.persist(io);
 	        
-	        form.setCourseOfferingId((Long)hibSession.save(co));
+	        hibSession.persist(co);
 
 	        if (form.getCreditFormat() != null && !form.getCreditFormat().isEmpty() && !form.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)) {
 	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
@@ -659,6 +659,10 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
             
             hibSession.flush();
             tx.commit();
+            
+            form.setInstrOfferingId(io.getUniqueId());
+	        
+	        form.setCourseOfferingId(co.getUniqueId());
 
             hibSession.refresh(co);
 

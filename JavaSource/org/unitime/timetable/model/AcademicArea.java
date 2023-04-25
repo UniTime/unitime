@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.AcademicAreaDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "academic_area")
 public class AcademicArea extends BaseAcademicArea {
 	private static final long serialVersionUID = 1L;
@@ -82,7 +82,7 @@ public class AcademicArea extends BaseAcademicArea {
 		return AcademicAreaDAO.getInstance().getSession().createQuery(
 				"select a from AcademicArea as a where a.session.uniqueId=:sessionId " +
 	    		"order by a.academicAreaAbbreviation", AcademicArea.class).
-				setParameter("sessionId", sessionId.longValue(), Long.class).setCacheable(true).list();
+				setParameter("sessionId", sessionId.longValue()).setCacheable(true).list();
 	}
 	
     /**
@@ -122,8 +122,8 @@ public class AcademicArea extends BaseAcademicArea {
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.academicAreaAbbreviation=:abbv", AcademicArea.class).
-             setParameter("sessionId", sessionId.longValue(), Long.class).
-             setParameter("abbv", abbv, String.class).
+             setParameter("sessionId", sessionId.longValue()).
+             setParameter("abbv", abbv).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -138,8 +138,8 @@ public class AcademicArea extends BaseAcademicArea {
                     "select a from AcademicArea a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.externalUniqueId=:externalId", AcademicArea.class).
-             setParameter("sessionId", sessionId.longValue(), Long.class).
-             setParameter("externalId", externalId, String.class).
+             setParameter("sessionId", sessionId.longValue()).
+             setParameter("externalId", externalId).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -155,6 +155,6 @@ public class AcademicArea extends BaseAcademicArea {
     public boolean isUsed(org.hibernate.Session hibSession) {
     	return ((hibSession == null ? AcademicAreaDAO.getInstance().getSession() : hibSession).createQuery(
     			"select count(c) from Curriculum c inner join c.academicArea a where a.uniqueId = :areaId", Number.class)
-    			.setParameter("areaId", getUniqueId(), Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+    			.setParameter("areaId", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
     }
 }

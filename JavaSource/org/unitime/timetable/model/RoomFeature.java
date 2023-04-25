@@ -43,7 +43,7 @@ import org.unitime.timetable.model.dao.RoomFeatureDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "room_feature")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="discriminator", discriminatorType = DiscriminatorType.STRING)
@@ -71,18 +71,18 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId) throws HibernateException {
 		return RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label", GlobalRoomFeature.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId, Long featureTypeId) throws HibernateException {
 		if (featureTypeId == null || featureTypeId < 0) {
 			return RoomFeatureDAO.getInstance().getSession().createQuery(
 					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType is null order by label", GlobalRoomFeature.class
-					).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+					).setParameter("sessionId", sessionId).setCacheable(true).list();
 		} else {
 			return RoomFeatureDAO.getInstance().getSession().createQuery(
 					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label", GlobalRoomFeature.class
-					).setParameter("sessionId", sessionId, Long.class).setParameter("featureTypeId", featureTypeId, Long.class).setCacheable(true).list();
+					).setParameter("sessionId", sessionId).setParameter("featureTypeId", featureTypeId).setCacheable(true).list();
 		}
 	}
 
@@ -94,13 +94,13 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		if (dept==null) return null;
 		return RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label", DepartmentRoomFeature.class
-				).setParameter("deptId", dept.getUniqueId(), Long.class).setCacheable(true).list();
+				).setParameter("deptId", dept.getUniqueId()).setCacheable(true).list();
 	}
 	
 	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeaturesInSession(Long sessionId) throws HibernateException {
 		return RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from DepartmentRoomFeature rf where rf.department.session.uniqueId = :sessionId order by label", DepartmentRoomFeature.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 
 
@@ -175,15 +175,15 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		if (this instanceof DepartmentRoomFeature) {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
 				"select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId and d.label=:label and d.department.deptCode=:deptCode", RoomFeature.class)
-				.setParameter("sessionId", session.getUniqueId().longValue(), Long.class)
-				.setParameter("deptCode", ((DepartmentRoomFeature)this).getDeptCode(), String.class)
-				.setParameter("label", getLabel(), String.class)
+				.setParameter("sessionId", session.getUniqueId().longValue())
+				.setParameter("deptCode", ((DepartmentRoomFeature)this).getDeptCode())
+				.setParameter("label", getLabel())
 				.setCacheable(true).list();
 		} else {
 			matchingFeatures = RoomFeatureDAO.getInstance().getSession().createQuery(
 			"select g from GlobalRoomFeature g where g.session.uniqueId=:sessionId and g.label=:label", RoomFeature.class)
-			.setParameter("sessionId", session.getUniqueId().longValue(), Long.class)
-			.setParameter("label", getLabel(), String.class)
+			.setParameter("sessionId", session.getUniqueId().longValue())
+			.setParameter("label", getLabel())
 			.setCacheable(true).list();
 		}
 		return (matchingFeatures.size() == 1 ? (RoomFeature)matchingFeatures.get(0) : null);

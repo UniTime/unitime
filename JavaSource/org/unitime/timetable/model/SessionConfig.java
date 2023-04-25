@@ -38,7 +38,7 @@ import org.unitime.timetable.model.dao.SessionConfigDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "session_config")
 public class SessionConfig extends BaseSessionConfig {
 	private static final long serialVersionUID = 1L;
@@ -52,13 +52,13 @@ public class SessionConfig extends BaseSessionConfig {
 		if (sessionId == null) return null;
         return SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class
-        		).setParameter("key", key, String.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult();
+        		).setParameter("key", key).setParameter("sessionId", sessionId).setCacheable(true).uniqueResult();
 	}
 	
 	public static List<SessionConfig> findAll(Long sessionId) {
         return SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId order by key", SessionConfig.class
-        		).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+        		).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 
 	public static String getConfigValue(String key, Long sessionId, String defaultValue) {
@@ -67,7 +67,7 @@ public class SessionConfig extends BaseSessionConfig {
         
         String value = SessionConfigDAO.getInstance().getSession().createQuery(
         		"select value from SessionConfig where key = :key and session.uniqueId = :sessionId", String.class
-        		).setParameter("key", key, String.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult();
+        		).setParameter("key", key).setParameter("sessionId", sessionId).setCacheable(true).uniqueResult();
 
         return (value == null ? defaultValue : value);
 	}
@@ -80,7 +80,7 @@ public class SessionConfig extends BaseSessionConfig {
         try {
             Properties properties = new Properties();
             for (SessionConfig config: hibSession.createQuery(
-            		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list()) {
+            		"from SessionConfig where session.uniqueId = :sessionId", SessionConfig.class).setParameter("sessionId", sessionId).setCacheable(true).list()) {
             	properties.setProperty(config.getKey(), config.getValue() == null ? "" : config.getValue());
             }
 			tx.commit();

@@ -142,7 +142,7 @@ public class EventInboundEmailService {
 			event.getNotes().add(note);
 			hibSession.saveOrUpdate(note);
 		
-			hibSession.update(event);
+			hibSession.merge(event);
 			hibSession.flush();
 			
 			DataSource data = null;

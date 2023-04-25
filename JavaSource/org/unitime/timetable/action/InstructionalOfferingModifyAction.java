@@ -321,16 +321,16 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 	        if (form.getInstrOffrConfigUnlimited() != ioc.isUnlimitedEnrollment()) {
 	        	ioc.setUnlimitedEnrollment(form.getInstrOffrConfigUnlimited());
 	        	ioc.setLimit(form.getInstrOffrConfigUnlimited() ? 0 : form.getInstrOffrConfigLimit());
-	        	hibSession.update(ioc);
+	        	hibSession.merge(ioc);
 	        } else if (!form.getInstrOffrConfigLimit().equals(ioc.getLimit())) {
 	        	ioc.setLimit(form.getInstrOffrConfigLimit());
-	        	hibSession.update(ioc);
+	        	hibSession.merge(ioc);
 	        }
 
 	        InstructionalMethod imeth = (form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod(), hibSession));
 	        if (!ToolBox.equals(ioc.getInstructionalMethod(), imeth)) {
 	        	ioc.setInstructionalMethod(imeth);
-	        	hibSession.update(ioc);
+	        	hibSession.merge(ioc);
 	        }
 
 	        // Get map of subpart ownership so that after the classes have changed it is possible to see if the ownership for a subparts has changed
@@ -508,7 +508,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         								}
         							}
         							if (classChanged){
-        								hibSession.update(c);
+        								hibSession.merge(c);
         							}
         						}
         					}
@@ -547,7 +547,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
     					rgp.setRoomGroup(rg);
     					ss.addTopreferences(rgp);
         			}
-        			hibSession.update(ss);
+        			hibSession.merge(ss);
         		}
         	}
         }
@@ -588,7 +588,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 					if (c.getParentClass() != null){
 						Class_ parent = c.getParentClass();
 						parent.getChildClasses().remove(c);
-						hibSession.update(parent);
+						hibSession.merge(parent);
 					}
 					c.getSchedulingSubpart().getClasses().remove(c);
 					if (c.getPreferences() != null)
@@ -596,7 +596,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 					
 					c.deleteAllDependentObjects(hibSession, false);
 					
-					hibSession.delete(c);
+					hibSession.remove(c);
 	        	}
 	        }
     	}
@@ -723,8 +723,8 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 				}
 				newClass.setLms(lms);
 
-				hibSession.save(newClass);
-				hibSession.save(ss);
+				hibSession.persist(newClass);
+				hibSession.persist(ss);
 				tmpClsToRealClass.put(classId, newClass);
 			}
 		}
@@ -820,8 +820,8 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 						} else {
 							modifiedClass.setParentClass(cdao.get(parentClassId));
 						}
-						hibSession.update(modifiedClass.getParentClass());
-						hibSession.update(origParent);
+						hibSession.merge(modifiedClass.getParentClass());
+						hibSession.merge(origParent);
 					}
 				}
 				if (managingDeptId.equals(Long.valueOf(-1))){
@@ -920,7 +920,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 				}
 				
 				if (changed)
-					hibSession.update(modifiedClass);
+					hibSession.merge(modifiedClass);
 			}
 		}
     }

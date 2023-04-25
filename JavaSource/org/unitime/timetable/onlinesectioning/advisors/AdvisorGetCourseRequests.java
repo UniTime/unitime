@@ -227,7 +227,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
 				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
-				).setParameter("studentId", iStudentId, Long.class).list();
+				).setParameter("studentId", iStudentId).list();
 		
 		if (student != null && iCheckExistingDemands) {
 			Format<Date> ts = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
@@ -512,8 +512,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		request.setStudentId(studentId);
 		
 		List<AdvisorCourseRequest> acrs = hibSession.createQuery(
-				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
-				).setParameter("studentId", studentId, Long.class).list();
+				"from AdvisorCourseRequest where student.uniqueId = :studentId order by priority, alternative", AdvisorCourseRequest.class
+				).setParameter("studentId", studentId).list();
 		
 		fillCourseRequests(request, acrs);
 		

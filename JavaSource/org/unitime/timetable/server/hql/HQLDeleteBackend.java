@@ -45,7 +45,7 @@ public class HQLDeleteBackend implements GwtRpcImplementation<HQLDeleteRpcReques
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 		SavedHQL hql = SavedHQLDAO.getInstance().get(request.getId(), hibSession);
 		if (hql != null) {
-			hibSession.delete(hql);
+			hibSession.remove(hql);
 			hibSession.flush();
 		}
 		return new GwtRpcResponseBoolean(hql != null);

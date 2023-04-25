@@ -94,7 +94,7 @@ public abstract class BaseExamConflict implements Serializable {
 	public void setNrInstructors(Integer nrInstructors) { iNrInstructors = nrInstructors; }
 
 	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "conflicts")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToexams(Exam exam) {
@@ -106,7 +106,7 @@ public abstract class BaseExamConflict implements Serializable {
 	@JoinTable(name = "xconflict_student",
 		joinColumns = { @JoinColumn(name = "conflict_id") },
 		inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addTostudents(Student student) {
@@ -118,7 +118,7 @@ public abstract class BaseExamConflict implements Serializable {
 	@JoinTable(name = "xconflict_instructor",
 		joinColumns = { @JoinColumn(name = "conflict_id") },
 		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {

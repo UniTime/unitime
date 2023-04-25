@@ -174,8 +174,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
 								for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
-									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
+									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 									.setCacheable(true).list()) {
 									Assignment a = getAssignment(c);
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
@@ -293,8 +293,8 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
 					for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
-						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
+						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 						.setCacheable(true).list()) {
 						Assignment a = getAssignment(c);
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))

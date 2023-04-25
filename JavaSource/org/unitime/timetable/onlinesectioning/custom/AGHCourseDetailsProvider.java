@@ -107,9 +107,9 @@ public class AGHCourseDetailsProvider implements CourseDetailsProvider, CourseUr
 				"where cu.course.subjectAreaAbbv = :subjArea " +
 				"and cu.course.courseNbr = :crsNbr " +
 				"and cu.course.instructionalOffering.session.uniqueId = :acadSessionId", String.class)
-				.setParameter("crsNbr", courseNbr, String.class)
-				.setParameter("subjArea", subject, String.class)
-				.setParameter("acadSessionId", sessionId, Long.class)
+				.setParameter("crsNbr", courseNbr)
+				.setParameter("subjArea", subject)
+				.setParameter("acadSessionId", sessionId)
 				.setMaxResults(1).uniqueResult();
 	}
 

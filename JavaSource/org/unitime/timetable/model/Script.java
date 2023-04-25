@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseScript;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "script")
 public class Script extends BaseScript {
 	private static final long serialVersionUID = 1L;

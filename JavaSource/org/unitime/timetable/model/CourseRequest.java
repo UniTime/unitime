@@ -45,7 +45,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "course_request")
 public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -216,7 +216,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 							i.remove();
 							if (r.getRequired() != p.isRequired()) {
 								r.setRequired(p.isRequired());
-								hibSession.update(r);
+								hibSession.merge(r);
 								changed = true;
 							}
 							continue p;
@@ -242,7 +242,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 							i.remove();
 							if (r.getRequired() != p.isRequired()) {
 								r.setRequired(p.isRequired());
-								hibSession.update(r);
+								hibSession.merge(r);
 								changed = true;
 							}
 							continue p;
@@ -259,7 +259,7 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
 		}
     	if (remain != null) {
     		for (StudentSectioningPref p: remain) {
-    			hibSession.delete(p);
+    			hibSession.remove(p);
     			getPreferences().remove(p);
     			changed = true;
     		}

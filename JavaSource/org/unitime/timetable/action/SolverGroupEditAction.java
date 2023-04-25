@@ -191,7 +191,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	            			mgr.getSolverGroups().remove(group);
 	            			hibSession.saveOrUpdate(mgr);
 	            		}
-	            		hibSession.delete(group);
+	            		hibSession.remove(group);
 	            	}
 	            	
 	    			tx.commit();

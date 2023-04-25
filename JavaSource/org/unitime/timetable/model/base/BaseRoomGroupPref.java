@@ -52,7 +52,7 @@ public abstract class BaseRoomGroupPref extends Preference implements Serializab
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "room_group_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public RoomGroup getRoomGroup() { return iRoomGroup; }
 	public void setRoomGroup(RoomGroup roomGroup) { iRoomGroup = roomGroup; }
 

@@ -87,7 +87,7 @@ public abstract class BaseSavedHQL implements Serializable {
 	public void setType(Integer type) { iType = type; }
 
 	@OneToMany(mappedBy = "savedHQL", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SavedHQLParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SavedHQLParameter> parameters) { iParameters = parameters; }
 	public void addToparameters(SavedHQLParameter savedHQLParameter) {

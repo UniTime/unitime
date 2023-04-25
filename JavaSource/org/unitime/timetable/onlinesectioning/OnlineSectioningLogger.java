@@ -318,7 +318,7 @@ public class OnlineSectioningLogger extends Thread {
 									sessions.put(sessionId, session);
 								}
 								log.setSession(session);
-								hibSession.save(log);
+								hibSession.persist(log);
 							}
 							hibSession.flush();
 						} finally {

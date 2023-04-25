@@ -40,7 +40,7 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "room_group")
 public class RoomGroup extends BaseRoomGroup implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -72,7 +72,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static List<RoomGroup> getAllGlobalRoomGroups(Long sessionId) throws HibernateException {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllGlobalRoomGroups(Session session) throws HibernateException {
@@ -98,7 +98,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static RoomGroup getGlobalDefaultRoomGroup(Long sessionId) {
 		List<RoomGroup> groups = RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = true and g.session.uniqueId = :sessionId and g.defaultGroup = true order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 		return (groups.isEmpty() ? null : groups.get(0));
 	}
 	
@@ -109,13 +109,13 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	public static List<RoomGroup> getAllDepartmentRoomGroups(Department dept) {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.global = false and g.department.uniqueId = :deptId order by name", RoomGroup.class
-				).setParameter("deptId", dept.getUniqueId(), Long.class).setCacheable(true).list();
+				).setParameter("deptId", dept.getUniqueId()).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllRoomGroupsForSession(Long sessionId) {
 		return RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.session.uniqueId = :sessionId order by name", RoomGroup.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 	
 	public static List<RoomGroup> getAllRoomGroupsForSession(Session session) {

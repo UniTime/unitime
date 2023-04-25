@@ -131,7 +131,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
     			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
     			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
     			"order by f.session.sessionBeginDateTime", Location.class
-    			).setParameter("uniqueId", getUniqueId(), Long.class).setCacheable(true).list()) {
+    			).setParameter("uniqueId", getUniqueId()).setCacheable(true).list()) {
     		if (futureSessionIds.add(location.getSession().getUniqueId()))
     			ret.add(location);
     		else

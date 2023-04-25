@@ -151,7 +151,7 @@ public class Class_ extends BaseClass_ {
                 		deleteEvent = true;
                 		deletedAssignment = a.getPlacement().getName();
                 	}
-                	hibSession.delete(a);
+                	hibSession.remove(a);
                 	i.remove();
                 }
             }
@@ -159,7 +159,7 @@ public class Class_ extends BaseClass_ {
         	if (event != null) {
         		if (deleteEvent) {
             		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
-                		hibSession.delete(event);
+                		hibSession.remove(event);
                 	} else {
                 		Calendar cal = Calendar.getInstance(Locale.US);
                 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -172,7 +172,7 @@ public class Class_ extends BaseClass_ {
                     		if (!i.next().getMeetingDate().before(today)) i.remove();
                     	
                     	if (event.getMeetings().isEmpty()) {
-                    		hibSession.delete(event);
+                    		hibSession.remove(event);
                     	} else if (user != null) {
                 			if (event.getNotes() == null)
                 				event.setNotes(new HashSet<EventNote>());
@@ -992,14 +992,14 @@ public class Class_ extends BaseClass_ {
     		DistributionPref distributionPref = relatedObject.getDistributionPref();
     		distributionPref.getDistributionObjects().remove(relatedObject);
     		Integer seqNo = relatedObject.getSequenceNumber();
-			hibSession.delete(relatedObject);
+			hibSession.remove(relatedObject);
 			deleted = true;
 			if (distributionPref.getDistributionObjects().isEmpty()) {
 				PreferenceGroup owner = distributionPref.getOwner();
 				owner.getPreferences().remove(distributionPref);
 				getPreferences().remove(distributionPref);
 				hibSession.saveOrUpdate(owner);
-				hibSession.delete(distributionPref);
+				hibSession.remove(distributionPref);
 			} else {
 				if (seqNo!=null) {
 					for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
@@ -1036,7 +1036,7 @@ public class Class_ extends BaseClass_ {
     	return hibSession.
     		createQuery("select distinct c from Class_ c where " +
     				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId", Class_.class).
-    		setParameter("sessionId", sessionId.longValue(), Long.class).
+    		setParameter("sessionId", sessionId.longValue()).
     		list();
     }
 
@@ -1049,8 +1049,8 @@ public class Class_ extends BaseClass_ {
     		createQuery("select distinct c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where " +
     				"co.subjectArea.subjectAreaAbbreviation=:subjectAreaAbbv and c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and co.isControl=true",
     				Class_.class).
-    		setParameter("subjectAreaAbbv", subjectAreaAbbv, String.class).
-    		setParameter("sessionId", sessionId.longValue(), Long.class).
+    		setParameter("subjectAreaAbbv", subjectAreaAbbv).
+    		setParameter("sessionId", sessionId.longValue()).
 			setHibernateFlushMode(FlushMode.MANUAL).
     		list();
     }
@@ -1184,7 +1184,7 @@ public class Class_ extends BaseClass_ {
 			ci.setInstructor(null);
 			ci.setClassInstructing(null);
 			hibSession.saveOrUpdate(di);
-			hibSession.delete(ci);
+			hibSession.remove(ci);
 			i.remove();
 		}
 	}
@@ -1198,11 +1198,11 @@ public class Class_ extends BaseClass_ {
 			TeachingClassRequest tcr = i.next();
 			TeachingRequest tr = tcr.getTeachingRequest();
 			tr.getClassRequests().remove(tcr);
-			hibSession.delete(tcr);
+			hibSession.remove(tcr);
 			if (tr.getClassRequests().isEmpty() && !tr.isAssignCoordinator()) {
 				InstructionalOffering offering = tr.getOffering();
 				offering.getTeachingRequests().remove(tr);
-				hibSession.delete(tr);
+				hibSession.remove(tr);
 				hibSession.saveOrUpdate(offering);
 			} else {
 				hibSession.saveOrUpdate(tr);
@@ -1229,7 +1229,7 @@ public class Class_ extends BaseClass_ {
 		if (s==null || s.size()==0) return;
 
 		for (Iterator i=s.iterator(); i.hasNext(); ) {
-			hibSession.delete(i.next());
+			hibSession.remove(i.next());
 			i.remove();
 		}
 	}
@@ -1298,8 +1298,8 @@ public class Class_ extends BaseClass_ {
         return new Class_DAO().
             getSession().
             createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.externalUniqueId=:externalId", Class_.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("externalId", externalId, String.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("externalId", externalId).
             setCacheable(true).
             uniqueResult();
     }
@@ -1308,8 +1308,8 @@ public class Class_ extends BaseClass_ {
         return new Class_DAO().
             getSession().
             createQuery("select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and c.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", Class_.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
     }
@@ -1320,7 +1320,7 @@ public class Class_ extends BaseClass_ {
         if (iEvent==null) 
             iEvent = new Class_DAO().getSession().createQuery(
                 "select e from ClassEvent e left join fetch e.meetings m where e.clazz.uniqueId=:classId", ClassEvent.class).
-                setParameter("classId", getUniqueId(), Long.class).
+                setParameter("classId", getUniqueId()).
                 setCacheable(true).uniqueResult();
         return iEvent;
     }
@@ -1382,7 +1382,7 @@ public class Class_ extends BaseClass_ {
             ClassEvent event = getEvent();
             if (event != null) {
             	if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
-            		hibSession.delete(event);
+            		hibSession.remove(event);
             	} else {
             		Calendar cal = Calendar.getInstance(Locale.US);
             		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -1395,7 +1395,7 @@ public class Class_ extends BaseClass_ {
                 		if (!i.next().getMeetingDate().before(today)) i.remove();
                 	
                 	if (event.getMeetings().isEmpty()) {
-                		hibSession.delete(event);
+                		hibSession.remove(event);
                 	} else {
             			if (event.getNotes() == null)
             				event.setNotes(new HashSet<EventNote>());
@@ -1425,13 +1425,13 @@ public class Class_ extends BaseClass_ {
             			a.getConstraintInfo().remove(ci);
             		}
             	}
-            	hibSession.delete(ci);
+            	hibSession.remove(ci);
             }
             
-        	hibSession.delete(oldAssignment);
+        	hibSession.remove(oldAssignment);
         	
         	setCommittedAssignment(null);
-        	hibSession.update(this);
+        	hibSession.merge(this);
         	
             ChangeLog.addChange(hibSession,
                     TimetableManager.findByExternalId(user.getExternalUserId()),
@@ -1484,10 +1484,10 @@ public class Class_ extends BaseClass_ {
                 			a.getConstraintInfo().remove(ci);
                 		}
                 	}
-                	hibSession.delete(ci);
+                	hibSession.remove(ci);
                 }
                 
-            	hibSession.delete(oldAssignment);
+            	hibSession.remove(oldAssignment);
             }
             
             SolverGroup group = getManagingDept().getSolverGroup();
@@ -1516,7 +1516,7 @@ public class Class_ extends BaseClass_ {
             for (ClassInstructorInfo inst: assignment.getInstructors())
             	if (inst.isLead()) a.getInstructors().add(inst.getInstructor(hibSession).getInstructor());
             
-            hibSession.save(a);
+            hibSession.persist(a);
 
             //TODO: More information should be gathered about the assignment.
             AssignmentPreferenceInfo pref = new AssignmentPreferenceInfo();
@@ -1528,7 +1528,7 @@ public class Class_ extends BaseClass_ {
 			ai.setDefinition(SolverInfoDef.findByName(hibSession,"AssignmentInfo"));
 			ai.setOpt(null);
 			ai.setInfo(pref);
-			hibSession.save(ai);
+			hibSession.persist(ai);
             
 			a.getAssignmentInfo().add(ai);
 			a.cleastAssignmentInfoCache();
@@ -1553,10 +1553,10 @@ public class Class_ extends BaseClass_ {
             	hibSession.saveOrUpdate(event);
             }
 		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
-		    	hibSession.delete(event);
+		    	hibSession.remove(event);
 
             setCommittedAssignment(a);
-            hibSession.update(this);
+            hibSession.merge(this);
 
             ChangeLog.addChange(hibSession,
                     TimetableManager.findByExternalId(user.getExternalUserId()),
@@ -1592,7 +1592,7 @@ public class Class_ extends BaseClass_ {
         return Class_DAO.getInstance().getSession().createQuery(
                 "select e.student.uniqueId from StudentClassEnrollment e where "+
                 "e.clazz.uniqueId=:classId", Long.class)
-                .setParameter("classId", getUniqueId(), Long.class)
+                .setParameter("classId", getUniqueId())
                 .setCacheable(true).list();
 
     }
@@ -1710,7 +1710,7 @@ public class Class_ extends BaseClass_ {
 	public SectioningInfo getSectioningInfo() {
 		return  SectioningInfoDAO.getInstance().getSession().createQuery(
 				"select i from SectioningInfo i where i.clazz.uniqueId = :classId", SectioningInfo.class)
-				.setParameter("classId", getUniqueId(), Long.class).setCacheable(true).uniqueResult();
+				.setParameter("classId", getUniqueId()).setCacheable(true).uniqueResult();
 	}
 
 //	/* (non-Javadoc)
@@ -1742,14 +1742,14 @@ public class Class_ extends BaseClass_ {
 				(preferences == null || preferences.length == 0 ? "" : " and p.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
 				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
 				);
-		q1.setParameter("c1", getUniqueId(), Long.class).setParameter("s1", getSchedulingSubpart().getUniqueId(), Long.class).setParameter("c2", classId, Long.class);
-		q2.setParameter("c1", getUniqueId(), Long.class).setParameter("c2", classId, Long.class);
+		q1.setParameter("c1", getUniqueId()).setParameter("s1", getSchedulingSubpart().getUniqueId()).setParameter("c2", classId);
+		q2.setParameter("c1", getUniqueId()).setParameter("c2", classId);
 		if (subpartId != null)
-			q1.setParameter("s2", subpartId, Long.class);
+			q1.setParameter("s2", subpartId);
 		if (preferences != null) {
 			if (preferences.length == 1) {
-				q1.setParameter("p", preferences[0], String.class);
-				q2.setParameter("p", preferences[0], String.class);
+				q1.setParameter("p", preferences[0]);
+				q2.setParameter("p", preferences[0]);
 			} else if (preferences.length > 1) {
 				q1.setParameterList("p", preferences, String.class);
 				q2.setParameterList("p", preferences, String.class);
@@ -1757,8 +1757,8 @@ public class Class_ extends BaseClass_ {
 		}
 		if (types != null) {
 			if (types.length == 1) {
-				q1.setParameter("t", types[0], String.class);
-				q2.setParameter("t", types[0], String.class);
+				q1.setParameter("t", types[0]);
+				q2.setParameter("t", types[0]);
 			} else if (types.length > 1) {
 				q1.setParameterList("t", types, String.class);
 				q2.setParameterList("t", types, String.class);

@@ -42,7 +42,7 @@ import org.unitime.timetable.model.dao.ApplicationConfigDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "application_config")
 public class ApplicationConfig extends BaseApplicationConfig {
 	private static final long serialVersionUID = 1L;
@@ -87,7 +87,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
         String value = ApplicationConfigDAO.getInstance().
             getSession().
             createQuery("select c.value from ApplicationConfig c where c.key=:key", String.class).
-            setParameter("key", key, String.class).setCacheable(true).uniqueResult();
+            setParameter("key", key).setCacheable(true).uniqueResult();
         
         return (value==null?defaultValue:value);
 	}

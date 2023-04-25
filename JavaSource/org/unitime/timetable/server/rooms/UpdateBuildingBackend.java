@@ -87,7 +87,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
             if (building.getUniqueId() == null) {
             	buildingInterface.setId((Long)hibSession.save(building));
             } else {
-            	hibSession.update(building);
+            	hibSession.merge(building);
             }
             
             ChangeLog.addChange(
@@ -100,11 +100,11 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
                     null);
             
             if (updateRoomCoordinates) {
-            	for (Room room: hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId(), Long.class).list()) {
+            	for (Room room: hibSession.createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId()).list()) {
             		if (!ToolBox.equals(room.getCoordinateX(), building.getCoordinateX()) || !ToolBox.equals(room.getCoordinateY(), building.getCoordinateY())) {
             			room.setCoordinateX(building.getCoordinateX());
             			room.setCoordinateY(building.getCoordinateY());
-            			hibSession.update(room);
+            			hibSession.merge(room);
             			ChangeLog.addChange(
             	                hibSession, 
             	                context, 
@@ -138,15 +138,15 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
             if (building != null) {
                 for (Room r: hibSession.createQuery(
                 		"select r from Room r where r.building.uniqueId=:buildingId", Room.class)
-                		.setParameter("buildingId", building.getUniqueId(), Long.class).list()) {
-                    hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId(), Long.class).executeUpdate();
+                		.setParameter("buildingId", building.getUniqueId()).list()) {
+                    hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId()).executeUpdate();
                     for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
                         Assignment a = (Assignment)j.next();
                         a.getRooms().remove(r);
                         hibSession.saveOrUpdate(a);
                         j.remove();
                     }
-                    hibSession.delete(r);
+                    hibSession.remove(r);
                 }
                 
                 ChangeLog.addChange(
@@ -157,7 +157,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
                         ChangeLog.Operation.DELETE, 
                         null, 
                         null);
-                hibSession.delete(building);
+                hibSession.remove(building);
             }
         	
 			tx.commit();

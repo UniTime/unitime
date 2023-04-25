@@ -101,7 +101,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
     			"select i from SectioningInfo i " +
     			"left join fetch i.clazz as c " +
     			"where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId", SectioningInfo.class).
-    			setParameter("offeringId", offeringId, Long.class).
+    			setParameter("offeringId", offeringId).
     			setCacheable(true).list()) {
     		Double expectation = expectations.remove(info.getClazz().getUniqueId());
     		if (expectation == null) {
@@ -123,7 +123,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
     	if (!expectations.isEmpty())
         	for (Class_ clazz: helper.getHibSession().createQuery(
         			"select c from Class_ c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId", Class_.class).
-        			setParameter("offeringId", offeringId, Long.class).
+        			setParameter("offeringId", offeringId).
         			setCacheable(true).list()) {
         		Double expectation = expectations.remove(clazz.getUniqueId());
         		if (expectation == null) continue;

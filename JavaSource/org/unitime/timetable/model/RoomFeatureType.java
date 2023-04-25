@@ -55,22 +55,22 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 		
 		if ((RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct featureType) from GlobalRoomFeature where session.uniqueId = :sessionId", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0)
+				.setParameter("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
 		return (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct featureType) from DepartmentRoomFeature where department.session.uniqueId = :sessionId", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, boolean includeDepartmental) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select distinct f.featureType from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is not null", RoomFeatureType.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+				.setParameter("sessionId", sessionId).setCacheable(true).list());
 		if (includeDepartmental) {
 			types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 					"select distinct f.featureType from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is not null", RoomFeatureType.class)
-					.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+					.setParameter("sessionId", sessionId).setCacheable(true).list());
 		}
 		return types;
 	}
@@ -78,24 +78,24 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, boolean includeDepartmental) {
 		if ((RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(f) from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.featureType is null", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0)
+				.setParameter("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0)
 			return true;
 		return includeDepartmental && (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(f) from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.featureType is null", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 	
 	public static Set<RoomFeatureType> getRoomFeatureTypes(Long sessionId, Long examTypeId) {
 		Set<RoomFeatureType> types = new TreeSet<RoomFeatureType>();
 		types.addAll(RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select distinct f.featureType from GlobalRoomFeature f inner join f.rooms l, ExamType t where f.session.uniqueId = :sessionId and f.featureType is not null and t.uniqueId = :examTypeId and t in elements(l.examTypes)", RoomFeatureType.class)
-				.setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list());
+				.setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId).setCacheable(true).list());
 		return types;
 	}
 
 	public static boolean hasRoomFeatureWithNoType(Long sessionId, Long examTypeId) {
 		return (RoomFeatureTypeDAO.getInstance().getSession().createQuery(
 				"select count(distinct f) from GlobalRoomFeature f inner join f.rooms l, ExamType t where l.session.uniqueId = :sessionId and f.featureType is null and t.uniqueId = :examTypeId and t in elements(l.examTypes)", Number.class)
-				.setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).uniqueResult()).intValue() > 0;
+				.setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId).setCacheable(true).uniqueResult()).intValue() > 0;
 	}
 }

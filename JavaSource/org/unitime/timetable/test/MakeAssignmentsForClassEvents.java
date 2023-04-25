@@ -298,7 +298,7 @@ public class MakeAssignmentsForClassEvents {
                             "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co " +
                             "where co.isControl=true and co.subjectArea.uniqueId=:subjectId "+
                             (excludeCommittedAssignments?" and c.committedAssignment is null":""), ClassEvent.class)
-                            .setParameter("subjectId", sa.getUniqueId(), Long.class)
+                            .setParameter("subjectId", sa.getUniqueId())
                             .list()) {
                         Assignment a = m.createAssignment(e, null, null);
                         e.getClazz().setDatePattern(m.getDatePattern(e));

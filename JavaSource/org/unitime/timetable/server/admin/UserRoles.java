@@ -150,7 +150,7 @@ public class UserRoles implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(role);
+		hibSession.remove(role);
 	}
 
 	@Override

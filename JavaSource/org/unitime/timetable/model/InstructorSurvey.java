@@ -54,8 +54,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	public static InstructorSurvey getInstructorSurvey(String externalUniqueId, Long sessionId) {
 		return  InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
-				).setParameter("sessionId", sessionId, Long.class)
-				.setParameter("externalId", externalUniqueId, String.class)
+				).setParameter("sessionId", sessionId)
+				.setParameter("externalId", externalUniqueId)
 				.setMaxResults(1).uniqueResult();
 	}
 	
@@ -69,7 +69,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 				"select count(s) from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
 				"di.department.uniqueId = :deptId", Number.class)
-				.setParameter("deptId", departmentId, Long.class).setCacheable(true).uniqueResult()
+				.setParameter("deptId", departmentId).setCacheable(true).uniqueResult()
 				.intValue() > 0;
 	}
 	
@@ -79,7 +79,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 				"select s from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +
 				"di.department.uniqueId = :deptId", InstructorSurvey.class)
-				.setParameter("deptId", departmentId, Long.class).setCacheable(true).list()) {
+				.setParameter("deptId", departmentId).setCacheable(true).list()) {
 			ret.put(is.getExternalUniqueId(), is);
 		}
 		return ret;
@@ -89,8 +89,8 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 		Map<Department, DepartmentalInstructor> ret = new HashMap<Department, DepartmentalInstructor>();
 		for (DepartmentalInstructor di: InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId = :extId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
-				.setParameter("extId", getExternalUniqueId(), String.class)
-				.setParameter("sessionId", io.getSessionId(), Long.class)
+				.setParameter("extId", getExternalUniqueId())
+				.setParameter("sessionId", io.getSessionId())
 				.setCacheable(true).list()) {
 			if (di.getDepartment().equals(io.getDepartment()))
 				return di;

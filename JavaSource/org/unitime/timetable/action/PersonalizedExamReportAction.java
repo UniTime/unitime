@@ -136,7 +136,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         DepartmentalInstructor instructor = null;
         for (DepartmentalInstructor s: DepartmentalInstructorDAO.getInstance().getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId", DepartmentalInstructor.class).
-                setParameter("externalId", userId, String.class).
+                setParameter("externalId", userId).
                 setCacheable(true).list()) {
             if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
@@ -146,7 +146,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         Student student = null;
         for (Student s: StudentDAO.getInstance().getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId", Student.class).
-                setParameter("externalId", userId, String.class).
+                setParameter("externalId", userId).
                 setCacheable(true).list()) {
             if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
@@ -226,7 +226,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         DepartmentalInstructor instructor = null;
         for (DepartmentalInstructor s: DepartmentalInstructorDAO.getInstance().getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId", DepartmentalInstructor.class).
-                setParameter("externalId", translate(externalId,Source.Staff), String.class).
+                setParameter("externalId", translate(externalId,Source.Staff)).
                 setCacheable(true).list()) {
             if (!canDisplay(s.getDepartment().getSession())) continue;
             sessions.add(s.getDepartment().getSession());
@@ -240,7 +240,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
         Student student = null;
         for (Student s: StudentDAO.getInstance().getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId", Student.class).
-                setParameter("externalId", translate(externalId,Source.Student), String.class).
+                setParameter("externalId", translate(externalId,Source.Student)).
                 setCacheable(true).list()) {
             if (!canDisplay(s.getSession())) continue;
             sessions.add(s.getSession());
@@ -302,7 +302,7 @@ public class PersonalizedExamReportAction extends UniTimeAction<PersonalizedExam
                             "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                             "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                             ")", ExamOwner.class).
-                            setParameter("studentId", student.getUniqueId(), Long.class).setCacheable(true).list());
+                            setParameter("studentId", student.getUniqueId()).setCacheable(true).list());
             for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
             	Exam exam = i.next().getExam();
             	DepartmentStatusType type = exam.effectiveStatusType();

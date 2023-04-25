@@ -148,7 +148,7 @@ public class ContactCategories implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(cc);
+		hibSession.remove(cc);
 	}
 	
 	@Override

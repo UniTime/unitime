@@ -141,12 +141,12 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula(" ( select s.status_id from %SCHEMA%.exam_status s where s.session_id = session_id and s.type_id = exam_type_id ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public DepartmentStatusType getStatusType() { return iStatusType; }
 	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "exam", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamOwner> getOwners() { return iOwners; }
 	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }
 	public void addToowners(ExamOwner examOwner) {
@@ -158,7 +158,7 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	@JoinTable(name = "exam_room_assignment",
 		joinColumns = { @JoinColumn(name = "exam_id") },
 		inverseJoinColumns = { @JoinColumn(name = "location_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getAssignedRooms() { return iAssignedRooms; }
 	public void setAssignedRooms(Set<Location> assignedRooms) { iAssignedRooms = assignedRooms; }
 	public void addToassignedRooms(Location location) {
@@ -167,7 +167,7 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "exams")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
@@ -179,7 +179,7 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	@JoinTable(name = "xconflict_exam",
 		joinColumns = { @JoinColumn(name = "exam_id") },
 		inverseJoinColumns = { @JoinColumn(name = "conflict_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
 	public Set<ExamConflict> getConflicts() { return iConflicts; }
 	public void setConflicts(Set<ExamConflict> conflicts) { iConflicts = conflicts; }

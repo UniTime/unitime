@@ -59,7 +59,7 @@ import org.unitime.timetable.util.duration.DurationModel;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "assignment")
 public class Assignment extends BaseAssignment {
 	private static final long serialVersionUID = 1L;
@@ -154,8 +154,8 @@ public class Assignment extends BaseAssignment {
 				org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 				Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 						"c.definition.name=:name and a.uniqueId=:assignmentId");
-				q.setParameter("assignmentId", getUniqueId(), Long.class);
-				q.setParameter("name", name, String.class);
+				q.setParameter("assignmentId", getUniqueId());
+				q.setParameter("name", name);
 				tInfos = new Vector();
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					ConstraintInfo info = (ConstraintInfo)i.next();
@@ -184,8 +184,8 @@ public class Assignment extends BaseAssignment {
 			org.hibernate.Session session = (ConstraintInfoDAO.getInstance()).getSession();
 			Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 					"c.definition.name=:name and a.uniqueId=:assignmentId");
-			q.setParameter("assignmentId", getUniqueId(), Long.class);
-			q.setParameter("name", name, String.class);
+			q.setParameter("assignmentId", getUniqueId());
+			q.setParameter("name", name);
 			for (Iterator i=q.list().iterator();i.hasNext();) {
 				ConstraintInfo info = (ConstraintInfo)i.next();
 				TimetableInfo tInfo = info.getInfo();

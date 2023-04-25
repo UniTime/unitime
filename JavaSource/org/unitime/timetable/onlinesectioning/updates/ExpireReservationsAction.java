@@ -57,7 +57,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 					"select r from Reservation r where " +
 					"r.instructionalOffering.session.uniqueId = :sessionId and " +
 					"r.expirationDate is not null and r.expirationDate < current_timestamp()", org.unitime.timetable.model.Reservation.class)
-					.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).list()) {
+					.setParameter("sessionId", server.getAcademicSession().getUniqueId()).list()) {
 				XOffering offering = server.getOffering(expiredReservation.getInstructionalOffering().getUniqueId());
 				if (offering == null) continue;
 				XReservation reservation = null;

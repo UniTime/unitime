@@ -156,7 +156,7 @@ public class PreferencesImport  extends BaseImport {
     		iDepartments = getHibSession().createQuery(
 	        		"select distinct d from Department d left join fetch d.preferences p where d.session.uniqueId = :sessionId",
 	        		Department.class)
-	        		.setParameter("sessionId", iSession.getUniqueId(), Long.class).list();
+	        		.setParameter("sessionId", iSession.getUniqueId()).list();
     	String deptCode = element.attributeValue("code", "not-set");
     	for (Iterator<Department> i = iDepartments.iterator(); i.hasNext(); ) {
     		Department department = i.next();
@@ -172,7 +172,7 @@ public class PreferencesImport  extends BaseImport {
     		iInstructors = getHibSession().createQuery(
 	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
 	        		DepartmentalInstructor.class
-    				).setParameter("sessionId", iSession.getUniqueId(), Long.class).list();
+    				).setParameter("sessionId", iSession.getUniqueId()).list();
     	String externalId = element.attributeValue("externalId");
     	String deptCode = element.attributeValue("department", "not-set");
     	if (externalId != null) {
@@ -205,7 +205,7 @@ public class PreferencesImport  extends BaseImport {
     		iInstructors = getHibSession().createQuery(
 	        		"select distinct i from DepartmentalInstructor i left join fetch i.preferences p where i.department.session.uniqueId = :sessionId",
 	        		DepartmentalInstructor.class
-    				).setParameter("sessionId", iSession.getUniqueId(), Long.class).list();
+    				).setParameter("sessionId", iSession.getUniqueId()).list();
     	for (Iterator<DepartmentalInstructor> i = iInstructors.iterator(); i.hasNext(); ) {
     		DepartmentalInstructor instructor = i.next();
     		if (externalId.equals(instructor.getExternalUniqueId()) && deptCode.equals(instructor.getDepartment().getDeptCode())) { return instructor; }
@@ -221,7 +221,7 @@ public class PreferencesImport  extends BaseImport {
     		iDatePatterns = new HashMap<String, DatePattern>();
     		for (DatePattern pattern: getHibSession().createQuery(
     				"from DatePattern where session.uniqueId = :sessionId",
-    				DatePattern.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				DatePattern.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iDatePatterns.put(pattern.getName(), pattern);
     	}
     	return iDatePatterns.get(name);
@@ -240,7 +240,7 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch c.preferences cp " +
 	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
 	        		SchedulingSubpart.class
-	        		).setParameter("sessionId", iSession.getUniqueId(), Long.class).list();
+	        		).setParameter("sessionId", iSession.getUniqueId()).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)
     			iClasses.addAll(subpart.getClasses());
@@ -279,7 +279,7 @@ public class PreferencesImport  extends BaseImport {
 	        		"left join fetch c.preferences cp " +
 	        		"where ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId and co.isControl = true",
 	        		SchedulingSubpart.class
-	        		).setParameter("sessionId", iSession.getUniqueId(), Long.class).list();
+	        		).setParameter("sessionId", iSession.getUniqueId()).list();
     		iClasses = new ArrayList<Class_>();
     		for (SchedulingSubpart subpart: iSubparts)
     			iClasses.addAll(subpart.getClasses());
@@ -339,7 +339,7 @@ public class PreferencesImport  extends BaseImport {
     		iTimePatterns = new HashMap<String, TimePattern>();
     		for (TimePattern pattern: getHibSession().createQuery(
     				"from TimePattern where session.uniqueId = :sessionId",
-    				TimePattern.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				TimePattern.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iTimePatterns.put(pattern.getName(), pattern);
     	}
     	TimePattern tp = iTimePatterns.get(name);
@@ -353,7 +353,7 @@ public class PreferencesImport  extends BaseImport {
     		iBuildings = new HashMap<String, Building>();
     		for (Building building: getHibSession().createQuery(
     				"from Building where session.uniqueId = :sessionId",
-    				Building.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				Building.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iBuildings.put(building.getAbbreviation(), building);
     	}
     	Building b = iBuildings.get(abbv);
@@ -367,7 +367,7 @@ public class PreferencesImport  extends BaseImport {
     		iRooms = new HashMap<String, Room>();
     		for (Room room: getHibSession().createQuery(
     				"from Room where session.uniqueId = :sessionId",
-    				Room.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				Room.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iRooms.put(room.getBuildingAbbv() + " " + room.getRoomNumber(), room);
     	}
     	Room r = iRooms.get(buildingAbbv + " " + roomNbr);
@@ -381,7 +381,7 @@ public class PreferencesImport  extends BaseImport {
     		iLocations = new HashMap<String, Location>();
     		for (Location location: getHibSession().createQuery(
     				"from NonUniversityLocation where session.uniqueId = :sessionId",
-    				Location.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				Location.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			for (RoomDept rd: location.getRoomDepts()) {
     				iLocations.put(location.getLabel() + "|" + rd.getDepartment().getDeptCode(), location);
     			}
@@ -397,7 +397,7 @@ public class PreferencesImport  extends BaseImport {
     		iRoomGroups = new HashMap<String, RoomGroup>();
     		for (RoomGroup group: getHibSession().createQuery(
     				"from RoomGroup where session.uniqueId = :sessionId",
-    				RoomGroup.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				RoomGroup.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			if (group.isGlobal())
     				iRoomGroups.put(group.getAbbv(), group);
     			else
@@ -415,11 +415,11 @@ public class PreferencesImport  extends BaseImport {
     		iRoomFeatures = new HashMap<String, RoomFeature>();
     		for (GlobalRoomFeature feature: getHibSession().createQuery(
     				"from GlobalRoomFeature where session.uniqueId = :sessionId",
-    				GlobalRoomFeature.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				GlobalRoomFeature.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iRoomFeatures.put(feature.getAbbv(), feature);
     		for (DepartmentRoomFeature feature: getHibSession().createQuery(
     				"from DepartmentRoomFeature where department.session.uniqueId = :sessionId",
-    				DepartmentRoomFeature.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				DepartmentRoomFeature.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iRoomFeatures.put(feature.getAbbv() + "|" + feature.getDepartment().getDeptCode(), feature);
     	}
     	RoomFeature f = iRoomFeatures.get(name);
@@ -447,7 +447,7 @@ public class PreferencesImport  extends BaseImport {
     		iCourseOfferings = new HashMap<String, CourseOffering>();
     		for (CourseOffering course: getHibSession().createQuery(
     				"from CourseOffering co where co.instructionalOffering.session.uniqueId = :sessionId",
-    				CourseOffering.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				CourseOffering.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			iCourseOfferings.put(course.getSubjectAreaAbbv() + "|" + course.getCourseNbr(), course);
     	}
     	CourseOffering course = iCourseOfferings.get(subjectAbbv + "|" + courseNbr);
@@ -461,7 +461,7 @@ public class PreferencesImport  extends BaseImport {
     		iInstructorAttributes = new HashMap<String, InstructorAttribute>();
     		for (InstructorAttribute attribute: (List<InstructorAttribute>)getHibSession().createQuery(
     				"from InstructorAttribute where session.uniqueId = :sessionId",
-    				InstructorAttribute.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list())
+    				InstructorAttribute.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			if (attribute.getDepartment() == null)
     				iInstructorAttributes.put(attribute.getCode(), attribute);
     			else
@@ -479,7 +479,7 @@ public class PreferencesImport  extends BaseImport {
     		iExamPeriods = new HashMap<String, ExamPeriod>();
     		for (ExamPeriod period: (List<ExamPeriod>)getHibSession().createQuery(
     				"from ExamPeriod where session.uniqueId = :sessionId",
-    				ExamPeriod.class).setParameter("sessionId", iSession.getUniqueId(), Long.class).list()) {
+    				ExamPeriod.class).setParameter("sessionId", iSession.getUniqueId()).list()) {
     			iExamPeriods.put(iDateFormat.format(period.getStartDate()) + "|" + iTimeFormat.format(period.getStartTime()), period);
     			iExamPeriods.put(iDateFormat.format(period.getStartDate()) + "|" + iTimeFormat.format(period.getStartTime()) + "|" + period.getExamType().getReference(), period);
     		}

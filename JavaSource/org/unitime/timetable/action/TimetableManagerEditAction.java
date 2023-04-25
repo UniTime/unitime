@@ -608,7 +608,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
                 null);
 
        	for (ManagerRole mgrRole: mgr.getManagerRoles()) {
-       	    hibSession.delete(mgrRole);
+       	    hibSession.remove(mgrRole);
        	}
        	for (Department d: mgr.getDepartments()) {
        		d.getTimetableManagers().remove(mgr);
@@ -619,7 +619,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        		hibSession.saveOrUpdate(sg);
        	}
 
-        hibSession.delete(mgr);
+        hibSession.remove(mgr);
 
        	tx.commit();
     }

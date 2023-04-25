@@ -222,7 +222,7 @@ public class StudentAccommodations implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(accomodation);
+		hibSession.remove(accomodation);
 	}
 	
 	@Override

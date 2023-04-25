@@ -59,7 +59,7 @@ public abstract class BaseTimePref extends Preference implements Serializable {
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "time_pattern_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public TimePattern getTimePattern() { return iTimePattern; }
 	public void setTimePattern(TimePattern timePattern) { iTimePattern = timePattern; }
 

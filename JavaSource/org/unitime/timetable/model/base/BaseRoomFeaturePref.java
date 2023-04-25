@@ -52,7 +52,7 @@ public abstract class BaseRoomFeaturePref extends Preference implements Serializ
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "room_feature_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public RoomFeature getRoomFeature() { return iRoomFeature; }
 	public void setRoomFeature(RoomFeature roomFeature) { iRoomFeature = roomFeature; }
 

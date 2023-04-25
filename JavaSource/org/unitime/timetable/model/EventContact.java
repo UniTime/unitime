@@ -41,7 +41,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "event_contact")
 public class EventContact extends BaseEventContact implements NameInterface {
 	private static final long serialVersionUID = 1L;
@@ -63,7 +63,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	public static EventContact findByExternalUniqueId(String externalUniqueId) {
 	    return EventContactDAO.getInstance().getSession().
 	        createQuery("select c from EventContact c where c.externalUniqueId=:externalUniqueId", EventContact.class).
-	        setParameter("externalUniqueId", externalUniqueId, String.class).
+	        setParameter("externalUniqueId", externalUniqueId).
 	        setHibernateFlushMode(FlushMode.MANUAL).
 	        uniqueResult();
 	}
@@ -71,7 +71,7 @@ public class EventContact extends BaseEventContact implements NameInterface {
 	public static EventContact findByEmail(String email) {
 	    List<EventContact> ec = EventContactDAO.getInstance().getSession().
 	        createQuery("select c from EventContact c where c.emailAddress=:emailAddress", EventContact.class).
-	        setParameter("emailAddress", email, String.class).list();
+	        setParameter("emailAddress", email).list();
 	    if (ec.isEmpty()) return null; 
 	    else return ec.get(0);
 	}

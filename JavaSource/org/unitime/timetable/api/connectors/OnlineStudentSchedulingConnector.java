@@ -106,7 +106,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class)
-						.setParameter("uid", studentId, String.class).setCacheable(true).list();
+						.setParameter("uid", studentId).setCacheable(true).list();
 				if (!student.isEmpty()) {
 					UserContext user = helper.getSessionContext().getUser();
 					principal = new UniTimePrincipal(user.getExternalUserId(), studentId, user.getName());

@@ -139,7 +139,7 @@ public class CourseCreditFormats implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(credit);
+		hibSession.remove(credit);
 	}
 
 	@Override

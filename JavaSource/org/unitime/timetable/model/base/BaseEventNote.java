@@ -126,7 +126,7 @@ public abstract class BaseEventNote implements Serializable {
 	@JoinTable(name = "event_note_meeting",
 		joinColumns = { @JoinColumn(name = "note_id") },
 		inverseJoinColumns = { @JoinColumn(name = "meeting_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Meeting> getAffectedMeetings() { return iAffectedMeetings; }
 	public void setAffectedMeetings(Set<Meeting> affectedMeetings) { iAffectedMeetings = affectedMeetings; }
 	public void addToaffectedMeetings(Meeting meeting) {

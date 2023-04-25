@@ -33,7 +33,7 @@ import org.unitime.timetable.model.dao.UserDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "users")
 public class User extends BaseUser {
 	private static final long serialVersionUID = 1L;
@@ -57,7 +57,7 @@ public class User extends BaseUser {
             UserDAO.getInstance().
             getSession().
             createQuery("select u from User u where u.externalUniqueId=:externalId", User.class).
-            setParameter("externalId", externalId, String.class).
+            setParameter("externalId", externalId).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();
@@ -68,7 +68,7 @@ public class User extends BaseUser {
             UserDAO.getInstance().
             getSession().
             createQuery("select u from User u where u.username=:userName", User.class).
-            setParameter("userName", userName, String.class).
+            setParameter("userName", userName).
             setCacheable(true).
             setMaxResults(1).
             uniqueResult();

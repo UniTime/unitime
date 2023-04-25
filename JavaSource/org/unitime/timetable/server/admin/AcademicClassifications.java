@@ -141,7 +141,7 @@ public class AcademicClassifications implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(clasf);
+		hibSession.remove(clasf);
 	}
 	
 	@Override

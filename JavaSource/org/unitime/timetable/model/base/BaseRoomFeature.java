@@ -90,7 +90,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	public void setFeatureType(RoomFeatureType featureType) { iFeatureType = featureType; }
 
 	@ManyToMany(mappedBy = "features")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {

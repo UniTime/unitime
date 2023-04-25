@@ -188,8 +188,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, Long.class)
-	            .setParameter("examTypeId", examTypeId, Long.class)
+	            .setParameter("sessionId", sessionId)
+	            .setParameter("examTypeId", examTypeId)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -198,8 +198,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.type=:type", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, Long.class)
-	            .setParameter("type", ExamType.sExamTypeMidterm, Integer.class)
+	            .setParameter("sessionId", sessionId)
+	            .setParameter("type", ExamType.sExamTypeMidterm)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -208,8 +208,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	    return ExamDAO.getInstance().getSession().createQuery(
 	            "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.type=:type", Exam.class
 	            )
-	            .setParameter("sessionId", sessionId, Long.class)
-	            .setParameter("type", ExamType.sExamTypeFinal, Integer.class)
+	            .setParameter("sessionId", sessionId)
+	            .setParameter("type", ExamType.sExamTypeFinal)
 	            .setCacheable(true)
 	            .list();
 	}
@@ -218,8 +218,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
+                .setParameter("subjectAreaId", subjectAreaId)
+                .setParameter("examTypeId", examTypeId)
                 .setCacheable(true)
                 .list();
     }
@@ -228,8 +228,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o inner join o.course.instructionalOffering.courseOfferings co where " +
                 "co.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
+                .setParameter("subjectAreaId", subjectAreaId)
+                .setParameter("examTypeId", examTypeId)
                 .setCacheable(true)
                 .list();
     }
@@ -238,8 +238,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.uniqueId=:courseOfferingId and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("courseOfferingId", courseOfferingId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
+                .setParameter("courseOfferingId", courseOfferingId)
+                .setParameter("examTypeId", examTypeId)
                 .setCacheable(true)
                 .list();
     }
@@ -252,9 +252,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and ("+
                     (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr") +
                     " or lower(o.course.title) like lower('%' || :courseNbr || '%'))", Exam.class)
-                    .setParameter("subjectAreaId", subjectAreaId, Long.class)
-                    .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class)
-                    .setParameter("examTypeId", examTypeId, Long.class)
+                    .setParameter("subjectAreaId", subjectAreaId)
+                    .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
+                    .setParameter("examTypeId", examTypeId)
                     .setCacheable(true)
                     .list();
         }
@@ -262,9 +262,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and x.examType.uniqueId=:examTypeId and "+
                 (courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr":"o.course.courseNbr=:courseNbr"), Exam.class)
-                .setParameter("subjectAreaId", subjectAreaId, Long.class)
-                .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"), String.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
+                .setParameter("subjectAreaId", subjectAreaId)
+                .setParameter("courseNbr", courseNbr.trim().replaceAll("\\*", "%"))
+                .setParameter("examTypeId", examTypeId)
                 .setCacheable(true)
                 .list();
     }
@@ -419,14 +419,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             DistributionPref distributionPref = relatedObject.getDistributionPref();
             distributionPref.getDistributionObjects().remove(relatedObject);
             Integer seqNo = relatedObject.getSequenceNumber();
-            hibSession.delete(relatedObject);
+            hibSession.remove(relatedObject);
             deleted = true;
             if (distributionPref.getDistributionObjects().isEmpty()) {
                 PreferenceGroup owner = distributionPref.getOwner();
                 owner.getPreferences().remove(distributionPref);
                 getPreferences().remove(distributionPref);
                 hibSession.saveOrUpdate(owner);
-                hibSession.delete(distributionPref);
+                hibSession.remove(distributionPref);
             } else {
                 if (seqNo!=null) {
                     for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
@@ -446,7 +446,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         
         ExamEvent event = getEvent();
         if (event!=null) {
-            hibSession.delete(event);
+            hibSession.remove(event);
             deleted = true;
         }
 
@@ -457,14 +457,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     public static void deleteFromExams(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
         for (ExamOwner owner: hibSession.createQuery("select o from Exam x inner join x.owners o where "+
                 "o.ownerType=:ownerType and o.ownerId=:ownerId", ExamOwner.class)
-                .setParameter("ownerType", ownerType, Integer.class)
-                .setParameter("ownerId", ownerId, Long.class).list()) {
+                .setParameter("ownerType", ownerType)
+                .setParameter("ownerId", ownerId).list()) {
             Exam exam = owner.getExam();
             exam.getOwners().remove(owner);
-            hibSession.delete(owner);
+            hibSession.remove(owner);
             if (exam.getOwners().isEmpty()) {
                 exam.deleteDependentObjects(hibSession, false);
-                hibSession.delete(exam);
+                hibSession.remove(exam);
             } else {
                 hibSession.saveOrUpdate(exam);
             }
@@ -488,8 +488,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o where "+
                 "o.ownerType=:ownerType and o.ownerId=:ownerId", Exam.class).
-                setParameter("ownerType", ownerType, Integer.class).
-                setParameter("ownerId", ownerId, Long.class).
+                setParameter("ownerType", ownerType).
+                setParameter("ownerId", ownerId).
                 setCacheable(true).list();
     }
     
@@ -508,7 +508,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("classId", id, Long.class).setCacheable(true).list();
+                    setParameter("classId", id).setCacheable(true).list();
         } else if ("SchedulingSubpart".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -522,7 +522,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("subpartId", id, Long.class).setCacheable(true).list();
+                    setParameter("subpartId", id).setCacheable(true).list();
         } else if ("CourseOffering".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -536,7 +536,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("courseOfferingId", id, Long.class).setCacheable(true).list();
+                    setParameter("courseOfferingId", id).setCacheable(true).list();
         } else if ("InstructionalOffering".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -550,7 +550,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("instructionalOfferingId", id, Long.class).setCacheable(true).list();
+                    setParameter("instructionalOfferingId", id).setCacheable(true).list();
         } else if ("InstrOfferingConfig".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o inner join o.course co "+
@@ -564,14 +564,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
                     "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                     ")", Exam.class).
-                    setParameter("instrOfferingConfigId", id, Long.class).setCacheable(true).list();
+                    setParameter("instrOfferingConfigId", id).setCacheable(true).list();
         } else if ("DepartmentalInstructor".equals(type)) {
             return ExamDAO.getInstance().getSession().createQuery(
                     "select distinct x from Exam x inner join x.instructors xi, DepartmentalInstructor i where "+
                     "i.uniqueId=:instructorId and (xi.uniqueId=i.uniqueId or ("+
                     "i.externalUniqueId is not null and i.externalUniqueId=xi.externalUniqueId " +
                     "and xi.department.session = i.department.session))", Exam.class).
-                    setParameter("instructorId", id, Long.class).setCacheable(true).list();
+                    setParameter("instructorId", id).setCacheable(true).list();
         } else if ("ExamEvent".equals(type)) {
             List ret = new ArrayList();
             ExamEvent event = ExamEventDAO.getInstance().get(id);
@@ -587,7 +587,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null and x.examType.type=:examType", Number.class).
-                setParameter("sessionId", sessionId, Long.class).setParameter("examType", examType, Integer.class).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).setParameter("examType", examType).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasTimetable(Long sessionId) {
@@ -596,7 +596,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null", Number.class).
-                setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().longValue()>0;
     }
 
     public static boolean hasMidtermExams(Long sessionId) {
@@ -605,7 +605,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     			createQuery("select count(p) from ExamPeriod p " +
     					"where p.session.uniqueId=:sessionId and "+
     					"p.examType.type = "+ExamType.sExamTypeMidterm, Number.class).
-    			setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
+    			setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasFinalExams(Long sessionId) {
@@ -614,7 +614,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.type = "+ExamType.sExamTypeFinal, Number.class).
-                setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().longValue()>0;
     }
     
     public static boolean hasExamsOfType(Long sessionId, ExamType type) {
@@ -623,7 +623,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.uniqueid = :typeId", Number.class).
-                setParameter("sessionId", sessionId, Long.class).setParameter("typeId", type.getUniqueId(), Long.class).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).setParameter("typeId", type.getUniqueId()).setCacheable(true).uniqueResult().longValue()>0;
     }
 
     public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long examTypeId) {
@@ -631,8 +631,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null and x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("sessionId", sessionId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("sessionId", sessionId).
+                setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -645,8 +645,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod=null and x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("sessionId", sessionId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("sessionId", sessionId).
+                setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamInfo(exam));
@@ -662,9 +662,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod!=null", Exam.class).
-                setParameter("sessionId", sessionId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
-                setParameter("subjectAreaId", subjectAreaId, Long.class).
+                setParameter("sessionId", sessionId).
+                setParameter("examTypeId", examTypeId).
+                setParameter("subjectAreaId", subjectAreaId).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -680,9 +680,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
                 "x.session.uniqueId=:sessionId and x.assignedPeriod=null", Exam.class).
-                setParameter("sessionId", sessionId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
-                setParameter("subjectAreaId", subjectAreaId, Long.class).
+                setParameter("sessionId", sessionId).
+                setParameter("examTypeId", examTypeId).
+                setParameter("subjectAreaId", subjectAreaId).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamInfo(exam));
@@ -696,8 +696,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.assignedRooms r where " +
                 "r.uniqueId=:locationId and x.assignedPeriod!=null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("locationId", locationId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("locationId", locationId).
+                setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
@@ -712,8 +712,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.instructors i where " +
                 "i.uniqueId=:instructorId and x.assignedPeriod!=null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
-                setParameter("instructorId", instructorId, Long.class).
-                setParameter("examTypeId", examTypeId, Long.class).
+                setParameter("instructorId", instructorId).
+                setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
         for (Exam exam: exams) {
             ret.add(new ExamAssignmentInfo(exam));
@@ -746,7 +746,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                         otherExams.add(x);
                     }
                 }
-                hibSession.delete(conf);
+                hibSession.remove(conf);
                 j.remove();
             }
 
@@ -757,7 +757,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setStudents(getStudents(hibSession, dc.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = dc.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -770,7 +770,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setDistance(btb.getDistance());
                 conf.setStudents(getStudents(hibSession, btb.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = btb.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -782,7 +782,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                 conf.setStudents(getStudents(hibSession, m2d.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
                     Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
@@ -797,7 +797,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setInstructors(getInstructors(hibSession, dc.getStudents()));
                 conf.setNrInstructors(conf.getInstructors().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = dc.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -810,7 +810,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setDistance(btb.getDistance());
                 conf.setInstructors(getInstructors(hibSession, btb.getStudents()));
                 conf.setNrInstructors(conf.getInstructors().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = btb.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -822,7 +822,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                 conf.setInstructors(getInstructors(hibSession, m2d.getStudents()));
                 conf.setNrInstructors(conf.getInstructors().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
                     Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
@@ -845,15 +845,15 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     contact.setLastName(manager.getLastName());
                     contact.setExternalUniqueId(manager.getExternalUniqueId());
                     contact.setEmailAddress(manager.getEmailAddress());
-                    hibSession.save(contact);
+                    hibSession.persist(contact);
                 }
                 event.setMainContact(contact);
                 hibSession.saveOrUpdate(event);
             }
             
-            hibSession.update(this);
+            hibSession.merge(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
-                hibSession.update((Exam)i.next());
+                hibSession.merge((Exam)i.next());
             
             SubjectArea subject = null;
             Department dept = null;
@@ -909,16 +909,16 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                         otherExams.add(x);
                     }
                 }
-                hibSession.delete(conf);
+                hibSession.remove(conf);
                 j.remove();
             }
 
             ExamEvent event = getEvent();
-            if (event!=null) hibSession.delete(event);
+            if (event!=null) hibSession.remove(event);
             
-            hibSession.update(this);
+            hibSession.merge(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
-                hibSession.update((Exam)i.next());
+                hibSession.merge((Exam)i.next());
             
             SubjectArea subject = null;
             Department dept = null;
@@ -1034,8 +1034,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().
             getSession().
             createQuery("select e from Exam e where e.session.uniqueId=:sessionId and e.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", Exam.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
     }
@@ -1175,7 +1175,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (iEvent==null) 
             iEvent = ExamDAO.getInstance().getSession().createQuery(
                 "select e from ExamEvent e left join fetch e.meetings m where e.exam.uniqueId=:examId", ExamEvent.class).
-                setParameter("examId", getUniqueId(), Long.class).
+                setParameter("examId", getUniqueId()).
                 setCacheable(true).uniqueResult();
         return iEvent;
     }
@@ -1200,7 +1200,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                         otherExams.add(x);
                     }
                 }
-                hibSession.delete(conf);
+                hibSession.remove(conf);
                 j.remove();
             }
             
@@ -1213,7 +1213,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setStudents(getStudents(hibSession, dc.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = dc.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -1226,7 +1226,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setDistance(btb.getDistance());
                 conf.setStudents(getStudents(hibSession, btb.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = btb.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -1238,7 +1238,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                 conf.setStudents(getStudents(hibSession, m2d.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
                     Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
@@ -1253,7 +1253,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeDirect);
                 conf.setStudents(getInstructors(hibSession, dc.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = dc.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -1266,7 +1266,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setDistance(btb.getDistance());
                 conf.setStudents(getInstructors(hibSession, btb.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 Exam other = btb.getOtherExam().getExam(hibSession);
                 other.getConflicts().add(conf);
@@ -1278,7 +1278,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 conf.setConflictType(ExamConflict.sConflictTypeMoreThanTwoADay);
                 conf.setStudents(getInstructors(hibSession, m2d.getStudents()));
                 conf.setNrStudents(conf.getStudents().size());
-                hibSession.save(conf);
+                hibSession.persist(conf);
                 getConflicts().add(conf);
                 for (Iterator j=m2d.getOtherExams().iterator();j.hasNext();) {
                     Exam otherExam = (Exam)((ExamInfo)j.next()).getExam(hibSession);
@@ -1287,9 +1287,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             }
             
-            hibSession.update(this);
+            hibSession.merge(this);
             for (Iterator i=otherExams.iterator();i.hasNext();)
-                hibSession.update((Exam)i.next());
+                hibSession.merge((Exam)i.next());
             
             if (tx!=null) tx.commit();
         } catch (Exception e) {

@@ -439,12 +439,12 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	                InstructionalOfferingDAO idao = InstructionalOfferingDAO.getInstance();
 	        		org.hibernate.Session hibSession = idao.getSession();
 
-	        		Query q = hibSession.createQuery(query.toString());
+	        		Query<Object[]> q = hibSession.createQuery(query.toString(), Object[].class);
 	        		q.setFetchSize(200);
 	        		q.setCacheable(true);
-	        		q.setParameter("subjectAreaId", Long.parseLong(subjectAreaId), Long.class);
+	        		q.setParameter("subjectAreaId", Long.parseLong(subjectAreaId));
 	                
-	        		List result = q.list();
+	        		List<Object[]> result = q.list();
 	                crsNumList = new Vector();
 	        		if(result.size()>0) {
 	        		    for(int i=0; i<result.size(); i++) {
@@ -479,17 +479,17 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	                    query.append("    and ioc.instructionalOffering.uniqueId=io.uniqueId ");
 	                    query.append("    and s.instrOfferingConfig.uniqueId=ioc.uniqueId ");	                    
 	                    
-		        		q = hibSession.createQuery(query.toString());
-		        		q.setFetchSize(200);
-		        		q.setCacheable(true);
-		        		q.setParameter("courseNbr", Long.parseLong(courseNbr), Long.class);
+		        		Query<SchedulingSubpart> q2 = hibSession.createQuery(query.toString());
+		        		q2.setFetchSize(200);
+		        		q2.setCacheable(true);
+		        		q2.setParameter("courseNbr", Long.parseLong(courseNbr));
 		                
-		        		result = new Vector(q.list());
-		        		if(result!=null && result.size()>0) {
-		        			Collections.sort(result, new SchedulingSubpartComparator(subjectAreaId==null || subjectAreaId.length()==0?null:Long.valueOf(subjectAreaId)));
+		        		List<SchedulingSubpart> subparts = q2.list();
+		        		if(subparts!=null && subparts.size()>0) {
+		        			Collections.sort(subparts, new SchedulingSubpartComparator(subjectAreaId==null || subjectAreaId.length()==0?null:Long.valueOf(subjectAreaId)));
 		        			subpartList = new Vector();
-		        		    for(int i=0; i<result.size(); i++) {
-		        		        SchedulingSubpart a = (SchedulingSubpart)result.get(i);
+		        		    for(int i=0; i<subparts.size(); i++) {
+		        		        SchedulingSubpart a = subparts.get(i);
 		        		        String ssid = a.getUniqueId().toString();
 		        		        String name = a.getItype().getAbbv();
 		        		        String sufix = a.getSchedulingSubpartSuffix();
@@ -528,22 +528,22 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 		                    query.append("  where s.uniqueId=:itype ");
 		                    query.append("    and s.uniqueId=c.schedulingSubpart.uniqueId ");	                    
 		                    
-			        		q = hibSession.createQuery(query.toString());
-			        		q.setFetchSize(200);
-			        		q.setCacheable(true);
-			        		q.setParameter("itype", Long.parseLong(subpart), Long.class);
+		                    Query<Class_> q3 = hibSession.createQuery(query.toString());
+			        		q3.setFetchSize(200);
+			        		q3.setCacheable(true);
+			        		q3.setParameter("itype", Long.parseLong(subpart));
 			        		
-			        		result = q.list();
-			        		if(result!=null && result.size()>0) {
-                                Collections.sort(result, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+			        		List<Class_> classes = q3.list();
+			        		if(classes!=null && classes.size()>0) {
+                                Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
                                 
 			        		    if(classNumber.equals(Preference.BLANK_PREF_VALUE)) 
 			        		        form.setClassNumber(index, DistributionPrefsForm.ALL_CLASSES_SELECT);
 			        		        
 	                            classNumList = new Vector();
 				        		classNumList.addElement(new ComboBoxLookup(MSG.dropDistrPrefAll(), "-1"));
-			        		    for(int i=0; i<result.size(); i++) {
-			        		    	Class_ clazz = (Class_)result.get(i);
+			        		    for(int i=0; i<classes.size(); i++) {
+			        		    	Class_ clazz = classes.get(i);
 			        		        ComboBoxLookup cbl = new ComboBoxLookup(clazz.getSectionNumberString(), clazz.getUniqueId().toString());
 			        		    	if (suffix) {
 			        		    		String extId = clazz.getClassSuffix(clazz.getSchedulingSubpart().getControllingCourseOffering());
@@ -786,7 +786,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         String query = "delete DistributionPref dp where dp.uniqueId=:distPrefId";
 
         Query q = hibSession.createQuery(query);
-        q.setParameter("distPrefId", Long.parseLong(distPrefId, Long.class));
+        q.setParameter("distPrefId", Long.parseLong(distPrefId));
         q.executeUpdate();
         */
         
@@ -815,7 +815,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 				hibSession.saveOrUpdate(pg);
 			}
 	        
-	        hibSession.delete(dp);
+	        hibSession.remove(dp);
 	        hibSession.saveOrUpdate(dept);
 	        
 	        Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");

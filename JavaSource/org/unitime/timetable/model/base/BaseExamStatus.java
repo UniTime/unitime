@@ -62,7 +62,7 @@ public abstract class BaseExamStatus extends ExamStatusId {
 			@JoinColumn(name = "type_id")
 		},
 		inverseJoinColumns = { @JoinColumn(name = "manager_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimetableManager> getManagers() { return iManagers; }
 	public void setManagers(Set<TimetableManager> managers) { iManagers = managers; }
 	public void addTomanagers(TimetableManager timetableManager) {

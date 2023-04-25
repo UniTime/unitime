@@ -428,7 +428,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 					if (r.getField(DataColumn.IS_FIRST_RECORD_FOR_CLASS.ordinal()).equals(Boolean.TRUE.toString())) {
 						if (!r.getField(DataColumn.DISPLAY.ordinal()).equals(c.isDisplayInstructor().toString())) {
 							c.setDisplayInstructor(Boolean.parseBoolean(r.getField(DataColumn.DISPLAY.ordinal())));
-							hibSession.update(c);
+							hibSession.merge(c);
 							somethingChanged = true;
 						}
 						if (!r.getField(DataColumn.FUNDING_DEPT.ordinal()).equals(c.getEffectiveFundingDept() == null ? "" : c.getEffectiveFundingDept().getUniqueId().toString())) {
@@ -437,7 +437,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 							} else {
 								c.setFundingDept(null);								
 							}
-							hibSession.update(c);
+							hibSession.merge(c);
 							somethingChanged = true;							
 						}
 					}
@@ -469,7 +469,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 						}
 						
 						if (changed) {
-							hibSession.update(ci);
+							hibSession.merge(ci);
 							somethingChanged = true;
 						}
 					} else {
@@ -540,7 +540,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				for (ClassInstructor ci : origInstrs) {
 					c.removeClassInstructor(ci);
 					ci.getInstructor().removeClassInstructor(ci);
-					hibSession.delete(ci);
+					hibSession.remove(ci);
 					somethingChanged = true;
 				}
 			}
@@ -627,7 +627,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				for (ClassInstructor ci : origInstrs) {
 					c.removeClassInstructor(ci);
 					ci.getInstructor().removeClassInstructor(ci);
-					hibSession.delete(ci);
+					hibSession.remove(ci);
 					changed = true;
 				}
 			}

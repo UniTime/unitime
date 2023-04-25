@@ -35,7 +35,7 @@ import org.unitime.timetable.model.base.BaseInstructorAttribute;
 import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "attribute")
 public class InstructorAttribute extends BaseInstructorAttribute implements Comparable<InstructorAttribute> {
 	private static final long serialVersionUID = 331064011983395675L;
@@ -58,13 +58,13 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 	public static List<InstructorAttribute> getAllGlobalAttributes(Long sessionId) throws HibernateException {
 		return InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null order by name", InstructorAttribute.class
-				).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 
 	public static List<InstructorAttribute> getAllDepartmentalAttributes(Long departmentId) throws HibernateException {
 		return InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute ia where ia.department.uniqueId = :departmentId order by name", InstructorAttribute.class
-				).setParameter("departmentId", departmentId, Long.class).setCacheable(true).list();
+				).setParameter("departmentId", departmentId).setCacheable(true).list();
 	}
 	
 	public InstructorAttribute findSameAttributeInSession(Session session) {
@@ -74,12 +74,12 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 			if (d == null) return null;
 			return InstructorAttributeDAO.getInstance().getSession().createQuery(
 					"from InstructorAttribute ia where ia.department.uniqueId = :departmentId and ia.code = :code", InstructorAttribute.class)
-					.setParameter("departmentId", d.getUniqueId(), Long.class).setParameter("code", getCode(), String.class).setCacheable(true)
+					.setParameter("departmentId", d.getUniqueId()).setParameter("code", getCode()).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		} else {
 			return InstructorAttributeDAO.getInstance().getSession().createQuery(
 					"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null and ia.code = :code", InstructorAttribute.class)
-					.setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("code", getCode(), String.class).setCacheable(true)
+					.setParameter("sessionId", session.getUniqueId()).setParameter("code", getCode()).setCacheable(true)
 					.setMaxResults(1).uniqueResult();
 		}
 	}

@@ -37,7 +37,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_group")
 public class StudentGroup extends BaseStudentGroup {
 	private static final long serialVersionUID = 1L;
@@ -79,8 +79,8 @@ public class StudentGroup extends BaseStudentGroup {
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId=:sessionId and "+
                     "a.groupAbbreviation=:abbv", StudentGroup.class).
-             setParameter("sessionId", sessionId.longValue(), Long.class).
-             setParameter("abbv", abbv, String.class).
+             setParameter("sessionId", sessionId.longValue()).
+             setParameter("abbv", abbv).
              setCacheable(true).
              uniqueResult(); 
     }
@@ -92,15 +92,15 @@ public class StudentGroup extends BaseStudentGroup {
                     "select a from StudentGroup a where "+
                     "a.session.uniqueId = :acadSessionId and "+
                     "externalUniqueId=:eId ", StudentGroup.class).
-             setParameter("acadSessionId", acadSessionId.longValue(), Long.class).
-             setParameter("eId", externalId, String.class).
+             setParameter("acadSessionId", acadSessionId.longValue()).
+             setParameter("eId", externalId).
              setCacheable(true).
              uniqueResult(); 
     }
     
     public static List<StudentGroup> findByType(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		if (typeId == null)
-			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null", StudentGroup.class).setParameter("sessionId", sessionId, Long.class).list();
-		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId", StudentGroup.class).setParameter("sessionId", sessionId, Long.class).setParameter("typeId", typeId, Long.class).list();
+			return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type is null", StudentGroup.class).setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from StudentGroup x where x.session.uniqueId = :sessionId and x.type.uniqueId = :typeId", StudentGroup.class).setParameter("sessionId", sessionId).setParameter("typeId", typeId).list();
 	}
 }

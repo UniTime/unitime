@@ -157,7 +157,7 @@ protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 	String query = createQueryString(subjectAreas);
 	Query q = StudentClassEnrollmentDAO.getInstance().getSession().createQuery(query);
-	q.setParameter("sessId", getSession().getUniqueId().longValue(), Long.class);
+	q.setParameter("sessId", getSession().getUniqueId().longValue());
 	return q.list();
 }
 

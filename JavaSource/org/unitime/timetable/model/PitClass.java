@@ -38,7 +38,7 @@ import org.unitime.timetable.model.base.BasePitClass;
 import org.unitime.timetable.util.Constants;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pit_class")
 public class PitClass extends BasePitClass {
 

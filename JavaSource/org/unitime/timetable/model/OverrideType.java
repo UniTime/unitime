@@ -43,7 +43,7 @@ public class OverrideType extends BaseOverrideType implements Comparable<Overrid
 		if (reference == null || reference.isEmpty()) return null;
 		return OverrideTypeDAO.getInstance().getSession().createQuery(
 				"from OverrideType where reference = :reference", OverrideType.class
-				).setParameter("reference", reference, String.class).setMaxResults(1).uniqueResult();
+				).setParameter("reference", reference).setMaxResults(1).uniqueResult();
 	}
 
 }

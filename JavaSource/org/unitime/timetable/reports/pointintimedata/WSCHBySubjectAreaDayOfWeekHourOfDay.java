@@ -95,8 +95,8 @@ public class WSCHBySubjectAreaDayOfWeekHourOfDay extends WSCHByDayOfWeekAndHourO
 
 		for (SubjectArea subjectArea : pointInTimeData.getSession().getSubjectAreas()){
 			for (PitClass pc : hibSession.createQuery(sb.toString(), PitClass.class)
-									.setParameter("sessId", pointInTimeData.getUniqueId().longValue(), Long.class)
-									.setParameter("saId", subjectArea.getUniqueId().longValue(), Long.class)
+									.setParameter("sessId", pointInTimeData.getUniqueId().longValue())
+									.setParameter("saId", subjectArea.getUniqueId().longValue())
 									.setCacheable(true)
 									.list()) {
 				if (processedClasses.contains(pc.getUniqueId())){

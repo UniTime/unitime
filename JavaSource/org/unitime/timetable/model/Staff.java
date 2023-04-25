@@ -42,7 +42,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "staff")
 public class Staff extends BaseStaff implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
@@ -76,8 +76,8 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 				"(s.campus is null or s.campus=(select x.academicInitiative from Session x where x.uniqueId = :sessionId)) and " +
 				"(select di.externalUniqueId from DepartmentalInstructor di " +
 				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
-		q.setParameter("deptCode", deptCode, String.class);
-		q.setParameter("sessionId", acadSessionId, Long.class);
+		q.setParameter("deptCode", deptCode);
+		q.setParameter("sessionId", acadSessionId);
 		q.setCacheable(true);
 		return (q.list());
 	}

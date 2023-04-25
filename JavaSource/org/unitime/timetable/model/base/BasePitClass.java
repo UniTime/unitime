@@ -135,19 +135,19 @@ public abstract class BasePitClass implements Serializable {
 
 	@ManyToOne
 	@JoinFormula(" ( select sa.department_uniqueid from %SCHEMA%.pit_sched_subpart ss, %SCHEMA%.pit_instr_offer_config ioc, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = pit_subpart_id and ioc.uniqueid = ss.pit_config_id and io.uniqueid = ioc.pit_instr_offr_id and co.pit_instr_offr_id = io.uniqueid and co.is_control = %TRUE% and sa.uniqueid = co.subject_area_id ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "class_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "managing_dept", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Department getManagingDept() { return iManagingDept; }
 	public void setManagingDept(Department managingDept) { iManagingDept = managingDept; }
 
@@ -173,12 +173,12 @@ public abstract class BasePitClass implements Serializable {
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "funding_dept_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentClass")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)
 	public Set<PitClass> getPitChildClasses() { return iPitChildClasses; }
 	public void setPitChildClasses(Set<PitClass> pitChildClasses) { iPitChildClasses = pitChildClasses; }
@@ -188,7 +188,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassInstructing", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassInstructor> getPitClassInstructors() { return iPitClassInstructors; }
 	public void setPitClassInstructors(Set<PitClassInstructor> pitClassInstructors) { iPitClassInstructors = pitClassInstructors; }
 	public void addTopitClassInstructors(PitClassInstructor pitClassInstructor) {
@@ -197,7 +197,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitStudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<PitStudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addTostudentEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
@@ -206,7 +206,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassEvent> getPitClassEvents() { return iPitClassEvents; }
 	public void setPitClassEvents(Set<PitClassEvent> pitClassEvents) { iPitClassEvents = pitClassEvents; }
 	public void addTopitClassEvents(PitClassEvent pitClassEvent) {

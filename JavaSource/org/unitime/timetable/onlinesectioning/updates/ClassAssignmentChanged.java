@@ -80,7 +80,7 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 					helper.getHibSession().createQuery(
 							"select e.student.uniqueId from StudentClassEnrollment e where "+
 			                "e.clazz.uniqueId = :classId", Long.class)
-					.setParameter("classId", classId, Long.class).list(), name());
+					.setParameter("classId", classId).list(), name());
 			try {
 				helper.beginTransaction();
 				try {

@@ -107,7 +107,7 @@ public class EventExpirationService extends Thread {
 					event.getNotes().add(note);
 					hibSession.saveOrUpdate(note);
 				
-					hibSession.update(event);
+					hibSession.merge(event);
 					
 					try {
 						EventEmail.eventExpired(event, affectedMeetings);

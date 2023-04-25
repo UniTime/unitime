@@ -170,7 +170,7 @@ public class TeachingResponsibilities implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(responsibility);
+		hibSession.remove(responsibility);
 	}
 	
 	@Override

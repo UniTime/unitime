@@ -47,7 +47,7 @@ public class UniTimePrincipal implements Principal, Serializable {
 		
 		org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 		try {
-			List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", externalId, String.class).list();
+			List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", externalId).list();
 			if (!student.isEmpty()) {
 				for (Student s: student) {
 					addStudentId(s.getSession().getUniqueId(), s.getUniqueId());

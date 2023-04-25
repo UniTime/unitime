@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseStudentAreaClassificationMajor;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_area_clasf_major")
 public class StudentAreaClassificationMajor extends BaseStudentAreaClassificationMajor implements Comparable<StudentAreaClassificationMajor> {
 	private static final long serialVersionUID = 1L;

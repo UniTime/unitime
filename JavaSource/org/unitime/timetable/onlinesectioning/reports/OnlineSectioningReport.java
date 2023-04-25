@@ -117,7 +117,7 @@ public class OnlineSectioningReport implements Runnable {
 				"select l from OnlineSectioningLog l where " +
 				"l.session.uniqueId = :sessionId " + filter +
 				" order by l.student, l.timeStamp", org.unitime.timetable.model.OnlineSectioningLog.class)
-				.setParameter("sessionId", sessionId, Long.class).list()) {
+				.setParameter("sessionId", sessionId).list()) {
 			if (student == null) {
 				student = l.getStudent();
 			} else if (!student.equals(l.getStudent())) {

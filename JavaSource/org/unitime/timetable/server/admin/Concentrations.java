@@ -160,7 +160,7 @@ public class Concentrations implements AdminTable {
 				null,
 				null);
 		conc.getMajor().getConcentrations().remove(conc);
-		hibSession.delete(conc);		
+		hibSession.remove(conc);		
 	}
 
 	@Override

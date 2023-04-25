@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseManagerRole;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "tmtbl_mgr_to_roles")
 public class ManagerRole extends BaseManagerRole {
 	private static final long serialVersionUID = 1L;

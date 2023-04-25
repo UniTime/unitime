@@ -204,7 +204,7 @@ public class EventEmail {
 						"l.uniqueId in :locationIds and m.emailAddress is not null and r.receiveEmails = true and :permission in elements (r.role.rights)",
 						TimetableManager.class)
 						.setParameterList("locationIds", locationIds, Long.class)
-						.setParameter("permission", Right.EventLookupContact.name(), String.class)
+						.setParameter("permission", Right.EventLookupContact.name())
 						.list()) {
 					email.addRecipientCC(m.getEmailAddress(), nf.format(m));
 				}

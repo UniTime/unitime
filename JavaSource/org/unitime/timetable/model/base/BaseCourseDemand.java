@@ -145,7 +145,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	public void setFreeTime(FreeTime freeTime) { iFreeTime = freeTime; }
 
 	@OneToMany(mappedBy = "courseDemand", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseRequest> getCourseRequests() { return iCourseRequests; }
 	public void setCourseRequests(Set<CourseRequest> courseRequests) { iCourseRequests = courseRequests; }
 	public void addTocourseRequests(CourseRequest courseRequest) {
@@ -154,7 +154,7 @@ public abstract class BaseCourseDemand implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "courseDemand", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentEnrollmentMessage> getEnrollmentMessages() { return iEnrollmentMessages; }
 	public void setEnrollmentMessages(Set<StudentEnrollmentMessage> enrollmentMessages) { iEnrollmentMessages = enrollmentMessages; }
 	public void addToenrollmentMessages(StudentEnrollmentMessage studentEnrollmentMessage) {

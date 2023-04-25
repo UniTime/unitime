@@ -406,11 +406,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							helper.logOption("message", getMessage());
 						
 						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
-							TimetableManager manager = helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id", TimetableManager.class).setParameter("id", helper.getUser().getExternalId(), String.class).uniqueResult();
+							TimetableManager manager = helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id", TimetableManager.class).setParameter("id", helper.getUser().getExternalId()).uniqueResult();
 							Advisor advisor = null;
 							if (manager == null || manager.getEmailAddress() == null)
 								advisor = helper.getHibSession().createQuery("from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId", Advisor.class)
-										.setParameter("externalId", helper.getUser().getExternalId(), String.class).setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).setMaxResults(1).uniqueResult();
+										.setParameter("externalId", helper.getUser().getExternalId()).setParameter("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(1).uniqueResult();
 							if (manager != null && manager.getEmailAddress() != null) {
 								email.setReplyTo(manager.getEmailAddress(), helper.getInstructorNameFormat().format(manager));
 								helper.logOption("reply-to", helper.getInstructorNameFormat().format(manager) + " <" + manager.getEmailAddress() + ">");

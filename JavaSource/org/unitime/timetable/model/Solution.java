@@ -84,7 +84,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solution")
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	private static CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -114,8 +114,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if ("GlobalInfo".equals(name)) return getGlobalInfo();
 		return SolutionInfoDAO.getInstance().getSession().
 			createQuery("select si from SolutionInfo si where si.definition.name=:name and si.solution.uniqueId=:solutionId", SolutionInfo.class).
-			setParameter("name", name, String.class).
-			setParameter("solutionId", getUniqueId(), Long.class).
+			setParameter("name", name).
+			setParameter("solutionId", getUniqueId()).
 			uniqueResult();
 	}
 
@@ -135,7 +135,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		setCommitDate(null);
 		setCommited(Boolean.FALSE);
 
-		hibSession.update(this);
+		hibSession.merge(this);
 		
 	    if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
 			deleteObjects(hibSession,
@@ -152,7 +152,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			        contact.setLastName(manager.getLastName());
 			        contact.setExternalUniqueId(manager.getExternalUniqueId());
 			        contact.setEmailAddress(manager.getEmailAddress());
-			        hibSession.save(contact);
+			        hibSession.persist(contact);
 		        }
 		    }
 		    
@@ -165,12 +165,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			
 			List<ClassEvent> events = hibSession.createQuery(
 					"select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
-					.setParameter("solutionId", getUniqueId(), Long.class).list();
+					.setParameter("solutionId", getUniqueId()).list();
 			for (ClassEvent event: events) {
 	        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
 	        		if (!i.next().getMeetingDate().before(today)) i.remove();
 	        	if (event.getMeetings().isEmpty()) {
-	        		hibSession.delete(event);
+	        		hibSession.remove(event);
 	        	} else {
 	    			if (event.getNotes() == null)
 	    				event.setNotes(new HashSet<EventNote>());
@@ -273,8 +273,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameterList("ownerIds", ownerIds, Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -290,8 +290,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameterList("ownerIds", ownerIds, Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -307,8 +307,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 					.setParameterList("ownerIds", ownerIds, Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -328,9 +328,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
 							.setParameterList("ownerIds", ownerIds, Long.class)
-							.setParameter("solutionId", getUniqueId(), Long.class)
-							.setParameter("sessionId", getOwner().getSession().getUniqueId(), Long.class)
-							.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+							.setParameter("solutionId", getUniqueId())
+							.setParameter("sessionId", getOwner().getSession().getUniqueId())
+							.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 							.list()) {
 				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
 				Assignment a = (Assignment)o[1];
@@ -346,9 +346,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
-					.setParameter("ownerId", getOwner().getUniqueId(), Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("ownerId", getOwner().getUniqueId())
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -363,9 +363,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
-					.setParameter("ownerId", getOwner().getUniqueId(), Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("ownerId", getOwner().getUniqueId())
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -380,9 +380,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 					"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 					"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
-					.setParameter("ownerId", getOwner().getUniqueId(), Long.class)
-					.setParameter("solutionId", getUniqueId(), Long.class)
-					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+					.setParameter("ownerId", getOwner().getUniqueId())
+					.setParameter("solutionId", getUniqueId())
+					.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 					.list()) {
 				Location room = (Location)o[0];
 				Assignment a = (Assignment)o[1];
@@ -401,10 +401,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 							"bitand(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
 							"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))", Object[].class)
-							.setParameter("ownerId", getOwner().getUniqueId(), Long.class)
-							.setParameter("solutionId", getUniqueId(), Long.class)
-							.setParameter("sessionId", getOwner().getSession().getUniqueId(), Long.class)
-							.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal(), Integer.class)
+							.setParameter("ownerId", getOwner().getUniqueId())
+							.setParameter("solutionId", getUniqueId())
+							.setParameter("sessionId", getOwner().getSession().getUniqueId())
+							.setParameter("exactType", TimePattern.TimePatternType.ExactTime.ordinal())
 							.list()) {
 				DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
 				Assignment a = (Assignment)o[1];
@@ -434,9 +434,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"s.uniqueId=:solutionId and os.owner.session.uniqueId=:sessionId and os.owner.uniqueId!=:ownerId and "+
 				"a.clazz=e.clazz and oa.clazz=oe.clazz and a.clazz.schedulingSubpart!=oa.clazz.schedulingSubpart and e.studentId=oe.studentId "+
 				"group by a.uniqueId, oa.uniqueId");
-		q.setParameter("ownerId", getOwner().getUniqueId(), Long.class);
-		q.setParameter("solutionId", getUniqueId(), Long.class);
-		q.setParameter("sessionId", getOwner().getSession().getUniqueId(), Long.class);
+		q.setParameter("ownerId", getOwner().getUniqueId());
+		q.setParameter("solutionId", getUniqueId());
+		q.setParameter("sessionId", getOwner().getSession().getUniqueId());
 		Iterator otherAssignments = q.iterate();
 		while (otherAssignments.hasNext()) {
 			Object[] result = (Object[])otherAssignments.next();
@@ -471,14 +471,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		        	contact.setLastName(manager.getLastName());
 		        	contact.setExternalUniqueId(manager.getExternalUniqueId());
 		        	contact.setEmailAddress(manager.getEmailAddress());
-		        	hibSession.save(contact);
+		        	hibSession.persist(contact);
 		        }
 		    }
 		}
         Hashtable<Long,ClassEvent> classEvents = new Hashtable();
         for (ClassEvent e: hibSession.createQuery(
                 "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
-                .setParameter("solutionId", getUniqueId(), Long.class)
+                .setParameter("solutionId", getUniqueId())
                 .list()) {
             classEvents.put(e.getClazz().getUniqueId(),e);
         }
@@ -502,13 +502,13 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		        hibSession.saveOrUpdate(event);
 		    }
 		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
-		    	hibSession.delete(event);
+		    	hibSession.remove(event);
 		}
 		
 		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
 			for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
 			    ClassEvent event = (ClassEvent)e.nextElement();
-			    hibSession.delete(event);
+			    hibSession.remove(event);
 			}
 		} else {
 			Calendar cal = Calendar.getInstance(Locale.US);
@@ -523,7 +523,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
 	        		if (!i.next().getMeetingDate().before(today)) i.remove();
 	        	if (event.getMeetings().isEmpty()) {
-	        		hibSession.delete(event);
+	        		hibSession.remove(event);
 	        	} else {
 	    			if (event.getNotes() == null)
 	    				event.setNotes(new HashSet<EventNote>());
@@ -779,7 +779,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
 	
 	private void deleteObjects(org.hibernate.Session hibSession, String objectName, String idQuery) {
-		Iterator<Long> idIterator = hibSession.createQuery(idQuery, Long.class).setParameter("solutionId", getUniqueId(), Long.class).list().iterator();
+		Iterator<Long> idIterator = hibSession.createQuery(idQuery, Long.class).setParameter("solutionId", getUniqueId()).list().iterator();
 		StringBuffer ids = new StringBuffer();
 		int idx = 0;
 		while (idIterator.hasNext()) {
@@ -804,7 +804,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"ConstraintInfo c inner join c.assignments a, Assignment oa "+
 				"where "+
 				"a.solution.uniqueId=:solutionId and oa.solution.uniqueId!=:solutionId and oa in elements ( c.assignments) ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.iterate();
 		while (i.hasNext()) {
 			Object[] next = (Object[])i.next();
@@ -825,12 +825,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
         hibSession.createQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		hibSession.createQuery(
 				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 
 		deleteObjects(
@@ -853,7 +853,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.createQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		deleteObjects(
@@ -864,7 +864,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		getOwner().getSolutions().remove(this);
 		
-		hibSession.delete(this);
+		hibSession.remove(this);
 	}
 	
 	public void empty(org.hibernate.Session hibSession, TimetableInfoFileProxy proxy) {
@@ -875,7 +875,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"ConstraintInfo c inner join c.assignments a, Assignment oa "+
 				"where "+
 				"a.solution.uniqueId=:solutionId and oa.solution.uniqueId!=:solutionId and oa in elements ( c.assignments) ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.iterate();
 		while (i.hasNext()) {
 			Object[] next = (Object[])i.next();
@@ -898,12 +898,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 		hibSession.createQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		hibSession.createQuery(
 				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ) ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 
 		deleteObjects(
@@ -926,7 +926,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.createQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ) ")
-				.setParameter("solutionId", getUniqueId(), Long.class)
+				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		deleteObjects(
@@ -992,7 +992,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					if (isCommittedInfo) {
 						a.getConstraintInfo().remove(c);
 						hibSession.saveOrUpdate(a);
-						hibSession.delete(c);
+						hibSession.remove(c);
 					}
 				}
 			}
@@ -1009,9 +1009,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"s.uniqueId=:solutionId and os.owner.session.uniqueId=:sessionId and os.owner.uniqueId!=:ownerId and os.commited=true and "+
 				"a.clazz=e.clazz and oa.clazz=oe.clazz and a.clazz.schedulingSubpart!=oa.clazz.schedulingSubpart and e.studentId=oe.studentId "+
 				"group by a.uniqueId, oa.uniqueId");
-		q.setParameter("ownerId", getOwner().getUniqueId(), Long.class);
-		q.setParameter("solutionId", getUniqueId(), Long.class);
-		q.setParameter("sessionId", getOwner().getSession().getUniqueId(), Long.class);
+		q.setParameter("ownerId", getOwner().getUniqueId());
+		q.setParameter("solutionId", getUniqueId());
+		q.setParameter("sessionId", getOwner().getSession().getUniqueId());
 		Iterator otherAssignments = q.iterate();
 		while (otherAssignments.hasNext()) {
 			Object[] result = (Object[])otherAssignments.next();
@@ -1039,7 +1039,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     	return (SolutionDAO.getInstance()).
     			getSession().
     			createQuery("select s from Solution s where s.owner.session.uniqueId=:sessionId", Solution.class).
-    			setParameter("sessionId", sessionId.longValue(), Long.class).
+    			setParameter("sessionId", sessionId.longValue()).
     			//setCacheable(true).
     			list();
     }
@@ -1072,7 +1072,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
                 "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)", Class_.class).
-                setParameter("solutionId", getUniqueId(), Long.class).
+                setParameter("solutionId", getUniqueId()).
                 list());
         HashSet relatedOfferings = new HashSet();
         for (Enumeration e=assignments.elements();e.hasMoreElements();) {
@@ -1166,7 +1166,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     		}
     		
     		clazz.setClassSuffix(sSufixFormat.format(divNum)+sSufixFormat.format(secNum));
-    		hibSession.update(clazz);
+    		hibSession.merge(clazz);
     		
     		lastAssignment = assignment;
     		lastSubpart = clazz.getSchedulingSubpart();
@@ -1181,7 +1181,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 Class_ clazz = (assignment==null?(Class_)o:assignment.getClazz());
         		if (recompute.contains(clazz.getSchedulingSubpart())) {
         			clazz.setClassSuffix(null);
-        			hibSession.update(clazz);
+        			hibSession.merge(clazz);
         		} else {
         			i.remove();
         		}
@@ -1227,7 +1227,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         		}
 
         		clazz.setClassSuffix(sSufixFormat.format(divNum)+sSufixFormat.format(secNum));
-        		hibSession.update(clazz);
+        		hibSession.merge(clazz);
         		
         		lastAssignment = assignment;
         		lastSubpart = clazz.getSchedulingSubpart();
@@ -1241,7 +1241,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                     Class_ clazz = (assignment==null?(Class_)o:assignment.getClazz());
             		if (recompute2.contains(clazz.getSchedulingSubpart())) {
             			clazz.setClassSuffix(null);
-            			hibSession.update(clazz);
+            			hibSession.merge(clazz);
             		} else {
             			i.remove();
             		}
@@ -1280,7 +1280,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             		}
 
             		clazz.setClassSuffix(sSufixFormat.format(divNum)+sSufixFormat.format(secNum));
-            		hibSession.update(clazz);
+            		hibSession.merge(clazz);
             		
             		lastAssignment = assignment;
             		lastSubpart = clazz.getSchedulingSubpart();
@@ -1296,7 +1296,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
                 "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a) order by c.schedulingSubpart.uniqueId, c.sectionNumberCache").
-                setParameter("solutionId", getUniqueId(), Long.class).
+                setParameter("solutionId", getUniqueId()).
                 list());
         
         for (Iterator i=otherClasses.iterator();i.hasNext();) {
@@ -1322,7 +1322,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             clazz.setClassSuffix(sSufixFormat.format(divNum)+sSufixFormat.format(1));
             takenDivNums.add(Integer.valueOf(divNum));
             lastSubpart = clazz.getSchedulingSubpart();
-            hibSession.update(clazz);
+            hibSession.merge(clazz);
         }
         */
     }
@@ -1345,14 +1345,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             
             subparts2fix.add(clazz.getSchedulingSubpart());
             
-            hibSession.update(clazz);
+            hibSession.merge(clazz);
     	}
     	
         List<Class_> otherClasses = SolutionDAO.getInstance().getSession().createQuery(
                 "select distinct c from Class_ c, Solution s inner join s.owner.departments d "+
                 "where s.uniqueId = :solutionId and c.managingDept=d and "+
                 "c.uniqueId not in (select a.clazz.uniqueId from s.assignments a)", Class_.class).
-                setParameter("solutionId", getUniqueId(), Long.class).
+                setParameter("solutionId", getUniqueId()).
                 list();
         for (Class_ clazz: otherClasses) {
             if (clazz.getClassSuffix()==null) continue;
@@ -1360,7 +1360,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             
             subparts2fix.add(clazz.getSchedulingSubpart());
             
-            hibSession.update(clazz);
+            hibSession.merge(clazz);
         }
         
         for (Iterator i=subparts2fix.iterator();i.hasNext();) {
@@ -1389,7 +1389,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                                 int clazzSecNum = Integer.parseInt(clazz.getClassSuffix().substring(3,6));
                                 if (clazzDivNum==div) {
                                     clazz.setClassSuffix(sSufixFormat.format(clazzDivNum-dec)+sSufixFormat.format(clazzSecNum));
-                                    hibSession.update(clazz);
+                                    hibSession.merge(clazz);
                                 }
                             }
                         }
@@ -1476,11 +1476,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         for (Long classId: hibSession.createQuery("select c.uniqueId from "+
                     "Class_ c, Solution s where s.uniqueId=:solutionId and "+
                     "c.managingDept.uniqueId in elements (s.owner.departments)", Long.class).
-                    setParameter("solutionId", solutionId.longValue(), Long.class).list()) {
+                    setParameter("solutionId", solutionId.longValue()).list()) {
             hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
             hibSessionFactory.getCache().evictCollectionData(Class_.class.getName()+".assignments", classId);
         }
-        hibSessionFactory.getCache().evictCollectionData(SolverGroup.class.getName()+".solutions", hibSession.createQuery("select owner.uniqueId from Solution s where s.uniqueId=:solutionId", Long.class).setParameter("solutionId", solutionId, Long.class).uniqueResult());
+        hibSessionFactory.getCache().evictCollectionData(SolverGroup.class.getName()+".solutions", hibSession.createQuery("select owner.uniqueId from Solution s where s.uniqueId=:solutionId", Long.class).setParameter("solutionId", solutionId).uniqueResult());
    }
     
     public static boolean hasTimetable(Long sessionId) {
@@ -1488,7 +1488,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 createQuery("select count(s) from Solution s " +
                         "where s.owner.session.uniqueId=:sessionId and " +
                         "s.commited = true", Number.class).
-                setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().longValue()>0;
+                setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().longValue()>0;
     }
     
 	@Override
@@ -1539,8 +1539,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							if (instructor.getInstructor().getExternalUniqueId() != null) {
 								for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 									"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
-									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
+									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 									.setCacheable(true).list()) {
 									Assignment a = getAssignment(c);
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
@@ -1616,8 +1616,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				if (instructor.getInstructor().getExternalUniqueId() != null) {
 					for (Class_ c: Class_DAO.getInstance().getSession().createQuery(
 						"select e.clazz from StudentClassEnrollment e where e.student.externalUniqueId = :externalId and e.student.session.uniqueId = :sessionId", Class_.class)
-						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId(), Long.class)
-						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId(), String.class)
+						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
+						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 						.setCacheable(true).list()) {
 						Assignment a = getAssignment(c);
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
@@ -1679,11 +1679,11 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
     	        	"e.solution.commited=true and x.solution.commited = true and " +
             		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class)
-            .setParameter("classId", classId, Long.class)
-            .setParameter("startSlot", startSlot, Integer.class)
-            .setParameter("endSlot", startSlot + length, Integer.class);
+            .setParameter("classId", classId)
+            .setParameter("startSlot", startSlot)
+            .setParameter("endSlot", startSlot + length);
     	for (int i=0; i<dates.size(); i++) {
-    		q.setParameter("date"+i, dates.get(i), Date.class);
+    		q.setParameter("date"+i, dates.get(i));
     	}
         for (Object[] o: q.setCacheable(true).list()) {
             Set<Long> set = table.get((Long)o[0]);

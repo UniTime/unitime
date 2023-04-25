@@ -88,7 +88,7 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
                         department.getRoomDepts().remove(rd);
                         location.getRoomDepts().remove(rd);
                         hibSession.saveOrUpdate(location);
-                        hibSession.delete(rd);
+                        hibSession.remove(rd);
                         location.removedFromDepartment(department, hibSession);
     				}
     			hibSession.saveOrUpdate(department);

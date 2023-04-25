@@ -414,11 +414,11 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				if (!iDays.contains(period.getDateOffset())) {
 				    for (Exam exam: hibSession.createQuery(
                     "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-                    .setParameter("periodId", period.getUniqueId(), Long.class)
+                    .setParameter("periodId", period.getUniqueId())
                     .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
-					hibSession.delete(period);
+					hibSession.remove(period);
 					i.remove();
 				} else {
 					oldDays.add(period.getDateOffset());
@@ -472,18 +472,18 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				if (start==null) {
 				    for (Exam exam: hibSession.createQuery(
 				            "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-				            .setParameter("periodId", period.getUniqueId(), Long.class)
+				            .setParameter("periodId", period.getUniqueId())
 				            .list()) {
 				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
-				    hibSession.delete(period);
+				    hibSession.remove(period);
 				    i.remove();
 				} else {
 				    period.setStartSlot(start);
 				    period.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
 				    period.setEventStartOffset(eventStartOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    period.setEventStopOffset(eventStopOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
-				    hibSession.update(period);
+				    hibSession.merge(period);
 				}
 			}
 			for (Iterator i=iDays.iterator();i.hasNext();) {
@@ -499,7 +499,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 				    ep.setEventStopOffset(eventStopOffsets.get(start) == null?Integer.valueOf(null):Integer.valueOf(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 				    ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
-				    hibSession.save(ep);
+				    hibSession.persist(ep);
 				}
 			}
 			return null;
@@ -520,11 +520,11 @@ public class ExamPeriodEditForm implements UniTimeForm {
 		ExamPeriod ep = (ExamPeriodDAO.getInstance()).get(getUniqueId(), hibSession);
 		for (Exam exam: hibSession.createQuery(
 		        "select x from Exam x where x.assignedPeriod.uniqueId=:periodId", Exam.class)
-		        .setParameter("periodId", ep.getUniqueId(), Long.class)
+		        .setParameter("periodId", ep.getUniqueId())
 		        .list()) {
             exam.unassign(context.getUser().getExternalUserId(), hibSession);
 		}
-		hibSession.delete(ep);
+		hibSession.remove(ep);
 	}
 	
 	public String getOp() { return iOp; }

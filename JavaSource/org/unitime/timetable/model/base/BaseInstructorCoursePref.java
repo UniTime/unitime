@@ -52,7 +52,7 @@ public abstract class BaseInstructorCoursePref extends Preference implements Ser
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "course_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public CourseOffering getCourse() { return iCourse; }
 	public void setCourse(CourseOffering course) { iCourse = course; }
 

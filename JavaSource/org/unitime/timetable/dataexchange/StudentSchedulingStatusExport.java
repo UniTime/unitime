@@ -55,7 +55,7 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        
 	        for (StudentSectioningStatus status: getHibSession().createQuery(
 	        		"from StudentSectioningStatus where session is null or session.uniqueId = :sessionId order by reference", StudentSectioningStatus.class
-	        		).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+	        		).setParameter("sessionId", session.getUniqueId()).list()) {
 	        	Element statusElement = root.addElement("status");
 	        	statusElement.addAttribute("reference", status.getReference());
 	        	statusElement.addAttribute("name", status.getLabel());

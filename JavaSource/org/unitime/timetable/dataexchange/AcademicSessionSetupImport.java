@@ -248,7 +248,7 @@ public class AcademicSessionSetupImport extends BaseImport {
     	Map<String, Department> id2dept = new Hashtable<String, Department>();
         Map<String, Department> code2dept = new Hashtable<String, Department>();
         for (Department dept: getHibSession().createQuery(
-        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (dept.getExternalUniqueId() != null)
         		id2dept.put(dept.getExternalUniqueId(), dept);
         	code2dept.put(dept.getDeptCode(), dept);
@@ -342,7 +342,7 @@ public class AcademicSessionSetupImport extends BaseImport {
     	Map<String, SubjectArea> id2subject = new Hashtable<String, SubjectArea>();
         Map<String, SubjectArea> abbv2subject = new Hashtable<String, SubjectArea>();
         for (SubjectArea subject: getHibSession().createQuery(
-        		"from SubjectArea where session.uniqueId=:sessionId", SubjectArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from SubjectArea where session.uniqueId=:sessionId", SubjectArea.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (subject.getExternalUniqueId() != null)
         		id2subject.put(subject.getExternalUniqueId(), subject);
         	abbv2subject.put(subject.getSubjectAreaAbbreviation(), subject);
@@ -392,7 +392,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, TimetableManager> id2manager = new Hashtable<String, TimetableManager>();
         for (TimetableManager m: new TreeSet<TimetableManager>(getHibSession().createQuery(
 				"select distinct m from TimetableManager m inner join m.departments d where d.session.uniqueId = :sessionId", TimetableManager.class
-				).setParameter("sessionId", session.getUniqueId(), Long.class).list())) {
+				).setParameter("sessionId", session.getUniqueId()).list())) {
         	id2manager.put(m.getExternalUniqueId(), m);
         }
         Map<String, TimetableManager> allManagers = new Hashtable<String, TimetableManager>();
@@ -403,7 +403,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         
         Map<String, Department> code2dept = new Hashtable<String, Department>();
         for (Department dept: getHibSession().createQuery(
-        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	code2dept.put(dept.getDeptCode(), dept);
         }
         
@@ -503,7 +503,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, SolverGroup> abbv2group = new Hashtable<String, SolverGroup>();
         for (SolverGroup g: getHibSession().createQuery(
 				"from SolverGroup where session.uniqueId = :sessionId", SolverGroup.class
-				).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				).setParameter("sessionId", session.getUniqueId()).list()) {
         	abbv2group.put(g.getAbbv(), g);
         }
         Map<String, TimetableManager> id2manager = new Hashtable<String, TimetableManager>();
@@ -514,7 +514,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         
         Map<String, Department> code2dept = new Hashtable<String, Department>();
         for (Department dept: getHibSession().createQuery(
-        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	code2dept.put(dept.getDeptCode(), dept);
         }
         
@@ -614,7 +614,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, AcademicArea> id2area = new Hashtable<String, AcademicArea>();
         Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
         for (AcademicArea area: getHibSession().createQuery(
-        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (area.getExternalUniqueId() != null)
         		id2area.put(area.getExternalUniqueId(), area);
         	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
@@ -662,7 +662,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, Degree> id2degr = new Hashtable<String, Degree>();
         Map<String, Degree> ref2degr = new Hashtable<String, Degree>();
         for (Degree degr: getHibSession().createQuery(
-        		"from Degree where session.uniqueId=:sessionId", Degree.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Degree where session.uniqueId=:sessionId", Degree.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (degr.getExternalUniqueId() != null)
         		id2degr.put(degr.getExternalUniqueId(), degr);
         	ref2degr.put(degr.getReference(), degr);
@@ -710,7 +710,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, AcademicClassification> id2clasf = new Hashtable<String, AcademicClassification>();
         Map<String, AcademicClassification> code2clasf = new Hashtable<String, AcademicClassification>();
         for (AcademicClassification clasf: getHibSession().createQuery(
-        		"from AcademicClassification where session.uniqueId=:sessionId", AcademicClassification.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from AcademicClassification where session.uniqueId=:sessionId", AcademicClassification.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (clasf.getExternalUniqueId() != null)
         		id2clasf.put(clasf.getExternalUniqueId(), clasf);
         	code2clasf.put(clasf.getCode(), clasf);
@@ -759,7 +759,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, PosMajor> id2major = new Hashtable<String, PosMajor>();
         Map<String, PosMajor> code2major = new Hashtable<String, PosMajor>();
         for (PosMajor major: getHibSession().createQuery(
-        		"from PosMajor where session.uniqueId=:sessionId", PosMajor.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from PosMajor where session.uniqueId=:sessionId", PosMajor.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (major.getExternalUniqueId() != null)
         		id2major.put(major.getExternalUniqueId(), major);
         	for (AcademicArea area: major.getAcademicAreas())
@@ -768,7 +768,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         
         Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
         for (AcademicArea area: getHibSession().createQuery(
-        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
         }
         
@@ -873,7 +873,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, PosMinor> id2minor = new Hashtable<String, PosMinor>();
         Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
         for (PosMinor minor: getHibSession().createQuery(
-        		"from PosMinor where session.uniqueId=:sessionId", PosMinor.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from PosMinor where session.uniqueId=:sessionId", PosMinor.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (minor.getExternalUniqueId() != null)
         		id2minor.put(minor.getExternalUniqueId(), minor);
         	for (AcademicArea area: minor.getAcademicAreas())
@@ -882,7 +882,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         
         Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
         for (AcademicArea area: getHibSession().createQuery(
-        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from AcademicArea where session.uniqueId=:sessionId", AcademicArea.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
         }
         
@@ -945,7 +945,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, StudentGroup> id2group = new Hashtable<String, StudentGroup>();
         Map<String, StudentGroup> code2group = new Hashtable<String, StudentGroup>();
         for (StudentGroup group: getHibSession().createQuery(
-        		"from StudentGroup where session.uniqueId=:sessionId", StudentGroup.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from StudentGroup where session.uniqueId=:sessionId", StudentGroup.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (group.getExternalUniqueId() != null)
         		id2group.put(group.getExternalUniqueId(), group);
         	code2group.put(group.getGroupAbbreviation(), group);
@@ -1003,7 +1003,7 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, StudentAccomodation> id2accomodation = new Hashtable<String, StudentAccomodation>();
         Map<String, StudentAccomodation> code2accomodation = new Hashtable<String, StudentAccomodation>();
         for (StudentAccomodation accomodation: getHibSession().createQuery(
-        		"from StudentAccomodation where session.uniqueId=:sessionId", StudentAccomodation.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from StudentAccomodation where session.uniqueId=:sessionId", StudentAccomodation.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	if (accomodation.getExternalUniqueId() != null)
         		id2accomodation.put(accomodation.getExternalUniqueId(), accomodation);
         	code2accomodation.put(accomodation.getAbbreviation(), accomodation);
@@ -1053,13 +1053,13 @@ public class AcademicSessionSetupImport extends BaseImport {
         Map<String, TimePattern> name2pattern = new Hashtable<String, TimePattern>();
         for (TimePattern p: getHibSession().createQuery(
 				"from TimePattern where session.uniqueId = :sessionId", TimePattern.class
-				).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				).setParameter("sessionId", session.getUniqueId()).list()) {
         	name2pattern.put(p.getName(), p);
         }
         
         Map<String, Department> code2dept = new Hashtable<String, Department>();
         for (Department dept: getHibSession().createQuery(
-        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	code2dept.put(dept.getDeptCode(), dept);
         }
         
@@ -1151,13 +1151,13 @@ public class AcademicSessionSetupImport extends BaseImport {
     	
         Map<String, DatePattern> name2pattern = new Hashtable<String, DatePattern>();
         for (DatePattern p: getHibSession().createQuery(
-				"from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				"from DatePattern where session.uniqueId = :sessionId", DatePattern.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	name2pattern.put(p.getName(), p);
         }
         
         Map<String, Department> code2dept = new Hashtable<String, Department>();
         for (Department dept: getHibSession().createQuery(
-        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		"from Department where session.uniqueId=:sessionId", Department.class).setParameter("sessionId", session.getUniqueId()).list()) {
         	code2dept.put(dept.getDeptCode(), dept);
         }
         
@@ -1339,7 +1339,7 @@ public class AcademicSessionSetupImport extends BaseImport {
     	Map<String, ExamPeriod> periods = new HashMap<String, ExamPeriod>();
     	for (ExamPeriod period: getHibSession().createQuery(
     			"from ExamPeriod p where p.session.uniqueId = :sessionId and p.examType.uniqueId = :typeId", ExamPeriod.class)
-    			.setParameter("sessionId", session.getUniqueId(), Long.class).setParameter("typeId", type.getUniqueId(), Long.class).list()) {
+    			.setParameter("sessionId", session.getUniqueId()).setParameter("typeId", type.getUniqueId()).list()) {
     		periods.put(period.getDateOffset() + ":" + period.getStartSlot(), period);
     	}
     	

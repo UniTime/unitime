@@ -166,7 +166,7 @@ public class SubjectAreas implements AdminTable {
 		String instrNameFormat = UserProperty.NameFormat.get(context.getUser());
 		
 		String query = "select d.uniqueId, tm from Department d inner join d.timetableManagers as tm where d.session.uniqueId = :sessionId";
-		for(Object[] result : hibSession.createQuery(query, Object[].class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).list()) {
+		for(Object[] result : hibSession.createQuery(query, Object[].class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
 			long deptId = (long)result[0];
 			TimetableManager tm = (TimetableManager)result[1];
 			String tmName = subjToManagers.get(deptId);
@@ -185,7 +185,7 @@ public class SubjectAreas implements AdminTable {
 	private HashMap<Long, String> lastChangeForAllSubjects(SessionContext context, Session hibSession) {
 		HashMap<Long, String> subjToChanges = new HashMap<Long, String>();
 		String query = "select cl from ChangeLog cl where cl.uniqueId in (select max(cl2.uniqueId) from ChangeLog cl2 where cl2.session.uniqueId = :sessionId and cl2.subjectArea.session.uniqueId = :sessionId group by cl2.subjectArea.uniqueId)";
-		for (ChangeLog cl : hibSession.createQuery(query, ChangeLog.class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).list()) {
+		for (ChangeLog cl : hibSession.createQuery(query, ChangeLog.class).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).list()) {
 			if (cl.getSubjectArea() == null) {
 				continue;
 			}
@@ -341,7 +341,7 @@ public class SubjectAreas implements AdminTable {
                                         hibSession.saveOrUpdate(newInstructor);
                                     } else {
                                         i.remove();
-                                        hibSession.delete(ci);
+                                        hibSession.remove(ci);
                                     }
 	                            }
 	                            hibSession.saveOrUpdate(c);
@@ -438,11 +438,11 @@ public class SubjectAreas implements AdminTable {
 			io.deleteAllDistributionPreferences(hibSession);
 			io.deleteAllClasses(hibSession);
 			io.deleteAllCourses(hibSession);
-			hibSession.delete(io);
+			hibSession.remove(io);
 		}
 		
 		for (CourseOffering co: area.getCourseOfferings()) {
-        	hibSession.delete(co);
+        	hibSession.remove(co);
         }
 		
 		area.getDepartment().getSubjectAreas().remove(area);
@@ -455,7 +455,7 @@ public class SubjectAreas implements AdminTable {
 				Operation.DELETE,
 				null,
 			    area.getDepartment());
-		hibSession.delete(area);
+		hibSession.remove(area);
 	}
 	
 	@Override

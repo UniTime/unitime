@@ -145,7 +145,7 @@ public class DefaultSettings implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(setting);
+		hibSession.remove(setting);
 	}
 	
 	@Override

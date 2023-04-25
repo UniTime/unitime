@@ -56,7 +56,7 @@ import org.unitime.timetable.webutil.Navigation;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "instructional_offering")
 public class InstructionalOffering extends BaseInstructionalOffering {
 	private static final long serialVersionUID = 1L;
@@ -327,12 +327,12 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
-		q.setParameter("subjectAreaId", subjectAreaId, Long.class);
-		q.setParameter("sessionId", acadSessionId.longValue(), Long.class);
+		q.setParameter("subjectAreaId", subjectAreaId);
+		q.setParameter("sessionId", acadSessionId.longValue());
 		if (courseNbr != null && courseNbr.length() > 0) {
 			if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
             	courseNbr = courseNbr.toUpperCase();
-			q.setParameter("courseNbr", courseNbr.replace('*', '%'), String.class);
+			q.setParameter("courseNbr", courseNbr.replace('*', '%'));
 		}
 		q.setCacheable(true);
 
@@ -373,14 +373,14 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                         ClassInstructor ci = (ClassInstructor) iterCi.next();
                         DepartmentalInstructor instr = ci.getInstructor();
                         instr.removeClassInstructor(ci);
-                        hibSession.delete(ci);
+                        hibSession.remove(ci);
                     }
                     
                     Event.deleteFromEvents(hibSession, c);
                     Exam.deleteFromExams(hibSession, c);
 
                     // Delete class
-                    hibSession.delete(c);
+                    hibSession.remove(c);
                 }
 
                 // Delete set of classes
@@ -507,7 +507,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		getSession().
     		createQuery("select distinct io from InstructionalOffering io where " +
     				"io.session.uniqueId=:sessionId", InstructionalOffering.class).
-    		setParameter("sessionId", sessionId.longValue(), Long.class).
+    		setParameter("sessionId", sessionId.longValue()).
     		list();
     }
 
@@ -628,7 +628,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         	CourseOffering co = (CourseOffering) i.next();
         	Event.deleteFromEvents(hibSession, co);
             Exam.deleteFromExams(hibSession, co);
-        	hibSession.delete(co);
+        	hibSession.remove(co);
         }
 	}
 	
@@ -692,8 +692,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return InstructionalOfferingDAO.getInstance().
             getSession().
             createQuery("select io from InstructionalOffering io where io.session.uniqueId=:sessionId and io.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", InstructionalOffering.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
     }

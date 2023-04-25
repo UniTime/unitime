@@ -183,29 +183,29 @@ public class TimePatternEditForm implements UniTimeForm {
 			tp.setSlotsPerMtg(Integer.valueOf(getSlotsPerMtg()));
 			for (Iterator i=tp.getTimes().iterator();i.hasNext();) {
 				TimePatternTime t = (TimePatternTime)i.next();
-				hibSession.delete(t);
+				hibSession.remove(t);
 			}
 			for (Iterator i=tp.getDays().iterator();i.hasNext();) {
 				TimePatternDays d = (TimePatternDays)i.next();
-				hibSession.delete(d);
+				hibSession.remove(d);
 			}
 			tp.setTimes(str2startSlots(getStartTimes(),"\n, "));
 			tp.setDays(str2dayCodes(getDayCodes(),"\n, "));
 			for (Iterator i=tp.getTimes().iterator();i.hasNext();) {
 				TimePatternTime t = (TimePatternTime)i.next();
-				hibSession.save(t);
+				hibSession.persist(t);
 			}
 			for (Iterator i=tp.getDays().iterator();i.hasNext();) {
 				TimePatternDays d = (TimePatternDays)i.next();
-				hibSession.save(d);
+				hibSession.persist(d);
 			}
 			if (tp.getSession() != null & tp.getSession().getStatusType().isAllowRollForward()){
 				if (oldDays != tp.getDays().size() || oldTimes != tp.getTimes().size()) {
 					for (TimePref tpref: hibSession.createQuery(
 							"from TimePref tp where tp.timePattern.uniqueId = :tpid", TimePref.class)
-							.setParameter("tpid", tp.getUniqueId(), Long.class).list()) {
+							.setParameter("tpid", tp.getUniqueId()).list()) {
 						tpref.setPreference(null);
-						hibSession.update(tpref);
+						hibSession.merge(tpref);
 					}
 				}
 			}
@@ -245,11 +245,11 @@ public class TimePatternEditForm implements UniTimeForm {
 		tp.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 		for (Iterator i=tp.getTimes().iterator();i.hasNext();) {
 			TimePatternTime t = (TimePatternTime)i.next();
-			hibSession.save(t);
+			hibSession.persist(t);
 		}
 		for (Iterator i=tp.getDays().iterator();i.hasNext();) {
 			TimePatternDays d = (TimePatternDays)i.next();
-			hibSession.save(d);
+			hibSession.persist(d);
 		}
 		HashSet newDepts = new HashSet();
 		for (Long departmentId: iDepartmentIds) {
@@ -258,7 +258,7 @@ public class TimePatternEditForm implements UniTimeForm {
 			newDepts.add(d);
 		}
 		tp.setDepartments(newDepts);
-		hibSession.save(tp);
+		hibSession.persist(tp);
 		for (Iterator i=newDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getTimePatterns().add(tp);
@@ -315,7 +315,7 @@ public class TimePatternEditForm implements UniTimeForm {
                 ChangeLog.Operation.DELETE, 
                 null, 
                 null);
-		hibSession.delete(tp);
+		hibSession.remove(tp);
 	}
 	
 	public String getOp() { return iOp; }

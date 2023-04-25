@@ -92,7 +92,7 @@ public class AllWSCHForDepartmentByInstructor extends WSCHByDepartment {
 	public void createWeeklyStudentContactHoursByDepartmentReportFor(PointInTimeData pointInTimeData, Session hibSession) {
 		HashSet<Long> processedClasses = new HashSet<Long>();
 		for(Long deptId : getDepartmentIds()){
-			Department d =  hibSession.createQuery("from Department d where d.uniqueId = :id", Department.class).setParameter("id", deptId, Long.class).setCacheable(true).uniqueResult();
+			Department d =  hibSession.createQuery("from Department d where d.uniqueId = :id", Department.class).setParameter("id", deptId).setCacheable(true).uniqueResult();
 			HashMap<PitDepartmentalInstructor, InstructorHours> positionClassHours = new HashMap<PitDepartmentalInstructor, InstructorHours>();
 			for (Long pioUid : findAllPitInstructionalOfferingUniqueIdsForDepartment(pointInTimeData, deptId, hibSession)) {
 				for(PitClass pc : findAllPitClassesForPitInstructionalOfferingId(pointInTimeData, pioUid, hibSession)) {

@@ -91,7 +91,7 @@ public class FixCourseTimetablingInconsistencies {
 		List<Assignment> assignments = hibSession.createQuery(
 				"select a from Assignment a " + 
 				"where a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId", Assignment.class)
-				.setParameter("sessionId", iSessionId, Long.class).list();
+				.setParameter("sessionId", iSessionId).list();
 		Hashtable<Location, List<Assignment>> roomAssignments = new Hashtable<Location, List<Assignment>>();
 		Hashtable<String, List<Assignment>> instructorAssignments = new Hashtable<String, List<Assignment>>();
 		for (Assignment a: assignments) {
@@ -148,7 +148,7 @@ public class FixCourseTimetablingInconsistencies {
 			if (location.isIgnoreRoomCheck()) continue;
 			List<Assignment> ax = entry.getValue();
 			DistributionType canShareRoomType = iHibSession.createQuery(
-					"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "CAN_SHARE_ROOM", String.class).uniqueResult();
+					"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "CAN_SHARE_ROOM").uniqueResult();
 			for (Assignment a: ax) {
 				b: for (Assignment b: ax) {
 					if (a.getUniqueId() >= b.getUniqueId()) continue;
@@ -182,10 +182,10 @@ public class FixCourseTimetablingInconsistencies {
 						/*
 						for (RoomPref p: (Set<RoomPref>)a.getClazz().effectivePreferences(RoomPref.class))
 							if (p.weakenHardPreferences())
-								hibSession.save(p);
+								hibSession.persist(p);
 						for (RoomPref p: (Set<RoomPref>)b.getClazz().effectivePreferences(RoomPref.class))
 							if (p.weakenHardPreferences())
-								hibSession.save(p);
+								hibSession.persist(p);
 						*/
 						int minSize = Math.round(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity()) + Math.round(b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 						if (location.getCapacity() < minSize) {
@@ -560,7 +560,7 @@ public class FixCourseTimetablingInconsistencies {
 							}
 						}
 						DistributionType meetWithType = iHibSession.createQuery(
-							"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "MEET_WITH", String.class).uniqueResult();
+							"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "MEET_WITH").uniqueResult();
 						DistributionPref dp = new DistributionPref();
 						dp.setDistributionType(meetWithType);
 						dp.setOwner(a.getClazz().getManagingDept());

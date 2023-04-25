@@ -124,7 +124,7 @@ public class PointInTimeDataSnapshots implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(pointInTimeData);
+		hibSession.remove(pointInTimeData);
 	}
 	
 	@Override

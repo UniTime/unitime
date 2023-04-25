@@ -96,15 +96,15 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and " +
 						"m.locationPermanentId = x.permanentId and m.meetingDate in ("+dates+")", Object[].class);
 				
-				roomsQuery.setParameter("startTime", request.getStartSlot(), Integer.class);
-				roomsQuery.setParameter("stopTime", request.getEndSlot(), Integer.class);
-				roomsQuery.setParameter("sessionId", request.getSessionId(), Long.class);
+				roomsQuery.setParameter("startTime", request.getStartSlot());
+				roomsQuery.setParameter("stopTime", request.getEndSlot());
+				roomsQuery.setParameter("sessionId", request.getSessionId());
 				for (int i = 0; i < request.getDates().size(); i++) {
 					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
-					roomsQuery.setParameter("d" + i, date, Date.class);
+					roomsQuery.setParameter("d" + i, date);
 				}
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					roomsQuery.setParameter("l" + i, request.getLocations().get(idx + i), Long.class);
+					roomsQuery.setParameter("l" + i, request.getLocations().get(idx + i));
 				
 				for (Object[] o: roomsQuery.list()) {
 					Meeting m = (Meeting)o[0];
@@ -220,9 +220,9 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				Query<Location> locationsQuery = EventDAO.getInstance().getSession().createQuery(
 						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")", Location.class);
 				for (int i = 0; i + idx < request.getLocations().size() && i < 1000; i++)
-					locationsQuery.setParameter("l" + i, request.getLocations().get(idx + i), Long.class);
+					locationsQuery.setParameter("l" + i, request.getLocations().get(idx + i));
 
-				for (Location location: locationsQuery.setParameter("sessionId", request.getSessionId(), Long.class).setCacheable(true).list()) {
+				for (Location location: locationsQuery.setParameter("sessionId", request.getSessionId()).setCacheable(true).list()) {
 					if (context.hasPermission(location, request.getEventType() == EventType.Unavailabile ? Right.EventLocationUnavailable : Right.EventLocation)) {
 						Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
 						if (conflicts != null && !conflicts.isEmpty())
@@ -338,11 +338,11 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							"m.locationPermanentId = x.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and "+
 							"(x.uniqueId = l.uniqueId or x.parentRoom.uniqueId = l.uniqueId or x.uniqueId = l.parentRoom.uniqueId) and l.ignoreRoomCheck = false",
 							Meeting.class)
-							.setParameter("startTime", meeting.getStartSlot(), Integer.class)
-							.setParameter("stopTime", meeting.getEndSlot(), Integer.class)
-							.setParameter("meetingDate", meeting.getMeetingDate(), Date.class)
-							.setParameter("locationdId", meeting.getLocation().getId(), Long.class)
-							.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId(), Long.class)
+							.setParameter("startTime", meeting.getStartSlot())
+							.setParameter("stopTime", meeting.getEndSlot())
+							.setParameter("meetingDate", meeting.getMeetingDate())
+							.setParameter("locationdId", meeting.getLocation().getId())
+							.setParameter("meetingId", meeting.getId() == null ? -1 : meeting.getId())
 							.list()) {
 						
 						MeetingConflictInterface conflict = new MeetingConflictInterface();

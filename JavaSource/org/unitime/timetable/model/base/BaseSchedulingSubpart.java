@@ -112,7 +112,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula("(select io.session_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid)")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -128,7 +128,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "config_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public InstrOfferingConfig getInstrOfferingConfig() { return iInstrOfferingConfig; }
 	public void setInstrOfferingConfig(InstrOfferingConfig instrOfferingConfig) { iInstrOfferingConfig = instrOfferingConfig; }
 
@@ -138,7 +138,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
 	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
 	public void addTochildSubparts(SchedulingSubpart schedulingSubpart) {
@@ -147,7 +147,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToclasses(Class_ class_) {
@@ -156,7 +156,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "subpartOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {

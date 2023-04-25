@@ -47,7 +47,7 @@ import org.unitime.timetable.model.dao.CourseDemandDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "course_demand")
 public class CourseDemand extends BaseCourseDemand implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -117,7 +117,7 @@ public class CourseDemand extends BaseCourseDemand implements Comparable {
     public static List<CourseDemand> findAll(org.hibernate.Session hibSession, Long sessionId) {
         return hibSession.
             createQuery("select c from CourseDemand c where c.student.session.uniqueId=:sessionId", CourseDemand.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
             list(); 
     }
     

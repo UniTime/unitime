@@ -33,7 +33,7 @@ import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pit_dept_instructor")
 public class PitDepartmentalInstructor extends BasePitDepartmentalInstructor implements NameInterface {
 

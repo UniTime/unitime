@@ -74,7 +74,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<Department>((DepartmentDAO.getInstance()).
 			getSession().
 			createQuery("select distinct d from Department as d where d.session.uniqueId=:sessionId", Department.class).
-			setParameter("sessionId", sessionId.longValue(), Long.class).
+			setParameter("sessionId", sessionId.longValue()).
 			setCacheable(true).
 			list());
     }
@@ -84,7 +84,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return new TreeSet<Department>((DepartmentDAO.getInstance()).
 				getSession().
 				createQuery("select distinct d from Department as d where d.externalManager=true and d.session.uniqueId=:sessionId", Department.class).
-				setParameter("sessionId", sessionId.longValue(), Long.class).
+				setParameter("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
 	}
@@ -94,7 +94,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
         return new TreeSet<Department>((DepartmentDAO.getInstance()).
                 getSession().
                 createQuery("select distinct d from Department as d where d.externalManager=false and d.session.uniqueId=:sessionId", Department.class).
-                setParameter("sessionId", sessionId.longValue(), Long.class).
+                setParameter("sessionId", sessionId.longValue()).
                 setCacheable(true).
                 list());
     }
@@ -121,8 +121,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	public static Department findByDeptCode(String deptCode, Long sessionId, org.hibernate.Session hibSession) {
 		return hibSession.
 			createQuery("select distinct d from Department as d where d.deptCode=:deptCode and d.session.uniqueId=:sessionId", Department.class).
-			setParameter("sessionId", sessionId, Long.class).
-			setParameter("deptCode", deptCode, String.class).
+			setParameter("sessionId", sessionId).
+			setParameter("deptCode", deptCode).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();
@@ -221,7 +221,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		for (String other: DepartmentDAO.getInstance().getSession().createQuery(
 				"select distinct x.department.roomSharingColor from Department d inner join d.roomDepts rd inner join rd.room.roomDepts x " +
 				"where d.uniqueId = :uniqueId and d != x.department", String.class
-				).setParameter("uniqueId", getUniqueId(), Long.class).setCacheable(true).list()) {
+				).setParameter("uniqueId", getUniqueId()).setCacheable(true).list()) {
 			if (other != null && distance(color, other) < 50) return true;
 		}
 		return false;
@@ -296,7 +296,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		return (DepartmentDAO.getInstance()).
 			getSession().
 			createQuery("select distinct c from Class_ as c where c.managingDept.uniqueId=:departmentId or (c.managingDept is null and c.controllingDept.uniqueId=:departmentId)", Class_.class).
-			setParameter("departmentId", getUniqueId(), Long.class).
+			setParameter("departmentId", getUniqueId()).
 			list();
 	}
 	
@@ -313,7 +313,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				"left join fetch ioc.instructionalOffering as io "+
 				"left join fetch io.courseOfferings as cox "+
 				"where c.managingDept.uniqueId=:departmentId or (c.managingDept is null and c.controllingDept.uniqueId=:departmentId)", Class_.class).
-				setParameter("departmentId", getUniqueId(), Long.class).
+				setParameter("departmentId", getUniqueId()).
 				list();
 
 	}
@@ -326,8 +326,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				"select distinct c from Class_ as c where (c.managingDept.uniqueId=:departmentId or (c.managingDept is null and c.controllingDept.uniqueId=:departmentId)) and "+
 				"not exists (from c.assignments as a where a.solution=:solutionId)", Class_.class
 				).
-		setParameter("departmentId", getUniqueId(), Long.class).
-		setParameter("solutionId", solution.getUniqueId(), Long.class).
+		setParameter("departmentId", getUniqueId()).
+		setParameter("solutionId", solution.getUniqueId()).
 		list();
 	}
 	
@@ -337,21 +337,21 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				(DepartmentDAO.getInstance()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.timetableManagers as m where d.session.uniqueId=:sessionId", Department.class).
-				setParameter("sessionId", sessionId.longValue(), Long.class).
+				setParameter("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
 		ret.addAll(
 				(DepartmentDAO.getInstance()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.roomDepts as r where d.session.uniqueId=:sessionId", Department.class).
-				setParameter("sessionId", sessionId.longValue(), Long.class).
+				setParameter("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
 		ret.addAll(
 				(DepartmentDAO.getInstance()).
 				getSession().
 				createQuery("select distinct d from Department as d inner join d.subjectAreas as r where d.session.uniqueId=:sessionId", Department.class).
-				setParameter("sessionId", sessionId.longValue(), Long.class).
+				setParameter("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
 		return ret;
@@ -436,8 +436,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 			//   the external unique id
 			@SuppressWarnings("unchecked")
 			List<Department> l = hibSession.createQuery("from Department where externalUniqueId = :externalUniqueId and session.uniqueId = :newSessionId", Department.class)
-				.setParameter("externalUniqueId",  this.getExternalUniqueId(), String.class)
-				.setParameter("newSessionId", newSessionId, Long.class)
+				.setParameter("externalUniqueId",  this.getExternalUniqueId())
+				.setParameter("newSessionId", newSessionId)
 				.setHibernateFlushMode(FlushMode.MANUAL)
 				.setCacheable(true).list();
 
@@ -498,7 +498,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
         		"select distinct t from InstructorAttribute a inner join a.type t " +
         		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)",
         		InstructorAttributeType.class)
-				.setParameter("sessionId", getSessionId(), Long.class).setParameter("departmentId", getUniqueId(), Long.class).setCacheable(true).list());
+				.setParameter("sessionId", getSessionId()).setParameter("departmentId", getUniqueId()).setCacheable(true).list());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -508,20 +508,20 @@ public class Department extends BaseDepartment implements Comparable<Department>
         		"select a from InstructorAttribute a " +
         		"where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId)",
         		InstructorAttribute.class)
-				.setParameter("sessionId", getSessionId(), Long.class).setParameter("departmentId", getUniqueId(), Long.class).setCacheable(true).list());
+				.setParameter("sessionId", getSessionId()).setParameter("departmentId", getUniqueId()).setCacheable(true).list());
 	}
 	
 	public static boolean isInstructorSchedulingCommitted(Long departmentId) {
 		Number oc = DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
 				"oc.instructor.department.uniqueId = :departmentId", Number.class)
-				.setParameter("departmentId", departmentId, Long.class).
+				.setParameter("departmentId", departmentId).
 				setCacheable(true).uniqueResult();
 		if (oc.intValue() > 0) return true;
 		Number ci = DepartmentDAO.getInstance().getSession().createQuery(
 				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
 				"ci.instructor.department.uniqueId = :departmentId", Number.class)
-				.setParameter("departmentId", departmentId, Long.class).
+				.setParameter("departmentId", departmentId).
 				setCacheable(true).uniqueResult();
 		return ci.intValue() > 0;
 	}

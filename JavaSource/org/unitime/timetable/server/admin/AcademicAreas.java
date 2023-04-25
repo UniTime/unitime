@@ -151,20 +151,20 @@ public class AcademicAreas implements AdminTable {
 			i.remove();
 			m.getAcademicAreas().remove(area);
 			if (m.getAcademicAreas().isEmpty())
-				hibSession.delete(m);
+				hibSession.remove(m);
 			else
-				hibSession.update(m);
+				hibSession.merge(m);
 		}
 		for (Iterator<PosMinor> i = area.getPosMinors().iterator(); i.hasNext(); ) {
 			PosMinor m = i.next();
 			i.remove();
 			m.getAcademicAreas().remove(area);
 			if (m.getAcademicAreas().isEmpty())
-				hibSession.delete(m);
+				hibSession.remove(m);
 			else
-				hibSession.update(m);
+				hibSession.merge(m);
 		}
-		hibSession.delete(area);
+		hibSession.remove(area);
 	}
 
 	@Override

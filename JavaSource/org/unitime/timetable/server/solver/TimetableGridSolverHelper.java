@@ -331,8 +331,8 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +
 				"c.classification.curriculum.abbv || ' ' || c.classification.academicClassification.code = :name and " + 
 				"c.classification.curriculum.department.session.uniqueId = :sessionId", Object[].class)
-				.setParameter("name", name, String.class)
-				.setParameter("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null), Long.class)
+				.setParameter("name", name)
+				.setParameter("sessionId", solver.getProperties().getPropertyLong("General.SessionId", null))
 				.setCacheable(true).list()) {
 			Long courseId = (Long)o[0];
 			String group = (String)o[1];
@@ -1028,13 +1028,13 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 							resp = TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.uniqueId = :instructorId", TeachingResponsibility.class
-									).setParameter("classId", p.variable().getId(), Long.class).setParameter("instructorId", ic.getId(), Long.class)
+									).setParameter("classId", p.variable().getId()).setParameter("instructorId", ic.getId())
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						else
 							resp = TeachingResponsibilityDAO.getInstance().getSession().createQuery(
 									"select ci.responsibility from ClassInstructor ci where " +
 									"ci.classInstructing.uniqueId = :classId and ci.instructor.externalUniqueId = :extId", TeachingResponsibility.class
-									).setParameter("classId", p.variable().getId(), Long.class).setParameter("extId", ic.getPuid(), String.class)
+									).setParameter("classId", p.variable().getId()).setParameter("extId", ic.getPuid())
 									.setMaxResults(1).setCacheable(true).uniqueResult();
 						if (term.equalsIgnoreCase("null") && resp == null) return true;
 						if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;

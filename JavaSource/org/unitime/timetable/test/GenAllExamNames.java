@@ -45,7 +45,7 @@ public class GenAllExamNames {
             for (Iterator i=exams.iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 exam.setName(exam.generateName());
-                hibSession.update(exam);
+                hibSession.merge(exam);
             }
 
             tx.commit();

@@ -40,7 +40,7 @@ public class Campus extends BaseCampus {
 	public static List<Campus> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? CampusDAO.getInstance().getSession() : hibSession).createQuery(
 				"from Campus x where x.session.uniqueId = :sessionId order by x.reference", Campus.class)
-				.setParameter("sessionId", sessionId, Long.class).list();
+				.setParameter("sessionId", sessionId).list();
 	}
 	
 	public Object clone() {

@@ -81,12 +81,12 @@ public class HQLStoreBackend implements GwtRpcImplementation<HQLStoreRpcRequest,
 				parameter.setDefaultValue(p.getDefaultValue());
 			}
 			for (SavedHQLParameter parameter: params.values()) {
-				hibSession.delete(parameter);
+				hibSession.remove(parameter);
 				hql.getParameters().remove(parameter);
 			}
 		} else {
 			for (Iterator<SavedHQLParameter> i = hql.getParameters().iterator(); i.hasNext(); ) {
-				hibSession.delete(i.next());
+				hibSession.remove(i.next());
 				i.remove();
 			}
 		}

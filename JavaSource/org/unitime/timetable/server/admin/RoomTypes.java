@@ -185,7 +185,7 @@ public class RoomTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 	
 	@Override

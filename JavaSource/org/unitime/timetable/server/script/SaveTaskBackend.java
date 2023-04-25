@@ -108,13 +108,13 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 					}
 					tp.setValue(value);
 				} else if (tp != null) {
-					tp.setTask(null); hibSession.delete(tp);
+					tp.setTask(null); hibSession.remove(tp);
 				}
 			}
 			for (TaskParameter tp: parameters) {
 				t.getParameters().remove(tp);
 				tp.setTask(null);
-				hibSession.delete(tp);
+				hibSession.remove(tp);
 			}
 			
 			int base = CalendarUtils.date2dayOfYear(t.getSession().getSessionStartYear(), t.getSession().getSessionBeginDateTime());
@@ -147,14 +147,14 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 				if (e.getExecutionStatus() == ExecutionStatus.CREATED.ordinal()) {
 					t.getSchedule().remove(e);
 					e.setTask(null);
-					hibSession.delete(e);
+					hibSession.remove(e);
 				}
 			}
 			
 			if (t.getUniqueId() == null)
 				t.setUniqueId((Long)hibSession.save(t));
 			else
-				hibSession.update(t);
+				hibSession.merge(t);
 			
 			hibSession.flush();
 			tx.commit();

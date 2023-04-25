@@ -267,7 +267,7 @@ public class QueryLogFilter implements Filter {
 						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (QueryLog q: queriesToSave)
-								hibSession.save(q);
+								hibSession.persist(q);
 							hibSession.flush();
 							tx.commit();
 						} catch (Exception e) {

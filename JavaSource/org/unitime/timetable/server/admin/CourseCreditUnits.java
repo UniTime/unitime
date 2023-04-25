@@ -64,7 +64,7 @@ public class CourseCreditUnits implements AdminTable {
 			int used =
 				(hibSession.createQuery(
 						"select count(c) from CourseCreditUnitConfig c where c.creditUnitType.uniqueId = :uniqueId", Number.class)
-						.setParameter("uniqueId", credit.getUniqueId(), Long.class).uniqueResult()).intValue();
+						.setParameter("uniqueId", credit.getUniqueId()).uniqueResult()).intValue();
 			Record r = data.addRecord(credit.getUniqueId(), used == 0);
 			r.setField(0, credit.getReference());
 			r.setField(1, credit.getLabel());
@@ -141,7 +141,7 @@ public class CourseCreditUnits implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(credit);
+		hibSession.remove(credit);
 	}
 
 	@Override

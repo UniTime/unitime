@@ -52,7 +52,7 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 		for (Object[] o: hibSession.createQuery(
 				"select distinct e.courseOffering, s " +
 				"from StudentClassEnrollment e inner join e.student s left join fetch s.areaClasfMajors where " +
-				"e.courseOffering.subjectArea.session.uniqueId = :sessionId", Object[].class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+				"e.courseOffering.subjectArea.session.uniqueId = :sessionId", Object[].class).setParameter("sessionId", session.getUniqueId()).list()) {
 			CourseOffering course = (CourseOffering)o[0];
 			Student student = (Student)o[1];
 			Set<WeightedStudentId> students = iDemands.get(course.getUniqueId());

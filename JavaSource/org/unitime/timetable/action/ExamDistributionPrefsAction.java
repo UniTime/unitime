@@ -493,7 +493,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 				hibSession.saveOrUpdate(pg);
 			}
 	        
-	        hibSession.delete(dp);
+	        hibSession.remove(dp);
 	        hibSession.saveOrUpdate(owner);
 	        
             for (Iterator i=relatedExams.iterator();i.hasNext();) {

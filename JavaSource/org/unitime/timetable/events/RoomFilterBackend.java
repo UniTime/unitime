@@ -89,8 +89,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					TimetableManagerDAO.getInstance().getSession().createQuery(
 							"select d.uniqueId from TimetableManager m inner join m.departments d where " +
 							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId", Long.class)
-							.setParameter("sessionId", request.getSessionId(), Long.class)
-							.setParameter("user", request.getOption("user"), String.class)
+							.setParameter("sessionId", request.getSessionId())
+							.setParameter("user", request.getOption("user"))
 							.setCacheable(true).list()
 					);
 		}
@@ -275,7 +275,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			if (coord.isEmpty()) {
 				for (Building b: hibSession.createQuery("select b from Building b where" +
 						" b.session.uniqueId = :sessionId and b.abbreviation in :building", Building.class)
-						.setParameter("sessionId", sessionId, Long.class)
+						.setParameter("sessionId", sessionId)
 						.setParameterList("building", building, String.class)
 						.list()) {
 					coord.add(new Coordinates(-b.getUniqueId(), b.getCoordinateX(), b.getCoordinateY()));
@@ -774,15 +774,15 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -792,7 +792,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 			}
@@ -849,19 +849,19 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				// System.out.println("Q: " + query());
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
-				query.setParameter("sessionId", iSessionId, Long.class);
+				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -871,7 +871,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 				if (iLimit != null)

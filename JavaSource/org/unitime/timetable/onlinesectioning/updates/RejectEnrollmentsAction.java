@@ -113,8 +113,8 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						CourseRequest cr = null;
 						for (StudentClassEnrollment e: helper.getHibSession().createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class)
-								.setParameter("studentId", enrollment.getStudentId(), Long.class)
-								.setParameter("offeringId", getOfferingId(), Long.class)
+								.setParameter("studentId", enrollment.getStudentId())
+								.setParameter("offeringId", getOfferingId())
 								.list()) {
 							if (cr == null) cr = e.getCourseRequest();
 							helper.getHibSession().delete(e);

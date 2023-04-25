@@ -110,7 +110,7 @@ public abstract class DatabaseUpdate {
         sLog.info("New " + updateName() + " database version: "+getVersion());
     }
     
-    public boolean performUpdate(Element updateElement) {
+	public boolean performUpdate(Element updateElement) {
         int version = Integer.parseInt(updateElement.attributeValue("version"));
         Session hibSession = new _RootDAO().getSession();
         String schema = HibernateUtil.getConfiguration().getProperty("default_schema");

@@ -43,7 +43,7 @@ import org.unitime.timetable.security.UserContext;
  * @author Tomas Muller, Heston Fernandes
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "subject_area")
 public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectArea> {
 
@@ -94,17 +94,17 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	public static SubjectArea findByAbbv(org.hibernate.Session hibSession, Long sessionId, String subjectAreaAbbr) {
 		return (hibSession == null ? SubjectAreaDAO.getInstance().getSession() : hibSession).createQuery(
 				"from SubjectArea where session.uniqueId = :sessionId and subjectAreaAbbreviation = :subjectAreaAbbr", SubjectArea.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("subjectAreaAbbr", subjectAreaAbbr, String.class).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId).setParameter("subjectAreaAbbr", subjectAreaAbbr).setMaxResults(1).uniqueResult();
 	}
 	
 	public static SubjectArea findUsingInitiativeYearTermSubjectAbbreviation(String academicInitiative, String academicYear, String term, String subjectAreaAbbreviation,
 	org.hibernate.Session hibSession) {
 		
 		return  hibSession.createQuery("from SubjectArea sa where sa.session.academicInitiative = :campus and sa.session.academicYear = :year and sa.session.academicTerm = :term and sa.subjectAreaAbbreviation = :subj", SubjectArea.class)
-         .setParameter("campus", academicInitiative, String.class)
-         .setParameter("year", academicYear, String.class)
-         .setParameter("term", term, String.class)
-         .setParameter("subj", subjectAreaAbbreviation, String.class)
+         .setParameter("campus", academicInitiative)
+         .setParameter("year", academicYear)
+         .setParameter("term", term)
+         .setParameter("subj", subjectAreaAbbreviation)
          .setCacheable(true)
          .setMaxResults(1)
          .uniqueResult();	
@@ -190,7 +190,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
 		return new TreeSet<SubjectArea>(
 				SubjectAreaDAO.getInstance().getSession().createQuery("from SubjectArea where session.uniqueId = :sessionId", SubjectArea.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+				.setParameter("sessionId", sessionId).setCacheable(true).list());
 	}
 	
 	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user) {

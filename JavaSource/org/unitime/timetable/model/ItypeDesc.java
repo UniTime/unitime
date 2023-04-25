@@ -39,7 +39,7 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "itype_desc")
 public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
 	private static final long serialVersionUID = 1L;
@@ -82,7 +82,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
     public static ItypeDesc findForReference(String reference, Session hibSession) {
     	return((ItypeDesc) hibSession
     			.createQuery("from ItypeDesc i where i.sis_ref = :ref", ItypeDesc.class)
-    			.setParameter("ref", reference, String.class)
+    			.setParameter("ref", reference)
     			.setCacheable(true)
     			.uniqueResult());
     }

@@ -61,7 +61,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 	public static TreeSet<RoomType> findAll(Long sessionId) {
 		return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from Location l inner join l.roomType t where l.session.uniqueId = :sessionId", RoomType.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list());
+				.setParameter("sessionId", sessionId).setCacheable(true).list());
 	}
 
 	public static TreeSet<RoomType> findAll(boolean isRoom) {
@@ -98,8 +98,8 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     	}
         RoomTypeOption opt = RoomTypeOptionDAO.getInstance().getSession().createQuery(
     			"from RoomTypeOption where department.uniqueId = :departmentId and roomType.uniqueId = :roomTypeId", RoomTypeOption.class)
-    			.setParameter("departmentId", department.getUniqueId(), Long.class)
-    			.setParameter("roomTypeId", getUniqueId(), Long.class)
+    			.setParameter("departmentId", department.getUniqueId())
+    			.setParameter("roomTypeId", getUniqueId())
     			.setCacheable(true)
     			.uniqueResult();
         if (opt==null) opt = new RoomTypeOption(this, department);
@@ -116,8 +116,8 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select distinct o from " + (isRoom() ? "Room" : "NonUniversityLocation") + " r, RoomTypeOption o " +
                 "where r.roomType.uniqueId = :roomTypeId and r.session.uniqueId = :sessionId and "+
                 "r.eventDepartment.allowEvents = true and r.eventDepartment = o.department and r.roomType = o.roomType", RoomTypeOption.class)
-                .setParameter("roomTypeId", getUniqueId(), Long.class)
-                .setParameter("sessionId", sessionId, Long.class)
+                .setParameter("roomTypeId", getUniqueId())
+                .setParameter("sessionId", sessionId)
     			.setCacheable(true).list()) {
     		if (option.canScheduleEvents()) { ret = true; break; }
     	}
@@ -128,13 +128,13 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     public int countRooms() {
         return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId", Number.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setCacheable(true).uniqueResult().intValue();
+        ).setParameter("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countRooms(Long sessionId) {
         return RoomTypeDAO.getInstance().getSession().createQuery(
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId", Number.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().intValue();
+        ).setParameter("roomTypeId", getUniqueId()).setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countManagableRooms() {
@@ -142,7 +142,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(distinct r.permanentId) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and "+
                 "r.eventDepartment.allowEvents = true", Number.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setCacheable(true).uniqueResult().intValue();
+        ).setParameter("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult().intValue();
     }
     
     public List<Location> getManagableRooms(Long sessionId) {
@@ -150,7 +150,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select r from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
                 "r.eventDepartment.allowEvents = true", Location.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+        ).setParameter("roomTypeId", getUniqueId()).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
 
 
@@ -159,7 +159,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(r) from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
                 "r.eventDepartment.allowEvents = true", Number.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).uniqueResult().intValue();
+        ).setParameter("roomTypeId", getUniqueId()).setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().intValue();
     }
 
     public int countManagableRoomsOfBuilding(Long buildingId) {
@@ -167,6 +167,6 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "select count(r) from Room r " +
                 "where r.roomType.uniqueId=:roomTypeId and r.building.uniqueId=:buildingId and "+
                 "r.eventDepartment.allowEvents = true", Number.class
-        ).setParameter("roomTypeId", getUniqueId(), Long.class).setParameter("buildingId", buildingId, Long.class).setCacheable(true).uniqueResult().intValue();
+        ).setParameter("roomTypeId", getUniqueId()).setParameter("buildingId", buildingId).setCacheable(true).uniqueResult().intValue();
     }
 }

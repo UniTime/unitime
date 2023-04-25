@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.SolverParameterDefDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solver_parameter_def")
 public class SolverParameterDef extends BaseSolverParameterDef implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -102,8 +102,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	public static SolverParameterDef findByNameGroup(org.hibernate.Session hibSession, String name, String group) {
 		List<SolverParameterDef> list = hibSession.createQuery(
 				"from SolverParameterDef where name = :name and group.name = :group", SolverParameterDef.class)
-				.setParameter("name", name, String.class)
-				.setParameter("group", group, String.class)
+				.setParameter("name", name)
+				.setParameter("group", group)
 				.setCacheable(true).list();
 		return list.isEmpty() ? null : list.get(0);
 	}
@@ -115,8 +115,8 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, SolverType type) {
 		List<SolverParameterDef> list = hibSession.createQuery(
 				"from SolverParameterDef where name = :name and group.type = :type", SolverParameterDef.class)
-				.setParameter("name", name, String.class)
-				.setParameter("type", type.ordinal(), Integer.class)
+				.setParameter("name", name)
+				.setParameter("type", type.ordinal())
 				.setCacheable(true).list();
 		return list.isEmpty() ? null : list.get(0);
 	}	

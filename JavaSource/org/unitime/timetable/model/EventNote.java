@@ -39,7 +39,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "event_note")
 public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	private static final long serialVersionUID = 1L;

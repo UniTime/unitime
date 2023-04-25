@@ -36,7 +36,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "exact_time_mins")
 public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -59,7 +59,7 @@ public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 		return
 			ExactTimeMinsDAO.getInstance().getSession().
 			createQuery("select m from ExactTimeMins m where m.minsPerMtgMin<=:minPerMtg and :minPerMtg<=m.minsPerMtgMax", ExactTimeMins.class).
-			setParameter("minPerMtg", minPerMtg, Integer.class).
+			setParameter("minPerMtg", minPerMtg).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();

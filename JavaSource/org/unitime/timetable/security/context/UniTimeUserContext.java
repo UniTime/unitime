@@ -68,7 +68,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 		try {
 			for (UserData data: hibSession.createQuery(
 					"from UserData where externalUniqueId = :id", UserData.class)
-					.setParameter("id", userId, String.class).list()) {
+					.setParameter("id", userId).list()) {
 				getProperties().put(data.getName(), data.getValue());
 			}
 			for (Settings setting: hibSession.createQuery("from Settings", Settings.class).list()) {
@@ -76,7 +76,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					getProperties().put(setting.getKey(), setting.getDefaultValue());
 			}
 			for (ManagerSettings setting: hibSession.createQuery(
-					"from ManagerSettings where manager.externalUniqueId = :id", ManagerSettings.class).setParameter("id", userId, String.class).list()) {
+					"from ManagerSettings where manager.externalUniqueId = :id", ManagerSettings.class).setParameter("id", userId).list()) {
 				if (setting.getValue() != null)
 					getProperties().put(setting.getKey().getKey(), setting.getValue());
 			}
@@ -88,7 +88,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			
 			TimetableManager manager = hibSession.createQuery(
 					"from TimetableManager where externalUniqueId = :id", TimetableManager.class)
-					.setParameter("id", userId, String.class).setMaxResults(1).uniqueResult();
+					.setParameter("id", userId).setMaxResults(1).uniqueResult();
 			if (manager != null) {
 				iName = manager.getName();
 				iEmail = manager.getEmailAddress();
@@ -145,7 +145,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			
 			for (Advisor advisor: hibSession.createQuery(
 					"from Advisor where externalUniqueId = :id", Advisor.class)
-					.setParameter("id", userId, String.class).list()) {
+					.setParameter("id", userId).list()) {
 				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
 				if (ApplicationProperty.AuthorizationAdvisorMustHaveStudents.isTrue() && advisor.getStudents().isEmpty()) continue;
 				if (iName == null && advisor.hasName()) iName = advisor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
@@ -160,7 +160,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			if (instructorRole != null && instructorRole.isEnabled()) {
 				for (DepartmentalInstructor instructor: hibSession.createQuery(
 						"from DepartmentalInstructor where externalUniqueId = :id", DepartmentalInstructor.class)
-						.setParameter("id", userId, String.class).list()) {
+						.setParameter("id", userId).list()) {
 					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = instructor.getEmail();
 					List<? extends UserAuthority> authorities = getAuthorities(Roles.ROLE_INSTRUCTOR, instructor.getDepartment().getSession());
@@ -190,7 +190,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			if (studentRole != null && studentRole.isEnabled()) {
 				for (Student student: hibSession.createQuery(
 						"from Student where externalUniqueId = :id", Student.class)
-						.setParameter("id", userId, String.class).list()) {
+						.setParameter("id", userId).list()) {
 					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = student.getEmail();
 					UserAuthority authority = new RoleAuthority(student.getUniqueId(), studentRole);
@@ -396,12 +396,12 @@ public class UniTimeUserContext extends AbstractUserContext {
 		org.hibernate.Session hibSession = UserDataDAO.getInstance().createNewSession();
 		try {
 			Settings settings = hibSession.createQuery("from Settings where key = :key", Settings.class)
-					.setParameter("key", key, String.class).setCacheable(true).setMaxResults(1).uniqueResult();
+					.setParameter("key", key).setCacheable(true).setMaxResults(1).uniqueResult();
 			
 			if (settings != null && getCurrentAuthority() != null && !getCurrentAuthority().getQualifiers("TimetableManager").isEmpty()) {
 				ManagerSettings managerData = hibSession.createQuery(
 						"from ManagerSettings where key.key = :key and manager.externalUniqueId = :id", ManagerSettings.class)
-						.setParameter("key", key, String.class).setParameter("id", getExternalUserId(), String.class).setCacheable(true).setMaxResults(1).uniqueResult();
+						.setParameter("key", key).setParameter("id", getExternalUserId()).setCacheable(true).setMaxResults(1).uniqueResult();
 				
 				if (value == null && managerData == null) return;
 				if (value != null && managerData != null && value.equals(managerData.getValue())) return;
@@ -414,7 +414,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				managerData.setValue(value);
 				
 				if (value == null)
-					hibSession.delete(managerData);
+					hibSession.remove(managerData);
 				else
 					hibSession.saveOrUpdate(managerData);
 			} else {
@@ -426,7 +426,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					userData = new UserData(getExternalUserId(), key);
 				
 				if (value == null) {
-					hibSession.delete(userData);
+					hibSession.remove(userData);
 				} else {
 					userData.setValue(value);
 					hibSession.saveOrUpdate(userData);

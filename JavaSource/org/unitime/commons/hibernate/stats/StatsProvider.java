@@ -19,8 +19,6 @@
 */
 package org.unitime.commons.hibernate.stats;
 
-import java.util.Date;
-
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.CacheRegionStatistics;
 import org.hibernate.stat.CollectionStatistics;
@@ -119,7 +117,7 @@ public class StatsProvider {
 
         	row = new TableRow();
             row.addContent(cell(" &nbsp; Start Time", 1, 1, true));
-            row.addContent(cell(new Date(stats.getStartTime()).toString(), 1, 1, false));
+            row.addContent(cell(stats.getStart().toString(), 1, 1, false));
             table.addContent(row);
 
             row = new TableRow();
@@ -447,15 +445,12 @@ public class StatsProvider {
 	            	row.addContent(headerCell(" Hits ", 1, 1));
 	            	row.addContent(headerCell(" Misses ", 1, 1));
 	            	row.addContent(headerCell(" Puts ", 1, 1));
-	            	row.addContent(headerCell(" In Memory ", 1, 1));
-	            	row.addContent(headerCell(" On Disk ", 1, 1));
-	            	row.addContent(headerCell(" Memory ", 1, 1));
 	            	
 	            	for (int i = 1; i < row.getContents().size(); i++)
 	            		((TableHeaderCell)row.getContents().get(i)).setAlign("right");
 	            	subTable.addContent(row);
 	            	
-	            	long elementsInMem = 0, elementsOnDisk = 0, putCnt = 0, missCnt = 0, hitCnt = 0, size = 0;
+	            	long elementsInMem = 0, putCnt = 0, missCnt = 0, hitCnt = 0;
 	
 	                for (int i=0; i<cRegionNames.length; i++) {
 	                    String cRegionName = cRegionNames[i];
@@ -471,31 +466,23 @@ public class StatsProvider {
 	                    if(i%2==0)
 	                        row.setBgColor(evenRowColor);
 	                    row.addContent(cell(cRegionName + " &nbsp;", 1, 1, true));
-	                    row.addContent(cell(String.valueOf(sStats.getElementCountInMemory()+sStats.getElementCountOnDisk()), 1, 1, false)); //sStats.getEntries().size()
+	                    row.addContent(cell(sStats.getElementCountInMemory()+"", 1, 1, false));
 	                    row.addContent(cell(sStats.getHitCount()+"", 1, 1, false));
 	                    row.addContent(cell(sStats.getMissCount()+"", 1, 1, false));
 	                    row.addContent(cell(sStats.getPutCount()+"", 1, 1, false));
-	                    row.addContent(cell(sStats.getElementCountInMemory()+"", 1, 1, false));
-	                    row.addContent(cell(sStats.getElementCountOnDisk()+"", 1, 1, false));
-	                    row.addContent(cell(sStats.getSizeInMemory()+" bytes", 1, 1, false));
 	                    elementsInMem += sStats.getElementCountInMemory();
-	                    elementsOnDisk += sStats.getElementCountOnDisk();
 	                    putCnt += sStats.getPutCount();
 	                    missCnt += sStats.getMissCount();
 	                    hitCnt += sStats.getHitCount();
-	                    size += sStats.getSizeInMemory();
 	                    subTable.addContent(row);
 	                }
 	                
 	            	row = new TableRow();
 	            	row.addContent(headerCell("Total &nbsp;", 1, 1));
-	            	row.addContent(headerCell(""+(elementsInMem+elementsOnDisk), 1, 1));
+	            	row.addContent(headerCell(""+elementsInMem, 1, 1));
 	            	row.addContent(headerCell(""+hitCnt, 1, 1));
 	            	row.addContent(headerCell(""+missCnt, 1, 1));
 	            	row.addContent(headerCell(""+putCnt, 1, 1));
-	            	row.addContent(headerCell(""+elementsInMem, 1, 1));
-	            	row.addContent(headerCell(""+elementsOnDisk, 1, 1));
-	            	row.addContent(headerCell(size+" bytes", 1, 1));
 	            	for (Object x: row.getContents())
 	            		((TableHeaderCell)x).setStyleClass(null);
 	            	subTable.addContent(row);

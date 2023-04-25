@@ -522,8 +522,8 @@ public abstract class BasePointInTimeDataReports {
 		  .append(" and pco.subjectArea.department.uniqueId = :deptUid");
 
 		return hibSession.createQuery(sb.toString(), Long.class)
-		          .setParameter("pitdUid", pointInTimeData.getUniqueId().longValue(), Long.class)
-		          .setParameter("deptUid", departmentId.longValue(), Long.class)
+		          .setParameter("pitdUid", pointInTimeData.getUniqueId().longValue())
+		          .setParameter("deptUid", departmentId.longValue())
 		          .setCacheable(true)
 		          .list();
 
@@ -548,7 +548,7 @@ public abstract class BasePointInTimeDataReports {
 	
 		ArrayList<PitClass> pitClasses = new ArrayList<PitClass>();
 			pitClasses.addAll(hibSession.createQuery(sb.toString(), PitClass.class)
-		          .setParameter("offrId", pitOfferingId.longValue(), Long.class)
+		          .setParameter("offrId", pitOfferingId.longValue())
 		          .setCacheable(true)
 		          .list());
 		return(pitClasses);

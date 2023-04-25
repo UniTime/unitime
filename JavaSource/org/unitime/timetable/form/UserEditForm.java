@@ -106,7 +106,7 @@ public class UserEditForm implements UniTimeForm {
                 if (getPassword() != null && !getPassword().equals(u.getPassword()) && !getPassword().isEmpty()) {
                     u.setPassword(encodePassword(getPassword()));
                 }
-                hibSession.update(u);
+                hibSession.merge(u);
             } else {
                 User w = new User();
                 w.setExternalUniqueId(u.getExternalUniqueId());
@@ -116,21 +116,21 @@ public class UserEditForm implements UniTimeForm {
                 } else {
                     w.setPassword(encodePassword(getPassword()));
                 }
-                hibSession.delete(u);
-                hibSession.save(w);
+                hibSession.remove(u);
+                hibSession.persist(w);
             }
         } else {
             User u = new User();
             u.setExternalUniqueId(getExternalId());
             u.setUsername(getName());
             u.setPassword(encodePassword(getPassword()));
-            hibSession.save(u);
+            hibSession.persist(u);
         }
     }
     
     public void delete(org.hibernate.Session hibSession) {
         User u = User.findByExternalId(getExternalId());
-        if (u!=null) hibSession.delete(u);
+        if (u!=null) hibSession.remove(u);
     }
 }
 

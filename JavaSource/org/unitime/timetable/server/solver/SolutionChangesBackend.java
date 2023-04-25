@@ -113,7 +113,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	for (Long ownerId: solver.getProperties().getPropertyLongArry("General.SolverGroupId", null)) {
         		Long solutionId = SolutionDAO.getInstance().getSession().createQuery(
         				"select uniqueId from Solution where owner.uniqueId = :ownerId and commited = true", Long.class
-        				).setParameter("ownerId", ownerId, Long.class).setMaxResults(1).uniqueResult();
+        				).setParameter("ownerId", ownerId).setMaxResults(1).uniqueResult();
         		if (solutionId != null) {
         			hasCommittedSolution = true;
         			List<RecordedAssignment> ch = solver.getChangesToSolution(solutionId);

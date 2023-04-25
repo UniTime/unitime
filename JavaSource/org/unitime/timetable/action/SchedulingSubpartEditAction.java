@@ -406,7 +406,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
         	CourseCreditUnitConfig origConfig = ss.getCredit();
         	if (origConfig != null){
 				ss.setCredit(null);
-				sdao.getSession().delete(origConfig);
+				sdao.getSession().remove(origConfig);
         	}
         } else {
          	if(ss.getCredit() != null){
@@ -442,14 +442,14 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
         			if (changed){
         				CourseCreditUnitConfig origConfig = ss.getCredit();
             			ss.setCredit(null);
-            			sdao.getSession().delete(origConfig);
+            			sdao.getSession().remove(origConfig);
             			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
             			ss.getCredit().setOwner(ss);
         			}
         		} else {
         			CourseCreditUnitConfig origConfig = ss.getCredit();
         			ss.setCredit(null);
-        			sdao.getSession().delete(origConfig);
+        			sdao.getSession().remove(origConfig);
         			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
         			ss.getCredit().setOwner(ss);
         		}

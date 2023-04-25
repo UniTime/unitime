@@ -81,8 +81,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
 								"where r.session.uniqueId = :sessionId and r.eventDepartment.allowEvents = true and (" +
 								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)", Room.class)
-								.setParameter("name", name, String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", name)
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.list();
 						if (!rooms.isEmpty()) {
 							Room room = rooms.get(0);
@@ -96,8 +96,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
 								"where l.session.uniqueId = :sessionId and l.name = :name and l.eventDepartment.allowEvents = true",
 								NonUniversityLocation.class)
-								.setParameter("name", name, String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", name)
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.list();
 						if (!locations.isEmpty()) {
 							NonUniversityLocation location = locations.get(0);
@@ -113,8 +113,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"where r.session.uniqueId = :sessionId and (" +
 								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)",
 								Room.class)
-								.setParameter("name", name, String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", name)
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.list();
 						if (!rooms.isEmpty()) {
 							Room room = rooms.get(0);
@@ -128,8 +128,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
 								"where l.session.uniqueId = :sessionId and l.name = :name",
 								NonUniversityLocation.class)
-								.setParameter("name", name, String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", name)
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.list();
 						if (!locations.isEmpty()) {
 							NonUniversityLocation location = locations.get(0);
@@ -145,7 +145,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and " +
 							"lower(s.subjectAreaAbbreviation) = :name", SubjectArea.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!subjects.isEmpty()) {
 						SubjectArea subject = subjects.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -159,7 +159,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and " +
 							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) = :name and c.instructionalOffering.notOffered = false",
 							CourseOffering.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!courses.isEmpty()) {
 						CourseOffering course = courses.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -173,7 +173,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case CURRICULUM:
 					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and " +
 							"lower(c.abbv) = :name or lower(c.name) = :name", Curriculum.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!curricula.isEmpty()) {
 						Curriculum curriculum = curricula.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -195,7 +195,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							"lower(c.abbv || f.academicClassification.code) = :name or lower(c.name || f.academicClassification.code) = :name or " + 
 							"lower(c.abbv || f.academicClassification.name) = :name or lower(c.name || f.academicClassification.name) = :name)",
 							CurriculumClassification.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!classifications.isEmpty()) {
 						CurriculumClassification classification = classifications.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -209,7 +209,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case DEPARTMENT:
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and " +
 							"(lower(d.deptCode) = :name or lower(d.abbreviation) = :name)", Department.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!departments.isEmpty()) {
 						Department department = departments.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -223,7 +223,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case PERSON:
 					List<Student> students = hibSession.createQuery("select s from Student s where s.session.uniqueId = :sessionId and " +
 							"s.externalUniqueId = :name", Student.class)
-							.setParameter("name", name, String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!students.isEmpty()) {
 						Student student = students.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -236,7 +236,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					}
 					List<DepartmentalInstructor> instructors = hibSession.createQuery("select i from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and " +
 							"i.externalUniqueId = :name", DepartmentalInstructor.class)
-							.setParameter("name", name, String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!instructors.isEmpty()) {
 						DepartmentalInstructor instructor = instructors.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -249,7 +249,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					}
 					List<EventContact> contacts = hibSession.createQuery("select c from EventContact c where " +
 							"c.externalUniqueId = :name", EventContact.class)
-							.setParameter("name", name, String.class).list();
+							.setParameter("name", name).list();
 					if (!contacts.isEmpty()) {
 						EventContact contact = contacts.get(0);
 						ResourceInterface ret = new ResourceInterface();
@@ -269,7 +269,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case GROUP:
 					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and " +
 							"(lower(g.groupName) = :name or lower(g.groupAbbreviation) = :name)", StudentGroup.class)
-							.setParameter("name", name.toLowerCase(), String.class).setParameter("sessionId", academicSession.getUniqueId(), Long.class).list();
+							.setParameter("name", name.toLowerCase()).setParameter("sessionId", academicSession.getUniqueId()).list();
 					if (!groups.isEmpty()) {
 						StudentGroup group = groups.get(0);
 						ret = new ResourceInterface();
@@ -310,8 +310,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"o.status != 0 and o.roomType = r.roomType and o.department = r.eventDepartment and (" +
 								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
 								"order by r.buildingAbbv, r.roomNumber", Room.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.setMaxResults(limit).list();
 						for (Room room: rooms) {
 							ResourceInterface ret = new ResourceInterface();
@@ -330,8 +330,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"RoomTypeOption o where l.eventDepartment.allowEvents = true and " + 
 								"l.session.uniqueId = :sessionId and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment and lower(l.name) like :name " +
 								"order by l.name", NonUniversityLocation.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.setMaxResults(limit).list();
 						for (NonUniversityLocation location: locations) {
 							ResourceInterface ret = new ResourceInterface();
@@ -355,8 +355,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"where r.session.uniqueId = :sessionId and (" +
 								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
 								"order by r.buildingAbbv, r.roomNumber", Room.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.setMaxResults(limit).list();
 						for (Room room: rooms) {
 							ResourceInterface ret = new ResourceInterface();
@@ -374,8 +374,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l where " +
 								"l.session.uniqueId = :sessionId and lower(l.name) like :name " +
 								"order by l.name", NonUniversityLocation.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.setMaxResults(limit).list();
 						for (NonUniversityLocation location: locations) {
 							ResourceInterface ret = new ResourceInterface();
@@ -400,8 +400,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
 							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title) " +
 							"order by s.subjectAreaAbbreviation", SubjectArea.class)
-							.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "% " + query.toLowerCase() + "%", String.class)
-							.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+							.setParameter("name", query.toLowerCase() + "%").setParameter("title", "% " + query.toLowerCase() + "%")
+							.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 					for (SubjectArea subject: subjects) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.SUBJECT);
@@ -425,8 +425,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
 								"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
 								"order by s.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "% " + query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+								.setParameter("name", query.toLowerCase() + "%").setParameter("title", "% " + query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 						for (CourseOffering course: courses) {
 							if (course.getInstructionalOffering().isNotOffered()) continue;
 							ResourceInterface ret = new ResourceInterface();
@@ -442,8 +442,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					List<CourseOffering> courses = hibSession.createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
 							"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
 							"order by s.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
-							.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "% " + query.toLowerCase() + "%", String.class)
-							.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+							.setParameter("name", query.toLowerCase() + "%").setParameter("title", "% " + query.toLowerCase() + "%")
+							.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 					for (CourseOffering course: courses) {
 						if (course.getInstructionalOffering().isNotOffered()) continue;
 						ResourceInterface ret = new ResourceInterface();
@@ -457,8 +457,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				case CURRICULUM:
 					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and (" +
 							"lower(c.abbv) like :name or lower(c.name) like :title) order by c.abbv", Curriculum.class)
-							.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "%" + query.toLowerCase() + "%", String.class)
-							.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+							.setParameter("name", query.toLowerCase() + "%").setParameter("title", "%" + query.toLowerCase() + "%")
+							.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 					for (Curriculum curriculum: curricula) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.CURRICULUM);
@@ -491,8 +491,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 								"lower(c.abbv || f.academicClassification.name) like :name or lower(c.name || f.academicClassification.name) like :title) " +
 								"order by c.abbv, f.academicClassification.code",
 								CurriculumClassification.class)
-								.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "%" + query.toLowerCase() + "%", String.class)
-								.setParameter("sessionId", academicSession.getUniqueId(), Long.class)
+								.setParameter("name", query.toLowerCase() + "%").setParameter("title", "%" + query.toLowerCase() + "%")
+								.setParameter("sessionId", academicSession.getUniqueId())
 								.setMaxResults(limit - resources.size()).list();
 						for (CurriculumClassification classification: classifications) {
 							ResourceInterface ret = new ResourceInterface();
@@ -511,8 +511,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and (" +
 							"lower(d.deptCode) like :name or lower(d.abbreviation) like :name or lower(d.name) like :title) " +
 							"order by d.abbreviation, d.deptCode", Department.class)
-							.setParameter("name", query.toLowerCase() + "%", String.class).setParameter("title", "%" + query.toLowerCase() + "%", String.class)
-							.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+							.setParameter("name", query.toLowerCase() + "%").setParameter("title", "%" + query.toLowerCase() + "%")
+							.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 					for (Department department: departments) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.DEPARTMENT);
@@ -526,8 +526,8 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and (" +
 							"lower(g.groupAbbreviation) like :abbv or lower(g.groupName) like :name) " +
 							"order by g.groupAbbreviation, g.groupName", StudentGroup.class)
-							.setParameter("abbv", query.toLowerCase() + "%", String.class).setParameter("name", "%" + query.toLowerCase() + "%", String.class)
-							.setParameter("sessionId", academicSession.getUniqueId(), Long.class).setMaxResults(limit).list();
+							.setParameter("abbv", query.toLowerCase() + "%").setParameter("name", "%" + query.toLowerCase() + "%")
+							.setParameter("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
 					for (StudentGroup group: groups) {
 						ResourceInterface ret = new ResourceInterface();
 						ret.setType(ResourceType.GROUP);

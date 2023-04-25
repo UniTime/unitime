@@ -126,12 +126,12 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					helper.getHibSession().createQuery(
 							"select distinct cr.courseDemand.student.uniqueId from CourseRequest cr " +
 							"where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", Long.class)
-							.setParameter("offeringId", offeringId, Long.class).list();
+							.setParameter("offeringId", offeringId).list();
 			studentIds.addAll(
 					helper.getHibSession().createQuery(
 							"select distinct e.student.uniqueId from StudentClassEnrollment e " +
 							"where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null", Long.class)
-							.setParameter("offeringId", offeringId, Long.class).list());
+							.setParameter("offeringId", offeringId).list());
 			
 			/*
 			List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
@@ -139,7 +139,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					"left outer join s.classEnrollments e " +
 					"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
 					"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
-					"co.instructionalOffering.uniqueId = :offeringId").setParameter("offeringId", offeringId, Long.class).list();
+					"co.instructionalOffering.uniqueId = :offeringId").setParameter("offeringId", offeringId).list();
 			*/
 			
 			Lock lock = server.lockOffering(offeringId, studentIds, name());
@@ -184,7 +184,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.notes as n " +
                 "where s.uniqueId in (select xe.student.uniqueId from StudentClassEnrollment xe where xe.courseOffering.instructionalOffering.uniqueId = :offeringId) " +
                 "or s.uniqueId in (select xr.courseDemand.student.uniqueId from CourseRequest xr where xr.courseOffering.instructionalOffering.uniqueId = :offeringId)"
-                ).setParameter("offeringId", offeringId, Long.class).list()) {
+                ).setParameter("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
 		}
 		*/
@@ -198,7 +198,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.groups as g " +
                 "left join fetch s.notes as n " +
                 "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", org.unitime.timetable.model.Student.class
-                ).setParameter("offeringId", offeringId, Long.class).list()) {
+                ).setParameter("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
 		}
 		for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
@@ -214,7 +214,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.notes as n " +
                 "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null",
                 org.unitime.timetable.model.Student.class
-                ).setParameter("offeringId", offeringId, Long.class).list()) {
+                ).setParameter("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
 		}
 		
@@ -238,11 +238,11 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	        		"where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId " +
 	        		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
 	        		"and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
-	        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference(), String.class)
-	        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE, String.class)
-	        		.setParameter("pref", PreferenceLevel.sRequired, String.class)
-	        		.setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class)
-	        		.setParameter("offeringId", offeringId, Long.class)
+	        		.setParameter("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+	        		.setParameter("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+	        		.setParameter("pref", PreferenceLevel.sRequired)
+	        		.setParameter("sessionId", server.getAcademicSession().getUniqueId())
+	        		.setParameter("offeringId", offeringId)
 	        		.list();
 	        if (!distPrefs.isEmpty()) {
 	        	for (DistributionPref pref: distPrefs) {
@@ -266,7 +266,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			// Load sectioning info
         	List<Object[]> infos = helper.getHibSession().createQuery(
         			"select i.clazz.uniqueId, i.nbrExpectedStudents from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId",
-        			Object[].class).setParameter("offeringId", offeringId, Long.class).list();
+        			Object[].class).setParameter("offeringId", offeringId).list();
         	XExpectations expectations = new XExpectations(offeringId);
         	for (Object[] info : infos) {
         		Long sectionId = (Long)info[0];

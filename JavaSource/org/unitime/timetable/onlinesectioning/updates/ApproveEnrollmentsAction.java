@@ -121,8 +121,8 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 							if (r != null && r.getEnrollment() != null) {
 								for (StudentClassEnrollment e: helper.getHibSession().createQuery(
 										"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering.uniqueId = :offeringId", StudentClassEnrollment.class)
-										.setParameter("studentId", enrollment.getStudentId(), Long.class)
-										.setParameter("offeringId", getOfferingId(), Long.class)
+										.setParameter("studentId", enrollment.getStudentId())
+										.setParameter("offeringId", getOfferingId())
 										.list()) {
 									e.setApprovedBy(approval[1]);
 									e.setApprovedDate(approvedDate);

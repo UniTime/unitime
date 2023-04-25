@@ -99,7 +99,7 @@ public abstract class BasePosMajor implements Serializable {
 	@JoinTable(name = "pos_acad_area_major",
 		joinColumns = { @JoinColumn(name = "major_id") },
 		inverseJoinColumns = { @JoinColumn(name = "academic_area_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
 	public void addToacademicAreas(AcademicArea academicArea) {
@@ -108,7 +108,7 @@ public abstract class BasePosMajor implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "major", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
 	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {

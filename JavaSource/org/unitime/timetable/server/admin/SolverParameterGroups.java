@@ -75,7 +75,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 			context.getUser().setProperty("Admin.SolverParamGroup.FilterType", filter[0]);
 			return SolverParameterGroupDAO.getInstance().getSession().createQuery(
 					"from SolverParameterGroup where type = :type order by order, name", SolverParameterGroup.class
-					).setParameter("type", Integer.valueOf(filter[0]), Integer.class).list();
+					).setParameter("type", Integer.valueOf(filter[0])).list();
 		}
 		
 	}
@@ -148,7 +148,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 		if (filter != null && filter[0] != null && !filter[0].isEmpty() && !filter[0].equals("null")) {
 			for (SolverParameterGroup group: SolverParameterGroupDAO.getInstance().getSession().createQuery(
 					"from SolverParameterGroup where type != :type", SolverParameterGroup.class
-					).setParameter("type", Integer.valueOf(filter[0]), Integer.class).list()) {
+					).setParameter("type", Integer.valueOf(filter[0])).list()) {
 				ords.add(group.getOrder());
 			}
 		}
@@ -230,7 +230,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(group);
+		hibSession.remove(group);
 	}
 	
 	@Override

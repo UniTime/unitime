@@ -32,7 +32,7 @@ import org.unitime.timetable.model.base.BaseExamLocationPref;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "exam_location_pref")
 public class ExamLocationPref extends BaseExamLocationPref implements Comparable<ExamLocationPref> {
 	private static final long serialVersionUID = 1L;

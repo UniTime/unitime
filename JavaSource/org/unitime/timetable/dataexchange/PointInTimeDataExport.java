@@ -355,9 +355,9 @@ public class PointInTimeDataExport extends BaseExport {
 		       .append(" and cco.instructionalOffering.uniqueId = io.uniqueId")
 		       .append(" and cco.isControl = true")
 		       .append(" and sa.uniqueId = :saId " )
-		       .append(" and c.cancelled is false " )
+		       .append(" and c.cancelled = false " )
 		       .append(" and c.studentEnrollments is not empty")
-		       .append(" and io.notOffered is false")
+		       .append(" and io.notOffered = false")
 		       ;
 		
 		
@@ -366,8 +366,8 @@ public class PointInTimeDataExport extends BaseExport {
 			info("Fetching Instructional Offerings for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			for (Object[] objects : getHibSession()
 					.createQuery(querySb.toString(), Object[].class)
-					.setParameter("sessId", acadSession.getUniqueId(), Long.class)
-					.setParameter("saId", sa.getUniqueId(), Long.class)
+					.setParameter("sessId", acadSession.getUniqueId())
+					.setParameter("saId", sa.getUniqueId())
 					.setFetchSize(1000)
 					.list()) {
 				offerings.add((InstructionalOffering) objects[0]);				
@@ -392,7 +392,7 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching AcademicArea");
 		academicAreas.addAll(getHibSession()
 			.createQuery(querySb.toString(), AcademicArea.class)
-			.setParameter("sessId", acadSession.getUniqueId(), Long.class)
+			.setParameter("sessId", acadSession.getUniqueId())
 			.setFetchSize(1000)
 			.list());
 		return(academicAreas);
@@ -414,7 +414,7 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching Time Patterns");
 		timePatterns.addAll(getHibSession()
 			.createQuery(querySb.toString(), TimePattern.class)
-			.setParameter("sessId", acadSession.getUniqueId(), Long.class)
+			.setParameter("sessId", acadSession.getUniqueId())
 			.setFetchSize(1000)
 			.list());
 		return(timePatterns);
@@ -448,13 +448,13 @@ public class PointInTimeDataExport extends BaseExport {
 		info("Fetching Rooms");
 		locations.addAll(getHibSession()
 			.createQuery(querySb1.toString(), Location.class)
-			.setParameter("sessId", acadSession.getUniqueId(), Long.class)
+			.setParameter("sessId", acadSession.getUniqueId())
 			.setFetchSize(1000)
 			.list());
 		info("Fetching Non Unversity Locations");
 		locations.addAll(getHibSession()
 			.createQuery(querySb2.toString(), Location.class)
-			.setParameter("sessId", acadSession.getUniqueId(), Long.class)
+			.setParameter("sessId", acadSession.getUniqueId())
 			.setFetchSize(1000)
 			.list());
 		return(locations);
@@ -483,7 +483,7 @@ public class PointInTimeDataExport extends BaseExport {
 		       .append(" where s.session.uniqueId = :sessId" )
 		       .append(" and sa.uniqueId = :saId")
 		       .append(" and s.classEnrollments is not empty" )
-		       .append(" and c.cancelled is false " )
+		       .append(" and c.cancelled = false " )
 		       ;
 		
 		ArrayList<StudentClassEnrollment> students = new ArrayList<StudentClassEnrollment>();
@@ -491,8 +491,8 @@ public class PointInTimeDataExport extends BaseExport {
 				info("Fetching Student Class Enrollments for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 				students.addAll(getHibSession()
 					.createQuery(querySb.toString(), StudentClassEnrollment.class)
-					.setParameter("sessId", acadSession.getUniqueId(), Long.class)
-					.setParameter("saId", sa.getUniqueId(), Long.class)
+					.setParameter("sessId", acadSession.getUniqueId())
+					.setParameter("saId", sa.getUniqueId())
 					.setFetchSize(1000)
 					.list());
 		}
@@ -517,7 +517,7 @@ public class PointInTimeDataExport extends BaseExport {
 	      .append(" and co.subjectArea.uniqueId = :saId")
 	      .append(" and co.isControl = true")
 	      .append(" and e.clazz.studentEnrollments is not empty")
-	      .append(" and e.clazz.cancelled is false")
+	      .append(" and e.clazz.cancelled = false")
 	      .append(" and l.permanentId = m.locationPermanentId")
 	      .append(" and l.session.uniqueId = :sessId")
 	      ;	
@@ -536,7 +536,7 @@ public class PointInTimeDataExport extends BaseExport {
 	      .append(" and co.subjectArea.uniqueId = :saId")
 	      .append(" and co.isControl = true")
 	      .append(" and e.clazz.studentEnrollments is not empty")
-	      .append(" and e.clazz.cancelled is false")
+	      .append(" and e.clazz.cancelled = false")
 	      .append(" and l.permanentId = m.locationPermanentId")
 	      .append(" and l.session.uniqueId = :sessId")
 	      ;		
@@ -547,14 +547,14 @@ public class PointInTimeDataExport extends BaseExport {
 			info("Fetching Class Events for Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			events.addAll(getHibSession()
 					.createQuery(querySb1.toString(), Object[].class)
-					.setParameter("sessId", acadSession.getUniqueId(), Long.class)
-					.setParameter("saId", sa.getUniqueId(), Long.class)
+					.setParameter("sessId", acadSession.getUniqueId())
+					.setParameter("saId", sa.getUniqueId())
 					.setFetchSize(1000)
 					.list());
 			events.addAll(getHibSession()
 					.createQuery(querySb2.toString(), Object[].class)
-					.setParameter("sessId", acadSession.getUniqueId(), Long.class)
-					.setParameter("saId", sa.getUniqueId(), Long.class)
+					.setParameter("sessId", acadSession.getUniqueId())
+					.setParameter("saId", sa.getUniqueId())
 					.setFetchSize(1000)
 					.list());
 			}

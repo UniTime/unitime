@@ -164,8 +164,8 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 ;
 				
 		return hibSession.createQuery(sb.toString(),PitClass.class)
-					.setParameter("pitdUid", pointInTimeData.getUniqueId().longValue(), Long.class)
-					.setParameter("deptId", departmentId.longValue(), Long.class)
+					.setParameter("pitdUid", pointInTimeData.getUniqueId().longValue())
+					.setParameter("deptId", departmentId.longValue())
 					.setCacheable(true)
 					.list();
 
@@ -193,7 +193,7 @@ public class RoomUtilization extends BasePointInTimeDataReports {
 	protected void runReport(org.hibernate.Session hibSession) {
 		PointInTimeData pitd = (PointInTimeData)hibSession
 				.createQuery("from PointInTimeData pitd where pitd.uniqueId = :uid", PointInTimeData.class)
-				.setParameter("uid", getPointInTimeDataUniqueId().longValue(), Long.class)
+				.setParameter("uid", getPointInTimeDataUniqueId().longValue())
 				.uniqueResult();
 		createRoomUtilizationReportFor(pitd, hibSession);
 		

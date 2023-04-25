@@ -107,7 +107,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	@JoinTable(name = "dist_type_dept",
 		joinColumns = { @JoinColumn(name = "dist_type_id") },
 		inverseJoinColumns = { @JoinColumn(name = "dept_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {

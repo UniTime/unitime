@@ -61,14 +61,14 @@ public class ClassDurationType extends BaseClassDurationType implements Comparab
 	public static ClassDurationType findByReference(String reference, org.hibernate.Session hibSession) {
 		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"from ClassDurationType where reference = :reference", ClassDurationType.class)
-				.setParameter("reference", reference, String.class)
+				.setParameter("reference", reference)
 				.setCacheable(true).uniqueResult();
 	}
 	
 	public static ClassDurationType findDefaultType(Long sessionId, org.hibernate.Session hibSession) {
 		return  (hibSession == null ? ClassDurationTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"select t from Session s inner join s.defaultClassDurationType t where s.uniqueId = :sessionId", ClassDurationType.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true).uniqueResult();
 	}
 	

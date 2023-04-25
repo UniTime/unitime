@@ -39,7 +39,7 @@ public class StudentGroupType extends BaseStudentGroupType {
 	public static StudentGroupType findByReference(String reference, org.hibernate.Session hibSession) {
 		return (hibSession == null ? StudentGroupTypeDAO.getInstance().getSession() : hibSession).createQuery(
 				"from StudentGroupType where reference = :reference", StudentGroupType.class
-				).setParameter("reference", reference, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+				).setParameter("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	public static enum AllowDisabledSection {

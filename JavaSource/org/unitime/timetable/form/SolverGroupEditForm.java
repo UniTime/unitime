@@ -246,7 +246,7 @@ public class SolverGroupEditForm implements UniTimeForm {
 		}
 		group.setTimetableManagers(newManagers);
 		group.setSolutions(new HashSet<Solution>());
-		hibSession.save(group);
+		hibSession.persist(group);
 		for (Department d: newDepartments) {
 			d.setSolverGroup(group);
 			hibSession.saveOrUpdate(d);
@@ -330,7 +330,7 @@ public class SolverGroupEditForm implements UniTimeForm {
                 ChangeLog.Operation.DELETE, 
                 null, 
                 null);
-		hibSession.delete(group);
+		hibSession.remove(group);
 	}
 	
 	public String getOp() { return iOp; }

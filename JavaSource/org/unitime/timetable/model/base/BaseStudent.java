@@ -204,7 +204,7 @@ public abstract class BaseStudent implements Serializable {
 	public void setSectioningStatus(StudentSectioningStatus sectioningStatus) { iSectioningStatus = sectioningStatus; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAreaClassificationMajor> getAreaClasfMajors() { return iAreaClasfMajors; }
 	public void setAreaClasfMajors(Set<StudentAreaClassificationMajor> areaClasfMajors) { iAreaClasfMajors = areaClasfMajors; }
 	public void addToareaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
@@ -213,7 +213,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAreaClassificationMinor> getAreaClasfMinors() { return iAreaClasfMinors; }
 	public void setAreaClasfMinors(Set<StudentAreaClassificationMinor> areaClasfMinors) { iAreaClasfMinors = areaClasfMinors; }
 	public void addToareaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
@@ -222,7 +222,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }
 	public void setAccomodations(Set<StudentAccomodation> accomodations) { iAccomodations = accomodations; }
 	public void addToaccomodations(StudentAccomodation studentAccomodation) {
@@ -231,7 +231,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<StudentGroup> groups) { iGroups = groups; }
 	public void addTogroups(StudentGroup studentGroup) {
@@ -240,7 +240,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<WaitList> getWaitlists() { return iWaitlists; }
 	public void setWaitlists(Set<WaitList> waitlists) { iWaitlists = waitlists; }
 	public void addTowaitlists(WaitList waitList) {
@@ -249,7 +249,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseDemand> getCourseDemands() { return iCourseDemands; }
 	public void setCourseDemands(Set<CourseDemand> courseDemands) { iCourseDemands = courseDemands; }
 	public void addTocourseDemands(CourseDemand courseDemand) {
@@ -258,7 +258,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
 	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
 	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
@@ -267,7 +267,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<LastLikeCourseDemand> getLastLikeCourseDemands() { return iLastLikeCourseDemands; }
 	public void setLastLikeCourseDemands(Set<LastLikeCourseDemand> lastLikeCourseDemands) { iLastLikeCourseDemands = lastLikeCourseDemands; }
 	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
@@ -276,7 +276,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentNote> getNotes() { return iNotes; }
 	public void setNotes(Set<StudentNote> notes) { iNotes = notes; }
 	public void addTonotes(StudentNote studentNote) {
@@ -285,7 +285,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Advisor> getAdvisors() { return iAdvisors; }
 	public void setAdvisors(Set<Advisor> advisors) { iAdvisors = advisors; }
 	public void addToadvisors(Advisor advisor) {
@@ -294,7 +294,7 @@ public abstract class BaseStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AdvisorCourseRequest> getAdvisorCourseRequests() { return iAdvisorCourseRequests; }
 	public void setAdvisorCourseRequests(Set<AdvisorCourseRequest> advisorCourseRequests) { iAdvisorCourseRequests = advisorCourseRequests; }
 	public void addToadvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {

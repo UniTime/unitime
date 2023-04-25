@@ -43,7 +43,7 @@ import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.Adv
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "advisor_crsreq")
 public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Comparable<AdvisorCourseRequest> {
 	private static final long serialVersionUID = 1L;
@@ -71,7 +71,7 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 							i.remove();
 							if (r.getRequired() != p.isRequired()) {
 								r.setRequired(p.isRequired());
-								hibSession.update(r);
+								hibSession.merge(r);
 								changed = true;
 							}
 							continue p;
@@ -97,7 +97,7 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 							i.remove();
 							if (r.getRequired() != p.isRequired()) {
 								r.setRequired(p.isRequired());
-								hibSession.update(r);
+								hibSession.merge(r);
 								changed = true;
 							}
 							continue p;
@@ -114,7 +114,7 @@ public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Co
 		}
     	if (remain != null) {
     		for (AdvisorSectioningPref p: remain) {
-    			hibSession.delete(p);
+    			hibSession.remove(p);
     			getPreferences().remove(p);
     			changed = true;
     		}

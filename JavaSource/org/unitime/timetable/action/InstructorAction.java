@@ -275,10 +275,10 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 		String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
        
         Query q = hibSession.createQuery(query);
-        q.setParameter("puid", form.getPuId().trim(), String.class);
-        q.setParameter("deptId", Long.parseLong(deptId), Long.class);
+        q.setParameter("puid", form.getPuId().trim());
+        q.setParameter("deptId", Long.parseLong(deptId));
         if (form.getInstructorId()!=null && form.getInstructorId().trim().length()>0) {
-            q.setParameter("uniqueId", Long.parseLong(form.getInstructorId().trim()), Long.class);
+            q.setParameter("uniqueId", Long.parseLong(form.getInstructorId().trim()));
         }
         
         return (q.list().size()==0);

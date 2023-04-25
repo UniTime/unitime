@@ -47,9 +47,12 @@ import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
+import org.unitime.timetable.model.CurriculumOverrideReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.GroupOverrideReservation;
+import org.unitime.timetable.model.IndividualOverrideReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.LearningCommunityReservation;
@@ -95,47 +98,47 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 		
-		Map<Integer, Integer> type2count = new HashMap<Integer, Integer>();
+		Map<String, Integer> type2count = new HashMap<String, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("type(r), count(distinct r)").group("type(r)").exclude("type").exclude("override").query(hibSession).list()) {
-			Integer type = ((Number)o[0]).intValue();
+			String type = ((Class)o[0]).getSimpleName();
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
 		}
 		Entity individualType = new Entity(Long.valueOf(0), "Individual", MESSAGES.reservationIndividualAbbv(), "translated-value", MESSAGES.reservationIndividualAbbv());
-		Integer individualCnt = type2count.get(0);
+		Integer individualCnt = type2count.get(IndividualReservation.class.getSimpleName());
 		if (individualCnt != null)
 			individualType.setCount(individualCnt);
-		Integer individualOverrideCnt = type2count.get(5);
+		Integer individualOverrideCnt = type2count.get(IndividualOverrideReservation.class.getSimpleName());
 		if (individualOverrideCnt != null)
 			individualType.setCount(individualType.getCount() + individualOverrideCnt);
 		response.add("type", individualType);
 		Entity groupType = new Entity(Long.valueOf(0), "Group", MESSAGES.reservationStudentGroupAbbv(), "translated-value", MESSAGES.reservationStudentGroupAbbv());
-		Integer groupCnt = type2count.get(1);
+		Integer groupCnt = type2count.get(StudentGroupReservation.class.getSimpleName());
 		if (groupCnt != null)
 			groupType.setCount(groupCnt);
-		Integer groupOverrideCnt = type2count.get(6);
+		Integer groupOverrideCnt = type2count.get(GroupOverrideReservation.class.getSimpleName());
 		if (groupOverrideCnt != null)
 			groupType.setCount(groupType.getCount() + groupOverrideCnt);
 		response.add("type", groupType);
 		Entity lcType = new Entity(Long.valueOf(0), "LC", MESSAGES.reservationLearningCommunityAbbv(), "translated-value", MESSAGES.reservationLearningCommunityAbbv());
-		Integer lcCnt = type2count.get(7);
+		Integer lcCnt = type2count.get(LearningCommunityReservation.class.getSimpleName());
 		if (lcCnt != null)
 			lcType.setCount(lcCnt);
 		response.add("type", lcType);
 		Entity curriculumType = new Entity(Long.valueOf(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
-		Integer curriculumCnt = type2count.get(2);
+		Integer curriculumCnt = type2count.get(CurriculumReservation.class.getSimpleName());
 		if (curriculumCnt != null)
 			curriculumType.setCount(curriculumCnt);
-		Integer curriculumOverrideCnt = type2count.get(8);
+		Integer curriculumOverrideCnt = type2count.get(CurriculumOverrideReservation.class.getSimpleName());
 		if (curriculumOverrideCnt != null)
 			curriculumType.setCount(curriculumType.getCount() + curriculumOverrideCnt);
 		response.add("type", curriculumType);
 		Entity courseType = new Entity(Long.valueOf(0), "Course", MESSAGES.reservationCourseAbbv(), "translated-value", MESSAGES.reservationCourseAbbv());
-		Integer courseCnt = type2count.get(3);
+		Integer courseCnt = type2count.get(CourseReservation.class.getSimpleName());
 		if (courseCnt != null)
 			courseType.setCount(courseCnt);
 		Entity overrideType = new Entity(Long.valueOf(0), "Override", MESSAGES.reservationOverrideAbbv(), "translated-value", MESSAGES.reservationOverrideAbbv());
-		Integer overrideCnt = type2count.get(4);
+		Integer overrideCnt = type2count.get(OverrideReservation.class.getSimpleName());
 		if (overrideCnt != null)
 			overrideType.setCount(overrideCnt);
 		response.add("type", overrideType);
@@ -299,9 +302,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			request.setOption("course", request.getText());
 		
 		String fetch = "inner join fetch r.instructionalOffering io inner join io.courseOfferings co " +
-				"left join fetch r.classes xclz left join fetch r.configurations xcfg " +
-				"left join fetch r.areas xarea left join fetch r.majors xmjr left join fetch r.classifications xclf " +
-				"left join fetch r.course xcrs left join fetch r.students xstd left join fetch r.group xgrp";
+				"left join fetch r.classes xclz left join fetch r.configurations xcfg";
 		
 		for (Reservation reservation: (List<Reservation>)getQuery(request, context).select("distinct r").from(fetch).query(hibSession).list())
 			ret.add(reservation);
@@ -454,6 +455,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				id ++;
 			}
 			query.addWhere("area", "xarea.academicAreaAbbreviation " + (id == 1 ? "= " + areas : "in (" + areas + ")"));
+			query.addJoin("area", "r.areas xarea");
 		}
 		
 		if (request.hasOptions("group")) {
@@ -547,15 +549,15 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -565,7 +567,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 			}
@@ -614,19 +616,19 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
-				query.setParameter("sessionId", iSessionId, Long.class);
+				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -636,7 +638,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 				if (iLimit != null)

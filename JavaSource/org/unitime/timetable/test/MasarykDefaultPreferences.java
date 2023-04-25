@@ -142,27 +142,27 @@ public class MasarykDefaultPreferences {
             if (!incremental) {
             	hibSession.createQuery(
             			"delete DistributionPref where owner in (from Department d where d.session.uniqueId = :sessionId)")
-            			.setParameter("sessionId", session.getUniqueId(), Long.class).executeUpdate();
+            			.setParameter("sessionId", session.getUniqueId()).executeUpdate();
             	hibSession.createQuery(
             			"delete DistributionPref where owner in (from Session s where s.uniqueId = :sessionId)")
-            			.setParameter("sessionId", session.getUniqueId(), Long.class).executeUpdate();
+            			.setParameter("sessionId", session.getUniqueId()).executeUpdate();
             }
             
             Hashtable<String, Set<Class_>> meetWith = new Hashtable<String, Set<Class_>>();
             
 			DistributionType sameDaysType = hibSession.createQuery(
-			"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "SAME_DAYS", String.class).uniqueResult();
+			"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "SAME_DAYS").uniqueResult();
 
             
 			TimePattern tp2h = hibSession.createQuery(
 					"select p from TimePattern as p where p.session.uniqueId=:sessionId and p.name=:name", TimePattern.class).
-					setParameter("sessionId", session.getUniqueId(), Long.class).
-					setParameter("name", "2h", String.class).uniqueResult();
+					setParameter("sessionId", session.getUniqueId()).
+					setParameter("name", "2h").uniqueResult();
 			
             for (SchedulingSubpart ss: hibSession.createQuery(
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
             		"co.subjectArea.department.session.uniqueId = :sessionId", SchedulingSubpart.class)
-            		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		.setParameter("sessionId", session.getUniqueId()).list()) {
             	
             	boolean hasPreferences = false;
             	if (!ss.getPreferences().isEmpty()) hasPreferences = true;
@@ -466,7 +466,7 @@ public class MasarykDefaultPreferences {
             
             if (addMeetWith) {
     			DistributionType meetWithType = hibSession.createQuery(
-				"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "MEET_WITH", String.class).uniqueResult();
+				"select d from DistributionType d where d.reference = :type", DistributionType.class).setParameter("type", "MEET_WITH").uniqueResult();
 
             for (Set<Class_> classes: meetWith.values()) {
             	if (classes.size() <= 1) continue;

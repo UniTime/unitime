@@ -248,7 +248,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	if (di.getExternalUniqueId() != null) {
     		List<StudentClassEnrollment> enrollments = hibSession.createQuery(
     				"from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId and e.clazz.cancelled = false", StudentClassEnrollment.class
-    				).setParameter("sessionId", di.getDepartment().getSessionId(), Long.class).setParameter("externalId", di.getExternalUniqueId(), String.class).setCacheable(true).list();
+    				).setParameter("sessionId", di.getDepartment().getSessionId()).setParameter("externalId", di.getExternalUniqueId()).setCacheable(true).list();
     		for (StudentClassEnrollment enrollment: enrollments) {
     			org.unitime.timetable.model.Assignment assignment = enrollment.getClazz().getCommittedAssignment();
     			if (assignment != null) {
@@ -280,7 +280,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		List<ClassInstructor> classInstructors = hibSession.createQuery(
     				"from ClassInstructor ci where ci.instructor.externalUniqueId = :externalId and ci.instructor.department.session.uniqueId = :sessionId and " +
     				"ci.instructor.department.uniqueId != :departmentId and ci.lead = true and ci.classInstructing.cancelled = false", ClassInstructor.class
-    				).setParameter("sessionId", di.getDepartment().getSessionId(), Long.class).setParameter("externalId", di.getExternalUniqueId(), String.class).setParameter("departmentId", di.getDepartment().getUniqueId(), Long.class).setCacheable(true).list();
+    				).setParameter("sessionId", di.getDepartment().getSessionId()).setParameter("externalId", di.getExternalUniqueId()).setParameter("departmentId", di.getDepartment().getUniqueId()).setCacheable(true).list();
     		for (ClassInstructor ci: classInstructors) {
         		org.unitime.timetable.model.Assignment assignment = ci.getClassInstructing().getCommittedAssignment();
         		if (assignment != null) {
@@ -354,7 +354,7 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     	List<DepartmentalInstructor> list = hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
     			"g.uniqueId in :solverGroupId and i.department = d and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0", DepartmentalInstructor.class
-    			).setParameterList("solverGroupId", iSolverGroupId).setParameter("prohibited", PreferenceLevel.sProhibited, String.class).list();
+    			).setParameterList("solverGroupId", iSolverGroupId).setParameter("prohibited", PreferenceLevel.sProhibited).list();
     	iProgress.setPhase("Loading instructors...", list.size());
     	for (DepartmentalInstructor i: list) {
     		Instructor instructor = new Instructor(i.getUniqueId(), i.getExternalUniqueId(), i.getName(iInstructorFormat),

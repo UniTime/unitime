@@ -190,9 +190,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 				Number myStudents = CourseOfferingDAO.getInstance().getSession().createQuery(
 						"select count(s) from Advisor a inner join a.students s where " +
 						"a.externalUniqueId = :user and a.role.reference = :role and a.session.uniqueId = :sessionId", Number.class
-						).setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId(), Long.class)
-						.setParameter("user", sessionContext.getUser().getExternalUserId(), String.class)
-						.setParameter("role", sessionContext.getUser().getCurrentAuthority().getRole(), String.class).setCacheable(true).uniqueResult();
+						).setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
+						.setParameter("user", sessionContext.getUser().getExternalUserId())
+						.setParameter("role", sessionContext.getUser().getCurrentAuthority().getRole()).setCacheable(true).uniqueResult();
 				response.sendRedirect("gwt.jsp?page=onlinesctdash" + (target == null ? "" : "&" + target) + (myStudents.intValue() > 0 ? "#mode:%22My%20Students%22@" : ""));
 			} else
 				response.sendRedirect("gwt.jsp?page=onlinesctdash" + (target == null ? "" : "&" + target));

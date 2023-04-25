@@ -44,8 +44,8 @@ public class GetRoomsOfABuildingBackend implements GwtRpcImplementation<GetRooms
 		GwtRpcResponseList response = new GwtRpcResponseList();
 		for (Room room: (List<Room>)
 				RoomDAO.getInstance().getSession().createQuery(
-						"from Room r where r.building = :buildingId order by r.roomNumber", Room.class)
-					.setParameter("buildingId", request.getBuildingId(), Long.class)
+						"from Room r where r.building.uniqueId = :buildingId order by r.roomNumber", Room.class)
+					.setParameter("buildingId", request.getBuildingId())
 					.setCacheable(true).list()) {
 			response.add(
 					new RoomDetailInterface(

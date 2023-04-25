@@ -142,12 +142,12 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pit_config_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public PitInstrOfferingConfig getPitInstrOfferingConfig() { return iPitInstrOfferingConfig; }
 	public void setPitInstrOfferingConfig(PitInstrOfferingConfig pitInstrOfferingConfig) { iPitInstrOfferingConfig = pitInstrOfferingConfig; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitSchedulingSubpart> getPitChildSubparts() { return iPitChildSubparts; }
 	public void setPitChildSubparts(Set<PitSchedulingSubpart> pitChildSubparts) { iPitChildSubparts = pitChildSubparts; }
 	public void addTopitChildSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
@@ -156,7 +156,7 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitSchedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClass> getPitClasses() { return iPitClasses; }
 	public void setPitClasses(Set<PitClass> pitClasses) { iPitClasses = pitClasses; }
 	public void addTopitClasses(PitClass pitClass) {

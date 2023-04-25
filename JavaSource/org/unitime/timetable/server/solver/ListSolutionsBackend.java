@@ -150,7 +150,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
     	       				solution.setNote(note);
             			}
             			response.setSuccess(solution.commitSolution(response.getErrors(), hibSession, context.getUser().getExternalUserId()));
-            			hibSession.update(solution);
+            			hibSession.merge(solution);
             	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
             	    	if (className != null && !className.isEmpty()) {
             	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).getDeclaredConstructor().newInstance());              	    		
@@ -321,7 +321,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 
 		List<SolverPredefinedSetting> configs = SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
 				"from SolverPredefinedSetting s where s.appearance = :appearance", SolverPredefinedSetting.class
-				).setParameter("appearance", appearance, Integer.class).setCacheable(true).list();
+				).setParameter("appearance", appearance).setCacheable(true).list();
 		
 		for (SolverPredefinedSetting config: configs) {
 			SolverConfiguration c = new SolverConfiguration();

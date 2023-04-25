@@ -39,7 +39,7 @@ import org.unitime.timetable.model.dao.UserDataDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "user_data")
 public class UserData extends BaseUserData {
 	private static final long serialVersionUID = 1L;
@@ -99,7 +99,7 @@ public class UserData extends BaseUserData {
 		}
 		q += ")";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, String.class).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;
@@ -108,7 +108,7 @@ public class UserData extends BaseUserData {
 	public static HashMap<String,String> getProperties(String externalUniqueId) {
 		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId";
 		HashMap<String,String> ret = new HashMap<String, String>();
-		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId, String.class).setCacheable(true).list()) {
+		for (UserData u: UserDataDAO.getInstance().getSession().createQuery(q, UserData.class).setParameter("externalUniqueId", externalUniqueId).setCacheable(true).list()) {
 			ret.put(u.getName(), u.getValue());
 		}
 		return ret;

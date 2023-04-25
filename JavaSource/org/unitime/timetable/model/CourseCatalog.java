@@ -38,7 +38,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "course_catalog")
 public class CourseCatalog extends BaseCourseCatalog {
 	private static final long serialVersionUID = 1L;
@@ -73,9 +73,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 			query += "  and cc.permanentId = '" + courseOffering.getPermId() + "'";
 		}
 		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
-					.setParameter("sessionId", session.getUniqueId(), Long.class)
-					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), String.class)
-					.setParameter("courseNbr", courseOffering.getCourseNbr(), String.class)
+					.setParameter("sessionId", session.getUniqueId())
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv())
+					.setParameter("courseNbr", courseOffering.getCourseNbr())
 					.list();
 		if (l != null && l.size() == 1){
 			return l.get(0);
@@ -107,9 +107,9 @@ public class CourseCatalog extends BaseCourseCatalog {
 		query += "  and cc.subject=:subjectAbbv";
 		query += "  and cc.courseNumber=:courseNbr";
 		List<CourseCatalog> l = SubjectAreaDAO.getInstance().getSession().createQuery(query, CourseCatalog.class)
-					.setParameter("sessionId", session.getUniqueId(), Long.class)
-					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv(), String.class)
-					.setParameter("courseNbr", courseOffering.getCourseNbr(), String.class)
+					.setParameter("sessionId", session.getUniqueId())
+					.setParameter("subjectAbbv", courseOffering.getSubjectAreaAbbv())
+					.setParameter("courseNbr", courseOffering.getCourseNbr())
 					.list();
 		if (l != null && l.size() == 1){
 			return((CourseCatalog) l.get(0));

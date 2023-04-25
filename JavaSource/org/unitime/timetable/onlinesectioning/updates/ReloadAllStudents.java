@@ -63,7 +63,7 @@ public class ReloadAllStudents extends ReloadAllData {
 	                    "left join fetch s.groups as g " +
 	                    "left join fetch s.notes as n " +
 	                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
-	                    setParameter("sessionId", server.getAcademicSession().getUniqueId(), Long.class).list();
+	                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
 	            for (org.unitime.timetable.model.Student student: students) {
 	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)

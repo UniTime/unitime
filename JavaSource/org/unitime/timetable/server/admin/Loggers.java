@@ -151,7 +151,7 @@ public class Loggers implements AdminTable {
 		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
 		if (level.toString().equalsIgnoreCase(defaultValue)) {
 			if (config != null)
-				hibSession.delete(config);
+				hibSession.remove(config);
 		} else {
 			if (config == null) {
 				config = new ApplicationConfig();
@@ -170,7 +170,7 @@ public class Loggers implements AdminTable {
 		solverServerService.setLoggingLevel(root ? null : record.getField(0), null);
 		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
 		if (config != null)
-			hibSession.delete(config);
+			hibSession.remove(config);
 	}
 	
 	protected void delete(String name, SessionContext context, Session hibSession) {
@@ -178,7 +178,7 @@ public class Loggers implements AdminTable {
 		solverServerService.setLoggingLevel(root ? null : name, null);
 		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + name);
 		if (config != null)
-			hibSession.delete(config);
+			hibSession.remove(config);
 	}
 
 }

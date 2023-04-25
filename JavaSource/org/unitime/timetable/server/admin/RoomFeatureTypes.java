@@ -71,7 +71,7 @@ public class RoomFeatureTypes implements AdminTable {
 			int used =
 					(hibSession.createQuery(
 							"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId", Number.class)
-							.setParameter("uniqueId", ftype.getUniqueId(), Long.class).uniqueResult()).intValue();
+							.setParameter("uniqueId", ftype.getUniqueId()).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.RoomFeatureTypeEdit));
@@ -148,7 +148,7 @@ public class RoomFeatureTypes implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 
 	@Override

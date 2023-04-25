@@ -246,8 +246,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return new TreeSet<Location>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r from RoomDept rd inner join rd.room r inner join rd.department d " +
     			"where r.session.uniqueId = :sessionId and (d.uniqueId = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))", Location.class
-    			).setParameter("sessionId", getDepartment().getSessionId(), Long.class)
-    			.setParameter("deptId", getDepartment().getUniqueId(), Long.class).setCacheable(true).list());
+    			).setParameter("sessionId", getDepartment().getSessionId())
+    			.setParameter("deptId", getDepartment().getUniqueId()).setCacheable(true).list());
     }
     
 	@Transient
@@ -255,8 +255,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return new TreeSet<Building>(DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     			"select distinct r.building from Room r inner join r.roomDepts rd inner join rd.department d " +
     			"where r.session.uniqueId = :sessionId and (d.uniqueId = :deptId or (d.externalManager = true and d.inheritInstructorPreferences = true))", Building.class
-    			).setParameter("sessionId", getDepartment().getSessionId(), Long.class)
-    			.setParameter("deptId", getDepartment().getUniqueId(), Long.class).setCacheable(true).list());
+    			).setParameter("sessionId", getDepartment().getSessionId())
+    			.setParameter("deptId", getDepartment().getUniqueId()).setCacheable(true).list());
     }
     
 	@Transient
@@ -295,8 +295,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 						"from DepartmentalInstructor where externalUniqueId=:puid and " +
 						"department.session.uniqueId=:sessionId", DepartmentalInstructor.class)
-				.setParameter("puid", di.getExternalUniqueId(), String.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("puid", di.getExternalUniqueId())
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true).list();
 	}
 	
@@ -307,7 +307,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public static List<DepartmentalInstructor> findInstructorsForDepartment(Long departmentId) {
 		return  DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where department.uniqueId = :departmentId order by lastName, firstName, middleName", DepartmentalInstructor.class)
-				.setParameter("departmentId", departmentId, Long.class)
+				.setParameter("departmentId", departmentId)
 				.setCacheable(true)
 				.list();
 	}
@@ -315,7 +315,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public static List<DepartmentalInstructor> findInstructorsForSession(Long sessionId) {
 		return  DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where department.session.uniqueId = :sessionId order by lastName, firstName, middleName", DepartmentalInstructor.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true)
 				.list();
 	}
@@ -353,8 +353,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		try {
 		return hibSession.
 			createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId", DepartmentalInstructor.class).
-			setParameter("puid", puid, String.class).
-			setParameter("deptId", deptId.longValue(), Long.class).
+			setParameter("puid", puid).
+			setParameter("deptId", deptId.longValue()).
 			setCacheable(true).
 			setHibernateFlushMode(FlushMode.MANUAL).
 			uniqueResult();
@@ -362,8 +362,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			Debug.warning("There are two or more instructors with puid "+puid+" for department "+deptId+" -- returning the first one.");
 			return hibSession.
 				createQuery("select d from DepartmentalInstructor d where d.externalUniqueId=:puid and d.department.uniqueId=:deptId", DepartmentalInstructor.class).
-				setParameter("puid", puid, String.class).
-				setParameter("deptId", deptId.longValue(), Long.class).
+				setParameter("puid", puid).
+				setParameter("deptId", deptId.longValue()).
 				setCacheable(true).
 				setHibernateFlushMode(FlushMode.MANUAL).
 				list().get(0);
@@ -460,8 +460,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     public static List<DepartmentalInstructor> findAllExamInstructors(Long sessionId, Long examTypeId) {
         return (DepartmentalInstructorDAO.getInstance()).getSession()
                 .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", DepartmentalInstructor.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
                 .setCacheable(true).list();
     }
     
@@ -471,16 +471,16 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
                 		"and x.examType.type=:examType", Exam.class)
-                .setParameter("instructorId", getUniqueId(), Long.class)
-                .setParameter("sessionId", getDepartment().getSession().getUniqueId(), Long.class)
-                .setParameter("externalId", getExternalUniqueId(), String.class)
-                .setParameter("examType", examType, Integer.class)
+                .setParameter("instructorId", getUniqueId())
+                .setParameter("sessionId", getDepartment().getSession().getUniqueId())
+                .setParameter("externalId", getExternalUniqueId())
+                .setParameter("examType", examType)
                 .setCacheable(true).list();
         } else {
             return (DepartmentalInstructorDAO.getInstance()).getSession()
             .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType=:examType", Exam.class)
-            .setParameter("instructorId", getUniqueId(), Long.class)
-            .setParameter("examType", examType, Integer.class)
+            .setParameter("instructorId", getUniqueId())
+            .setParameter("examType", examType)
             .setCacheable(true).list();
             
         }
@@ -492,16 +492,16 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
                 		"and x.examType.uniqueId=:examTypeId", Exam.class)
-                .setParameter("instructorId", getUniqueId(), Long.class)
-                .setParameter("sessionId", getDepartment().getSession().getUniqueId(), Long.class)
-                .setParameter("externalId", getExternalUniqueId(), String.class)
-                .setParameter("examTypeId", examType.getUniqueId(), Long.class)
+                .setParameter("instructorId", getUniqueId())
+                .setParameter("sessionId", getDepartment().getSession().getUniqueId())
+                .setParameter("externalId", getExternalUniqueId())
+                .setParameter("examTypeId", examType.getUniqueId())
                 .setCacheable(true).list();
         } else {
             return (DepartmentalInstructorDAO.getInstance()).getSession()
             .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType.uniqueId=:examTypeId", Exam.class)
-            .setParameter("instructorId", getUniqueId(), Long.class)
-            .setParameter("examTypeId", examType.getUniqueId(), Long.class)
+            .setParameter("instructorId", getUniqueId())
+            .setParameter("examTypeId", examType.getUniqueId())
             .setCacheable(true).list();
             
         }
@@ -513,14 +513,14 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             return (DepartmentalInstructorDAO.getInstance()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId))", Exam.class)
-                .setParameter("instructorId", getUniqueId(), Long.class)
-                .setParameter("sessionId", getDepartment().getSession().getUniqueId(), Long.class)
-                .setParameter("externalId", getExternalUniqueId(), String.class)
+                .setParameter("instructorId", getUniqueId())
+                .setParameter("sessionId", getDepartment().getSession().getUniqueId())
+                .setParameter("externalId", getExternalUniqueId())
                 .setCacheable(true).list();
         } else {
             return (DepartmentalInstructorDAO.getInstance()).getSession()
             .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId", Exam.class)
-            .setParameter("instructorId", getUniqueId(), Long.class)
+            .setParameter("instructorId", getUniqueId())
             .setCacheable(true).list();
             
         }
@@ -531,7 +531,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
                 "select a from Assignment a inner join a.instructors i where " +
                 "a.solution.commited=true and i.uniqueId=:instructorId", Assignment.class)
-                .setParameter("instructorId", getUniqueId(), Long.class)
+                .setParameter("instructorId", getUniqueId())
                 .setCacheable(true).list();
     }
 
@@ -566,7 +566,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return new TreeSet<CourseOffering>(
     			DepartmentalInstructorDAO.getInstance().getSession().createQuery(
     					"from CourseOffering c where c.subjectArea.department.uniqueId = :departmentId and c.isControl = true and c.instructionalOffering.notOffered = false", CourseOffering.class
-    				).setParameter("departmentId", getDepartment().getUniqueId(), Long.class).setCacheable(true).list()
+    				).setParameter("departmentId", getDepartment().getUniqueId()).setCacheable(true).list()
     			);
     }
     
@@ -649,8 +649,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor i where i.department.session.uniqueId = :sessionId and i.externalUniqueId = :externalId " +
 				"order by i.department.deptCode", DepartmentalInstructor.class)
-				.setParameter("sessionId", user.getCurrentAcademicSessionId(), Long.class)
-				.setParameter("externalId", user.getExternalUserId(), String.class).setCacheable(true).list();
+				.setParameter("sessionId", user.getCurrentAcademicSessionId())
+				.setParameter("externalId", user.getExternalUserId()).setCacheable(true).list();
 	}
 	
 	@Transient

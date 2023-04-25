@@ -99,7 +99,7 @@ public class SavedHqlExportToCSV implements Exporter {
 			hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
 		} catch (NumberFormatException e) {}
 		if (hql == null)
-			hql = SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name", SavedHQL.class).setParameter("name", report, String.class).setMaxResults(1).uniqueResult();
+			hql = SavedHQLDAO.getInstance().getSession().createQuery("from SavedHQL where name = :name", SavedHQL.class).setParameter("name", report).setMaxResults(1).uniqueResult();
 		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 				
 		List<SavedHQLInterface.IdValue> params = new ArrayList<SavedHQLInterface.IdValue>();
@@ -241,25 +241,25 @@ public class SavedHqlExportToCSV implements Exporter {
 					for (SavedHQLInterface.IdValue v: options)
 						if (parameter.getName().equals(v.getValue())) { value = v.getText(); break; }
 					if (parameter.getType().equalsIgnoreCase("boolean")) {
-						q.setParameter(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)), Boolean.class);
+						q.setParameter(parameter.getName(), value == null ? null : Boolean.valueOf("true".equalsIgnoreCase(value)));
 					} else if (parameter.getType().equalsIgnoreCase("long")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value), Long.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Long.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("int") || parameter.getType().equalsIgnoreCase("integer") || parameter.getType().equalsIgnoreCase("slot") || parameter.getType().equalsIgnoreCase("time")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value), Integer.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Integer.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("double")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value), Double.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Double.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("float")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value), Float.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Float.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("short")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value), Short.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Short.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("byte")) {
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value), Byte.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : Byte.valueOf(value));
 					} else if (parameter.getType().equalsIgnoreCase("date")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), Date.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
 					} else if (parameter.getType().equalsIgnoreCase("datetime") || parameter.getType().equalsIgnoreCase("timestamp")) {
 						Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
-						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value), Date.class);
+						q.setParameter(parameter.getName(), value == null || value.isEmpty() ? null : dateFormat.parse(value));
 					} else {
 						for (SavedHQL.Option option: SavedHQL.Option.values()) {
 							if (parameter.getType().equalsIgnoreCase(option.name())) {
@@ -287,12 +287,12 @@ public class SavedHqlExportToCSV implements Exporter {
 									} catch (NumberFormatException e) {
 										id  =  option.lookupValue(user, value);
 									}
-									q.setParameter(parameter.getName(), id == null ? -1l : id, Long.class);
+									q.setParameter(parameter.getName(), id == null ? -1l : id);
 								}
 								continue parameters;
 							}
 						}
-						q.setParameter(parameter.getName(), value, String.class);
+						q.setParameter(parameter.getName(), value);
 					}
 				}
 			}

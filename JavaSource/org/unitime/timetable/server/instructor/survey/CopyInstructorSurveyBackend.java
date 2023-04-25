@@ -159,8 +159,8 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 						"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
 						"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 						)
-						.setParameter("id", survey.getExternalId(), String.class)
-						.setParameter("sessionId", sessionId, Long.class)
+						.setParameter("id", survey.getExternalId())
+						.setParameter("sessionId", sessionId)
 						.setCacheable(true).list()) {
 					if (courseIds.add(co.getUniqueId())) {
 						Course ci = new Course();

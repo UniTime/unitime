@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.TravelTimeDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "travel_time")
 public class TravelTime extends BaseTravelTime {
 	private static final long serialVersionUID = -5810111960278939304L;
@@ -47,7 +47,7 @@ public class TravelTime extends BaseTravelTime {
 	public static void populateTravelTimes(DistanceMetric metric, Long sessionId, org.hibernate.Session hibSession) {
 		for (TravelTime time: hibSession.createQuery(
 				"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
-				.setParameter("sessionId", sessionId, Long.class).setCacheable(true).list())
+				.setParameter("sessionId", sessionId).setCacheable(true).list())
 			metric.addTravelTime(time.getLocation1Id(), time.getLocation2Id(), time.getDistance());
 	}
 	

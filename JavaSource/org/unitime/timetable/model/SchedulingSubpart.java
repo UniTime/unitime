@@ -518,7 +518,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		Set parentPrefs = new HashSet();
     		for (InstructorCoursePref icp: InstructorCoursePrefDAO.getInstance().getSession().createQuery(
     				"from InstructorCoursePref where course.instructionalOffering.uniqueId = :offeringId", InstructorCoursePref.class)
-    				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId(), Long.class).setCacheable(true).list()) {
+    				.setParameter("offeringId", getInstrOfferingConfig().getInstructionalOffering().getUniqueId()).setCacheable(true).list()) {
     			InstructorPref ip = new InstructorPref();
     			ip.setInstructor((DepartmentalInstructor)icp.getOwner());
     			ip.setPrefLevel(icp.getPrefLevel());
@@ -723,14 +723,14 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		DistributionPref distributionPref = relatedObject.getDistributionPref();
     		distributionPref.getDistributionObjects().remove(relatedObject);
     		Integer seqNo = relatedObject.getSequenceNumber();
-			hibSession.delete(relatedObject);
+			hibSession.remove(relatedObject);
 			deleted = true;
 			if (distributionPref.getDistributionObjects().isEmpty()) {
 				PreferenceGroup owner = distributionPref.getOwner();
 				owner.getPreferences().remove(distributionPref);
 				getPreferences().remove(distributionPref);
 				hibSession.saveOrUpdate(owner);
-				hibSession.delete(distributionPref);
+				hibSession.remove(distributionPref);
 			} else {
 				if (seqNo!=null) {
 					for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
@@ -766,7 +766,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     		getSession().
     		createQuery("select distinct s from SchedulingSubpart s where " +
     				"s.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId", SchedulingSubpart.class).
-    		setParameter("sessionId", sessionId.longValue(), Long.class).
+    		setParameter("sessionId", sessionId.longValue()).
     		list();
     }
     
@@ -897,8 +897,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return SchedulingSubpartDAO.getInstance().
             getSession().
             createQuery("select ss from SchedulingSubpart ss where ss.instrOfferingConfig.instructionalOffering.session.uniqueId=:sessionId and ss.uniqueIdRolledForwardFrom=:uniqueIdRolledForwardFrom", SchedulingSubpart.class).
-            setParameter("sessionId", sessionId.longValue(), Long.class).
-            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue(), Long.class).
+            setParameter("sessionId", sessionId.longValue()).
+            setParameter("uniqueIdRolledForwardFrom", uniqueIdRolledForwardFrom.longValue()).
             setCacheable(true).
             uniqueResult();
     }

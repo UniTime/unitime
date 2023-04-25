@@ -38,7 +38,7 @@ import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "student_class_enrl")
 public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	private static final long serialVersionUID = 1L;
@@ -75,14 +75,14 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 	    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 	            "select e from StudentClassEnrollment e where "+
 	            "e.student.session.uniqueId=:sessionId", StudentClassEnrollment.class).
-	            setParameter("sessionId", sessionId.longValue(), Long.class).list();
+	            setParameter("sessionId", sessionId.longValue()).list();
 	}
 
     public static Iterator<StudentClassEnrollment> findAllForStudent(Long studentId) {
         return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
                 "select e from StudentClassEnrollment e where "+
                 "e.student.uniqueId=:studentId", StudentClassEnrollment.class).
-                setParameter("studentId", studentId.longValue(), Long.class).setCacheable(true).list().iterator();
+                setParameter("studentId", studentId.longValue()).setCacheable(true).list().iterator();
     }
 
 	public static boolean sessionHasEnrollments(Long sessionId) {
@@ -90,7 +90,7 @@ public class StudentClassEnrollment extends BaseStudentClassEnrollment {
 		    return StudentClassEnrollmentDAO.getInstance().getSession().createQuery(
 		            "select count(e) from StudentClassEnrollment e where "+
 		            "e.student.session.uniqueId=:sessionId", Number.class).
-		            setParameter("sessionId", sessionId.longValue(), Long.class).setCacheable(true).uniqueResult().longValue() > 0;
+		            setParameter("sessionId", sessionId.longValue()).setCacheable(true).uniqueResult().longValue() > 0;
 		}
 		return false;
 	}

@@ -117,7 +117,7 @@ public class ImportPreferences {
 		}
 		timePattern.setDays(days);
 		timePattern.setTimes(times);
-		hibSession.save(timePattern);
+		hibSession.persist(timePattern);
 		return timePattern;
 	}
 	
@@ -133,7 +133,7 @@ public class ImportPreferences {
 		datePattern.setSession(iSession);
 		datePattern.setOffset(Integer.valueOf(element.attributeValue("offset")));
 		datePattern.setPattern(element.attributeValue("pattern"));
-		hibSession.save(datePattern);
+		hibSession.persist(datePattern);
 		return datePattern;
 	}
 	
@@ -171,7 +171,7 @@ public class ImportPreferences {
 			tp.setPrefLevel(level);
 			tp.setTimePattern(timePattern);
 			tp.setPreference(el.attributeValue("preference"));
-			hibSession.save(tp);
+			hibSession.persist(tp);
 			sLog.info("  -- added time preference "+tp.getTimePattern().getName()+" "+tp.getPreference());
 		}
 
@@ -192,7 +192,7 @@ public class ImportPreferences {
 			rp.setOwner(owner);
 			rp.setPrefLevel(level);
 			rp.setRoom(location);
-			hibSession.save(rp);
+			hibSession.persist(rp);
 			sLog.info("  -- added room preference "+rp.getPrefLevel().getPrefName()+" "+rp.getRoom().getLabel());
 		}
 
@@ -213,7 +213,7 @@ public class ImportPreferences {
 			bp.setOwner(owner);
 			bp.setPrefLevel(level);
 			bp.setBuilding(building);
-			hibSession.save(bp);
+			hibSession.persist(bp);
 			sLog.info("  -- added building preference "+bp.getPrefLevel().getPrefName()+" "+bp.getBuilding().getName());
 		}
 
@@ -234,7 +234,7 @@ public class ImportPreferences {
 			fp.setOwner(owner);
 			fp.setPrefLevel(level);
 			fp.setRoomFeature(feature);
-			hibSession.save(fp);
+			hibSession.persist(fp);
 			sLog.info("  -- added room feature preference "+fp.getPrefLevel().getPrefName()+" "+fp.getRoomFeature().getLabel());
 		}
 
@@ -255,7 +255,7 @@ public class ImportPreferences {
 			gp.setOwner(owner);
 			gp.setPrefLevel(level);
 			gp.setRoomGroup(group);
-			hibSession.save(gp);
+			hibSession.persist(gp);
 			sLog.info("  -- added time preference "+gp.getPrefLevel().getPrefName()+" "+gp.getRoomGroup().getName());
 		}
 	}
@@ -264,14 +264,14 @@ public class ImportPreferences {
 		if ("LLR".equals(deptCode) || "LAB".equals(deptCode)) {
 			return hibSession.
 			createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.externalManager=true and d.externalMgrAbbv=:deptCode", Department.class).
-			setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
-			setParameter("deptCode", deptCode, String.class).
+			setParameter("sessionId", iSession.getUniqueId().longValue()).
+			setParameter("deptCode", deptCode).
 			uniqueResult();
 		}
 		return hibSession.
 		createQuery("select d from Department d where d.session.uniqueId=:sessionId and d.deptCode=:deptCode", Department.class).
-		setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
-		setParameter("deptCode", deptCode, String.class).
+		setParameter("sessionId", iSession.getUniqueId().longValue()).
+		setParameter("deptCode", deptCode).
 		uniqueResult();
 	}
 
@@ -292,7 +292,7 @@ public class ImportPreferences {
 		if (!clazz.getManagingDept().getDeptCode().equals(manager)) {
 			sLog.info("  -- changing managing department to "+manager+" (was "+clazz.getManagingDept().getDeptCode()+")");
 			clazz.setManagingDept(getDepartment(manager));
-			hibSession.update(clazz);
+			hibSession.merge(clazz);
 			hibSession.flush();
 			hibSession.refresh(clazz);
 		}
@@ -351,7 +351,7 @@ public class ImportPreferences {
 			for (Iterator i=clazz.getClassInstructors().iterator();i.hasNext();) {
 				ClassInstructor ci = (ClassInstructor)i.next();
 				sLog.info("    -- "+ci.nameLastNameFirst()+" (lead:"+ci.isLead()+", share:"+ci.getPercentShare()+")");
-				hibSession.delete(ci);i.remove();
+				hibSession.remove(ci);i.remove();
 			}
 		}
 		for (Iterator i=element.elementIterator("instructor");i.hasNext();) {
@@ -361,8 +361,8 @@ public class ImportPreferences {
 			try {
 				instructor = (DepartmentalInstructor)hibSession.
 					createQuery("select i from DepartmentalInstructor i where i.puid=:puid and i.department.uniqueId=:deptId", DepartmentalInstructor.class).
-					setParameter("puid", puid, String.class).
-					setParameter("deptId", clazz.getControllingDept().getUniqueId().longValue(), Long.class).
+					setParameter("puid", puid).
+					setParameter("deptId", clazz.getControllingDept().getUniqueId().longValue()).
 					uniqueResult();
 			} catch (NonUniqueResultException e) {
 				sLog.error("Two or more instructors with puid "+puid+" (department: "+clazz.getControllingDept().getDeptCode()+")");
@@ -373,8 +373,8 @@ public class ImportPreferences {
 				try {
 					staff = hibSession.
 						createQuery("select distinct s from Staff s where s.dept=:dept and s.puid=:puid", Staff.class).
-						setParameter("dept", clazz.getControllingDept().getDeptCode(), String.class).
-						setParameter("puid", puid, String.class).
+						setParameter("dept", clazz.getControllingDept().getDeptCode()).
+						setParameter("puid", puid).
 						uniqueResult();
 				} catch (NonUniqueResultException e) {
 					sLog.error("Two or more staffs with puid "+puid+" (department: "+clazz.getControllingDept().getDeptCode()+")");
@@ -383,7 +383,7 @@ public class ImportPreferences {
 				if (staff==null) {
 					List staffs = hibSession.
 						createQuery("select distinct s from Staff s where s.puid=:puid", Staff.class).
-						setParameter("puid", puid, String.class).
+						setParameter("puid", puid).
 						list();
 					if (!staffs.isEmpty())
 						staff = (Staff)staffs.get(0);
@@ -400,7 +400,7 @@ public class ImportPreferences {
 						instructor.setLastName(staff.getLastName());
 					if (staff.getPositionType()!=null)
 						instructor.setPositionType(staff.getPositionType());
-					hibSession.save(instructor);
+					hibSession.persist(instructor);
 					hibSession.flush();
 					hibSession.refresh(instructor);
 					sLog.info("  -- instructor "+instructor.nameLastNameFirst()+" created");
@@ -420,7 +420,7 @@ public class ImportPreferences {
 				ci.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, hibSession));
 			ci.setInstructor(instructor);
 			ci.setClassInstructing(clazz);
-			hibSession.save(ci);
+			hibSession.persist(ci);
 			sLog.info("  -- added instructor "+ci.nameLastNameFirst()+" (lead:"+ci.isLead()+", share:"+ci.getPercentShare()+")");
 		}
 		
@@ -449,12 +449,12 @@ public class ImportPreferences {
 				}
 			}
 			assignment.setRooms(rooms);
-			hibSession.save(assignment);
+			hibSession.persist(assignment);
 			sLog.info("  -- assignment "+assignment.getPlacement().getName());
 			
 		}
 		
-		hibSession.update(clazz);
+		hibSession.merge(clazz);
 		hibSession.flush();
 		hibSession.refresh(clazz);
 		return clazz;
@@ -494,7 +494,7 @@ public class ImportPreferences {
 		
 		importPreferences(subpart, element);
 
-		hibSession.update(subpart);
+		hibSession.merge(subpart);
 		hibSession.flush();
 		hibSession.refresh(subpart);
 		return subpart;
@@ -505,9 +505,9 @@ public class ImportPreferences {
 		String puid = element.attributeValue("puid");
 		DepartmentalInstructor instructor = hibSession.
 			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId and id.puid=:puid", DepartmentalInstructor.class).
-			setParameter("deptCode", deptCode, String.class).
-			setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
-			setParameter("puid", puid, String.class).
+			setParameter("deptCode", deptCode).
+			setParameter("sessionId", iSession.getUniqueId().longValue()).
+			setParameter("puid", puid).
 			uniqueResult();
 		if (instructor==null) {
 			sLog.error("Unable to find instructor "+puid+" for department "+deptCode);
@@ -517,7 +517,7 @@ public class ImportPreferences {
 		
 		importPreferences(instructor, element);
 
-		hibSession.update(instructor);
+		hibSession.merge(instructor);
 		hibSession.flush();
 		hibSession.refresh(instructor);
 		return instructor;
@@ -540,7 +540,7 @@ public class ImportPreferences {
 							sLog.info("  -- scheduling subpart "+s.getCourseName()+" "+s.getItypeDesc()+(s.getSchedulingSubpartSuffix().length()==0?"":" ("+s.getSchedulingSubpartSuffix()+")"));
 						}
 					}
-					hibSession.delete(dp); i.remove();
+					hibSession.remove(dp); i.remove();
 				}
 			}
 			hibSession.flush();
@@ -552,7 +552,7 @@ public class ImportPreferences {
 		PreferenceLevel level = PreferenceLevel.getPreferenceLevel(element.attributeValue("level"));
 		DistributionType type = hibSession.
 			createQuery("select t from DistributionType t where t.reference=:reference", DistributionType.class).
-			setParameter("reference", element.attributeValue("type"), String.class).uniqueResult();
+			setParameter("reference", element.attributeValue("type")).uniqueResult();
 		if (type==null) {
 			sLog.error("Unable to find distribution preference type "+element.attributeValue("type"));
 			return null;
@@ -632,7 +632,7 @@ public class ImportPreferences {
 		}
 
 		distPref.setDistributionObjects(distObjects);
-		hibSession.save(distPref);
+		hibSession.persist(distPref);
 		return distPref;
 	}
 	
@@ -646,13 +646,13 @@ public class ImportPreferences {
 				Element x = (Element)i.next();
 				SubjectArea sa =  hibSession.
 					createQuery("select sa from SubjectArea sa where sa.subjectAreaAbbreviation=:subjectAreaAbbreviation and sa.sessionId=:sessionId", SubjectArea.class).
-					setParameter("sessionId", iSession.getUniqueId().longValue(), Long.class).
-					setParameter("subjectAreaAbbreviation", x.attributeValue("subjectArea"), String.class).
+					setParameter("sessionId", iSession.getUniqueId().longValue()).
+					setParameter("subjectAreaAbbreviation", x.attributeValue("subjectArea")).
 					uniqueResult();
 				CourseOffering co = hibSession.
 					createQuery("select co from CourseOffering co where co.subjectArea.uniqueId=:subjectAreaId and co.courseNbr=:courseNbr", CourseOffering.class).
-					setParameter("subjectAreaId", sa.getUniqueId(), Long.class).
-					setParameter("courseNbr", x.attributeValue("courseNbr"), String.class).
+					setParameter("subjectAreaId", sa.getUniqueId()).
+					setParameter("courseNbr", x.attributeValue("courseNbr")).
 					uniqueResult();
 				if (co==null) {
 					co = new CourseOffering();
@@ -674,13 +674,13 @@ public class ImportPreferences {
 		    for (Iterator i=courseOfferings.iterator();i.hasNext();) {
 		    	((CourseOffering)i.next()).setInstructionalOffering(io);
 		    }
-		    hibSession.save(io);
+		    hibSession.persist(io);
 			hibSession.flush();
 			hibSession.refresh(io);
 		} else if (io.isNotOffered().booleanValue()) {
 			sLog.info("  -- changing not offered offering");
 			io.setNotOffered(Boolean.valueOf(false));
-			hibSession.update(io);
+			hibSession.merge(io);
 		}
 		Hashtable classTable = new Hashtable();
 		Iterator i = element.elementIterator("instrOfferingConfig");
@@ -693,7 +693,7 @@ public class ImportPreferences {
 					sLog.info("  -- changing limit to "+limit+" (was "+c.getLimit()+")");
 					c.setLimit(Integer.valueOf(limit));
 				}
-				hibSession.update(c);
+				hibSession.merge(c);
 				for (Iterator k=x.elementIterator("schedulingSubpart");k.hasNext();) {
 					importSchedulingSubpartStructure((Element)k.next(),null,c,classTable);
 				}
@@ -707,7 +707,7 @@ public class ImportPreferences {
 			c.setUnlimitedEnrollment(Boolean.FALSE);
 			if (x.attributeValue("unlimitedEnrollment")!=null)
 				c.setUnlimitedEnrollment(Boolean.valueOf(x.attributeValue("unlimitedEnrollment")));
-			hibSession.save(c);
+			hibSession.persist(c);
 			hibSession.flush();
 			hibSession.refresh(c);
 			for (Iterator j=x.elementIterator("schedulingSubpart");j.hasNext();) {
@@ -727,12 +727,12 @@ public class ImportPreferences {
 			subpart.setItype(
 					hibSession.
 					createQuery("select i from ItypeDesc i where i.abbv=:abbv", ItypeDesc.class).
-					setParameter("abbv", element.attributeValue("itype"), String.class).
+					setParameter("abbv", element.attributeValue("itype")).
 					uniqueResult());
 			subpart.setParentSubpart(parent);
 			subpart.setInstrOfferingConfig(cfg);
 			subpart.setMinutesPerWk(Integer.valueOf(element.attributeValue("minutesPerWk")));
-			hibSession.save(subpart);
+			hibSession.persist(subpart);
 			iAllSubparts.put(subpartHash,subpart);
 			sLog.info("  -- subpart "+subpartHash+" imported");
 			hibSession.flush();
@@ -778,7 +778,7 @@ public class ImportPreferences {
 				clazz.setEnabledForStudentScheduling(Boolean.TRUE);
 				if (x.attributeValue("parent")!=null)
 					clazz.setParentClass((Class_)classTable.get(Long.valueOf(x.attributeValue("parent"))));
-				hibSession.save(clazz);
+				hibSession.persist(clazz);
 				hibSession.flush();
 				hibSession.refresh(clazz);
 				sLog.info("    -- class "+clazzHash+" imported");
@@ -803,8 +803,8 @@ public class ImportPreferences {
 			sLog.info("solverGroupName:"+root.attributeValue("solverGroupName"));
 			iSession = hibSession.
 				createQuery("select s from Session s where s.academicYearTerm=:academicYearTerm and s.academicInitiative=:academicInitiative", Session.class).
-				setParameter("academicYearTerm", root.attributeValue("academicYearTerm"), String.class).
-				setParameter("academicInitiative", root.attributeValue("academicInitiative"), String.class).
+				setParameter("academicYearTerm", root.attributeValue("academicYearTerm")).
+				setParameter("academicInitiative", root.attributeValue("academicInitiative")).
 				uniqueResult();
 			sLog.info("session:"+iSession);
 			
@@ -857,7 +857,7 @@ public class ImportPreferences {
 			iSolution.setNote("Imported solution.");
 			iSolution.setOwner(iManager);
 			iSolution.setValid(Boolean.FALSE);
-			hibSession.save(iSolution);
+			hibSession.persist(iSolution);
 			
 			for (Iterator i=root.elementIterator("instructionalOffering");i.hasNext();) {
 				importInstructionalOffering((Element)i.next());

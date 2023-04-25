@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseSolverParameter;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "solver_parameter")
 public class SolverParameter extends BaseSolverParameter implements Comparable {
 	private static final long serialVersionUID = 1L;

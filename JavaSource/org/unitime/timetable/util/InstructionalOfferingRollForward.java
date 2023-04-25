@@ -134,8 +134,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			query += "  and cc.subject=:subjectAbbv";
 			query += "  and cc.courseNumber = co.courseNbr)";
 		    List<CourseCatalog> l = coDao.getSession().createQuery(query, CourseCatalog.class)
-				.setParameter("subjectAbbv", subjectAreaAbbreviation, String.class)
-				.setParameter("sessionId", toSession.getUniqueId(), Long.class)
+				.setParameter("subjectAbbv", subjectAreaAbbreviation)
+				.setParameter("sessionId", toSession.getUniqueId())
 				.list();
 			if (l != null){
 				CourseCatalog cc = null;
@@ -221,9 +221,9 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
 					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
 					hibSession.saveOrUpdate(toInstrOffrConfig);
-					hibSession.update(toInstructionalOffering);
+					hibSession.merge(toInstructionalOffering);
 					rollForwardSchedSubpartsForAConfig(fromInstrOffrConfig, toInstrOffrConfig, hibSession, toSession);
-					hibSession.update(toInstructionalOffering);
+					hibSession.merge(toInstructionalOffering);
 				}
 			}
 			if (trns != null && trns.isActive()) {
@@ -377,8 +377,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			parentSubpart.getToSubpart().addTochildSubparts(toSubpart);
 		}
 				
-		hibSession.save(toSubpart);
-		hibSession.update(toInstrOffrConfig);
+		hibSession.persist(toSubpart);
+		hibSession.merge(toInstrOffrConfig);
 		if (fromSubpart.getClasses() != null && fromSubpart.getClasses().size() > 0){
 			List<Class_> classes = new ArrayList<Class_>(fromSubpart.getClasses());
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
@@ -404,10 +404,10 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toClass.setParentClass(parentClass);
 					parentClass.addTochildClasses(toClass);
 				}
-				hibSession.save(toClass);
+				hibSession.persist(toClass);
 			}
 		}
-		hibSession.update(toInstrOffrConfig);
+		hibSession.merge(toInstrOffrConfig);
 		rollForwardTimePrefs(fromSubpart, toSubpart, toSession);
 		rollForwardBuildingPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomPrefs(fromSubpart, toSubpart, toSession);
@@ -424,7 +424,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				rollForwardSchedulingSubpart(toInstrOffrConfig, childSubpart, rfSs, hibSession,toSession);
 			}
 		}
-		hibSession.update(toInstrOffrConfig);
+		hibSession.merge(toInstrOffrConfig);
 	}
 	
 	private void rollForwardSchedSubpartsForAConfig(InstrOfferingConfig ioc, InstrOfferingConfig newIoc, org.hibernate.Session hibSession, Session toSession) throws Exception{

@@ -204,12 +204,12 @@ public abstract class BaseCourseOffering implements Serializable {
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "funding_dept_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "courseOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
@@ -221,7 +221,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	@JoinTable(name = "disabled_override",
 		joinColumns = { @JoinColumn(name = "course_id") },
 		inverseJoinColumns = { @JoinColumn(name = "type_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<OverrideType> getDisabledOverrides() { return iDisabledOverrides; }
 	public void setDisabledOverrides(Set<OverrideType> disabledOverrides) { iDisabledOverrides = disabledOverrides; }
 	public void addTodisabledOverrides(OverrideType overrideType) {

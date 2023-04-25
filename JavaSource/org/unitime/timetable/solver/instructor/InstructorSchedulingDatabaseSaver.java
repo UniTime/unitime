@@ -173,7 +173,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 					changedInstructors.add(ci.getInstructor());
 					ci.getClassInstructing().getClassInstructors().remove(ci);
 					i.remove();
-					hibSession.delete(ci);
+					hibSession.remove(ci);
 				}
 			}
 		}
@@ -186,7 +186,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 				iUpdatedOfferings.add(coordinator.getOffering());
 				changedOfferings.add(coordinator.getOffering());
 				coordinator.getOffering().getOfferingCoordinators().remove(coordinator);
-				hibSession.delete(coordinator);
+				hibSession.remove(coordinator);
 			}
 		}
 		
@@ -220,7 +220,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 					oc.setTeachingRequest(r);
 					r.getOffering().getOfferingCoordinators().add(oc);
 					changedOfferings.add(r.getOffering());
-					hibSession.save(oc);
+					hibSession.persist(oc);
 					iUpdatedOfferings.add(r.getOffering());
 				}
 				for (TeachingClassRequest cr: r.getClassRequests()) {

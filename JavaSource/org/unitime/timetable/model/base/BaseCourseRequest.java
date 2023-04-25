@@ -126,7 +126,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	public void setCourseOffering(CourseOffering courseOffering) { iCourseOffering = courseOffering; }
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseRequestOption> getCourseRequestOptions() { return iCourseRequestOptions; }
 	public void setCourseRequestOptions(Set<CourseRequestOption> courseRequestOptions) { iCourseRequestOptions = courseRequestOptions; }
 	public void addTocourseRequestOptions(CourseRequestOption courseRequestOption) {
@@ -135,7 +135,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ClassWaitList> getClassWaitLists() { return iClassWaitLists; }
 	public void setClassWaitLists(Set<ClassWaitList> classWaitLists) { iClassWaitLists = classWaitLists; }
 	public void addToclassWaitLists(ClassWaitList classWaitList) {
@@ -144,7 +144,7 @@ public abstract class BaseCourseRequest implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentSectioningPref> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<StudentSectioningPref> preferences) { iPreferences = preferences; }
 	public void addTopreferences(StudentSectioningPref studentSectioningPref) {

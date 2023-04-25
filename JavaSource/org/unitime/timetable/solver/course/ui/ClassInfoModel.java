@@ -1035,7 +1035,7 @@ public class ClassInfoModel implements Serializable {
         } else {
         	query = "select r from Location r " + a + " where r.session.uniqueId = :sessionId " + b;
         }
-        return LocationDAO.getInstance().getSession().createQuery(query, Location.class).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+        return LocationDAO.getInstance().getSession().createQuery(query, Location.class).setParameter("sessionId", sessionId).setCacheable(true).list();
     }
     
     protected Vector<ClassRoomInfo> findRooms(ClassTimeInfo period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts, RoomBase showAllRooms) {

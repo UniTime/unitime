@@ -36,7 +36,7 @@ import org.unitime.timetable.model.dao.ExternalRoomDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "external_room")
 public class ExternalRoom extends BaseExternalRoom {
 	private static final long serialVersionUID = 1L;
@@ -68,7 +68,7 @@ public class ExternalRoom extends BaseExternalRoom {
     public static List<ExternalRoom> findAll(Long sessionId) {
         return ExternalRoomDAO.getInstance().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId", ExternalRoom.class).
-                setParameter("sessionId", sessionId, Long.class).
+                setParameter("sessionId", sessionId).
                 setCacheable(true).
                 list();
     }
@@ -77,9 +77,9 @@ public class ExternalRoom extends BaseExternalRoom {
         return ExternalRoomDAO.getInstance().getSession().createQuery(
                 "select r from ExternalRoom r where r.building.session.uniqueId=:sessionId and " +
                 "r.building.abbreviation=:bldgAbbv and r.roomNumber=:roomNbr", ExternalRoom.class).
-                setParameter("sessionId", sessionId, Long.class).
-                setParameter("bldgAbbv", bldgAbbv, String.class).
-                setParameter("roomNbr", roomNbr, String.class).
+                setParameter("sessionId", sessionId).
+                setParameter("bldgAbbv", bldgAbbv).
+                setParameter("roomNbr", roomNbr).
                 uniqueResult();
     }
 	

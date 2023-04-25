@@ -167,7 +167,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public void setSession(Session session) { iSession = session; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
 	public void addTocourseOfferings(CourseOffering courseOffering) {
@@ -176,7 +176,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstrOfferingConfig> getInstrOfferingConfigs() { return iInstrOfferingConfigs; }
 	public void setInstrOfferingConfigs(Set<InstrOfferingConfig> instrOfferingConfigs) { iInstrOfferingConfigs = instrOfferingConfigs; }
 	public void addToinstrOfferingConfigs(InstrOfferingConfig instrOfferingConfig) {
@@ -185,7 +185,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructionalOffering")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Reservation> getReservations() { return iReservations; }
 	public void setReservations(Set<Reservation> reservations) { iReservations = reservations; }
 	public void addToreservations(Reservation reservation) {
@@ -194,7 +194,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "offering")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
 	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
 	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
@@ -203,7 +203,7 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "offering", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TeachingRequest> getTeachingRequests() { return iTeachingRequests; }
 	public void setTeachingRequests(Set<TeachingRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
 	public void addToteachingRequests(TeachingRequest teachingRequest) {

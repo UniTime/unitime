@@ -187,10 +187,10 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                         Exam x = i.next();
                         if (!x.equals(exam)) x.getConflicts().remove(conf);
                     }
-                    hibSession.delete(conf);
+                    hibSession.remove(conf);
                     j.remove();
                 }
-                hibSession.delete(exam);
+                hibSession.remove(exam);
                 tx.commit();
             } catch (Exception e) {
                 if (tx!=null) tx.rollback();

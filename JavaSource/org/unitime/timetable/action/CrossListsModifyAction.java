@@ -266,15 +266,15 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     
                     for (CurriculumCourse x: hibSession.createQuery(
                     		"from CurriculumCourse where course.uniqueId = :courseId", CurriculumCourse.class)
-                    		.setParameter("courseId", co1.getUniqueId(), Long.class).list()) {
+                    		.setParameter("courseId", co1.getUniqueId()).list()) {
                     	cc.add(x.clone(co2));
                     	x.getClassification().getCourses().remove(x);
-                    	hibSession.delete(x);
+                    	hibSession.remove(x);
                     }
                     if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
                     	for (CourseRequest oldReq: hibSession.createQuery(
                     			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
-                    			.setParameter("courseId", co1.getUniqueId(), Long.class).list()) {
+                    			.setParameter("courseId", co1.getUniqueId()).list()) {
                     		CourseRequest newReq = new CourseRequest();
                     		newReq.setAllowOverlap(oldReq.getAllowOverlap());
                     		newReq.setOrder(oldReq.getOrder());
@@ -283,12 +283,12 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     		newReq.setCourseDemand(oldReq.getCourseDemand());
                     		oldReq.getCourseDemand().getCourseRequests().remove(oldReq);
                     		courseRequests.add(newReq);
-                    		hibSession.delete(oldReq);
+                    		hibSession.remove(oldReq);
                     	}
                     
                     advCourseReqs.put(co2.getCourseName(), hibSession.createQuery(
                 			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-                			.setParameter("courseId", co1.getUniqueId(), Long.class).list());
+                			.setParameter("courseId", co1.getUniqueId()).list());
                     
                     deletedOfferings.add(co2);
 /*	                
@@ -320,7 +320,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                 		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).getDeclaredConstructor().newInstance());
         	       		removeAction.performExternalCourseOfferingRemoveAction(co1, hibSession);
                 	}
-			        hibSession.delete(co1);
+			        hibSession.remove(co1);
 			        
 			        //io.setCourseOfferings(offerings);
 			        
@@ -401,15 +401,15 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    
 	                    for (CurriculumCourse x: hibSession.createQuery(
 	                    		"from CurriculumCourse where course.uniqueId = :courseId", CurriculumCourse.class)
-	                    		.setParameter("courseId", co2.getUniqueId(), Long.class).list()) {
+	                    		.setParameter("courseId", co2.getUniqueId()).list()) {
 	                    	cc.add(x.clone(co3));
 	                    	x.getClassification().getCourses().remove(x);
-	                    	hibSession.delete(x);
+	                    	hibSession.remove(x);
 	                    }
 	                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
 	                    	for (CourseRequest oldReq: hibSession.createQuery(
 	                    			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
-	                    			.setParameter("courseId", co2.getUniqueId(), Long.class).list()) {
+	                    			.setParameter("courseId", co2.getUniqueId()).list()) {
 	                    		CourseRequest newReq = new CourseRequest();
 	                    		newReq.setAllowOverlap(oldReq.getAllowOverlap());
 	                    		newReq.setOrder(oldReq.getOrder());
@@ -418,12 +418,12 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    		newReq.setCourseDemand(oldReq.getCourseDemand());
 	                    		oldReq.getCourseDemand().getCourseRequests().remove(oldReq);
 	                    		courseRequests.add(newReq);
-	                    		hibSession.delete(oldReq);
+	                    		hibSession.remove(oldReq);
 	                    	}
 
 	                    advCourseReqs.put(co3.getCourseName(), hibSession.createQuery(
 	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-	                			.setParameter("courseId", co2.getUniqueId(), Long.class).list());
+	                			.setParameter("courseId", co2.getUniqueId()).list());
 	                    addedOfferings.add(co3);
 
     	                int indx = form.getIndex(course);
@@ -450,7 +450,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
             	       		removeAction.performExternalCourseOfferingRemoveAction(co2, hibSession);
                     	}
 
-	                    hibSession.delete(co2);
+	                    hibSession.remove(co2);
 	                    hibSession.flush();
 
 	                    //hibSession.refresh(sa2);
@@ -462,7 +462,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                Event.deleteFromEvents(hibSession, io1);
 	                Exam.deleteFromExams(hibSession, io1);
 
-	                hibSession.delete(io1);
+	                hibSession.remove(io1);
 	                hibSession.flush();
 	                
 	                hibSession.saveOrUpdate(sa);
@@ -502,7 +502,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     	for (Iterator<AdvisorSectioningPref> ip = req.getPreferences().iterator(); ip.hasNext(); ) {
                     		AdvisorSectioningPref p = ip.next();
                     		if (p instanceof AdvisorClassPref) {
-                    			hibSession.delete(p);
+                    			hibSession.remove(p);
                     			ip.remove();
                     		}
                     	}

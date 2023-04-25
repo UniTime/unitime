@@ -119,20 +119,20 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 			q.setMaxResults(ApplicationProperty.LastChangesLimit.intValue());
 		
 		if (request.hasOption("operation")) {
-			q.setParameter("operation", request.getOption("operation").toUpperCase(), String.class);
+			q.setParameter("operation", request.getOption("operation").toUpperCase());
 		}
 		
 		if (request.hasOption("page")) {
-			q.setParameter("source", request.getOption("page").replace(' ', '_').toUpperCase(), String.class);
+			q.setParameter("source", request.getOption("page").replace(' ', '_').toUpperCase());
 		}
 		
 		if (Location.class.getName().equals(request.getObjectType())) {
-			q.setParameter("roomType", Room.class.getName(), String.class);
-			q.setParameter("locType", NonUniversityLocation.class.getName(), String.class);
+			q.setParameter("roomType", Room.class.getName());
+			q.setParameter("locType", NonUniversityLocation.class.getName());
 		}
 
-		q.setParameter("type", request.getObjectType(), String.class);
-		q.setParameter("id", request.getObjectId(), Long.class);
+		q.setParameter("type", request.getObjectType());
+		q.setParameter("id", request.getObjectId());
 		q.setCacheable(true);
 		return q.list();
 	}

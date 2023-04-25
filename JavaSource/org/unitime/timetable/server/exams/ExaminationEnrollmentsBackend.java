@@ -248,10 +248,10 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
         			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student" +
         			where(t2, 2) + 
         			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod", Object[].class)
-        			.setParameter("examId", examId, Long.class)
-        			.setParameter("meetingDate", period.getStartDate(), Date.class)
-        			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent, Integer.class)
-        			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent, Integer.class)
+        			.setParameter("examId", examId)
+        			.setParameter("meetingDate", period.getStartDate())
+        			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent)
+        			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent)
         			.list()) {
         		Long studentId = (Long)o[0];
         		Meeting meeting = (Meeting)o[1];
@@ -272,10 +272,10 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
             			" where e2.uniqueId = :examId and s1.student = s2.student" +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1", Object[].class)
-            			.setParameter("examId", examId, Long.class)
-            			.setParameter("meetingDate", period.getStartDate(), Date.class)
-            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, Integer.class)
-            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, Integer.class)
+            			.setParameter("examId", examId)
+            			.setParameter("meetingDate", period.getStartDate())
+            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
             			.list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];
@@ -296,11 +296,11 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
             			" where e2.uniqueId = :examId and s1.student = s2.student and e1.exam.examType.uniqueId != :examTypeId " +
             			where(t1, 1) + where(t2, 2) +
             			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and m1.approvalStatus = 1", Object[].class)
-            			.setParameter("examId", examId, Long.class)
-            			.setParameter("meetingDate", period.getStartDate(), Date.class)
-            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent, Integer.class)
-            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent, Integer.class)
-            			.setParameter("examTypeId", period.getExamType().getUniqueId(), Long.class)
+            			.setParameter("examId", examId)
+            			.setParameter("meetingDate", period.getStartDate())
+            			.setParameter("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+            			.setParameter("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+            			.setParameter("examTypeId", period.getExamType().getUniqueId())
             			.list()) {
             		Long studentId = (Long)o[0];
             		Meeting meeting = (Meeting)o[1];

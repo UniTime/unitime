@@ -162,7 +162,7 @@ public class ExportServletHelper implements ExportHelper {
 				List<Long> sessions = hibSession.createQuery("select s.uniqueId from Session s where " +
 						"s.academicTerm || s.academicYear = :term or " +
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
-						setParameter("term", iParams.getParameter("term"), String.class).list();
+						setParameter("term", iParams.getParameter("term")).list();
 				if (!sessions.isEmpty())
 					sessionId = sessions.get(0);
 			} finally {

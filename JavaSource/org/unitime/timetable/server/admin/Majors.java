@@ -177,7 +177,7 @@ public class Majors implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(major);		
+		hibSession.remove(major);		
 	}
 
 	@Override

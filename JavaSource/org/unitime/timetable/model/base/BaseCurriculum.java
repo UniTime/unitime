@@ -109,7 +109,7 @@ public abstract class BaseCurriculum implements Serializable {
 	@JoinTable(name = "curriculum_major",
 		joinColumns = { @JoinColumn(name = "curriculum_id") },
 		inverseJoinColumns = { @JoinColumn(name = "major_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
 	public void addTomajors(PosMajor posMajor) {
@@ -118,7 +118,7 @@ public abstract class BaseCurriculum implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "curriculum", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CurriculumClassification> getClassifications() { return iClassifications; }
 	public void setClassifications(Set<CurriculumClassification> classifications) { iClassifications = classifications; }
 	public void addToclassifications(CurriculumClassification curriculumClassification) {

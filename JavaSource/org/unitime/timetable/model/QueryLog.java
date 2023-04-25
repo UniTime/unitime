@@ -58,7 +58,7 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "query_log")
 public class QueryLog extends BaseQueryLog {
 	private static final long serialVersionUID = 7073111443207707716L;
@@ -78,7 +78,7 @@ public class QueryLog extends BaseQueryLog {
 		c.add(Calendar.DAY_OF_YEAR, -days);
 		return (QueryLogDAO.getInstance().getSession().createQuery(
 				"select count(distinct q.sessionId) from QueryLog q where q.timeStamp > :date", Number.class).
-				setParameter("date", c.getTime(), Date.class).uniqueResult()).intValue();
+				setParameter("date", c.getTime()).uniqueResult()).intValue();
 	}
 	
 	public static int getNrActiveUsers(int days) {
@@ -87,7 +87,7 @@ public class QueryLog extends BaseQueryLog {
 		c.add(Calendar.DAY_OF_YEAR, -days);
 		return (QueryLogDAO.getInstance().getSession().createQuery(
 				"select count(distinct q.uid) from QueryLog q where q.timeStamp > :date", Number.class).
-				setParameter("date", c.getTime(), Date.class).uniqueResult()).intValue();
+				setParameter("date", c.getTime()).uniqueResult()).intValue();
 	}
 
 	public static WebTable getTopQueries(int days) {
@@ -102,31 +102,31 @@ public class QueryLog extends BaseQueryLog {
 		HashMap<String, Integer> errors = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
+				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
 			errors.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> overMinutes = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
 			overMinutes.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over100mss = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
 			over100mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 		HashMap<String, Integer> over10mss = new HashMap<String, Integer>();
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
+				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
 			over10mss.put((String)o[0],((Number)o[1]).intValue());
 		}
 
 		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
 				"select q.uri, count(q), avg(q.timeSpent), max(q.timeSpent) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime(), Date.class).list()) {
+				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
 			Integer nrErrors = errors.get((String)o[0]);
 			if (nrErrors == null) nrErrors = 0;
 			Integer overMinute = overMinutes.get((String)o[0]);

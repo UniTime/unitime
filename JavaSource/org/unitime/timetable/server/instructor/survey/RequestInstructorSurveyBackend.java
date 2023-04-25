@@ -116,7 +116,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				} catch (NumberFormatException e) {
 					Number id = SessionDAO.getInstance().getSession().createQuery(
 							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session", Number.class
-							).setParameter("session", request.getSession(), String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+							).setParameter("session", request.getSession()).setMaxResults(1).setCacheable(true).uniqueResult();
 					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
 					sessionId = id.longValue();
 				}
@@ -132,8 +132,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		boolean editable = true;
 		InstructorSurvey is = InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
-				).setParameter("sessionId", sessionId, Long.class)
-				.setParameter("externalId", externalId, String.class).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId)
+				.setParameter("externalId", externalId).setMaxResults(1).uniqueResult();
 
 		if (!admin) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
@@ -214,9 +214,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		}
 		
 		List<DepartmentalInstructor> instructors = DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor where externalUniqueId=:id and department.session=:sessionId", DepartmentalInstructor.class)
-				.setParameter("id", externalId, String.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				"from DepartmentalInstructor where externalUniqueId=:id and department.session.uniqueId=:sessionId", DepartmentalInstructor.class)
+				.setParameter("id", externalId)
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true).list();
 
 		for (DepartmentalInstructor di: instructors) {
@@ -481,8 +481,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
 				"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
 				)
-				.setParameter("id", externalId, String.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("id", externalId)
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true).list()) {
 			if (courseIds.add(co.getUniqueId())) {
 				Course ci = new Course();

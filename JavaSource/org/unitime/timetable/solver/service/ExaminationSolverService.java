@@ -64,7 +64,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
 		
 		// Load properties
 		for (SolverParameterDef def: SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverParameterDef where group.type = :type", SolverParameterDef.class).setParameter("type", SolverParameterGroup.SolverType.EXAM.ordinal(), Integer.class).list()) {
+				"from SolverParameterDef where group.type = :type", SolverParameterDef.class).setParameter("type", SolverParameterGroup.SolverType.EXAM.ordinal()).list()) {
 			if (def.getDefault() != null) properties.put(def.getName(), def.getDefault());
 			if (options != null && options.containsKey(def.getUniqueId()))
 				properties.put(def.getName(), options.get(def.getUniqueId()));

@@ -161,15 +161,15 @@ public class StaffImport extends BaseImport {
 			return
 				getHibSession().
 				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId and a.dept=:deptCode", Staff.class).
-				setParameter("externalId", externalId, String.class).
-				setParameter("deptCode", deptCode, String.class).
+				setParameter("externalId", externalId).
+				setParameter("deptCode", deptCode).
 				setCacheable(true).
 				uniqueResult();
 		else
 			return
 				getHibSession().
 				createQuery("select distinct a from Staff as a where a.externalUniqueId=:externalId", Staff.class).
-				setParameter("externalId", externalId, String.class).
+				setParameter("externalId", externalId).
 				setCacheable(true).
 				uniqueResult();
 	}

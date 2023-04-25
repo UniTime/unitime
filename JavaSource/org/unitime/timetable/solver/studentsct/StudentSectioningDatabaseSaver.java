@@ -160,7 +160,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
             StudentClassEnrollment sce = i.next();
             sce.getClazz().getStudentEnrollments().remove(sce);
-            hibSession.delete(sce); i.remove();
+            hibSession.remove(sce); i.remove();
         }
         
         if (iUpdateCourseRequests && BatchEnrollStudent.sRequestsChangedStatus.equals(student.getStatus())) {
@@ -194,7 +194,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         			cd.setCritical(CourseDemand.Critical.fromRequestPriority(request.getRequestPriority()).ordinal());
         			if (request instanceof CourseRequest)
         				cd.updatePreferences((CourseRequest)request, hibSession);
-        			hibSession.update(cd);
+        			hibSession.merge(cd);
         		} else {
     				cd = new CourseDemand();
 					cd.setTimestamp(ts);
@@ -258,13 +258,13 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         	
         	for (CourseDemand cd: remaining) {
 				if (cd.getFreeTime() != null)
-					hibSession.delete(cd.getFreeTime());
+					hibSession.remove(cd.getFreeTime());
 				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
 					iRequests.remove(cd.getUniqueId() + ":" + cr.getCourseOffering().getInstructionalOffering().getUniqueId());
-					hibSession.delete(cr);
+					hibSession.remove(cr);
 				}
 				s.getCourseDemands().remove(cd);
-				hibSession.delete(cd);
+				hibSession.remove(cd);
 			}
         }
         
@@ -295,7 +295,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     }
                     sce.setTimestamp(iTimeStamp);
                     s.getClassEnrollments().add(sce);
-                    hibSession.save(sce);
+                    hibSession.persist(sce);
                 }
                 if (cr != null)
                 	hibSession.saveOrUpdate(cr);
@@ -317,7 +317,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Class_ clazz: hibSession.createQuery(
         		"select distinct c from Class_ c where " +
         		"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", Class_.class)
-        		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+        		.setParameter("sessionId", session.getUniqueId()).list()) {
             iClasses.put(clazz.getUniqueId(),clazz);
         }
         incProgress();
@@ -327,7 +327,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             setPhase("Loading courses...", 1);
             for (CourseOffering course: hibSession.createQuery(
             		"select distinct c from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId", CourseOffering.class)
-            		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		.setParameter("sessionId", session.getUniqueId()).list()) {
                 iCourses.put(course.getUniqueId(), course);
             }
             incProgress();
@@ -341,7 +341,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
             		"where s.session.uniqueId = :sessionId", org.unitime.timetable.model.Student.class)
-            		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		.setParameter("sessionId", session.getUniqueId()).list()) {
             	iStudents.put(student.getUniqueId(), student);
             }
             incProgress();
@@ -355,7 +355,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             		"left join fetch r.courseOffering as co " +
             		"left join fetch co.instructionalOffering as io " +
             		"where c.student.session.uniqueId=:sessionId", CourseDemand.class)
-            		.setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		.setParameter("sessionId", session.getUniqueId()).list()) {
                 for (org.unitime.timetable.model.CourseRequest request: demand.getCourseRequests()) {
                     iRequests.put(demand.getUniqueId()+":"+request.getCourseOffering().getInstructionalOffering().getUniqueId(), request);
                 }
@@ -392,7 +392,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
         	List<SectioningInfo> infos = hibSession.createQuery(
         			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId", SectioningInfo.class)
-        			.setParameter("sessionId", session.getUniqueId(), Long.class)
+        			.setParameter("sessionId", session.getUniqueId())
         			.list();
         	for (SectioningInfo info : infos)
         		infoTable.put(info.getClazz().getUniqueId(), info);

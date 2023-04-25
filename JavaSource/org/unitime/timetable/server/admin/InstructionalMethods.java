@@ -69,7 +69,7 @@ public class InstructionalMethods implements AdminTable {
 			int used =
 					(hibSession.createQuery(
 							"select count(c) from InstrOfferingConfig c where c.instructionalMethod.uniqueId = :uniqueId", Number.class)
-							.setParameter("uniqueId", im.getUniqueId(), Long.class).uniqueResult()).intValue();
+							.setParameter("uniqueId", im.getUniqueId()).uniqueResult()).intValue();
 			r.setDeletable(used == 0);
 		}
 		data.setEditable(context.hasPermission(Right.InstructionalMethodEdit));
@@ -143,7 +143,7 @@ public class InstructionalMethods implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(type);
+		hibSession.remove(type);
 	}
 	
 	@Override

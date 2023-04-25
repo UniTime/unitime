@@ -40,7 +40,7 @@ import org.unitime.timetable.model.base.BaseCourseCreditUnitConfig;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "course_credit_unit_config")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="credit_format", discriminatorType = DiscriminatorType.STRING)

@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseSectioningInfo;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "sectioning_info")
 public class SectioningInfo extends BaseSectioningInfo {
 	private static final long serialVersionUID = 1L;

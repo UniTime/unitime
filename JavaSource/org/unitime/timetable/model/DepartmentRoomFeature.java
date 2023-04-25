@@ -87,7 +87,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		return  DepartmentRoomFeatureDAO.getInstance().
 				getSession().
 				createQuery("select distinct d from DepartmentRoomFeature d where d.department.session.uniqueId=:sessionId order by label", DepartmentRoomFeature.class).
-				setParameter("sessionId", session.getUniqueId().longValue(), Long.class).
+				setParameter("sessionId", session.getUniqueId().longValue()).
 				setCacheable(true).
 				list();
 	}

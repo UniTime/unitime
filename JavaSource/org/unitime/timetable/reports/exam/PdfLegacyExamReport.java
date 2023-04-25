@@ -795,43 +795,43 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
         Hashtable<Long, Exam> exams = new Hashtable();
         for (Exam exam: ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId", Exam.class
-                ).setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list()) {
+                ).setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId).setCacheable(true).list()) {
             exams.put(exam.getUniqueId(), exam);
         }
         
 		sLog.info("  Fetching related objects (class)...");
         ExamDAO.getInstance().getSession().createQuery(
                 "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class_.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
-                .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class).setCacheable(true).list();
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
+                .setParameter("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
         sLog.info("  Fetching related objects (config)...");
         ExamDAO.getInstance().getSession().createQuery(
                 "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", InstrOfferingConfig.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
-                .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class).setCacheable(true).list();
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
+                .setParameter("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
         sLog.info("  Fetching related objects (course)...");
         ExamDAO.getInstance().getSession().createQuery(
                 "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", CourseOffering.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
-                .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class).setCacheable(true).list();
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
+                .setParameter("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
         sLog.info("  Fetching related objects (offering)...");
         ExamDAO.getInstance().getSession().createQuery(
                 "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", InstructionalOffering.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
-                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class).setCacheable(true).list();
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
+                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
         
 		sLog.info("  Fetching related class events...");
         Hashtable<Long, ClassEvent> classEvents = new Hashtable();
         for (ClassEvent ce: ExamDAO.getInstance().getSession().createQuery(
         			"select c from ClassEvent c left join fetch c.meetings m, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.clazz.uniqueId=o.ownerId",
         			ClassEvent.class)
-                .setParameter("sessionId", sessionId, Long.class)
-                .setParameter("examTypeId", examTypeId, Long.class)
-                .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class).setCacheable(true).list()) {
+                .setParameter("sessionId", sessionId)
+                .setParameter("examTypeId", examTypeId)
+                .setParameter("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list()) {
         	classEvents.put(ce.getClazz().getUniqueId(), ce);
         }
         
@@ -847,8 +847,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
                 "o.ownerId=c.uniqueId", Object[].class)
-            	.setParameter("sessionId", sessionId, Long.class)
-            	.setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list()) {
+            	.setParameter("sessionId", sessionId)
+            	.setParameter("examTypeId", examTypeId).setCacheable(true).list()) {
                     Long examId = (Long)o[0];
                     Long ownerId = (Long)o[1];
                     Long studentId = (Long)o[2];
@@ -886,8 +886,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
                         "o.ownerId=ioc.uniqueId", Object[].class)
-            		.setParameter("sessionId", sessionId, Long.class)
-            		.setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list()) {
+            		.setParameter("sessionId", sessionId)
+            		.setParameter("examTypeId", examTypeId).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -924,8 +924,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
                         "o.ownerId=co.uniqueId", Object[].class)
-            		.setParameter("sessionId", sessionId, Long.class)
-            		.setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list()) {
+            		.setParameter("sessionId", sessionId)
+            		.setParameter("examTypeId", examTypeId).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -962,8 +962,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                         "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
                         "o.ownerId=io.uniqueId", Object[].class)
-            		.setParameter("sessionId", sessionId, Long.class)
-            		.setParameter("examTypeId", examTypeId, Long.class).setCacheable(true).list()) {
+            		.setParameter("sessionId", sessionId)
+            		.setParameter("examTypeId", examTypeId).setCacheable(true).list()) {
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
                 Long studentId = (Long)o[2];
@@ -1001,8 +1001,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue(), Integer.class)
-                    .setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class)
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
+                    .setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId)
                     .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -1017,8 +1017,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), Integer.class)
-                    .setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class)
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
+                    .setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId)
                     .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -1033,8 +1033,8 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     "select p.uniqueId, m from ExamEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.exam.examType.uniqueId != :examTypeId and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId", Object[].class)
-                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue(), Integer.class)
-                    .setParameter("sessionId", sessionId, Long.class).setParameter("examTypeId", examTypeId, Long.class)
+                    .setParameter("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
+                    .setParameter("sessionId", sessionId).setParameter("examTypeId", examTypeId)
                     .setCacheable(true).list()) {
                 Long periodId = (Long)o[0];
                 Meeting meeting = (Meeting)o[1];
@@ -1099,7 +1099,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     inSubjects += "'"+s.nextToken()+"'"+(s.hasMoreTokens()?",":"");
                 subjects.addAll(new _RootDAO().getSession().createQuery(
                         "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")", SubjectArea.class
-                        ).setParameter("sessionId", session.getUniqueId(), Long.class).list());
+                        ).setParameter("sessionId", session.getUniqueId()).list());
             }
             TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType.getUniqueId(), assgn, ignempty, true);
             if (subjects==null) {

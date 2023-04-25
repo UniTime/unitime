@@ -32,7 +32,7 @@ import org.unitime.timetable.model.dao.PosMinorDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pos_minor")
 public class PosMinor extends BasePosMinor {
 	private static final long serialVersionUID = 1L;
@@ -58,8 +58,8 @@ public class PosMinor extends BasePosMinor {
                 "select a from PosMinor a where "+
                 "a.session.uniqueId=:sessionId and "+
                 "a.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -72,9 +72,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.uniqueId=:areaId and p.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("areaId", areaId.longValue(), Long.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("areaId", areaId.longValue()).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }
@@ -87,9 +87,9 @@ public class PosMinor extends BasePosMinor {
                 "select p from PosMinor p inner join p.academicAreas a where "+
                 "p.session.uniqueId=:sessionId and "+
                 "a.academicAreaAbbreviation=:areaAbbv and p.code=:code", PosMinor.class).
-         setParameter("sessionId", sessionId.longValue(), Long.class).
-         setParameter("areaAbbv", areaAbbv, String.class).
-         setParameter("code", code, String.class).
+         setParameter("sessionId", sessionId.longValue()).
+         setParameter("areaAbbv", areaAbbv).
+         setParameter("code", code).
          setCacheable(true).
          uniqueResult(); 
     }

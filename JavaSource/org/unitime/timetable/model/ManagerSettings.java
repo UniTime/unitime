@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.SettingsDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "manager_settings")
 public class ManagerSettings extends BaseManagerSettings {
 	private static final long serialVersionUID = 1L;
@@ -59,7 +59,7 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (mgr == null) {
 			Settings s = SettingsDAO.getInstance().getSession().createQuery(
 					"select s from Settings s where s.key = :key", Settings.class
-					).setParameter("key", name, String.class).setCacheable(true).uniqueResult();
+					).setParameter("key", name).setCacheable(true).uniqueResult();
 			return (s == null ? defaultValue : s.getDefaultValue());
 		}
 		return getValue(mgr.getUniqueId(), name, defaultValue);
@@ -73,11 +73,11 @@ public class ManagerSettings extends BaseManagerSettings {
 		if (managerId == null) return defaultValue;
 		Settings s = SettingsDAO.getInstance().getSession().createQuery(
 				"select s from Settings s where s.key = :key", Settings.class
-				).setParameter("key", name, String.class).setCacheable(true).uniqueResult();
+				).setParameter("key", name).setCacheable(true).uniqueResult();
 		if (s == null) return defaultValue;
 		ManagerSettings m = ManagerSettingsDAO.getInstance().getSession().createQuery(
 				"select m from ManagerSettings m where m.manager.uniqueId = :managerId and m.key.uniqueId = :settingsId", ManagerSettings.class
-				).setParameter("managerId", managerId, Long.class).setParameter("settingsId", s.getUniqueId(), Long.class).setCacheable(true).uniqueResult();
+				).setParameter("managerId", managerId).setParameter("settingsId", s.getUniqueId()).setCacheable(true).uniqueResult();
 		return (m == null? s.getDefaultValue() : m.getValue());
 	}
 

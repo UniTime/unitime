@@ -66,7 +66,7 @@ public class CourseCreditFormat extends BaseCourseCreditFormat {
 		if (referenceString == null || referenceString.isEmpty()) return null;
 		return CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
 				"from CourseCreditFormat where reference = :reference", CourseCreditFormat.class)
-				.setParameter("reference", referenceString, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+				.setParameter("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 	public static CourseCreditFormat getCourseCreditForUniqueId(Long uniqueId) {

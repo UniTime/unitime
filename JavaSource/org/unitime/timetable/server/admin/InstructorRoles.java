@@ -84,7 +84,7 @@ public class InstructorRoles implements AdminTable {
 			departments.add(new ListItem(department.getUniqueId().toString(), department.getLabel()));
 			for (DepartmentalInstructor instructor: hibSession.createQuery(
 					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName", DepartmentalInstructor.class)
-					.setParameter("departmentId", department.getUniqueId(), Long.class).list()) {
+					.setParameter("departmentId", department.getUniqueId()).list()) {
 				if (deptIndep && instructor.getRole() == null) continue;
 				Record r = data.addRecord(instructor.getUniqueId(), false);
 				r.setField(0, instructor.getDepartment().getUniqueId().toString(), false);
@@ -112,7 +112,7 @@ public class InstructorRoles implements AdminTable {
 			
 			List<DepartmentalInstructor> instructors = hibSession.createQuery(
 					"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName", DepartmentalInstructor.class)
-					.setParameter("departmentId", department.getUniqueId(), Long.class).list();
+					.setParameter("departmentId", department.getUniqueId()).list();
 			
 			for (DepartmentalInstructor instructor: instructors) {
 				Record r = data.getRecord(instructor.getUniqueId());
@@ -167,7 +167,7 @@ public class InstructorRoles implements AdminTable {
 			record.setUniqueId(instructor.getUniqueId());
 			instructor.setRole(record.getField(2) == null || record.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(record.getField(2))));
 
-			hibSession.update(instructor);
+			hibSession.merge(instructor);
 		}
 		
 		record.setDeletable(false);
@@ -197,7 +197,7 @@ public class InstructorRoles implements AdminTable {
 		
 		instructor.setRole(record.getField(2) == null || record.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(record.getField(2))));
 		
-		hibSession.update(instructor);
+		hibSession.merge(instructor);
 		
 		ChangeLog.addChange(hibSession,
 				context,
@@ -222,7 +222,7 @@ public class InstructorRoles implements AdminTable {
 		
 		instructor.setRole(null);
 		
-		hibSession.update(instructor);
+		hibSession.merge(instructor);
 		
 		ChangeLog.addChange(hibSession,
 				context,

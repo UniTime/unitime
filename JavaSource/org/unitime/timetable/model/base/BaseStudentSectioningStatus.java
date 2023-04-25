@@ -97,7 +97,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -105,7 +105,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	@JoinTable(name = "sectioning_course_types",
 		joinColumns = { @JoinColumn(name = "sectioning_status_id") },
 		inverseJoinColumns = { @JoinColumn(name = "course_type_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseType> getTypes() { return iTypes; }
 	public void setTypes(Set<CourseType> types) { iTypes = types; }
 	public void addTotypes(CourseType courseType) {

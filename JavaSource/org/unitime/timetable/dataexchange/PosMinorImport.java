@@ -56,7 +56,7 @@ public class PosMinorImport extends BaseImport {
             Map<String, PosMinor> code2minor = new Hashtable<String, PosMinor>();
             for (PosMinor minor: getHibSession().createQuery(
             		"from PosMinor where session.uniqueId=:sessionId",
-            		PosMinor.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		PosMinor.class).setParameter("sessionId", session.getUniqueId()).list()) {
             	if (minor.getExternalUniqueId() != null)
             		id2minor.put(minor.getExternalUniqueId(), minor);
             	for (AcademicArea area: minor.getAcademicAreas())
@@ -66,7 +66,7 @@ public class PosMinorImport extends BaseImport {
             Map<String, AcademicArea> abbv2area = new Hashtable<String, AcademicArea>();
             for (AcademicArea area: getHibSession().createQuery(
             		"from AcademicArea where session.uniqueId=:sessionId",
-            		AcademicArea.class).setParameter("sessionId", session.getUniqueId(), Long.class).list()) {
+            		AcademicArea.class).setParameter("sessionId", session.getUniqueId()).list()) {
             	abbv2area.put(area.getAcademicAreaAbbreviation(), area);
             }
             

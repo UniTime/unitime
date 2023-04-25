@@ -104,7 +104,7 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	public void setSession(Session session) { iSession = session; }
 
 	@OneToMany(mappedBy = "instructorSurvey", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructorCourseRequirement> getCourseRequirements() { return iCourseRequirements; }
 	public void setCourseRequirements(Set<InstructorCourseRequirement> courseRequirements) { iCourseRequirements = courseRequirements; }
 	public void addTocourseRequirements(InstructorCourseRequirement instructorCourseRequirement) {

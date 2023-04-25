@@ -354,8 +354,8 @@ public class ExportPreferences {
 		List<DepartmentalInstructor> ids = (DepartmentDAO.getInstance()).
 			getSession().
 			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId", DepartmentalInstructor.class).
-			setParameter("deptCode", dept.getDeptCode(), String.class).
-			setParameter("sessionId", dept.getSessionId().longValue(), Long.class).
+			setParameter("deptCode", dept.getDeptCode()).
+			setParameter("sessionId", dept.getSessionId().longValue()).
 			list();
 		for (Iterator<DepartmentalInstructor> i=ids.iterator();i.hasNext();) {
 			DepartmentalInstructor id = i.next();

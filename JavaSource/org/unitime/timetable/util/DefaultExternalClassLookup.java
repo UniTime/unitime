@@ -37,7 +37,7 @@ public class DefaultExternalClassLookup implements ExternalClassLookupInterface 
 		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
 				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId and co.isControl = true", CourseOffering.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("externalId", externalId, String.class).setCacheable(true).setMaxResults(1).uniqueResult();
+				).setParameter("sessionId", sessionId).setParameter("externalId", externalId).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class DefaultExternalClassLookup implements ExternalClassLookupInterface 
 		return CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
 				"where io.session.uniqueId = :sessionId and c.externalUniqueId = :externalId", Class_.class
-				).setParameter("sessionId", sessionId, Long.class).setParameter("externalId", externalId, String.class).setCacheable(true).list();
+				).setParameter("sessionId", sessionId).setParameter("externalId", externalId).setCacheable(true).list();
 	}
 	
 }

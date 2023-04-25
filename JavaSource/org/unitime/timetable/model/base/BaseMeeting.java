@@ -129,7 +129,7 @@ public abstract class BaseMeeting implements Serializable {
 	@JoinTable(name = "meeting_contact",
 		joinColumns = { @JoinColumn(name = "meeting_id") },
 		inverseJoinColumns = { @JoinColumn(name = "contact_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventContact> getMeetingContacts() { return iMeetingContacts; }
 	public void setMeetingContacts(Set<EventContact> meetingContacts) { iMeetingContacts = meetingContacts; }
 	public void addTomeetingContacts(EventContact eventContact) {

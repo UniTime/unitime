@@ -313,7 +313,7 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
                 instr.getClasses().remove(ci);
                 c.getClassInstructors().remove(ci);
                 hibSession.saveOrUpdate(instr);
-                hibSession.delete(ci);
+                hibSession.remove(ci);
             }
             
         	try {

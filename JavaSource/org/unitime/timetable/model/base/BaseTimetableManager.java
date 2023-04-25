@@ -105,7 +105,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	public void setEmailAddress(String emailAddress) { iEmailAddress = emailAddress; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "manager", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ManagerSettings> getSettings() { return iSettings; }
 	public void setSettings(Set<ManagerSettings> settings) { iSettings = settings; }
 	public void addTosettings(ManagerSettings managerSettings) {
@@ -114,7 +114,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "timetableManagers")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -123,7 +123,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "timetableManager", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ManagerRole> getManagerRoles() { return iManagerRoles; }
 	public void setManagerRoles(Set<ManagerRole> managerRoles) { iManagerRoles = managerRoles; }
 	public void addTomanagerRoles(ManagerRole managerRole) {
@@ -132,7 +132,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "timetableManagers")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverGroup> getSolverGroups() { return iSolverGroups; }
 	public void setSolverGroups(Set<SolverGroup> solverGroups) { iSolverGroups = solverGroups; }
 	public void addTosolverGroups(SolverGroup solverGroup) {

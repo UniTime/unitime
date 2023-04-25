@@ -201,7 +201,7 @@ public class ExamEditForm extends PreferencesForm {
                             "order by co.courseNbr ", Object[].class).
                     setFetchSize(200).
                     setCacheable(true).
-                    setParameter("subjectAreaId", getSubjectArea(idx), Long.class).list()) {
+                    setParameter("subjectAreaId", getSubjectArea(idx)).list()) {
                 ret.add(new IdValue((Long)o[0],((String)o[1] + " - " + (String)o[2])));
                 if (o[0].equals(getCourseNbr(idx))) contains = true;
             }
@@ -232,7 +232,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where co.uniqueId = :courseOfferingId", InstrOfferingConfig.class).
                 setFetchSize(200).
                 setCacheable(true).
-                setParameter("courseOfferingId", course.getUniqueId(), Long.class).
+                setParameter("courseOfferingId", course.getUniqueId()).
                 list());
             if (!configs.isEmpty()) {
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Configurations --"));
@@ -249,7 +249,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where co.uniqueId = :courseOfferingId", SchedulingSubpart.class).
                 setFetchSize(200).
                 setCacheable(true).
-                setParameter("courseOfferingId", course.getUniqueId(), Long.class).
+                setParameter("courseOfferingId", course.getUniqueId()).
                 list());
             if (!configs.isEmpty() && !subparts.isEmpty())
                 ret.add(new IdValue(Long.MIN_VALUE+2,"-- Subparts --"));
@@ -326,7 +326,7 @@ public class ExamEditForm extends PreferencesForm {
                         "where c.schedulingSubpart.uniqueId=:schedulingSubpartId", Class_.class).
                 setFetchSize(200).
                 setCacheable(true).
-                setParameter("schedulingSubpartId", getItype(idx), Long.class).
+                setParameter("schedulingSubpartId", getItype(idx)).
                 list());
             for (Class_ c: classes) {
                 if (c.getUniqueId().equals(getClassNumber(idx))) contains = true;

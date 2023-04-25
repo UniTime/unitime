@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseScriptParameter;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "script_parameter")
 public class ScriptParameter extends BaseScriptParameter {
 	private static final long serialVersionUID = 1L;

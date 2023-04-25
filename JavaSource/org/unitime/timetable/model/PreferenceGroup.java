@@ -47,7 +47,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class PreferenceGroup extends BasePreferenceGroup {
 	private static final long serialVersionUID = 1L;

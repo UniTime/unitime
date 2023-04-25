@@ -188,7 +188,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				for (String m: messages) {
     					iProgress.error(MSG.errorUnableToCommit(m));
     				}
-    				hibSession.update(solution);
+    				hibSession.merge(solution);
     				incProgress();
     			}
 				tx.commit();
@@ -235,7 +235,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			logInfo.setOpt(null);
         			logInfo.setSolution(solution);
         			logInfo.setInfo(lInfo,getFileProxy());
-        			hibSession.save(logInfo);
+        			hibSession.persist(logInfo);
         			tx.commit();
     			}
     		}
@@ -341,7 +341,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         				SolverParameter param = new SolverParameter();
         				param.setDefinition(def);
         				param.setValue(value);
-        				hibSession.save(param);
+        				hibSession.persist(param);
         				params.add(param);
         			}
         			incProgress();
@@ -416,7 +416,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			assignment.setRooms(rooms);
         			assignment.setInstructors(instructors);
         			assignment.setSolution(solution);
-        			hibSession.save(assignment);
+        			hibSession.persist(assignment);
         			iAssignments.put(lecture.getClassId(),assignment);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();
@@ -446,7 +446,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         				enrl.setStudentId(student.getId());
         				enrl.setClazz(clazz);
         				enrl.setSolution(solution);
-        				hibSession.save(enrl);
+        				hibSession.persist(enrl);
         				if (++batchIdx % BATCH_SIZE == 0) {
         					hibSession.flush(); hibSession.clear();
         				}
@@ -471,7 +471,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			jenrl.setClass1(clazz1);
     			jenrl.setClass2(clazz2);
     			jenrl.setSolution(solution);
-    			hibSession.save(jenrl);
+    			hibSession.persist(jenrl);
     			
     			incProgress();
     		}
@@ -505,7 +505,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			defGroupInfo.setDescription("Student group information");
     			defGroupInfo.setImplementation(StudentGroupInfo.class.getName());
     			defGroupInfo.setName("GroupInfo");
-    			hibSession.save(defGroupInfo);
+    			hibSession.persist(defGroupInfo);
     		}
     		
     		Hashtable<Solution, List<Lecture>> lectures4solution = new Hashtable<Solution, List<Lecture>>();
@@ -531,7 +531,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
            		solutionInfo.setOpt(null);
            		solutionInfo.setSolution(solution);
            		solutionInfo.setInfo(new PropertiesInfo(getSolution().getInfo(lectures)),getFileProxy());
-           		hibSession.save(solutionInfo);
+           		hibSession.persist(solutionInfo);
                 solution.setGlobalInfo(solutionInfo);
    	    		incProgress();
     		}
@@ -557,7 +557,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             		cbsSolutionInfo.setOpt(null);
             		cbsSolutionInfo.setSolution(solution);
             		cbsSolutionInfo.setInfo(cbsInfo.getConflictStatisticsSubInfo(lectures),getFileProxy());
-            		hibSession.save(cbsSolutionInfo);
+            		hibSession.persist(cbsSolutionInfo);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();
     				}
@@ -577,7 +577,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				assignmentInfo.setDefinition(defAssignmentInfo);
     				assignmentInfo.setOpt(null);
     				assignmentInfo.setInfo(new AssignmentPreferenceInfo(getSolver(),placement,true,true),getFileProxy());
-    				hibSession.save(assignmentInfo);
+    				hibSession.persist(assignmentInfo);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();
     				}
@@ -615,7 +615,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     					if (!biAssignments.isEmpty()) {
     						constraintInfo.setAssignments(biAssignments);
     						constraintInfo.setInfo(biInfo,getFileProxy());
-    						hibSession.save(constraintInfo);
+    						hibSession.persist(constraintInfo);
     						if (++batchIdx % BATCH_SIZE == 0) {
     							hibSession.flush(); hibSession.clear();
     						}
@@ -646,7 +646,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			if (!gcAssignments.isEmpty()) {
     				constraintInfo.setAssignments(gcAssignments);
         			constraintInfo.setInfo(gcInfo,getFileProxy());
-    				hibSession.save(constraintInfo);
+    				hibSession.persist(constraintInfo);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();
     				}
@@ -677,7 +677,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			jAssignments.add(secondAssignment);
    				constraintInfo.setAssignments(jAssignments);
        			constraintInfo.setInfo(jInfo,getFileProxy());
-   				hibSession.save(constraintInfo);
+   				hibSession.persist(constraintInfo);
    				if (++batchIdx % BATCH_SIZE == 0) {
    					hibSession.flush(); hibSession.clear();
    				}
@@ -699,7 +699,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			if (jAssignments.isEmpty()) continue;
    				constraintInfo.setAssignments(jAssignments);
        			constraintInfo.setInfo(gInfo, getFileProxy());
-   				hibSession.save(constraintInfo);
+   				hibSession.persist(constraintInfo);
    				if (++batchIdx % BATCH_SIZE == 0) {
    					hibSession.flush(); hibSession.clear();
    				}
@@ -738,7 +738,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			jAssignments.add(other);
         			constraintInfo.setAssignments(jAssignments);
         			constraintInfo.setInfo(jInfo,getFileProxy());
-        			hibSession.save(constraintInfo);
+        			hibSession.persist(constraintInfo);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();
     				}

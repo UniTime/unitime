@@ -43,7 +43,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "preference_level")
 public class PreferenceLevel extends BasePreferenceLevel {
 	private static final long serialVersionUID = 1L;
@@ -190,7 +190,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     	} else {
     		return PreferenceLevelDAO.getInstance().getSession().createQuery(
     				"from PreferenceLevel where prefProlog != :na order by prefId", PreferenceLevel.class)
-    				.setParameter("na", sNotAvailable, String.class).setCacheable(true).list();
+    				.setParameter("na", sNotAvailable).setCacheable(true).list();
     	}
     }
 

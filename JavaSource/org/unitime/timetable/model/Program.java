@@ -41,7 +41,7 @@ public class Program extends BaseProgram {
 	public static List<Program> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? ProgramDAO.getInstance().getSession() : hibSession).createQuery(
 				"from Program x where x.session.uniqueId = :sessionId order by x.reference", Program.class)
-				.setParameter("sessionId", sessionId, Long.class).list();
+				.setParameter("sessionId", sessionId).list();
 	}
 	
     public Object clone() {

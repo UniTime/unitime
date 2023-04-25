@@ -104,19 +104,19 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	public static StudentSectioningStatus getStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
 		if (reference != null) {
 			StudentSectioningStatus status = hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session is null", StudentSectioningStatus.class)
-					.setParameter("reference", reference, String.class).setMaxResults(1).setCacheable(true).uniqueResult();
+					.setParameter("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null)
 				return status;
 			if (sessionId != null) {
 				status = hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference and s.session.uniqueId = :sessionId", StudentSectioningStatus.class)
-						.setParameter("reference", reference, String.class).setParameter("sessionId", sessionId, Long.class).setMaxResults(1).setCacheable(true).uniqueResult();
+						.setParameter("reference", reference).setParameter("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
 				if (status != null)
 					return status;
 			}
 		}
 		if (sessionId != null) {
 			StudentSectioningStatus status = hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId", StudentSectioningStatus.class)
-					.setParameter("sessionId", sessionId, Long.class).setMaxResults(1).setCacheable(true).uniqueResult();
+					.setParameter("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
 			if (status != null) return status;
 		}
 		return null;
@@ -245,7 +245,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		else
 			return (hibSession == null ? StudentSectioningStatusDAO.getInstance().getSession() : hibSession).createQuery(
 					"from StudentSectioningStatus where session is null or session.uniqueId = :sessionId order by label", StudentSectioningStatus.class
-					).setParameter("sessionId", sessionId, Long.class).setCacheable(true).list();
+					).setParameter("sessionId", sessionId).setCacheable(true).list();
 	}
 	
 	public static StudentSectioningStatus getPresentStatus(StudentSectioningStatus status) {

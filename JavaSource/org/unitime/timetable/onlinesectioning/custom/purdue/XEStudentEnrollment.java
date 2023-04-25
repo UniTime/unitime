@@ -382,10 +382,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						helper.getHibSession().createQuery(
 								"select count(s) from Student s where s.externalUniqueId = :id and " +
 								"s.session.academicYear = :year and s.session.academicTerm = :term and s.session.academicInitiative != :campus", Number.class
-								).setParameter("id", student.getExternalId(), String.class)
-								.setParameter("term", server.getAcademicSession().getTerm(), String.class)
-								.setParameter("year", server.getAcademicSession().getYear(), String.class)
-								.setParameter("campus", server.getAcademicSession().getCampus(), String.class)
+								).setParameter("id", student.getExternalId())
+								.setParameter("term", server.getAcademicSession().getTerm())
+								.setParameter("year", server.getAcademicSession().getYear())
+								.setParameter("campus", server.getAcademicSession().getCampus())
 								.uniqueResult().intValue() > 0);
 				if (!keepMessage)
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");

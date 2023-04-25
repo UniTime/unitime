@@ -31,7 +31,7 @@ import org.unitime.timetable.model.base.BaseExamStatus;
 import org.unitime.timetable.model.dao.ExamStatusDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "exam_status")
 public class ExamStatus extends BaseExamStatus {
 	private static final long serialVersionUID = 1L;
@@ -47,8 +47,8 @@ public class ExamStatus extends BaseExamStatus {
 	public static ExamStatus findStatus(org.hibernate.Session hibSession, Long sessionId, Long typeId) {
 		return (hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId", ExamStatus.class)
-				.setParameter("sessionId", sessionId, Long.class)
-				.setParameter("typeId", typeId, Long.class)
+				.setParameter("sessionId", sessionId)
+				.setParameter("typeId", typeId)
 				.setCacheable(true)
 				.uniqueResult();
 	}
@@ -60,7 +60,7 @@ public class ExamStatus extends BaseExamStatus {
 	public static List<ExamStatus> findAll(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession != null ? hibSession : ExamStatusDAO.getInstance().getSession()).createQuery(
 				"from ExamStatus where session.uniqueId = :sessionId and type.uniqueId = :typeId", ExamStatus.class)
-				.setParameter("sessionId", sessionId, Long.class)
+				.setParameter("sessionId", sessionId)
 				.setCacheable(true)
 				.list();
 	}

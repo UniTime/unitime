@@ -678,12 +678,12 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			try {
 				for (SolverParameterDef def: hibSession.createQuery(
 						"from SolverParameterDef x where x.group.type = :type and x.default is not null", SolverParameterDef.class)
-						.setParameter("type", SolverParameterGroup.SolverType.STUDENT.ordinal(), Integer.class).list()) {
+						.setParameter("type", SolverParameterGroup.SolverType.STUDENT.ordinal()).list()) {
 					setProperty(def.getName(), def.getDefault());
 				}
 				SolverPredefinedSetting settings = hibSession.createQuery(
 						"from SolverPredefinedSetting x where x.name = :reference", SolverPredefinedSetting.class)
-						.setParameter("reference", "StudentSct.Online", String.class).setMaxResults(1).uniqueResult();
+						.setParameter("reference", "StudentSct.Online").setMaxResults(1).uniqueResult();
 				if (settings != null) {
 					for (SolverParameter param: settings.getParameters()) {
 						if (!param.getDefinition().isVisible().booleanValue()) continue;

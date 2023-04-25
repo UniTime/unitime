@@ -140,7 +140,7 @@ public class Campuses implements AdminTable {
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(campus);		
+		hibSession.remove(campus);		
 	}
 
 	@Override

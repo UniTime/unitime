@@ -36,7 +36,7 @@ import org.unitime.timetable.model.dao.CurriculumDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "curriculum")
 public class Curriculum extends BaseCurriculum implements Comparable<Curriculum> {
 	private static final long serialVersionUID = 1L;
@@ -58,14 +58,14 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
 	public static List<Curriculum> findAll(Long sessionId) {
 	    return CurriculumDAO.getInstance().getSession()
 	        .createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class)
-	        .setParameter("sessionId", sessionId, Long.class)
+	        .setParameter("sessionId", sessionId)
 	        .setCacheable(true).list();
 	}
 
     public static List<Curriculum> findByDepartment(Long deptId) {
         return CurriculumDAO.getInstance().getSession()
             .createQuery("select c from Curriculum c where c.department.uniqueId=:deptId", Curriculum.class)
-            .setParameter("deptId", deptId, Long.class)
+            .setParameter("deptId", deptId)
             .setCacheable(true).list();
     }
     

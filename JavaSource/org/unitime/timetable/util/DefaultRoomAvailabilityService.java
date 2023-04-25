@@ -96,11 +96,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
                     exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""), Meeting.class)
-                    .setParameter("locPermId", location.getPermanentId(), Long.class)
-                    .setParameter("startDate", time.getStartDate(), Date.class)
-                    .setParameter("endDate", time.getEndDate(), Date.class)
-                    .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                    .setParameter("endSlot", time.getEndSlot(), Integer.class)
+                    .setParameter("locPermId", location.getPermanentId())
+                    .setParameter("startDate", time.getStartDate())
+                    .setParameter("endDate", time.getEndDate())
+                    .setParameter("startSlot", time.getStartSlot())
+                    .setParameter("endSlot", time.getEndSlot())
                     .setCacheable(true).list()) {
                 MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
                 if (block.getStartTime() != null)
@@ -113,12 +113,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
-                            .setParameter("locPermId", location.getPermanentId(), Long.class)
-                            .setParameter("sessionId", location.getSession().getUniqueId(), Long.class)
-                            .setParameter("startDate", time.getStartDate(), Date.class)
-                            .setParameter("endDate", time.getEndDate(), Date.class)
-                            .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", time.getEndSlot(), Integer.class)
+                            .setParameter("locPermId", location.getPermanentId())
+                            .setParameter("sessionId", location.getSession().getUniqueId())
+                            .setParameter("startDate", time.getStartDate())
+                            .setParameter("endDate", time.getEndDate())
+                            .setParameter("startSlot", time.getStartSlot())
+                            .setParameter("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
                         MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
                         if (block.getStartTime() != null)
@@ -131,12 +131,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                             (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Meeting.class)
-                            .setParameter("locPermId", location.getPermanentId(), Long.class)
-                            .setParameter("sessionId", location.getSession().getUniqueId(), Long.class)
-                            .setParameter("startDate", time.getStartDate(), Date.class)
-                            .setParameter("endDate", time.getEndDate(), Date.class)
-                            .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", time.getEndSlot(), Integer.class)
+                            .setParameter("locPermId", location.getPermanentId())
+                            .setParameter("sessionId", location.getSession().getUniqueId())
+                            .setParameter("startDate", time.getStartDate())
+                            .setParameter("endDate", time.getEndDate())
+                            .setParameter("startSlot", time.getStartSlot())
+                            .setParameter("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
                         MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
                         if (block.getStartTime() != null)
@@ -236,10 +236,10 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType.uniqueId = " + examType.getUniqueId() + ")" :
                     	exclude == null ? "" : " and type(e)!=" + exclude.getSimpleName()), Meeting.class)
-                    .setParameter("startDate", iTime.getStartDate(), Date.class)
-                    .setParameter("endDate", iTime.getEndDate(), Date.class)
-                    .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                    .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                    .setParameter("startDate", iTime.getStartDate())
+                    .setParameter("endDate", iTime.getEndDate())
+                    .setParameter("startSlot", iTime.getStartSlot())
+                    .setParameter("endSlot", iTime.getEndSlot())
                     .setCacheable(true)
                     .list(), class2eventDateMap);
             if (sessionId != null && ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && exclude != null) {
@@ -249,11 +249,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
-                            .setParameter("sessionId", sessionId, Long.class)
-                            .setParameter("startDate", iTime.getStartDate(), Date.class)
-                            .setParameter("endDate", iTime.getEndDate(), Date.class)
-                            .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                            .setParameter("sessionId", sessionId)
+                            .setParameter("startDate", iTime.getStartDate())
+                            .setParameter("endDate", iTime.getEndDate())
+                            .setParameter("startSlot", iTime.getStartSlot())
+                            .setParameter("endSlot", iTime.getEndSlot())
                             .setCacheable(true).list(), class2eventDateMap);
             	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
             		addAll(LocationDAO.getInstance().getSession().createQuery(
@@ -262,11 +262,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
                             (examType != null ? " and e.exam.examType.uniqueId = " + examType.getUniqueId() : ""), Meeting.class)
-                            .setParameter("sessionId", sessionId, Long.class)
-                            .setParameter("startDate", iTime.getStartDate(), Date.class)
-                            .setParameter("endDate", iTime.getEndDate(), Date.class)
-                            .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                            .setParameter("sessionId", sessionId)
+                            .setParameter("startDate", iTime.getStartDate())
+                            .setParameter("endDate", iTime.getEndDate())
+                            .setParameter("startSlot", iTime.getStartSlot())
+                            .setParameter("endSlot", iTime.getEndSlot())
                             .setCacheable(true).list(), class2eventDateMap);
             	}
             }
@@ -280,11 +280,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                          "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                          (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType.uniqueId = " + examType.getUniqueId() + ")" :
                         	 exclude!=null?" and type(e)!="+exclude.getSimpleName():""), Object[].class)
-                         .setParameter("startDate", iTime.getStartDate(), Date.class)
-                         .setParameter("endDate", iTime.getEndDate(), Date.class)
-                         .setParameter("sessionId", sessionId, Long.class)
-                         .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                         .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                         .setParameter("startDate", iTime.getStartDate())
+                         .setParameter("endDate", iTime.getEndDate())
+                         .setParameter("sessionId", sessionId)
+                         .setParameter("startSlot", iTime.getStartSlot())
+                         .setParameter("endSlot", iTime.getEndSlot())
                          .setCacheable(true).list(), class2eventDateMap);
             	if (ApplicationProperty.RoomAvailabilityIncludeOtherTerms.isTrue() && exclude != null) {
             		if (ClassEvent.class.isAssignableFrom(exclude)) {
@@ -293,11 +293,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                                 "ci.lead = true and m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                                 "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                                 "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Object[].class)
-                                .setParameter("sessionId", sessionId, Long.class)
-                                .setParameter("startDate", iTime.getStartDate(), Date.class)
-                                .setParameter("endDate", iTime.getEndDate(), Date.class)
-                                .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                                .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                                .setParameter("sessionId", sessionId)
+                                .setParameter("startDate", iTime.getStartDate())
+                                .setParameter("endDate", iTime.getEndDate())
+                                .setParameter("startSlot", iTime.getStartSlot())
+                                .setParameter("endSlot", iTime.getEndSlot())
                                 .setCacheable(true).list(), class2eventDateMap);
                 	} else if (ExamEvent.class.isAssignableFrom(exclude)) {
                 		addAllInstructors(LocationDAO.getInstance().getSession().createQuery(
@@ -306,11 +306,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                                 "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                                 "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +
                                 (examType != null ? " and e.exam.examType.uniqueId = " + examType.getUniqueId() : ""), Object[].class)
-                                .setParameter("sessionId", sessionId, Long.class)
-                                .setParameter("startDate", iTime.getStartDate(), Date.class)
-                                .setParameter("endDate", iTime.getEndDate(), Date.class)
-                                .setParameter("startSlot", iTime.getStartSlot(), Integer.class)
-                                .setParameter("endSlot", iTime.getEndSlot(), Integer.class)
+                                .setParameter("sessionId", sessionId)
+                                .setParameter("startDate", iTime.getStartDate())
+                                .setParameter("endDate", iTime.getEndDate())
+                                .setParameter("startSlot", iTime.getStartSlot())
+                                .setParameter("endSlot", iTime.getEndSlot())
                                 .setCacheable(true).list(), class2eventDateMap);
                 	}
                 }
@@ -526,11 +526,11 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                     (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType.uniqueId = " + examType.getUniqueId() + ")" :
                     	exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""), Meeting.class)
-                    .setParameter("user", instructor.getExternalUniqueId(), String.class)
-                    .setParameter("startDate", time.getStartDate(), Date.class)
-                    .setParameter("endDate", time.getEndDate(), Date.class)
-                    .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                    .setParameter("endSlot", time.getEndSlot(), Integer.class)
+                    .setParameter("user", instructor.getExternalUniqueId())
+                    .setParameter("startDate", time.getStartDate())
+                    .setParameter("endDate", time.getEndDate())
+                    .setParameter("startSlot", time.getStartSlot())
+                    .setParameter("endSlot", time.getEndSlot())
                     .setCacheable(true).list()) {
                 MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                 if (block.getStartTime() != null)
@@ -544,12 +544,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.approvalStatus = 1 and e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot", Meeting.class)
-            				.setParameter("user", instructor.getExternalUniqueId(), String.class)
-                            .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId(), Long.class)
-                            .setParameter("startDate", time.getStartDate(), Date.class)
-                            .setParameter("endDate", time.getEndDate(), Date.class)
-                            .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", time.getEndSlot(), Integer.class)
+            				.setParameter("user", instructor.getExternalUniqueId())
+                            .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId())
+                            .setParameter("startDate", time.getStartDate())
+                            .setParameter("endDate", time.getEndDate())
+                            .setParameter("startSlot", time.getStartSlot())
+                            .setParameter("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
                         MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                         if (block.getStartTime() != null)
@@ -563,12 +563,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
                             (examType != null ? " and e.exam.examType.uniqueId = " + examType.getUniqueId() : ""), Meeting.class)
-            				.setParameter("user", instructor.getExternalUniqueId(), String.class)
-                            .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId(), Long.class)
-                            .setParameter("startDate", time.getStartDate(), Date.class)
-                            .setParameter("endDate", time.getEndDate(), Date.class)
-                            .setParameter("startSlot", time.getStartSlot(), Integer.class)
-                            .setParameter("endSlot", time.getEndSlot(), Integer.class)
+            				.setParameter("user", instructor.getExternalUniqueId())
+                            .setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId())
+                            .setParameter("startDate", time.getStartDate())
+                            .setParameter("endDate", time.getEndDate())
+                            .setParameter("startSlot", time.getStartSlot())
+                            .setParameter("endSlot", time.getEndSlot())
                             .setCacheable(true).list()) {
                         MeetingTimeBlock block = new MeetingTimeBlockWithRoom(m, class2eventDateMap);
                         if (block.getStartTime() != null)

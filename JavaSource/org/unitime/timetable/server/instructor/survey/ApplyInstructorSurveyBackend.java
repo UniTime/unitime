@@ -82,7 +82,7 @@ public class ApplyInstructorSurveyBackend implements GwtRpcImplementation<Instru
 		}
 		if (is.getEmail() != null && !is.getEmail().isEmpty())
 			di.setEmail(is.getEmail());
-		hibSession.update(di);
+		hibSession.merge(di);
 		is.setAppliedDeptCode(di.getDepartment().getDeptCode());
 		is.setApplied(new Date());
 		hibSession.flush();

@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BasePosMajorConcentration;
 import org.unitime.timetable.model.dao.PosMajorConcentrationDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "pos_major_conc")
 public class PosMajorConcentration extends BasePosMajorConcentration {
 	private static final long serialVersionUID = 1L;
@@ -45,7 +45,7 @@ public class PosMajorConcentration extends BasePosMajorConcentration {
 	public static List<PosMajorConcentration> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return (hibSession == null ? PosMajorConcentrationDAO.getInstance().getSession() : hibSession).createQuery(
 				"from PosMajorConcentration x where x.major.session.uniqueId = :sessionId order by x.major.code, x.code", PosMajorConcentration.class)
-				.setParameter("sessionId", sessionId, Long.class).list();
+				.setParameter("sessionId", sessionId).list();
 	}
 	
     public Object clone() {

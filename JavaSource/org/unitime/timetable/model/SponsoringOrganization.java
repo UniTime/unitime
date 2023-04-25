@@ -36,7 +36,7 @@ import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
  * @author Zuzana Mullerova, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "sponsoring_organization")
 public class SponsoringOrganization extends BaseSponsoringOrganization implements Comparable {
 	private static final long serialVersionUID = 1L;

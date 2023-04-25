@@ -116,7 +116,7 @@ public abstract class BasePitInstrOfferingConfig implements Serializable {
 	public void setInstructionalMethod(InstructionalMethod instructionalMethod) { iInstructionalMethod = instructionalMethod; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstrOfferingConfig", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitSchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<PitSchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
 	public void addToschedulingSubparts(PitSchedulingSubpart pitSchedulingSubpart) {

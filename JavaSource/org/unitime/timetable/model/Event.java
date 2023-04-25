@@ -55,7 +55,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "event")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="event_type", discriminatorType = DiscriminatorType.INTEGER)
@@ -123,13 +123,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
     public static void deleteFromEvents(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
         for (RelatedCourseInfo relatedCourse: hibSession.createQuery("select r from CourseEvent e inner join e.relatedCourses r where "+
                 "r.ownerType=:ownerType and r.ownerId=:ownerId", RelatedCourseInfo.class)
-                .setParameter("ownerType", ownerType, Integer.class)
-                .setParameter("ownerId", ownerId, Long.class).list()) {
+                .setParameter("ownerType", ownerType)
+                .setParameter("ownerId", ownerId).list()) {
             CourseEvent event = relatedCourse.getEvent();
             event.getRelatedCourses().remove(relatedCourse);
             relatedCourse.setOwnerId(null);
             relatedCourse.setCourse(null);
-            hibSession.delete(relatedCourse);
+            hibSession.remove(relatedCourse);
             hibSession.saveOrUpdate(event);
         }
     }
@@ -309,9 +309,9 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "select e, s.student.uniqueId from "+
                         "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")", Object[].class)
-                        .setParameter("meetingDate", meetingDate, Date.class)
-                        .setParameter("startSlot", startSlot, Integer.class)
-                        .setParameter("endSlot", endSlot, Integer.class)
+                        .setParameter("meetingDate", meetingDate)
+                        .setParameter("startSlot", startSlot)
+                        .setParameter("endSlot", endSlot)
                         .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
@@ -329,13 +329,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
-                        .setParameter("meetingDate", meetingDate, Date.class)
-                        .setParameter("startSlot", startSlot, Integer.class)
-                        .setParameter("endSlot", endSlot, Integer.class)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                        .setParameter("meetingDate", meetingDate)
+                        .setParameter("startSlot", startSlot)
+                        .setParameter("endSlot", endSlot)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering)
                         .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
@@ -353,13 +353,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
-                        .setParameter("meetingDate", meetingDate, Date.class)
-                        .setParameter("startSlot", startSlot, Integer.class)
-                        .setParameter("endSlot", endSlot, Integer.class)
-                        .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
-                        .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                        .setParameter("meetingDate", meetingDate)
+                        .setParameter("startSlot", startSlot)
+                        .setParameter("endSlot", endSlot)
+                        .setParameter("classType", ExamOwner.sOwnerTypeClass)
+                        .setParameter("configType", ExamOwner.sOwnerTypeConfig)
+                        .setParameter("courseType", ExamOwner.sOwnerTypeCourse)
+                        .setParameter("offeringType", ExamOwner.sOwnerTypeOffering)
                         .setCacheable(true).list()) {
                     Event event = (Event)o[0];
                     long studentId = (Long)o[1];
@@ -377,9 +377,9 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "select e, s.student.uniqueId from "+
                     "ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s where "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+")", Object[].class)
-                    .setParameter("meetingDate", meetingDate, Date.class)
-                    .setParameter("startSlot", startSlot, Integer.class)
-                    .setParameter("endSlot", endSlot, Integer.class)
+                    .setParameter("meetingDate", meetingDate)
+                    .setParameter("startSlot", startSlot)
+                    .setParameter("endSlot", endSlot)
                     .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];
@@ -397,13 +397,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
-                    .setParameter("meetingDate", meetingDate, Date.class)
-                    .setParameter("startSlot", startSlot, Integer.class)
-                    .setParameter("endSlot", endSlot, Integer.class)
-                    .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
-                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                    .setParameter("meetingDate", meetingDate)
+                    .setParameter("startSlot", startSlot)
+                    .setParameter("endSlot", endSlot)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering)
                     .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];
@@ -421,13 +421,13 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
                     "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId) or "+
                     "(o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId))", Object[].class)
-                    .setParameter("meetingDate", meetingDate, Date.class)
-                    .setParameter("startSlot", startSlot, Integer.class)
-                    .setParameter("endSlot", endSlot, Integer.class)
-                    .setParameter("classType", ExamOwner.sOwnerTypeClass, Integer.class)
-                    .setParameter("configType", ExamOwner.sOwnerTypeConfig, Integer.class)
-                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse, Integer.class)
-                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering, Integer.class)
+                    .setParameter("meetingDate", meetingDate)
+                    .setParameter("startSlot", startSlot)
+                    .setParameter("endSlot", endSlot)
+                    .setParameter("classType", ExamOwner.sOwnerTypeClass)
+                    .setParameter("configType", ExamOwner.sOwnerTypeConfig)
+                    .setParameter("courseType", ExamOwner.sOwnerTypeCourse)
+                    .setParameter("offeringType", ExamOwner.sOwnerTypeOffering)
                     .setCacheable(true).list()) {
                 Event event = (Event)o[0];
                 long studentId = (Long)o[1];

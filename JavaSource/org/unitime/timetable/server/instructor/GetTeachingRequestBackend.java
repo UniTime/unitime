@@ -92,7 +92,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 		
 		for (InstructorAttribute attribute: InstructorAttributeDAO.getInstance().getSession().createQuery(
 				"from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :departmentId) order by a.name", InstructorAttribute.class
-				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId(), Long.class).setParameter("departmentId", offering.getDepartment().getUniqueId(), Long.class).setCacheable(true).list()) {
+				).setParameter("sessionId", context.getUser().getCurrentAcademicSessionId()).setParameter("departmentId", offering.getDepartment().getUniqueId()).setCacheable(true).list()) {
 			AttributeInterface a = new AttributeInterface();
 			a.setId(attribute.getUniqueId());
 			a.setParentId(attribute.getParentAttribute() == null ? null : attribute.getParentAttribute().getUniqueId());
@@ -127,7 +127,7 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 		NameFormat instructorNameFormat = NameFormat.fromReference(UserProperty.NameFormat.get(context.getUser()));
 		boolean sortByLastName = CommonValues.SortByLastName.eq(UserProperty.SortNames.get(context.getUser()));
 		for (DepartmentalInstructor instructor: DepartmentalInstructorDAO.getInstance().getSession().createQuery(
-				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId", DepartmentalInstructor.class).setParameter("departmentId", offering.getDepartment().getUniqueId(), Long.class).setCacheable(true).list()) {
+				"from DepartmentalInstructor i where i.department.uniqueId = :departmentId", DepartmentalInstructor.class).setParameter("departmentId", offering.getDepartment().getUniqueId()).setCacheable(true).list()) {
 			InstructorInterface i = new InstructorInterface();
 			i.setId(instructor.getUniqueId());
 			i.setFirstName(instructor.getFirstName());

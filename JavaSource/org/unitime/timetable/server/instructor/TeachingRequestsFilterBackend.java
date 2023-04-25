@@ -323,15 +323,15 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -341,7 +341,7 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 			}
@@ -389,19 +389,19 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
-				query.setParameter("sessionId", iSessionId, Long.class);
+				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -411,7 +411,7 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 				if (iLimit != null)
@@ -532,15 +532,15 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
 				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -550,7 +550,7 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 			}
@@ -598,19 +598,19 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
-				query.setParameter("sessionId", iSessionId, Long.class);
+				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
-						query.setParameter(param.getKey(), (Integer)param.getValue(), Integer.class);
+						query.setParameter(param.getKey(), (Integer)param.getValue());
 					} else if (param.getValue() instanceof Long) {
-						query.setParameter(param.getKey(), (Long)param.getValue(), Long.class);
+						query.setParameter(param.getKey(), (Long)param.getValue());
 					} else if (param.getValue() instanceof String) {
-						query.setParameter(param.getKey(), (String)param.getValue(), String.class);
+						query.setParameter(param.getKey(), (String)param.getValue());
 					} else if (param.getValue() instanceof Boolean) {
-						query.setParameter(param.getKey(), (Boolean)param.getValue(), Boolean.class);
+						query.setParameter(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
-						query.setParameter(param.getKey(), (Date)param.getValue(), Date.class);
+						query.setParameter(param.getKey(), (Date)param.getValue());
 					} else if (param.getValue() instanceof List) {
 						List<?> list = (List<?>)param.getValue();
 						if (!list.isEmpty() && list.get(0) instanceof Long)
@@ -620,7 +620,7 @@ public class TeachingRequestsFilterBackend extends FilterBoxBackend<TeachingRequ
 						else
 							query.setParameterList(param.getKey(), list);
 					} else {
-						query.setParameter(param.getKey(), param.getValue().toString(), String.class);
+						query.setParameter(param.getKey(), param.getValue().toString());
 					}
 				}
 				if (iLimit != null)

@@ -37,7 +37,7 @@ import org.unitime.timetable.model.base.BaseExternalRoomDepartment;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = "non-lazy")
+@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "external_room_department")
 public class ExternalRoomDepartment extends BaseExternalRoomDepartment {
 	private static final long serialVersionUID = 1L;
