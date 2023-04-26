@@ -345,47 +345,47 @@ SLF4J API Module (slf4j-api-1.7.25.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-5.3.26.jar)
+Spring AOP (spring-aop-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-5.3.26.jar)
+Spring Beans (spring-beans-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-5.3.26.jar)
+Spring Context (spring-context-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-5.3.26.jar)
+Spring Context Support (spring-context-support-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-5.3.26.jar)
+Spring Core (spring-core-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-5.3.26.jar)
+Spring Expression Language (SpEL) (spring-expression-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Commons Logging Bridge (spring-jcl-5.3.26.jar)
+Spring Commons Logging Bridge (spring-jcl-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-5.3.26.jar)
+Spring JDBC (spring-jdbc-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-5.3.26.jar)
+Spring Messaging (spring-messaging-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Transaction (spring-tx-5.3.26.jar)
+Spring Transaction (spring-tx-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-5.3.26.jar)
+Spring Web (spring-web-5.3.27.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
