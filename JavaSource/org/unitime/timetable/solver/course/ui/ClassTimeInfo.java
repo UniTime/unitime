@@ -261,7 +261,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
         int breakTimeStart = ApplicationProperty.RoomAvailabilityClassBreakTimeStart.intValue(); 
         int breakTimeStop = ApplicationProperty.RoomAvailabilityClassBreakTimeStop.intValue();
         for (Date date: getDates()) {
-        	DummyTimeBlock dummy = new DummyTimeBlock(date, breakTimeStart, breakTimeStop);
+        	DummyTimeBlock dummy = new DummyTimeBlock(this, date, breakTimeStart, breakTimeStop);
         	for (TimeBlock time: times)
         		if (dummy.overlaps(time)) return time;
         }
@@ -274,24 +274,24 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
         int breakTimeStop = ApplicationProperty.RoomAvailabilityClassBreakTimeStop.intValue();
         List<TimeBlock> blocks = new ArrayList<TimeBlock>();
         for (Date date: getDates()) {
-        	DummyTimeBlock dummy = new DummyTimeBlock(date, breakTimeStart, breakTimeStop);
+        	DummyTimeBlock dummy = new DummyTimeBlock(this, date, breakTimeStart, breakTimeStop);
         	for (TimeBlock time: times)
         		if (dummy.overlaps(time)) blocks.add(time);
         }
         return blocks;
     }
 
-    public class DummyTimeBlock implements TimeBlock {
+    public static class DummyTimeBlock implements TimeBlock {
 		private static final long serialVersionUID = -3806087343289917036L;
 		private Date iD1, iD2;
-    	private DummyTimeBlock(Date d, int breakTimeStart, int breakTimeStop) {
+    	private DummyTimeBlock(ClassTimeInfo info, Date d, int breakTimeStart, int breakTimeStop) {
     		Calendar c = Calendar.getInstance(Locale.US);
     		c.setTime(d);
-            int min = getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - breakTimeStart;
+            int min = info.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - breakTimeStart;
             c.set(Calendar.HOUR, min/60);
             c.set(Calendar.MINUTE, min%60);
             iD1 = c.getTime();
-            min = (getStartSlot() + getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + breakTimeStop;
+            min = (info.getStartSlot() + info.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + breakTimeStop;
             c.setTime(d);
             c.set(Calendar.HOUR, min/60);
             c.set(Calendar.MINUTE, min%60);

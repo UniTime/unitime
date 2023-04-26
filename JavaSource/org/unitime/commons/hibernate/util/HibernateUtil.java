@@ -147,8 +147,10 @@ public class HibernateUtil {
 		LoadedConfig config = registryBuilder.getConfigLoader().loadConfigXmlUrl(classLoader.getResource("hibernate.cfg.xml"));
 		
         String dialect = ApplicationProperty.DatabaseDialect.value();
-        if (dialect!=null)
+        if (dialect!=null) {
         	config.getConfigurationValues().put("dialect", dialect);
+        	config.getConfigurationValues().put("hibernate.dialect", dialect);
+        }
 
         String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
         if (idgen!=null)

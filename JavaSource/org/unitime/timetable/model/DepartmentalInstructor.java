@@ -601,7 +601,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		while ((i = getUnavailableDays().indexOf('1', i + 1)) >= 0) {
 			cal.setTime(start);
 			cal.add(Calendar.DAY_OF_YEAR, i);
-			ret.add(new UnavailableDay(cal.getTime()));
+			ret.add(new UnavailableDay(this, cal.getTime()));
 		}
 		return ret;
 	}
@@ -883,24 +883,23 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return sb.toString();
 	}
 	
-	class UnavailableDay implements TimeBlock, Comparable<TimeBlock> {
+	public static class UnavailableDay implements TimeBlock, Comparable<TimeBlock> {
 		private static final long serialVersionUID = 1L;
 		private Date iDate;
-		private UnavailableDay(Date date) { iDate = date; }
+		private Long iEventId;
+		private UnavailableDay(DepartmentalInstructor instructor, Date date) {
+			iEventId = - instructor.getUniqueId();
+			iDate = date;
+		}
 		@Override
-	@Transient
-		public Long getEventId() { return - getUniqueId(); }
+		public Long getEventId() { return iEventId; }
 		@Override
-	@Transient
 		public String getEventName() { return MSG.instructorNotAvailableName(); }
 		@Override
-	@Transient
 		public String getEventType() { return MSG.instructorNotAvailableType(); }
 		@Override
-	@Transient
 		public Date getStartTime() { return iDate; }
 		@Override
-	@Transient
 		public Date getEndTime() { return new Date(iDate.getTime() + 86400000l); }
 		@Override
 		public int compareTo(TimeBlock block) {
