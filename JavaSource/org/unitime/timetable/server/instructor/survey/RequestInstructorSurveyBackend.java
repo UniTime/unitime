@@ -341,6 +341,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				if (!hasDept) continue;
 			}
 			IdLabel dp = distPref.addItem(dt.getUniqueId(), dt.getLabel(), dt.getDescr());
+			if (dp == null) continue;
 			boolean hasPref = false;
 			if (dt.getAllowedPref() != null && dt.getAllowedPref().length() > 0)
 				for (int i = 0; i < dt.getAllowedPref().length(); i++) {
@@ -475,7 +476,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 			}
 		}
 		for (CourseOffering co: (List<CourseOffering>)CourseOfferingDAO.getInstance().getSession().createQuery(
-				"select distinct co from CourseOffering co, " +
+				"select distinct co from " +
 				"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 				"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
 				"where co.isControl = true and io.notOffered = false and io.session = :sessionId and i.externalUniqueId=:id " +
