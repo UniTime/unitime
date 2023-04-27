@@ -105,7 +105,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
     			setCacheable(true).list()) {
     		Double expectation = expectations.remove(info.getClazz().getUniqueId());
     		if (expectation == null) {
-    			helper.getHibSession().delete(info);
+    			helper.getHibSession().remove(info);
     		} else if (!expectation.equals(info.getNbrExpectedStudents())) {
         		helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": expected " + sDF.format(expectation - info.getNbrExpectedStudents()));
     			
@@ -116,7 +116,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
         			helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
         		
     			info.setNbrExpectedStudents(expectation);
-        		helper.getHibSession().saveOrUpdate(info);
+        		helper.getHibSession().merge(info);
     		}
     	}
     	
@@ -138,7 +138,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
                 info.setClazz(clazz);
                 info.setNbrExpectedStudents(expectation);
                 info.setNbrHoldingStudents(0.0);
-                helper.getHibSession().saveOrUpdate(info);
+                helper.getHibSession().persist(info);
     		}
 	}
 	

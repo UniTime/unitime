@@ -479,7 +479,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 	                    query.append("    and ioc.instructionalOffering.uniqueId=io.uniqueId ");
 	                    query.append("    and s.instrOfferingConfig.uniqueId=ioc.uniqueId ");	                    
 	                    
-		        		Query<SchedulingSubpart> q2 = hibSession.createQuery(query.toString());
+		        		Query<SchedulingSubpart> q2 = hibSession.createQuery(query.toString(), SchedulingSubpart.class);
 		        		q2.setFetchSize(200);
 		        		q2.setCacheable(true);
 		        		q2.setParameter("courseNbr", Long.parseLong(courseNbr));
@@ -528,7 +528,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 		                    query.append("  where s.uniqueId=:itype ");
 		                    query.append("    and s.uniqueId=c.schedulingSubpart.uniqueId ");	                    
 		                    
-		                    Query<Class_> q3 = hibSession.createQuery(query.toString());
+		                    Query<Class_> q3 = hibSession.createQuery(query.toString(), Class_.class);
 			        		q3.setFetchSize(200);
 			        		q3.setCacheable(true);
 			        		q3.setParameter("itype", Long.parseLong(subpart));
@@ -641,7 +641,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         				PreferenceGroup pg = dObj.getPrefGroup();
                         relatedInstructionalOfferings.add((pg instanceof Class_ ?((Class_)pg).getSchedulingSubpart():(SchedulingSubpart)pg).getInstrOfferingConfig().getInstructionalOffering());
         				pg.getDistributionObjects().remove(dObj);
-        				hibSession.saveOrUpdate(pg);
+        				hibSession.merge(pg);
         			}
         			s.clear();
         			dp.setDistributionObjects(s);
@@ -743,7 +743,10 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
      	    sessionContext.checkPermission(dp, Right.DistributionPreferenceEdit);
         
 	        // Save
-    	    hibSession.saveOrUpdate(dp);
+     	    if (dp.getUniqueId() == null)
+     	    	hibSession.persist(dp);
+     	    else
+     	    	hibSession.merge(dp);
     	    
     	    Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");
             
@@ -812,11 +815,11 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 				PreferenceGroup pg = dObj.getPrefGroup();
                 relatedInstructionalOfferings.add((pg instanceof Class_ ?((Class_)pg).getSchedulingSubpart():(SchedulingSubpart)pg).getInstrOfferingConfig().getInstructionalOffering());
 				pg.getDistributionObjects().remove(dObj);
-				hibSession.saveOrUpdate(pg);
+				hibSession.merge(pg);
 			}
 	        
 	        hibSession.remove(dp);
-	        hibSession.saveOrUpdate(dept);
+	        hibSession.merge(dept);
 	        
 	        Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");
 	        

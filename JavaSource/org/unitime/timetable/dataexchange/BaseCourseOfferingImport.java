@@ -613,7 +613,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 		
 		if (changed){
-			this.getHibSession().saveOrUpdate(io);
+			if (io.getUniqueId() == null)
+				getHibSession().persist(io);
+			else
+				getHibSession().merge(io);
 		}
 		
 		if ("create-if-not-exists".equals(action)) {
@@ -632,7 +635,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 		
 		if (changed){
-			this.getHibSession().saveOrUpdate(io);
+			if (io.getUniqueId() == null)
+				getHibSession().persist(io);
+			else
+				getHibSession().merge(io);
 			ChangeLog.addChange(getHibSession(), getManager(), session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (action.equalsIgnoreCase("insert")?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getDepartment());
 		}
 		
@@ -722,7 +728,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			dp.setSession(session);
 			dp.setType(Integer.valueOf(3));
 			dp.setVisible(Boolean.valueOf(false));
-			this.getHibSession().save(dp);
+			this.getHibSession().persist(dp);
 			this.getHibSession().flush();
 			this.getHibSession().refresh(dp);
 			ChangeLog.addChange(getHibSession(), getManager(), session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
@@ -1098,7 +1104,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						di.setAcademicTitle(acadTitle);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
 						di.setIgnoreToFar(Boolean.valueOf(false));
-						getHibSession().save(di);
+						getHibSession().persist(di);
 						getHibSession().flush();
 						getHibSession().refresh(di);
 			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
@@ -1124,7 +1130,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				if (changed) {
-					getHibSession().saveOrUpdate(c);
+					if (c.getUniqueId() == null)
+						getHibSession().persist(c);
+					else
+						getHibSession().merge(c);
 					getHibSession().flush();
 					getHibSession().refresh(c);
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, instructor, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
@@ -1229,7 +1238,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        if (changed){
 	        	ss.setCredit(ccuc);
 	        	ccuc.setOwner(ss);
-	        	getHibSession().saveOrUpdate(ss);
+	        	if (ss.getUniqueId() == null)
+					getHibSession().persist(ss);
+				else
+					getHibSession().merge(ss);
 	        	getHibSession().flush();
 	        	getHibSession().refresh(ss);
 	        	ChangeLog.addChange(getHibSession(), getManager(), session, ss.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
@@ -1362,7 +1374,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				addNote("\tadded course: " + co.getSubjectArea().getSubjectAreaAbbreviation() + " " + co.getCourseNbr());
 				if (co.getCredit() != null)
 					addNote("\tadded credit: " + co.getCredit().creditAbbv());
-				getHibSession().saveOrUpdate(io);
+				if (io.getUniqueId() == null)
+					getHibSession().persist(io);
+				else
+					getHibSession().merge(io);
 				getHibSession().flush();
 				getHibSession().refresh(io);
 				ChangeLog.addChange(getHibSession(), getManager(), session, co, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, co.getSubjectArea(), co.getDepartment());
@@ -1460,14 +1475,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						} else if (oco.getCredit() != null && nco.getCredit() == null) {
 							if (!incremental) {
 								CourseCreditUnitConfig old = oco.getCredit();
-								getHibSession().delete(old);
+								getHibSession().remove(old);
 								oco.setCredit(null);
 								addNote("\tremoved credit: " + old);
 								changed = true;
 							}
 						} else  if (oco.getCredit() != null && !isSameCreditConfig(oco.getCredit(),nco.getCredit())) {
 							CourseCreditUnitConfig old = oco.getCredit();
-							getHibSession().delete(old);
+							getHibSession().remove(old);
 							CourseCreditUnitConfig credit = nco.getCredit();
 							oco.setCredit(credit); credit.setOwner(oco);
 							addNote("\tchanged credit: " + oco.getCredit().creditAbbv());
@@ -1516,7 +1531,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\tadded credit: " + nco.getCredit().creditAbbv());
 					io.addTocourseOfferings(nco);
 					changed = true;
-					getHibSession().saveOrUpdate(io);
+					if (io.getUniqueId() == null)
+						getHibSession().persist(io);
+					else
+						getHibSession().merge(io);
 					getHibSession().flush();
 					getHibSession().refresh(io);
 		        	handleCustomCourseChildElements(nco, ico.getElement());
@@ -1615,7 +1633,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				}
 				
 				if (changed){
-					this.getHibSession().saveOrUpdate(ioc);
+					if (ioc.getUniqueId() == null)
+						getHibSession().persist(ioc);
+					else
+						getHibSession().merge(ioc);
 				}
 
 				if (handleCustomInstrOffrConfigChildElements(ioc, configElement)){
@@ -1627,7 +1648,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				if (changed){
-					this.getHibSession().saveOrUpdate(ioc);
+					if (ioc.getUniqueId() == null)
+						getHibSession().persist(ioc);
+					else
+						getHibSession().merge(ioc);
 				}
 				
 				if (elementClass(configElement, ioc, null, null)){
@@ -1638,7 +1662,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (changed){
 					addNote("\tconfig element changed: " + name);
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, ioc, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
-					this.getHibSession().saveOrUpdate(ioc);
+		        	if (ioc.getUniqueId() == null)
+						getHibSession().persist(ioc);
+					else
+						getHibSession().merge(ioc);
 				}
 			}
 		} else if (incremental) {
@@ -1771,7 +1798,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 								org.hibernate.Session hSess = this.getHibSession();
 								clazz.setSchedulingSubpart(ss);
 								ss.addToclasses(clazz);
-								hSess.update(ss);
+								hSess.merge(ss);
 								hSess.flush();
 								hSess.refresh(ss);
 								hSess.refresh(prevSubpart);
@@ -1910,7 +1937,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					if (dp == null) dp = clazz.effectiveDatePattern();
 				}
 				if (changed){
-					this.getHibSession().saveOrUpdate(clazz);
+					if (clazz.getUniqueId() == null)
+						getHibSession().persist(clazz);
+					else
+						getHibSession().merge(clazz);
 				}
 
 				if (elementMeetsWith(classElement, clazz)){
@@ -2004,7 +2034,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}				
 				if (changed){
-					getHibSession().saveOrUpdate(clazz);
+					if (clazz.getUniqueId() == null)
+						getHibSession().persist(clazz);
+					else
+						getHibSession().merge(clazz);
 					getHibSession().flush();
 					getHibSession().refresh(clazz);
 				}
@@ -2070,12 +2103,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if (datePattern == null) return null;
 		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 		if (datePattern.isPatternSet()) {
+			TimePattern ret = null;
 			for (DatePattern child: datePattern.findChildren(getHibSession())) {
 				String timePatternLookupString = days+"x"+dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, days)+"x"+timeObject.getStartPeriod().toString();
 				TimePattern pattern = timePatterns.get(timePatternLookupString);
-				if (pattern != null) return pattern;
+				if (pattern != null) { ret = pattern; break; }
 			}
-			return null;
+			return ret;
 		} else {
 			String timePatternLookupString = days+"x"+dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, days)+"x"+timeObject.getStartPeriod().toString();
 			return(timePatterns.get(timePatternLookupString));
@@ -2185,7 +2219,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				dp.addTodistributionObjects(distObj);
 				c.addTodistributionObjects(distObj);
 			}
-			getHibSession().save(dp);
+			getHibSession().persist(dp);
 			getHibSession().flush();
 			getHibSession().refresh(dp);
 	        ChangeLog.addChange(getHibSession(), getManager(), session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, null, clazz.getSchedulingSubpart().getControllingDept());       
@@ -2215,7 +2249,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				meeting.setApprovalDate(approvedTime);
 				newEvent.addTomeetings(meeting);
 			}
-			getHibSession().save(newEvent);
+			getHibSession().persist(newEvent);
 			assignmentHelper.createAssignment(newEvent, tp, dp);
 			changed = true; 
 			addNote("\tdid not find matching event, added new event: " + c.getSchedulingSubpart().getInstrOfferingConfig().getCourseName() + " " + c.getSchedulingSubpart().getItype().getAbbv().trim() + " " + c.getClassSuffix());
@@ -2275,14 +2309,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                     origEvent.getMeetings().remove(m);
                     m.setEvent(null);
                     ChangeLog.addChange(getHibSession(), getManager(), session, m, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
-                    getHibSession().delete(m);
+                    getHibSession().remove(m);
                     changed = true;
                 }
             }
             if (changed){
                 assignmentHelper.createAssignment(origEvent, tp, dp);
                 ChangeLog.addChange(getHibSession(), getManager(), session, origEvent, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());   
-                getHibSession().update(origEvent);
+                getHibSession().merge(origEvent);
             }
 		}
 				
@@ -2400,7 +2434,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				}
 				
 				if (changed){
-					this.getHibSession().saveOrUpdate(ss);
+					if (ss.getUniqueId() == null)
+						getHibSession().persist(ss);
+					else
+						getHibSession().merge(ss);
 				}
 				
 				if (elementSubpart(subpart, ioc, ss, allExistingSubparts)){
@@ -2422,7 +2459,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				deleteSchedulingSubpart(ss);
 			}
 			if(parentSubpart != null) {
-				this.getHibSession().saveOrUpdate(parentSubpart);
+				if (parentSubpart.getUniqueId() == null)
+					getHibSession().persist(parentSubpart);
+				else
+					getHibSession().merge(parentSubpart);
 				ChangeLog.addChange(getHibSession(), getManager(), session, parentSubpart, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
 			}
 			changed = true;
@@ -2451,11 +2491,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			PreferenceGroup pg = dObj.getPrefGroup();
             relatedInstructionalOfferings.add((pg instanceof Class_ ?((Class_)pg).getSchedulingSubpart():(SchedulingSubpart)pg).getInstrOfferingConfig().getInstructionalOffering());
 			pg.getDistributionObjects().remove(dObj);
-			getHibSession().saveOrUpdate(pg);
+			getHibSession().merge(pg);
 		}
         ChangeLog.addChange(getHibSession(), getManager(), session, dp, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, null, dept);       
-        getHibSession().delete(dp);
-        getHibSession().saveOrUpdate(dept);
+        getHibSession().remove(dp);
+        getHibSession().merge(dept);
         
 //        for (Iterator i=relatedInstructionalOfferings.iterator();i.hasNext();) {
 //            InstructionalOffering io = (InstructionalOffering)i.next();
@@ -2478,10 +2518,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			}
 			co.setInstructionalOffering(null);
 			existingCourseOfferings.remove(co.getUniqueId());
-			this.getHibSession().delete(co);
+			this.getHibSession().remove(co);
 		} else {
 			existingCourseOfferings.remove(co.getUniqueId());
-			this.getHibSession().delete(co);
+			this.getHibSession().remove(co);
 		}
 	}
 	
@@ -2516,7 +2556,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 
 		ChangeLog.addChange(getHibSession(), getManager(), session, io, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getSubjectArea()), (io.getControllingCourseOffering() == null?null:io.getControllingCourseOffering().getDepartment()));
-		this.getHibSession().delete(io);
+		this.getHibSession().remove(io);
 		flush(true);
 	}
 	
@@ -2538,7 +2578,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 		ioc.getInstructionalOffering().getInstrOfferingConfigs().remove(ioc);
 		ChangeLog.addChange(getHibSession(), getManager(), session, ioc, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
-		this.getHibSession().delete(ioc);
+		this.getHibSession().remove(ioc);
 	}
 	
 	private void deleteSchedulingSubpart(SchedulingSubpart ss) {
@@ -2568,9 +2608,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			ss.setParentSubpart(null);
 		}
 		ioc.getSchedulingSubparts().remove(ss);	
-		this.getHibSession().update(ioc);
+		this.getHibSession().merge(ioc);
 		ChangeLog.addChange(getHibSession(), getManager(), session, ss, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ioc.getControllingCourseOffering().getSubjectArea(), ioc.getControllingCourseOffering().getDepartment());
-//		this.getHibSession().delete(ss);
+//		this.getHibSession().remove(ss);
 	}
 
 	private void deleteClassInstructor(ClassInstructor ci){
@@ -2580,7 +2620,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		ci.setClassInstructing(null);
 		ci.setInstructor(null);
 		ChangeLog.addChange(getHibSession(), getManager(), session, ci, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, clazz.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), clazz.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
-		this.getHibSession().delete(ci);
+		this.getHibSession().remove(ci);
 	}
 
 	private void deleteClass(Class_ c){
@@ -2590,7 +2630,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		ss.getClasses().remove(c);
 		ChangeLog.addChange(getHibSession(), getManager(), session, c, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.DELETE, ss.getControllingCourseOffering().getSubjectArea(), ss.getControllingCourseOffering().getDepartment());
 		existingClasses.remove(c.getUniqueId());
-		this.getHibSession().delete(c);
+		this.getHibSession().remove(c);
 	}
 	
 	private CourseOffering findExistingCourseOffering(CourseOffering courseOffering, Long sessionId){
@@ -2962,7 +3002,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					for (ExamOwner owner: owners) {
 						owner.setExam(null);
 						exam.getOwners().remove(owner);
-						getHibSession().delete(owner);
+						getHibSession().remove(owner);
 						addNote("\t exam owner removed (" + owner.getLabel() + ")");
 						changed = true;
 					}
@@ -3041,7 +3081,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				
 				if (changed){
 					addNote("\texam element changed: " + name);
-					getHibSession().saveOrUpdate(exam);
+					if (exam.getUniqueId() == null)
+						getHibSession().persist(exam);
+					else
+						getHibSession().merge(exam);
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, exam, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
 
 					if (periodElement != null) {
@@ -3050,9 +3093,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			            	event.setEventName(exam.getLabel());
 	                        event.setMinCapacity(exam.getSize());
 	                        event.setMaxCapacity(exam.getSize());
-			                getHibSession().saveOrUpdate(event);
+	                        if (event.getUniqueId() == null)
+	    						getHibSession().persist(event);
+	    					else
+	    						getHibSession().merge(event);
 			            } else if (exam.getEvent() != null) {
-			            	getHibSession().delete(exam.getEvent());
+			            	getHibSession().remove(exam.getEvent());
 			            	exam.setEvent(null);
 			            }
 					}
@@ -3070,7 +3116,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if ("midterm".equals(includeExams) && exam.getExamType().getType() != ExamType.sExamTypeMidterm) continue;
 				addNote("\tremoved exam: " + exam.getLabel() + " (" + exam.getExamType().getReference() + ")");
 				exam.deleteDependentObjects(getHibSession(), false);
-				getHibSession().delete(exam);
+				getHibSession().remove(exam);
 				changed = true;
 			}
 		}
@@ -3133,7 +3179,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						String lastName = lastNames.get(id);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
 						di.setIgnoreToFar(Boolean.valueOf(false));
-						getHibSession().save(di);
+						getHibSession().persist(di);
 						getHibSession().flush();
 						getHibSession().refresh(di);
 			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, offering.getControllingCourseOffering().getSubjectArea(), offering.getControllingCourseOffering().getDepartment());

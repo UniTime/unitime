@@ -57,7 +57,7 @@ public class CourseOfferingReservationImport extends BaseImport {
                 CourseOffering course = this.fetchCourseOffering(element.attributeValue("courseNumber"), subject.getUniqueId());
                 String r = element.attributeValue("reservation");
                 course.setReservation(r == null ? null : Integer.valueOf(r));
-                getHibSession().saveOrUpdate(course);
+                getHibSession().merge(course);
                 
                 flushIfNeeded(false);
             }

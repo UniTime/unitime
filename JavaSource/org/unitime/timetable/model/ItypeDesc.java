@@ -64,7 +64,7 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
         return new TreeSet<ItypeDesc>(
                 ItypeDescDAO.getInstance().
                 getSession().
-                createQuery("select i from ItypeDesc i"+(basic?" where i.basic = true":"")).
+                createQuery("select i from ItypeDesc i"+(basic?" where i.basic = true":""), ItypeDesc.class).
                 setCacheable(true).
                 list());
     }

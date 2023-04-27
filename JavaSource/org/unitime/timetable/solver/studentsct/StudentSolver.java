@@ -1172,7 +1172,9 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         		if (config != null)
         			log.setConfig(config.getDescription());
         	}
-        	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);
+        	SectioningSolutionLogDAO.getInstance().getSession().persist(log);
+        	SectioningSolutionLogDAO.getInstance().getSession().flush();
+        	Long publishId = log.getUniqueId();
         	if (SolverServerImplementation.getInstance() != null) {
     			SolverServerImplementation.getInstance().unloadSolver(getType(), "PUBLISHED_" + getSessionId());
     			DataProperties config = new DataProperties(getProperties().toMap());

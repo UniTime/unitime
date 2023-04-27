@@ -174,7 +174,8 @@ public class ServiceProviders implements AdminTable {
 			provider.setSession(provider.getDepartment().getSession());
 			context.checkPermission(provider.getDepartment(), Right.EventServiceProviderEditDepartment);
 		}
-		record.setUniqueId((Long)hibSession.save(provider));
+		hibSession.persist(provider);
+		record.setUniqueId(provider.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				provider,
@@ -199,7 +200,7 @@ public class ServiceProviders implements AdminTable {
 		provider.setEmail(record.getField(3));
 		provider.setAllRooms("true".equalsIgnoreCase(record.getField(5)));
 		provider.setVisible("true".equalsIgnoreCase(record.getField(6)));
-		hibSession.saveOrUpdate(provider);
+		hibSession.merge(provider);
 		ChangeLog.addChange(hibSession,
 				context,
 				provider,

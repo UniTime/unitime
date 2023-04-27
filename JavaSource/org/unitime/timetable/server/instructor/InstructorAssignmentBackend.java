@@ -266,7 +266,7 @@ public class InstructorAssignmentBackend extends InstructorSchedulingBackendHelp
 					ci.setTeachingRequest(request);
 					cr.getTeachingClass().getClassInstructors().add(ci);
 					instructor.getClasses().add(ci);
-					hibSession.saveOrUpdate(ci);
+					hibSession.persist(ci);
 				}
 			}
 		}

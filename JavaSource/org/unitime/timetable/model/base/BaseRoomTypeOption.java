@@ -38,6 +38,8 @@ public abstract class BaseRoomTypeOption extends RoomTypeOptionId {
 	private String iMessage;
 	private Integer iBreakTime;
 
+
+
 	@Column(name = "status", nullable = false, length = 10)
 	public Integer getStatus() { return iStatus; }
 	public void setStatus(Integer status) { iStatus = status; }

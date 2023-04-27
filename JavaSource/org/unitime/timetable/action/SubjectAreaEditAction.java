@@ -281,7 +281,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	                                    if (!rgp.getRoomGroup().isGlobal()) l.remove();
 	                                }
 	                            }
-	                            hibSession.saveOrUpdate(ss);
+	                            hibSession.merge(ss);
 	                        }
 	                        for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
 	                            Class_ c = (Class_)l.next();
@@ -313,17 +313,17 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	                                            ci.getInstructor().getExternalUniqueId(), dept.getUniqueId());
 	                                }
 	                                ci.getInstructor().getClasses().remove(ci);
-	                                hibSession.saveOrUpdate(ci.getInstructor());
+	                                hibSession.merge(ci.getInstructor());
                                     if (newInstructor!=null) {
                                         ci.setInstructor(newInstructor);
                                         newInstructor.getClasses().add(ci);
-                                        hibSession.saveOrUpdate(newInstructor);
+                                        hibSession.merge(newInstructor);
                                     } else {
                                         m.remove();
                                         hibSession.remove(ci);
                                     }
 	                            }
-	                            hibSession.saveOrUpdate(c);
+	                            hibSession.merge(c);
                                 updatedClasses.add(c);
 	                        }
 	                    }
@@ -349,7 +349,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	                    }
 	                    if (change) {
                             dp.setOwner(dept);
-                            hibSession.saveOrUpdate(dp);
+                            hibSession.merge(dp);
 	                    }
 	                }
 	            }
@@ -361,7 +361,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	        sa.setExternalUniqueId(form.getExternalId());
 	        sa.setTitle(form.getTitle());
 	        
-	        hibSession.saveOrUpdate(sa);
+	        hibSession.merge(sa);
 			
             ChangeLog.addChange(
                     hibSession, 

@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Campus;
@@ -69,7 +70,7 @@ public abstract class BaseStudentAreaClassificationMajor implements Serializable
 
 
 	@Id
-	@GenericGenerator(name = "student_area_clasf_major_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "student_area_clasf_major_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "student_area_clasf_major_id")

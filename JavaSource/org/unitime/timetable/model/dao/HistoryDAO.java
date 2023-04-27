@@ -42,6 +42,6 @@ public class HistoryDAO extends _RootDAO<History,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<History> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from History x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from History x where x.session.uniqueId = :sessionId", History.class).setParameter("sessionId", sessionId).list();
 	}
 }

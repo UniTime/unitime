@@ -42,11 +42,11 @@ public class RoomGroupDAO extends _RootDAO<RoomGroup,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<RoomGroup> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from RoomGroup x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+		return hibSession.createQuery("from RoomGroup x where x.department.uniqueId = :departmentId", RoomGroup.class).setParameter("departmentId", departmentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<RoomGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from RoomGroup x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from RoomGroup x where x.session.uniqueId = :sessionId", RoomGroup.class).setParameter("sessionId", sessionId).list();
 	}
 }

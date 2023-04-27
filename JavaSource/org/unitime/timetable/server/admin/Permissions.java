@@ -120,7 +120,7 @@ public class Permissions implements AdminTable {
 			}
 		}
 		for (Roles role: changed) {
-			hibSession.saveOrUpdate(role);
+			hibSession.merge(role);
 			ChangeLog.addChange(hibSession,
 					context,
 					role,
@@ -156,7 +156,7 @@ public class Permissions implements AdminTable {
 			}
 		}
 		for (Roles role: changed) {
-			hibSession.saveOrUpdate(role);
+			hibSession.merge(role);
 			ChangeLog.addChange(hibSession,
 					context,
 					role,

@@ -41,6 +41,7 @@ import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.Solution;
@@ -84,7 +85,7 @@ public abstract class BaseSolution implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solution_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "solution_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "solution_seq")
 	})
 	@GeneratedValue(generator = "solution_id")

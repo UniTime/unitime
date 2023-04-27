@@ -42,21 +42,21 @@ public class TeachingRequestDAO extends _RootDAO<TeachingRequest,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingRequest> findByOffering(org.hibernate.Session hibSession, Long offeringId) {
-		return hibSession.createQuery("from TeachingRequest x where x.offering.uniqueId = :offeringId").setParameter("offeringId", offeringId).list();
+		return hibSession.createQuery("from TeachingRequest x where x.offering.uniqueId = :offeringId", TeachingRequest.class).setParameter("offeringId", offeringId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingRequest> findBySameCoursePreference(org.hibernate.Session hibSession, Long sameCoursePreferenceId) {
-		return hibSession.createQuery("from TeachingRequest x where x.sameCoursePreference.uniqueId = :sameCoursePreferenceId").setParameter("sameCoursePreferenceId", sameCoursePreferenceId).list();
+		return hibSession.createQuery("from TeachingRequest x where x.sameCoursePreference.uniqueId = :sameCoursePreferenceId", TeachingRequest.class).setParameter("sameCoursePreferenceId", sameCoursePreferenceId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingRequest> findBySameCommonPart(org.hibernate.Session hibSession, Long sameCommonPartId) {
-		return hibSession.createQuery("from TeachingRequest x where x.sameCommonPart.uniqueId = :sameCommonPartId").setParameter("sameCommonPartId", sameCommonPartId).list();
+		return hibSession.createQuery("from TeachingRequest x where x.sameCommonPart.uniqueId = :sameCommonPartId", TeachingRequest.class).setParameter("sameCommonPartId", sameCommonPartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingRequest> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from TeachingRequest x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from TeachingRequest x where x.responsibility.uniqueId = :responsibilityId", TeachingRequest.class).setParameter("responsibilityId", responsibilityId).list();
 	}
 }

@@ -42,21 +42,21 @@ public class StudentAreaClassificationMinorDAO extends _RootDAO<StudentAreaClass
 
 	@SuppressWarnings("unchecked")
 	public List<StudentAreaClassificationMinor> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.student.uniqueId = :studentId", StudentAreaClassificationMinor.class).setParameter("studentId", studentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentAreaClassificationMinor> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
-		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
+		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.academicArea.uniqueId = :academicAreaId", StudentAreaClassificationMinor.class).setParameter("academicAreaId", academicAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentAreaClassificationMinor> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
-		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
+		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.academicClassification.uniqueId = :academicClassificationId", StudentAreaClassificationMinor.class).setParameter("academicClassificationId", academicClassificationId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentAreaClassificationMinor> findByMinor(org.hibernate.Session hibSession, Long minorId) {
-		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.minor.uniqueId = :minorId").setParameter("minorId", minorId).list();
+		return hibSession.createQuery("from StudentAreaClassificationMinor x where x.minor.uniqueId = :minorId", StudentAreaClassificationMinor.class).setParameter("minorId", minorId).list();
 	}
 }

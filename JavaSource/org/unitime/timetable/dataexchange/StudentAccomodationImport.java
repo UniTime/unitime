@@ -83,12 +83,15 @@ public class StudentAccomodationImport extends BaseImport {
                 accomodation.setAbbreviation(abbv);
                 accomodation.setName(name);
                 
-                getHibSession().saveOrUpdate(accomodation);
+                if (accomodation.getUniqueId() == null)
+		        	getHibSession().persist(accomodation);
+		        else
+		        	getHibSession().merge(accomodation);
             }
             
             for (StudentAccomodation accomodation: id2accomodation.values()) {
             	info("Accomodation " + accomodation.getAbbreviation() + " (" + accomodation.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(accomodation);
+            	getHibSession().remove(accomodation);
             }
             
             commitTransaction();

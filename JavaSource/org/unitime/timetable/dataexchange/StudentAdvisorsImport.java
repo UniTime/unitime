@@ -136,7 +136,10 @@ public class StudentAdvisorsImport extends BaseImport {
             			advisor.getStudents().removeAll(students.values());
             		}
                 }
-                getHibSession().saveOrUpdate(advisor);
+                if (advisor.getUniqueId() == null)
+		        	getHibSession().persist(advisor);
+		        else
+		        	getHibSession().merge(advisor);
             }
             
             if (!incremental)
@@ -147,7 +150,7 @@ public class StudentAdvisorsImport extends BaseImport {
             				studentIds.add(student.getUniqueId());
             				student.getAdvisors().remove(advisor);
             			}
-                	getHibSession().delete(advisor);
+                	getHibSession().remove(advisor);
                 }
             
             if (!studentIds.isEmpty()) {

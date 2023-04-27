@@ -94,7 +94,8 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 			hq.setCreated(ts);
 			hq.setNbrUsed(0l);
 			hq.setLastUsed(ts);
-			HashedQueryDAO.getInstance().save(hq);
+			HashedQueryDAO.getInstance().getSession().persist(hq);
+			HashedQueryDAO.getInstance().getSession().flush();
 			return hash;
 		} catch (Exception e) {
 			throw new GwtRpcException("Hashing failed: " + e.getMessage(), e);
@@ -114,7 +115,8 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 					throw new GwtRpcException("The query hash " + text + " no longer exists. Please create a new URL.");
 				hq.setNbrUsed(1 + hq.getNbrUsed());
 				hq.setLastUsed(new Date());
-				HashedQueryDAO.getInstance().update(hq);
+				HashedQueryDAO.getInstance().getSession().merge(hq);
+				HashedQueryDAO.getInstance().getSession().flush();
 				return hq.getQueryText();
 			} else {
 				Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");

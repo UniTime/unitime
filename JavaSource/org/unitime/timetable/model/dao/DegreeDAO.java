@@ -42,6 +42,6 @@ public class DegreeDAO extends _RootDAO<Degree,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Degree> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Degree x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Degree x where x.session.uniqueId = :sessionId", Degree.class).setParameter("sessionId", sessionId).list();
 	}
 }

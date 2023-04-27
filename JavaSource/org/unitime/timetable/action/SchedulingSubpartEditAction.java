@@ -161,7 +161,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
             Set s = ss.getPreferences();
             super.doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
             ss.setPreferences(s);
-            sdao.update(ss);
+            sdao.getSession().merge(ss);
 
             ChangeLog.addChange(
                     null,
@@ -172,6 +172,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
                     ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                     ss.getManagingDept());
 
+            sdao.getSession().flush();
             return "displaySubpartDetail";
         }
 
@@ -460,16 +461,18 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
         }
 
         if (ss.getCredit() != null){
-        	sdao.getSession().saveOrUpdate(ss.getCredit());
+        	if (ss.getCredit().getUniqueId() == null)
+        		sdao.getSession().persist(ss.getCredit());
+        	else
+        		sdao.getSession().merge(ss.getCredit());
         }
-        sdao.update(ss);
+        sdao.getSession().merge(ss);
  
         String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();
     	if (className != null && className.trim().length() > 0){
         	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
        		editAction.performExternalSchedulingSubpartEditAction(ss, sdao.getSession());
     	}
-
 
         ChangeLog.addChange(
                 null,
@@ -479,6 +482,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
                 ChangeLog.Operation.UPDATE,
                 ss.getInstrOfferingConfig().getControllingCourseOffering().getSubjectArea(),
                 ss.getManagingDept());
+        sdao.getSession().flush();
     }
     
     protected void setupChildren(SchedulingSubpart ss) {

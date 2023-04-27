@@ -353,7 +353,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	    }
        	    mgr.addTomanagerRoles(mgrRole);
        	}        
-		hibSession.saveOrUpdate(mgr);
+		hibSession.persist(mgr);
 
        	// Add departments
 		mgr.setDepartments(new HashSet<Department>());
@@ -361,7 +361,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	    Department dept = dDao.get(i.next());
        	    mgr.getDepartments().add(dept);
        	    dept.getTimetableManagers().add(mgr);
-    		hibSession.saveOrUpdate(dept);
+    		hibSession.merge(dept);
        	}
        	
        	mgr.setSolverGroups(new HashSet<SolverGroup>());
@@ -369,7 +369,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	    SolverGroup sg = sgDao.get(i.next());
        	    mgr.getSolverGroups().add(sg);
        	    sg.getTimetableManagers().add(mgr);
-    		hibSession.saveOrUpdate(sg);
+    		hibSession.merge(sg);
        	}
 
         ChangeLog.addChange(
@@ -499,7 +499,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
            	if (!found){
            	    mgrDepts.add(dept);
            	    dept.getTimetableManagers().add(mgr);
-           	    hibSession.saveOrUpdate(dept);
+           	    hibSession.merge(dept);
            	}
        	}
 
@@ -519,7 +519,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
            	if (!found) {
            	    j.remove();
            	    eDept.getTimetableManagers().remove(mgr);
-           	    hibSession.saveOrUpdate(eDept);
+           	    hibSession.merge(eDept);
            	}
        	}
        	
@@ -546,7 +546,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
            	if (!found){
            		mgrSolverGrs.add(sg);
            	    sg.getTimetableManagers().add(mgr);
-           	    hibSession.saveOrUpdate(sg);
+           	    hibSession.merge(sg);
            	}
        	}
 
@@ -566,11 +566,11 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
            	if (!found) {
            	    j.remove();
            	    eSg.getTimetableManagers().remove(mgr);
-           	    hibSession.saveOrUpdate(eSg);
+           	    hibSession.merge(eSg);
            	}
        	}
 
-       	hibSession.saveOrUpdate(mgr);       	
+       	hibSession.merge(mgr);       	
 
         ChangeLog.addChange(
                 hibSession, 
@@ -612,11 +612,11 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	}
        	for (Department d: mgr.getDepartments()) {
        		d.getTimetableManagers().remove(mgr);
-       		hibSession.saveOrUpdate(d);
+       		hibSession.merge(d);
        	}
        	for (SolverGroup sg: mgr.getSolverGroups()) {
        		sg.getTimetableManagers().remove(mgr);
-       		hibSession.saveOrUpdate(sg);
+       		hibSession.merge(sg);
        	}
 
         hibSession.remove(mgr);

@@ -87,15 +87,19 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	
 	public DepartmentalInstructor getInstructor(InstructionalOffering io) {
 		Map<Department, DepartmentalInstructor> ret = new HashMap<Department, DepartmentalInstructor>();
+		DepartmentalInstructor match = null;
 		for (DepartmentalInstructor di: InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor where externalUniqueId = :extId and department.session.uniqueId = :sessionId", DepartmentalInstructor.class)
 				.setParameter("extId", getExternalUniqueId())
 				.setParameter("sessionId", io.getSessionId())
 				.setCacheable(true).list()) {
-			if (di.getDepartment().equals(io.getDepartment()))
-				return di;
+			if (di.getDepartment().equals(io.getDepartment())) {
+				match = di;
+				break;
+			}
 			ret.put(di.getDepartment(), di);
 		}
+		if (match != null) return match;
 		if (ret.isEmpty()) return null;
 		if (ret.size() == 1)
 			return ret.entrySet().iterator().next().getValue();

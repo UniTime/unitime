@@ -91,7 +91,10 @@ public class HQLStoreBackend implements GwtRpcImplementation<HQLStoreRpcRequest,
 			}
 		}
 		
-		hibSession.saveOrUpdate(hql);
+		if (hql.getUniqueId() == null)
+			hibSession.persist(hql);
+		else
+			hibSession.merge(hql);
 		hibSession.flush();
 		hibSession.refresh(hql);
 		return new GwtRpcResponseLong(hql.getUniqueId());

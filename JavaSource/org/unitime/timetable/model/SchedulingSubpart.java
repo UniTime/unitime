@@ -702,10 +702,10 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	
     	if (save) {
     		if (hibSession == null) {
-        		(SchedulingSubpartDAO.getInstance()).getSession().saveOrUpdate(this);
+        		(SchedulingSubpartDAO.getInstance()).getSession().merge(this);
         		(SchedulingSubpartDAO.getInstance()).getSession().flush();
     		} else {
-    			hibSession.saveOrUpdate(this);
+    			hibSession.merge(this);
     		}
     	}
     	
@@ -729,7 +729,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 				PreferenceGroup owner = distributionPref.getOwner();
 				owner.getPreferences().remove(distributionPref);
 				getPreferences().remove(distributionPref);
-				hibSession.saveOrUpdate(owner);
+				hibSession.merge(owner);
 				hibSession.remove(distributionPref);
 			} else {
 				if (seqNo!=null) {
@@ -737,15 +737,15 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 						DistributionObject dObj = (DistributionObject)j.next();
 						if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
 							dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
-							hibSession.saveOrUpdate(dObj);
+							hibSession.merge(dObj);
 						}
 					}
 				}
-				hibSession.saveOrUpdate(distributionPref);
+				hibSession.merge(distributionPref);
 			}
 			i.remove();
     	}
-    	if (deleted) hibSession.saveOrUpdate(this);
+    	if (deleted) hibSession.merge(this);
     }
     
 	@Transient

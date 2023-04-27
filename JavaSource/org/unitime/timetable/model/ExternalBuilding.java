@@ -26,9 +26,10 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.model.base.BaseExternalBuilding;
 import org.unitime.timetable.model.dao.ExternalBuildingDAO;
@@ -63,20 +64,16 @@ public class ExternalBuilding extends BaseExternalBuilding {
 	 * @param sessionId
 	 * @return Hashtable
 	 */
-	public static Hashtable getBuildings(Long sessionId) {
+	public static Map<String, ExternalBuilding> getBuildings(Long sessionId) {
 		
-		List bldgs = (ExternalBuildingDAO.getInstance()).getSession().createQuery(
+		List<ExternalBuilding> bldgs = (ExternalBuildingDAO.getInstance()).getSession().createQuery(
 				"from ExternalBuilding as b " + 
-				"where b.session.uniqueId = " + sessionId.longValue()).
+				"where b.session.uniqueId = " + sessionId.longValue(), ExternalBuilding.class).
 				list();
 		
-		Hashtable buildings = new Hashtable((int)(bldgs.size() * 1.25));
-		Iterator l = bldgs.iterator();
-		
-		while(l.hasNext()) {
-			ExternalBuilding bldg = (ExternalBuilding)l.next();
+		Map<String, ExternalBuilding> buildings = new HashMap<String, ExternalBuilding>((int)(bldgs.size() * 1.25));
+		for (ExternalBuilding bldg: bldgs)
 			buildings.put(bldg.getExternalUniqueId(), bldg);
-		}
 		
 		return buildings;
 	}

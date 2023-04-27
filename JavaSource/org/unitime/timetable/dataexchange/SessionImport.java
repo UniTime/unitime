@@ -82,7 +82,7 @@ public class SessionImport extends BaseImport {
                 session.setLastWeekToEnroll(Integer.valueOf(element.attributeValue("lastWeekToEnroll", "1")));
                 session.setLastWeekToChange(Integer.valueOf(element.attributeValue("lastWeekToChange", "1")));
                 session.setLastWeekToDrop(Integer.valueOf(element.attributeValue("lastWeekToDrop", "4")));
-                getHibSession().saveOrUpdate(session);
+                getHibSession().persist(session);
                 
                 flushIfNeeded(false);
             }

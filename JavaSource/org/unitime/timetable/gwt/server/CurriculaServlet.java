@@ -843,7 +843,10 @@ public class CurriculaServlet implements CurriculaService {
 					if (!remove.isEmpty())
 						c.getMajors().removeAll(remove);
 				}
-				hibSession.saveOrUpdate(c);
+				if (c.getUniqueId() == null)
+					hibSession.persist(c);
+				else
+					hibSession.merge(c);
 
 				Hashtable<Long, CurriculumClassification> classifications = new Hashtable<Long, CurriculumClassification>();
 				Hashtable<String, CurriculumCourseGroup> groups = new Hashtable<String, CurriculumCourseGroup>();
@@ -861,7 +864,7 @@ public class CurriculaServlet implements CurriculaService {
 						cl.setOrd(ord++);
 						c.getClassifications().add(cl);
 						classifications.put(cl.getAcademicClassification().getUniqueId(), cl);
-						hibSession.saveOrUpdate(cl);
+						hibSession.persist(cl);
 					}
 				} else {
 					HashSet<CurriculumClassification> remove = new HashSet<CurriculumClassification>(c.getClassifications());
@@ -882,7 +885,7 @@ public class CurriculaServlet implements CurriculaService {
 									}
 									remaining.add(cc);
 								}
-								hibSession.saveOrUpdate(cl);
+								hibSession.merge(cl);
 								continue clasf;
 							}
 						}
@@ -894,7 +897,7 @@ public class CurriculaServlet implements CurriculaService {
 						cl.setCurriculum(c);
 						c.getClassifications().add(cl);
 						classifications.put(cl.getAcademicClassification().getUniqueId(), cl);
-						hibSession.saveOrUpdate(cl);
+						hibSession.persist(cl);
 					}
 					if (!remove.isEmpty()) {
 						for (CurriculumClassification cl: remove) {
@@ -955,12 +958,12 @@ public class CurriculaServlet implements CurriculaService {
 										g.setType(gr.getType());
 										g.setCurriculum(c);
 										groups.put(g.getName(), g);
-										hibSession.saveOrUpdate(g);
+										hibSession.persist(g);
 									} else {
 										g.setName(gr.getName());
 										g.setColor(gr.getColor());
 										g.setType(gr.getType());
-										hibSession.saveOrUpdate(g);
+										hibSession.merge(g);
 										remainingGroups.remove(g);
 									}
 									if (!delete.remove(g)) {
@@ -973,7 +976,10 @@ public class CurriculaServlet implements CurriculaService {
 							} else if (cx.getGroups() != null && !cx.getGroups().isEmpty()) {
 								cx.getGroups().clear();
 							}
-							hibSession.saveOrUpdate(cx);
+							if (cx.getUniqueId() == null)
+								hibSession.persist(cx);
+							else
+								hibSession.merge(cx);
 						}
 					}
 				
@@ -992,9 +998,8 @@ public class CurriculaServlet implements CurriculaService {
 					}
 				}
 				
-				Long ret = c.getUniqueId();
-				if (ret == null) {
-					ret = (Long)hibSession.save(c);
+				if (c.getUniqueId() == null) {
+					hibSession.persist(c);
 				} else {
 					hibSession.merge(c);
 				}
@@ -1012,7 +1017,7 @@ public class CurriculaServlet implements CurriculaService {
 				tx.commit(); tx = null;
 
 				sLog.debug("Saved 1 curriculum (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
-				return ret;
+				return c.getUniqueId();
 			} finally {
 				try {
 					if (tx != null && tx.isActive()) {
@@ -1056,7 +1061,7 @@ public class CurriculaServlet implements CurriculaService {
 							if (cl.getAcademicClassification().getUniqueId().equals(clasf.getAcademicClassification().getId())) {
 								cl.setNrStudents(clasf.getExpected());
 								remove.remove(cl);
-								hibSession.saveOrUpdate(cl);
+								hibSession.merge(cl);
 								continue clasf;
 							}
 						}
@@ -1068,7 +1073,7 @@ public class CurriculaServlet implements CurriculaService {
 						cl.setOrd(ord++);
 						cl.setCurriculum(c);
 						c.getClassifications().add(cl);
-						hibSession.saveOrUpdate(cl);
+						hibSession.persist(cl);
 					}
 					
 					for (CurriculumClassification cl: remove) {
@@ -1086,7 +1091,7 @@ public class CurriculaServlet implements CurriculaService {
 							null,
 							c.getDepartment());
 
-					hibSession.saveOrUpdate(c);
+					hibSession.merge(c);
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1386,10 +1391,10 @@ public class CurriculaServlet implements CurriculaService {
 					
 					mergedCurriculum.setMultipleMajors(multipleMajors);
 					
-					hibSession.saveOrUpdate(mergedCurriculum);
+					hibSession.persist(mergedCurriculum);
 					
 					for (CurriculumCourseGroup g: groups.values())
-						hibSession.saveOrUpdate(g);
+						hibSession.persist(g);
 				}
 				
 				for (Curriculum curriculum: merged) {
@@ -2755,7 +2760,7 @@ public class CurriculaServlet implements CurriculaService {
 							r.setMajor(major);
 							r.setAcademicClassification(clasf);
 							r.setProjection(c.getValue()[0].floatValue());
-							hibSession.saveOrUpdate(r);	
+							hibSession.persist(r);	
 							
 							ChangeLog.addChange(hibSession,
 									getSessionContext(),
@@ -2931,7 +2936,10 @@ public class CurriculaServlet implements CurriculaService {
 						clasf.setNrStudents(Math.round(proj));
 						totalProjection += Math.round(proj);
 						
-						hibSession.saveOrUpdate(clasf);
+						if (clasf.getUniqueId() == null)
+							hibSession.persist(clasf);
+						else
+							hibSession.merge(clasf);
 					}
 					
 					if (updateCurriculumCourses) {
@@ -2971,7 +2979,7 @@ public class CurriculaServlet implements CurriculaService {
 							if (majorCourse2ll == null || clasf.getNrStudents() == 0) {
 								for (CurriculumCourse course: clasf.getCourses()) {
 									course.setPercShare(0.0f);
-									hibSession.saveOrUpdate(course);
+									hibSession.merge(course);
 								}
 								continue;
 							}
@@ -3001,7 +3009,7 @@ public class CurriculaServlet implements CurriculaService {
 								course.setPercShare(proj / clasf.getNrStudents());
 								remainingCourses.remove(course.getCourse().getUniqueId());
 								
-								hibSession.saveOrUpdate(course);
+								hibSession.merge(course);
 							}
 							
 							for (Long courseId: remainingCourses) {
@@ -3038,7 +3046,7 @@ public class CurriculaServlet implements CurriculaService {
 								course.setCourse(CourseOfferingDAO.getInstance().get(courseId, hibSession));
 								course.setPercShare(share);
 								
-								hibSession.saveOrUpdate(course);
+								hibSession.persist(course);
 							}
 						}
 					}
@@ -3273,7 +3281,7 @@ public class CurriculaServlet implements CurriculaService {
 								courseOffering.getSubjectArea().getDepartment());
 					}
 					
-					hibSession.saveOrUpdate(courseOffering);
+					hibSession.merge(courseOffering);
 				}
 				
 				hibSession.flush();
@@ -3462,7 +3470,7 @@ public class CurriculaServlet implements CurriculaService {
 								courseOffering.getSubjectArea().getDepartment());
 					}
 					
-					hibSession.saveOrUpdate(courseOffering);
+					hibSession.merge(courseOffering);
 				}
 				
 				hibSession.flush();

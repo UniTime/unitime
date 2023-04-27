@@ -323,10 +323,13 @@ public class DepartmentEditForm implements UniTimeForm {
             }
             for (ExternalDepartmentStatusType t: statuses) {
             	department.getExternalStatusTypes().remove(t);
-            	session.delete(t);
+            	session.remove(t);
             }
             
-            session.saveOrUpdate(department);
+            if (department.getUniqueId() == null)
+            	session.persist(department);
+			else
+				session.merge(department);
             ChangeLog.addChange(
                     session, 
                     context, 

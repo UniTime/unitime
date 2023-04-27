@@ -188,30 +188,30 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							StudentClassEnrollment enrl = i.next();
 							if (enrollmentsToKeep != null && enrollmentsToKeep.containsKey(enrl.getCourseOffering().getUniqueId()) && enrollmentsToKeep.get(enrl.getCourseOffering().getUniqueId()).contains(enrl.getClazz().getUniqueId())) continue;
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
-							helper.getHibSession().delete(enrl);
+							helper.getHibSession().remove(enrl);
 							i.remove();
 						}
 
 						for (Iterator<CourseDemand> i = student.getCourseDemands().iterator(); i.hasNext(); ) {
 							CourseDemand cd = i.next();
 							if (cd.getFreeTime() != null)
-								helper.getHibSession().delete(cd.getFreeTime());
+								helper.getHibSession().remove(cd.getFreeTime());
 							for (Iterator<CourseRequest> j = cd.getCourseRequests().iterator(); j.hasNext(); ) {
 								CourseRequest cr = j.next();
 								for (Iterator<ClassWaitList> k = cr.getClassWaitLists().iterator(); k.hasNext(); ) {
-									helper.getHibSession().delete(k.next());
+									helper.getHibSession().remove(k.next());
 									k.remove();
 								}
 								if (enrollmentsToKeep != null && enrollmentsToKeep.containsKey(cr.getCourseOffering().getUniqueId())) {
 									cr.setOrder(0);
-									helper.getHibSession().update(cr);
+									helper.getHibSession().merge(cr);
 								} else {
-									helper.getHibSession().delete(cr);
+									helper.getHibSession().remove(cr);
 									j.remove();
 								}
 							}
 							if (cd.getCourseRequests().isEmpty()) {
-								helper.getHibSession().delete(cd);
+								helper.getHibSession().remove(cd);
 								i.remove();
 							} else {
 								cd.setAlternative(false);
@@ -223,14 +223,14 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							int priority = 0;
 							for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
 								cd.setPriority(priority ++);
-								helper.getHibSession().update(cd);
+								helper.getHibSession().merge(cd);
 							}
 						}
 						
 						if (changeStatus())
 							student.setSectioningStatus(status);
 						
-						helper.getHibSession().saveOrUpdate(student);
+						helper.getHibSession().merge(student);
 						helper.getHibSession().flush();
 						
 						XStudent newStudent = null;

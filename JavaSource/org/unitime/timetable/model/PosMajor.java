@@ -68,10 +68,10 @@ public class PosMajor extends BasePosMajor {
 	 * @param sessionId academic session
 	 * @return Vector of PosMajor objects
 	 */
-    public static List getPosMajorList(Long sessionId) {
+    public static List<PosMajor> getPosMajorList(Long sessionId) {
 	    Session hibSession = PosMajorDAO.getInstance().getSession();
 	    String query = "from PosMajor where academicArea.sessionId=:acadSessionId order by name";
-	    Query q = hibSession.createQuery(query);
+	    Query<PosMajor> q = hibSession.createQuery(query, PosMajor.class);
 	    q.setParameter("acadSessionId", sessionId.longValue());
 		return q.list();
     }

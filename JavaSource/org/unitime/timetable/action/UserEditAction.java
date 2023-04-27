@@ -150,7 +150,7 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
             	
             	form.delete(hibSession);
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;

@@ -93,7 +93,8 @@ public class Campuses implements AdminTable {
 		campus.setReference(record.getField(1));
 		campus.setLabel(record.getField(2));
 		campus.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(campus));
+		hibSession.persist(campus);
+		record.setUniqueId(campus.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				campus,
@@ -112,7 +113,7 @@ public class Campuses implements AdminTable {
 			campus.setExternalUniqueId(record.getField(0));
 			campus.setReference(record.getField(1));
 			campus.setLabel(record.getField(2));
-			hibSession.saveOrUpdate(campus);
+			hibSession.merge(campus);
 			ChangeLog.addChange(hibSession,
 					context,
 					campus,

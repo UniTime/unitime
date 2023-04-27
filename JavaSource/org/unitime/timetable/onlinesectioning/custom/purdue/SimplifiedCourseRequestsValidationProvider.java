@@ -377,7 +377,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (student.getUniqueId() != null && original != null && original.maxHours != null && original.maxHours > 0 && original.maxHours != student.getMaxCredit()) {
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 					dbStudent.setMaxCredit(original.maxHours);
-					helper.getHibSession().update(dbStudent);
+					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
 					if (!(server instanceof DatabaseServer)) {
 						XStudent xs = server.getStudent(student.getUniqueId());
@@ -458,7 +458,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
 					if (pin != null) dbStudent.setPin(pin);
-					helper.getHibSession().update(dbStudent);
+					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
 					if (!(server instanceof DatabaseServer)) {
 						XStudent xs = server.getStudent(student.getUniqueId());

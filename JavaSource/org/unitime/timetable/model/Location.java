@@ -44,7 +44,6 @@ import java.util.Vector;
 
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.query.Query;
 import org.unitime.localization.impl.Localization;
@@ -320,14 +319,6 @@ public abstract class Location extends BaseLocation implements Comparable {
 	
 	/**
 	 * 
-	 * @throws HibernateException
-	 */
-	public void saveOrUpdate() throws HibernateException {
-		(LocationDAO.getInstance()).saveOrUpdate(this);
-	}
-	
-	/**
-	 * 
 	 * @return
 	 */
 	@Transient
@@ -398,7 +389,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 			if (department.equals(drf.getDepartment())) {
 				drf.getRooms().remove(this);
 				iter.remove();
-				hibSession.saveOrUpdate(drf);
+				hibSession.merge(drf);
 			}
 		}
 		for (Iterator iter = getRoomGroups().iterator(); iter.hasNext();) {
@@ -407,7 +398,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 			if (department.equals(rg.getDepartment())) {
 				rg.getRooms().remove(this);
 				iter.remove();
-				hibSession.saveOrUpdate(rg);
+				hibSession.merge(rg);
 			}
 		}
 		for (Iterator iter = department.getPreferences().iterator(); iter.hasNext();) {
@@ -417,7 +408,7 @@ public abstract class Location extends BaseLocation implements Comparable {
            		iter.remove();
             }
 		}
-		hibSession.saveOrUpdate(department);
+		hibSession.merge(department);
 		List<RoomPref> roomPrefs = hibSession.
 			createQuery("select distinct rp from RoomPref rp where rp.room.uniqueId=:locationId", RoomPref.class).
 			setParameter("locationId", getUniqueId()).
@@ -428,7 +419,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				if (department.equals(c.getManagingDept())) {
 					c.getPreferences().remove(rp);
 					hibSession.remove(rp);
-					hibSession.saveOrUpdate(c);
+					hibSession.merge(c);
 				}
 			}
 			if (rp.getOwner() instanceof SchedulingSubpart) {
@@ -436,7 +427,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				if (department.equals(s.getManagingDept())) {
 					s.getPreferences().remove(rp);
 					hibSession.remove(rp);
-					hibSession.saveOrUpdate(s);
+					hibSession.merge(s);
 				}
 			}
 			if (rp.getOwner() instanceof DepartmentalInstructor) {
@@ -444,7 +435,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				if (department.equals(d.getDepartment())) {
 					d.getPreferences().remove(rp);
 					hibSession.remove(rp);
-					hibSession.saveOrUpdate(d);
+					hibSession.merge(d);
 				}
 			}
 		}
@@ -461,7 +452,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 					if (!c.getAvailableBuildings().contains(bldg) && department.equals(c.getManagingDept())) {
 						c.getPreferences().remove(bp);
 						hibSession.remove(bp);
-						hibSession.saveOrUpdate(c);
+						hibSession.merge(c);
 					}
 				}
 				if (bp.getOwner() instanceof SchedulingSubpart) {
@@ -469,7 +460,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 					if (!s.getAvailableBuildings().contains(bldg) && department.equals(s.getManagingDept())) {
 						s.getPreferences().remove(bp);
 						hibSession.remove(bp);
-						hibSession.saveOrUpdate(s);
+						hibSession.merge(s);
 					}
 				}
 				if (bp.getOwner() instanceof DepartmentalInstructor) {
@@ -477,7 +468,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 					if (!d.getAvailableBuildings().contains(bldg) && department.equals(d.getDepartment())) {
 						d.getPreferences().remove(bp);
 						hibSession.remove(bp);
-						hibSession.saveOrUpdate(d);
+						hibSession.merge(d);
 					}
 				}
 			}
@@ -553,7 +544,7 @@ public abstract class Location extends BaseLocation implements Comparable {
                     i.remove();
                 } else {
                     pref.setPrefLevel(preference);
-                    ExamLocationPrefDAO.getInstance().getSession().update(pref);
+                    ExamLocationPrefDAO.getInstance().getSession().merge(pref);
                 }
                 return; 
             }
@@ -564,7 +555,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         pref.setPrefLevel(preference);
         pref.setLocation(this);
         getExamPreferences().add(pref);
-        ExamLocationPrefDAO.getInstance().getSession().save(pref);
+        ExamLocationPrefDAO.getInstance().getSession().persist(pref);
     }
     
     public void addExamPreference(ExamPeriod period, PreferenceLevel preference) {
@@ -574,7 +565,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         pref.setPrefLevel(preference);
         pref.setLocation(this);
         getExamPreferences().add(pref);
-        ExamLocationPrefDAO.getInstance().getSession().save(pref);
+        ExamLocationPrefDAO.getInstance().getSession().persist(pref);
     }
 
     public String getExamPreferencesHtml(ExamType examType) {

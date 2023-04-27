@@ -42,7 +42,7 @@ public class ExamResetRoomPrefs {
             Exam exam = (Exam)i.next();
             sLog.info("Updating "+exam.getLabel());
             exam.generateDefaultPreferences(override);
-            hibSession.saveOrUpdate(exam);
+            hibSession.merge(exam);
             hibSession.flush();
         }
     }

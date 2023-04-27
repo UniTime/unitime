@@ -156,7 +156,7 @@ public class MakeAssignmentsForClassEvents {
             week++;
         }
         dp.setPattern(pattern);
-        iHibSession.save(dp);
+        iHibSession.persist(dp);
         iDatePatterns.put(patternName, dp);
         return dp;
     }
@@ -197,7 +197,7 @@ public class MakeAssignmentsForClassEvents {
         sg.setSession(iSession);
         sg.setTimetableManagers(new HashSet(department.getTimetableManagers()));
         sg.setSolutions(new HashSet());
-        iHibSession.save(sg); iHibSession.update(department);
+        iHibSession.persist(sg); iHibSession.merge(department);
         return sg;
     }
     
@@ -211,7 +211,7 @@ public class MakeAssignmentsForClassEvents {
         solution.setOwner(sg); sg.getSolutions().add(solution);
         solution.setValid(true);
         solution.setAssignments(new HashSet());
-        iHibSession.save(solution); iHibSession.update(sg);
+        iHibSession.persist(solution); iHibSession.merge(sg);
         return solution;
     }
     
@@ -241,7 +241,7 @@ public class MakeAssignmentsForClassEvents {
         iExactTimePattern.setSlotsPerMtg(0);
         iExactTimePattern.setTimePatternType(TimePattern.TimePatternType.ExactTime);
         iExactTimePattern.setVisible(true);
-        iHibSession.save(iExactTimePattern);
+        iHibSession.persist(iExactTimePattern);
         return iExactTimePattern;
     }
     
@@ -263,8 +263,11 @@ public class MakeAssignmentsForClassEvents {
         assignment.setRooms(getRooms(event));
         assignment.setTimePattern(tp != null ? tp : getTimePattern(event));
         assignment.setDatePattern(dp != null ? dp : getDatePattern(event));
-        iHibSession.saveOrUpdate(clazz);
-        iHibSession.saveOrUpdate(assignment);
+        iHibSession.merge(clazz);
+        if (assignment.getUniqueId() == null)
+        	iHibSession.persist(assignment);
+        else
+        	iHibSession.merge(assignment);
         return assignment;
     }
 

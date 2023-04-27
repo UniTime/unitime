@@ -425,7 +425,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 PreferenceGroup owner = distributionPref.getOwner();
                 owner.getPreferences().remove(distributionPref);
                 getPreferences().remove(distributionPref);
-                hibSession.saveOrUpdate(owner);
+                hibSession.merge(owner);
                 hibSession.remove(distributionPref);
             } else {
                 if (seqNo!=null) {
@@ -433,13 +433,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                         DistributionObject dObj = (DistributionObject)j.next();
                         if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
                             dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
-                            hibSession.saveOrUpdate(dObj);
+                            hibSession.merge(dObj);
                         }
                     }
                 }
 
                 if (updateExam)
-                    hibSession.saveOrUpdate(distributionPref);
+                    hibSession.merge(distributionPref);
             }
             i.remove();
         }
@@ -451,7 +451,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         }
 
         if (deleted && updateExam)
-            hibSession.saveOrUpdate(this);
+            hibSession.merge(this);
     }
     
     public static void deleteFromExams(org.hibernate.Session hibSession, Integer ownerType, Long ownerId) {
@@ -466,7 +466,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 exam.deleteDependentObjects(hibSession, false);
                 hibSession.remove(exam);
             } else {
-                hibSession.saveOrUpdate(exam);
+                hibSession.merge(exam);
             }
         }
     }
@@ -848,7 +848,10 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                     hibSession.persist(contact);
                 }
                 event.setMainContact(contact);
-                hibSession.saveOrUpdate(event);
+                if (event.getUniqueId() == null)
+                	hibSession.persist(event);
+                else
+                	hibSession.merge(event);
             }
             
             hibSession.merge(this);

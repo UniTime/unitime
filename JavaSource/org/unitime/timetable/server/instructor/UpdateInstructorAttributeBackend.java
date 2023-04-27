@@ -261,23 +261,26 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
 				ia.getParentAttribute().getChildAttributes().add(ia);
 		}
 
-		hibSession.saveOrUpdate(ia);
+		if (ia.getUniqueId() == null)
+			hibSession.persist(ia);
+		else
+			hibSession.merge(ia);
     	
     	if (add != null && !add.isEmpty())
 			for (DepartmentalInstructor instructor: lookupInstructors(hibSession, add, future, sessionId)) {
 				instructor.getAttributes().add(ia);
 				ia.getInstructors().add(instructor);
-				hibSession.saveOrUpdate(instructor);
+				hibSession.merge(instructor);
 			}
 
     	if (drop != null && !drop.isEmpty())
     		for (DepartmentalInstructor instructor: lookupInstructors(hibSession, drop, future, sessionId)) {
 				instructor.getAttributes().remove(ia);
 				ia.getInstructors().remove(instructor);
-				hibSession.saveOrUpdate(instructor);
+				hibSession.merge(instructor);
 			}
     	
-    	hibSession.saveOrUpdate(ia);
+    	hibSession.merge(ia);
     	
         ChangeLog.addChange(
                 hibSession, 
@@ -313,19 +316,19 @@ public class UpdateInstructorAttributeBackend implements GwtRpcImplementation<Up
         
         for (DepartmentalInstructor instructor: ia.getInstructors()) {
         	instructor.getAttributes().remove(ia);
-        	hibSession.saveOrUpdate(instructor);
+        	hibSession.merge(instructor);
         }
         if (ia.getParentAttribute() != null)
         	ia.getParentAttribute().getChildAttributes().remove(ia);
         for (InstructorAttribute ch: ia.getChildAttributes()) {
         	ch.setParentAttribute(null);
-        	hibSession.saveOrUpdate(ch);
+        	hibSession.merge(ch);
         }
         
         for (InstructorAttributePref p: hibSession.createQuery("from InstructorAttributePref p where p.attribute.uniqueId = :id", InstructorAttributePref.class).setParameter("id", ia.getUniqueId()).list()) {
         	p.getOwner().getPreferences().remove(p);
         	hibSession.remove(p);
-        	hibSession.saveOrUpdate(p.getOwner());
+        	hibSession.merge(p.getOwner());
         }
         
         hibSession.remove(ia);

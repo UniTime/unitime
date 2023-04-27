@@ -47,6 +47,7 @@ import org.unitime.timetable.form.TimePatternEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePattern.TimePatternType;
@@ -221,7 +222,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	
             	form.delete(sessionContext, hibSession);
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -292,7 +293,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                 			});
             	}
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
             	ExportUtils.exportCSV(csv, response, "exact");
             	return null;
     	    } catch (Exception e) {
@@ -442,9 +443,9 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             		
             		out.println("Checking "+tp.getName()+" ...");
             		
-                	List timePrefs = 
+                	List<TimePref> timePrefs = 
             			hibSession.
-                		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
+                		createQuery("select distinct p from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid", TimePref.class).
         				setParameter("uniqueid", tp.getUniqueId()).
                 		list();
             		
@@ -483,13 +484,13 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             			if (!tp.getDepartments().contains(d)) {
             				tp.getDepartments().add(d);
             				d.getTimePatterns().add(tp);
-            				hibSession.saveOrUpdate(d);
+            				hibSession.merge(d);
             				out.println("    -- department "+d+" added to "+tp.getName());
             				added=true;
             			}
             		}
             		if (added) {
-            			hibSession.saveOrUpdate(tp);
+            			hibSession.merge(tp);
             			refresh.add(tp);
             		}
             	}
@@ -497,7 +498,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
             	out.flush(); out.close(); out = null;
             	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     			
     			for (Iterator i=refresh.iterator();i.hasNext();) {
     				hibSession.refresh(i.next());
@@ -553,9 +554,9 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
                 	
                 	String classStr = "";
                 	if (tp.getTimePatternType() != TimePatternType.Standard) {
-                    	List timePrefs = 
+                    	List<PreferenceGroup> timePrefs = 
                 			hibSession.
-                    		createQuery("select distinct p.owner from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid").
+                    		createQuery("select distinct p.owner from TimePref as p inner join p.timePattern as tp where tp.uniqueId=:uniqueid", PreferenceGroup.class).
             				setParameter("uniqueid", tp.getUniqueId()).
                     		list();
 	            		
@@ -606,7 +607,7 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
 	            			});
             	}
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     			
     			ExportUtils.exportCSV(csv, response, "timePatterns");
     			return null;

@@ -42,6 +42,6 @@ public class AdvisorInstrMthPrefDAO extends _RootDAO<AdvisorInstrMthPref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<AdvisorInstrMthPref> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
-		return hibSession.createQuery("from AdvisorInstrMthPref x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
+		return hibSession.createQuery("from AdvisorInstrMthPref x where x.instructionalMethod.uniqueId = :instructionalMethodId", AdvisorInstrMthPref.class).setParameter("instructionalMethodId", instructionalMethodId).list();
 	}
 }

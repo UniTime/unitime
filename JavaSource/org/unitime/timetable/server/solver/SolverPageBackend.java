@@ -272,7 +272,9 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
         	}
         	String mgrId = solver.getProperties().getProperty("General.OwnerPuid");
         	log.setOwner(TimetableManager.findByExternalId(mgrId == null ? context.getUser().getExternalUserId() : mgrId));
-        	Long publishId = SectioningSolutionLogDAO.getInstance().save(log);
+        	SectioningSolutionLogDAO.getInstance().getSession().persist(log);
+        	SectioningSolutionLogDAO.getInstance().getSession().flush();
+        	Long publishId = log.getUniqueId();
         	((StudentSectioningSolverService)service).publishSolver(publishId, solver.getProperties(), data);
         	break;
         	

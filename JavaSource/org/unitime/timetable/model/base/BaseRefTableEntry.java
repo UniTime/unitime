@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.RefTableEntry;
 
 /**
@@ -52,7 +53,7 @@ public abstract class BaseRefTableEntry implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "ref_table_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "ref_table_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "ref_table_seq")
 	})
 	@GeneratedValue(generator = "ref_table_id")

@@ -162,7 +162,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
            }
             
             if (department.getUniqueId() == null) {
-            	departmentInterface.setId((Long)hibSession.save(department));
+            	hibSession.persist(department);
             } else {
             	hibSession.merge(department);
             }
@@ -170,6 +170,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
 	    } finally {
 	    	hibSession.flush();
 		}
+        departmentInterface.setId(department.getUniqueId());
 	} catch (PageAccessException e) {
 		throw e;
 	} catch (Exception e) {
@@ -198,7 +199,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
                              if (!(pref instanceof TimePref)) j.remove();
                          }
                          clazz.getSchedulingSubpart().deleteAllDistributionPreferences(hibSession);
-                         hibSession.saveOrUpdate(clazz.getSchedulingSubpart());
+                         hibSession.merge(clazz.getSchedulingSubpart());
                      }
                      clazz.setManagingDept(clazz.getControllingDept(), context.getUser(), hibSession);
                      // Clear all room preferences from the class
@@ -207,11 +208,11 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
                          if (!(pref instanceof TimePref)) j.remove();
                      }
                      clazz.deleteAllDistributionPreferences(hibSession);
-                     hibSession.saveOrUpdate(clazz);
+                     hibSession.merge(clazz);
                  }
              }       		
         	 else {
-                 hibSession.createQuery(
+                 hibSession.createMutationQuery(
                          "delete StudentClassEnrollment e where e.clazz.uniqueId in " +
                          "(select c.uniqueId from Class_ c, CourseOffering co where " +
                          "co.isControl=true and " +

@@ -106,11 +106,14 @@ public class HQLImport extends BaseImport {
 		}
 		
 		for (SavedHQLParameter parameter: params.values()) {
-			getHibSession().delete(parameter);
+			getHibSession().remove(parameter);
 			report.getParameters().remove(parameter);
 		}
 		
-		getHibSession().saveOrUpdate(report);
+		if (report.getUniqueId() == null)
+        	getHibSession().persist(report);
+        else
+        	getHibSession().merge(report);
 	}
 
 }

@@ -247,7 +247,10 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			main.setAcademicTitle(request.getEvent().getContact().getAcademicTitle());
 			main.setEmailAddress(request.getEvent().getContact().getEmail());
 			main.setPhone(request.getEvent().getContact().getPhone());
-			hibSession.saveOrUpdate(main);
+			if (main.getUniqueId() == null)
+				hibSession.persist(main);
+			else
+				hibSession.merge(main);
 			event.setMainContact(main);
 			
 			if (event.getNotes() == null)

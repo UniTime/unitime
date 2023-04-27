@@ -990,8 +990,11 @@ public class ReservationServlet implements ReservationService {
 						cr.getConcentrations().add(PosMajorConcentrationDAO.getInstance().get(cc.getId(), hibSession));
 					}
 				}
-				hibSession.saveOrUpdate(r);
-				hibSession.saveOrUpdate(r.getInstructionalOffering());
+				if (r.getUniqueId() == null)
+					hibSession.persist(r);
+				else
+					hibSession.merge(r);
+				hibSession.merge(r.getInstructionalOffering());
 				if (permissionOfferingLockNeeded.check(user, offering))
 					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();
@@ -1039,7 +1042,7 @@ public class ReservationServlet implements ReservationService {
 				InstructionalOffering offering = reservation.getInstructionalOffering();
 				offering.getReservations().remove(reservation);
 				hibSession.remove(reservation);
-				hibSession.saveOrUpdate(offering);
+				hibSession.merge(offering);
 				if (permissionOfferingLockNeeded.check(user, offering))
 					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();

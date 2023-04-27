@@ -335,8 +335,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									free.setLength(ft.getLength());
 									free.setSession(student.getSession());
 									free.setName(ft.toString());
-									helper.getHibSession().saveOrUpdate(free);
-									helper.getHibSession().saveOrUpdate(cd);
+									if (free.getUniqueId() == null)
+										helper.getHibSession().persist(free);
+									else
+										helper.getHibSession().merge(free);
+									if (cd.getUniqueId() == null)
+										helper.getHibSession().persist(cd);
+									else
+										helper.getHibSession().merge(cd);
 								}
 								priority++;
 							} else {
@@ -368,7 +374,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					} else {
 						for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
 							StudentEnrollmentMessage message = i.next();
-							helper.getHibSession().delete(message);
+							helper.getHibSession().remove(message);
 							i.remove();
 						}
 					}
@@ -394,7 +400,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr = requests.next();
 							if (cr.getClassWaitLists() != null)
 								for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
-									helper.getHibSession().delete(i.next());
+									helper.getHibSession().remove(i.next());
 									i.remove();
 								}
 						} else {
@@ -455,9 +461,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					while (requests.hasNext()) {
 						CourseRequest cr = requests.next();
 						cd.getCourseRequests().remove(cr);
-						helper.getHibSession().delete(cr);
+						helper.getHibSession().remove(cr);
 					}
-					helper.getHibSession().saveOrUpdate(cd);
+					if (cd.getUniqueId() == null)
+						helper.getHibSession().persist(cd);
+					else
+						helper.getHibSession().merge(cd);
 					
 					if (helper.isAlternativeCourseEnabled() && cd.getCourseRequests().size() == 1) {
 						CourseOffering alt = cd.getCourseRequests().iterator().next().getCourseOffering().getAlternativeOffering();
@@ -501,8 +510,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									free.setLength(ft.getLength());
 									free.setSession(student.getSession());
 									free.setName(ft.toString());
-									helper.getHibSession().saveOrUpdate(free);
-									helper.getHibSession().saveOrUpdate(cd);
+									if (free.getUniqueId() == null)
+										helper.getHibSession().persist(free);
+									else
+										helper.getHibSession().merge(free);
+									if (cd.getUniqueId() == null)
+										helper.getHibSession().persist(cd);
+									else
+										helper.getHibSession().merge(cd);
 								}
 								priority ++;
 							} else if (rc.isCourse()) {
@@ -533,7 +548,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					} else {
 						for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
 							StudentEnrollmentMessage message = i.next();
-							helper.getHibSession().delete(message);
+							helper.getHibSession().remove(message);
 							i.remove();
 						}
 					}
@@ -558,7 +573,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr = requests.next();
 							if (cr.getClassWaitLists() != null)
 								for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
-									helper.getHibSession().delete(i.next());
+									helper.getHibSession().remove(i.next());
 									i.remove();
 								}
 						} else {
@@ -584,9 +599,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					while (requests.hasNext()) {
 						CourseRequest cr = requests.next();
 						cd.getCourseRequests().remove(cr);
-						helper.getHibSession().delete(cr);
+						helper.getHibSession().remove(cr);
 					}
-					helper.getHibSession().saveOrUpdate(cd);
+					if (cd.getUniqueId() == null)
+						helper.getHibSession().persist(cd);
+					else
+						helper.getHibSession().merge(cd);
 					priority++;
 				}
 				
@@ -594,7 +612,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
 						int crit = acr.isCritical(cc);
 						if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
-							acr.setCritical(crit); helper.getHibSession().update(acr);
+							acr.setCritical(crit); helper.getHibSession().merge(acr);
 						}
 					}
 				}
@@ -618,11 +636,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						classIds += "," + ca.getClassId();
 				}
 				if (classIds != null)
-					for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
+					for (Class_ clazz: helper.getHibSession().createQuery(
 							"select c from Class_ c " +
 							"left join fetch c.studentEnrollments as e " +
 							"left join fetch c.schedulingSubpart as s " +
-							"where c.uniqueId in (" + classIds + ")").list()) {
+							"where c.uniqueId in (" + classIds + ")", Class_.class).list()) {
 						classes.put(clazz.getUniqueId(), clazz);
 					}
 				Map<Long, Long> courseDemandId2courseId = new HashMap<Long, Long>();
@@ -667,7 +685,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(ca.getCourseId(), helper.getHibSession()));
 						}
 						course2request.put(ca.getCourseId(), cr);
-						helper.getHibSession().saveOrUpdate(cd);
+						if (cd.getUniqueId() == null)
+							helper.getHibSession().persist(cd);
+						else
+							helper.getHibSession().merge(cd);
 						courseDemandId2courseId.put(cd.getUniqueId(), ca.getCourseId());
 						includeRequestInTheReturnMessage = true;
 					} else {
@@ -689,7 +710,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							if (checkCritical) cd.setCritical(isCritical(ca, cc));
 							cr.setCourseDemand(cd);
 							cd.getCourseRequests().add(cr);
-							helper.getHibSession().saveOrUpdate(cd);
+							if (cd.getUniqueId() == null)
+								helper.getHibSession().persist(cd);
+							else
+								helper.getHibSession().merge(cd);
 							courseDemandId2courseId.put(cd.getUniqueId(), ca.getCourseId());
 							includeRequestInTheReturnMessage = true;
 						}
@@ -699,7 +723,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (enrl != null) {
 						if (!cr.equals(enrl.getCourseRequest())) {
 							enrl.setCourseRequest(cr);
-							helper.getHibSession().update(enrl);
+							helper.getHibSession().merge(enrl);
 						}
 						continue;
 					}
@@ -717,7 +741,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						if (cr.getClassWaitLists() == null)
 							cr.setClassWaitLists(new HashSet<ClassWaitList>());
 						cr.getClassWaitLists().add(cwl);
-						helper.getHibSession().saveOrUpdate(cwl);
+						helper.getHibSession().persist(cwl);
 						continue;
 					}
 
@@ -739,21 +763,21 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				for (CourseDemand cd: remaining) {
 					if (cd.getFreeTime() != null)
-						helper.getHibSession().delete(cd.getFreeTime());
+						helper.getHibSession().remove(cd.getFreeTime());
 					for (CourseRequest cr: cd.getCourseRequests())
-						helper.getHibSession().delete(cr);
+						helper.getHibSession().remove(cr);
 					if (Boolean.TRUE.equals(cd.isWaitlist())) hasWaitList = true;
 					student.getCourseDemands().remove(cd);
-					helper.getHibSession().delete(cd);
+					helper.getHibSession().remove(cd);
 				}
 				
 				for (StudentClassEnrollment enrl: oldEnrollments.values()) {
 					enrl.getClazz().getStudentEnrollments().remove(enrl);
 					student.getClassEnrollments().remove(enrl);
-					helper.getHibSession().delete(enrl);
+					helper.getHibSession().remove(enrl);
 				}
 				
-				helper.getHibSession().saveOrUpdate(student);
+				helper.getHibSession().merge(student);
 				
 				if (wlMode == WaitListMode.WaitList) {
 					student.resetWaitLists(

@@ -42,6 +42,6 @@ public class SolverGroupDAO extends _RootDAO<SolverGroup,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SolverGroup> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from SolverGroup x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from SolverGroup x where x.session.uniqueId = :sessionId", SolverGroup.class).setParameter("sessionId", sessionId).list();
 	}
 }

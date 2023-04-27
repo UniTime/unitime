@@ -42,16 +42,16 @@ public class SubjectAreaDAO extends _RootDAO<SubjectArea,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SubjectArea> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from SubjectArea x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from SubjectArea x where x.session.uniqueId = :sessionId", SubjectArea.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SubjectArea> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from SubjectArea x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+		return hibSession.createQuery("from SubjectArea x where x.department.uniqueId = :departmentId", SubjectArea.class).setParameter("departmentId", departmentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SubjectArea> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
-		return hibSession.createQuery("from SubjectArea x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
+		return hibSession.createQuery("from SubjectArea x where x.fundingDept.uniqueId = :fundingDeptId", SubjectArea.class).setParameter("fundingDeptId", fundingDeptId).list();
 	}
 }

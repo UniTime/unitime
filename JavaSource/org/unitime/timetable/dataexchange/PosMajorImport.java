@@ -102,7 +102,10 @@ public class PosMajorImport extends BaseImport {
                 major.getAcademicAreas().add(area);
                 area.getPosMajors().add(major);
                 
-                getHibSession().saveOrUpdate(major);
+                if (major.getUniqueId() == null)
+                	getHibSession().persist(major);
+                else
+                	getHibSession().merge(major);
             }
             
             for (PosMajor major: id2major.values()) {
@@ -112,7 +115,7 @@ public class PosMajorImport extends BaseImport {
             		abbv = area.getAcademicAreaAbbreviation();
             	}
             	info("Major " + abbv + " " + major.getCode() + " (" + major.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(major);
+            	getHibSession().remove(major);
             }
             
             commitTransaction();

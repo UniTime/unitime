@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.server.hql;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +79,7 @@ public class HQLQueriesBackend implements GwtRpcImplementation<HQLQueriesRpcRequ
 							for (LearningManagementSystemInfo entry: LearningManagementSystemInfo.findAll(context.getUser().getCurrentAcademicSessionId()))
 								parameter.addOption(entry.getReference(), entry.getLabel());
 						} else {
-							for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
+							for (RefTableEntry entry: RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz, RefTableEntry.class).setCacheable(true).list()) {
 								parameter.addOption(entry.getReference(), entry.getLabel());
 							}
 						}

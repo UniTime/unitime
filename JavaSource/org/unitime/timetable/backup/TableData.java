@@ -3,6 +3,7 @@
 
 package org.unitime.timetable.backup;
 
+@SuppressWarnings("deprecation")
 public final class TableData {
   private TableData() {}
   public static void registerAllExtensions(

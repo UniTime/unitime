@@ -126,7 +126,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 										.list()) {
 									e.setApprovedBy(approval[1]);
 									e.setApprovedDate(approvedDate);
-									helper.getHibSession().saveOrUpdate(e);
+									helper.getHibSession().merge(e);
 								}
 								
 								server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).fromAction(name()).oldEnrollment(offering, offering.getCourse(oldEnrollment.getCourseId()), oldEnrollment), helper.getUser());

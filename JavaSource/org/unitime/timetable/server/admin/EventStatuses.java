@@ -195,7 +195,7 @@ public class EventStatuses implements AdminTable {
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
-						hibSession.saveOrUpdate(option);
+						hibSession.merge(option);
 						if (optionChanged)
 							ChangeLog.addChange(hibSession,
 									context,
@@ -225,7 +225,7 @@ public class EventStatuses implements AdminTable {
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
-						hibSession.saveOrUpdate(option);
+						hibSession.merge(option);
 						if (optionChanged)
 							ChangeLog.addChange(hibSession,
 									context,
@@ -299,7 +299,7 @@ public class EventStatuses implements AdminTable {
 		location.setNote(note);
 		location.setBreakTime(breakTime);
 		setServiceProviders(location, context, record);
-		hibSession.saveOrUpdate(location);
+		hibSession.merge(location);
 		ChangeLog.addChange(hibSession,
 				context,
 				location,
@@ -340,7 +340,7 @@ public class EventStatuses implements AdminTable {
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
-						hibSession.saveOrUpdate(option);
+						hibSession.merge(option);
 						if (optionChanged)
 							ChangeLog.addChange(hibSession,
 									context,
@@ -369,7 +369,7 @@ public class EventStatuses implements AdminTable {
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
-						hibSession.saveOrUpdate(option);
+						hibSession.merge(option);
 						if (optionChanged)
 							ChangeLog.addChange(hibSession,
 									context,

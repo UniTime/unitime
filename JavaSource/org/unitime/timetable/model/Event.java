@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -130,7 +129,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
             relatedCourse.setOwnerId(null);
             relatedCourse.setCourse(null);
             hibSession.remove(relatedCourse);
-            hibSession.saveOrUpdate(event);
+            hibSession.merge(event);
         }
     }
     
@@ -167,14 +166,6 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 		} else return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(e.getUniqueId() == null ? -1 : e.getUniqueId());
 	}
 
-	public static List findAll() {
-	    return EventDAO.getInstance().getSession().createQuery(
-	            "select e from Event e"
-	            )
-	            .setCacheable(true)
-	            .list();
-	}
-	
 	@Transient
 	public TreeSet<MultiMeeting> getMultiMeetings() {
 	    return getMultiMeetings(getMeetings());

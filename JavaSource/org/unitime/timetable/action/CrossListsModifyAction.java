@@ -304,7 +304,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 		                    // Remove from Subject Area
 					        SubjectArea sa = co3.getSubjectArea();
 					        sa.getCourseOfferings().remove(co1);
-			                hibSession.saveOrUpdate(sa);
+			                hibSession.merge(sa);
 			                saList.put(sa.getSubjectAreaAbbreviation(), sa);
 			            }
 			        }
@@ -324,7 +324,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 			        
 			        //io.setCourseOfferings(offerings);
 			        
-		            hibSession.saveOrUpdate(io);
+		            hibSession.merge(io);
 		            hibSession.flush();
 	                
 	                // Add course to instructional offering
@@ -333,7 +333,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 
 	                // Update
                     if (io1.getInstrOfferingPermId()==null) io1.generateInstrOfferingPermId();
-	                hibSession.saveOrUpdate(io1);
+	                hibSession.persist(io1);
 	                hibSession.flush();
 
 	    	        hibSession.refresh(io);
@@ -367,7 +367,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                	co.setReservation(null);
 	                }
 
-	                hibSession.saveOrUpdate(co);
+	                hibSession.merge(co);
 
 	                hibSession.flush();
 	                hibSession.refresh(co);
@@ -437,7 +437,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    //i.remove();
 
                         sa2.getCourseOfferings().remove(co2);
-	                    hibSession.saveOrUpdate(sa2);
+	                    hibSession.merge(sa2);
 		                saList.put(sa2.getSubjectAreaAbbreviation(), sa2);
                         
 	                    // Delete course offering
@@ -465,7 +465,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                hibSession.remove(io1);
 	                hibSession.flush();
 	                
-	                hibSession.saveOrUpdate(sa);
+	                hibSession.merge(sa);
 	                saList.put(sa.getSubjectAreaAbbreviation(), sa);
 
 	    	        //hibSession.refresh(sa);
@@ -480,18 +480,18 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	            CourseOffering co3 = addedOfferings.get(i);
 	            co3.setInstructionalOffering(io);
 	            io.addTocourseOfferings(co3);
-	            hibSession.saveOrUpdate(co3);
+	            hibSession.persist(co3);
 	            
 	            hibSession.flush();
 	            hibSession.refresh(co3);
 
-	            hibSession.saveOrUpdate(io);
+	            hibSession.merge(io);
 	        }
 	        for (CurriculumCourse x: cc)
-	        	hibSession.saveOrUpdate(x);
+	        	hibSession.persist(x);
 	        for (CourseRequest x: courseRequests) {
 		        x.getCourseDemand().getCourseRequests().add(x);
-	        	hibSession.saveOrUpdate(x);
+	        	hibSession.persist(x);
 	        }
 	        // for advisor course recommendations, keep the requests but remove class preferences as they no longer apply (courses moved away)
 	        for (CourseOffering co: deletedOfferings) {
@@ -506,7 +506,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     			ip.remove();
                     		}
                     	}
-	    	        	hibSession.saveOrUpdate(req);
+	    	        	hibSession.merge(req);
 	    	        }
 	        	}
 	        }
@@ -516,7 +516,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	        	if (acrs != null) {
 	        		for (AdvisorCourseRequest req: acrs) {
 	        			req.setCourseOffering(co);
-	    	        	hibSession.saveOrUpdate(req);
+	    	        	hibSession.merge(req);
 	    	        }
 	        	}
 	        }
@@ -535,10 +535,10 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 			        	// Only change departmental class managing dept and not externally managed
 			        	if (!cls.getManagingDept().isExternalManager()) {
 				        	cls.setManagingDept(dept, sessionContext.getUser(), hibSession);
-				        	hibSession.saveOrUpdate(cls);
+				        	hibSession.merge(cls);
 			        	}
 			        }
-		        }	        		        	
+		        }
 	        }
 	        
 	        

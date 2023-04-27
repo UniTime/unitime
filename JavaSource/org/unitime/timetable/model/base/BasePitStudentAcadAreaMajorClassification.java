@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.PitStudent;
@@ -63,7 +64,7 @@ public abstract class BasePitStudentAcadAreaMajorClassification implements Seria
 
 
 	@Id
-	@GenericGenerator(name = "pit_stu_aa_major_clasf_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pit_stu_aa_major_clasf_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "pit_stu_aa_major_clasf_id")

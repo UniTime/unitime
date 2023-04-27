@@ -37,6 +37,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.PitStudent;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
 import org.unitime.timetable.model.PitStudentAcadAreaMinorClassification;
@@ -74,7 +75,7 @@ public abstract class BasePitStudent implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_student_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pit_student_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "pit_student_id")

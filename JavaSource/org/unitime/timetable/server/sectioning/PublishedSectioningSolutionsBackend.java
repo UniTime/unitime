@@ -141,11 +141,13 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
 			context.removeAttribute(SessionAttribute.StudentSectioningSolver);
 			break;
 		case REMOVE:
-			SectioningSolutionLogDAO.getInstance().delete(solution);
+			SectioningSolutionLogDAO.getInstance().getSession().remove(solution);
+			SectioningSolutionLogDAO.getInstance().getSession().flush();
 			break;
 		case NOTE:
 			solution.setNote(request.getNote());
-			SectioningSolutionLogDAO.getInstance().update(solution);
+			SectioningSolutionLogDAO.getInstance().getSession().merge(solution);
+			SectioningSolutionLogDAO.getInstance().getSession().flush();
 			break;
 		}
 		

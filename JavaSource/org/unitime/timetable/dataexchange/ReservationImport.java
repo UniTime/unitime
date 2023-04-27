@@ -79,7 +79,7 @@ public class ReservationImport  extends BaseImport {
         	info("Deleting existing reservations...");
         	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session.uniqueId=:sessionId", Reservation.class).
             	setParameter("sessionId", session.getUniqueId()).list()) {
-        		getHibSession().delete(r);
+        		getHibSession().remove(r);
         	}
         	flush(false);
         	
@@ -394,7 +394,7 @@ public class ReservationImport  extends BaseImport {
                     }
                 } else if ("course".equals(type)) {
                 	course.setReservation(reservation.getLimit()); reservation.setLimit(null);
-                	getHibSession().saveOrUpdate(course);
+                	getHibSession().merge(course);
                 	if (reservation.getConfigurations().isEmpty() && reservation.getClasses().isEmpty()) continue;
                 	((CourseReservation)reservation).setCourse(course);
                 } else {
@@ -415,7 +415,7 @@ public class ReservationImport  extends BaseImport {
                 	}
                 }
                 
-                getHibSession().saveOrUpdate(reservation);
+                getHibSession().persist(reservation);
             }
         	
         	info("All done.");

@@ -124,7 +124,11 @@ public class ItypeDescEditForm implements UniTimeForm {
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         ItypeDesc itype = null;
         if (getUniqueId()!=null) itype = ItypeDescDAO.getInstance().get(getUniqueId());
-        if (itype==null) itype = new ItypeDesc();
+        boolean created = false;
+        if (itype==null) {
+        	itype = new ItypeDesc();
+        	created = true;
+        }
         itype.setItype(Integer.valueOf(getId()));
         itype.setAbbv(getAbbreviation());
         itype.setDesc(getName());
@@ -132,7 +136,10 @@ public class ItypeDescEditForm implements UniTimeForm {
         itype.setBasic(getBasicType() == 1);
         itype.setParent(getParent()==null?null:ItypeDescDAO.getInstance().get(getParent()));
         itype.setOrganized(getOrganized());
-        hibSession.saveOrUpdate(itype);
+        if (created)
+        	hibSession.persist(itype);
+        else
+        	hibSession.merge(itype);
     }
     
     public void delete(org.hibernate.Session hibSession) {

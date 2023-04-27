@@ -230,10 +230,13 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 				}
 			}
 			
-			hibSession.saveOrUpdate(is);
-			survey.setId(is.getUniqueId());
+			if (is.getUniqueId() == null)
+				hibSession.persist(is);
+			else
+				hibSession.merge(is);
 			
 			tx.commit(); tx = null;
+			survey.setId(is.getUniqueId());
 			if (!request.isChanged())
 				if (request.getInstructorId() != null)
 					return new RequestInstructorSurveyBackend().execute(new InstructorSurveyRequest(request.getInstructorId()), context);

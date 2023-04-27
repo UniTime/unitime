@@ -33,6 +33,7 @@ import org.unitime.timetable.model.base.BaseInstructorCourseRequirementNote;
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 @Table(name = "instr_crsreq_note")
 public class InstructorCourseRequirementNote extends BaseInstructorCourseRequirementNote {
+	private static final long serialVersionUID = 5329224826169603067L;
 
 	public InstructorCourseRequirementNote() {
 		super();

@@ -70,11 +70,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
 			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List l = coDao.getSession().createQuery(query).list();
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
 		if (l != null){
 			CourseOffering co = null;
-			for (Iterator it = l.iterator(); it.hasNext();){
-				co = (CourseOffering) it.next();
+			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
+				co = it.next();
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
@@ -94,11 +94,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
                 + "  where co2.subjectArea.session.uniqueId = " + toSession.getUniqueId().longValue()
                 + "   and co2.subjectArea.subjectAreaAbbreviation = co.subjectArea.subjectAreaAbbreviation"
                 + "   and co2.courseNbr = co.courseNbr)";
-		List l = coDao.getSession().createQuery(query).list();
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
 		if (l != null){
 			CourseOffering co = null;
-			for (Iterator it = l.iterator(); it.hasNext();){
-				co = (CourseOffering) it.next();
+			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
+				co = it.next();
 				if ((co.getSubjectArea().getSubjectAreaAbbreviation().equals("ECE")&& co.getCourseNbr().equals("495E"))
 					|| (co.getSubjectArea().getSubjectAreaAbbreviation().equals("AMST")&& co.getCourseNbr().equals("650A"))
 					|| (co.getSubjectArea().getSubjectAreaAbbreviation().equals("FLL")&& co.getCourseNbr().equals("650T")))
@@ -165,7 +165,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				instructionalOffering.generateInstrOfferingPermId();
 			}
 			InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
-			ioDao.saveOrUpdate(instructionalOffering);
+			ioDao.getSession().persist(instructionalOffering);
 			ioDao.getSession().flush();
 			ioDao.getSession().evict(instructionalOffering);
 		}
@@ -177,11 +177,11 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		+ "' and co.getCourseNbr = '" + courseNumber
 		+ "' and co.isControl = true"
 		+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List l = coDao.getSession().createQuery(query).list();
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
 		if (l != null && l.size() > 0){
 			CourseOffering co = null;
-			for (Iterator it = l.iterator(); it.hasNext();){
-				co = (CourseOffering) it.next();
+			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
+				co = it.next();
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
@@ -220,7 +220,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
 					toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
 					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
-					hibSession.saveOrUpdate(toInstrOffrConfig);
+					hibSession.persist(toInstrOffrConfig);
 					hibSession.merge(toInstructionalOffering);
 					rollForwardSchedSubpartsForAConfig(fromInstrOffrConfig, toInstrOffrConfig, hibSession, toSession);
 					hibSession.merge(toInstructionalOffering);
@@ -529,7 +529,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.saveOrUpdate(toInstructionalOffering); 
+		hibSession.persist(toInstructionalOffering); 
 		return(toInstructionalOffering);
 		
 	}
@@ -684,7 +684,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.saveOrUpdate(toInstructionalOffering); 
+		hibSession.persist(toInstructionalOffering); 
 		return(toInstructionalOffering);		
 	}
 

@@ -100,7 +100,8 @@ public class UserRoles implements AdminTable {
 		role.setInstructor("true".equals(record.getField(2)));
 		role.setEnabled("true".equals(record.getField(3)));
 		role.setManager(true);
-		record.setUniqueId((Long)hibSession.save(role));
+		hibSession.persist(role);
+		record.setUniqueId(role.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				role,
@@ -121,7 +122,7 @@ public class UserRoles implements AdminTable {
 			role.setAbbv(record.getField(1));
 			role.setInstructor("true".equals(record.getField(2)));
 			role.setEnabled("true".equals(record.getField(3)));
-			hibSession.saveOrUpdate(role);
+			hibSession.merge(role);
 			ChangeLog.addChange(hibSession,
 					context,
 					role,

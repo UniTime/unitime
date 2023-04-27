@@ -96,7 +96,7 @@ public class ChangeStudentGroup implements OnlineSectioningAction<Boolean> {
 							dbStudent.getGroups().add(group);
 							if (changed) student.getGroups().add(new XStudent.XGroup(group));
 						}
-						helper.getHibSession().saveOrUpdate(group);
+						helper.getHibSession().merge(group);
 						server.update(student, false);
 						
 						action.setResult(changed ? OnlineSectioningLog.Action.ResultType.TRUE : OnlineSectioningLog.Action.ResultType.FALSE);

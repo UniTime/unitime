@@ -142,7 +142,7 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
             	
             	form.delete(hibSession);
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -168,14 +168,14 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
                         DepartmentStatusType s = (DepartmentStatusType)i.next();
                         if (s.getOrd()+1==curStatus.getOrd()) {
                             s.setOrd(s.getOrd()+1); 
-                            hibSession.saveOrUpdate(s);
+                            hibSession.merge(s);
                             found = true;
                         }
                     }
                     if (found) {
                         curStatus.setOrd(curStatus.getOrd()-1);
                         form.setOrder(curStatus.getOrd());
-                        hibSession.saveOrUpdate(curStatus);
+                        hibSession.merge(curStatus);
                     }
                 } else {
                     boolean found = false;
@@ -183,14 +183,14 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
                         DepartmentStatusType s = (DepartmentStatusType)i.next();
                         if (s.getOrd()-1==curStatus.getOrd()) {
                             s.setOrd(s.getOrd()-1); 
-                            hibSession.saveOrUpdate(s);
+                            hibSession.merge(s);
                             found = true;
                         }
                     }
                     if (found) {
                         curStatus.setOrd(curStatus.getOrd()+1);
                         form.setOrder(curStatus.getOrd());
-                        hibSession.saveOrUpdate(curStatus);
+                        hibSession.merge(curStatus);
                     }
                 }
                 
@@ -234,7 +234,7 @@ public class DeptStatusTypeEditAction extends UniTimeAction<DeptStatusTypeEditFo
         	DepartmentStatusType s = (DepartmentStatusType)i.next();
         	if (ord != s.getOrd()) {
         		s.setOrd(ord);
-        		DepartmentStatusTypeDAO.getInstance().saveOrUpdate(s);
+        		DepartmentStatusTypeDAO.getInstance().getSession().merge(s);
         	}
         	ord ++;
         	String onClick = "onClick=\"document.location='deptStatusTypeEdit.action?op=Edit&id=" + s.getUniqueId() + "';\"";

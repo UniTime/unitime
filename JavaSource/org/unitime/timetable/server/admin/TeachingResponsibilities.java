@@ -118,7 +118,8 @@ public class TeachingResponsibilities implements AdminTable {
 		responsibility.setInstructor("true".equals(record.getField(3)));
 		responsibility.setCoordinator("true".equals(record.getField(4)));
 		responsibility.setOptions(options(record));
-		record.setUniqueId((Long)hibSession.save(responsibility));
+		hibSession.persist(responsibility);
+		record.setUniqueId(responsibility.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				responsibility,
@@ -143,7 +144,7 @@ public class TeachingResponsibilities implements AdminTable {
 		responsibility.setInstructor("true".equals(record.getField(3)));
 		responsibility.setCoordinator("true".equals(record.getField(4)));
 		responsibility.setOptions(options(record));
-		hibSession.saveOrUpdate(responsibility);
+		hibSession.merge(responsibility);
 		ChangeLog.addChange(hibSession,
 				context,
 				responsibility,

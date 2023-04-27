@@ -42,6 +42,6 @@ public class InstructionalOfferingDAO extends _RootDAO<InstructionalOffering,Lon
 
 	@SuppressWarnings("unchecked")
 	public List<InstructionalOffering> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from InstructionalOffering x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from InstructionalOffering x where x.session.uniqueId = :sessionId", InstructionalOffering.class).setParameter("sessionId", sessionId).list();
 	}
 }

@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.TimePatternTime;
 
 /**
@@ -51,7 +52,7 @@ public abstract class BaseTimePatternTime implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "time_pattern_time_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "time_pattern_time_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "time_pattern_times_seq")
 	})
 	@GeneratedValue(generator = "time_pattern_time_id")

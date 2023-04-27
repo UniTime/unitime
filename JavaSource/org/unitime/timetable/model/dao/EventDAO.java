@@ -42,11 +42,11 @@ public class EventDAO extends _RootDAO<Event,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Event> findByMainContact(org.hibernate.Session hibSession, Long mainContactId) {
-		return hibSession.createQuery("from Event x where x.mainContact.uniqueId = :mainContactId").setParameter("mainContactId", mainContactId).list();
+		return hibSession.createQuery("from Event x where x.mainContact.uniqueId = :mainContactId", Event.class).setParameter("mainContactId", mainContactId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Event> findBySponsoringOrganization(org.hibernate.Session hibSession, Long sponsoringOrganizationId) {
-		return hibSession.createQuery("from Event x where x.sponsoringOrganization.uniqueId = :sponsoringOrganizationId").setParameter("sponsoringOrganizationId", sponsoringOrganizationId).list();
+		return hibSession.createQuery("from Event x where x.sponsoringOrganization.uniqueId = :sponsoringOrganizationId", Event.class).setParameter("sponsoringOrganizationId", sponsoringOrganizationId).list();
 	}
 }

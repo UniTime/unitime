@@ -129,7 +129,7 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
         // Clear all preferences
         if (MSG.actionClearInstructorPreferences().equals(op)) {
         	doClear(inst.getPreferences(), Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DISTRIBUTION);
-            idao.update(inst);
+        	idao.getSession().merge(inst);
             op = "init";            	
             
             ChangeLog.addChange(
@@ -186,7 +186,7 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
                         null, 
                         inst.getDepartment());
 
-        		idao.saveOrUpdate(inst);
+                idao.getSession().merge(inst);
                 
 	        	if (MSG.actionNextInstructor().equals(op)) {
 	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.action?instructorId="+form.getNextId()));

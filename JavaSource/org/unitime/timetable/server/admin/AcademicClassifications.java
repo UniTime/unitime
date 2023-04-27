@@ -94,7 +94,8 @@ public class AcademicClassifications implements AdminTable {
 		clasf.setCode(record.getField(1));
 		clasf.setName(record.getField(2));
 		clasf.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(clasf));
+		hibSession.persist(clasf);
+		record.setUniqueId(clasf.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				clasf,
@@ -113,7 +114,7 @@ public class AcademicClassifications implements AdminTable {
 			clasf.setExternalUniqueId(record.getField(0));
 			clasf.setCode(record.getField(1));
 			clasf.setName(record.getField(2));
-			hibSession.saveOrUpdate(clasf);
+			hibSession.merge(clasf);
 			ChangeLog.addChange(hibSession,
 					context,
 					clasf,

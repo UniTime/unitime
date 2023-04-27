@@ -105,7 +105,10 @@ public class PosMinorImport extends BaseImport {
                 minor.getAcademicAreas().add(area);
                 area.getPosMinors().add(minor);
                 
-                getHibSession().saveOrUpdate(minor);
+                if (minor.getUniqueId() == null)
+                	getHibSession().persist(minor);
+                else
+                	getHibSession().merge(minor);
             }
             
             for (PosMinor minor: id2minor.values()) {
@@ -115,7 +118,7 @@ public class PosMinorImport extends BaseImport {
             		abbv = area.getAcademicAreaAbbreviation();
             	}
             	info("Minor " + abbv + " " + minor.getCode() + " (" + minor.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(minor);
+            	getHibSession().remove(minor);
             }
             
             commitTransaction();

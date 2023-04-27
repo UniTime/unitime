@@ -42,36 +42,36 @@ public class PitClassDAO extends _RootDAO<PitClass,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from PitClass x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+		return hibSession.createQuery("from PitClass x where x.clazz.uniqueId = :clazzId", PitClass.class).setParameter("clazzId", clazzId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByManagingDept(org.hibernate.Session hibSession, Long managingDeptId) {
-		return hibSession.createQuery("from PitClass x where x.managingDept.uniqueId = :managingDeptId").setParameter("managingDeptId", managingDeptId).list();
+		return hibSession.createQuery("from PitClass x where x.managingDept.uniqueId = :managingDeptId", PitClass.class).setParameter("managingDeptId", managingDeptId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByPitSchedulingSubpart(org.hibernate.Session hibSession, Long pitSchedulingSubpartId) {
-		return hibSession.createQuery("from PitClass x where x.pitSchedulingSubpart.uniqueId = :pitSchedulingSubpartId").setParameter("pitSchedulingSubpartId", pitSchedulingSubpartId).list();
+		return hibSession.createQuery("from PitClass x where x.pitSchedulingSubpart.uniqueId = :pitSchedulingSubpartId", PitClass.class).setParameter("pitSchedulingSubpartId", pitSchedulingSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByPitParentClass(org.hibernate.Session hibSession, Long pitParentClassId) {
-		return hibSession.createQuery("from PitClass x where x.pitParentClass.uniqueId = :pitParentClassId").setParameter("pitParentClassId", pitParentClassId).list();
+		return hibSession.createQuery("from PitClass x where x.pitParentClass.uniqueId = :pitParentClassId", PitClass.class).setParameter("pitParentClassId", pitParentClassId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from PitClass x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from PitClass x where x.datePattern.uniqueId = :datePatternId", PitClass.class).setParameter("datePatternId", datePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
-		return hibSession.createQuery("from PitClass x where x.timePattern.uniqueId = :timePatternId").setParameter("timePatternId", timePatternId).list();
+		return hibSession.createQuery("from PitClass x where x.timePattern.uniqueId = :timePatternId", PitClass.class).setParameter("timePatternId", timePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClass> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
-		return hibSession.createQuery("from PitClass x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
+		return hibSession.createQuery("from PitClass x where x.fundingDept.uniqueId = :fundingDeptId", PitClass.class).setParameter("fundingDeptId", fundingDeptId).list();
 	}
 }

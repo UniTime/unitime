@@ -35,6 +35,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
@@ -64,7 +65,7 @@ public abstract class BaseRoomFeature implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_feature_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "room_feature_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "room_feature_seq")
 	})
 	@GeneratedValue(generator = "room_feature_id")

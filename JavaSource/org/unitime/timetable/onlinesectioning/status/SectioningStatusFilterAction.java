@@ -1362,6 +1362,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
+				@SuppressWarnings("deprecation")
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
 				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);

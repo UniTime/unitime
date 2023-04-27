@@ -234,8 +234,14 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							free.setLength(ft.getLength());
 							free.setSession(student.getSession());
 							free.setName(ft.toString());
-							helper.getHibSession().saveOrUpdate(free);
-							helper.getHibSession().saveOrUpdate(cd);
+							if (free.getUniqueId() == null)
+								helper.getHibSession().persist(free);
+							else
+								helper.getHibSession().merge(free);
+							if (cd.getUniqueId() == null)
+								helper.getHibSession().persist(cd);
+							else
+								helper.getHibSession().merge(cd);
 						}
 						priority++;
 					} else if (rc.isCourse()) {
@@ -319,9 +325,12 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				while (requests.hasNext()) {
 					CourseRequest cr = requests.next();
 					cd.getCourseRequests().remove(cr);
-					helper.getHibSession().delete(cr);
+					helper.getHibSession().remove(cr);
 				}
-				helper.getHibSession().saveOrUpdate(cd);
+				if (cd.getUniqueId() == null)
+					helper.getHibSession().persist(cd);
+				else
+					helper.getHibSession().merge(cd);
 				priority++;
 			}
 		}
@@ -362,8 +371,14 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 							free.setLength(ft.getLength());
 							free.setSession(student.getSession());
 							free.setName(ft.toString());
-							helper.getHibSession().saveOrUpdate(free);
-							helper.getHibSession().saveOrUpdate(cd);
+							if (free.getUniqueId() == null)
+								helper.getHibSession().persist(free);
+							else
+								helper.getHibSession().merge(free);
+							if (cd.getUniqueId() == null)
+								helper.getHibSession().persist(cd);
+							else
+								helper.getHibSession().merge(cd);
 						}
 						priority ++;
 					} else if (rc.isCourse()) {
@@ -447,9 +462,12 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				while (requests.hasNext()) {
 					CourseRequest cr = requests.next();
 					cd.getCourseRequests().remove(cr);
-					helper.getHibSession().delete(cr);
+					helper.getHibSession().remove(cr);
 				}
-				helper.getHibSession().saveOrUpdate(cd);
+				if (cd.getUniqueId() == null)
+					helper.getHibSession().persist(cd);
+				else
+					helper.getHibSession().merge(cd);
 				priority++;
 			}
 		}
@@ -460,15 +478,15 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 				CourseRequest cr = course2request.get(enrl.getCourseOffering().getUniqueId());
 				if (cr == null) {
 					enrl.getClazz().getStudentEnrollments().remove(enrl);
-					helper.getHibSession().delete(enrl);
+					helper.getHibSession().remove(enrl);
 					i.remove();
 				} else {
 					enrl.setCourseRequest(cr);
-					helper.getHibSession().saveOrUpdate(enrl);
+					helper.getHibSession().merge(enrl);
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
-				helper.getHibSession().delete(enrl);
+				helper.getHibSession().remove(enrl);
 				i.remove();
 			}
 		}
@@ -479,18 +497,18 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 					for (CourseRequest cr: cd.getCourseRequests())
 						if (cr.getClassWaitLists() != null)
 							for (Iterator<ClassWaitList> i = cr.getClassWaitLists().iterator(); i.hasNext(); ) {
-								helper.getHibSession().delete(i.next());
+								helper.getHibSession().remove(i.next());
 								i.remove();
 							}
 		}
 		
 		for (CourseDemand cd: remaining) {
 			if (cd.getFreeTime() != null)
-				helper.getHibSession().delete(cd.getFreeTime());
+				helper.getHibSession().remove(cd.getFreeTime());
 			for (CourseRequest cr: cd.getCourseRequests())
-				helper.getHibSession().delete(cr);
+				helper.getHibSession().remove(cr);
 			student.getCourseDemands().remove(cd);
-			helper.getHibSession().delete(cd);
+			helper.getHibSession().remove(cd);
 		}
 		
 		
@@ -498,7 +516,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 			for (AdvisorCourseRequest acr: student.getAdvisorCourseRequests()) {
 				int crit = acr.isCritical(critical);
 				if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
-					acr.setCritical(crit); helper.getHibSession().update(acr);
+					acr.setCritical(crit); helper.getHibSession().merge(acr);
 				}
 			}
 		
@@ -513,7 +531,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 		student.setOverrideMaxCredit(request.getMaxCreditOverride());
 		student.setMaxCreditOverrideIntent(request.getMaxCreditOverrideExternalId() == null ? null : CourseRequestOverrideIntent.REGISTER);
 		
-		helper.getHibSession().saveOrUpdate(student);
+		helper.getHibSession().merge(student);
 		helper.getHibSession().flush();
 		
 		if (request.getWaitListMode() == WaitListMode.WaitList) {

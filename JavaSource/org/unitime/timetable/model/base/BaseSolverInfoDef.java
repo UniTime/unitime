@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.SolverInfoDef;
 
 /**
@@ -53,7 +54,7 @@ public abstract class BaseSolverInfoDef implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solver_info_def_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "solver_info_def_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "solver_info_def_seq")
 	})
 	@GeneratedValue(generator = "solver_info_def_id")

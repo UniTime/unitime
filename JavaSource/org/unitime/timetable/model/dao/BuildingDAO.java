@@ -42,6 +42,6 @@ public class BuildingDAO extends _RootDAO<Building,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Building> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Building x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Building x where x.session.uniqueId = :sessionId", Building.class).setParameter("sessionId", sessionId).list();
 	}
 }

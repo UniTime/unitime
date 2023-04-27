@@ -64,7 +64,8 @@ public class StudentEnrollmentImport extends BaseImport {
         
         Session session = null;
         
-        Set<Long> updatedStudents = new HashSet<Long>(); 
+        Set<Long> updatedStudents = new HashSet<Long>();
+        List<Student> createdStudents = new ArrayList<Student>();
         
 		try {
 	        String campus = rootElement.attributeValue("campus");
@@ -334,7 +335,7 @@ public class StudentEnrollmentImport extends BaseImport {
             			}
             			for (Iterator<StudentEnrollmentMessage> j = enrollment.getCourseRequest().getCourseDemand().getEnrollmentMessages().iterator(); j.hasNext(); ) {
             				StudentEnrollmentMessage message = j.next();
-            				getHibSession().delete(message);
+            				getHibSession().remove(message);
             				j.remove();
             			}
             		} else {
@@ -366,15 +367,16 @@ public class StudentEnrollmentImport extends BaseImport {
             	if (!enrollments.isEmpty()) {
             		for (StudentClassEnrollment enrollment: enrollments.values()) {
             			student.getClassEnrollments().remove(enrollment);
-            			getHibSession().delete(enrollment);
+            			getHibSession().remove(enrollment);
                 		updatedStudents.add(student.getUniqueId());
             		}
             	}
 
             	if (student.getUniqueId() == null) {
-            		updatedStudents.add((Long)getHibSession().save(student));
+            		createdStudents.add(student);
+            		getHibSession().persist(student);
             	} else {
-            		getHibSession().update(student);
+            		getHibSession().merge(student);
             	}
             	
             	if (fixCourseDemands) {
@@ -382,16 +384,16 @@ public class StudentEnrollmentImport extends BaseImport {
             		if (student.getSession().getStatusType() == null || !student.getSession().getStatusType().canPreRegisterStudents())
                 		for (CourseDemand cd: remaining) {
                 			if (cd.getFreeTime() != null)
-                				getHibSession().delete(cd.getFreeTime());
+                				getHibSession().remove(cd.getFreeTime());
                 			for (CourseRequest cr: cd.getCourseRequests())
-                				getHibSession().delete(cr);
+                				getHibSession().remove(cr);
                 			student.getCourseDemands().remove(cd);
-                			getHibSession().delete(cd);
+                			getHibSession().remove(cd);
                 		}
             		int priority = 0;
             		for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
             			cd.setPriority(priority++);
-            			getHibSession().saveOrUpdate(cd);
+            			getHibSession().merge(cd);
             		}
             	}
 
@@ -401,18 +403,21 @@ public class StudentEnrollmentImport extends BaseImport {
 	 	        for (Student student: students.values()) {
 	        		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 	        			StudentClassEnrollment enrollment = i.next();
-	        			getHibSession().delete(enrollment);
+	        			getHibSession().remove(enrollment);
 	        			i.remove();
 	     	        	updatedStudents.add(student.getUniqueId());
 	        		}
-	        		getHibSession().update(student);
+	        		getHibSession().merge(student);
 	 	        }
  	        
+        	getHibSession().flush();
+			if (!createdStudents.isEmpty())
+				for (Student s: createdStudents)
+					updatedStudents.add(s.getUniqueId());
             info(updatedStudents.size() + " students changed");
+            if (!updatedStudents.isEmpty())
+            	StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
 
- 	        if (!updatedStudents.isEmpty())
- 	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
-            
             commitTransaction();
 		} catch (Exception e) {
 			fatal("Exception: " + e.getMessage(), e);

@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -201,7 +200,10 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 	    				}
 	    				io.getOfferingCoordinators().add(coordinator);
 	    				instructor.getOfferingCoordinators().add(coordinator);
-	    				hibSession.saveOrUpdate(coordinator);
+	    				if (coordinator.getUniqueId() == null)
+	    					hibSession.persist(coordinator);
+	    				else
+	    					hibSession.merge(coordinator);
 	    			}	
 	        	}
 
@@ -337,7 +339,10 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     				}
 
     				if (courseOffering.getCredit() != null){
-    					hibSession.saveOrUpdate(courseOffering.getCredit());
+    					if (courseOffering.getCredit().getUniqueId() == null)
+	    					hibSession.persist(courseOffering.getCredit());
+	    				else
+	    					hibSession.merge(courseOffering.getCredit());
     				}
     			}
 
@@ -368,7 +373,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			}
     		}
 
-    		hibSession.saveOrUpdate(courseOffering);
+    		hibSession.merge(courseOffering);
     		
     		ChangeLog.addChange(
                     hibSession, 
@@ -542,27 +547,20 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			courseOffering.setConsentType(OfferingConsentTypeDAO.getInstance().get(courseOfferingInterface.getConsent()));
     		}
     		
-            if (courseOffering.getUniqueId() == null) {
-           	
-            	if (courseOffering.getUniqueId() == null) {
-    		    	hibSession.persist(io);
-    		    }
-            	courseOfferingInterface.setId((Long)hibSession.save(courseOffering));
-            	
-            	courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
-            	if (courseOffering.getCredit() != null) {
-            		courseOffering.getCredit().setOwner(courseOffering);
-            		hibSession.saveOrUpdate(courseOffering.getCredit());
-            	}
+    		hibSession.persist(io);
+        	hibSession.persist(courseOffering);
+        	
+        	courseOffering.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseOfferingInterface.getCreditFormat(), courseOfferingInterface.getCreditType(), courseOfferingInterface.getCreditUnitType(), courseOfferingInterface.getUnits(), courseOfferingInterface.getMaxUnits(), courseOfferingInterface.getFractionalIncrementsAllowed(), Boolean.valueOf(true)));
+        	if (courseOffering.getCredit() != null) {
+        		courseOffering.getCredit().setOwner(courseOffering);
+        		hibSession.persist(courseOffering.getCredit());
+        	}
 
-                for (OfferingCoordinator coordinator: io.getOfferingCoordinators()) {
-                	hibSession.saveOrUpdate(coordinator);
-                }
-
-            } else {
-            	hibSession.merge(courseOffering);
-            }
+            for (OfferingCoordinator coordinator: io.getOfferingCoordinators())
+            	hibSession.persist(coordinator);
             
+            hibSession.flush();
+
             ChangeLog.addChange(
                     hibSession, 
                     context, 
@@ -573,10 +571,8 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
                     courseOffering.getDepartment());
             
             
-            hibSession.flush();
-			tx.commit();
-			HibernateUtil.clearCache();
-			
+            tx.commit();
+            courseOfferingInterface.setId(courseOffering.getUniqueId());
 
 			if (context.hasPermission(io, Right.OfferingCanLock)) {
 				io.getSession().lockOffering(io.getUniqueId());

@@ -68,10 +68,14 @@ public class MapTileCache extends BaseMapTileCache {
 			if (tile == null) {
 				tile = new MapTileCache();
 				tile.setX(x); tile.setY(y); tile.setZ(zoom);
+				tile.setData(data);
+				tile.setTimeStamp(new Date());
+				hibSession.persist(tile);
+			} else {
+				tile.setData(data);
+				tile.setTimeStamp(new Date());
+				hibSession.merge(tile);
 			}
-			tile.setData(data);
-			tile.setTimeStamp(new Date());
-			hibSession.saveOrUpdate(tile);
 			tx.commit();
 		} catch (Exception e) {
 			tx.rollback();

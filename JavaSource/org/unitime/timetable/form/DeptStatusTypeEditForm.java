@@ -272,7 +272,10 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
         s.setApply(getApply());
         if (s.getOrd()==null) s.setOrd(DepartmentStatusType.findAll().size());
         s.setStatus(getRights());
-        hibSession.saveOrUpdate(s);
+        if (s.getUniqueId() != null)
+        	hibSession.persist(s);
+        else
+        	hibSession.merge(s);
         setUniqueId(s.getUniqueId());
         return s;
 	}
@@ -293,19 +296,19 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
             if (other==null)
                 throw new RuntimeException("Unable to delete session status "+getReference()+", no other session status available.");
             session.setStatusType(other);
-            hibSession.saveOrUpdate(session);
+            hibSession.merge(session);
         }
         for (Department dept: hibSession.createQuery(
                 "select d from Department d where d.statusType.uniqueId=:id",Department.class).
                 setParameter("id", s.getUniqueId()).list()) {
             dept.setStatusType(null);
-            hibSession.saveOrUpdate(dept);
+            hibSession.merge(dept);
         }        
         for (Iterator i=DepartmentStatusType.findAll().iterator();i.hasNext();) {
             DepartmentStatusType x = (DepartmentStatusType)i.next();
             if (x.getOrd()>s.getOrd()) {
                 x.setOrd(x.getOrd()-1); 
-                hibSession.saveOrUpdate(x);
+                hibSession.merge(x);
             }
         }
         if (s!=null) hibSession.remove(s);

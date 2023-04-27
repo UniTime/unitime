@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentNote;
 
@@ -58,7 +59,7 @@ public abstract class BaseStudentNote implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "student_note_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "student_note_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "student_note_id")

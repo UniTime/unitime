@@ -42,6 +42,6 @@ public class CurriculumCourseGroupDAO extends _RootDAO<CurriculumCourseGroup,Lon
 
 	@SuppressWarnings("unchecked")
 	public List<CurriculumCourseGroup> findByCurriculum(org.hibernate.Session hibSession, Long curriculumId) {
-		return hibSession.createQuery("from CurriculumCourseGroup x where x.curriculum.uniqueId = :curriculumId").setParameter("curriculumId", curriculumId).list();
+		return hibSession.createQuery("from CurriculumCourseGroup x where x.curriculum.uniqueId = :curriculumId", CurriculumCourseGroup.class).setParameter("curriculumId", curriculumId).list();
 	}
 }

@@ -87,7 +87,7 @@ public class ScriptImport extends BaseImport {
 		}
 		
 		for (ScriptParameter parameter: params.values()) {
-			getHibSession().delete(parameter);
+			getHibSession().remove(parameter);
 			script.getParameters().remove(parameter);
 		}
 		
@@ -103,7 +103,10 @@ public class ScriptImport extends BaseImport {
 		else
 			script.setDescription(null);
 		
-		getHibSession().saveOrUpdate(script);
+		if (script.getUniqueId() == null)
+        	getHibSession().persist(script);
+        else
+        	getHibSession().merge(script);
 	}
 
 }

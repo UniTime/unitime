@@ -42,21 +42,21 @@ public class AssignmentDAO extends _RootDAO<Assignment,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Assignment> findByTimePattern(org.hibernate.Session hibSession, Long timePatternId) {
-		return hibSession.createQuery("from Assignment x where x.timePattern.uniqueId = :timePatternId").setParameter("timePatternId", timePatternId).list();
+		return hibSession.createQuery("from Assignment x where x.timePattern.uniqueId = :timePatternId", Assignment.class).setParameter("timePatternId", timePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Assignment> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from Assignment x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from Assignment x where x.datePattern.uniqueId = :datePatternId", Assignment.class).setParameter("datePatternId", datePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Assignment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
-		return hibSession.createQuery("from Assignment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
+		return hibSession.createQuery("from Assignment x where x.solution.uniqueId = :solutionId", Assignment.class).setParameter("solutionId", solutionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Assignment> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from Assignment x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+		return hibSession.createQuery("from Assignment x where x.clazz.uniqueId = :clazzId", Assignment.class).setParameter("clazzId", clazzId).list();
 	}
 }

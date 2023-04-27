@@ -39,6 +39,8 @@ public abstract class BaseClusterDiscovery extends ClusterDiscoveryId {
 	private byte[] iPingData;
 	private Date iTimeStamp;
 
+
+
 	@Column(name = "ping_data", nullable = true, length = 5000)
 	public byte[] getPingData() { return iPingData; }
 	public void setPingData(byte[] pingData) { iPingData = pingData; }

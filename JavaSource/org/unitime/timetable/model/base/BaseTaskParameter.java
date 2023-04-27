@@ -36,6 +36,8 @@ public abstract class BaseTaskParameter extends TaskParameterId {
 
 	private String iValue;
 
+
+
 	@Column(name = "value", nullable = true, length = 2048)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }

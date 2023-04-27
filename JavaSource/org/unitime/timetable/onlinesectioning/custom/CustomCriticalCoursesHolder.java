@@ -177,7 +177,7 @@ public class CustomCriticalCoursesHolder {
 							for (CourseDemand cd: dbStudent.getCourseDemands()) {
 								int crit = isCritical(cd, critical);
 								if (cd.getCritical() == null || cd.getCritical().intValue() != crit) {
-									cd.setCritical(crit); helper.getHibSession().update(cd); changed = true;
+									cd.setCritical(crit); helper.getHibSession().merge(cd); changed = true;
 								}
 							}
 						}
@@ -196,7 +196,7 @@ public class CustomCriticalCoursesHolder {
 								for (AdvisorCourseRequest acr: dbStudent.getAdvisorCourseRequests()) {
 									int crit = acr.isCritical(critical);
 									if (acr.getCritical() == null || acr.getCritical().intValue() != crit) {
-										acr.setCritical(crit); helper.getHibSession().update(acr);
+										acr.setCritical(crit); helper.getHibSession().merge(acr);
 									}
 								}
 						}

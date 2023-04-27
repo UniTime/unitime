@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ExactTimeMins;
 
 /**
@@ -54,7 +55,7 @@ public abstract class BaseExactTimeMins implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "exact_time_mins_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "exact_time_mins_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "exact_time_mins_id")

@@ -32,6 +32,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Session;
 
@@ -60,7 +61,7 @@ public abstract class BasePointInTimeData implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "point_in_time_data_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "point_in_time_data_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "point_in_time_data_id")

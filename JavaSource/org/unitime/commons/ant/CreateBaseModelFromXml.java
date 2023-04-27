@@ -297,17 +297,17 @@ public class CreateBaseModelFromXml extends Task {
 		TreeSet<String> properties = new TreeSet<String>();
 		Vector<String[]> compositeId = new Vector<String[]>();
 		
-		imports.add("javax.persistence.MappedSuperclass");
+		imports.add("jakarta.persistence.MappedSuperclass");
 		pwh.println("@MappedSuperclass");
-		mainImports.add("javax.persistence.Entity");
+		mainImports.add("jakarta.persistence.Entity");
 		pwmh.println("@Entity");
 		if (ext == null) {
 			mainImports.add("org.hibernate.annotations.Cache");
 			mainImports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-			pwmh.println("@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
+			pwmh.println("@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");
 		}
 		if (table != null) {
-			mainImports.add("javax.persistence.Table");
+			mainImports.add("jakarta.persistence.Table");
 			pwmh.println("@Table(name = \"" + table + "\")");	
 		}
 		
@@ -319,16 +319,16 @@ public class CreateBaseModelFromXml extends Task {
 				imports.add(type);
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
-			mainImports.add("javax.persistence.Inheritance");
-			mainImports.add("javax.persistence.InheritanceType");
-			mainImports.add("javax.persistence.DiscriminatorColumn");
-			mainImports.add("javax.persistence.DiscriminatorType");
+			mainImports.add("jakarta.persistence.Inheritance");
+			mainImports.add("jakarta.persistence.InheritanceType");
+			mainImports.add("jakarta.persistence.DiscriminatorColumn");
+			mainImports.add("jakarta.persistence.DiscriminatorType");
 			pwmh.println("@Inheritance(strategy = InheritanceType.SINGLE_TABLE)");
 			pwmh.println("@DiscriminatorColumn(name=\"" + column + "\", discriminatorType = DiscriminatorType." + type.toUpperCase() + ")");
 		} else {
 			String discriminatorValue = classEl.attributeValue("discriminator-value");
 			if (discriminatorValue != null) {
-				mainImports.add("javax.persistence.DiscriminatorValue");
+				mainImports.add("jakarta.persistence.DiscriminatorValue");
 				pwmh.println("@DiscriminatorValue(\"" + discriminatorValue + "\")");
 			}
 		}
@@ -358,7 +358,7 @@ public class CreateBaseModelFromXml extends Task {
 			pwa.println("	private "+type+" i"+name+";");
 			properties.add(name);
 			pwb.println();
-			imports.add("javax.persistence.Id");
+			imports.add("jakarta.persistence.Id");
 			pwb.println("	@Id");
 			String tableid = table + "_id";
 			if ("Location".equals(className)) tableid = "room_id";
@@ -369,13 +369,14 @@ public class CreateBaseModelFromXml extends Task {
 			if (sequence != null) {
 				imports.add("org.hibernate.annotations.GenericGenerator");
 				imports.add("org.hibernate.annotations.Parameter");
-				pwb.println("	@GenericGenerator(name = \"" + tableid + "\", strategy = \"org.unitime.commons.hibernate.id.UniqueIdGenerator\", parameters = {");
+				imports.add("org.unitime.commons.hibernate.id.UniqueIdGenerator");
+				pwb.println("	@GenericGenerator(name = \"" + tableid + "\", type = UniqueIdGenerator.class, parameters = {");
 				pwb.println("		@Parameter(name = \"sequence\", value = \"" + sequence + "\")");
 				pwb.println("	})");
-				imports.add("javax.persistence.GeneratedValue");
+				imports.add("jakarta.persistence.GeneratedValue");
 				pwb.println("	@GeneratedValue(generator = \"" + tableid + "\")");
 			}
-			imports.add("javax.persistence.Column");
+			imports.add("jakarta.persistence.Column");
 			pwb.println("	@Column(name=\"" + column + "\")");
 			pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 			pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
@@ -391,7 +392,7 @@ public class CreateBaseModelFromXml extends Task {
 			idImports.add("java.io.Serializable");
 			constructor = false; hashCode = false; equals = false; serializable = false;
 			
-			imports.add("javax.persistence.IdClass");
+			imports.add("jakarta.persistence.IdClass");
 			ext = pkg + ".base." + className + "Id";
 			pwh.println("@IdClass(" + className + "Id.class)");
 			
@@ -413,10 +414,10 @@ public class CreateBaseModelFromXml extends Task {
 				String cascade = el.attributeValue("cascade");
 				boolean notNul = "true".equals(el.attributeValue("not-null", "true"));
 
-				if (lazy || join || eager) idImports.add("javax.persistence.FetchType");
-				if ("all".equals(cascade)) idImports.add("javax.persistence.CascadeType");
-				else if ("save-update".equals(cascade)) {}
-				else if ("all-delete-orphan".equals(cascade)) idImports.add("javax.persistence.CascadeType");
+				if (lazy || join || eager) idImports.add("jakarta.persistence.FetchType");
+				if ("all".equals(cascade)) idImports.add("jakarta.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) idImports.add("jakarta.persistence.CascadeType");
+				else if ("all-delete-orphan".equals(cascade)) idImports.add("jakarta.persistence.CascadeType");
 				else if ("delete-orphan".equals(cascade)) {}
 				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
 				
@@ -426,29 +427,26 @@ public class CreateBaseModelFromXml extends Task {
 				properties.add(name);
 				compositeId.add(new String[] {type, name});
 				pwi2.println();
-				idImports.add("javax.persistence.Id");
+				idImports.add("jakarta.persistence.Id");
 				pwi2.println("	@Id");
-				idImports.add("javax.persistence.ManyToOne");
+				idImports.add("jakarta.persistence.ManyToOne");
 				pwi2.println(annotation("ManyToOne",
 						"optional = " +  (notNul ? "false" : "true"),
 						(lazy ? "fetch = FetchType.LAZY" : join || eager ? "fetch = FetchType.EAGER" : null),
 						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
-						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null)
 						));
-				idImports.add("javax.persistence.JoinColumn");
+				idImports.add("jakarta.persistence.JoinColumn");
 				pwi2.println("	@JoinColumn(name = \"" + column + "\")");
 				if (lazy || join || eager || el.element("cache") != null) {
 					idImports.add("org.hibernate.annotations.Cache");
 					idImports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-					pwi2.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+					pwi2.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");	
 				}
 				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
 					idImports.add("org.hibernate.annotations.Cascade");
 					pwi2.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
-				}
-				if ("save-update".equals(cascade)) {
-					idImports.add("org.hibernate.annotations.Cascade");
-					pwi2.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
 				}
 				pwi2.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwi2.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
@@ -471,9 +469,9 @@ public class CreateBaseModelFromXml extends Task {
 				pwi1.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				pwi2.println();
-				idImports.add("javax.persistence.Id");
+				idImports.add("jakarta.persistence.Id");
 				pwi2.println("	@Id");
-				idImports.add("javax.persistence.Column");
+				idImports.add("jakarta.persistence.Column");
 				pwi2.println("	@Column(name=\"" + column + "\"" + (length != null && !length.isEmpty() ? ", length = " + length : "") + ")");
 				pwi2.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwi2.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
@@ -488,7 +486,7 @@ public class CreateBaseModelFromXml extends Task {
 			pwc.println("package "+pkg+".base;");
 			pwc.println();
 			String last = null;
-			idImports.add("javax.persistence.MappedSuperclass");
+			idImports.add("jakarta.persistence.MappedSuperclass");
 			for (String imp: idImports) {
 				String top = imp.substring(0, imp.indexOf('.'));
 				if (last!=null && !last.equals(top)) pwc.println();
@@ -570,11 +568,11 @@ public class CreateBaseModelFromXml extends Task {
 				pwa.println("	private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
-				imports.add("javax.persistence.Column");
+				imports.add("jakarta.persistence.Column");
 				pwb.println("	@Column(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + (length != null && !length.isEmpty() ? ", length = " + length : "") + ")");
 				if (type.equals("Boolean")) {
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
-					imports.add("javax.persistence.Transient");
+					imports.add("jakarta.persistence.Transient");
 					pwb.println("	@Transient");
 				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
@@ -609,10 +607,10 @@ public class CreateBaseModelFromXml extends Task {
 			boolean notNul = "true".equals(el.attributeValue("not-null"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
-			if (lazy || join || eager) imports.add("javax.persistence.FetchType");
-			if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
-			else if ("save-update".equals(cascade)) {}
-			else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+			if (lazy || join || eager) imports.add("jakarta.persistence.FetchType");
+			if ("all".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+			else if ("save-update".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+			else if ("all-delete-orphan".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
 			else if ("delete-orphan".equals(cascade)) {}
 			else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
 			if (column!=null) {
@@ -620,54 +618,48 @@ public class CreateBaseModelFromXml extends Task {
 				properties.add(name);
 				pwb.println();
 				manyToOnes.add(new String[] {type, name});
-				imports.add("javax.persistence.ManyToOne");
+				imports.add("jakarta.persistence.ManyToOne");
 				
 				pwb.println(annotation("ManyToOne",
 						"optional = " +  (notNul ? "false" : "true"),
 						(lazy ? "fetch = FetchType.LAZY" : join || eager ? "fetch = FetchType.EAGER" : null),
 						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
-						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null)
 						));
-				imports.add("javax.persistence.JoinColumn");
+				imports.add("jakarta.persistence.JoinColumn");
 				pwb.println("	@JoinColumn(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + ")");
 				if (lazy || eager || join || el.element("cache") != null) {
 					imports.add("org.hibernate.annotations.Cache");
 					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");	
 				}
 				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
 					imports.add("org.hibernate.annotations.Cascade");
 					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
-				}
-				if ("save-update".equals(cascade)) {
-					imports.add("org.hibernate.annotations.Cascade");
-					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
 				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else if (formula!=null) {
 				pwa.println("	private "+type+" i"+name+";");
 				pwb.println();
-				imports.add("javax.persistence.ManyToOne");
+				imports.add("jakarta.persistence.ManyToOne");
 				pwb.println(annotation("ManyToOne",
 						(lazy ? "fetch = FetchType.LAZY" : join ? "fetch = FetchType.EAGER" : null),
 						("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
-						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+						("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+						("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null)
 						));
 				imports.add("org.hibernate.annotations.JoinFormula");
 				pwb.println("	@JoinFormula(\"" + formula + "\")");
 				if (lazy || eager || join || el.element("cache") != null) {
 					imports.add("org.hibernate.annotations.Cache");
 					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");	
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");	
 				}
 				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
 					imports.add("org.hibernate.annotations.Cascade");
 					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
-				}
-				if ("save-update".equals(cascade)) {
-					imports.add("org.hibernate.annotations.Cascade");
-					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
 				}
 				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
 				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
@@ -697,11 +689,11 @@ public class CreateBaseModelFromXml extends Task {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
-				imports.add("javax.persistence.ManyToMany");
-				if (lazy || eager) imports.add("javax.persistence.FetchType");
-				if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
-				else if ("save-update".equals(cascade)) {}
-				else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				imports.add("jakarta.persistence.ManyToMany");
+				if (lazy || eager) imports.add("jakarta.persistence.FetchType");
+				if ("all".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+				else if ("all-delete-orphan".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
 				else if ("delete-orphan".equals(cascade)) {}
 				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
 				if (inverse) {
@@ -709,16 +701,18 @@ public class CreateBaseModelFromXml extends Task {
 							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
 							"mappedBy = \"" + iRelations.get(className + "." + icolumn) + "\"",
 							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
-							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null)
 							));
 				} else {
 					pwb.println(annotation("ManyToMany",
 							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
 							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
-							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null)
+							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
+							("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null)
 							));
-					imports.add("javax.persistence.JoinTable");
-					imports.add("javax.persistence.JoinColumn");
+					imports.add("jakarta.persistence.JoinTable");
+					imports.add("jakarta.persistence.JoinColumn");
 					pwb.println("	@JoinTable(name = \"" + m2mtable + "\",");
 					if (column == null) {
 						pwb.println("		joinColumns = {");
@@ -736,15 +730,11 @@ public class CreateBaseModelFromXml extends Task {
 				if (lazy || eager || el.element("cache") != null) {
 					imports.add("org.hibernate.annotations.Cache");
 					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");
 				}
 				if ("all-delete-orphan".equals(cascade) || "delete-orphan".equals(cascade)) {
 					imports.add("org.hibernate.annotations.Cascade");
 					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
-				}
-				if ("save-update".equals(cascade)) {
-					imports.add("org.hibernate.annotations.Cascade");
-					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
 				}
 			} else if (el.element("one-to-many")!=null) {
 				String column = el.element("key").attributeValue("column").toLowerCase();
@@ -753,11 +743,11 @@ public class CreateBaseModelFromXml extends Task {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
-				imports.add("javax.persistence.OneToMany");
-				if (lazy || eager) imports.add("javax.persistence.FetchType");
-				if ("all".equals(cascade)) imports.add("javax.persistence.CascadeType");
-				else if ("save-update".equals(cascade)) {}
-				else if ("all-delete-orphan".equals(cascade)) imports.add("javax.persistence.CascadeType");
+				imports.add("jakarta.persistence.OneToMany");
+				if (lazy || eager) imports.add("jakarta.persistence.FetchType");
+				if ("all".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+				else if ("save-update".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
+				else if ("all-delete-orphan".equals(cascade)) imports.add("jakarta.persistence.CascadeType");
 				else if ("delete-orphan".equals(cascade)) {}
 				else if (cascade != null && !"none".equals(cascade)) warn("Not-supported cascade type: " + cascade);
 				if (inverse) {
@@ -766,6 +756,7 @@ public class CreateBaseModelFromXml extends Task {
 							"mappedBy = \"" + iRelations.get(type + "." + column) + "\"",
 							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
 							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}, orphanRemoval = true" : null),
+							("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null),
 							("delete-orphan".equals(cascade) ? "orphanRemoval = true" : null)
 							));
 				} else {
@@ -773,11 +764,12 @@ public class CreateBaseModelFromXml extends Task {
 							(lazy ? "fetch = FetchType.LAZY" : eager ? "fetch = FetchType.EAGER" : null),
 							("all".equals(cascade) ? "cascade = {CascadeType.ALL}" : null),
 							("all-delete-orphan".equals(cascade) ? "cascade = {CascadeType.ALL}, orphanRemoval = true" : null),
+							("save-update".equals(cascade) ? "cascade = {CascadeType.PERSIST, CascadeType.MERGE}" : null),
 							("delete-orphan".equals(cascade) ? "orphanRemoval = true" : null)
 							));
-					imports.add("javax.persistence.JoinColumn");
+					imports.add("jakarta.persistence.JoinColumn");
 					if (column == null)  {
-						imports.add("javax.persistence.JoinColumns");
+						imports.add("jakarta.persistence.JoinColumns");
 						pwb.println("	@JoinColumns({");
 						for (Iterator<Element> j = el.element("key").elementIterator("column"); j.hasNext();) {
 							Element colEl = j.next();
@@ -792,11 +784,7 @@ public class CreateBaseModelFromXml extends Task {
 				if (lazy || eager || el.element("cache") != null) {
 					imports.add("org.hibernate.annotations.Cache");
 					imports.add("org.hibernate.annotations.CacheConcurrencyStrategy");
-					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, include = \"non-lazy\")");
-				}
-				if ("save-update".equals(cascade)) {
-					imports.add("org.hibernate.annotations.Cascade");
-					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)");
+					pwb.println("	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)");
 				}
 			} else if (el.element("element")!=null) {
 				String m2mtable = el.attributeValue("table").toLowerCase();
@@ -807,14 +795,14 @@ public class CreateBaseModelFromXml extends Task {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
-				imports.add("javax.persistence.ElementCollection");
+				imports.add("jakarta.persistence.ElementCollection");
 				pwb.println("	@ElementCollection");
-				imports.add("javax.persistence.CollectionTable");
-				imports.add("javax.persistence.JoinColumn");
+				imports.add("jakarta.persistence.CollectionTable");
+				imports.add("jakarta.persistence.JoinColumn");
 				pwb.println("	@CollectionTable(name = \"" + m2mtable + "\",");
 				pwb.println("		joinColumns = @JoinColumn(name = \"" + keyColumn + "\")");
 				pwb.println("	)");
-				imports.add("javax.persistence.Column");
+				imports.add("jakarta.persistence.Column");
 				pwb.println("	@Column(name = \"" + elColumn + "\")");
 			} else {
 				System.err.println("Unknown type of set");
@@ -842,8 +830,8 @@ public class CreateBaseModelFromXml extends Task {
 		if (idName != null || !compositeId.isEmpty())
 			imports.add(fixType(classEl.attributeValue("name"), pkg));
 		if (abs && discriminator == null && "class".equals(classEl.getName())) {
-			mainImports.add("javax.persistence.Inheritance");
-			mainImports.add("javax.persistence.InheritanceType");
+			mainImports.add("jakarta.persistence.Inheritance");
+			mainImports.add("jakarta.persistence.InheritanceType");
 			pwmh.println("@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)");
 		}
 		
@@ -1010,7 +998,7 @@ public class CreateBaseModelFromXml extends Task {
 					existingImports.add(imp);
 				}
 				if (readLine.matches("[\t ]*(public|private|protected)[\t ]*[a-zA-Z<>\\., _\\[\\]\\?]+[\t ]+(get|is)[A-Za-z0-9_]+\\(\\).*")) {
-					mainImports.add("javax.persistence.Transient");
+					mainImports.add("jakarta.persistence.Transient");
 					needTransient = true;
 				}
 				file.add(readLine);
@@ -1036,7 +1024,7 @@ public class CreateBaseModelFromXml extends Task {
 				Matcher importMatcher = importPattern.matcher(line);
 				if (importMatcher.matches()) {
 					String imp = importMatcher.group(1);
-					if ("javax.persistence.Transient".equals(imp) && !needTransient) continue;
+					if ("jakarta.persistence.Transient".equals(imp) && !needTransient) continue;
 				}
 				if (!classLine && line.startsWith("@Entity")) continue;
 				if (!classLine && line.startsWith("@Cache")) continue;
@@ -1107,7 +1095,7 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println();
 			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+iType+" "+x+"Id) {");
-			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").setParameter(\""+x+"Id\", "+x+"Id).list();");
+			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\", " + className + ".class).setParameter(\""+x+"Id\", "+x+"Id).list();");
 			pw.println("	}");
 		}
 		pw.println("}");

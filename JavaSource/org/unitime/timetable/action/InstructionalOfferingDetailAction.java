@@ -582,7 +582,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
             // Set flag to not offered
             io.setNotOffered(Boolean.valueOf(true));
             
-            idao.saveOrUpdate(io);
+            hibSession.merge(io);
 
             ChangeLog.addChange(
                     hibSession, 
@@ -634,7 +634,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
             // Set flag to offered
             io.setNotOffered(Boolean.valueOf(false));
             
-            idao.saveOrUpdate(io);
+            hibSession.merge(io);
             
             ChangeLog.addChange(
                     hibSession, 

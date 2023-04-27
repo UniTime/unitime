@@ -122,7 +122,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 		while (idIterator.hasNext()) {
 			ids.append(idIterator.next()); idx++;
 			if (idx==100) {
-				hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+				hibSession.createMutationQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
 				ids = new StringBuffer();
 				idx = 0;
 			} else if (idIterator.hasNext()) {
@@ -130,7 +130,7 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 			}
 		}
 		if (idx>0)
-			hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+			hibSession.createMutationQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
 	}
 	
 	/**
@@ -160,25 +160,25 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
             }
             */
             hibSession.flush();
-            hibSession.createQuery(
+            hibSession.createMutationQuery(
 	                    "delete DistributionPref p where p.owner in (select s from Session s where s.uniqueId=:sessionId)").
 	                    setParameter("sessionId", id).
 	                    executeUpdate();
-		    hibSession.createQuery(
+		    hibSession.createMutationQuery(
                 "delete InstructionalOffering o where o.session.uniqueId=:sessionId").
                 setParameter("sessionId", id).
                 executeUpdate();
-            hibSession.createQuery(
+            hibSession.createMutationQuery(
                 "delete Department d where d.session.uniqueId=:sessionId").
                 setParameter("sessionId", id).
                 executeUpdate();
-		    hibSession.createQuery(
+		    hibSession.createMutationQuery(
 		            "delete Session s where s.uniqueId=:sessionId").
 		            setParameter("sessionId", id).
                     executeUpdate();
 		    String[] a = { "DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref" };
 		    for (String str : a) {       
-	            hibSession.createQuery(
+	            hibSession.createMutationQuery(
 	                    "delete " + str + " p where owner not in (from PreferenceGroup)").
 	                    executeUpdate();
 			}
@@ -195,10 +195,6 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
             throw e;
 		}
 		HibernateUtil.clearCache();
-	}
-
-	public void saveOrUpdate() throws HibernateException {
-		(SessionDAO.getInstance()).saveOrUpdate(this);
 	}
 
 	@Transient

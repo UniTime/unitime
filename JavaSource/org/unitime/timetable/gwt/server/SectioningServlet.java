@@ -4194,7 +4194,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				student.setPreferredScheduleGaps(preferences.getScheduleGaps());
 				student.setClassStartDate(preferences.getClassDateFrom());
 				student.setClassEndDate(preferences.getClassDateTo());
-				StudentDAO.getInstance().update(student);
+				StudentDAO.getInstance().getSession().merge(student);
+				StudentDAO.getInstance().getSession().flush();
 			}
 		}
 		try {

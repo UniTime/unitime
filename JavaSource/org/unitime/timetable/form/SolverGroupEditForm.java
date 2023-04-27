@@ -249,11 +249,11 @@ public class SolverGroupEditForm implements UniTimeForm {
 		hibSession.persist(group);
 		for (Department d: newDepartments) {
 			d.setSolverGroup(group);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		for (TimetableManager mgr: newManagers) {
 			mgr.getSolverGroups().add(group);
-			hibSession.saveOrUpdate(mgr);
+			hibSession.merge(mgr);
 		}
 		iUniqueId = group.getUniqueId();
 		return group;
@@ -274,13 +274,13 @@ public class SolverGroupEditForm implements UniTimeForm {
 				} else {
 					group.getDepartments().add(dept);
 					dept.setSolverGroup(group);
-					hibSession.saveOrUpdate(dept);
+					hibSession.merge(dept);
 				}
 			}
 			for (Department dept: oldDepartments) {
 				group.getDepartments().remove(dept);
 				dept.setSolverGroup(null);
-				hibSession.saveOrUpdate(dept);
+				hibSession.merge(dept);
 			}
 		}
 		HashSet<TimetableManager> oldManagers = new HashSet<TimetableManager>(group.getTimetableManagers());
@@ -298,9 +298,9 @@ public class SolverGroupEditForm implements UniTimeForm {
 		for (TimetableManager mgr: oldManagers) {
 			group.getTimetableManagers().remove(mgr);
 			mgr.getSolverGroups().remove(group);
-			hibSession.saveOrUpdate(mgr);
+			hibSession.merge(mgr);
 		}
-		hibSession.saveOrUpdate(group);
+		hibSession.merge(group);
 		hibSession.flush();
 		hibSession.refresh(group);
 		for (Iterator i=group.getDepartments().iterator();i.hasNext();) 
@@ -316,11 +316,11 @@ public class SolverGroupEditForm implements UniTimeForm {
 		if (group == null) return;
 		for (Department dept: group.getDepartments()) {
 			dept.setSolverGroup(null);
-			hibSession.saveOrUpdate(dept);
+			hibSession.merge(dept);
 		}
 		for (TimetableManager mgr: group.getTimetableManagers()) {
 			mgr.getSolverGroups().remove(group);
-			hibSession.saveOrUpdate(mgr);
+			hibSession.merge(mgr);
 		}
         ChangeLog.addChange(
                 hibSession, 

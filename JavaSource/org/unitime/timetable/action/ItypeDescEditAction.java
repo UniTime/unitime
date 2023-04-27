@@ -145,7 +145,7 @@ public class ItypeDescEditAction extends UniTimeAction<ItypeDescEditForm> {
 
 					form.delete(hibSession);
 
-					tx.commit();
+					if (tx != null) tx.commit();
 				} catch (Exception e) {
 					if (tx != null)
 						tx.rollback();

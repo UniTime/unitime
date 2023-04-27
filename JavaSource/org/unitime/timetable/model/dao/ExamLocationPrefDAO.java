@@ -42,16 +42,16 @@ public class ExamLocationPrefDAO extends _RootDAO<ExamLocationPref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExamLocationPref> findByLocation(org.hibernate.Session hibSession, Long locationId) {
-		return hibSession.createQuery("from ExamLocationPref x where x.location.uniqueId = :locationId").setParameter("locationId", locationId).list();
+		return hibSession.createQuery("from ExamLocationPref x where x.location.uniqueId = :locationId", ExamLocationPref.class).setParameter("locationId", locationId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExamLocationPref> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
-		return hibSession.createQuery("from ExamLocationPref x where x.prefLevel.uniqueId = :prefLevelId").setParameter("prefLevelId", prefLevelId).list();
+		return hibSession.createQuery("from ExamLocationPref x where x.prefLevel.uniqueId = :prefLevelId", ExamLocationPref.class).setParameter("prefLevelId", prefLevelId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExamLocationPref> findByExamPeriod(org.hibernate.Session hibSession, Long examPeriodId) {
-		return hibSession.createQuery("from ExamLocationPref x where x.examPeriod.uniqueId = :examPeriodId").setParameter("examPeriodId", examPeriodId).list();
+		return hibSession.createQuery("from ExamLocationPref x where x.examPeriod.uniqueId = :examPeriodId", ExamLocationPref.class).setParameter("examPeriodId", examPeriodId).list();
 	}
 }

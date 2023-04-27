@@ -42,16 +42,16 @@ public class ExamDAO extends _RootDAO<Exam,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Exam> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Exam x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Exam x where x.session.uniqueId = :sessionId", Exam.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Exam> findByAssignedPeriod(org.hibernate.Session hibSession, Long assignedPeriodId) {
-		return hibSession.createQuery("from Exam x where x.assignedPeriod.uniqueId = :assignedPeriodId").setParameter("assignedPeriodId", assignedPeriodId).list();
+		return hibSession.createQuery("from Exam x where x.assignedPeriod.uniqueId = :assignedPeriodId", Exam.class).setParameter("assignedPeriodId", assignedPeriodId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Exam> findByExamType(org.hibernate.Session hibSession, Long examTypeId) {
-		return hibSession.createQuery("from Exam x where x.examType.uniqueId = :examTypeId").setParameter("examTypeId", examTypeId).list();
+		return hibSession.createQuery("from Exam x where x.examType.uniqueId = :examTypeId", Exam.class).setParameter("examTypeId", examTypeId).list();
 	}
 }

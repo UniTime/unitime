@@ -42,11 +42,11 @@ public class RelatedCourseInfoDAO extends _RootDAO<RelatedCourseInfo,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<RelatedCourseInfo> findByEvent(org.hibernate.Session hibSession, Long eventId) {
-		return hibSession.createQuery("from RelatedCourseInfo x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
+		return hibSession.createQuery("from RelatedCourseInfo x where x.event.uniqueId = :eventId", RelatedCourseInfo.class).setParameter("eventId", eventId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<RelatedCourseInfo> findByCourse(org.hibernate.Session hibSession, Long courseId) {
-		return hibSession.createQuery("from RelatedCourseInfo x where x.course.uniqueId = :courseId").setParameter("courseId", courseId).list();
+		return hibSession.createQuery("from RelatedCourseInfo x where x.course.uniqueId = :courseId", RelatedCourseInfo.class).setParameter("courseId", courseId).list();
 	}
 }

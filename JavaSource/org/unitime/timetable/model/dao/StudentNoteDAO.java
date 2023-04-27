@@ -42,6 +42,6 @@ public class StudentNoteDAO extends _RootDAO<StudentNote,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<StudentNote> findByStudent(org.hibernate.Session hibSession, Long studentId) {
-		return hibSession.createQuery("from StudentNote x where x.student.uniqueId = :studentId").setParameter("studentId", studentId).list();
+		return hibSession.createQuery("from StudentNote x where x.student.uniqueId = :studentId", StudentNote.class).setParameter("studentId", studentId).list();
 	}
 }

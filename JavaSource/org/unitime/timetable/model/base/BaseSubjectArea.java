@@ -37,6 +37,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
@@ -69,7 +70,7 @@ public abstract class BaseSubjectArea implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "subject_area_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "subject_area_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "subject_area_seq")
 	})
 	@GeneratedValue(generator = "subject_area_id")

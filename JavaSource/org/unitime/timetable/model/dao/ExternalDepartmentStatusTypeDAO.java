@@ -43,6 +43,6 @@ public class ExternalDepartmentStatusTypeDAO extends _RootDAO<ExternalDepartment
 
 	@SuppressWarnings("unchecked")
 	public List<ExternalDepartmentStatusType> findByStatusType(org.hibernate.Session hibSession, Long statusTypeId) {
-		return hibSession.createQuery("from ExternalDepartmentStatusType x where x.statusType.uniqueId = :statusTypeId").setParameter("statusTypeId", statusTypeId).list();
+		return hibSession.createQuery("from ExternalDepartmentStatusType x where x.statusType.uniqueId = :statusTypeId", ExternalDepartmentStatusType.class).setParameter("statusTypeId", statusTypeId).list();
 	}
 }

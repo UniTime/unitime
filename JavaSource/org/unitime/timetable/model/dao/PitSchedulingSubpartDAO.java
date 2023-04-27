@@ -42,31 +42,31 @@ public class PitSchedulingSubpartDAO extends _RootDAO<PitSchedulingSubpart,Long>
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditType.uniqueId = :creditTypeId", PitSchedulingSubpart.class).setParameter("creditTypeId", creditTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findByCreditUnitType(org.hibernate.Session hibSession, Long creditUnitTypeId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditUnitType.uniqueId = :creditUnitTypeId").setParameter("creditUnitTypeId", creditUnitTypeId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.creditUnitType.uniqueId = :creditUnitTypeId", PitSchedulingSubpart.class).setParameter("creditUnitTypeId", creditUnitTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.itype.itype = :itypeId").setParameter("itypeId", itypeId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.itype.itype = :itypeId", PitSchedulingSubpart.class).setParameter("itypeId", itypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findBySchedulingSubpart(org.hibernate.Session hibSession, Long schedulingSubpartId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.schedulingSubpart.uniqueId = :schedulingSubpartId").setParameter("schedulingSubpartId", schedulingSubpartId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.schedulingSubpart.uniqueId = :schedulingSubpartId", PitSchedulingSubpart.class).setParameter("schedulingSubpartId", schedulingSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findByPitParentSubpart(org.hibernate.Session hibSession, Long pitParentSubpartId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitParentSubpart.uniqueId = :pitParentSubpartId").setParameter("pitParentSubpartId", pitParentSubpartId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitParentSubpart.uniqueId = :pitParentSubpartId", PitSchedulingSubpart.class).setParameter("pitParentSubpartId", pitParentSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitSchedulingSubpart> findByPitInstrOfferingConfig(org.hibernate.Session hibSession, Long pitInstrOfferingConfigId) {
-		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitInstrOfferingConfig.uniqueId = :pitInstrOfferingConfigId").setParameter("pitInstrOfferingConfigId", pitInstrOfferingConfigId).list();
+		return hibSession.createQuery("from PitSchedulingSubpart x where x.pitInstrOfferingConfig.uniqueId = :pitInstrOfferingConfigId", PitSchedulingSubpart.class).setParameter("pitInstrOfferingConfigId", pitInstrOfferingConfigId).list();
 	}
 }

@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Session;
 
@@ -57,7 +58,7 @@ public abstract class BaseEventDateMapping implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "date_mapping_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "date_mapping_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "date_mapping_id")

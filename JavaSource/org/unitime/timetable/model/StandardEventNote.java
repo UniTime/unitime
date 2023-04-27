@@ -62,9 +62,9 @@ public class StandardEventNote extends BaseStandardEventNote {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-   public static List findAll() {
+   public static List<StandardEventNote> findAll() {
         return StandardEventNoteDAO.getInstance().getSession().createQuery(
-                "select sen from StandardEventNote sen order by sen.reference"
+                "select sen from StandardEventNote sen order by sen.reference", StandardEventNote.class
                 ).setCacheable(true).list();
     }	
    

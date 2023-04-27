@@ -554,7 +554,7 @@ public class SessionRestore implements SessionRestoreInterface {
     				if (e.canSave() == null) {
     					iProgress.incProgress();
     					e.fixRelationsNullOnly(otherObjectsToSave);
-    					iHibSession.save(e.getObject());
+    					iHibSession.persist(e.getObject());
     					i.remove();
     					saved = true;
     				}
@@ -562,7 +562,7 @@ public class SessionRestore implements SessionRestoreInterface {
     			iHibSession.flush();
     		}
     		for (Object object: otherObjectsToSave)
-    			iHibSession.save(object);
+    			iHibSession.persist(object);
     		otherObjectsToSave.clear();
     		iHibSession.flush();
 
@@ -572,14 +572,14 @@ public class SessionRestore implements SessionRestoreInterface {
     			String property = e.canSave();
     			if (property == null) {
     				e.fixRelations(otherObjectsToSave);
-    				iHibSession.update(e.getObject());
+    				iHibSession.merge(e.getObject());
     			} else {
     				message("Skipping " + e.getAbbv() + " (missing not-null relation " + property + ")", e.getId());
     				continue;
     			}
     		}
     		for (Object object: otherObjectsToSave)
-    			iHibSession.save(object);
+    			iHibSession.persist(object);
     		otherObjectsToSave.clear();
     		
     		iProgress.setPhase("Flush", 1);

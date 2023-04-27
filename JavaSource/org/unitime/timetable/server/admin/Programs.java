@@ -93,7 +93,8 @@ public class Programs implements AdminTable {
 		program.setReference(record.getField(1));
 		program.setLabel(record.getField(2));
 		program.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(program));
+		hibSession.persist(program);
+		record.setUniqueId(program.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				program,
@@ -112,7 +113,7 @@ public class Programs implements AdminTable {
 			program.setExternalUniqueId(record.getField(0));
 			program.setReference(record.getField(1));
 			program.setLabel(record.getField(2));
-			hibSession.saveOrUpdate(program);
+			hibSession.merge(program);
 			ChangeLog.addChange(hibSession,
 					context,
 					program,

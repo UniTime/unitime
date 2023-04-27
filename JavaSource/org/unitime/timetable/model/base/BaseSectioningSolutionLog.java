@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.SectioningSolutionLog;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
@@ -62,7 +63,7 @@ public abstract class BaseSectioningSolutionLog implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "sct_solution_log_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "sct_solution_log_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "sct_solution_log_id")

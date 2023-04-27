@@ -36,6 +36,8 @@ public abstract class BaseInstructorCourseRequirementNote extends InstructorCour
 
 	private String iNote;
 
+
+
 	@Column(name = "note", nullable = true, length = 2048)
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }

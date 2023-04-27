@@ -42,41 +42,41 @@ public class CourseOfferingDAO extends _RootDAO<CourseOffering,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
-		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
+		return hibSession.createQuery("from CourseOffering x where x.subjectArea.uniqueId = :subjectAreaId", CourseOffering.class).setParameter("subjectAreaId", subjectAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.instructionalOffering.uniqueId = :instructionalOfferingId", CourseOffering.class).setParameter("instructionalOfferingId", instructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOffering(org.hibernate.Session hibSession, Long demandOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId").setParameter("demandOfferingId", demandOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.demandOffering.uniqueId = :demandOfferingId", CourseOffering.class).setParameter("demandOfferingId", demandOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByDemandOfferingType(org.hibernate.Session hibSession, Long demandOfferingTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId").setParameter("demandOfferingTypeId", demandOfferingTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.demandOfferingType.uniqueId = :demandOfferingTypeId", CourseOffering.class).setParameter("demandOfferingTypeId", demandOfferingTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByCourseType(org.hibernate.Session hibSession, Long courseTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.courseType.uniqueId = :courseTypeId").setParameter("courseTypeId", courseTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.courseType.uniqueId = :courseTypeId", CourseOffering.class).setParameter("courseTypeId", courseTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByConsentType(org.hibernate.Session hibSession, Long consentTypeId) {
-		return hibSession.createQuery("from CourseOffering x where x.consentType.uniqueId = :consentTypeId").setParameter("consentTypeId", consentTypeId).list();
+		return hibSession.createQuery("from CourseOffering x where x.consentType.uniqueId = :consentTypeId", CourseOffering.class).setParameter("consentTypeId", consentTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByAlternativeOffering(org.hibernate.Session hibSession, Long alternativeOfferingId) {
-		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId").setParameter("alternativeOfferingId", alternativeOfferingId).list();
+		return hibSession.createQuery("from CourseOffering x where x.alternativeOffering.uniqueId = :alternativeOfferingId", CourseOffering.class).setParameter("alternativeOfferingId", alternativeOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseOffering> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
-		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
+		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId", CourseOffering.class).setParameter("fundingDeptId", fundingDeptId).list();
 	}
 }

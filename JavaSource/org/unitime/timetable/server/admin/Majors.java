@@ -115,7 +115,8 @@ public class Majors implements AdminTable {
 			major.getAcademicAreas().add(area);
 			area.getPosMajors().add(major);
 		}
-		record.setUniqueId((Long)hibSession.save(major));
+		hibSession.persist(major);
+		record.setUniqueId(major.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				major,
@@ -149,7 +150,7 @@ public class Majors implements AdminTable {
 				area.getPosMajors().remove(major);
 				changed = true;
 			}
-			hibSession.saveOrUpdate(major);
+			hibSession.merge(major);
 			if (changed)
 				ChangeLog.addChange(hibSession,
 						context,

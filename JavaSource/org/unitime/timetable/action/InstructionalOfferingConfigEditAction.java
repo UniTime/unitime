@@ -748,7 +748,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             // The following line was calling delete ioc for the second time (which is a problem for MySQL as
             // it returns zero number of deleted lines even when called in the same transaction).
             //hibSession.remove(ioc);
-	        hibSession.saveOrUpdate(io);
+	        hibSession.merge(io);
 
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
@@ -827,8 +827,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                 ioc.setInstructionalMethod(imeth);
                 io.addToinstrOfferingConfigs(ioc);
 
-                hibSession.saveOrUpdate(ioc);
-                hibSession.saveOrUpdate(io);
+                hibSession.persist(ioc);
+                hibSession.merge(io);
             }
             else {
                 ioc = iocDao.get(configId);
@@ -861,8 +861,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             // Remove any subparts that do not exist in the modified config
             deleteSubpart(hibSession, ioc, notDeletedSubparts);
 
-            hibSession.saveOrUpdate(ioc);
-            hibSession.saveOrUpdate(io);
+            hibSession.merge(ioc);
+            hibSession.merge(io);
 
 	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
 	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
@@ -932,7 +932,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             for (Iterator i=classes.iterator(); i.hasNext(); ) {
                 Class_ c = (Class_) i.next();
                 c.setParentClass(null);
-                hibSession.saveOrUpdate(c);
+                hibSession.merge(c);
             }
         }
         else {
@@ -959,8 +959,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	    	                Debug.debug("Setting class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 		                    childClass.setParentClass(parentClass);
 		                    parentClass.addTochildClasses(childClass);
-				            hibSession.saveOrUpdate(parentClass);
-				            hibSession.saveOrUpdate(childClass);
+				            hibSession.merge(parentClass);
+				            hibSession.merge(childClass);
 
 	                    }
 	                    else {
@@ -971,14 +971,14 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		                    if (childClass.getParentClass()!=null) {
 		                        Class_ pc = childClass.getParentClass();
 		                        pc.getChildClasses().remove(childClass);
-		                        hibSession.saveOrUpdate(pc);
+		                        hibSession.merge(pc);
 			                    childClass.setParentClass(null);
-	    			            hibSession.saveOrUpdate(childClass);
+	    			            hibSession.merge(childClass);
 		                    }
 		                    classes.remove(childClass);
 		                    childClass.deleteAllDependentObjects(hibSession, false);
 		                    hibSession.remove(childClass);
-    			            hibSession.saveOrUpdate(subpart);
+    			            hibSession.merge(subpart);
 	                    }
 
 	    	            if (classPerParentRem!=0) {
@@ -988,8 +988,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 		   	                        childClass.setParentClass(parentClass);
 		    	                    parentClass.addTochildClasses(childClass);
-		    			            hibSession.saveOrUpdate(parentClass);
-		    			            hibSession.saveOrUpdate(childClass);
+		    			            hibSession.merge(parentClass);
+		    			            hibSession.merge(childClass);
 	   		                    }
 	   		                    else {
 	   		                    	if (!sessionContext.hasPermission(childClass, Right.ClassDelete))
@@ -999,14 +999,14 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	   			                    if (childClass.getParentClass()!=null) {
 	   			                        Class_ pc = childClass.getParentClass();
 	   			                        pc.getChildClasses().remove(childClass);
-	   			                        hibSession.saveOrUpdate(pc);
+	   			                        hibSession.merge(pc);
 	   				                    childClass.setParentClass(null);
-	   		    			            hibSession.saveOrUpdate(childClass);
+	   		    			            hibSession.merge(childClass);
 	   			                    }
 	   			                    classes.remove(childClass);
 	   			                    childClass.deleteAllDependentObjects(hibSession, false);
 	   			                    hibSession.remove(childClass);
-		    			            hibSession.saveOrUpdate(childClass.getSchedulingSubpart());
+		    			            hibSession.merge(childClass.getSchedulingSubpart());
 	   		                    }
 
 	    	                }
@@ -1025,8 +1025,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
    	                        childClass.setParentClass(parentClass);
     	                    parentClass.addTochildClasses(childClass);
-    			            hibSession.saveOrUpdate(parentClass);
-    			            hibSession.saveOrUpdate(childClass);
+    			            hibSession.merge(parentClass);
+    			            hibSession.merge(childClass);
     	                }
 
     	                --classPerParentRem;
@@ -1035,7 +1035,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	            }
 	            }
 
-	            hibSession.saveOrUpdate(parent);
+	            hibSession.merge(parent);
             }
 
 
@@ -1072,7 +1072,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                     if (pc!=null) {
                         pc.getChildClasses().remove(c);
                         if (notDeletedSubparts.get(pc.getSchedulingSubpart().getUniqueId())!=null)
-                            hibSession.saveOrUpdate(pc);
+                            hibSession.merge(pc);
                     }
                     j.remove();
                 }
@@ -1084,7 +1084,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                         parentSubpart.getChildSubparts().remove(tmpSubpart);
                     tmpSubpart.setParentSubpart(null);
                     if (deletedSubparts.get(parentSubpart.getUniqueId())==null)
-                        hibSession.saveOrUpdate(parentSubpart);
+                        hibSession.merge(parentSubpart);
                 }
 
                 // Remove references from child subparts
@@ -1099,7 +1099,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             }
         }
 
-        hibSession.saveOrUpdate(ioc);
+        hibSession.merge(ioc);
         hibSession.flush();
     }
 
@@ -1204,7 +1204,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	            subpart.setPreferences(prefs);
             }
 
-            hibSession.saveOrUpdate(subpart);
+            hibSession.persist(subpart);
             hibSession.flush();
 
             hibSession.refresh(subpart);
@@ -1268,7 +1268,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 				                j.remove();
 			                }
 			            }
-		                hibSession.saveOrUpdate(c);
+		                hibSession.merge(c);
 		            }
 	            }
 
@@ -1395,7 +1395,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		                    Debug.debug("Class Managing department same as subpart ... ignoring");
 	                    }
 	                }
-	                hibSession.saveOrUpdate(c);
+	                hibSession.merge(c);
 	            }
             } // End: Update only if user has permissions and does not have mixed managed classes
 
@@ -1413,7 +1413,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	            for (Iterator cci = subpart.getClasses().iterator(); cci.hasNext(); ) {
     	                Class_ childClass = (Class_) cci.next();
     	                childClass.setParentClass(null);
-			            hibSession.saveOrUpdate(childClass);
+			            hibSession.merge(childClass);
     	            }
     	        }
     	        else {
@@ -1438,8 +1438,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	    	                Debug.debug("Setting class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 	    	                    childClass.setParentClass(parentClass);
 	    	                    parentClass.addTochildClasses(childClass);
-	    			            hibSession.saveOrUpdate(parentClass);
-	    			            hibSession.saveOrUpdate(childClass);
+	    			            hibSession.merge(parentClass);
+	    			            hibSession.merge(childClass);
 
 	    	    	            if (classPerParentRem!=0) {
 	    	    	                if (cci.hasNext()) {
@@ -1447,8 +1447,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 	    	   	                        childClass.setParentClass(parentClass);
 	    	    	                    parentClass.addTochildClasses(childClass);
-	    	    			            hibSession.saveOrUpdate(parentClass);
-	    	    			            hibSession.saveOrUpdate(childClass);
+	    	    			            hibSession.merge(parentClass);
+	    	    			            hibSession.merge(childClass);
 	    	    	                }
 
 	    	    	                --classPerParentRem;
@@ -1465,8 +1465,8 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
     	   	                        childClass.setParentClass(parentClass);
     	    	                    parentClass.addTochildClasses(childClass);
-    	    			            hibSession.saveOrUpdate(parentClass);
-    	    			            hibSession.saveOrUpdate(childClass);
+    	    			            hibSession.merge(parentClass);
+    	    			            hibSession.merge(childClass);
     	    	                }
 
     	    	                --classPerParentRem;
@@ -1475,12 +1475,12 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		    	            }
 	    	            }
 
-	    	            hibSession.saveOrUpdate(parent);
+	    	            hibSession.merge(parent);
     	            }
     	        }
            } // End If: Update Parent
 
-            hibSession.saveOrUpdate(subpart);
+            hibSession.merge(subpart);
             hibSession.flush();
             hibSession.refresh(subpart);
             if (parent!=null)
@@ -1495,7 +1495,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             createOrUpdateSubpart(hibSession, sic1, ioc, subpart, rg, notDeletedSubparts);
         }
 
-        hibSession.saveOrUpdate(ioc);
+        hibSession.merge(ioc);
         hibSession.flush();
     }
 
@@ -1622,14 +1622,14 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	                    	Class_ pc = c.getParentClass();
     	                    	if (pc != null) {
     	                    		pc.getChildClasses().remove(c);
-    	                    		hibSession.saveOrUpdate(pc);
+    	                    		hibSession.merge(pc);
     	                    	}
     		                    classes.remove(c);
     	                    }
         	            }
 
-        	            hibSession.saveOrUpdate(subpart);
-                        hibSession.saveOrUpdate(parent);
+        	            hibSession.merge(subpart);
+                        hibSession.merge(parent);
                         hibSession.flush();
                     }
                 }
@@ -1667,7 +1667,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         	        subpart.addToclasses(c);
                 }
 
-                hibSession.saveOrUpdate(subpart);
+                hibSession.merge(subpart);
                 hibSession.flush();
 
                 setParentClass(hibSession, subpart, parent, nc);
@@ -1687,7 +1687,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	                    	Class_ pc = c.getParentClass();
 	                    	if (pc != null) {
 	                    		pc.getChildClasses().remove(c);
-	                    		hibSession.saveOrUpdate(pc);
+	                    		hibSession.merge(pc);
 	                    	}
 		                    classes.remove(c);
 	                    }
@@ -1730,18 +1730,18 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	                    	Class_ pc = c.getParentClass();
     	                    	if (pc != null) {
     	                    		pc.getChildClasses().remove(c);
-    	                    		hibSession.saveOrUpdate(pc);
+    	                    		hibSession.merge(pc);
     	                    	}
     		                    classes.remove(c);
     	                    }
         	            }
 
-        	            hibSession.saveOrUpdate(subpart);
-                        hibSession.saveOrUpdate(parent);
+        	            hibSession.merge(subpart);
+                        hibSession.merge(parent);
                         hibSession.flush();
                     }
 	            }
-	            hibSession.saveOrUpdate(subpart);
+	            hibSession.merge(subpart);
 
             }
         }
@@ -1767,7 +1767,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         	SchedulingSubpart ps = cc.getSchedulingSubpart();
         	if (deleteChildClasses(cc, hibSession, recurseLevel + 1, canCancel)) {
         		ps.getClasses().remove(cc);
-        		hibSession.saveOrUpdate(ps);
+        		hibSession.merge(ps);
         		i.remove();
         	}
         }
@@ -1779,7 +1779,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	} else if (canCancel && sessionContext.hasPermission(c, Right.ClassCancel)) {
     		c.setCancelled(true);
     		c.cancelEvent(sessionContext.getUser(), hibSession, true);
-    		hibSession.saveOrUpdate(c);
+    		hibSession.merge(c);
     		return false;
     	} else {
     		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
@@ -1838,15 +1838,15 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 
                                 childClass.setParentClass(parentClass);
                                 parentClass.addTochildClasses(childClass);
-            		            hibSession.saveOrUpdate(parentClass);
-            		            hibSession.saveOrUpdate(childClass);
+            		            hibSession.merge(parentClass);
+            		            hibSession.merge(childClass);
                             }
                         }
                     }
                 }
             }
 
-            hibSession.saveOrUpdate(parent);
+            hibSession.merge(parent);
         }
 
     }

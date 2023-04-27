@@ -1545,7 +1545,7 @@ public abstract class RoomSummaryReportsHelper {
 		return getUtilQueryResultsForQuery(query, headerRow);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public List<List<Object>> getUtilQueryResultsForQuery(String query, ArrayList<Object> headerRow) {
 		ArrayList<List<Object>> headerPlusResults = new ArrayList<List<Object>>();
 		headerPlusResults.add(headerRow);

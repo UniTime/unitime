@@ -36,11 +36,11 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
@@ -91,7 +91,7 @@ public abstract class BasePitClass implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_class_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pit_class_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "pit_class_id")
@@ -177,9 +177,8 @@ public abstract class BasePitClass implements Serializable {
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentClass")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentClass", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
-	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)
 	public Set<PitClass> getPitChildClasses() { return iPitChildClasses; }
 	public void setPitChildClasses(Set<PitClass> pitChildClasses) { iPitChildClasses = pitChildClasses; }
 	public void addTopitChildClasses(PitClass pitClass) {

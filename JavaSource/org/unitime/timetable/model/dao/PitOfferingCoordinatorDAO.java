@@ -42,16 +42,16 @@ public class PitOfferingCoordinatorDAO extends _RootDAO<PitOfferingCoordinator,L
 
 	@SuppressWarnings("unchecked")
 	public List<PitOfferingCoordinator> findByPitInstructionalOffering(org.hibernate.Session hibSession, Long pitInstructionalOfferingId) {
-		return hibSession.createQuery("from PitOfferingCoordinator x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId").setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
+		return hibSession.createQuery("from PitOfferingCoordinator x where x.pitInstructionalOffering.uniqueId = :pitInstructionalOfferingId", PitOfferingCoordinator.class).setParameter("pitInstructionalOfferingId", pitInstructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitOfferingCoordinator> findByPitDepartmentalInstructor(org.hibernate.Session hibSession, Long pitDepartmentalInstructorId) {
-		return hibSession.createQuery("from PitOfferingCoordinator x where x.pitDepartmentalInstructor.uniqueId = :pitDepartmentalInstructorId").setParameter("pitDepartmentalInstructorId", pitDepartmentalInstructorId).list();
+		return hibSession.createQuery("from PitOfferingCoordinator x where x.pitDepartmentalInstructor.uniqueId = :pitDepartmentalInstructorId", PitOfferingCoordinator.class).setParameter("pitDepartmentalInstructorId", pitDepartmentalInstructorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitOfferingCoordinator> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from PitOfferingCoordinator x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from PitOfferingCoordinator x where x.responsibility.uniqueId = :responsibilityId", PitOfferingCoordinator.class).setParameter("responsibilityId", responsibilityId).list();
 	}
 }

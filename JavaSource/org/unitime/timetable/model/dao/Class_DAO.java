@@ -42,31 +42,31 @@ public class Class_DAO extends _RootDAO<Class_,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findByManagingDept(org.hibernate.Session hibSession, Long managingDeptId) {
-		return hibSession.createQuery("from Class_ x where x.managingDept.uniqueId = :managingDeptId").setParameter("managingDeptId", managingDeptId).list();
+		return hibSession.createQuery("from Class_ x where x.managingDept.uniqueId = :managingDeptId", Class_.class).setParameter("managingDeptId", managingDeptId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findBySchedulingSubpart(org.hibernate.Session hibSession, Long schedulingSubpartId) {
-		return hibSession.createQuery("from Class_ x where x.schedulingSubpart.uniqueId = :schedulingSubpartId").setParameter("schedulingSubpartId", schedulingSubpartId).list();
+		return hibSession.createQuery("from Class_ x where x.schedulingSubpart.uniqueId = :schedulingSubpartId", Class_.class).setParameter("schedulingSubpartId", schedulingSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findByParentClass(org.hibernate.Session hibSession, Long parentClassId) {
-		return hibSession.createQuery("from Class_ x where x.parentClass.uniqueId = :parentClassId").setParameter("parentClassId", parentClassId).list();
+		return hibSession.createQuery("from Class_ x where x.parentClass.uniqueId = :parentClassId", Class_.class).setParameter("parentClassId", parentClassId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from Class_ x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from Class_ x where x.datePattern.uniqueId = :datePatternId", Class_.class).setParameter("datePatternId", datePatternId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findByLmsInfo(org.hibernate.Session hibSession, Long lmsInfoId) {
-		return hibSession.createQuery("from Class_ x where x.lmsInfo.uniqueId = :lmsInfoId").setParameter("lmsInfoId", lmsInfoId).list();
+		return hibSession.createQuery("from Class_ x where x.lmsInfo.uniqueId = :lmsInfoId", Class_.class).setParameter("lmsInfoId", lmsInfoId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Class_> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
-		return hibSession.createQuery("from Class_ x where x.fundingDept.uniqueId = :fundingDeptId").setParameter("fundingDeptId", fundingDeptId).list();
+		return hibSession.createQuery("from Class_ x where x.fundingDept.uniqueId = :fundingDeptId", Class_.class).setParameter("fundingDeptId", fundingDeptId).list();
 	}
 }

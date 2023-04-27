@@ -185,9 +185,9 @@ public abstract class AbstractSolverServer implements SolverServer {
 	            hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
 	            hibSessionFactory.getCache().evictCollectionData(Class_.class.getName()+".classInstructors", classId);
 	    	}
-	    	List<Long> instructorIds = (List<Long>)hibSession.createQuery(
+	    	List<Long> instructorIds = hibSession.createQuery(
 	    			"select i.uniqueId from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
-	    			"g.uniqueId in :solverGroupId and i.department = d"
+	    			"g.uniqueId in :solverGroupId and i.department = d", Long.class
 	    			).setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long instructorId: instructorIds) {
 	            hibSessionFactory.getCache().evictEntityData(DepartmentalInstructor.class, instructorId);
@@ -200,9 +200,9 @@ public abstract class AbstractSolverServer implements SolverServer {
 	            hibSessionFactory.getCache().evictEntityData(TeachingRequest.class, requestId);
 	            hibSessionFactory.getCache().evictCollectionData(TeachingRequest.class.getName()+".assignedInstructors", requestId);
 	    	}
-	    	List<Long> offeringIds = (List<Long>)hibSession.createQuery(
+	    	List<Long> offeringIds = hibSession.createQuery(
 	    			"select distinct c.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId from " +
-	    			"Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false")
+	    			"Class_ c inner join c.teachingRequests r where c.controllingDept.solverGroup.uniqueId in :solverGroupId and c.cancelled = false", Long.class)
 	    			.setParameterList("solverGroupId", solverGroupIds).list();
 	    	for (Long offeringId: offeringIds) {
 	            hibSessionFactory.getCache().evictEntityData(InstructionalOffering.class, offeringId);

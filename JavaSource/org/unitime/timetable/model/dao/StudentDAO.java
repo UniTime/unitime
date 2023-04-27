@@ -42,11 +42,11 @@ public class StudentDAO extends _RootDAO<Student,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Student> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Student x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Student x where x.session.uniqueId = :sessionId", Student.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Student> findBySectioningStatus(org.hibernate.Session hibSession, Long sectioningStatusId) {
-		return hibSession.createQuery("from Student x where x.sectioningStatus.uniqueId = :sectioningStatusId").setParameter("sectioningStatusId", sectioningStatusId).list();
+		return hibSession.createQuery("from Student x where x.sectioningStatus.uniqueId = :sectioningStatusId", Student.class).setParameter("sectioningStatusId", sectioningStatusId).list();
 	}
 }

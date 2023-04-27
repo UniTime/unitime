@@ -38,7 +38,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from QueryLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -58,7 +58,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from ChangeLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -78,7 +78,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from OnlineSectioningLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -98,7 +98,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from MessageLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -118,7 +118,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from StudentSectioningQueue where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -138,7 +138,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from HashedQuery where lastUsed < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)
@@ -158,7 +158,7 @@ public class LogCleaner {
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
-			int rows = hibSession.createQuery(
+			int rows = hibSession.createMutationQuery(
 					"delete from SectioningSolutionLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
 					).setParameter("days", - days).executeUpdate();
 			if (rows > 0)

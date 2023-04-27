@@ -181,7 +181,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 
 	private void completeLoad() {
 		pointInTimeData.setSavedSuccessfully(true);
-		getHibSession().update(pointInTimeData);
+		getHibSession().merge(pointInTimeData);
         flush(true);
         commitTransaction();
 	}
@@ -228,7 +228,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		s.setMiddleName(getOptionalStringAttribute(studentElement, PointInTimeDataExport.sMiddleNameAttribute));
 		s.setLastName(getRequiredStringAttribute(studentElement, PointInTimeDataExport.sLastNameAttribute, PointInTimeDataExport.sStudentElementName));
 		s.setPointInTimeData(pointInTimeData);
-		s.setUniqueId((Long)getHibSession().save(s));
+		getHibSession().persist(s);
 		for(Element element : (List<Element>)studentElement.elements()){
 			if (element.getName().equals(PointInTimeDataExport.sEnrollmentElementName)) {
 				elementEnrollment(element, s);
@@ -255,7 +255,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			aamc.setWeight(1.0);
 		aamc.setPitStudent(s);
 		s.addTopitAcadAreaMajorClassifications(aamc);
-		aamc.setUniqueId((Long) getHibSession().save(aamc));
+		 getHibSession().persist(aamc);
 	}
 
 	private void elementAcadAreaMinorClassification(Element element, PitStudent s) throws Exception {
@@ -265,7 +265,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		aamc.setMinor(minors.get(getRequiredLongAttribute(element, PointInTimeDataExport.sMinorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
 		aamc.setPitStudent(s);
 		s.addTopitAcadAreaMinorClassifications(aamc);
-		aamc.setUniqueId((Long) getHibSession().save(aamc));
+		 getHibSession().persist(aamc);
 	}
 
 	private void elementEnrollment(Element element, PitStudent s) throws NumberFormatException, Exception {
@@ -278,7 +278,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		psce.setChangedBy(getOptionalStringAttribute(element, PointInTimeDataExport.sChangedByAttribute));
 		psce.setPitStudent(s);
 		s.addTopitClassEnrollments(psce);
-		psce.setUniqueId((Long) getHibSession().save(psce));
+		 getHibSession().persist(psce);
 	}
 
 	// If a setup action needs to take place before the data is loaded override this method
@@ -349,7 +349,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
         	pio.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
         }
         pio.setPointInTimeData(pointInTimeData);
-        pio.setUniqueId((Long) getHibSession().save(pio));
+         getHibSession().persist(pio);
         for(Element element: (List<Element>)instructionalOfferingElement.elements()){
         	if (PointInTimeDataExport.sCourseElementName.equals(element.getName())){
         		elementCourse(element, pio);
@@ -395,7 +395,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			rt.setLabel(label);
 			rt.setRoom(isRoom);
 			rt.setOrd(order);
-			rt.setUniqueId((Long)getHibSession().save(rt));
+			getHibSession().persist(rt);
 		}
 		roomTypes.put(uid, rt);
 	}
@@ -411,7 +411,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pt.setReference(reference);
 			pt.setLabel(label);
 			pt.setSortOrder(order);
-			pt.setUniqueId((Long)getHibSession().save(pt));
+			getHibSession().persist(pt);
 		}
 		positionTypes.put(uid, pt);
 	}
@@ -433,7 +433,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			tr.setCoordinator(coordinator);
 			tr.setAbbreviation(abbreviation);
 			tr.setOptions(options == null ? 0 : options.intValue());
-			tr.setUniqueId((Long)getHibSession().save(tr));
+			getHibSession().persist(tr);
 		}
 		teachingResponsibilities.put(uid, tr);
 	}
@@ -476,7 +476,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (masterCode != null){
 				ct.setLegacyCourseMasterCode(masterCode);
 			}
-			ct.setUniqueId((Long)getHibSession().save(ct));
+			getHibSession().persist(ct);
 		}
 		creditTypes.put(uid, ct);
 		
@@ -505,7 +505,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			cut.setReference(reference);
 			cut.setLabel(label);
 			cut.setAbbreviation(abbreviation);
-			cut.setUniqueId((Long)getHibSession().save(cut));
+			getHibSession().persist(cut);
 		}
 		creditUnitTypes.put(uid, cut);
 	}
@@ -546,7 +546,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			im.setReference(reference);
 			im.setLabel(label);
 			im.setVisible(visible);
-			im.setUniqueId((Long)getHibSession().save(im));
+			getHibSession().persist(im);
 			instructionalMethods.put(im.getReference(), im);
 		}		
 	}
@@ -578,7 +578,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			cdt.setImplementation(implementation);
 			cdt.setParameter(parameter);
 			cdt.setVisible(visible);
-			cdt.setUniqueId((Long)getHibSession().save(cdt));
+			getHibSession().persist(cdt);
 			classDurationTypes.put(cdt.getReference(), cdt);
 		}		
 	}
@@ -604,7 +604,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			ct = new CourseType();
 			ct.setReference(reference);
 			ct.setLabel(label);
-			ct.setUniqueId((Long)getHibSession().save(ct));
+			getHibSession().persist(ct);
 		}
 		courseTypes.put(uid, ct);		
 	}
@@ -675,7 +675,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
            if (defaultDurationType != null){
                session.setDefaultClassDurationType(classDurationTypes.get(defaultDurationType));        	   
            }
-           session.setUniqueId((Long)getHibSession().save(session));
+           getHibSession().persist(session);
         }
         pointInTimeData = new PointInTimeData();
         pointInTimeData.setName(getRequiredStringAttribute(rootElement, PointInTimeDataExport.sPointInTimeNameAttribute, rootElementName));
@@ -683,7 +683,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
         pointInTimeData.setSavedSuccessfully(Boolean.FALSE);
         pointInTimeData.setSession(session);
         pointInTimeData.setTimestamp(CalendarUtils.getDate(getRequiredStringAttribute(rootElement, PointInTimeDataExport.sCreatedAttribute, rootElementName), (dateFormat + " " + timeFormat)));
-        pointInTimeData.setUniqueId((Long)getHibSession().save(pointInTimeData));
+        getHibSession().persist(pointInTimeData);
 	}
 
 	
@@ -783,7 +783,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			dp.setVisible(getRequiredBooleanAttribute(datePatternElement, PointInTimeDataExport.sVisibleAttribute, PointInTimeDataExport.sDatePatternElementName));
 			dp.setType(getRequiredIntegerAttribute(datePatternElement, PointInTimeDataExport.sTypeAttribute, PointInTimeDataExport.sDatePatternElementName));
 			dp.setSession(session);
-			dp.setUniqueId((Long)getHibSession().save(dp));
+			getHibSession().persist(dp);
 		}		
 		datePatterns.put(uid, dp);
 	}
@@ -811,7 +811,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 					elementTimePatternTime(element, tp);
 				}
 			}
-			tp.setUniqueId((Long)getHibSession().save(tp));
+			getHibSession().persist(tp);
 		}		
 		timePatterns.put(uid, tp);
 	}
@@ -875,7 +875,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			n.setIgnoreRoomCheck(Boolean.FALSE);
 			n.setIgnoreTooFar(Boolean.FALSE);
 			n.setPermanentId(getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sPermanentIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName));
-			n.setUniqueId((Long)getHibSession().save(n));
+			getHibSession().persist(n);
 			Long ctrlDeptId = getOptionalLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
 			if (ctrlDeptId != null){
 				RoomDept rd = new RoomDept();
@@ -883,7 +883,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				rd.setDepartment(departments.get(ctrlDeptId));
 				rd.setRoom(n);
 				n.addToroomDepts(rd);
-				rd.setUniqueId((Long)getHibSession().save(rd));
+				getHibSession().persist(rd);
 			}
 			l = n;
 		}
@@ -916,7 +916,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				Double coordinateY = Double.parseDouble(coordinateYstr);
 				b.setCoordinateY(coordinateY);
 				}
-			b.setUniqueId((Long)getHibSession().save(b));
+			getHibSession().persist(b);
 		}
 		buildings.put(uid, b);
 		for(Element roomElement : (List<Element>)buildingElement.elements()){
@@ -959,7 +959,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				Double coordinateY = Double.parseDouble(coordinateYstr);
 				r.setCoordinateY(coordinateY);
 			}
-			r.setUniqueId((Long)getHibSession().save(r));
+			getHibSession().persist(r);
 			Long ctrlDeptId = getOptionalLongAttribute(roomElement, PointInTimeDataExport.sControllingDepartmentUniqueIdAttribute);
 			if (ctrlDeptId != null){
 				RoomDept rd = new RoomDept();
@@ -967,7 +967,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				rd.setDepartment(departments.get(ctrlDeptId));
 				rd.setRoom(r);
 				r.addToroomDepts(rd);
-				rd.setUniqueId((Long)getHibSession().save(rd));
+				getHibSession().persist(rd);
 			}
 			l = r;
 		}
@@ -1011,7 +1011,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			d.setExternalManager(Boolean.FALSE);
 			d.setDistributionPrefPriority(0);
 			session.addTodepartments(d);
-			d.setUniqueId((Long)getHibSession().save(d));
+			getHibSession().persist(d);
 			departmentsByCode.put(deptCode, d);
 		}
 		departments.put(uid, d);
@@ -1069,7 +1069,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			
 			pitDeptInstr.setDepartment(department);
 			pitDeptInstr.setPointInTimeData(pointInTimeData);
-			pitDeptInstr.setUniqueId((Long)getHibSession().save(pitDeptInstr));
+			getHibSession().persist(pitDeptInstr);
 			pitDepartmentInstructors.put(uid, pitDeptInstr);
 		}
 	}
@@ -1089,7 +1089,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				department.addTosubjectAreas(sa);
 				sa.setSession(session);
 				session.addTosubjectAreas(sa);
-				sa.setUniqueId((Long)getHibSession().save(sa));
+				getHibSession().persist(sa);
 				subjectAreas.put(sa.getSubjectAreaAbbreviation(), sa);
 			}
 		}		
@@ -1109,7 +1109,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (externalId != null){
 				major.setExternalUniqueId(externalId);
 			}
-			major.setUniqueId((Long)getHibSession().save(major));
+			getHibSession().persist(major);
 		}		
 		majors.put(uid, major);
 		for (Element concElement : (List<Element>)majorElement.elements())
@@ -1130,7 +1130,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (externalId != null){
 				conc.setExternalUniqueId(externalId);
 			}
-			conc.setUniqueId((Long)getHibSession().save(conc));
+			getHibSession().persist(conc);
 		}		
 		concentrations.put(uid, conc);
 	}
@@ -1149,7 +1149,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (externalId != null){
 				minor.setExternalUniqueId(externalId);
 			}
-			minor.setUniqueId((Long)getHibSession().save(minor));
+			getHibSession().persist(minor);
 		}		
 		minors.put(uid, minor);
 	}
@@ -1168,7 +1168,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (externalId != null){
 				ac.setExternalUniqueId(externalId);
 			}
-			ac.setUniqueId((Long)getHibSession().save(ac));
+			getHibSession().persist(ac);
 		}			
 		academicClassifications.put(uid, ac);
 	}
@@ -1187,7 +1187,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			if (externalId != null){
 				aa.setExternalUniqueId(externalId);
 			}
-			aa.setUniqueId((Long)getHibSession().save(aa));
+			getHibSession().persist(aa);
 		}		
 		academicAreas.put(uid, aa);
 	}
@@ -1280,7 +1280,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 		pci.setLead(getOptionalBooleanAttribute(classInstructorElement, PointInTimeDataExport.sLeadAttribute, true));
 
-		pci.setUniqueId((Long)getHibSession().save(pci));
+		getHibSession().persist(pci);
 		
 	}
 	
@@ -1296,7 +1296,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pci.setResponsibility(teachingResponsibilities.get(responsibilityId));
 		}
 		
-		pci.setUniqueId((Long)getHibSession().save(pci));
+		getHibSession().persist(pci);
 		
 	}
 		
@@ -1354,7 +1354,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	        	pco.setExternalUniqueId(externalId);
 	        }
 
-			pco.setUniqueId((Long)getHibSession().save(pco));
+			getHibSession().persist(pco);
 			pitCourseOfferings.put(uid, pco);
 		}		
 	}
@@ -1387,7 +1387,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
         	pioc.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
         }
 
-		pioc.setUniqueId((Long) getHibSession().save(pioc));
+		 getHibSession().persist(pioc);
 		for (Element subpartElement : (List<Element>)configElement.elements()){
 			elementSubpart(subpartElement, pioc, null);
 		}
@@ -1449,7 +1449,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
         	pc.setExternalUniqueId(externalId);
         }
 
-        pc.setUniqueId((Long)getHibSession().save(pc));
+        getHibSession().persist(pc);
         pitClasses.put(uid, pc);
 
 		Iterator<Element> classInstructorElementIt = classElement.elementIterator(PointInTimeDataExport.sClassInstructorElementName);
@@ -1524,7 +1524,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pce.setPitClass(pc);
 		pc.addTopitClassEvents(pce);
 		pce.setEventName(getRequiredStringAttribute(classEventElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sClassEventElementName));
-		pce.setUniqueId((Long) getHibSession().save(pce));
+		 getHibSession().persist(pce);
 		for(Element classMeetingElement : (List<Element>) classEventElement.elements()){
 			elementClassMeeting(classMeetingElement, pce);
 		}
@@ -1549,7 +1549,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pcm.setLocationPermanentId(loc.getPermanentId());
 		pcm.setTimePatternMinPerMtg(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sTimePatternMinutesPerMeetingAttribute, PointInTimeDataExport.sClassMeetingElementName));
 		pcm.setCalculatedMinPerMtg(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sCalculatedMinutesPerMeetingAttribute, PointInTimeDataExport.sClassMeetingElementName));
-		pcm.setUniqueId((Long) getHibSession().save(pcm));
+		 getHibSession().persist(pcm);
 	
 		for(Element classMeetingUtilPeriodElement : (List<Element>) classMeetingElement.elements()){
 			elementClassMeetingUtilPeriod(classMeetingUtilPeriodElement, pcm);
@@ -1562,7 +1562,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		pcmup.setTimeSlot(getRequiredIntegerAttribute(classMeetingUtilPeriodElement, PointInTimeDataExport.sPeriodAttribute, PointInTimeDataExport.sClassMeetingUtilPeriodElementName));
 		pcmup.setPitClassMeeting(pitClassMeeting);
 		pitClassMeeting.addTopitClassMeetingUtilPeriods(pcmup);
-		pcmup.setUniqueId((Long) getHibSession().save(pcmup));
+		 getHibSession().persist(pcmup);
 	}
 
 	private void elementSubpart(Element subpartElement, PitInstrOfferingConfig pitInstructionalOfferingConfig, PitSchedulingSubpart parentPitSubpart) throws Exception {
@@ -1598,7 +1598,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	        if (uidRollFwdFrm != null){
 	        	pss.setUniqueIdRolledForwardFrom(uidRollFwdFrm);
 	        }
-	        pss.setUniqueId((Long)getHibSession().save(pss));
+	        getHibSession().persist(pss);
 	        
 			Iterator<Element> classElementIterator = (Iterator<Element>)subpartElement.elementIterator(PointInTimeDataExport.sClassElementName);
 	        while(classElementIterator.hasNext()){

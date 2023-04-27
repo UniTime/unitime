@@ -285,10 +285,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             chl.setSource(source);
             chl.setOperation(operation);
             if (hibSession!=null)
-                hibSession.saveOrUpdate(chl);
-            else
-                ChangeLogDAO.getInstance().saveOrUpdate(chl); 
-            
+                hibSession.persist(chl);
+            else {
+                ChangeLogDAO.getInstance().getSession().persist(chl);
+                ChangeLogDAO.getInstance().getSession().flush();
+            }
         } catch (Exception e) {
             Debug.error(e);
         }
@@ -363,12 +364,12 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
     public static ChangeLog findLastChange(String objectType, Number objectUniqueId, Source source) {
         try {
             org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
-            Query q = hibSession.createQuery(
+            Query<ChangeLog> q = hibSession.createQuery(
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
                         "and ch.operationString != :note " +
-                        "order by ch.timeStamp desc");
+                        "order by ch.timeStamp desc", ChangeLog.class);
             q.setParameter("objectUniqueId", objectUniqueId.longValue());
             q.setParameter("objectType", objectType);
             q.setParameter("note", Operation.NOTE.toString());
@@ -394,11 +395,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             for (Iterator<Long> i=objectUniqueIds.iterator();i.hasNext();idx++) {
                 ids.append(i.next()); idx++;
                 if (idx==100) {
-                    Query q = hibSession.createQuery(
+                    Query<ChangeLog> q = hibSession.createQuery(
                             "select ch from ChangeLog ch " +
                             "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                             (source==null?"":"and ch.sourceString=:source ") +
-                            "order by ch.timeStamp desc");
+                            "order by ch.timeStamp desc", ChangeLog.class);
                     q.setParameter("objectType", objectType);
                     if (source!=null) q.setParameter("source", source.name());
                     q.setMaxResults(1);
@@ -417,11 +418,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             }
             
             if (idx>0) {
-                Query q = hibSession.createQuery(
+                Query<ChangeLog> q = hibSession.createQuery(
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId in ("+ids+") and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
-                        "order by ch.timeStamp desc");
+                        "order by ch.timeStamp desc", ChangeLog.class);
                 q.setParameter("objectType", objectType);
                 if (source!=null) q.setParameter("source", source.name());
                 q.setMaxResults(1);
@@ -452,11 +453,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
             org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
-            Query q = hibSession.createQuery(
+            Query<ChangeLog> q = hibSession.createQuery(
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
-                        "order by ch.timeStamp desc");
+                        "order by ch.timeStamp desc", ChangeLog.class);
             q.setParameter("objectUniqueId", objectUniqueId.longValue());
             q.setParameter("objectType", objectType);
             if (source!=null)
@@ -474,13 +475,13 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
 	public static List<ChangeLog> findLastNChanges(Long sessionId, Long managerId, Long subjAreaId, Long departmentId, int n) {
         try {
             org.hibernate.Session hibSession = ChangeLogDAO.getInstance().getSession(); 
-            Query q = hibSession.createQuery(
+            Query<ChangeLog> q = hibSession.createQuery(
                         "select ch from ChangeLog ch where " +
                         "ch.session.uniqueId=:sessionId " +
                         (managerId==null?"":"and ch.manager.uniqueId=:managerId ") +
                         (subjAreaId==null?"":"and ch.subjectArea.uniqueId=:subjAreaId ") +
                         (departmentId==null?"":"and ch.department.uniqueId=:departmentId ") + 
-                        "order by ch.timeStamp desc");
+                        "order by ch.timeStamp desc", ChangeLog.class);
             q.setParameter("sessionId", sessionId.longValue());
             if (managerId!=null) q.setParameter("managerId", managerId.longValue());
             if (subjAreaId!=null) q.setParameter("subjAreaId", subjAreaId.longValue());

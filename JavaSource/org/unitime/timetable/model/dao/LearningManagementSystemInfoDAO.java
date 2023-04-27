@@ -42,6 +42,6 @@ public class LearningManagementSystemInfoDAO extends _RootDAO<LearningManagement
 
 	@SuppressWarnings("unchecked")
 	public List<LearningManagementSystemInfo> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from LearningManagementSystemInfo x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from LearningManagementSystemInfo x where x.session.uniqueId = :sessionId", LearningManagementSystemInfo.class).setParameter("sessionId", sessionId).list();
 	}
 }

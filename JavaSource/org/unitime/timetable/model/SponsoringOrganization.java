@@ -65,7 +65,7 @@ public class SponsoringOrganization extends BaseSponsoringOrganization implement
 
     public static List<SponsoringOrganization> findAll() {
         return SponsoringOrganizationDAO.getInstance().getSession().createQuery(
-                "select so from SponsoringOrganization so order by so.name"
+                "select so from SponsoringOrganization so order by so.name", SponsoringOrganization.class
                 ).setCacheable(true).list();
     }
     

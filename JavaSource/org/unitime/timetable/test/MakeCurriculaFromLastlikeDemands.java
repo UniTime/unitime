@@ -385,9 +385,9 @@ public class MakeCurriculaFromLastlikeDemands {
 
                 if (dept == null) continue;
                 
-                hibSession.saveOrUpdate(curriculum);
+                hibSession.persist(curriculum);
                 for (CurriculumCourseGroup g: createdGroups)
-                	hibSession.saveOrUpdate(g);
+                	hibSession.persist(g);
 
             }
         }

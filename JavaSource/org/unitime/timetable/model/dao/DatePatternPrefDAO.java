@@ -42,6 +42,6 @@ public class DatePatternPrefDAO extends _RootDAO<DatePatternPref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<DatePatternPref> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from DatePatternPref x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from DatePatternPref x where x.datePattern.uniqueId = :datePatternId", DatePatternPref.class).setParameter("datePatternId", datePatternId).list();
 	}
 }

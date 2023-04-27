@@ -242,11 +242,14 @@ public class ReadLearningCommunities {
         		int idx = 0;
         		for (DistributionObject obj: new TreeSet<DistributionObject>(distPref.getDistributionObjects()))
         			obj.setSequenceNumber(idx++);
-        		hibSession.saveOrUpdate(distPref);
+        		hibSession.persist(distPref);
         	}
         	for (StudentGroup g: groups) {
         		// if (g.getStudents().isEmpty()) continue;
-        		hibSession.saveOrUpdate(g);
+        		if (g.getUniqueId() == null)
+                	hibSession.persist(g);
+                else
+                	hibSession.merge(g);
         	}
         	
         	for (StudentGroupReservation res: reservations) {
@@ -275,7 +278,10 @@ public class ReadLearningCommunities {
         					p = p.getParentClass();
         				}
         			}
-        			hibSession.saveOrUpdate(x);
+        			if (x.getUniqueId() == null)
+                    	hibSession.persist(x);
+                    else
+                    	hibSession.merge(x);
         		}
         	}
         	

@@ -334,7 +334,10 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		                	}
 		                	io.getOfferingCoordinators().add(coordinator);
 		                	instructor.getOfferingCoordinators().add(coordinator);
-		                	hibSession.saveOrUpdate(coordinator);
+		                	if (coordinator.getUniqueId() == null)
+		                		hibSession.persist(coordinator);
+		                	else
+		                		hibSession.merge(coordinator);
 		                }
 		           }
 		        }
@@ -449,7 +452,10 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        	}
 
 			        if (co.getCredit() != null){
-			        	hibSession.saveOrUpdate(co.getCredit());
+			        	if (co.getCredit().getUniqueId() == null)
+	                		hibSession.persist(co.getCredit());
+	                	else
+	                		hibSession.merge(co.getCredit());
 			        }
 		        }
 		        
@@ -479,7 +485,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		        	co.setExternalUniqueId(form.getExternalId() == null || form.getExternalId().isEmpty() ? null : form.getExternalId());
 	        }
 
-	        hibSession.saveOrUpdate(co);
+	        hibSession.merge(co);
 
             ChangeLog.addChange(
                     hibSession,
@@ -643,10 +649,10 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        }
 
 	        if (co.getCredit() != null)
-	        	hibSession.saveOrUpdate(co.getCredit());
+	        	hibSession.persist(co.getCredit());
 	        
 	        for (OfferingCoordinator coordinator: io.getOfferingCoordinators())
-	        	hibSession.saveOrUpdate(coordinator);
+	        	hibSession.persist(coordinator);
 	        
             ChangeLog.addChange(
                     hibSession,

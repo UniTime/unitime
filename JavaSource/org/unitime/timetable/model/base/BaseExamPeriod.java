@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -63,7 +64,7 @@ public abstract class BaseExamPeriod implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "exam_period_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "exam_period_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "exam_period_id")

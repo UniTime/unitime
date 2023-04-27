@@ -97,7 +97,8 @@ public class InstructionalMethods implements AdminTable {
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setVisible("true".equals(record.getField(2)));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -116,7 +117,7 @@ public class InstructionalMethods implements AdminTable {
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setVisible("true".equals(record.getField(2)));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

@@ -41,7 +41,8 @@ public class DeleteTaskBackend implements GwtRpcImplementation<DeleteTaskDetails
 		PeriodicTask t = PeriodicTaskDAO.getInstance().get(request.getTaskId());
 		if (t == null) return null;
 		
-		PeriodicTaskDAO.getInstance().delete(t);
+		PeriodicTaskDAO.getInstance().getSession().remove(t);
+		PeriodicTaskDAO.getInstance().getSession().flush();
 		return null;
 	}
 

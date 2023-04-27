@@ -31,6 +31,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
@@ -59,7 +60,7 @@ public abstract class BaseManagerRole implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "tmtbl_mgr_to_roles_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "tmtbl_mgr_to_roles_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "tmtbl_mgr_to_roles_seq")
 	})
 	@GeneratedValue(generator = "tmtbl_mgr_to_roles_id")

@@ -185,13 +185,13 @@ public class DatePatternEditForm implements UniTimeForm {
 				//not changed -> do nothing
 			} else {
 				dp.getParents().add(d);				
-				hibSession.saveOrUpdate(dp);				
+				hibSession.merge(dp);				
 			}
 		}
 		for (Iterator i=oldParents.iterator();i.hasNext();) {
 			DatePattern d = (DatePattern)i.next();
 			dp.getParents().remove(d);			
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		
 		HashSet oldDepts = new HashSet(dp.getDepartments());
@@ -203,16 +203,16 @@ public class DatePatternEditForm implements UniTimeForm {
 			} else {
 				dp.getDepartments().add(d);
 				d.getDatePatterns().add(dp);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 		}
 		for (Iterator i=oldDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			dp.getDepartments().remove(d);
 			d.getDatePatterns().remove(dp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
-		hibSession.saveOrUpdate(dp);
+		hibSession.merge(dp);
 		
 		if (dp.isPatternSet()) {
 			List<DatePattern> oldChildren = dp.findChildren(hibSession);
@@ -223,18 +223,18 @@ public class DatePatternEditForm implements UniTimeForm {
 					//not changed -> do nothing
 				} else {
 					d.getParents().add(dp);
-					hibSession.saveOrUpdate(d);
+					hibSession.merge(d);
 				}
 			}
 			for (DatePattern d: oldChildren) {
 				d.getParents().remove(dp);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 		} else {
 			List<DatePattern> oldChildren = dp.findChildren(hibSession);
 			for (DatePattern d: oldChildren) {
 				d.getParents().remove(dp);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 		}
 	}
@@ -275,7 +275,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		for (Iterator i=newDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getDatePatterns().add(dp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		setUniqueId(dp.getUniqueId());
 		if (dp.isPatternSet()) {
@@ -283,7 +283,7 @@ public class DatePatternEditForm implements UniTimeForm {
 				DatePattern d = (DatePatternDAO.getInstance()).get(childId,hibSession);
 				if (d==null) continue;
 				d.getParents().add(dp);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 		}
 		return dp;
@@ -307,15 +307,15 @@ public class DatePatternEditForm implements UniTimeForm {
 		for (Iterator i=dp.getDepartments().iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getDatePatterns().remove(dp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		for (Iterator i=dp.findChildren().iterator();i.hasNext();) {
 			DatePattern d = (DatePattern)i.next();
 			d.getParents().remove(dp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		dp.getParents().clear();
-		hibSession.saveOrUpdate(dp);
+		hibSession.merge(dp);
 		hibSession.remove(dp);
 	}
 	

@@ -132,7 +132,8 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setLength(Integer.parseInt(record.getField(2)));
 		type.setSortOrder(record.getOrder());
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -153,7 +154,7 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setLength(Integer.parseInt(record.getField(2)));
 		type.setSortOrder(record.getOrder());
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

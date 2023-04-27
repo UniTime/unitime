@@ -42,6 +42,6 @@ public class SolverParameterDefDAO extends _RootDAO<SolverParameterDef,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SolverParameterDef> findByGroup(org.hibernate.Session hibSession, Long groupId) {
-		return hibSession.createQuery("from SolverParameterDef x where x.group.uniqueId = :groupId").setParameter("groupId", groupId).list();
+		return hibSession.createQuery("from SolverParameterDef x where x.group.uniqueId = :groupId", SolverParameterDef.class).setParameter("groupId", groupId).list();
 	}
 }

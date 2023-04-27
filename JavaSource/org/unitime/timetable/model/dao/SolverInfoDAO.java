@@ -42,6 +42,6 @@ public class SolverInfoDAO extends _RootDAO<SolverInfo,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SolverInfo> findByDefinition(org.hibernate.Session hibSession, Long definitionId) {
-		return hibSession.createQuery("from SolverInfo x where x.definition.uniqueId = :definitionId").setParameter("definitionId", definitionId).list();
+		return hibSession.createQuery("from SolverInfo x where x.definition.uniqueId = :definitionId", SolverInfo.class).setParameter("definitionId", definitionId).list();
 	}
 }

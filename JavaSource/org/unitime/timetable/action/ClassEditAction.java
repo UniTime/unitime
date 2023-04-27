@@ -196,7 +196,8 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             Set s = c.getPreferences();
             doClear(s, Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
             c.setPreferences(s);
-            cdao.update(c);
+            cdao.getSession().merge(c);
+            cdao.getSession().flush();
             op = "init";
 
             ChangeLog.addChange(
@@ -242,7 +243,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
                     super.doUpdate(c, s, timeVertical,
                     		Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
                     
-                    hibSession.saveOrUpdate(c);
+                    hibSession.merge(c);
 
     	            tx.commit();
     	            
@@ -530,7 +531,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             } catch (NumberFormatException e) {
             	classInstr.setResponsibility(null);
             }
-            hibSession.saveOrUpdate(deptInstr);
+            hibSession.merge(deptInstr);
         }
 
         for (Iterator<ClassInstructor> iter = classInstrs.iterator(); iter.hasNext() ;) {
@@ -538,7 +539,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             DepartmentalInstructor instr = ci.getInstructor();
             instr.getClasses().remove(ci);
             c.getClassInstructors().remove(ci);
-            hibSession.saveOrUpdate(instr);
+            hibSession.merge(instr);
             hibSession.remove(ci);
         }
 

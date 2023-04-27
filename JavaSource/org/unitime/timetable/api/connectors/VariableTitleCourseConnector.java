@@ -190,7 +190,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		  ;
 		
 		@SuppressWarnings("unchecked")
-		List<CourseOffering> courses = (List<CourseOffering>)hibSession.createQuery(sb.toString()).setCacheable(true).list();
+		List<CourseOffering> courses = hibSession.createQuery(sb.toString(), CourseOffering.class).setCacheable(true).list();
 		CourseOffering co = null;
 		for (CourseOffering c : courses) {
 			if (c.getTitle() != null && c.getTitle().trim().equalsIgnoreCase(variableTitleQuery.getCourseTitle().trim())) {
@@ -374,8 +374,8 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		instructionalOffering.setByReservationOnly(false);
 		instructionalOffering.generateInstrOfferingPermId();
 		
-		instructionalOffering.setUniqueId((Long)hibSession.save(instructionalOffering));
-		courseOffering.setUniqueId((Long)hibSession.save(courseOffering));
+		hibSession.persist(instructionalOffering);
+		hibSession.persist(courseOffering);
 		ExternalVariableTitleDataLookup externalVariableTitleDataLookup = null;
 		try {
 			externalVariableTitleDataLookup = lookupExternalVariableTitleDataLookup();
@@ -398,7 +398,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 						CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(ccf.getReference(), cct, ccut, minCredit, maxCredit, Boolean.TRUE, Boolean.TRUE);
 						ccuc.setOwner(courseOffering);
 						courseOffering.addTocreditConfigs(ccuc);
-						ccuc.setUniqueId((Long) hibSession.save(ccuc));
+						hibSession.persist(ccuc);
 					}
 				}
 			}
@@ -419,7 +419,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 			instrOfferingConfig.setLimit(ApplicationProperty.VariableTitleDefaultLimit.intValue());
 		}
 		instrOfferingConfig.setName(configName);
-		instrOfferingConfig.setUniqueId((Long) hibSession.save(instrOfferingConfig));
+		hibSession.persist(instrOfferingConfig);
 		
 		return instrOfferingConfig;
 	}
@@ -435,7 +435,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
         ss.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
         ss.setChildSubparts(new HashSet<SchedulingSubpart>());
         ss.setSession(instrOfferingConfig.getSession());
-        ss.setUniqueId((Long) hibSession.save(ss));
+        hibSession.persist(ss);
         
         return ss;
 	}
@@ -466,7 +466,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
         clazz.setSchedulingSubpart(ss);
         clazz.setRoomRatio(Float.valueOf(0));
         ss.addToclasses(clazz);
-        clazz.setUniqueId((Long) hibSession.save(clazz));
+        hibSession.persist(clazz);
         
         if (variableTitleQuery.getInstructorId() != null) {
         	DepartmentalInstructor di = DepartmentalInstructor.findByPuidDepartmentId(variableTitleQuery.getInstructorId(), subjectArea.getDepartment().getUniqueId(), hibSession);
@@ -476,7 +476,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	        ci.setInstructor(di);
 	        ci.setClassInstructing(clazz);
 	        clazz.addToclassInstructors(ci);
-	        ci.setUniqueId((Long)hibSession.save(ci));
+	        hibSession.persist(ci);
         }
         return clazz;
 	}
@@ -562,7 +562,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 				instructionalOffering = courseOffering.getInstructionalOffering();
 				if (instructionalOffering.isNotOffered()) {
 					instructionalOffering.setNotOffered(false);
-					helper.getHibSession().update(instructionalOffering);
+					helper.getHibSession().merge(instructionalOffering);
 				}
 			}
 			InstrOfferingConfig instrOfferingConfig = findOrCreateVariableTitleConfig(instructionalOffering, helper.getHibSession());
@@ -683,7 +683,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		dp.setPattern(sb.toString());
 		dp.setDatePatternType(DatePatternType.Extended);
 		dp.setVisible(true);
-		dp.setUniqueId((Long)hibSession.save(dp));
+		hibSession.persist(dp);
 		    
 		return dp;
 	}

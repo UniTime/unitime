@@ -42,6 +42,6 @@ public class DistributionPrefDAO extends _RootDAO<DistributionPref,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<DistributionPref> findByDistributionType(org.hibernate.Session hibSession, Long distributionTypeId) {
-		return hibSession.createQuery("from DistributionPref x where x.distributionType.uniqueId = :distributionTypeId").setParameter("distributionTypeId", distributionTypeId).list();
+		return hibSession.createQuery("from DistributionPref x where x.distributionType.uniqueId = :distributionTypeId", DistributionPref.class).setParameter("distributionTypeId", distributionTypeId).list();
 	}
 }

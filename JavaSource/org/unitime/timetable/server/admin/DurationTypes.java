@@ -102,7 +102,8 @@ public class DurationTypes implements AdminTable {
 		type.setImplementation(record.getField(3));
 		type.setParameter(record.getField(4));
 		type.setVisible("true".equalsIgnoreCase(record.getField(5)));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -127,7 +128,7 @@ public class DurationTypes implements AdminTable {
 		type.setImplementation(record.getField(3));
 		type.setParameter(record.getField(4));
 		type.setVisible("true".equalsIgnoreCase(record.getField(5)));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

@@ -216,7 +216,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     					free.setLength(ft.getTime().getLength());
     					free.setSession(s.getSession());
     					free.setName("Free " + ft.getTime().getDayHeader() + " " + ft.getTime().getStartTimeHeader(true) + " - " + ft.getTime().getEndTimeHeader(true));
-    					hibSession.saveOrUpdate(free);
+    					hibSession.persist(free);
         			} else {
         				CourseRequest cr = (CourseRequest)request;
         				if (status == null || status.hasOption(Option.waitlist)) {
@@ -249,7 +249,9 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
 						}
         				cd.updatePreferences((CourseRequest)request, hibSession);
         			}
-					Long demandId = (Long)hibSession.save(cd);
+        			hibSession.persist(cd);
+        			if (cd.getUniqueId() == null) hibSession.flush();
+					Long demandId = cd.getUniqueId();
 					for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
 	                    iRequests.put(demandId+":"+cr.getCourseOffering().getInstructionalOffering().getUniqueId(), cr);
 	                }
@@ -298,10 +300,10 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     hibSession.persist(sce);
                 }
                 if (cr != null)
-                	hibSession.saveOrUpdate(cr);
+                	hibSession.merge(cr);
             }
         }
-        hibSession.saveOrUpdate(s);
+        hibSession.merge(s);
         
         if (s.getWaitListMode() == WaitListMode.WaitList)
             s.resetWaitLists(
@@ -415,7 +417,10 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                             }
                             info.setNbrExpectedStudents(section.getSpaceExpected());
                             info.setNbrHoldingStudents(section.getSpaceHeld());
-                            hibSession.saveOrUpdate(info);
+                            if (info.getUniqueId() == null)
+                            	hibSession.persist(info);
+                            else
+                            	hibSession.merge(info);
                             flushIfNeeded(hibSession);
                         }
                     }

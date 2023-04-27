@@ -102,7 +102,8 @@ public class PositionTypes implements AdminTable {
 		position.setReference(record.getField(0));
 		position.setLabel(record.getField(1));
 		position.setSortOrder(Integer.valueOf(record.getField(2)));
-		record.setUniqueId((Long)hibSession.save(position));
+		hibSession.persist(position);
+		record.setUniqueId(position.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				position,
@@ -122,7 +123,7 @@ public class PositionTypes implements AdminTable {
 		position.setReference(record.getField(0));
 		position.setLabel(record.getField(1));
 		position.setSortOrder(Integer.valueOf(record.getField(2)));
-		hibSession.saveOrUpdate(position);
+		hibSession.merge(position);
 		ChangeLog.addChange(hibSession,
 				context,
 				position,

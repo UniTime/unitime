@@ -325,7 +325,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 		query.append(" and co.subjectArea.uniqueId = :subjectAreaId ");
 		
-		Query q = hibSession.createQuery(query.toString());
+		Query<InstructionalOffering> q = hibSession.createQuery(query.toString(), InstructionalOffering.class);
 		q.setFetchSize(1000);
 		q.setParameter("subjectAreaId", subjectAreaId);
 		q.setParameter("sessionId", acadSessionId.longValue());
@@ -518,11 +518,11 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		for (Iterator i2=cfg.getSchedulingSubparts().iterator();i2.hasNext();) {
     			SchedulingSubpart ss = (SchedulingSubpart)i2.next();
     			ss.setSchedulingSubpartSuffixCache(null); ss.getSchedulingSubpartSuffix(false);
-    			hibSession.saveOrUpdate(ss);
+    			hibSession.merge(ss);
     			for (Iterator i3=ss.getClasses().iterator();i3.hasNext();) {
     				Class_ c = (Class_)i3.next();
     				c.setSectionNumberCache(null); c.getSectionNumber(false);
-    				hibSession.saveOrUpdate(c);
+    				hibSession.merge(c);
     			}
     		}
     	}

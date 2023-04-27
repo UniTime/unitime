@@ -42,6 +42,6 @@ public class MeetingDAO extends _RootDAO<Meeting,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Meeting> findByEvent(org.hibernate.Session hibSession, Long eventId) {
-		return hibSession.createQuery("from Meeting x where x.event.uniqueId = :eventId").setParameter("eventId", eventId).list();
+		return hibSession.createQuery("from Meeting x where x.event.uniqueId = :eventId", Meeting.class).setParameter("eventId", eventId).list();
 	}
 }

@@ -236,7 +236,8 @@ public class SubjectAreas implements AdminTable {
 		dept.getSubjectAreas().add(area);
 		area.setFundingDept(fundDept);
 		
-		record.setUniqueId((Long)hibSession.save(area));
+		hibSession.persist(area);
+		record.setUniqueId(area.getUniqueId());
 		if (fundDept == null) record.setField(4, "-1");
 		String instrNameFormat = UserProperty.NameFormat.get(context.getUser());
 		String managers = "";
@@ -304,7 +305,7 @@ public class SubjectAreas implements AdminTable {
 	                                    if (!rgp.getRoomGroup().isGlobal()) i.remove();
 	                                }
 	                            }
-	                            hibSession.saveOrUpdate(ss);
+	                            hibSession.merge(ss);
 	                        }
 	                        for (Class_ c: ss.getClasses()) {
 	                            if (!c.getManagingDept().isExternalManager()) {
@@ -334,17 +335,17 @@ public class SubjectAreas implements AdminTable {
 	                                	newInstructor = DepartmentalInstructor.findByPuidDepartmentId(ci.getInstructor().getExternalUniqueId(), dept.getUniqueId());
 	                                }
 	                                ci.getInstructor().getClasses().remove(ci);
-	                                hibSession.saveOrUpdate(ci.getInstructor());
+	                                hibSession.merge(ci.getInstructor());
                                     if (newInstructor != null) {
                                         ci.setInstructor(newInstructor);
                                         newInstructor.getClasses().add(ci);
-                                        hibSession.saveOrUpdate(newInstructor);
+                                        hibSession.merge(newInstructor);
                                     } else {
                                         i.remove();
                                         hibSession.remove(ci);
                                     }
 	                            }
-	                            hibSession.saveOrUpdate(c);
+	                            hibSession.merge(c);
                                 updatedClasses.add(c);
 	                        }
 	                    }
@@ -368,7 +369,7 @@ public class SubjectAreas implements AdminTable {
 	                    }
 	                    if (change) {
                             dp.setOwner(dept);
-                            hibSession.saveOrUpdate(dp);
+                            hibSession.merge(dp);
 	                    }
 	                }
 	            }
@@ -385,7 +386,7 @@ public class SubjectAreas implements AdminTable {
 			if (fundingEnabled) {
 				area.setFundingDept(fundDept);
 			}
-			hibSession.saveOrUpdate(area);
+			hibSession.merge(area);
 			ChangeLog.addChange(hibSession,
 				context,
 				area,

@@ -100,7 +100,8 @@ public class InstructorAttributeTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setConjunctive("true".equals(record.getField(2)));
 		type.setRequired("true".equals(record.getField(3)));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -121,7 +122,7 @@ public class InstructorAttributeTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setConjunctive("true".equals(record.getField(2)));
 		type.setRequired("true".equals(record.getField(3)));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

@@ -406,30 +406,32 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (value == null && managerData == null) return;
 				if (value != null && managerData != null && value.equals(managerData.getValue())) return;
 				
-				if (managerData == null) {
+				if (value == null) {
+					hibSession.remove(managerData);
+				} else if (managerData == null) {
 					managerData = new ManagerSettings();
 					managerData.setKey(settings);
 					managerData.setManager(TimetableManagerDAO.getInstance().get((Long)getCurrentAuthority().getQualifiers("TimetableManager").get(0).getQualifierId(), hibSession));
+					managerData.setValue(value);
+					hibSession.persist(managerData);
+				} else {
+					managerData.setValue(value);
+					hibSession.merge(managerData);
 				}
-				managerData.setValue(value);
-				
-				if (value == null)
-					hibSession.remove(managerData);
-				else
-					hibSession.saveOrUpdate(managerData);
 			} else {
 				UserData userData = UserDataDAO.getInstance().get(new UserDataId(getExternalUserId(), key), hibSession);
 				if (userData == null && value == null) return;
 				if (userData != null && value != null && value.equals(userData.getValue())) return;
 				
-				if (userData == null)
-					userData = new UserData(getExternalUserId(), key);
-				
 				if (value == null) {
 					hibSession.remove(userData);
+				} else if (userData == null) {
+					userData = new UserData(getExternalUserId(), key);
+					userData.setValue(value);
+					hibSession.persist(userData);
 				} else {
 					userData.setValue(value);
-					hibSession.saveOrUpdate(userData);
+					hibSession.merge(userData);
 				}
 			}
 			hibSession.flush();

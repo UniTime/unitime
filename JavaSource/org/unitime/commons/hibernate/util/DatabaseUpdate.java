@@ -110,6 +110,7 @@ public abstract class DatabaseUpdate {
         sLog.info("New " + updateName() + " database version: "+getVersion());
     }
     
+	@SuppressWarnings("deprecation")
 	public boolean performUpdate(Element updateElement) {
         int version = Integer.parseInt(updateElement.attributeValue("version"));
         Session hibSession = new _RootDAO().getSession();

@@ -231,12 +231,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = StaffDAO.getInstance().getSession().createQuery(q);
+        Query<Staff> hq = StaffDAO.getInstance().getSession().createQuery(q, Staff.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
-        for (Staff staff: (List<Staff>)hq.setCacheable(true).list()) {
+        for (Staff staff: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
                     staff.getFirstName(), staff.getMiddleName(), staff.getLastName(), staff.getAcademicTitle(),
                     staff.getEmail(), null, staff.getDept(), 
@@ -259,12 +259,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = AdvisorDAO.getInstance().getSession().createQuery(q);
+        Query<Advisor> hq = AdvisorDAO.getInstance().getSession().createQuery(q, Advisor.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
-        for (Advisor advisor: (List<Advisor>)hq.setCacheable(true).list()) {
+        for (Advisor advisor: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(advisor.getExternalUniqueId(), Source.Staff), 
                     advisor.getFirstName(), advisor.getMiddleName(), advisor.getLastName(), advisor.getAcademicTitle(),
                     advisor.getEmail(), null, null, 
@@ -287,12 +287,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = EventContactDAO.getInstance().getSession().createQuery(q);
+        Query<EventContact> hq = EventContactDAO.getInstance().getSession().createQuery(q, EventContact.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
-        for (EventContact contact: (List<EventContact>)hq.setCacheable(true).list()) {
+        for (EventContact contact: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
                     contact.getFirstName(), contact.getMiddleName(), contact.getLastName(), contact.getAcademicTitle(), 
                     contact.getEmailAddress(), contact.getPhone(), null, 
@@ -322,14 +322,14 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = DepartmentalInstructorDAO.getInstance().getSession().createQuery(q);
+        Query<DepartmentalInstructor> hq = DepartmentalInstructorDAO.getInstance().getSession().createQuery(q, DepartmentalInstructor.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         hq.setParameter("sessionId", context.getSessionId());
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
         int ret = 0;
-        for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hq.setCacheable(true).list()) {
+        for (DepartmentalInstructor instructor: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(instructor.getExternalUniqueId(), Source.Staff), 
                     Constants.toInitialCase(instructor.getFirstName()),
                     Constants.toInitialCase(instructor.getMiddleName()),
@@ -356,7 +356,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :i" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = StudentDAO.getInstance().getSession().createQuery(q);
+        Query<Student> hq = StudentDAO.getInstance().getSession().createQuery(q, Student.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         	if (context.isAdmin()) {
@@ -370,7 +370,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         hq.setParameter("sessionId", context.getSessionId());
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
-        for (Student student: (List<Student>)hq.setCacheable(true).list()) {
+        for (Student student: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
                     student.getFirstName(), student.getMiddleName(), student.getLastName(), student.getAcademicTitle(),
                     student.getEmail(), null, null, 
@@ -393,12 +393,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
-        Query hq = TimetableManagerDAO.getInstance().getSession().createQuery(q);
+        Query<TimetableManager> hq = TimetableManagerDAO.getInstance().getSession().createQuery(q, TimetableManager.class);
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
         	hq.setParameter("t" + idx, context.getQueryTokens().get(idx));
         if (context.getLimit() > 0)
         	hq.setMaxResults(context.getLimit());
-        for (TimetableManager manager: (List<TimetableManager>)hq.setCacheable(true).list()) {
+        for (TimetableManager manager: hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
                     manager.getFirstName(), manager.getMiddleName(), manager.getLastName(), manager.getAcademicTitle(),
                     manager.getEmailAddress(), null, null, 

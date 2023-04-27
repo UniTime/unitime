@@ -95,7 +95,8 @@ public class CourseCreditUnits implements AdminTable {
 		credit.setReference(record.getField(0));
 		credit.setLabel(record.getField(1));
 		credit.setAbbreviation(record.getField(2));
-		record.setUniqueId((Long)hibSession.save(credit));
+		hibSession.persist(credit);
+		record.setUniqueId(credit.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				credit,
@@ -114,7 +115,7 @@ public class CourseCreditUnits implements AdminTable {
 		credit.setReference(record.getField(0));
 		credit.setLabel(record.getField(1));
 		credit.setAbbreviation(record.getField(2));
-		hibSession.saveOrUpdate(credit);
+		hibSession.merge(credit);
 		ChangeLog.addChange(hibSession,
 				context,
 				credit,

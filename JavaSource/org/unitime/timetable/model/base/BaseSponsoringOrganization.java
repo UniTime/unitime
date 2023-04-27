@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.SponsoringOrganization;
 
 /**
@@ -52,7 +53,7 @@ public abstract class BaseSponsoringOrganization implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "sponsoring_organization_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "sponsoring_organization_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "sponsoring_organization_id")

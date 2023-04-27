@@ -98,7 +98,8 @@ public class ContactCategories implements AdminTable {
 		cc.setMessage(record.getField(2));
 		cc.setHasRole("true".equalsIgnoreCase(record.getField(3)));
 		cc.setEmail(record.getField(4));
-		record.setUniqueId((Long)hibSession.save(cc));
+		hibSession.persist(cc);
+		record.setUniqueId(cc.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				cc,
@@ -121,7 +122,7 @@ public class ContactCategories implements AdminTable {
 		cc.setMessage(record.getField(2));
 		cc.setHasRole("true".equalsIgnoreCase(record.getField(3)));
 		cc.setEmail(record.getField(4));
-		hibSession.saveOrUpdate(cc);
+		hibSession.merge(cc);
 		ChangeLog.addChange(hibSession,
 				context,
 				cc,

@@ -193,20 +193,19 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        	Class_ c = ci.getClassInstructing();
 	        	updatedClasses.add(c);
 	        	c.getClassInstructors().remove(ci);
-	        	hibSession.saveOrUpdate(ci);
 	        	hibSession.remove(ci);
 	        }           
             
             for (Iterator i=inst.getExams().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 exam.getInstructors().remove(inst);
-                hibSession.saveOrUpdate(exam);
+                hibSession.merge(exam);
             }
 	        
 	        for (Iterator i=inst.getAssignments().iterator();i.hasNext();) {
 	        	Assignment a = (Assignment)i.next();
 	        	a.getInstructors().remove(inst);
-	        	hibSession.saveOrUpdate(a);
+	        	hibSession.merge(a);
 	        }
 	        
 	        Department d = null;

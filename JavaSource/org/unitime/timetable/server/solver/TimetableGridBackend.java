@@ -22,7 +22,6 @@ package org.unitime.timetable.server.solver;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -193,13 +192,12 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     		            	response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoCourseSolverRoomAvailabilityLastUpdated(ts)));
     				}
     				
-    				Query q = hibSession.createQuery(
+    				Query<Location> q = hibSession.createQuery(
     						"select distinct r from "+
     						"Location as r inner join r.assignments as a where "+
-    						"a.solution.uniqueId in ("+solutionIdsStr+")");
+    						"a.solution.uniqueId in ("+solutionIdsStr+")", Location.class);
     				q.setCacheable(true);
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					Location room = (Location)i.next();
+    				for (Location room: q.list()) {
     					if (!match(filter, room)) continue;
     					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, room, hibSession, cx));
     				}
@@ -213,22 +211,21 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     		            	response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoCourseSolverRoomAvailabilityLastUpdated(ts)));
     				}
                     String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
-    				Query q = null;
+    				Query<DepartmentalInstructor> q = null;
     				if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
     					q = hibSession.createQuery(
     							"select distinct i.instructor from "+
     							"ClassInstructor as i inner join i.classInstructing.assignments as a where "+
-    							"a.solution.uniqueId in ("+solutionIdsStr+")");
+    							"a.solution.uniqueId in ("+solutionIdsStr+")", DepartmentalInstructor.class);
     				} else {
     					q = hibSession.createQuery(
     							"select distinct i from "+
     							"DepartmentalInstructor as i inner join i.assignments as a where "+
-    							"a.solution.uniqueId in ("+solutionIdsStr+")");
+    							"a.solution.uniqueId in ("+solutionIdsStr+")", DepartmentalInstructor.class);
     				}
     				q.setCacheable(true);
     				HashSet puids = new HashSet();
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+    				for (DepartmentalInstructor instructor: q.list()) {
     					String name = (instructor.getLastName()+", "+instructor.getFirstName()+" "+instructor.getMiddleName()).trim();
     					if (!match(filter, name)) continue;
     					if (instructor.getExternalUniqueId() == null || instructor.getExternalUniqueId().isEmpty() || puids.add(instructor.getExternalUniqueId())) {
@@ -238,50 +235,47 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
                         }
     				}
     			} else if (cx.getResourceType() == ResourceType.DEPARTMENT.ordinal()) {
-    				Query q = hibSession.createQuery(
+    				Query<Department> q = hibSession.createQuery(
     						"select distinct d from "+
     						"Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where "+
-    						"a.solution.uniqueId in ("+solutionIdsStr+") and o.isControl=true");
+    						"a.solution.uniqueId in ("+solutionIdsStr+") and o.isControl=true", Department.class);
     				q.setCacheable(true);
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					Department dept = (Department)i.next();
+    				for (Department dept: q.list()) {
     					String name = dept.getAbbreviation();
     					if (!match(filter, name)) continue;
     					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, dept, hibSession, cx));
     				}
     			} else if (cx.getResourceType() == ResourceType.SUBJECT_AREA.ordinal()) {
-    				Query q = hibSession.createQuery(
+    				Query<SubjectArea> q = hibSession.createQuery(
     						"select distinct sa from "+
     						"Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where "+
-    						"a.solution.uniqueId in ("+solutionIdsStr+") and o.isControl=true");
+    						"a.solution.uniqueId in ("+solutionIdsStr+") and o.isControl=true", SubjectArea.class);
     				q.setCacheable(true);
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					SubjectArea sa = (SubjectArea)i.next();
+    				for (SubjectArea sa: q.list()) {
     					String name = sa.getSubjectAreaAbbreviation();
     					if (!match(filter, name)) continue;
     					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, sa, hibSession, cx));
     				}
     			} else if (cx.getResourceType() == ResourceType.CURRICULUM.ordinal()) {
-    				Query q = hibSession.createQuery(
+    				Query<CurriculumClassification> q = hibSession.createQuery(
     						"select cc.classification from "+
     						"CurriculumCourse cc, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where "+
-    						"a.solution.uniqueId in ("+solutionIdsStr+") and co = cc.course");
+    						"a.solution.uniqueId in ("+solutionIdsStr+") and co = cc.course", CurriculumClassification.class);
     				q.setCacheable(true);
     				Set<Long> infos = new HashSet<Long>();
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					CurriculumClassification cc = (CurriculumClassification)i.next();
+    				for (CurriculumClassification cc: q.list()) {
     					if (!infos.add(cc.getUniqueId())) continue;
     					String name = cc.getCurriculum().getAbbv() + " " + cc.getName();
     					if (!match(filter, name)) continue;
     					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, cc, hibSession, cx));
     				}
     			} else if (cx.getResourceType() == ResourceType.STUDENT_GROUP.ordinal()) {
-    				Query q = hibSession.createQuery(
-    						"select c from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId in ("+solutionIdsStr+") and c.definition.name = 'GroupInfo'");
+    				Query<ConstraintInfo> q = hibSession.createQuery(
+    						"select c from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId in ("+solutionIdsStr+") and c.definition.name = 'GroupInfo'",
+    						ConstraintInfo.class);
     				q.setCacheable(true);
     				Set<Long> infos = new HashSet<Long>();
-    				for (Iterator i=q.list().iterator();i.hasNext();) {
-    					ConstraintInfo g = (ConstraintInfo)i.next();
+    				for (ConstraintInfo g: q.list()) {
     					if (!infos.add(g.getUniqueId())) continue;
     					if (!match(filter, g.getOpt())) continue;
     					TimetableInfo info = g.getInfo();
@@ -289,12 +283,11 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     						response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, (StudentGroupInfo)info, hibSession, cx));
     				}
     				if (response.getModels().isEmpty()) {
-    					q = hibSession.createQuery(
+    					Query<StudentGroup> q2 = hibSession.createQuery(
     							"select distinct r.group from StudentGroupReservation r, Assignment a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering as io where "+
-    							"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering");
+    							"a.solution.uniqueId in ("+solutionIdsStr+") and io = r.instructionalOffering", StudentGroup.class);
     					q.setCacheable(true);
-    					for (Iterator i=q.list().iterator();i.hasNext();) {
-    						StudentGroup g = (StudentGroup)i.next();
+    					for (StudentGroup g: q2.list()) {
     						if (match(filter, g.getGroupName()) || match(filter, g.getGroupAbbreviation()))
     							response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, g, hibSession, cx));
     					}					

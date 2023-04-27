@@ -162,7 +162,8 @@ public class InstructorRoles implements AdminTable {
 
 			instructor.setRole(record.getField(2) == null || record.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(record.getField(2))));
 
-			record.setUniqueId((Long)hibSession.save(instructor));
+			hibSession.persist(instructor);
+			record.setUniqueId(instructor.getUniqueId());
 		} else {
 			record.setUniqueId(instructor.getUniqueId());
 			instructor.setRole(record.getField(2) == null || record.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(record.getField(2))));

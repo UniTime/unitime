@@ -892,14 +892,19 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			iDate = date;
 		}
 		@Override
+	@Transient
 		public Long getEventId() { return iEventId; }
 		@Override
+	@Transient
 		public String getEventName() { return MSG.instructorNotAvailableName(); }
 		@Override
+	@Transient
 		public String getEventType() { return MSG.instructorNotAvailableType(); }
 		@Override
+	@Transient
 		public Date getStartTime() { return iDate; }
 		@Override
+	@Transient
 		public Date getEndTime() { return new Date(iDate.getTime() + 86400000l); }
 		@Override
 		public int compareTo(TimeBlock block) {

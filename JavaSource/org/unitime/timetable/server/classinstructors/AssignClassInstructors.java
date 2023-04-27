@@ -532,7 +532,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 						} else {
 							ci.setResponsibility(TeachingResponsibilityDAO.getInstance().get(Long.parseLong(r.getField(DataColumn.RESPONSIBILITY.ordinal()))));
 						}
-						ci.setUniqueId((Long)hibSession.save(ci));
+						hibSession.persist(ci);
 						newInstrs.add(ci);
 						somethingChanged = true;
 					}

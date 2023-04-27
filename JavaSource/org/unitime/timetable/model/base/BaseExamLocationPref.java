@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
@@ -58,7 +59,7 @@ public abstract class BaseExamLocationPref implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "exam_location_pref_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "exam_location_pref_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_seq")
 	})
 	@GeneratedValue(generator = "exam_location_pref_id")

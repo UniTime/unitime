@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -58,7 +59,7 @@ public abstract class BaseRelatedCourseInfo implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "related_course_info_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "related_course_info_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "related_course_info_id")

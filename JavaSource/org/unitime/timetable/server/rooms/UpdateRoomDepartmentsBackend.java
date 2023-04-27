@@ -72,9 +72,8 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
                         rd.setControl(Boolean.FALSE);
                         department.getRoomDepts().add(rd);
                         location.getRoomDepts().add(rd);
-                        hibSession.saveOrUpdate(location);
-                        hibSession.saveOrUpdate(rd);
-    					hibSession.saveOrUpdate(location);
+                        hibSession.persist(rd);
+    					hibSession.merge(location);
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.CREATE, null, department);
     				}
     			if (request.hasDropLocations())
@@ -87,24 +86,24 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
                         ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.DELETE, null, department);
                         department.getRoomDepts().remove(rd);
                         location.getRoomDepts().remove(rd);
-                        hibSession.saveOrUpdate(location);
+                        hibSession.merge(location);
                         hibSession.remove(rd);
                         location.removedFromDepartment(department, hibSession);
     				}
-    			hibSession.saveOrUpdate(department);
+    			hibSession.merge(department);
     		} else if (request.hasExamType()) {
     			context.checkPermission(Right.EditRoomDepartmentsExams);
     			ExamType type = ExamTypeDAO.getInstance().get(request.getExamType().getId(), hibSession);
     			if (request.hasAddLocations())
     				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getAddLocations()).list()) {
     					location.setExamEnabled(type, true);
-    					hibSession.saveOrUpdate(location);
+    					hibSession.merge(location);
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);
     				}
     			if (request.hasDropLocations())
     				for (Location location: hibSession.createQuery("from Location where uniqueId in :ids", Location.class).setParameterList("ids", request.getDropLocations()).list()) {
     					location.setExamEnabled(type, false);
-    					hibSession.saveOrUpdate(location);
+    					hibSession.merge(location);
     					ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);
     				}
     		}

@@ -131,7 +131,7 @@ public class FixCourseTimetablingInconsistencies {
 			}
 			
 			if (save) {
-				hibSession.saveOrUpdate(c);
+				hibSession.merge(c);
 			}
 		}
 		
@@ -168,8 +168,8 @@ public class FixCourseTimetablingInconsistencies {
 											float ratio = ((float)location.getCapacity()) / minSize;
 											a.getClazz().setRoomRatio(a.getClazz().getRoomRatio() * ratio);
 											b.getClazz().setRoomRatio(b.getClazz().getRoomRatio() * ratio);
-											iHibSession.saveOrUpdate(a.getClazz());
-											iHibSession.saveOrUpdate(b.getClazz());
+											iHibSession.merge(a.getClazz());
+											iHibSession.merge(b.getClazz());
 										}
 										continue b;
 									}
@@ -193,8 +193,8 @@ public class FixCourseTimetablingInconsistencies {
 							float ratio = ((float)location.getCapacity()) / minSize;
 							a.getClazz().setRoomRatio(a.getClazz().getRoomRatio() * ratio);
 							b.getClazz().setRoomRatio(b.getClazz().getRoomRatio() * ratio);
-							iHibSession.saveOrUpdate(a.getClazz());
-							iHibSession.saveOrUpdate(b.getClazz());
+							iHibSession.merge(a.getClazz());
+							iHibSession.merge(b.getClazz());
 						}
 						DistributionPref dp = new DistributionPref();
 						dp.setDistributionType(canShareRoomType);
@@ -212,7 +212,7 @@ public class FixCourseTimetablingInconsistencies {
 						o2.setPrefGroup(b.getClazz());
 						o2.setSequenceNumber(2);
 						dp.getDistributionObjects().add(o2);
-						iHibSession.saveOrUpdate(dp);
+						iHibSession.persist(dp);
 					}
 				}
 			}
@@ -249,7 +249,7 @@ public class FixCourseTimetablingInconsistencies {
 									"  " + a.getClazz().getClassLabel() + " " + a.getPlacement().getLongName(CONSTANTS.useAmPm()) + "\n" +
 									"  " + b.getClazz().getClassLabel() + " " + b.getPlacement().getLongName(CONSTANTS.useAmPm()));
 							ca.setLead(false);
-							iHibSession.saveOrUpdate(ca);
+							iHibSession.merge(ca);
 						}
 					}
 				}
@@ -293,7 +293,7 @@ public class FixCourseTimetablingInconsistencies {
                         	pattern.setPreference(d, t, PreferenceLevel.sStronglyDiscouraged);
                         	p.setPreference(pattern.getPreferences());
                         	if (p.getOwner() == null) p.setOwner(clazz);
-                        	iHibSession.saveOrUpdate(p);
+                        	iHibSession.merge(p);
                         	return true;
                     	}
                     }
@@ -318,7 +318,7 @@ public class FixCourseTimetablingInconsistencies {
                 }
             	p.setPreference(pattern.getPreferences());
             	if (p.getOwner() == null) p.setOwner(clazz);
-            	iHibSession.saveOrUpdate(p);
+            	iHibSession.merge(p);
             }
             if (found) return true;
         }
@@ -332,7 +332,7 @@ public class FixCourseTimetablingInconsistencies {
             	pattern.setExactDays(assignment.getDays());
             	pattern.setExactStartSlot(assignment.getStartSlot());
             	p.setPreference(pattern.getPreferences());
-            	iHibSession.saveOrUpdate(p);
+            	iHibSession.merge(p);
         		return true;
         	}
         }
@@ -369,7 +369,7 @@ public class FixCourseTimetablingInconsistencies {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " requires a room " + p.getRoom().getLabel() + " different from the assigned room " + assignment.getPlacement().getRoomName(","));
 		        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 		        	if (p.getOwner() == null) p.setOwner(clazz);
-		        	iHibSession.save(p);
+		        	iHibSession.persist(p);
 				}
 			}
 			if (p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sProhibited)) {
@@ -377,7 +377,7 @@ public class FixCourseTimetablingInconsistencies {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits the assigned room " + p.getRoom().getLabel());
 					p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
 		        	if (p.getOwner() == null) p.setOwner(clazz);
-		        	iHibSession.save(p);
+		        	iHibSession.persist(p);
 				}
 			}
 		}
@@ -385,7 +385,7 @@ public class FixCourseTimetablingInconsistencies {
 			if (hasReq && !p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired) && remaining.remove(p.getRoom())) {
 	        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 	        	if (p.getOwner() == null) p.setOwner(clazz);
-	        	iHibSession.save(p);
+	        	iHibSession.persist(p);
 			}
 		}
 		boolean ret = false;
@@ -406,7 +406,7 @@ public class FixCourseTimetablingInconsistencies {
 					if (px.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sProhibited)) {
 						sLog.info("Class " + clazz.getClassLabel() + " is assigned to a room " + loc.getLabel() + " that is prohibited on a departmental level.");
 						px.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
-						iHibSession.saveOrUpdate(px);
+						iHibSession.merge(px);
 					}
 					if (px.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sStronglyDiscouraged)) {
 						for (RoomPref p: roomPrefs)
@@ -455,7 +455,7 @@ public class FixCourseTimetablingInconsistencies {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " requires a building " + p.getBuilding().getAbbreviation() + " different from the assigned building " + assignment.getPlacement().getRoomName(","));
 		        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 		        	if (p.getOwner() == null) p.setOwner(clazz);
-		        	iHibSession.save(p);
+		        	iHibSession.persist(p);
 				}
 			}
 			if (p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sProhibited)) {
@@ -463,7 +463,7 @@ public class FixCourseTimetablingInconsistencies {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits the assigned building " + p.getBuilding().getAbbreviation());
 					p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
 		        	if (p.getOwner() == null) p.setOwner(clazz);
-		        	iHibSession.save(p);
+		        	iHibSession.persist(p);
 				}
 			}
 		}
@@ -471,7 +471,7 @@ public class FixCourseTimetablingInconsistencies {
 			if (hasReq && !p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired) && remaining.remove(p.getBuilding())) {
 	        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 	        	if (p.getOwner() == null) p.setOwner(clazz);
-	        	iHibSession.save(p);
+	        	iHibSession.persist(p);
 			}
 		}
 		if (hasReq && !remaining.isEmpty()) {
@@ -507,7 +507,7 @@ public class FixCourseTimetablingInconsistencies {
 						ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + " (" + 
 						ci.getLead() + " -> " + a.getInstructors().contains(ci.getInstructor()) + ")");
 				ci.setLead(a.getInstructors().contains(ci.getInstructor()));
-				iHibSession.saveOrUpdate(ci);
+				iHibSession.merge(ci);
 			}
 		}
 		for (ClassInstructor ci: clazz.getClassInstructors()) {
@@ -539,8 +539,8 @@ public class FixCourseTimetablingInconsistencies {
 												float ratio = ((float)location.getCapacity()) / minSize;
 												a.getClazz().setRoomRatio(a.getClazz().getRoomRatio() * ratio);
 												b.getClazz().setRoomRatio(b.getClazz().getRoomRatio() * ratio);
-												iHibSession.saveOrUpdate(a.getClazz());
-												iHibSession.saveOrUpdate(b.getClazz());
+												iHibSession.merge(a.getClazz());
+												iHibSession.merge(b.getClazz());
 											}
 										}
 										continue b;
@@ -555,8 +555,8 @@ public class FixCourseTimetablingInconsistencies {
 								float ratio = ((float)location.getCapacity()) / minSize;
 								a.getClazz().setRoomRatio(a.getClazz().getRoomRatio() * ratio);
 								b.getClazz().setRoomRatio(b.getClazz().getRoomRatio() * ratio);
-								iHibSession.saveOrUpdate(a.getClazz());
-								iHibSession.saveOrUpdate(b.getClazz());
+								iHibSession.merge(a.getClazz());
+								iHibSession.merge(b.getClazz());
 							}
 						}
 						DistributionType meetWithType = iHibSession.createQuery(
@@ -577,17 +577,17 @@ public class FixCourseTimetablingInconsistencies {
 						o2.setPrefGroup(b.getClazz());
 						o2.setSequenceNumber(2);
 						dp.getDistributionObjects().add(o2);
-						iHibSession.saveOrUpdate(dp);						
+						iHibSession.persist(dp);						
 					} else {
 						ci.setLead(false);
-						iHibSession.saveOrUpdate(ci);
+						iHibSession.merge(ci);
 					}
 				} else if (!ci.getInstructor().isIgnoreToFar() && isBackToBackTooFar(a.getPlacement(), b.getPlacement())) {
 					sLog.info("Class " + clazz.getClassLabel() + " " + a.getTimeLocation().getName(CONSTANTS.useAmPm()) + " " + a.getPlacement().getRoomName(",") + 
 							" has an instructor " + ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort)+ " and is too far back-to-back with " + 
 							other.getClassInstructing().getClassLabel() + " " + b.getTimeLocation().getName(CONSTANTS.useAmPm()) + "  " + b.getPlacement().getRoomName(",") + ".");
 					ci.getInstructor().setIgnoreToFar(true);
-					iHibSession.saveOrUpdate(ci.getInstructor());
+					iHibSession.merge(ci.getInstructor());
 				}
 			}
 		}
@@ -602,7 +602,7 @@ public class FixCourseTimetablingInconsistencies {
 						sLog.info("Class " + clazz.getClassLabel() + " requires feature " + p.getRoomFeature().getLabel() + " but assigned room " + loc.getLabel() + " does not have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
 			        	if (p.getOwner() == null) p.setOwner(clazz);
-						iHibSession.saveOrUpdate(p);
+						iHibSession.merge(p);
 					}
 				}
 			}
@@ -612,7 +612,7 @@ public class FixCourseTimetablingInconsistencies {
 						sLog.info("Class " + clazz.getClassLabel() + " prohibits feature " + p.getRoomFeature().getLabel() + " but assigned room " + loc.getLabel() + " does have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
 			        	if (p.getOwner() == null) p.setOwner(clazz);
-						iHibSession.saveOrUpdate(p);
+						iHibSession.merge(p);
 					}
 				}
 			}
@@ -628,7 +628,7 @@ public class FixCourseTimetablingInconsistencies {
 						sLog.info("Class " + clazz.getClassLabel() + " requires feature " + p.getRoomGroup().getName() + " but assigned room " + loc.getLabel() + " does not have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
 			        	if (p.getOwner() == null) p.setOwner(clazz);
-						iHibSession.saveOrUpdate(p);
+						iHibSession.merge(p);
 					}
 				}
 			}
@@ -638,7 +638,7 @@ public class FixCourseTimetablingInconsistencies {
 						sLog.info("Class " + clazz.getClassLabel() + " prohibits feature " + p.getRoomGroup().getName() + " but assigned room " + loc.getLabel() + " does have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
 			        	if (p.getOwner() == null) p.setOwner(clazz);
-						iHibSession.saveOrUpdate(p);
+						iHibSession.merge(p);
 					}
 				}
 			}
@@ -657,13 +657,13 @@ public class FixCourseTimetablingInconsistencies {
 				rd.setRoom(loc);
 				clazz.getManagingDept().getRoomDepts().add(rd);
 				loc.getRoomDepts().add(rd);
-				iHibSession.saveOrUpdate(rd);
+				iHibSession.persist(rd);
 				RoomPref rp = new RoomPref();
 				rp.setOwner(clazz.getManagingDept());
 				rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
 				rp.setRoom(loc);
 				clazz.getManagingDept().getPreferences().add(rp);
-				iHibSession.saveOrUpdate(clazz.getManagingDept());
+				iHibSession.merge(clazz.getManagingDept());
 			}
 			RoomSharingModel m = loc.getRoomSharingModel();
 			boolean changed = false;
@@ -679,7 +679,7 @@ public class FixCourseTimetablingInconsistencies {
 			if (changed) {
 				sLog.info("Room sharing changed for room " + loc.getLabel() + " to allow class " + clazz.getClassLabel() + " " + a.getTimeLocation().getLongName(CONSTANTS.useAmPm()) + " in.");
 				loc.setRoomSharingModel(m);
-				iHibSession.saveOrUpdate(loc);
+				iHibSession.merge(loc);
 			}
 		}
 	}

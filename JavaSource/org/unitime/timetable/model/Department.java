@@ -218,13 +218,14 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	@SuppressWarnings("unchecked")
 	public boolean isRoomSharingColorConflicting(String color) {
 		if (getUniqueId() == null) return false;
+		boolean ret = false;
 		for (String other: DepartmentDAO.getInstance().getSession().createQuery(
 				"select distinct x.department.roomSharingColor from Department d inner join d.roomDepts rd inner join rd.room.roomDepts x " +
 				"where d.uniqueId = :uniqueId and d != x.department", String.class
 				).setParameter("uniqueId", getUniqueId()).setCacheable(true).list()) {
-			if (other != null && distance(color, other) < 50) return true;
+			if (other != null && distance(color, other) < 50) { ret = true; break; }
 		}
-		return false;
+		return ret;
 	}
 	
 	public boolean isRoomSharingColorConflicting(String color, Collection<Object> otherDepartments) {
@@ -263,7 +264,8 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				}
 			}
 			setRoomSharingColor(color);
-			(DepartmentDAO.getInstance()).saveOrUpdate(this);
+			DepartmentDAO.getInstance().getSession().merge(this);
+			DepartmentDAO.getInstance().getSession().flush();
 		}
 	}
 	

@@ -291,8 +291,9 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 					response.addStandardNote(n);
 				}
 			} else if (!departments.isEmpty()) {
-				for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
-						"from StandardEventNoteDepartment where department.uniqueId in (" + departments + ")").setCacheable(true).list()) {
+				for (StandardEventNote note: StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
+						"from StandardEventNoteDepartment where department.uniqueId in (" + departments + ")", StandardEventNote.class)
+						.setCacheable(true).list()) {
 					StandardEventNoteInterface n = new StandardEventNoteInterface();
 					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 					response.addStandardNote(n);

@@ -34,6 +34,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQLParameter;
 
@@ -62,7 +63,7 @@ public abstract class BaseSavedHQL implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "saved_hql_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "saved_hql_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "saved_hql_id")

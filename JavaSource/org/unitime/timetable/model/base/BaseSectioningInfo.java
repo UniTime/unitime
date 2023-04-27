@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.SectioningInfo;
 
@@ -56,7 +57,7 @@ public abstract class BaseSectioningInfo implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "sectioning_info_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "sectioning_info_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "sectioning_info_id")

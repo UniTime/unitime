@@ -43,6 +43,6 @@ public class ExamStatusDAO extends _RootDAO<ExamStatus,ExamStatusId> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExamStatus> findByStatus(org.hibernate.Session hibSession, Long statusId) {
-		return hibSession.createQuery("from ExamStatus x where x.status.uniqueId = :statusId").setParameter("statusId", statusId).list();
+		return hibSession.createQuery("from ExamStatus x where x.status.uniqueId = :statusId", ExamStatus.class).setParameter("statusId", statusId).list();
 	}
 }

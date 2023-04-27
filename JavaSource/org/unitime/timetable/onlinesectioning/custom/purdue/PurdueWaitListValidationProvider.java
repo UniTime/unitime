@@ -1348,7 +1348,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if (req == null) {
 								if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
 									cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-									helper.getHibSession().update(cr);
+									helper.getHibSession().merge(cr);
 									changed = true;
 								}
 							} else {
@@ -1368,7 +1368,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									break;
 								}
 								if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
-									helper.getHibSession().update(cr);
+									helper.getHibSession().merge(cr);
 									changed = true;
 								}
 							}
@@ -1413,7 +1413,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						studentChanged = true;
 				}
 			}
-			if (studentChanged) helper.getHibSession().update(student);
+			if (studentChanged) helper.getHibSession().merge(student);
 			
 			if (changed || studentChanged) helper.getHibSession().flush();
 						
@@ -1770,7 +1770,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										cr.setOverrideExternalId(r.regRequestId);
 										cr.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
 										cr.setCourseRequestOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
-										helper.getHibSession().update(cr);
+										helper.getHibSession().merge(cr);
 										continue cr;
 									}
 								}
@@ -1781,7 +1781,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						cr.setOverrideStatus(null);
 						cr.setOverrideTimeStamp(null);
 						cr.setOverrideIntent(null);
-						helper.getHibSession().update(cr);
+						helper.getHibSession().merge(cr);
 						changed = true;
 					}
 				}
@@ -1828,7 +1828,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			student.setOverrideIntent(null);
 			studentChanged = true;
 		}
-		if (studentChanged) helper.getHibSession().update(student);
+		if (studentChanged) helper.getHibSession().merge(student);
 		
 		if (changed) helper.getHibSession().flush();
 					
@@ -1941,7 +1941,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 								if (req == null) {
 									if (cr.getCourseRequestOverrideStatus() != CourseRequestOverrideStatus.CANCELLED) {
 										cr.setCourseRequestOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
-										helper.getHibSession().update(cr);
+										helper.getHibSession().merge(cr);
 										changed = true;
 									}
 								} else {
@@ -1961,7 +1961,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 										break;
 									}
 									if (oldStatus == null || !oldStatus.equals(cr.getOverrideStatus())) {
-										helper.getHibSession().update(cr);
+										helper.getHibSession().merge(cr);
 										changed = true;
 									}
 								}
@@ -2006,7 +2006,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 								studentChanged = true;
 						}
 					}
-					if (studentChanged) helper.getHibSession().update(student);
+					if (studentChanged) helper.getHibSession().merge(student);
 					
 					if (changed || studentChanged) reloadIds.add(student.getUniqueId());
 				}
@@ -2095,7 +2095,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									for (org.unitime.timetable.model.CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 										if (dbCourseRequest.getCourseOffering().getUniqueId().equals(course.getCourseId())) {
 											dbCourseRequest.setOverrideStatus(newStatus);
-											helper.getHibSession().update(dbCourseRequest);
+											helper.getHibSession().merge(dbCourseRequest);
 										}
 									}
 								}
@@ -2111,7 +2111,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
 					dbStudent.setMaxCredit(status.data.maxCredit);
-					helper.getHibSession().update(dbStudent);
+					helper.getHibSession().merge(dbStudent);
 				}
 				studentChanged = true;
 			}
@@ -2142,7 +2142,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 						if (dbStudent != null) {
 							dbStudent.setOverrideStatus(newStatus);
-							helper.getHibSession().update(dbStudent);
+							helper.getHibSession().merge(dbStudent);
 						}
 						studentChanged = true;
 					}

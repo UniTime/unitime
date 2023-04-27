@@ -42,16 +42,16 @@ public class PitClassInstructorDAO extends _RootDAO<PitClassInstructor,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<PitClassInstructor> findByPitClassInstructing(org.hibernate.Session hibSession, Long pitClassInstructingId) {
-		return hibSession.createQuery("from PitClassInstructor x where x.pitClassInstructing.uniqueId = :pitClassInstructingId").setParameter("pitClassInstructingId", pitClassInstructingId).list();
+		return hibSession.createQuery("from PitClassInstructor x where x.pitClassInstructing.uniqueId = :pitClassInstructingId", PitClassInstructor.class).setParameter("pitClassInstructingId", pitClassInstructingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClassInstructor> findByPitDepartmentalInstructor(org.hibernate.Session hibSession, Long pitDepartmentalInstructorId) {
-		return hibSession.createQuery("from PitClassInstructor x where x.pitDepartmentalInstructor.uniqueId = :pitDepartmentalInstructorId").setParameter("pitDepartmentalInstructorId", pitDepartmentalInstructorId).list();
+		return hibSession.createQuery("from PitClassInstructor x where x.pitDepartmentalInstructor.uniqueId = :pitDepartmentalInstructorId", PitClassInstructor.class).setParameter("pitDepartmentalInstructorId", pitDepartmentalInstructorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from PitClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from PitClassInstructor x where x.responsibility.uniqueId = :responsibilityId", PitClassInstructor.class).setParameter("responsibilityId", responsibilityId).list();
 	}
 }

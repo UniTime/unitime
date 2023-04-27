@@ -220,7 +220,7 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
             }
             exam.setAssignedPreference(new ExamAssignment(placement, getAssignment()).getAssignedPreferenceString());
             
-            hibSession.saveOrUpdate(exam);
+            hibSession.merge(exam);
             ExamAssignment newAssignment = new ExamAssignment(exam);
             if (!ToolBox.equals(newAssignment.getPeriodId(), oldAssignment.getPeriodId()) || !ToolBox.equals(newAssignment.getRooms(), oldAssignment.getRooms())) {
                 SubjectArea subject = null;
@@ -402,9 +402,12 @@ public class ExamDatabaseSaver extends ProblemSaver<Exam, ExamPlacement, ExamMod
                 event.setMinCapacity(examVar.getSize());
                 event.setMaxCapacity(examVar.getSize());
                 event.setMainContact(contact);
-                hibSession.saveOrUpdate(event);
+                if (event.getUniqueId() == null)
+        			hibSession.persist(event);
+        		else
+        			hibSession.merge(event);
             }
-            if (event!=null || !exam.getConflicts().isEmpty()) hibSession.saveOrUpdate(exam);
+            if (event!=null || !exam.getConflicts().isEmpty()) hibSession.merge(exam);
         }
     }
     

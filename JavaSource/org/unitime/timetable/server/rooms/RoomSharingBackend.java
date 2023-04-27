@@ -274,10 +274,10 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				rd.getDepartment().getRoomDepts().add(rd);
 				rd.setRoom(location);
 				location.getRoomDepts().add(rd);
-				hibSession.saveOrUpdate(rd);
+				hibSession.persist(rd);
 			}
 			
-			hibSession.saveOrUpdate(location);
+			hibSession.merge(location);
 			
 			if (request.getModel().isNoteEditable()) {
 				if (request.getModel().hasNote())

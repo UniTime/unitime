@@ -23,7 +23,6 @@ package org.unitime.timetable.model.dao;
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-import java.util.List;
 import org.unitime.timetable.model.NonUniversityLocation;
 
 public class NonUniversityLocationDAO extends _RootDAO<NonUniversityLocation,Long> {
@@ -38,10 +37,5 @@ public class NonUniversityLocationDAO extends _RootDAO<NonUniversityLocation,Lon
 
 	public Class<NonUniversityLocation> getReferenceClass() {
 		return NonUniversityLocation.class;
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<NonUniversityLocation> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
-		return hibSession.createQuery("from NonUniversityLocation x where x.roomType.uniqueId = :roomTypeId").setParameter("roomTypeId", roomTypeId).list();
 	}
 }

@@ -39,6 +39,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMajorConcentration;
@@ -70,7 +71,7 @@ public abstract class BasePosMajor implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pos_major_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pos_major_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pos_major_seq")
 	})
 	@GeneratedValue(generator = "pos_major_id")

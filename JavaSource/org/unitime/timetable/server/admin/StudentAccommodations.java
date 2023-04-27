@@ -127,7 +127,8 @@ public class StudentAccommodations implements AdminTable {
 			}
 			record.setField(3, students, true);
 		}
-		record.setUniqueId((Long)hibSession.save(accomodation));
+		hibSession.persist(accomodation);
+		record.setUniqueId(accomodation.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				accomodation,
@@ -186,7 +187,7 @@ public class StudentAccommodations implements AdminTable {
 				}
 				record.setField(3, newStudents, accomodation.getExternalUniqueId() == null);
 			}
-			hibSession.saveOrUpdate(accomodation);
+			hibSession.merge(accomodation);
 			if (changed)
 				ChangeLog.addChange(hibSession,
 						context,

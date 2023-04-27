@@ -187,7 +187,8 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
             Set s = exam.getPreferences();
             s.clear();
             exam.setPreferences(s);            
-            ExamDAO.getInstance().update(exam);
+            ExamDAO.getInstance().getSession().merge(exam);
+            ExamDAO.getInstance().getSession().flush();
             op = "init";                
             
             ChangeLog.addChange(
@@ -507,9 +508,12 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         
         exam.generateDefaultPreferences(false);
         
-        ExamDAO.getInstance().saveOrUpdate(exam);
+        if (exam.getUniqueId() == null)
+        	ExamDAO.getInstance().getSession().persist(exam);
+        else
+        	ExamDAO.getInstance().getSession().merge(exam);
         
-                ChangeLog.addChange(
+        ChangeLog.addChange(
                 null, 
                 sessionContext,
                 exam, 

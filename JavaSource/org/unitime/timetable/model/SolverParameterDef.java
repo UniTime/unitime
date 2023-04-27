@@ -77,14 +77,6 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 		return (SolverParameterDefDAO.getInstance()).get(id);
 	}
 	
-	/**
-	 * 
-	 * @throws HibernateException
-	 */
-	public void saveOrUpdate() throws HibernateException {
-		(SolverParameterDefDAO.getInstance()).saveOrUpdate(this);
-	}
-	
 	@Deprecated
 	public static SolverParameterDef findByNameGroup(String name) {
 		return SolverParameterDefDAO.getInstance().getSession()

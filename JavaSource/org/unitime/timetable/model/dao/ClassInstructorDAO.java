@@ -42,21 +42,21 @@ public class ClassInstructorDAO extends _RootDAO<ClassInstructor,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByClassInstructing(org.hibernate.Session hibSession, Long classInstructingId) {
-		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId").setParameter("classInstructingId", classInstructingId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.classInstructing.uniqueId = :classInstructingId", ClassInstructor.class).setParameter("classInstructingId", classInstructingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByInstructor(org.hibernate.Session hibSession, Long instructorId) {
-		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId").setParameter("instructorId", instructorId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.instructor.uniqueId = :instructorId", ClassInstructor.class).setParameter("instructorId", instructorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.responsibility.uniqueId = :responsibilityId", ClassInstructor.class).setParameter("responsibilityId", responsibilityId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ClassInstructor> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
-		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
+		return hibSession.createQuery("from ClassInstructor x where x.teachingRequest.uniqueId = :teachingRequestId", ClassInstructor.class).setParameter("teachingRequestId", teachingRequestId).list();
 	}
 }

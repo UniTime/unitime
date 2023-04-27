@@ -42,21 +42,21 @@ public class OfferingCoordinatorDAO extends _RootDAO<OfferingCoordinator,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<OfferingCoordinator> findByInstructor(org.hibernate.Session hibSession, Long instructorId) {
-		return hibSession.createQuery("from OfferingCoordinator x where x.instructor.uniqueId = :instructorId").setParameter("instructorId", instructorId).list();
+		return hibSession.createQuery("from OfferingCoordinator x where x.instructor.uniqueId = :instructorId", OfferingCoordinator.class).setParameter("instructorId", instructorId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<OfferingCoordinator> findByOffering(org.hibernate.Session hibSession, Long offeringId) {
-		return hibSession.createQuery("from OfferingCoordinator x where x.offering.uniqueId = :offeringId").setParameter("offeringId", offeringId).list();
+		return hibSession.createQuery("from OfferingCoordinator x where x.offering.uniqueId = :offeringId", OfferingCoordinator.class).setParameter("offeringId", offeringId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<OfferingCoordinator> findByResponsibility(org.hibernate.Session hibSession, Long responsibilityId) {
-		return hibSession.createQuery("from OfferingCoordinator x where x.responsibility.uniqueId = :responsibilityId").setParameter("responsibilityId", responsibilityId).list();
+		return hibSession.createQuery("from OfferingCoordinator x where x.responsibility.uniqueId = :responsibilityId", OfferingCoordinator.class).setParameter("responsibilityId", responsibilityId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<OfferingCoordinator> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
-		return hibSession.createQuery("from OfferingCoordinator x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
+		return hibSession.createQuery("from OfferingCoordinator x where x.teachingRequest.uniqueId = :teachingRequestId", OfferingCoordinator.class).setParameter("teachingRequestId", teachingRequestId).list();
 	}
 }

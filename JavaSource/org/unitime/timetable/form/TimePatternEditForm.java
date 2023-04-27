@@ -219,16 +219,16 @@ public class TimePatternEditForm implements UniTimeForm {
 			} else {
 				tp.getDepartments().add(d);
 				d.getTimePatterns().add(tp);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 		}
 		for (Iterator i=oldDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			tp.getDepartments().remove(d);
 			d.getTimePatterns().remove(tp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
-		hibSession.saveOrUpdate(tp);
+		hibSession.merge(tp);
 	}
 	
 	public TimePattern create(SessionContext context, org.hibernate.Session hibSession) throws Exception {
@@ -262,7 +262,7 @@ public class TimePatternEditForm implements UniTimeForm {
 		for (Iterator i=newDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getTimePatterns().add(tp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
 		setUniqueId(tp.getUniqueId());
 		return tp;
@@ -305,7 +305,7 @@ public class TimePatternEditForm implements UniTimeForm {
 		for (Iterator i=tp.getDepartments().iterator();i.hasNext();) {
 			Department d = (Department)i.next();
 			d.getTimePatterns().remove(tp);
-			hibSession.saveOrUpdate(d);
+			hibSession.merge(d);
 		}
         ChangeLog.addChange(
                 hibSession, 

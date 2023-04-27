@@ -83,7 +83,7 @@ public class DepartmentImport extends BaseImport {
                     department.setDistributionPrefPriority(Integer.valueOf(0));
                 } else {
                     if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                        getHibSession().delete(department);
+                        getHibSession().remove(department);
                         continue;
                     }
                 }
@@ -93,7 +93,10 @@ public class DepartmentImport extends BaseImport {
                 department.setExternalUniqueId(externalId);
                 department.setAllowEvents("true".equals(element.attributeValue("allowEvents", department.isAllowEvents() ? "true" : "false")));
                 department.setInheritInstructorPreferences("true".equals(element.attributeValue("instructorPrefs", department.isInheritInstructorPreferences() ? "true" : "false")));
-                getHibSession().saveOrUpdate(department);
+                if (department.getUniqueId() == null)
+                	getHibSession().persist(department);
+                else
+                	getHibSession().merge(department);
                 flushIfNeeded(false);
             }
             commitTransaction();

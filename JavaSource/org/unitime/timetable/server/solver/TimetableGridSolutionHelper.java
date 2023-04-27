@@ -531,39 +531,46 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				deptIds.add(d.getUniqueId());
 			}
 		}
-		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
+		Query<Assignment> q = hibSession.createQuery(
+				"select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId",
+				Assignment.class);
 		q.setParameter("resourceId", room.getUniqueId());
 		q.setCacheable(true);
 		List<Assignment> assignments = q.list();
 		createCells(model, assignments, hibSession, context, false);
 		q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
-				"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+				"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")",
+				Assignment.class);
 		q.setParameter("roomId", room.getUniqueId());
         q.setParameter("sessionId", room.getSession().getUniqueId().longValue());
 		q.setCacheable(true);
 		List<Assignment> committed = q.list();
 		createCells(model, committed, hibSession, context, true);
 		if (ApplicationProperty.TimeGridShowClassesAcrossPartitions.isTrue() && room instanceof Room) {
-			q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.parentRoom.uniqueId=:resourceId");
+			q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.parentRoom.uniqueId=:resourceId",
+					Assignment.class);
 			q.setParameter("resourceId", room.getUniqueId());
 			q.setCacheable(true);
 			assignments = q.list();
 			createCells(model, assignments, hibSession, context, false);
 			q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
-					"where r.parentRoom.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+					"where r.parentRoom.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")",
+					Assignment.class);
 			q.setParameter("roomId", room.getUniqueId());
 	        q.setParameter("sessionId", room.getSession().getUniqueId().longValue());
 			q.setCacheable(true);
 			committed = q.list();
 			createCells(model, committed, hibSession, context, true);
 			if (((Room)room).getParentRoom() != null) {
-				q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
+				q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId",
+						Assignment.class);
 				q.setParameter("resourceId", ((Room)room).getParentRoom().getUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				createCells(model, assignments, hibSession, context, false);
 				q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
-						"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+						"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")",
+						Assignment.class);
 				q.setParameter("roomId", ((Room)room).getParentRoom().getUniqueId());
 		        q.setParameter("sessionId", room.getSession().getUniqueId().longValue());
 				q.setCacheable(true);
@@ -661,23 +668,27 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue())
 				check += " and i.classInstructing.displayInstructor = true";
 			if (instructor.getExternalUniqueId() != null && !instructor.getExternalUniqueId().isEmpty()) {
-				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check);
+				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check,
+						Assignment.class);
 				q.setParameter("extId", instructor.getExternalUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
-						"where i.instructor.externalUniqueId = :extId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
+						"where i.instructor.externalUniqueId = :extId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check,
+						Assignment.class);
 				q.setParameter("extId", instructor.getExternalUniqueId());
 	            q.setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId());
 				q.setCacheable(true);
 				committed = q.list();
 			} else {
-				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check);
+				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check,
+						Assignment.class);
 				q.setParameter("instructorId", instructor.getUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
-						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
+						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check,
+						Assignment.class);
 				q.setParameter("instructorId", instructor.getUniqueId());
 	            q.setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId());
 				q.setCacheable(true);
@@ -685,23 +696,27 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			}
 		} else {
 			if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
-				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.externalUniqueId=:puid");
+				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.externalUniqueId=:puid",
+						Assignment.class);
 				q.setParameter("puid", instructor.getExternalUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
-						"where i.externalUniqueId=:puid and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+						"where i.externalUniqueId=:puid and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")",
+						Assignment.class);
 				q.setParameter("puid", instructor.getExternalUniqueId());
 	            q.setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId());
 				q.setCacheable(true);
 				committed = q.list();
 			} else {
-				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId");
+				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId",
+						Assignment.class);
 				q.setParameter("resourceId", instructor.getUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
-						"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+						"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")",
+						Assignment.class);
 				q.setParameter("instructorId", instructor.getUniqueId());
 	            q.setParameter("sessionId", instructor.getDepartment().getSession().getUniqueId());
 				q.setCacheable(true);
@@ -732,9 +747,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
 
-    	Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where " +
+    	Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea.department as d where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and d.uniqueId=:resourceId and " +
-				"o.isControl=true");
+				"o.isControl=true", Assignment.class);
 		q.setCacheable(true);
 		q.setParameter("resourceId", department.getUniqueId());
 		List assignments = q.list();
@@ -754,9 +769,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     	model.setFirstSessionDay(context.getFirstSessionDay());
     	model.setFirstDate(context.getFirstDate());
 
-    	Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where " +
+    	Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o inner join o.subjectArea as sa where " +
 				"a.solution.uniqueId in ("+solutionIdsStr+") and sa.uniqueId=:resourceId and " +
-				"o.isControl=true");
+				"o.isControl=true", Assignment.class);
 		q.setCacheable(true);
 		q.setParameter("resourceId", sa.getUniqueId());
 		List assignments = q.list();
@@ -872,8 +887,8 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 			classIds.add(clazz.getClassId());
 		if (classIds.isEmpty()) return null;
 		
-		Query q = hibSession.createQuery(
-				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.classId in (:classIds)");
+		Query<Assignment> q = hibSession.createQuery(
+				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.classId in (:classIds)", Assignment.class);
 		q.setParameterList("classIds", classIds, Long.class);
 		q.setCacheable(true);
 		List assignments = q.list();

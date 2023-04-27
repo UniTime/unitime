@@ -159,7 +159,7 @@ public class Loggers implements AdminTable {
 				config.setDescription(MESSAGES.descriptionLoggingLevelFor(record.getField(0)));
 			}
 			config.setValue(level.toString());
-			hibSession.saveOrUpdate(config);
+			hibSession.merge(config);
 		}
 	}
 

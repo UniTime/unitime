@@ -284,12 +284,12 @@ public class LocationPermissions {
 		@Override
 		public boolean check(UserContext user, Building source) {
 			if (!permissionSession.check(user, source.getSession())) return false;
-			
+			boolean ret = true;
 			for (Room room: RoomDAO.getInstance().findByBuilding(RoomDAO.getInstance().getSession(), source.getUniqueId()))
-				if (!permissionRoomDelete.check(user, room))
-					return false;
-			
-			return true;
+				if (!permissionRoomDelete.check(user, room)) {
+					ret = false; break;
+				}
+			return ret;
 		}
 
 		@Override

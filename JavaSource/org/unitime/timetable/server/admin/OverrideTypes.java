@@ -89,7 +89,8 @@ public class OverrideTypes implements AdminTable {
 		OverrideType type = new OverrideType();
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -106,7 +107,7 @@ public class OverrideTypes implements AdminTable {
 				ToolBox.equals(type.getLabel(), record.getField(1))) return;
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

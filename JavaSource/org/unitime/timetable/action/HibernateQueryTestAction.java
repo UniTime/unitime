@@ -35,6 +35,7 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.dom4j.Document;
+import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 import org.hibernate.query.internal.ParameterMetadataImpl;
 import org.hibernate.query.internal.QueryParameterBindingsImpl;
@@ -197,18 +198,22 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
-		        Query q = null;
-		        boolean update = false;
+		        Query<Tuple> q = null;
+		        MutationQuery updateQuery = null;
 		        try {
 		        	q = hibSession.createQuery(query, Tuple.class);
 		        } catch (IllegalArgumentException e) {
 		        	// update query
-		        	update = true;
-		        	q = hibSession.createQuery(query);
+		        	updateQuery = hibSession.createMutationQuery(query);
 		        }
 		        
 		        try {
-		        	SqmStatement sqm = ((SqmQuery)q).getSqmStatement();
+		        	SqmStatement sqm = null;
+		        	if (updateQuery != null) {
+		        		sqm = ((SqmQuery)updateQuery).getSqmStatement();
+		        	} else {
+		        		sqm = ((SqmQuery)q).getSqmStatement();
+		        	}
 		        	SessionFactoryImplementor sfi = (SessionFactoryImplementor)hibSession.getSessionFactory();
 		        	Dialect dialect = sfi.getJdbcServices().getDialect();
 		        	if (sqm instanceof SqmSelectStatement) {
@@ -265,10 +270,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        	Debug.error(e);
 		        }
 		        
-		        q.setFirstResult(form.getStart());
-		        if (limit > 0) q.setMaxResults(limit + 1);
-		        String idAlias = null;
-		        if (!update) {
+		        if (q != null) {
+			        q.setFirstResult(form.getStart());
+			        if (limit > 0) q.setMaxResults(limit + 1);
+			        String idAlias = null;
 	                List<Tuple> l = q.list();
 			        List<Long> ids = new ArrayList<Long>();
 	                StringBuffer s = new StringBuffer();
@@ -319,11 +324,11 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			    		else if ("__Event".equals(idAlias))
 			    			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
 			        }
-		        } else {
+		        } else if (updateQuery != null) {
 		            Transaction tx = null;
 		            try {
 		                tx = hibSession.beginTransaction();
-		                int i = q.executeUpdate();
+		                int i = updateQuery.executeUpdate();
 	                    request.setAttribute("result", MSG.queryLinesUpdated(i));
 	                    form.setListSize(MSG.queryLinesUpdated(i));
 		                tx.commit();

@@ -63,14 +63,21 @@ public class UserData extends BaseUserData {
 			if (value!=null && value.length()==0) value=null;
 			if (userData==null && value==null) return;
 			if (userData!=null && value!=null && value.equals(userData.getValue())) return;
+			if (value==null) {
+				dao.getSession().remove(userData);
+				dao.getSession().flush();
+				return;
+			}
 			if (userData==null) {
 				userData = new UserData(externalUniqueId, name);
+				userData.setValue(value);
+				dao.getSession().persist(userData);
+				
+			} else {
+				userData.setValue(value);
+				dao.getSession().merge(userData);
 			}
-			userData.setValue(value);
-			if (value==null)
-				dao.delete(userData);
-			else
-				dao.saveOrUpdate(userData);
+			dao.getSession().flush();
 		} catch (Exception e) {
 			Debug.warning("Failed to set user property " + name + ":=" + value + " (" + e.getMessage() + ")");
 		}

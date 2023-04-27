@@ -98,14 +98,14 @@ public class BuildingsConntector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(building, Right.BuildingDelete);
 			
 			for (Room r: BuildingDAO.getInstance().getSession().createQuery("from Room r where r.building.uniqueId = :buildingId", Room.class).setParameter("buildingId", building.getUniqueId()).list()) {
-				helper.getHibSession().createQuery("delete RoomPref p where p.room.uniqueId = :roomId").setParameter("roomId", r.getUniqueId()).executeUpdate();
+				helper.getHibSession().createMutationQuery("delete RoomPref p where p.room.uniqueId = :roomId").setParameter("roomId", r.getUniqueId()).executeUpdate();
 				for (Iterator<Assignment> i = r.getAssignments().iterator(); i.hasNext(); ) {
 					Assignment a = i.next();
                     a.getRooms().remove(r);
-                    helper.getHibSession().saveOrUpdate(a);
+                    helper.getHibSession().merge(a);
                     i.remove();
                 }
-				helper.getHibSession().delete(r);
+				helper.getHibSession().remove(r);
 			}
 			ChangeLog.addChange(
                     helper.getHibSession(),
@@ -116,7 +116,7 @@ public class BuildingsConntector extends ApiConnector {
                     ChangeLog.Operation.DELETE, 
                     null, 
                     null);
-			helper.getHibSession().delete(building);
+			helper.getHibSession().remove(building);
 			tx.commit();
 		} catch (Exception e) {
 			if (tx != null) { tx.rollback(); }
@@ -170,7 +170,10 @@ public class BuildingsConntector extends ApiConnector {
 	        building.setExternalUniqueId(b.getExternalId());
 	        building.setCoordinateX(b.getX());
 	        building.setCoordinateY(b.getY());
-	        helper.getHibSession().saveOrUpdate(building);
+	        if (building.getUniqueId() == null)
+	        	helper.getHibSession().persist(building);
+	        else
+	        	helper.getHibSession().merge(building);
 	        
 	        b.setId(building.getUniqueId());
 	        

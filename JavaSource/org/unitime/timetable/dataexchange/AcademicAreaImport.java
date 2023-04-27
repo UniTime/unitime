@@ -75,19 +75,22 @@ public class AcademicAreaImport extends BaseImport {
                 	area = new AcademicArea();
                 	area.setSession(session);
                 	info("Academic area " + abbv + (externalId == null ? "" : " (" + externalId + ")") + " created.");
+                    area.setExternalUniqueId(externalId);
+                    area.setAcademicAreaAbbreviation(abbv);
+                    area.setTitle(element.attributeValue("title", element.attributeValue("longTitle")));
+                    getHibSession().persist(area);
                 } else {
                 	info("Academic area " + abbv + (externalId == null ? "" : " (" + externalId + ")") + " updated.");
+                    area.setExternalUniqueId(externalId);
+                    area.setAcademicAreaAbbreviation(abbv);
+                    area.setTitle(element.attributeValue("title", element.attributeValue("longTitle")));
+                    getHibSession().merge(area);
                 }
-                area.setExternalUniqueId(externalId);
-                area.setAcademicAreaAbbreviation(abbv);
-                area.setTitle(element.attributeValue("title", element.attributeValue("longTitle")));
-
-                getHibSession().saveOrUpdate(area);
             }
             
             for (AcademicArea area: id2area.values()) {
             	info("Academic area " + area.getAcademicAreaAbbreviation() + " (" + area.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(area);
+            	getHibSession().remove(area);
             }
             
             commitTransaction();

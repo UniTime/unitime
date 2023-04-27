@@ -96,7 +96,8 @@ public class DefaultSettings implements AdminTable {
 		setting.setDescription(record.getField(1));
 		setting.setDefaultValue(record.getField(2));
 		setting.setAllowedValues(record.getField(3).replace('\n', ','));
-		record.setUniqueId((Long)hibSession.save(setting));
+		hibSession.persist(setting);
+		record.setUniqueId(setting.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				setting,
@@ -118,7 +119,7 @@ public class DefaultSettings implements AdminTable {
 		setting.setDescription(record.getField(1));
 		setting.setDefaultValue(record.getField(2));
 		setting.setAllowedValues(record.getField(3).replace('\n', ','));
-		hibSession.saveOrUpdate(setting);
+		hibSession.merge(setting);
 		ChangeLog.addChange(hibSession,
 				context,
 				setting,

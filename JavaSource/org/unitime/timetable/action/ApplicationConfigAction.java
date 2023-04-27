@@ -200,16 +200,21 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 		}
                 		
                 		ApplicationConfig config = ApplicationConfigDAO.getInstance().get(form.getKey());
+                		boolean create = false;
                 		if (config == null) {
                 			config = new ApplicationConfig();
                 			config.setKey(form.getKey());
+                			create = true;
                 		}
                 		config.setValue(form.getValue());
     	                config.setDescription(form.getDescription());
     	                
     	                getSolverServerService().setApplicationProperty(null, form.getKey(), form.getValue());
     	                
-    	                hibSession.saveOrUpdate(config);
+    	                if (create)
+    	                	hibSession.persist(config);
+    	                else
+    	                	hibSession.merge(config);
                 	} else {
                 		if (update && !wasSession) {
                 			// update --> delete global value
@@ -226,10 +231,12 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
                 			SessionConfig config = hibSession.createQuery(
                 					"from SessionConfig where key = :key and session.uniqueId = :sessionId", SessionConfig.class)
                 					.setParameter("sessionId", sessionId).setParameter("key", form.getKey()).uniqueResult();
+                			boolean create = false;
                 			if (config == null) {
                 				config = new SessionConfig();
                 				config.setKey(form.getKey());
                 				config.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
+                				create = true;
                 			}
                 			
                 			config.setValue(form.getValue());
@@ -237,7 +244,10 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
         	                
         	                getSolverServerService().setApplicationProperty(sessionId, form.getKey(), form.getValue());
         	                
-        	                hibSession.saveOrUpdate(config);
+        	                if (create)
+        	                	hibSession.persist(config);
+        	                else
+        	                	hibSession.merge(config);
         	                updatedSessionIds.add(sessionId);
                 		}
                 		

@@ -56,7 +56,7 @@ public class ExactTimeEditForm implements UniTimeForm {
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 tx = hibSession.beginTransaction();
             for (ExactTimeMins ex: iExactTimeMins) {
-                hibSession.saveOrUpdate(ex);
+                hibSession.merge(ex);
             }
             if (tx!=null) tx.commit();
         } catch (Exception e) {

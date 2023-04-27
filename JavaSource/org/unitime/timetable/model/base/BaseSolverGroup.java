@@ -39,6 +39,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
@@ -71,7 +72,7 @@ public abstract class BaseSolverGroup implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solver_group_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "solver_group_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "solver_group_seq")
 	})
 	@GeneratedValue(generator = "solver_group_id")

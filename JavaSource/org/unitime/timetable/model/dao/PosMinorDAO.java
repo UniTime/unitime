@@ -42,6 +42,6 @@ public class PosMinorDAO extends _RootDAO<PosMinor,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<PosMinor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from PosMinor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from PosMinor x where x.session.uniqueId = :sessionId", PosMinor.class).setParameter("sessionId", sessionId).list();
 	}
 }

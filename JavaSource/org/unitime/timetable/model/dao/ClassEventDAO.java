@@ -42,6 +42,6 @@ public class ClassEventDAO extends _RootDAO<ClassEvent,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ClassEvent> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from ClassEvent x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+		return hibSession.createQuery("from ClassEvent x where x.clazz.uniqueId = :clazzId", ClassEvent.class).setParameter("clazzId", clazzId).list();
 	}
 }

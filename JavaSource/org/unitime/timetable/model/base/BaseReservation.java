@@ -39,6 +39,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -71,7 +72,7 @@ public abstract class BaseReservation implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "reservation_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "reservation_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "reservation_seq")
 	})
 	@GeneratedValue(generator = "reservation_id")

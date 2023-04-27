@@ -90,7 +90,10 @@ public class SaveOrUpdateScriptBackend implements GwtRpcImplementation<SaveOrUpd
 			}
 		}
 		
-		hibSession.saveOrUpdate(script);
+		if (script.getUniqueId() == null)
+			hibSession.persist(script);
+		else
+			hibSession.merge(script);
 		hibSession.flush();
 		
 		return LoadAllScriptsBackend.load(script, context);

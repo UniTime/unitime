@@ -42,6 +42,6 @@ public class OnlineSectioningLogDAO extends _RootDAO<OnlineSectioningLog,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<OnlineSectioningLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from OnlineSectioningLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from OnlineSectioningLog x where x.session.uniqueId = :sessionId", OnlineSectioningLog.class).setParameter("sessionId", sessionId).list();
 	}
 }

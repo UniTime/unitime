@@ -42,6 +42,6 @@ public class ExamEventDAO extends _RootDAO<ExamEvent,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExamEvent> findByExam(org.hibernate.Session hibSession, Long examId) {
-		return hibSession.createQuery("from ExamEvent x where x.exam.uniqueId = :examId").setParameter("examId", examId).list();
+		return hibSession.createQuery("from ExamEvent x where x.exam.uniqueId = :examId", ExamEvent.class).setParameter("examId", examId).list();
 	}
 }

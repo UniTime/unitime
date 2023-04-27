@@ -183,7 +183,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setTextNote(MSG.classNoteUncommitted(getOwner().getName()));
 					note.setMeetings(MSG.classMeetingsNotApplicable());
 					event.getNotes().add(note);
-	        		hibSession.saveOrUpdate(event);
+	        		hibSession.merge(event);
 	        	}
 			}
 	    }
@@ -499,15 +499,18 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				note.setTextNote(MSG.classNoteCommitted(getOwner().getName()));
 				note.setMeetings(a.getPlacement().getLongName(CONSTANTS.useAmPm()));
 				event.getNotes().add(note);
-		        hibSession.saveOrUpdate(event);
+				if (event.getUniqueId() == null)
+					hibSession.persist(event);
+				else
+					hibSession.merge(event);
 		    }
 		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
 		    	hibSession.remove(event);
 		}
 		
 		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
-			for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
-			    ClassEvent event = (ClassEvent)e.nextElement();
+			for (Enumeration<ClassEvent> e=classEvents.elements();e.hasMoreElements();) {
+			    ClassEvent event = e.nextElement();
 			    hibSession.remove(event);
 			}
 		} else {
@@ -536,7 +539,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setTextNote(MSG.classNoteCommittedClassRemoved(getOwner().getName()));
 					note.setMeetings(MSG.classMeetingsNotApplicable());
 					event.getNotes().add(note);
-	        		hibSession.saveOrUpdate(event);
+	        		hibSession.merge(event);
 	        	}
 			}
 		}
@@ -785,7 +788,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		while (idIterator.hasNext()) {
 			ids.append(idIterator.next()); idx++;
 			if (idx==100) {
-				hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+				hibSession.createMutationQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
 				ids = new StringBuffer();
 				idx = 0;
 			} else if (idIterator.hasNext()) {
@@ -793,7 +796,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			}
 		}
 		if (idx>0)
-			hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+			hibSession.createMutationQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
 	}
 	
 	public void delete(org.hibernate.Session hibSession) {
@@ -823,12 +826,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Debug.error(e);
 		}
 		
-        hibSession.createQuery(
+        hibSession.createMutationQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
-		hibSession.createQuery(
+		hibSession.createMutationQuery(
 				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
@@ -851,7 +854,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"select c.uniqueId from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId=:solutionId"
 				);
 		
-		hibSession.createQuery(
+		hibSession.createMutationQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
@@ -896,12 +899,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.flush(); 
 
-		hibSession.createQuery(
+		hibSession.createMutationQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
-		hibSession.createQuery(
+		hibSession.createMutationQuery(
 				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ) ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
@@ -924,7 +927,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"select c.uniqueId from ConstraintInfo c inner join c.assignments a where a.solution.uniqueId=:solutionId"
 				);
 		
-		hibSession.createQuery(
+		hibSession.createMutationQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ) ")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
@@ -941,7 +944,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		setStudentEnrollments(null);
 		setParameters(null);
 		
-		hibSession.saveOrUpdate(this);
+		hibSession.merge(this);
 
 		hibSession.flush();
 	}
@@ -961,7 +964,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				propInfo.setProperty("Student conflicts", newConf);
 			}
 			sInfo.setInfo(propInfo);
-			hibSession.saveOrUpdate(sInfo);
+			hibSession.merge(sInfo);
 		}
 		
 		//NOTE: In order to decrease the amount of interaction between solutions persistance of committed student conflicts was disabled

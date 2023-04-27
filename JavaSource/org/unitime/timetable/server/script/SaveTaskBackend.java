@@ -152,7 +152,7 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 			}
 			
 			if (t.getUniqueId() == null)
-				t.setUniqueId((Long)hibSession.save(t));
+				hibSession.persist(t);
 			else
 				hibSession.merge(t);
 			

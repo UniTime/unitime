@@ -42,6 +42,6 @@ public class ProgramDAO extends _RootDAO<Program,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Program> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Program x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Program x where x.session.uniqueId = :sessionId", Program.class).setParameter("sessionId", sessionId).list();
 	}
 }

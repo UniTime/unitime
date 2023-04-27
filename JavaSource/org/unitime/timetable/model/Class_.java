@@ -125,6 +125,7 @@ public class Class_ extends BaseClass_ {
     
 	@Transient
     public Department getControllingDept() {
+		if (getSchedulingSubpart() == null) return null;
     	if (super.getControllingDept() == null) return getSchedulingSubpart().getControllingDept();
     	return super.getControllingDept();
     }
@@ -185,12 +186,15 @@ public class Class_ extends BaseClass_ {
             				note.setTextNote(MSG.classNoteUnassigned(deletedAssignment));
             				note.setMeetings(MSG.classMeetingsNotApplicable());
             				event.getNotes().add(note);
-                    		hibSession.saveOrUpdate(event);
+                    		hibSession.persist(event);
                     	}
                 	}
             	} else {
             		event.setEventName(getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString(hibSession));
-            		hibSession.saveOrUpdate(event);
+            		if (event.getUniqueId() == null)
+            			hibSession.persist(event);
+            		else
+            			hibSession.merge(event);
             	}
             }
         }
@@ -733,9 +737,9 @@ public class Class_ extends BaseClass_ {
 
     	if (save) {
     		if (hibSession != null) {
-    			hibSession.saveOrUpdate(this);
+    			hibSession.merge(this);
     		} else {
-        		(new Class_DAO()).getSession().saveOrUpdate(this);
+        		(new Class_DAO()).getSession().merge(this);
         		(new Class_DAO()).getSession().flush();
     		}
     	}
@@ -998,7 +1002,7 @@ public class Class_ extends BaseClass_ {
 				PreferenceGroup owner = distributionPref.getOwner();
 				owner.getPreferences().remove(distributionPref);
 				getPreferences().remove(distributionPref);
-				hibSession.saveOrUpdate(owner);
+				hibSession.merge(owner);
 				hibSession.remove(distributionPref);
 			} else {
 				if (seqNo!=null) {
@@ -1006,19 +1010,19 @@ public class Class_ extends BaseClass_ {
 						DistributionObject dObj = (DistributionObject)j.next();
 						if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
 							dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
-							hibSession.saveOrUpdate(dObj);
+							hibSession.merge(dObj);
 						}
 					}
 				}
 
 				if (updateClass)
-					hibSession.saveOrUpdate(distributionPref);
+					hibSession.merge(distributionPref);
 			}
 			i.remove();
     	}
 
     	if (deleted && updateClass)
-    		hibSession.saveOrUpdate(this);
+    		hibSession.merge(this);
     }
 
 	@Transient
@@ -1164,7 +1168,7 @@ public class Class_ extends BaseClass_ {
 		// Add more collection deletes if needed
 
 		if (updateClass)
-			hibSession.saveOrUpdate(this);
+			hibSession.merge(this);
 	}
 
 	/**
@@ -1183,7 +1187,7 @@ public class Class_ extends BaseClass_ {
 			di.getClasses().remove(ci);
 			ci.setInstructor(null);
 			ci.setClassInstructing(null);
-			hibSession.saveOrUpdate(di);
+			hibSession.merge(di);
 			hibSession.remove(ci);
 			i.remove();
 		}
@@ -1203,9 +1207,9 @@ public class Class_ extends BaseClass_ {
 				InstructionalOffering offering = tr.getOffering();
 				offering.getTeachingRequests().remove(tr);
 				hibSession.remove(tr);
-				hibSession.saveOrUpdate(offering);
+				hibSession.merge(offering);
 			} else {
-				hibSession.saveOrUpdate(tr);
+				hibSession.merge(tr);
 			}
 			i.remove();
 		}
@@ -1347,7 +1351,7 @@ public class Class_ extends BaseClass_ {
         		if (meeting.getMeetingDate().before(today) && !ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue())
         			continue;
         		meeting.setStatus(cancelled ? Meeting.Status.CANCELLED : Meeting.Status.APPROVED);
-        		hibSession.saveOrUpdate(meeting);
+        		hibSession.merge(meeting);
         	}
         	
 			if (event.getNotes() == null)
@@ -1364,7 +1368,7 @@ public class Class_ extends BaseClass_ {
 			else
 				note.setMeetings(getCommittedAssignment().getPlacement().getLongName(CONSTANTS.useAmPm()));
 			event.getNotes().add(note);
-    		hibSession.saveOrUpdate(event);
+    		hibSession.merge(event);
         }
     }
     
@@ -1408,7 +1412,7 @@ public class Class_ extends BaseClass_ {
         				note.setTextNote(MSG.classNoteUnassigned(oldAssignment.getPlacement().getName()));
         				note.setMeetings(MSG.classMeetingsNotApplicable());
         				event.getNotes().add(note);
-                		hibSession.saveOrUpdate(event);
+                		hibSession.persist(event);
                 	}
             	}
             }
@@ -1550,7 +1554,10 @@ public class Class_ extends BaseClass_ {
 					note.setTextNote(MSG.classNoteReassigned(oldAssignment.getPlacement().getName(), a.getPlacement().getName()));
 				note.setMeetings(assignment.getTime().getLongName() + (assignment.getNrRooms() > 0 ? " " + assignment.getRoomNames(", ") : ""));
 				event.getNotes().add(note);
-            	hibSession.saveOrUpdate(event);
+				if (event.getUniqueId() == null)
+					hibSession.persist(event);
+				else
+					hibSession.merge(event);
             }
 		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
 		    	hibSession.remove(event);
@@ -1728,20 +1735,20 @@ public class Class_ extends BaseClass_ {
 	
 	public List<DistributionPref> getSharedPreferences(Long classId, Long subpartId, String[] preferences,  String[] types) {
 		if (classId == null) return null;
-		Query q1 = Class_DAO.getInstance().getSession().createQuery(
+		Query<DistributionPref> q1 = Class_DAO.getInstance().getSession().createQuery(
 				"select o1.distributionPref from DistributionObject o1, DistributionObject o2" + 
 				(subpartId == null ? ", Class_ c2" : "") + " where " +
 				"o1.distributionPref = o2.distributionPref and o1.prefGroup.uniqueId in (:c1, :s1)" +
 				(subpartId == null ? " and o2.prefGroup.uniqueId in (c2.uniqueId, c2.schedulingSubpart.uniqueId) and c2.uniqueId = :c2" : " and o2.prefGroup.uniqueId in (:c2, :s2)") +
 				(preferences == null || preferences.length == 0 ? "" : " and o1.distributionPref.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
-				(types == null || types.length == 0 ? "" : " and o1.distributionPref.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
-				);
-		Query q2 = Class_DAO.getInstance().getSession().createQuery(
+				(types == null || types.length == 0 ? "" : " and o1.distributionPref.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t"),
+				DistributionPref.class);
+		Query<DistributionPref> q2 = Class_DAO.getInstance().getSession().createQuery(
 				"select p from ClassInstructor c1 inner join c1.instructor.preferences p, ClassInstructor c2 where " +
 				"c1.classInstructing.uniqueId = :c1 and c2.classInstructing.uniqueId = :c2 and c1.instructor = c2.instructor and type(p) = DistributionPref" +
 				(preferences == null || preferences.length == 0 ? "" : " and p.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
-				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
-				);
+				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t"),
+				DistributionPref.class);
 		q1.setParameter("c1", getUniqueId()).setParameter("s1", getSchedulingSubpart().getUniqueId()).setParameter("c2", classId);
 		q2.setParameter("c1", getUniqueId()).setParameter("c2", classId);
 		if (subpartId != null)

@@ -98,7 +98,8 @@ public class SolverInfoDefs implements AdminTable {
 		def.setName(record.getField(0));
 		def.setDescription(record.getField(1));
 		def.setImplementation(record.getField(2));
-		record.setUniqueId((Long)hibSession.save(def));
+		hibSession.persist(def);
+		record.setUniqueId(def.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				def,
@@ -117,7 +118,7 @@ public class SolverInfoDefs implements AdminTable {
 		def.setName(record.getField(0));
 		def.setDescription(record.getField(1));
 		def.setImplementation(record.getField(2));
-		hibSession.saveOrUpdate(def);
+		hibSession.merge(def);
 		ChangeLog.addChange(hibSession,
 				context,
 				def,

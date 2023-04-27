@@ -108,7 +108,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		}
 		Lock lock = null;
 		if (iContainer.getLockService() != null) {
-			iContainer.getLockService().getLock("updater[generic].check");
+			lock = iContainer.getLockService().getLock("updater[generic].check");
 			lock.lock();
 		}
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -152,7 +152,8 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 								}
 								if (masters.size() > 1) {
 									iLog.warn(masters.size() + " masters for " + session.getLabel() + " detected.");
-									iLog.info(iContainer.getLockService().printLocks());
+									if (lock != null)
+										iLog.info(iContainer.getLockService().printLocks());
 									iLog.info("Releasing master locks for " + session.getLabel() + " ...");
 									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
 											new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},

@@ -93,7 +93,8 @@ public class Degrees implements AdminTable {
 		degree.setReference(record.getField(1));
 		degree.setLabel(record.getField(2));
 		degree.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(degree));
+		hibSession.persist(degree);
+		record.setUniqueId(degree.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				degree,
@@ -112,7 +113,7 @@ public class Degrees implements AdminTable {
 			degree.setExternalUniqueId(record.getField(0));
 			degree.setReference(record.getField(1));
 			degree.setLabel(record.getField(2));
-			hibSession.saveOrUpdate(degree);
+			hibSession.merge(degree);
 			ChangeLog.addChange(hibSession,
 					context,
 					degree,

@@ -104,7 +104,8 @@ public class ExaminationTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setType(Integer.valueOf(record.getField(2)));
 		type.setHighlightInEvents("true".equalsIgnoreCase(record.getField(3)));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -125,7 +126,7 @@ public class ExaminationTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setType(Integer.valueOf(record.getField(2)));
 		type.setHighlightInEvents("true".equalsIgnoreCase(record.getField(3)));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

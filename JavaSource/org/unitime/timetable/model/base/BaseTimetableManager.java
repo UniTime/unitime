@@ -36,6 +36,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.ManagerSettings;
@@ -72,7 +73,7 @@ public abstract class BaseTimetableManager implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "timetable_manager_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "timetable_manager_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "timetable_mgr_seq")
 	})
 	@GeneratedValue(generator = "timetable_manager_id")

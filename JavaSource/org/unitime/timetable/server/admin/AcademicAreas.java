@@ -100,7 +100,8 @@ public class AcademicAreas implements AdminTable {
 		area.setAcademicAreaAbbreviation(record.getField(1));
 		area.setTitle(record.getField(2));
 		area.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(area));
+		hibSession.persist(area);
+		record.setUniqueId(area.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				area,
@@ -119,7 +120,7 @@ public class AcademicAreas implements AdminTable {
 		area.setExternalUniqueId(record.getField(0));
 		area.setAcademicAreaAbbreviation(record.getField(1));
 		area.setTitle(record.getField(2));
-		hibSession.saveOrUpdate(area);
+		hibSession.merge(area);
 		ChangeLog.addChange(hibSession,
 				context,
 				area,

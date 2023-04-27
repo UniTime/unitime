@@ -61,7 +61,7 @@ public class BuildingRoomImport extends BaseImport {
              * Remove all buildings and rooms for the given session and reload them using the xml 
              */
             
-            getHibSession().createQuery("delete ExternalBuilding eb where eb.session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId()).executeUpdate();
+            getHibSession().createMutationQuery("delete ExternalBuilding eb where eb.session.uniqueId=:sessionId").setParameter("sessionId", session.getUniqueId()).executeUpdate();
             
             flush(true);
             
@@ -85,10 +85,10 @@ public class BuildingRoomImport extends BaseImport {
 		building.setCoordinateY(element.attributeValue("locationY") == null ? null : Double.valueOf(element.attributeValue("locationY")));
 		building.setDisplayName(element.attributeValue("name"));
 		building.setSession(session);
-		getHibSession().save(building);
+		getHibSession().persist(building);
 		for (Iterator i = element.elementIterator("room"); i.hasNext();)
 			importRoom((Element) i.next(), building);
-		getHibSession().save(building);
+		getHibSession().persist(building);
 		if (++batchIdx == BATCH_SIZE) {
 			getHibSession().flush(); getHibSession().clear(); batchIdx = 0;
 		}
@@ -125,7 +125,7 @@ public class BuildingRoomImport extends BaseImport {
 		room.setBuilding(building);
 		room.setDisplayName(element.attributeValue("displayName"));
 		building.addTorooms(room);
-		getHibSession().save(room);
+		getHibSession().persist(room);
 		if(element.element("roomDepartments") != null) {
 			for (Iterator i = element.element("roomDepartments").elementIterator(); i.hasNext();)
 				importDepts((Element) i.next(), room);
@@ -153,7 +153,7 @@ public class BuildingRoomImport extends BaseImport {
 		}
 		dept.setRoom(room);
 		room.addToroomDepartments(dept);
-		getHibSession().save(dept);
+		getHibSession().persist(dept);
 	}
 
 	private void importFeatures(Element element, ExternalRoom room) throws Exception {
@@ -168,7 +168,7 @@ public class BuildingRoomImport extends BaseImport {
 		}
 		feature.setRoom(room);
 		room.addToroomFeatures(feature);
-		getHibSession().save(feature);
+		getHibSession().persist(feature);
 	}
 	
 

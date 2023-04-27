@@ -90,7 +90,7 @@ public class StaffImport extends BaseImport {
 	        
 	        if (!incremental) {
 	        	info("Incremental mode disabled, deleting all Staff content.");
-	        	getHibSession().createQuery("delete Staff").executeUpdate();
+	        	getHibSession().createMutationQuery("delete Staff").executeUpdate();
 	        }
 	       
 	        for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
@@ -116,7 +116,7 @@ public class StaffImport extends BaseImport {
 		            }
 				}
 				if ("T".equalsIgnoreCase(element.attributeValue("delete")) || "Y".equalsIgnoreCase(element.attributeValue("delete")) || "true".equalsIgnoreCase(element.attributeValue("delete"))) {
-					if (staff != null) getHibSession().delete(staff);
+					if (staff != null) getHibSession().remove(staff);
 					continue;
 				}
 				if(staff == null) {
@@ -142,7 +142,10 @@ public class StaffImport extends BaseImport {
 				String email = getOptionalStringAttribute(element, "email");
 				if (email != null)
 					staff.setEmail(email);
-				getHibSession().saveOrUpdate(staff);
+				if (staff.getUniqueId() == null)
+		        	getHibSession().persist(staff);
+		        else
+		        	getHibSession().merge(staff);
 				flushIfNeeded(true);
 	        }
 			commitTransaction();

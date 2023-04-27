@@ -140,10 +140,10 @@ public class MasarykDefaultPreferences {
             }
 
             if (!incremental) {
-            	hibSession.createQuery(
+            	hibSession.createMutationQuery(
             			"delete DistributionPref where owner in (from Department d where d.session.uniqueId = :sessionId)")
             			.setParameter("sessionId", session.getUniqueId()).executeUpdate();
-            	hibSession.createQuery(
+            	hibSession.createMutationQuery(
             			"delete DistributionPref where owner in (from Session s where s.uniqueId = :sessionId)")
             			.setParameter("sessionId", session.getUniqueId()).executeUpdate();
             }
@@ -187,7 +187,7 @@ public class MasarykDefaultPreferences {
         		if (ss.getInstrOfferingConfig().isUnlimitedEnrollment()) {
         			ss.getInstrOfferingConfig().setUnlimitedEnrollment(false);
         			ss.getInstrOfferingConfig().setLimit(0);
-            		hibSession.saveOrUpdate(ss);
+            		hibSession.merge(ss);
         		}
         		
         		if (ss.getChildSubparts().isEmpty() && ss.getParentSubpart() != null) {
@@ -228,7 +228,7 @@ public class MasarykDefaultPreferences {
             				dp.getDistributionObjects().add(o);
         					x = x.getParentSubpart();
         				}
-        				hibSession.saveOrUpdate(dp);
+        				hibSession.persist(dp);
         			}
         		}
         		
@@ -241,7 +241,7 @@ public class MasarykDefaultPreferences {
                 		System.out.println(c.getClassLabel(hibSession) + " has " + ss.getMinutesPerWk() + " minutes per meeting (should have " + minPerMeeting + ").");
                 		if (c.getSectionNumber() == 1) {
                 			ss.setMinutesPerWk(minPerMeeting);
-                			hibSession.saveOrUpdate(ss);
+                			hibSession.merge(ss);
                 		}
             		}
             	}
@@ -458,7 +458,7 @@ public class MasarykDefaultPreferences {
 
             		c.setNbrRooms(Math.max(1, a.getRooms().size()));
             		
-            		hibSession.saveOrUpdate(c);
+            		hibSession.merge(c);
             	}
         		hibSession.flush();
             }
@@ -495,11 +495,11 @@ public class MasarykDefaultPreferences {
     					for (Class_ c: classes) {
     						double roomLimit = Math.floor(roomRatio * c.getClassLimit());
     						c.setRoomRatio((float) Math.floor(100f * roomLimit / c.getClassLimit()) / 100f);
-    						hibSession.saveOrUpdate(c);
+    						hibSession.merge(c);
     					}
     				}
         		}
-				hibSession.saveOrUpdate(dp);
+				hibSession.persist(dp);
             }
             
             hibSession.flush();

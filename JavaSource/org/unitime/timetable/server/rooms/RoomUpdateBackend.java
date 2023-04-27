@@ -254,7 +254,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					note.setTextNote(MESSAGES.eventNoteRoomDeleted(location.getLabel()));
 					note.setMeetingCollection(meetings);
 					event.getNotes().add(note);
-					hibSession.saveOrUpdate(event);
+					hibSession.merge(event);
 				}
 			}
 			List<RoomPref> roomPrefs = hibSession.createQuery("from RoomPref where room.uniqueId = :locationId", RoomPref.class)
@@ -265,18 +265,18 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Department d = rd.getDepartment();
 				d.getRoomDepts().remove(rd);
 				hibSession.remove(rd);
-				hibSession.saveOrUpdate(d);
+				hibSession.merge(d);
 			}
 			for (Iterator i=roomPrefs.iterator();i.hasNext();) {
 				RoomPref rp = (RoomPref)i.next();
 				rp.getOwner().getPreferences().remove(rp);
 				hibSession.remove(rp);
-				hibSession.saveOrUpdate(rp.getOwner());
+				hibSession.merge(rp.getOwner());
 			}
 			for (Iterator i=location.getAssignments().iterator();i.hasNext();) {
 				Assignment a = (Assignment)i.next();
 				a.getRooms().remove(location);
-				hibSession.saveOrUpdate(a);
+				hibSession.merge(a);
 				i.remove();
 			}
 			hibSession.remove(location);
@@ -516,7 +516,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						rd.getDepartment().getRoomDepts().add(rd);
 						rd.setRoom(location);
 						location.getRoomDepts().add(rd);
-						hibSession.saveOrUpdate(rd);
+						hibSession.persist(rd);
 					}
 					
 					if (room.getRoomSharingModel().isNoteEditable()) {
@@ -538,7 +538,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							rd.getDepartment().getRoomDepts().add(rd);
 							rd.setRoom(location);
 							location.getRoomDepts().add(rd);
-							hibSession.saveOrUpdate(rd);
+							hibSession.persist(rd);
 						}
 					}
 					for (RoomDept rd: rds.values()) {
@@ -589,17 +589,17 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							rp.setOwner(rd.getDepartment());
 							rd.getDepartment().getPreferences().add(rp);
 							rd.setPreference(pref);
-							hibSession.saveOrUpdate(rp);
-							hibSession.saveOrUpdate(rd.getDepartment());
+							hibSession.persist(rp);
+							hibSession.merge(rd.getDepartment());
 						} else if (rp != null && (pref == null || pref.getPrefProlog().equals(PreferenceLevel.sNeutral))) {
 							rd.getDepartment().getPreferences().remove(rp);
 							rd.setPreference(null);
 							hibSession.remove(rp);
-							hibSession.saveOrUpdate(rd.getDepartment());
+							hibSession.merge(rd.getDepartment());
 						} else if (rp != null && !rp.getPrefLevel().equals(pref)) {
 							rp.setPrefLevel(pref);
 							rd.setPreference(pref);
-							hibSession.saveOrUpdate(rp);
+							hibSession.merge(rp);
 						}
 					}
 				}
@@ -616,7 +616,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						if (feature instanceof DepartmentRoomFeature && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(((DepartmentRoomFeature)feature).getDepartment())) continue;
 						location.getFeatures().add(feature);
 						feature.getRooms().add(location);
-						hibSession.saveOrUpdate(feature);
+						hibSession.merge(feature);
 					}
 				}
 				for (RoomFeature feature: features) {
@@ -630,7 +630,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					}
 					location.getFeatures().remove(feature);
 					feature.getRooms().remove(location);
-					hibSession.saveOrUpdate(feature);
+					hibSession.merge(feature);
 				}
 			}
 			
@@ -645,7 +645,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						if (!group.isGlobal() && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(group.getDepartment())) continue;
 						location.getRoomGroups().add(group);
 						group.getRooms().add(location);
-						hibSession.saveOrUpdate(group);
+						hibSession.merge(group);
 					}
 				}
 				for (RoomGroup group: groups) {
@@ -658,7 +658,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					}
 					location.getRoomGroups().remove(group);
 					group.getRooms().remove(location);
-					hibSession.saveOrUpdate(group);
+					hibSession.merge(group);
 				}
 			}
 			
@@ -679,9 +679,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setEventAvailability(availability);
 			}
 			
-			hibSession.saveOrUpdate(location);
+			hibSession.merge(location);
 			for (RoomDept rd: location.getRoomDepts())
-				hibSession.saveOrUpdate(rd);
+				hibSession.merge(rd);
 			
         	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !(oldNote == null ? "" : oldNote).equals(location.getNote() == null ? "" : location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
@@ -706,7 +706,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							if (samePicture(p1, p2)) {
 								if (!sameType(p1, p2)) {
 									p2.setType(p1.getPictureType() == null ? null : AttachmentTypeDAO.getInstance().get(p1.getPictureType().getId(), hibSession));
-									hibSession.saveOrUpdate(p2);
+									hibSession.merge(p2);
 								}
 								i.remove();
 								continue p1;
@@ -718,7 +718,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								RoomPicture p2 = original.clonePicture();
 								p2.setLocation(location);
 								((Room)location).getPictures().add(p2);
-								hibSession.saveOrUpdate(p2);
+								hibSession.persist(p2);
 							}
 						} else {
 							NonUniversityLocationPicture original = NonUniversityLocationPictureDAO.getInstance().get(p1.getUniqueId());
@@ -726,7 +726,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								NonUniversityLocationPicture p2 = original.clonePicture();
 								p2.setLocation(location);
 								((NonUniversityLocation)location).getPictures().add(p2);
-								hibSession.saveOrUpdate(p2);
+								hibSession.persist(p2);
 							}
 						}
 					}
@@ -751,13 +751,13 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								}
 								if (p.getPictureType() != null)
 									picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-								hibSession.saveOrUpdate(picture);
+								hibSession.persist(picture);
 								p.setUniqueId(picture.getUniqueId());
 							}
 						} else if (picture != null) {
 							if (p.getPictureType() != null)
 								picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-							hibSession.saveOrUpdate(picture);
+							hibSession.merge(picture);
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {
@@ -1037,8 +1037,8 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							rp.setOwner(rd.getDepartment());
 							rd.getDepartment().getPreferences().add(rp);
 							rd.setPreference(pref);
-							hibSession.saveOrUpdate(rp);
-							hibSession.saveOrUpdate(rd.getDepartment());
+							hibSession.persist(rp);
+							hibSession.merge(rd.getDepartment());
 						}
 					}
 				}
@@ -1055,7 +1055,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						if (feature instanceof DepartmentRoomFeature && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(((DepartmentRoomFeature)feature).getDepartment())) continue;
 						location.getFeatures().add(feature);
 						feature.getRooms().add(location);
-						hibSession.saveOrUpdate(feature);
+						hibSession.merge(feature);
 					}
 				}
 				for (RoomFeature feature: features) {
@@ -1064,7 +1064,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					if (future && lookupFeature(hibSession, new FeatureInterface(feature.getUniqueId(), feature.getAbbv(), feature.getLabel()), future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
 					location.getFeatures().remove(feature);
 					feature.getRooms().remove(location);
-					hibSession.saveOrUpdate(feature);
+					hibSession.merge(feature);
 				}
 			}
 			
@@ -1079,7 +1079,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						if (!group.isGlobal() && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(group.getDepartment())) continue;
 						location.getRoomGroups().add(group);
 						group.getRooms().add(location);
-						hibSession.saveOrUpdate(group);
+						hibSession.merge(group);
 					}
 				}
 				for (RoomGroup group: groups) {
@@ -1088,7 +1088,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					if (future && lookupGroup(hibSession, new GroupInterface(group.getUniqueId(), group.getAbbv(), group.getName()), future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
 					location.getRoomGroups().remove(group);
 					group.getRooms().remove(location);
-					hibSession.saveOrUpdate(group);
+					hibSession.merge(group);
 				}
 			}
 			
@@ -1102,9 +1102,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setEventAvailability(availability);
 			}
 			
-			hibSession.saveOrUpdate(location);
+			hibSession.merge(location);
 			for (RoomDept rd: location.getRoomDepts())
-				hibSession.saveOrUpdate(rd);
+				hibSession.persist(rd);
 			
         	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && location.getNote() != null && !location.getNote().isEmpty() && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
@@ -1129,7 +1129,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							if (samePicture(p1, p2)) {
 								if (!sameType(p1, p2)) {
 									p2.setType(p1.getPictureType() == null ? null : AttachmentTypeDAO.getInstance().get(p1.getPictureType().getId(), hibSession));
-									hibSession.saveOrUpdate(p2);
+									hibSession.merge(p2);
 								}
 								i.remove();
 								continue p1;
@@ -1141,7 +1141,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								RoomPicture p2 = original.clonePicture();
 								p2.setLocation(location);
 								((Room)location).getPictures().add(p2);
-								hibSession.saveOrUpdate(p2);
+								hibSession.persist(p2);
 							}
 						} else {
 							NonUniversityLocationPicture original = NonUniversityLocationPictureDAO.getInstance().get(p1.getUniqueId());
@@ -1149,7 +1149,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								NonUniversityLocationPicture p2 = original.clonePicture();
 								p2.setLocation(location);
 								((NonUniversityLocation)location).getPictures().add(p2);
-								hibSession.saveOrUpdate(p2);
+								hibSession.persist(p2);
 							}
 						}
 					}
@@ -1170,7 +1170,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									((Room)location).getPictures().add((RoomPicture)picture);
 									if (p.getPictureType() != null)
 										picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-									hibSession.saveOrUpdate(picture);
+									hibSession.persist(picture);
 									p.setUniqueId(picture.getUniqueId());
 								} else {
 									NonUniversityLocationPicture np = new NonUniversityLocationPicture();
@@ -1182,14 +1182,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									((NonUniversityLocation)location).getPictures().add(np);
 									if (p.getPictureType() != null)
 										np.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-									hibSession.saveOrUpdate(np);
+									hibSession.persist(np);
 									p.setUniqueId(np.getUniqueId());
 								}
 							}
 						} else if (picture != null) {
 							if (p.getPictureType() != null)
 								picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-							hibSession.saveOrUpdate(picture);
+							hibSession.merge(picture);
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {

@@ -199,7 +199,8 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 			}
 			record.setField(5, students, true);
 		}
-		record.setUniqueId((Long)hibSession.save(group));
+		hibSession.persist(group);
+		record.setUniqueId(group.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				group,
@@ -288,7 +289,7 @@ public class StudentGroups implements AdminTable, HasLazyFields, HasFilter {
 			}
 			record.setField(5, newStudents, group.getExternalUniqueId() == null);
 		}
-		hibSession.saveOrUpdate(group);
+		hibSession.merge(group);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,

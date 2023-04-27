@@ -85,12 +85,15 @@ public class AcademicClassificationImport extends BaseImport {
                 clasf.setCode(code);
                 clasf.setName(element.attributeValue("name"));
                 
-                getHibSession().saveOrUpdate(clasf);
+                if (clasf.getUniqueId() == null)
+                	getHibSession().persist(clasf);
+                else
+                	getHibSession().merge(clasf);
             }
             
             for (AcademicClassification clasf: id2clasf.values()) {
             	info("Academic classification " + clasf.getCode() + " (" + clasf.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(clasf);
+            	getHibSession().remove(clasf);
             }
             
             commitTransaction();

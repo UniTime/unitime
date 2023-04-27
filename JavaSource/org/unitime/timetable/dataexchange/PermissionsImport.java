@@ -67,7 +67,10 @@ public class PermissionsImport extends BaseImport {
                 	}
                 }
                 
-                getHibSession().saveOrUpdate(role);
+                if (role.getUniqueId() == null)
+                	getHibSession().persist(role);
+                else
+                	getHibSession().merge(role);
 			}
 			
 			

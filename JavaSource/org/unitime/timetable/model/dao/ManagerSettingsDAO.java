@@ -42,11 +42,11 @@ public class ManagerSettingsDAO extends _RootDAO<ManagerSettings,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ManagerSettings> findByKey(org.hibernate.Session hibSession, Long keyId) {
-		return hibSession.createQuery("from ManagerSettings x where x.key.uniqueId = :keyId").setParameter("keyId", keyId).list();
+		return hibSession.createQuery("from ManagerSettings x where x.key.uniqueId = :keyId", ManagerSettings.class).setParameter("keyId", keyId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ManagerSettings> findByManager(org.hibernate.Session hibSession, Long managerId) {
-		return hibSession.createQuery("from ManagerSettings x where x.manager.uniqueId = :managerId").setParameter("managerId", managerId).list();
+		return hibSession.createQuery("from ManagerSettings x where x.manager.uniqueId = :managerId", ManagerSettings.class).setParameter("managerId", managerId).list();
 	}
 }

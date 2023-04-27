@@ -134,7 +134,8 @@ public class RoomTypes implements AdminTable {
 		type.setRoom("room".equals(record.getField(2)));
 		type.setOrd(order);
 		record.setField(3, "0");
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -157,7 +158,7 @@ public class RoomTypes implements AdminTable {
 		type.setLabel(record.getField(1));
 		type.setRoom("room".equals(record.getField(2)));
 		type.setOrd(order);
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,

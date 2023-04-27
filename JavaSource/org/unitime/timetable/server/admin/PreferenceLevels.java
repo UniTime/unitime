@@ -98,7 +98,7 @@ public class PreferenceLevels implements AdminTable {
 				ToolBox.equals(pref.getAbbreviation(), record.getField(2))) return;
 		pref.setPrefName(record.getField(1));
 		pref.setPrefAbbv(record.getField(2));
-		hibSession.saveOrUpdate(pref);
+		hibSession.merge(pref);
 		ChangeLog.addChange(hibSession,
 				context,
 				pref,

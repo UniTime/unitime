@@ -42,6 +42,6 @@ public class RoomPictureDAO extends _RootDAO<RoomPicture,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<RoomPicture> findByLocation(org.hibernate.Session hibSession, Long locationId) {
-		return hibSession.createQuery("from RoomPicture x where x.location.uniqueId = :locationId").setParameter("locationId", locationId).list();
+		return hibSession.createQuery("from RoomPicture x where x.location.uniqueId = :locationId", RoomPicture.class).setParameter("locationId", locationId).list();
 	}
 }

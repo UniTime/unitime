@@ -252,7 +252,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
                 	DatePattern dp = form.saveOrUpdate(request, hibSession);
                 	if (MSG.actionMakeDatePatternDefaulf().equals(op)) {
                 		dp.getSession().setDefaultDatePattern(dp);
-                		hibSession.saveOrUpdate(dp.getSession());
+                		hibSession.merge(dp.getSession());
                 		form.setIsDefault(true);
                 	}
                 	
@@ -326,7 +326,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
 
                 form.delete(hibSession);
             	
-    			tx.commit();
+                if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -381,7 +381,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             			for (Iterator j=dp.getDepartments().iterator();j.hasNext();) {
             				Department d = (Department)j.next();
             				d.getDatePatterns().remove(dp);
-            				hibSession.saveOrUpdate(d);
+            				hibSession.merge(d);
             			}
                         ChangeLog.addChange(
                                 hibSession, 
@@ -440,18 +440,18 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
                             for (Iterator j=classes.iterator();j.hasNext();) {
                                 Class_ clazz = (Class_)j.next();
                                 clazz.setDatePattern(likeDp.isDefault()?null:likeDp);
-                                hibSession.saveOrUpdate(clazz);
+                                hibSession.merge(clazz);
                             }
                             for (Iterator j=subparts.iterator();j.hasNext();) {
                                 SchedulingSubpart subpart = (SchedulingSubpart)j.next();
                                 subpart.setDatePattern(likeDp.isDefault()?null:likeDp);
-                                hibSession.saveOrUpdate(subpart);
+                                hibSession.merge(subpart);
                             }
                             out.println("    -- deleting date pattern "+dp.getName());
                             for (Iterator j=dp.getDepartments().iterator();j.hasNext();) {
                                 Department d = (Department)j.next();
                                 d.getDatePatterns().remove(dp);
-                                hibSession.saveOrUpdate(d);
+                                hibSession.merge(d);
                             }
                             ChangeLog.addChange(
                                     hibSession, 
@@ -467,7 +467,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
                             out.println("      -- "+likeDp.getUsage(allClasses));
                             Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
                             dp.setName("generated "+sdf.format(dp.getStartDate())+" - "+sdf.format(dp.getEndDate()));
-                            hibSession.saveOrUpdate(dp);
+                            hibSession.merge(dp);
                         }
         			}
             	}
@@ -475,7 +475,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             	out.flush(); out.close(); out = null;
             	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -585,16 +585,16 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		for (Iterator j=subpart.getClasses().iterator();j.hasNext();) {
             			Class_ clazz = (Class_)j.next();
             			clazz.setDatePattern(null);
-            			hibSession.saveOrUpdate(clazz);
+            			hibSession.merge(clazz);
             		}
             		subpart.setDatePattern(dp.isDefault()?null:dp);
-            		hibSession.saveOrUpdate(subpart);
+            		hibSession.merge(subpart);
                 }
 
             	out.flush(); out.close(); out = null;
             	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
 	        	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -669,13 +669,13 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             			if (!dp.getDepartments().contains(d)) {
             				dp.getDepartments().add(d);
             				d.getDatePatterns().add(dp);
-            				hibSession.saveOrUpdate(d);
+            				hibSession.merge(d);
             				out.println("    -- department "+d+" added to "+dp.getName());
             				added = true;
             			}
             		}
             		if (added) {
-            			hibSession.saveOrUpdate(dp);
+            			hibSession.merge(dp);
                         ChangeLog.addChange(
                                 hibSession, 
                                 sessionContext, 
@@ -691,7 +691,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             	out.flush(); out.close(); out = null;
             	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     			
     			for (Iterator i=refresh.iterator();i.hasNext();) {
     				hibSession.refresh(i.next());
@@ -806,7 +806,7 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             	}
             	
             	ExportUtils.exportCSV(csv, response, "datePatterns");
-    			tx.commit();
+            	if (tx != null) tx.commit();
             	return null;
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();

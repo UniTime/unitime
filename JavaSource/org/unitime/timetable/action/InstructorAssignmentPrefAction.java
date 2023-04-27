@@ -259,7 +259,7 @@ public class InstructorAssignmentPrefAction extends PreferencesAction2<Instructo
     		if ("Enabled".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()) || "Assignments".equalsIgnoreCase(ApplicationProperty.InstructorUnavailbeDays.value()))
     			inst.setUnavailablePatternAndOffset(request);
 			
-			hibSession.saveOrUpdate(inst);
+			hibSession.merge(inst);
 
             ChangeLog.addChange(
                     hibSession, 

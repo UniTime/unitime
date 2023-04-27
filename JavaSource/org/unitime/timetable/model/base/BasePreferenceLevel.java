@@ -28,6 +28,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.PreferenceLevel;
 
 /**
@@ -54,7 +55,7 @@ public abstract class BasePreferenceLevel implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "preference_level_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "preference_level_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_level_seq")
 	})
 	@GeneratedValue(generator = "preference_level_id")

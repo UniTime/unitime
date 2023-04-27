@@ -50,7 +50,7 @@ public class TravelTimesImport extends BaseImport {
             }
             
         	info("Deleting existing travel times...");
-        	getHibSession().createQuery(
+        	getHibSession().createMutationQuery(
     				"delete from TravelTime where session.uniqueId = :sessionId")
     				.setParameter("sessionId", session.getUniqueId())
     				.executeUpdate();
@@ -72,7 +72,7 @@ public class TravelTimesImport extends BaseImport {
 					time.setLocation2Id(Math.max(from.getUniqueId(), to.getUniqueId()));
 					time.setDistance(Integer.parseInt(toEl.getTextTrim()));
 					
-					getHibSession().saveOrUpdate(time);
+					getHibSession().persist(time);
                 }
                 
         	}

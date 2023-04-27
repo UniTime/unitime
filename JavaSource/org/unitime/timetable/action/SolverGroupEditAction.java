@@ -157,7 +157,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
             	
             	form.delete(hibSession, sessionContext);
             	
-    			tx.commit();
+            	if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
@@ -184,17 +184,17 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	            		for (Iterator j=group.getDepartments().iterator();j.hasNext();) {
 	            			Department dept = (Department)j.next();
 	            			dept.setSolverGroup(null);
-	            			hibSession.saveOrUpdate(dept);
+	            			hibSession.merge(dept);
 	            		}
 	            		for (Iterator j=group.getTimetableManagers().iterator();j.hasNext();) {
 	            			TimetableManager mgr = (TimetableManager)j.next();
 	            			mgr.getSolverGroups().remove(group);
-	            			hibSession.saveOrUpdate(mgr);
+	            			hibSession.merge(mgr);
 	            		}
 	            		hibSession.remove(group);
 	            	}
 	            	
-	    			tx.commit();
+	            	if (tx != null) tx.commit();
 	    	    } catch (Exception e) {
 	    	    	if (tx!=null) tx.rollback();
 	    	    	throw e;
@@ -232,14 +232,14 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	            			sg.setName(d.getDeptCode()+" - "+d.getExternalMgrLabel().replaceAll(" Manager", ""));
 	            			sg.setSession(session);
 	            			sg.setTimetableManagers(new HashSet<TimetableManager>());
-	            			hibSession.saveOrUpdate(sg);
+	            			hibSession.persist(sg);
 	            			d.setSolverGroup(sg);
-	            			hibSession.saveOrUpdate(d);
+	            			hibSession.merge(d);
             				for (Iterator j=d.getTimetableManagers().iterator();j.hasNext();) {
             					TimetableManager mgr = (TimetableManager)j.next();
             					mgr.getSolverGroups().add(sg);
             					sg.getTimetableManagers().add(mgr);
-            					hibSession.saveOrUpdate(mgr);
+            					hibSession.merge(mgr);
             				}
 	            		} else if (!d.getSubjectAreas().isEmpty() && !d.getTimetableManagers().isEmpty()) {
 	            			Set depts = null;
@@ -272,23 +272,23 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	            				sg.setName(name.length()<=50?name.toString():name.toString().substring(0,47)+"...");
 	            				sg.setTimetableManagers(new HashSet<TimetableManager>());
 	            				sg.setSession(session);
-	            				hibSession.saveOrUpdate(sg);
+	            				hibSession.persist(sg);
 	            				for (Iterator j=depts.iterator();j.hasNext();) {
 	            					Department x = (Department)j.next();
 	            					x.setSolverGroup(sg);
-	            					hibSession.saveOrUpdate(x);
+	            					hibSession.merge(x);
 	            				}
 	            				for (Iterator j=mgrs.iterator();j.hasNext();) {
 	            					TimetableManager mgr = (TimetableManager)j.next();
 	            					mgr.getSolverGroups().add(sg);
 	            					sg.getTimetableManagers().add(mgr);
-	            					hibSession.saveOrUpdate(mgr);
+	            					hibSession.merge(mgr);
 	            				}
 	            			}
 	            		}
 	            	}
 	            	
-	    			tx.commit();
+	            	if (tx != null) tx.commit();
 	    	    } catch (Exception e) {
 	    	    	if (tx!=null) tx.rollback();
 	    	    	throw e;

@@ -318,10 +318,11 @@ public class SessionRollForward {
 						toRoomGroup.setSession(toSession);
 						if (fromRoomGroup.getDepartment() != null)
 							toRoomGroup.setDepartment(fromRoomGroup.getDepartment().findSameDepartmentInSession(toSession));
-						rgDao.saveOrUpdate(toRoomGroup);
+						rgDao.getSession().persist(toRoomGroup);
 					}
 				}
 			}
+			rgDao.getSession().flush();
 		} catch (Exception e) {
 			String type = MSG.rollForwardRoomsGroups();
 			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
@@ -342,7 +343,7 @@ public class SessionRollForward {
 					if (fromRoomFeature != null){
 						toRoomFeature = (DepartmentRoomFeature)fromRoomFeature.clone();
 						toRoomFeature.setDepartment(fromRoomFeature.getDepartment().findSameDepartmentInSession(toSession));
-						rfDao.saveOrUpdate(toRoomFeature);
+						rfDao.getSession().persist(toRoomFeature);
 					}
 				}
 			}
@@ -350,7 +351,7 @@ public class SessionRollForward {
 			for (GlobalRoomFeature fromRoomFeatureGlobal: GlobalRoomFeature.getAllGlobalRoomFeatures(fromSession)) {
 				GlobalRoomFeature toRoomFeatureGlobal = (GlobalRoomFeature)fromRoomFeatureGlobal.clone();
 				toRoomFeatureGlobal.setSession(toSession);
-				rfDao.saveOrUpdate(toRoomFeatureGlobal);
+				rfDao.getSession().persist(toRoomFeatureGlobal);
 				globalFeatures.add(fromRoomFeatureGlobal.getLabel());
 			}
 			if (sessionHasExternalRoomFeatureList(toSession)){
@@ -373,10 +374,11 @@ public class SessionRollForward {
 						grf.setSisReference(newSisReference);
 						grf.setSisValue(null);
 						grf.setSession(toSession);
-						grfDao.saveOrUpdate(grf);
+						grfDao.getSession().persist(grf);
 					}
 				}
 			}
+			rfDao.getSession().flush();
 		} catch (Exception e) {
 			String type = MSG.rollForwardRoomsFeatures();
 			String msg = MSG.errorRollForwardFailedAll(type.toLowerCase());
@@ -501,7 +503,7 @@ public class SessionRollForward {
 				}
 				rollRoomFeaturesForLocationForward(fromRoom, toRoom, toSession, roomFeatureCache);
 				rollRoomGroupsForLocationForward(fromRoom, toRoom, toSession, roomGroupCache);
-				rDao.saveOrUpdate(toRoom);
+				rDao.getSession().persist(toRoom);
 				boolean rollForwardExistingRoomDepts = true;
 				if (fromRoom.getExternalUniqueId() != null && sessionHasExternalRoomDeptList(toSession)){
 					ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
@@ -553,13 +555,13 @@ public class SessionRollForward {
 						}
 					}
 				}
-				rDao.saveOrUpdate(toRoom);
+				rDao.getSession().persist(toRoom);
 				
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toRoom);
 					toRoom.addTopictures(toPicture);
-					rDao.getSession().saveOrUpdate(toPicture);
+					rDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromRoom.getAllowedServices()) {
@@ -591,7 +593,7 @@ public class SessionRollForward {
 			toRoomDept.setDepartment(toDept);
 			toLocation.addToroomDepts(toRoomDept);
 			toDept.addToroomDepts(toRoomDept);
-			rdDao.saveOrUpdate(toRoomDept);
+			rdDao.getSession().persist(toRoomDept);
 			PreferenceLevel fromRoomPrefLevel = fromLocation.getRoomPreferenceLevel(fromRoomDept.getDepartment());
 			if (!fromRoomPrefLevel.getPrefProlog().equals(PreferenceLevel.sNeutral)){
 				RoomPref toRoomPref = new RoomPref();
@@ -599,9 +601,10 @@ public class SessionRollForward {
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
 				toRoomPref.setRoom(toLocation);
 				toDept.addTopreferences(toRoomPref);
-				rdDao.getSession().saveOrUpdate(toDept);
+				rdDao.getSession().persist(toDept);
 			}
 		}
+		rdDao.getSession().flush();
 	}
 
 	
@@ -669,13 +672,13 @@ public class SessionRollForward {
 			}
 			rollRoomFeaturesForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomFeatureCache);
 			rollRoomGroupsForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomGroupCache);
-			nulDao.saveOrUpdate(toNonUniversityLocation);
+			nulDao.getSession().persist(toNonUniversityLocation);
 			
 			for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
 				NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
 				toPicture.setLocation(toNonUniversityLocation);
 				toNonUniversityLocation.addTopictures(toPicture);
-				nulDao.getSession().saveOrUpdate(toPicture);
+				nulDao.getSession().persist(toPicture);
 			}
 			
 			for (EventServiceProvider fromProvider: fromNonUniversityLocation.getAllowedServices()) {
@@ -689,7 +692,7 @@ public class SessionRollForward {
 					fromRoomDept = (RoomDept)deptIt.next();
 					rollForwardRoomDept(fromRoomDept, toNonUniversityLocation, toSession, fromNonUniversityLocation);
 				}
-				nulDao.saveOrUpdate(toNonUniversityLocation);
+				nulDao.getSession().merge(toNonUniversityLocation);
 				nulDao.getSession().flush();
 				nulDao.getSession().evict(toNonUniversityLocation);
 				nulDao.getSession().evict(fromNonUniversityLocation);
@@ -722,7 +725,7 @@ public class SessionRollForward {
 	
 	private void rollTravelTimesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		TravelTimeDAO dao = TravelTimeDAO.getInstance();
-		dao.getSession().createQuery(
+		dao.getSession().createMutationQuery(
 				"delete from TravelTime where session.uniqueId = :sessionId")
 				.setParameter("sessionId", toSession.getUniqueId())
 				.executeUpdate();
@@ -741,8 +744,9 @@ public class SessionRollForward {
 			time.setLocation2Id(Math.max(from.getUniqueId(), to.getUniqueId()));
 			time.setDistance(travel.getDistance());
 			
-			dao.saveOrUpdate(time);
+			dao.getSession().persist(time);
 		}
+		dao.getSession().flush();
 	}
 
 	private Location findLocation(Long locationId, Long sessionId) {
@@ -800,7 +804,7 @@ public class SessionRollForward {
 					}
 					toBldg.setSession(toSession);
 					toSession.getBuildings().add(toBldg);
-					bDao.saveOrUpdate(toBldg);
+					bDao.getSession().persist(toBldg);
 					bDao.getSession().flush();
 					//bDao.getSession().evict(toBldg); -- commented out to prevent NonUniqueObjectException
 					//bDao.getSession().evict(fromBldg);	
@@ -836,7 +840,7 @@ public class SessionRollForward {
 							if (tm != null){
 								toDepartment.getTimetableManagers().add(tm);
 								tm.getDepartments().add(toDepartment);
-								tmDao.saveOrUpdate(tm);
+								tmDao.getSession().merge(tm);
 								tmDao.getSession().flush();
 								if (tm.getSolverGroups(toSession).isEmpty()){
 									for(Iterator sgIt = tm.getSolverGroups(fromSession).iterator(); sgIt.hasNext();){
@@ -878,7 +882,7 @@ public class SessionRollForward {
 					toDepartment.setStatusType(null);
 					toDepartment.setSession(toSession);
 					toSession.addTodepartments(toDepartment);
-					dDao.saveOrUpdate(toDepartment);
+					dDao.getSession().persist(toDepartment);
 					if(fromDepartment.getSolverGroup() != null) {
 						sg = SolverGroup.findBySessionIdName(toSession.getUniqueId(), fromDepartment.getSolverGroup().getName());
 						if (sg == null){
@@ -892,19 +896,22 @@ public class SessionRollForward {
 							sg.getDepartments().add(toDepartment);
 							toDepartment.setSolverGroup(sg);
 							SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
-							sgDao.saveOrUpdate(sg);
+							if (sg.getUniqueId() == null)
+								sgDao.getSession().persist(sg);
+							else
+								sgDao.getSession().merge(sg);
 						}
 					}
 
-					dDao.saveOrUpdate(toDepartment);
+					dDao.getSession().merge(toDepartment);
 					DistributionTypeDAO dtDao = DistributionTypeDAO.getInstance();
-					List l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
+					List l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString(), DistributionType.class).list();
 					if (l != null && !l.isEmpty()){
 						DistributionType distributionType = null;
 						for (Iterator dtIt = l.iterator(); dtIt.hasNext();){
 							distributionType = (DistributionType) dtIt.next();
 							distributionType.getDepartments().add(toDepartment);
-							dtDao.saveOrUpdate(distributionType);
+							dtDao.getSession().merge(distributionType);
 						}
 					}
 	
@@ -957,7 +964,7 @@ public class SessionRollForward {
 					toDatePattern = (DatePattern) fromDatePattern.clone();
 					toDatePattern.setSession(toSession);
 					rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
-					dpDao.saveOrUpdate(toDatePattern);
+					dpDao.getSession().persist(toDatePattern);
 					dpDao.getSession().flush();
 					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 				}
@@ -969,7 +976,7 @@ public class SessionRollForward {
 					for (DatePattern fromParent: fromDp.getParents()){
 						toDp.addToparents(fromToDatePatternMap.get(fromParent));
 					}
-					dpDao.saveOrUpdate(toDp);
+					dpDao.getSession().merge(toDp);
 				}
 			}
 			
@@ -978,7 +985,7 @@ public class SessionRollForward {
 				if (defDp != null){
 					toSession.setDefaultDatePattern(defDp);
 					SessionDAO sDao = SessionDAO.getInstance();
-					sDao.saveOrUpdate(toSession);
+					sDao.getSession().merge(toSession);
 				}
 			}
 			dpDao.getSession().flush();
@@ -1033,7 +1040,7 @@ public class SessionRollForward {
 								if (toDepartment != null){
 									toSubjectArea.setDepartment(toDepartment);
 									toDepartment.addTosubjectAreas(toSubjectArea);
-									sDao.saveOrUpdate(toSubjectArea);
+									sDao.getSession().persist(toSubjectArea);
 									sDao.getSession().flush();
 									sDao.getSession().evict(toSubjectArea);
 									sDao.getSession().evict(fromSubjectArea);
@@ -1090,7 +1097,7 @@ public class SessionRollForward {
 					toDepartment.setAllowEvents(false);
 					toDepartment.setAllowStudentScheduling(true);
 					toSession.addTodepartments(toDepartment);
-					DepartmentDAO.getInstance().saveOrUpdate(toDepartment);
+					DepartmentDAO.getInstance().getSession().persist(toDepartment);
 				}
 				String toSubject = null;
 				for (Iterator<String> saIt = newSubjects.iterator(); saIt.hasNext();){
@@ -1103,7 +1110,7 @@ public class SessionRollForward {
 						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 						toDepartment.addTosubjectAreas(toSubjectArea);
 						toSession.addTosubjectAreas(toSubjectArea);
-						sDao.saveOrUpdate(toSubjectArea);
+						sDao.getSession().persist(toSubjectArea);
 						sDao.getSession().flush();
 						sDao.getSession().evict(toSubjectArea);
 						sDao.getSession().evict(fromSubjectArea);
@@ -1126,7 +1133,7 @@ public class SessionRollForward {
 							if (toDepartment != null){
 								toSubjectArea.setDepartment(toDepartment);
 								toDepartment.addTosubjectAreas(toSubjectArea);
-								sDao.saveOrUpdate(toSubjectArea);
+								sDao.getSession().persist(toSubjectArea);
 								sDao.getSession().flush();
 								sDao.getSession().evict(toSubjectArea);
 								sDao.getSession().evict(fromSubjectArea);
@@ -1789,7 +1796,10 @@ public class SessionRollForward {
 				toDistObj.setPrefGroup(toPrefGroup);
 				toDistObj.setSequenceNumber(fromDistObj.getSequenceNumber());
 				toPrefGroup.addTodistributionObjects(toDistObj);
-				hibSession.saveOrUpdate(toDistributionPref);
+				if (toDistributionPref.getUniqueId() == null)
+					hibSession.persist(toDistributionPref);
+				else
+					hibSession.merge(toDistributionPref);
 			}
 		}		
 	}
@@ -1818,7 +1828,7 @@ public class SessionRollForward {
 	private void rollGlobalInstructorAttributesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
 		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllGlobalAttributes(toSession.getUniqueId())) {
-			InstructorAttributeDAO.getInstance().delete(oldAttribute);
+			InstructorAttributeDAO.getInstance().getSession().remove(oldAttribute);
 		}
 		List<InstructorAttribute> globalAttributes = InstructorAttribute.getAllGlobalAttributes(fromSession.getUniqueId());
 		for (InstructorAttribute fromAttribute: globalAttributes) {
@@ -1830,7 +1840,7 @@ public class SessionRollForward {
 			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
 			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
 			attributes.put(fromAttribute.getUniqueId(), toAttribute);
-			InstructorAttributeDAO.getInstance().saveOrUpdate(toAttribute);
+			InstructorAttributeDAO.getInstance().getSession().persist(toAttribute);
 		}
 		for (InstructorAttribute fromChildAttribute: globalAttributes) {
 			if (fromChildAttribute.getParentAttribute() != null) {
@@ -1839,16 +1849,17 @@ public class SessionRollForward {
 				if (toParentAttribute != null) {
 					toChildAttribute.setParentAttribute(toParentAttribute);
 					toParentAttribute.getChildAttributes().add(toChildAttribute);
-					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
+					InstructorAttributeDAO.getInstance().getSession().merge(toChildAttribute);
 				}
 			}
 		}
+		InstructorAttributeDAO.getInstance().getSession().flush();
 	}
 	
 	private void rollDepartmentalInstructorAttributesForward(RollForwardErrors errors, Department fromDepartment, Department toDepartment) {
 		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
 		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllDepartmentalAttributes(toDepartment.getUniqueId())) {
-			InstructorAttributeDAO.getInstance().delete(oldAttribute);
+			InstructorAttributeDAO.getInstance().getSession().remove(oldAttribute);
 		}
 		List<InstructorAttribute> departmentalAttributes = InstructorAttribute.getAllDepartmentalAttributes(fromDepartment.getUniqueId());
 		for (InstructorAttribute fromAttribute: departmentalAttributes) {
@@ -1861,7 +1872,7 @@ public class SessionRollForward {
 			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
 			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
 			attributes.put(fromAttribute.getUniqueId(), toAttribute);
-			InstructorAttributeDAO.getInstance().save(toAttribute);
+			InstructorAttributeDAO.getInstance().getSession().persist(toAttribute);
 		}
 		for (InstructorAttribute fromChildAttribute: departmentalAttributes) {
 			if (fromChildAttribute.getParentAttribute() != null) {
@@ -1870,10 +1881,11 @@ public class SessionRollForward {
 				if (toParentAttribute != null) {
 					toChildAttribute.setParentAttribute(toParentAttribute);
 					toParentAttribute.getChildAttributes().add(toChildAttribute);
-					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
+					InstructorAttributeDAO.getInstance().getSession().merge(toChildAttribute);
 				}
 			}
 		}
+		InstructorAttributeDAO.getInstance().getSession().flush();
 	}
 	
 	protected void rollForwardInstructorAttributePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
@@ -1919,8 +1931,9 @@ public class SessionRollForward {
 			toExamPeriod.setSession(toSession);
 			if (toExamPeriod.getEventStartOffset()==null) toExamPeriod.setEventStartOffset(0);
 			if (toExamPeriod.getEventStopOffset()==null) toExamPeriod.setEventStopOffset(0);
-			examPeriodDao.save(toExamPeriod);
+			examPeriodDao.getSession().persist(toExamPeriod);
 		}
+		examPeriodDao.getSession().flush();
 	}
 	
 	private void rollForwardExamLocationPrefs(Session toSession, Session fromSession) throws Exception{
@@ -1983,13 +1996,14 @@ public class SessionRollForward {
 				toStatus.setSession(toSession);
 				toStatus.setType(fromStatus.getType());
 				toStatus.setManagers(new HashSet<TimetableManager>());
+				dao.getSession().persist(toStatus);
 			} else {
 				toStatus.getManagers().clear();
 			}
 			for (TimetableManager m: fromStatus.getManagers())
 				if (managers.contains(m))
 					toStatus.getManagers().add(m);
-			dao.saveOrUpdate(toStatus);
+			dao.getSession().merge(toStatus);
 		}
 	}
 	
@@ -2044,7 +2058,7 @@ public class SessionRollForward {
 		}
 		if (toExam.getOwners() != null || toExam.getOwners().size() > 0){
 			ExamDAO eDao = ExamDAO.getInstance();
-			eDao.save(toExam);
+			eDao.getSession().persist(toExam);
 			if (EXAMS_ROOM_PREFS.equals(prefOption) || EXAMS_ALL_PREF.equals(prefOption)) {
 				rollForwardBuildingPrefs(fromExam, toExam, toSession);
 				rollForwardRoomGroupPrefs(fromExam, toExam, toSession);
@@ -2054,7 +2068,7 @@ public class SessionRollForward {
 				rollForwardRoomPrefs(fromExam, toExam, toSession);
 				rollForwardPeriodPrefs(fromExam, toExam, toSession);
 			}
-			eDao.update(toExam);
+			eDao.getSession().merge(toExam);
 			eDao.getSession().flush();
 			eDao.getSession().evict(toExam);
 			eDao.getSession().evict(fromExam);
@@ -2205,7 +2219,7 @@ public class SessionRollForward {
 								rollForwardRoomGroupPrefs(fromInstructor, toInstructor, toSession);
 								rollForwardTimePrefs(fromInstructor, toInstructor, toSession);
 								rollInstructorDistributionPrefs(fromInstructor, toInstructor);
-								iDao.saveOrUpdate(toInstructor);
+								iDao.getSession().persist(toInstructor);
 								iDao.getSession().flush();
 								iDao.getSession().evict(toInstructor);
 								iDao.getSession().evict(fromInstructor);
@@ -2329,11 +2343,8 @@ public class SessionRollForward {
 		}
 		if (!getSessionHasCourseCatalogList().containsKey(session)){
 			CourseCatalogDAO ccDao = CourseCatalogDAO.getInstance();
-			List l = ccDao.getSession().createQuery("select count(cc) from CourseCatalog cc where cc.session.uniqueId =" + session.getUniqueId().toString()).list();
-			int cnt = 0;
-			if (l != null && ! l.isEmpty()){
-				cnt = ((Long)l.get(0)).intValue();
-			}
+			int cnt = ccDao.getSession().createQuery(
+					"select count(cc) from CourseCatalog cc where cc.session.uniqueId =" + session.getUniqueId(), Number.class).uniqueResult().intValue();
 			getSessionHasCourseCatalogList().put(session, Boolean.valueOf(cnt != 0));	
 		}
 		return(((Boolean)getSessionHasCourseCatalogList().get(session)).booleanValue());
@@ -2349,11 +2360,8 @@ public class SessionRollForward {
 	public boolean sessionHasExternalBuildingList(Session session){
 		if (!getSessionHasExternalBuildingList().containsKey(session)){
 			ExternalBuildingDAO ebDao = ExternalBuildingDAO.getInstance();
-			List l = ebDao.getSession().createQuery("select count(eb) from ExternalBuilding eb where eb.session.uniqueId =" + session.getUniqueId().toString()).list();
-			int cnt = 0;
-			if (l != null && ! l.isEmpty()){	
-				cnt = ((Long)l.get(0)).intValue();
-			}
+			int cnt = ebDao.getSession().createQuery(
+					"select count(eb) from ExternalBuilding eb where eb.session.uniqueId =" + session.getUniqueId(), Number.class).uniqueResult().intValue();
 			getSessionHasExternalBuildingList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalBuildingList().get(session)).booleanValue());
@@ -2369,11 +2377,8 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomList(Session session){
 		if (!getSessionHasExternalRoomList().containsKey(session)){
 			ExternalRoomDAO erDao = ExternalRoomDAO.getInstance();
-			List l = erDao.getSession().createQuery("select count(er) from ExternalRoom er where er.building.session.uniqueId =" + session.getUniqueId().toString()).list();
-			int cnt = 0;
-			if (l != null && ! l.isEmpty()){
-				cnt = ((Long)l.get(0)).intValue();
-			}
+			int cnt = erDao.getSession().createQuery(
+					"select count(er) from ExternalRoom er where er.building.session.uniqueId =" + session.getUniqueId(), Number.class).uniqueResult().intValue();
 			getSessionHasExternalRoomList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomList().get(session)).booleanValue());
@@ -2389,11 +2394,8 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomDeptList(Session session){
 		if (!getSessionHasExternalRoomDeptList().containsKey(session)){
 			ExternalRoomDepartmentDAO erdDao = ExternalRoomDepartmentDAO.getInstance();
-			List l = erdDao.getSession().createQuery("select count(erd) from ExternalRoomDepartment erd where erd.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
-			int cnt = 0;
-			if (l != null && ! l.isEmpty()){
-				cnt = ((Long)l.get(0)).intValue();
-			}
+			int cnt = erdDao.getSession().createQuery(
+					"select count(erd) from ExternalRoomDepartment erd where erd.room.building.session.uniqueId =" + session.getUniqueId(), Number.class).uniqueResult().intValue();
 			getSessionHasExternalRoomDeptList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomDeptList().get(session)).booleanValue());
@@ -2409,11 +2411,8 @@ public class SessionRollForward {
 	public boolean sessionHasExternalRoomFeatureList(Session session){
 		if (!getSessionHasExternalRoomFeatureList().containsKey(session)){
 			ExternalRoomFeatureDAO erfDao = ExternalRoomFeatureDAO.getInstance();
-			List l = erfDao.getSession().createQuery("select count(erf) from ExternalRoomFeature erf where erf.room.building.session.uniqueId =" + session.getUniqueId().toString()).list();
-			int cnt = 0;
-			if (l != null && ! l.isEmpty()){
-				cnt = ((Long)l.get(0)).intValue();
-			}
+			int cnt = erfDao.getSession().createQuery(
+					"select count(erf) from ExternalRoomFeature erf where erf.room.building.session.uniqueId =" + session.getUniqueId(), Number.class).uniqueResult().intValue();
 			getSessionHasExternalRoomFeatureList().put(session, Boolean.valueOf(cnt != 0));
 		}
 		return(((Boolean) getSessionHasExternalRoomFeatureList().get(session)).booleanValue());
@@ -2459,7 +2458,7 @@ public class SessionRollForward {
 					toTimePattern = (TimePattern) fromTimePattern.clone();
 					toTimePattern.setSession(toSession);
 					rollTimePatternOntoDepartments(fromTimePattern, toTimePattern);
-					tpDao.saveOrUpdate(toTimePattern);
+					tpDao.getSession().persist(toTimePattern);
 					tpDao.getSession().flush();
 				}
 			}
@@ -2576,11 +2575,12 @@ public class SessionRollForward {
 						toOfferingCoordinator.setResponsibility(fromOfferingCoordinator.getResponsibility());
 						toOfferingCoordinator.setPercentShare(fromOfferingCoordinator.getPercentShare());
 						toInstructionalOffering.addToofferingCoordinators(toOfferingCoordinator);
-						OfferingCoordinatorDAO.getInstance().saveOrUpdate(toOfferingCoordinator);
+						OfferingCoordinatorDAO.getInstance().getSession().persist(toOfferingCoordinator);
 					}
 				}
 			}
 		}
+		OfferingCoordinatorDAO.getInstance().getSession().flush();
 	}
 
 	/*
@@ -2660,7 +2660,7 @@ public class SessionRollForward {
         }
         
         org.hibernate.Session hibSession = LastLikeCourseDemandDAO.getInstance().getSession();
-        hibSession.createQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
+        hibSession.createMutationQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
         		.setParameter("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();;
         
@@ -2676,24 +2676,24 @@ public class SessionRollForward {
                 d.setCourseNbr(co.getCourseNbr());
                 d.setCoursePermId(co.getPermId());
                 d.setStudent(s);
-                hibSession.saveOrUpdate(d);
+                hibSession.persist(d);
             }
         }
         hibSession.flush(); hibSession.clear();
         if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
-	        hibSession.createQuery("update CourseOffering c set c.demand="+
+	        hibSession.createMutationQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
 	                "c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
 	                setParameter("sessionId", toSession.getUniqueId().longValue()).executeUpdate();
         } else {
-        	hibSession.createQuery("update CourseOffering c set c.demand="+
+        	hibSession.createMutationQuery("update CourseOffering c set c.demand="+
                     "(select count(distinct d.student) from LastLikeCourseDemand d where "+
                     "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
                     "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
                     setParameter("sessionId", toSession.getUniqueId().longValue()).executeUpdate();
 
-        	hibSession.createQuery("update CourseOffering c set c.demand="+
+        	hibSession.createMutationQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
 	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
@@ -2961,7 +2961,7 @@ public class SessionRollForward {
     		
     		hibSession.persist(newCurriculum);
             for (CurriculumCourseGroup g: createdGroups.values())
-            	hibSession.saveOrUpdate(g);
+            	hibSession.persist(g);
     	}
 		
 		// roll forward projection rules (if empty)
@@ -3136,7 +3136,7 @@ public class SessionRollForward {
 				} catch (ParseException e) {}
 			}
 			for (SubjectArea subject: subjects) {
-				hibSession.createQuery("delete CourseReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+				hibSession.createMutationQuery("delete CourseReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
 						).setParameter("subjectId", subject.getUniqueId()).executeUpdate();
 				
 				for (CourseReservation reservation: hibSession.createQuery(
@@ -3145,7 +3145,7 @@ public class SessionRollForward {
 						.setParameter("subject", subject.getSubjectAreaAbbreviation()).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
 					CourseReservation toReservation = rollCourseReservationForward(reservation, subject.getSession(), startDate, expiration);
 					if (toReservation != null)
-						hibSession.saveOrUpdate(toReservation);
+						hibSession.persist(toReservation);
 				}
 			}
 		}
@@ -3210,7 +3210,7 @@ public class SessionRollForward {
 	        }
 	        
 			for (SubjectArea subject: subjects) {
-				hibSession.createQuery("delete CurriculumReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+				hibSession.createMutationQuery("delete CurriculumReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
 						).setParameter("subjectId", subject.getUniqueId()).executeUpdate();
 				
 				for (CurriculumReservation reservation: hibSession.createQuery(
@@ -3219,7 +3219,7 @@ public class SessionRollForward {
 						.setParameter("subject", subject.getSubjectAreaAbbreviation()).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
 					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), startDate, expiration, areas, classifications, majors, concentrations, minors);
 					if (toReservation != null)
-						hibSession.saveOrUpdate(toReservation);
+						hibSession.persist(toReservation);
 				}
 			}
 		}
@@ -3243,7 +3243,7 @@ public class SessionRollForward {
 	        	groups.put(group.getGroupAbbreviation(), group);
 
 			for (SubjectArea subject: subjects) {
-				hibSession.createQuery("delete StudentGroupReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+				hibSession.createMutationQuery("delete StudentGroupReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
 						).setParameter("subjectId", subject.getUniqueId()).executeUpdate();
 				
 				for (StudentGroupReservation reservation: hibSession.createQuery(
@@ -3252,7 +3252,7 @@ public class SessionRollForward {
 						.setParameter("subject", subject.getSubjectAreaAbbreviation()).setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
 					StudentGroupReservation toReservation = rollGroupReservationForward(reservation, subject.getSession(), startDate, expiration, groups, rollForwardSessionForm.getCreateStudentGroupsIfNeeded());
 					if (toReservation != null)
-						hibSession.saveOrUpdate(toReservation);
+						hibSession.persist(toReservation);
 				}
 			}
 		}
@@ -3473,7 +3473,7 @@ public class SessionRollForward {
 				group.setGroupName(fromReservation.getGroup().getGroupName());
 				group.setExpectedSize(fromReservation.getGroup().getExpectedSize());
 				group.setType(fromReservation.getGroup().getType());
-				StudentGroupDAO.getInstance().getSession().save(group);
+				StudentGroupDAO.getInstance().getSession().persist(group);
 				groups.put(group.getGroupAbbreviation(), group);
 			} else {
 				return null;
@@ -3496,7 +3496,7 @@ public class SessionRollForward {
 				InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
 				if (fromInstructionalOffering == null) continue;
 				for (Iterator<TeachingRequest> it = toInstructionalOffering.getTeachingRequests().iterator(); it.hasNext(); ) {
-					trDao.delete(it.next()); it.remove();
+					trDao.getSession().remove(it.next()); it.remove();
 				}
 				for (TeachingRequest fromRequest: fromInstructionalOffering.getTeachingRequests()) {
 					TeachingRequest toRequest = new TeachingRequest();
@@ -3526,7 +3526,7 @@ public class SessionRollForward {
 					}
 					if (valid) {
 						toInstructionalOffering.addToteachingRequests(toRequest);
-						trDao.saveOrUpdate(toRequest);
+						trDao.getSession().persist(toRequest);
 						rollForwardInstructorPrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());
 						rollForwardInstructorAttributePrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());
 					}
@@ -3616,7 +3616,7 @@ public class SessionRollForward {
 				if (fromLms != null){
 					toLms = (LearningManagementSystemInfo) fromLms.clone();
 					toLms.setSession(toSession);
-					lmsDao.saveOrUpdate(toLms);
+					lmsDao.getSession().persist(toLms);
 					lmsDao.getSession().flush();
 				}
 			}

@@ -42,6 +42,6 @@ public class AssignmentInfoDAO extends _RootDAO<AssignmentInfo,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<AssignmentInfo> findByAssignment(org.hibernate.Session hibSession, Long assignmentId) {
-		return hibSession.createQuery("from AssignmentInfo x where x.assignment.uniqueId = :assignmentId").setParameter("assignmentId", assignmentId).list();
+		return hibSession.createQuery("from AssignmentInfo x where x.assignment.uniqueId = :assignmentId", AssignmentInfo.class).setParameter("assignmentId", assignmentId).list();
 	}
 }

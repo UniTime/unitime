@@ -400,12 +400,12 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								approvedDate = enrl.getApprovedDate();
 							}
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
-							helper.getHibSession().delete(enrl);
+							helper.getHibSession().remove(enrl);
 							i.remove();
 						} else if (dropEnrollment != null && dropEnrollment.getCourseId().equals(enrl.getCourseOffering().getUniqueId())) {
 							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
-							helper.getHibSession().delete(enrl);
+							helper.getHibSession().remove(enrl);
 							i.remove();	
 						}
 					}
@@ -446,7 +446,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						}
 						if (cd != null && cd.isWaitlist()) {
 							cd.setWaitlist(false);
-							helper.getHibSession().saveOrUpdate(cd);
+							helper.getHibSession().merge(cd);
 							student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 						} else if (cd != null) {
 							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_CHECK, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
@@ -461,11 +461,11 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								for (CourseRequest x: cd.getCourseRequests()) {
 									if (x.getOrder() < cr.getOrder()) {
 										x.setOrder(x.getOrder() + 1);
-										helper.getHibSession().update(x);
+										helper.getHibSession().merge(x);
 									}
 								}
 								cr.setOrder(0);
-								helper.getHibSession().update(cr);
+								helper.getHibSession().merge(cr);
 							}
 							// ensure that the course request is not a substitute 
 							if (cd.isAlternative()) {
@@ -474,7 +474,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 									if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
 										if (priority > x.getPriority()) priority = x.getPriority();
 										x.setPriority(1 + x.getPriority());
-										helper.getHibSession().update(x);
+										helper.getHibSession().merge(x);
 									}
 								}
 								cd.setPriority(priority);
@@ -483,7 +483,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							cd.setWaitlist(true);
 							cd.setWaitlistedTimeStamp(dropTS == null ? ts : dropTS);
 							cd.setWaitListSwapWithCourseOffering(null);
-							helper.getHibSession().saveOrUpdate(cd);
+							helper.getHibSession().merge(cd);
 							student.addWaitList(
 									CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
 									WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
@@ -526,7 +526,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_CHECK, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					
-					helper.getHibSession().save(student);
+					helper.getHibSession().persist(student);
 		
 					EnrollStudent.updateSpace(server,
 							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, offering, r.getRequest().getEnrollment(), WaitListMode.WaitList),

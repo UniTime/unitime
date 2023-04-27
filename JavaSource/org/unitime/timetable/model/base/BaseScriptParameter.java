@@ -38,6 +38,8 @@ public abstract class BaseScriptParameter extends ScriptParameterId {
 	private String iType;
 	private String iDefaultValue;
 
+
+
 	@Column(name = "label", nullable = true, length = 256)
 	public String getLabel() { return iLabel; }
 	public void setLabel(String label) { iLabel = label; }

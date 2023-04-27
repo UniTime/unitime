@@ -42,6 +42,6 @@ public class SectioningInfoDAO extends _RootDAO<SectioningInfo,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SectioningInfo> findByClazz(org.hibernate.Session hibSession, Long clazzId) {
-		return hibSession.createQuery("from SectioningInfo x where x.clazz.uniqueId = :clazzId").setParameter("clazzId", clazzId).list();
+		return hibSession.createQuery("from SectioningInfo x where x.clazz.uniqueId = :clazzId", SectioningInfo.class).setParameter("clazzId", clazzId).list();
 	}
 }

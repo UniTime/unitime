@@ -319,7 +319,7 @@ public class AcademicSessionMerge {
 	private void mergeGlobalInstructorAttributesToSession(Session fromSession) {
 		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
 		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllGlobalAttributes(iMergedSession.getUniqueId())) {
-			InstructorAttributeDAO.getInstance().delete(oldAttribute);
+			InstructorAttributeDAO.getInstance().getSession().remove(oldAttribute);
 		}
 		List<InstructorAttribute> globalAttributes = InstructorAttribute.getAllGlobalAttributes(fromSession.getUniqueId());
 		for (InstructorAttribute fromAttribute: globalAttributes) {
@@ -331,7 +331,7 @@ public class AcademicSessionMerge {
 			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
 			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
 			attributes.put(fromAttribute.getUniqueId(), toAttribute);
-			InstructorAttributeDAO.getInstance().save(toAttribute);
+			InstructorAttributeDAO.getInstance().getSession().persist(toAttribute);
 		}
 		for (InstructorAttribute fromChildAttribute: globalAttributes) {
 			if (fromChildAttribute.getParentAttribute() != null) {
@@ -340,7 +340,7 @@ public class AcademicSessionMerge {
 				if (toParentAttribute != null) {
 					toChildAttribute.setParentAttribute(toParentAttribute);
 					toParentAttribute.getChildAttributes().add(toChildAttribute);
-					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
+					InstructorAttributeDAO.getInstance().getSession().merge(toChildAttribute);
 				}
 			}
 		}
@@ -391,7 +391,7 @@ public class AcademicSessionMerge {
         	newNote.setNote(note.getNote());
         	newNote.setReference(note.getReference());
         	newNote.setSession(iMergedSession);
-        	newNote.setUniqueId((Long)hibSession.save(newNote));
+        	hibSession.persist(newNote);
         }
         
         for (StandardEventNoteDepartment note: hibSession.createQuery(
@@ -403,7 +403,7 @@ public class AcademicSessionMerge {
             	newNote.setNote(note.getNote());
             	newNote.setReference(note.getReference());
             	newNote.setDepartment(newDepartment);
-            	newNote.setUniqueId((Long)hibSession.save(newNote));
+            	hibSession.persist(newNote);
         	}
         }
         
@@ -455,7 +455,7 @@ public class AcademicSessionMerge {
         		if (newDepartment == null) continue;
         		newProvider.setDepartment(newDepartment);
         	}
-        	newProvider.setUniqueId((Long)hibSession.save(newProvider));
+        	hibSession.persist(newProvider);
         }
         
         // merge global instructor attributes to session
@@ -490,7 +490,7 @@ public class AcademicSessionMerge {
 					}
 					toDepartment.setSession(iMergedSession);
 					iMergedSession.addTodepartments(toDepartment);
-					toDepartment.setUniqueId(dDao.save(toDepartment, dDao.getSession()));
+					dDao.getSession().persist(toDepartment);
 				}
 				if(fromDepartment.getSolverGroup() != null && toDepartment.getSolverGroup() == null) {
 					sg = findToSolverGroup(fromDepartment.getSolverGroup(), fromDepartment, defaultPrefix);
@@ -509,18 +509,21 @@ public class AcademicSessionMerge {
 						sg.getDepartments().add(toDepartment);
 						toDepartment.setSolverGroup(sg);
 						SolverGroupDAO sgDao = SolverGroupDAO.getInstance();
-						sgDao.saveOrUpdate(sg);
+						if (sg.getUniqueId() == null)
+							sgDao.getSession().persist(sg);
+						else
+							sgDao.getSession().merge(sg);
 					}
 				}
-
-				dDao.saveOrUpdate(toDepartment);
+				
+				dDao.getSession().merge(toDepartment);
 				DistributionTypeDAO dtDao = DistributionTypeDAO.getInstance();
 				@SuppressWarnings("unchecked")
-				List<DistributionType> l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString()).list();
+				List<DistributionType> l = dtDao.getSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString(), DistributionType.class).list();
 				if (l != null && !l.isEmpty()){
 					for (DistributionType distributionType : l){
 							distributionType.getDepartments().add(toDepartment);
-						dtDao.saveOrUpdate(distributionType);
+						dtDao.getSession().merge(distributionType);
 					}
 				}
 			}
@@ -577,7 +580,7 @@ public class AcademicSessionMerge {
 								tmDao.getSession().refresh(tm);
 								toDepartment.getTimetableManagers().add(tm);
 								tm.getDepartments().add(toDepartment);
-								tmDao.saveOrUpdate(tm);
+								tmDao.getSession().merge(tm);
 								if (tm.getSolverGroups(iMergedSession).isEmpty()){
 									for(Iterator sgIt = tm.getSolverGroups(fromSession).iterator(); sgIt.hasNext();){
 										SolverGroup fromSg = (SolverGroup) sgIt.next();
@@ -585,10 +588,10 @@ public class AcademicSessionMerge {
 										if (toSg != null && !tm.getSolverGroups().contains(toSg)){
 											toSg.addTotimetableManagers(tm);
 											tm.addTosolverGroups(toSg);
-											sgDao.update(toSg);
+											sgDao.getSession().merge(toSg);
 										}
 									}
-									tmDao.update(tm);
+									tmDao.getSession().merge(tm);
 								}
 							}
 						}
@@ -628,7 +631,7 @@ public class AcademicSessionMerge {
 				iCampusRoomFeatureType.setReference("campus");
 				iCampusRoomFeatureType.setLabel(MESSAGES.labelCampus());
 				iCampusRoomFeatureType.setShowInEventManagement(true);
-				iCampusRoomFeatureType.setUniqueId(rftDao.save(iCampusRoomFeatureType));
+				rftDao.getSession().persist(iCampusRoomFeatureType);
 			}
 		}
 		return iCampusRoomFeatureType;
@@ -647,7 +650,7 @@ public class AcademicSessionMerge {
 				rf.setLabel(campusPrefix);
 				rf.setFeatureType(getCampusRoomFeatureType());
 				rf.setSession(iMergedSession);
-				rf.setUniqueId(GlobalRoomFeatureDAO.getInstance().save(rf));
+				GlobalRoomFeatureDAO.getInstance().getSession().persist(rf);
 				iPrefixRoomFeatureMap.put(campusPrefix, rf);
 			}
 		}
@@ -670,7 +673,7 @@ public class AcademicSessionMerge {
 						if (toRoomFeature == null) {
 							toRoomFeature = (DepartmentRoomFeature)fromRoomFeature.clone();
 							toRoomFeature.setDepartment(findToDepartment(fromRoomFeature.getDepartment(), defaultPrefix));
-							toRoomFeature.setUniqueId(rfDao.save(toRoomFeature));
+							rfDao.getSession().persist(toRoomFeature);
 						}
 					}
 				}
@@ -681,7 +684,7 @@ public class AcademicSessionMerge {
 				if (toRoomFeatureGlobal == null) {
 					toRoomFeatureGlobal = (GlobalRoomFeature)fromRoomFeatureGlobal.clone();
 					toRoomFeatureGlobal.setSession(iMergedSession);
-					toRoomFeatureGlobal.setUniqueId(rfDao.save(toRoomFeatureGlobal));
+					rfDao.getSession().persist(toRoomFeatureGlobal);
 				}
 			}
 			rfDao.getSession().flush();
@@ -710,7 +713,7 @@ public class AcademicSessionMerge {
 							toRoomGroup.setSession(iMergedSession);
 							if (fromRoomGroup.getDepartment() != null)
 								toRoomGroup.setDepartment(findToDepartment(fromRoomGroup.getDepartment(), defaultPrefix));
-							toRoomGroup.setUniqueId(rgDao.save(toRoomGroup));
+							rgDao.getSession().persist(toRoomGroup);
 						}	
 					}
 				}
@@ -761,7 +764,7 @@ public class AcademicSessionMerge {
 						}
 						toBldg.setSession(iMergedSession);
 						iMergedSession.addTobuildings(toBldg);
-						toBldg.setUniqueId(bDao.save(toBldg));
+						bDao.getSession().persist(toBldg);
 					} 
 					bDao.getSession().flush();
 					bDao.getSession().evict(toBldg); // -- Previously commented out to prevent NonUniqueObjectException
@@ -913,7 +916,7 @@ public class AcademicSessionMerge {
 			toRoomDept.setDepartment(toDept);
 			toLocation.addToroomDepts(toRoomDept);
 			toDept.addToroomDepts(toRoomDept);
-			toRoomDept.setUniqueId(rdDao.save(toRoomDept));
+			rdDao.getSession().persist(toRoomDept);
 			PreferenceLevel fromRoomPrefLevel = fromLocation.getRoomPreferenceLevel(fromRoomDept.getDepartment());
 			if (!fromRoomPrefLevel.getPrefProlog().equals(PreferenceLevel.sNeutral)){
 				RoomPref toRoomPref = new RoomPref();
@@ -921,7 +924,7 @@ public class AcademicSessionMerge {
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
 				toRoomPref.setRoom(toLocation);
 				toDept.addTopreferences(toRoomPref);
-				rdDao.getSession().saveOrUpdate(toDept);
+				rdDao.getSession().merge(toDept);
 			}
 		}
 	}
@@ -1002,7 +1005,7 @@ public class AcademicSessionMerge {
 					}
 					copyMergeRoomFeaturesForLocation(fromRoom, toRoom, roomFeatureCache, defaultPrefix);
 					copyMergeRoomGroupsForLocation(fromRoom, toRoom, roomGroupCache);
-					toRoom.setUniqueId(rDao.save(toRoom));
+					rDao.getSession().persist(toRoom);
 				}
 				boolean mergeExistingRoomDepts = true;
 				if (fromRoom.getExternalUniqueId() != null && iSessionRollForward.sessionHasExternalRoomDeptList(iMergedSession)){
@@ -1050,14 +1053,14 @@ public class AcademicSessionMerge {
 						}
 					}
 				}
-				rDao.saveOrUpdate(toRoom);
+				rDao.getSession().merge(toRoom);
 				
 				RoomPictureDAO rpDao = RoomPictureDAO.getInstance();
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toRoom);
 					toRoom.addTopictures(toPicture);
-					toPicture.setUniqueId(rpDao.save(toPicture));
+					rpDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromRoom.getAllowedServices()) {
@@ -1065,7 +1068,7 @@ public class AcademicSessionMerge {
 					if (toProvider != null)
 						toRoom.addToallowedServices(toProvider);
 				}
-				rDao.saveOrUpdate(toRoom);
+				rDao.getSession().merge(toRoom);
 			} else {
 				if (fromRoom.getRoomDepts() != null && !fromRoom.getRoomDepts().isEmpty()){
 					for (RoomDept fromRoomDept : fromRoom.getRoomDepts()){
@@ -1073,11 +1076,11 @@ public class AcademicSessionMerge {
 							copyMergeRoomDept(fromRoomDept, toRoom, fromRoom, defaultPrefix);
 						}
 					}
-					rDao.update(toRoom);
+					rDao.getSession().merge(toRoom);
 				}			
 				copyMergeRoomFeaturesForLocation(fromRoom, toRoom, roomFeatureCache, defaultPrefix);
 				copyMergeRoomGroupsForLocation(fromRoom, toRoom, roomGroupCache);
-				rDao.update(toRoom);
+				rDao.getSession().merge(toRoom);
 			}
 			rDao.getSession().flush();
 			rDao.getSession().evict(toRoom); // --  Previously commented out to prevent NonUniqueObjectException
@@ -1132,14 +1135,14 @@ public class AcademicSessionMerge {
 				}
 				copyMergeRoomFeaturesForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomFeatureCache, defaultPrefix);
 				copyMergeRoomGroupsForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomGroupCache);
-				toNonUniversityLocation.setUniqueId(nulDao.save(toNonUniversityLocation));
+				nulDao.getSession().persist(toNonUniversityLocation);
 				
 				NonUniversityLocationPictureDAO nulpDao = NonUniversityLocationPictureDAO.getInstance();
 				for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
 					NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toNonUniversityLocation);
 					toNonUniversityLocation.addTopictures(toPicture);
-					toPicture.setUniqueId(nulpDao.save(toPicture));
+					nulpDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromNonUniversityLocation.getAllowedServices()) {
@@ -1152,7 +1155,7 @@ public class AcademicSessionMerge {
 					for (RoomDept fromRoomDept : fromNonUniversityLocation.getRoomDepts()){
 						copyMergeRoomDept(fromRoomDept, toNonUniversityLocation, fromNonUniversityLocation, defaultPrefix);
 					}
-					nulDao.update(toNonUniversityLocation);
+					nulDao.getSession().merge(toNonUniversityLocation);
 				}	
 			} else {
 				if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
@@ -1161,12 +1164,12 @@ public class AcademicSessionMerge {
 							copyMergeRoomDept(fromRoomDept, toNonUniversityLocation, fromNonUniversityLocation, defaultPrefix);
 						}
 					}
-					nulDao.update(toNonUniversityLocation);
+					nulDao.getSession().merge(toNonUniversityLocation);
 				}			
 				
 				copyMergeRoomFeaturesForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomFeatureCache, defaultPrefix);
 				copyMergeRoomGroupsForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomGroupCache);
-				nulDao.update(toNonUniversityLocation);
+				nulDao.getSession().merge(toNonUniversityLocation);
 			}
 			nulDao.getSession().flush();
 			nulDao.getSession().evict(toNonUniversityLocation);
@@ -1224,7 +1227,7 @@ public class AcademicSessionMerge {
 				time.setLocation2Id(Math.max(from.getUniqueId(), to.getUniqueId()));
 				time.setDistance(travel.getDistance());
 				
-				time.setUniqueId(dao.save(time));
+				dao.getSession().persist(time);
 			}
 		}
 		dao.getSession().flush();
@@ -1263,7 +1266,7 @@ public class AcademicSessionMerge {
 						toDatePattern = (DatePattern) fromDatePattern.clone();
 						toDatePattern.setSession(iMergedSession);
 						mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
-						toDatePattern.setUniqueId(dpDao.save(toDatePattern));
+						dpDao.getSession().persist(toDatePattern);
 						dpDao.getSession().flush();
 					}
 					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
@@ -1276,7 +1279,7 @@ public class AcademicSessionMerge {
 					for (DatePattern fromParent: fromDp.getParents()){
 						toDp.addToparents(fromToDatePatternMap.get(fromParent));
 					}
-					dpDao.update(toDp);
+					dpDao.getSession().merge(toDp);
 				}
 			}
 			
@@ -1285,7 +1288,7 @@ public class AcademicSessionMerge {
 				if (defDp != null){
 					iMergedSession.setDefaultDatePattern(defDp);
 					SessionDAO sDao = SessionDAO.getInstance();
-					sDao.update(iMergedSession);
+					sDao.getSession().merge(iMergedSession);
 				}
 			}
 			dpDao.getSession().flush();
@@ -1326,7 +1329,7 @@ public class AcademicSessionMerge {
 						toTimePattern = (TimePattern) fromTimePattern.clone();
 						toTimePattern.setSession(iMergedSession);
 						mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
-						toTimePattern.setUniqueId(tpDao.save(toTimePattern));
+						tpDao.getSession().persist(toTimePattern);
 						tpDao.getSession().flush();
 					}
 				}
@@ -1349,7 +1352,7 @@ public class AcademicSessionMerge {
 					if (toLms == null) {
 						toLms = (LearningManagementSystemInfo) fromLms.clone();
 						toLms.setSession(iMergedSession);
-						toLms.setUniqueId(lmsDao.save(toLms));
+						lmsDao.getSession().persist(toLms);
 						lmsDao.getSession().flush();
 					}
 				}
@@ -1459,7 +1462,7 @@ public class AcademicSessionMerge {
 									if (toDepartment != null){
 										toSubjectArea.setDepartment(toDepartment);
 										toDepartment.addTosubjectAreas(toSubjectArea);
-										toSubjectArea.setUniqueId(sDao.save(toSubjectArea));
+										sDao.getSession().persist(toSubjectArea);
 										sDao.getSession().flush();
 										sDao.getSession().evict(toSubjectArea);
 										sDao.getSession().evict(fromSubjectArea);
@@ -1491,7 +1494,7 @@ public class AcademicSessionMerge {
 					toDepartment.setAllowEvents(false);
 					toDepartment.setAllowStudentScheduling(true);
 					iMergedSession.addTodepartments(toDepartment);
-					toDepartment.setUniqueId(DepartmentDAO.getInstance().save(toDepartment));
+					DepartmentDAO.getInstance().getSession().persist(toDepartment);
 				}
 				for (String toSubject : newSubjects){
 					if (toSubject != null){
@@ -1502,7 +1505,7 @@ public class AcademicSessionMerge {
 						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 						toDepartment.addTosubjectAreas(toSubjectArea);
 						iMergedSession.addTosubjectAreas(toSubjectArea);
-						toSubjectArea.setUniqueId(sDao.save(toSubjectArea));
+						sDao.getSession().persist(toSubjectArea);
 						sDao.getSession().flush();
 						sDao.getSession().evict(toSubjectArea);
 						sDao.getSession().evict(fromSubjectArea);
@@ -1536,7 +1539,7 @@ public class AcademicSessionMerge {
 								if (toDepartment != null){
 										toSubjectArea.setDepartment(toDepartment);
 										toDepartment.addTosubjectAreas(toSubjectArea);
-										toSubjectArea.setUniqueId(sDao.save(toSubjectArea));
+										sDao.getSession().persist(toSubjectArea);
 										sDao.getSession().flush();
 										sDao.getSession().evict(toSubjectArea);
 										sDao.getSession().evict(fromSubjectArea);									
@@ -1744,7 +1747,7 @@ public class AcademicSessionMerge {
 				toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
 				toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
 				attributes.put(fromAttribute.getUniqueId(), toAttribute);
-				toAttribute.setUniqueId(InstructorAttributeDAO.getInstance().save(toAttribute));
+				InstructorAttributeDAO.getInstance().getSession().persist(toAttribute);
 			}
 			attributes.put(fromAttribute.getUniqueId(), toAttribute);
 		}
@@ -1755,7 +1758,7 @@ public class AcademicSessionMerge {
 				if (toParentAttribute != null) {
 					toChildAttribute.setParentAttribute(toParentAttribute);
 					toParentAttribute.getChildAttributes().add(toChildAttribute);
-					InstructorAttributeDAO.getInstance().saveOrUpdate(toChildAttribute);
+					InstructorAttributeDAO.getInstance().getSession().merge(toChildAttribute);
 				}
 			}
 		}
@@ -2242,7 +2245,7 @@ public class AcademicSessionMerge {
 									mergeRoomGroupPrefsToSession(fromInstructor, toInstructor, false, false, false, null, defaultPrefix);
 									mergeTimePrefsToSession(fromInstructor, toInstructor, false, false, false, null);
 									mergeInstructorDistributionPrefsToSession(fromInstructor, toInstructor);
-									toInstructor.setUniqueId(iDao.save(toInstructor));
+									iDao.getSession().persist(toInstructor);
 									iDao.getSession().flush();
 									iDao.getSession().evict(toInstructor);
 									iDao.getSession().evict(fromInstructor);
@@ -2429,7 +2432,7 @@ public class AcademicSessionMerge {
 //		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 //			toInstructionalOffering.generateInstrOfferingPermId();
 //		}
-//		toInstructionalOffering.setUniqueId(InstructionalOfferingDAO.getInstance().save(toInstructionalOffering)); 
+//		toInstructionalOffering.setUniqueId(InstructionalOfferingDAO.getInstance().getSession().persist(toInstructionalOffering)); 
 //		return(toInstructionalOffering);		
 //	}
 	
@@ -2548,7 +2551,7 @@ public class AcademicSessionMerge {
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
 		if (toInstructionalOffering.getUniqueId() == null) {
-			toInstructionalOffering.setUniqueId(InstructionalOfferingDAO.getInstance().save(toInstructionalOffering)); 
+			InstructionalOfferingDAO.getInstance().getSession().persist(toInstructionalOffering); 
 		} else {
 			int ctrlCount = 0;
 			for (CourseOffering co : toInstructionalOffering.getCourseOfferings()) {
@@ -2566,7 +2569,7 @@ public class AcademicSessionMerge {
 					}
 				}
 			}
-			InstructionalOfferingDAO.getInstance().update(toInstructionalOffering);
+			InstructionalOfferingDAO.getInstance().getSession().merge(toInstructionalOffering);
 		}
 		return(toInstructionalOffering);
 		
@@ -2813,7 +2816,7 @@ public class AcademicSessionMerge {
 						((SchedulingSubpart)toPrefGroup).setDatePattern(toDatePattern);
 						for (Class_ c: ((SchedulingSubpart)toPrefGroup).getClasses()) {
 							c.setDatePattern(null);
-							cDao.update(c);
+							cDao.getSession().merge(c);
 						}
 					}
 				}
@@ -2887,7 +2890,10 @@ public class AcademicSessionMerge {
 				toDistObj.setPrefGroup(toPrefGroup);
 				toDistObj.setSequenceNumber(fromDistObj.getSequenceNumber());
 				toPrefGroup.addTodistributionObjects(toDistObj);
-				dpDao.saveOrUpdate(toDistributionPref);
+				if (toDistributionPref.getUniqueId() == null)
+					dpDao.getSession().persist(toDistributionPref);
+				else
+					dpDao.getSession().merge(toDistributionPref);
 			}
 		}		
 	}
@@ -3043,9 +3049,9 @@ public class AcademicSessionMerge {
 			parentSubpart.getToSubpart().addTochildSubparts(toSubpart);
 		}
 				
-		toSubpart.setUniqueId(SchedulingSubpartDAO.getInstance().save(toSubpart));
+		SchedulingSubpartDAO.getInstance().getSession().persist(toSubpart);
 		InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
-		iocDao.update(toInstrOffrConfig);
+		iocDao.getSession().merge(toInstrOffrConfig);
 		if (fromSubpart.getClasses() != null && fromSubpart.getClasses().size() > 0){
 			List<Class_> classes = new ArrayList<Class_>(fromSubpart.getClasses());
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
@@ -3070,10 +3076,10 @@ public class AcademicSessionMerge {
 					toClass.setParentClass(parentClass);
 					parentClass.addTochildClasses(toClass);
 				}
-				toClass.setUniqueId(Class_DAO.getInstance().save(toClass));
+				Class_DAO.getInstance().getSession().persist(toClass);
 			}
 		}
-		iocDao.update(toInstrOffrConfig);
+		iocDao.getSession().merge(toInstrOffrConfig);
 
 		mergeTimePrefsToSession(fromSubpart, toSubpart, isClassMerge, isSubpartTimePrefMerge, isClassPrefsPushUp, cancelledClassAction);
 		mergeBuildingPrefs(fromSubpart, toSubpart, isClassMerge, isSubpartLocationPrefMerge, isClassPrefsPushUp, cancelledClassAction, defaultPrefix);
@@ -3090,7 +3096,7 @@ public class AcademicSessionMerge {
 						isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, defaultPrefix);
 			}
 		}
-		iocDao.update(toInstrOffrConfig);
+		iocDao.getSession().merge(toInstrOffrConfig);
 	}
 
 	private void mergeSchedSubpartsForAConfigToSession(InstrOfferingConfig ioc, InstrOfferingConfig newIoc,
@@ -3158,11 +3164,11 @@ public class AcademicSessionMerge {
 					toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
 					toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
 					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
-					toInstrOffrConfig.setUniqueId(iocDao.save(toInstrOffrConfig));
-					ioDao.update(toInstructionalOffering);
+					iocDao.getSession().persist(toInstrOffrConfig);
+					ioDao.getSession().merge(toInstructionalOffering);
 					mergeSchedSubpartsForAConfigToSession(fromInstrOffrConfig, toInstrOffrConfig, isClassMerge, isSubpartTimePrefMerge, isSubpartLocationPrefMerge,
 							isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, defaultPrefix);
-					ioDao.update(toInstructionalOffering);
+					ioDao.getSession().merge(toInstructionalOffering);
 				}
 			}
 			if (trns != null && trns.isActive()) {
@@ -3200,10 +3206,10 @@ public class AcademicSessionMerge {
 		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectArea.getSubjectAreaAbbreviation()
 			+ "' and co.isControl = true"
 			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List l = coDao.getSession().createQuery(query).list();
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
 		if (l != null){
 			CourseOffering co = null;
-			for (Iterator it = l.iterator(); it.hasNext();){
+			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
 				co = (CourseOffering) it.next();
 				mergeInstructionalOfferingToSession(co.getInstructionalOffering(), fromSession, mergeWaitListsProhibitedOverrides, isClassMerge, 
 						isSubpartTimePrefMerge, isSubpartLocationPrefMerge, isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, prefix);

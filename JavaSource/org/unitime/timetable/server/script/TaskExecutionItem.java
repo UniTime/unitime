@@ -98,7 +98,7 @@ public class TaskExecutionItem extends ScriptExecution {
 			if (execution != null) {
 				execution.setStartedDate(new Date());
 				execution.setExecutionStatus(ExecutionStatus.RUNNING.ordinal());
-				hibSession.saveOrUpdate(execution);
+				hibSession.merge(execution);
 			}
 			hibSession.flush();
 			tx.commit();
@@ -129,7 +129,7 @@ public class TaskExecutionItem extends ScriptExecution {
 						is.close();
 					}
 				}
-				hibSession.saveOrUpdate(execution);
+				hibSession.merge(execution);
 			}
 			hibSession.flush();
 			tx.commit();

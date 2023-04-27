@@ -325,7 +325,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
                 	for (int j = weekCode.nextSetBit(0); j < weekCode.length(); j++)
                 		pattern += (weekCode.get(j) ? "1" : "0");
                 	p.setPattern(pattern);
-                	hibSession.saveOrUpdate(p);
+                	hibSession.persist(p);
                 } else {
                 	String pattern = "";
                 	for (int j = weekCode.nextSetBit(0); j < weekCode.length(); j++)
@@ -334,7 +334,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
                 	p.setPattern(pattern);
                 	p.setDatePatternType(DatePatternType.Extended);
                 	p.setVisible(true);
-                	hibSession.saveOrUpdate(p);
+                	hibSession.merge(p);
                 }
             }
 

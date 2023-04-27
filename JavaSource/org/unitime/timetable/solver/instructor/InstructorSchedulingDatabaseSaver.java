@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.instructor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -161,9 +160,9 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 		Map<Long, DepartmentalInstructor> instructors = new HashMap<Long, DepartmentalInstructor>();
 		Set<DepartmentalInstructor> changedInstructors = new HashSet<DepartmentalInstructor>();
 		Set<InstructionalOffering> changedOfferings = new HashSet<InstructionalOffering>();
-		for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
+		for (DepartmentalInstructor instructor: hibSession.createQuery(
     			"select i from DepartmentalInstructor i, SolverGroup g inner join g.departments d where " +
-    			"g.uniqueId in :solverGroupId and i.department = d"
+    			"g.uniqueId in :solverGroupId and i.department = d", DepartmentalInstructor.class
     			).setParameterList("solverGroupId", iSolverGroupId).list()) {
 			instructors.put(instructor.getUniqueId(), instructor);
 			for (Iterator<ClassInstructor> i = instructor.getClasses().iterator(); i.hasNext(); ) {
@@ -178,9 +177,9 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 			}
 		}
 		iProgress.incProgress();
-		for (OfferingCoordinator coordinator: (List<OfferingCoordinator>)hibSession.createQuery(
+		for (OfferingCoordinator coordinator: hibSession.createQuery(
     			"select c from OfferingCoordinator c inner join c.instructor i, SolverGroup g inner join g.departments d where " +
-    			"g.uniqueId in :solverGroupId and i.department = d"
+    			"g.uniqueId in :solverGroupId and i.department = d", OfferingCoordinator.class
     			).setParameterList("solverGroupId", iSolverGroupId).list()) {
 			if (coordinator.getTeachingRequest() != null) {
 				iUpdatedOfferings.add(coordinator.getOffering());
@@ -192,8 +191,9 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 		
 		iProgress.setPhase("Loading requests ...", 1);
 		Map<Long, org.unitime.timetable.model.TeachingRequest> requests = new HashMap<Long, org.unitime.timetable.model.TeachingRequest>();
-    	for (org.unitime.timetable.model.TeachingRequest request: (List<org.unitime.timetable.model.TeachingRequest>)hibSession.createQuery(
-    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId")
+    	for (org.unitime.timetable.model.TeachingRequest request: hibSession.createQuery(
+    			"select r from TeachingRequest r inner join r.offering.courseOfferings co where co.isControl = true and co.subjectArea.department.solverGroup.uniqueId in :solverGroupId",
+    			org.unitime.timetable.model.TeachingRequest.class)
     			.setParameterList("solverGroupId", iSolverGroupId).list()) {
     		request.getAssignedInstructors().clear();
     		requests.put(request.getUniqueId(), request);
@@ -235,7 +235,7 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 						cr.getTeachingClass().getClassInstructors().add(ci);
 		    			instructor.getClasses().add(ci);
 						changedInstructors.add(ci.getInstructor());
-						hibSession.saveOrUpdate(ci);
+						hibSession.persist(ci);
 						iUpdatedConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
 					}
 				}
@@ -243,11 +243,11 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
     	}
 
     	for (org.unitime.timetable.model.TeachingRequest request: requests.values())
-    		hibSession.saveOrUpdate(request);
+    		hibSession.merge(request);
     	for (DepartmentalInstructor instructor: changedInstructors)
-    		hibSession.saveOrUpdate(instructor);
+    		hibSession.merge(instructor);
     	for (InstructionalOffering offering: changedOfferings)
-    		hibSession.saveOrUpdate(offering);
+    		hibSession.merge(offering);
 	}
 
 }

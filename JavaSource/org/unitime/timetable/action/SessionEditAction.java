@@ -222,7 +222,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             sessn.setStatusType(form.getStatusType());
             setSessionData(sessn);
 
-            hibSession.saveOrUpdate(sessn);
+            if (sessn.getSessionId() == null)
+            	hibSession.persist(sessn);
+            else
+            	hibSession.merge(sessn);
 
             ChangeLog.addChange(
                     hibSession, 
@@ -271,10 +274,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             }
 
             if (sessn.getStatusType().isTestSession()) {
-            	hibSession.createQuery(
+            	hibSession.createMutationQuery(
             			"delete ExamEvent where exam in (from Exam x where x.session.uniqueId = :sessionId)")
             			.setParameter("sessionId", sessn.getUniqueId()).executeUpdate();
-            	hibSession.createQuery(
+            	hibSession.createMutationQuery(
             			"delete ClassEvent where clazz in (from Class_ c where c.committedAssignment.solution.owner.session.uniqueId = :sessionId)")
             			.setParameter("sessionId", sessn.getUniqueId()).executeUpdate();
             } else {
@@ -286,7 +289,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             		ClassEvent event = assignment.generateCommittedEvent(null,true);
             		if (event != null && !event.getMeetings().isEmpty()) {
                     	event.setMainContact(contact);
-                        hibSession.saveOrUpdate(event);
+                    	if (event.getUniqueId() == null)
+                    		hibSession.persist(event);
+                    	else
+                    		hibSession.merge(event);
                     }
         		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
         		    	hibSession.remove(event);
@@ -302,7 +308,10 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
                         event.setMinCapacity(exam.getSize());
                         event.setMaxCapacity(exam.getSize());
                         event.setMainContact(contact);
-                        hibSession.saveOrUpdate(event);
+                    	if (event.getUniqueId() == null)
+                    		hibSession.persist(event);
+                    	else
+                    		hibSession.merge(event);
                     }
             	}
             }

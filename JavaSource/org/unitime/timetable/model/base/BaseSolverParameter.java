@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 
@@ -55,7 +56,7 @@ public abstract class BaseSolverParameter implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solver_parameter_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "solver_parameter_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "solver_parameter_seq")
 	})
 	@GeneratedValue(generator = "solver_parameter_id")

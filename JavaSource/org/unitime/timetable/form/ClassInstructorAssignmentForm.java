@@ -302,7 +302,7 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	                	classInstr.setResponsibility(null);
 	                }
 	                
-	                hibSession.saveOrUpdate(deptInstr);
+	                hibSession.merge(deptInstr);
 	                
 	            };
             };
@@ -312,12 +312,12 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
                 DepartmentalInstructor instr = ci.getInstructor();
                 instr.getClasses().remove(ci);
                 c.getClassInstructors().remove(ci);
-                hibSession.saveOrUpdate(instr);
+                hibSession.merge(instr);
                 hibSession.remove(ci);
             }
             
         	try {
-                hibSession.saveOrUpdate(c);
+                hibSession.merge(c);
 	            tx.commit();
         	} catch (Exception e) {
         		tx.rollback(); throw e;
@@ -340,7 +340,7 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
         	Transaction tx = hibSession.beginTransaction();
         	try {
     		    c.deleteClassInstructors(hibSession);
-                hibSession.saveOrUpdate(c);
+                hibSession.merge(c);
 	            tx.commit();
         	} catch (Exception e) {
         		tx.rollback(); throw e;

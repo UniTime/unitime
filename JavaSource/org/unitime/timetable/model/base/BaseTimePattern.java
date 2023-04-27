@@ -39,6 +39,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
@@ -76,7 +77,7 @@ public abstract class BaseTimePattern implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "time_pattern_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "time_pattern_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "time_pattern_seq")
 	})
 	@GeneratedValue(generator = "time_pattern_id")

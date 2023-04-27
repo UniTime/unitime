@@ -42,6 +42,6 @@ public class GlobalRoomFeatureDAO extends _RootDAO<GlobalRoomFeature,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<GlobalRoomFeature> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from GlobalRoomFeature x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from GlobalRoomFeature x where x.session.uniqueId = :sessionId", GlobalRoomFeature.class).setParameter("sessionId", sessionId).list();
 	}
 }

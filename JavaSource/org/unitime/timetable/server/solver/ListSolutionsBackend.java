@@ -120,7 +120,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 	       				if (note != null && note.length() > 1000)
 	       					note = note.substring(0,1000);
 	       				solution.setNote(note);
-	       				hibSession.saveOrUpdate(solution);
+	       				hibSession.merge(solution);
 					}
 				}
 				break;

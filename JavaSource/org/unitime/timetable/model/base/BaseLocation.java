@@ -40,6 +40,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamLocationPref;
@@ -79,8 +80,8 @@ public abstract class BaseLocation implements Serializable {
 	private String iExternalUniqueId;
 
 	private Session iSession;
-	private RoomType iRoomType;
 	private Department iEventDepartment;
+	private RoomType iRoomType;
 	private Set<RoomFeature> iFeatures;
 	private Set<ExamType> iExamTypes;
 	private Set<ExamLocationPref> iExamPreferences;
@@ -97,7 +98,7 @@ public abstract class BaseLocation implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "room_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "room_seq")
 	})
 	@GeneratedValue(generator = "room_id")
@@ -181,17 +182,17 @@ public abstract class BaseLocation implements Serializable {
 	@JoinColumn(name = "session_id", nullable = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
-	
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "room_type", nullable = false)
-	public RoomType getRoomType() { return iRoomType; }
-	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "event_dept_id", nullable = true)
 	public Department getEventDepartment() { return iEventDepartment; }
 	public void setEventDepartment(Department eventDepartment) { iEventDepartment = eventDepartment; }
-	
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "room_type", nullable = false)
+	public RoomType getRoomType() { return iRoomType; }
+	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
+
 	@ManyToMany
 	@JoinTable(name = "room_join_room_feature",
 		joinColumns = { @JoinColumn(name = "room_id") },
@@ -292,6 +293,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	Note: " + getNote() +
 			"\n	Pattern: " + getPattern() +
 			"\n	PermanentId: " + getPermanentId() +
+			"\n	RoomType: " + getRoomType() +
 			"\n	Session: " + getSession() +
 			"\n	ShareNote: " + getShareNote() +
 			"\n	UniqueId: " + getUniqueId() +

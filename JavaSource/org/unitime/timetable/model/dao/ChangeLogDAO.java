@@ -42,21 +42,21 @@ public class ChangeLogDAO extends _RootDAO<ChangeLog,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ChangeLog> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from ChangeLog x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from ChangeLog x where x.session.uniqueId = :sessionId", ChangeLog.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ChangeLog> findByManager(org.hibernate.Session hibSession, Long managerId) {
-		return hibSession.createQuery("from ChangeLog x where x.manager.uniqueId = :managerId").setParameter("managerId", managerId).list();
+		return hibSession.createQuery("from ChangeLog x where x.manager.uniqueId = :managerId", ChangeLog.class).setParameter("managerId", managerId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ChangeLog> findBySubjectArea(org.hibernate.Session hibSession, Long subjectAreaId) {
-		return hibSession.createQuery("from ChangeLog x where x.subjectArea.uniqueId = :subjectAreaId").setParameter("subjectAreaId", subjectAreaId).list();
+		return hibSession.createQuery("from ChangeLog x where x.subjectArea.uniqueId = :subjectAreaId", ChangeLog.class).setParameter("subjectAreaId", subjectAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ChangeLog> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from ChangeLog x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+		return hibSession.createQuery("from ChangeLog x where x.department.uniqueId = :departmentId", ChangeLog.class).setParameter("departmentId", departmentId).list();
 	}
 }

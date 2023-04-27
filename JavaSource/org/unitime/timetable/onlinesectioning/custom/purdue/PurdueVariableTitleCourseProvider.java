@@ -21,7 +21,6 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -88,7 +87,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 
 	@Override
 	public Collection<VariableTitleCourseInfo> getVariableTitleCourses(String query, int limit, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		org.hibernate.query.Query q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
+		org.hibernate.query.Query<Object[]> q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()), Object[].class);
 		q.setParameter("query", query == null ? "%" : query.toUpperCase() + "%");
 		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
 		q.setParameter("sessionId", server.getAcademicSession().getUniqueId());
@@ -98,7 +97,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 		
 		Map<String, VariableTitleCourseInfo> courses = new HashMap<String, VariableTitleCourseInfo>();
 		
-		for (Object[] line: (List<Object[]>)q.list()) {
+		for (Object[] line: q.list()) {
 			String subject = (String)line[0];
 			String courseNbr = (String)line[1];
 			String title = (String)line[2];
@@ -148,7 +147,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 	
 	@Override
 	public VariableTitleCourseInfo getVariableTitleCourse(String query, Long studentId, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		org.hibernate.query.Query q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()));
+		org.hibernate.query.Query<Object[]> q = helper.getHibSession().createNativeQuery(getVariableTitleCourseSQL(server.getAcademicSession()), Object[].class);
 		q.setParameter("query", query.toUpperCase());
 		q.setParameter("term", iExternalTermProvider.getExternalTerm(server.getAcademicSession()));
 		q.setParameter("sessionId", server.getAcademicSession().getUniqueId());
@@ -157,7 +156,7 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 		NameFormat nameFormat = NameFormat.fromReference(getInstructorNameFormat());
 
 		VariableTitleCourseInfo info = null;
-		for (Object[] line: (List<Object[]>)q.list()) {
+		for (Object[] line: q.list()) {
 			String subject = (String)line[0];
 			String courseNbr = (String)line[1];
 			String title = (String)line[2];

@@ -974,16 +974,16 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 cp.setCourse(course);
                 instructor.getPreferences().add(cp);
                 
-                hibSession.saveOrUpdate(instructor);
+                hibSession.merge(instructor);
             } else if (!cp.getPrefLevel().getPrefId().equals(Integer.valueOf(pref))) {
             	cp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            	hibSession.saveOrUpdate(cp);
+            	hibSession.merge(cp);
             }
         }
         
         for (InstructorCoursePref cp: prefs.values()) {
         	cp.getOwner().getPreferences().remove(cp);
-        	hibSession.saveOrUpdate(cp.getOwner());
+        	hibSession.merge(cp.getOwner());
         }
     }
     

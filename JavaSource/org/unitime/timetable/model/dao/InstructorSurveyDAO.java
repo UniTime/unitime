@@ -42,6 +42,6 @@ public class InstructorSurveyDAO extends _RootDAO<InstructorSurvey,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<InstructorSurvey> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from InstructorSurvey x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from InstructorSurvey x where x.session.uniqueId = :sessionId", InstructorSurvey.class).setParameter("sessionId", sessionId).list();
 	}
 }

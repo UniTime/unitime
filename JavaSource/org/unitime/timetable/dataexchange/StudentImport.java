@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -159,7 +161,8 @@ public class StudentImport extends BaseImport {
             	code2accomodation.put(accomodation.getAbbreviation(), accomodation);
             }
 	        
-	        Set<Long> updatedStudents = new HashSet<Long>(); 
+	        Set<Long> updatedStudents = new HashSet<Long>();
+	        List<Student> createdStudents = new ArrayList<Student>();
 	        
 	        for (Iterator i1 = rootElement.elementIterator(); i1.hasNext(); ) {
 	            Element element = (Element) i1.next();
@@ -168,19 +171,22 @@ public class StudentImport extends BaseImport {
 	            if (externalId == null) continue;
 	            while (trimLeadingZerosFromExternalId && externalId.startsWith("0")) externalId = externalId.substring(1);
 
-	            importStudent(element, externalId, students, session, updatedStudents,
+	            importStudent(element, externalId, students, session, updatedStudents, createdStudents,
 	            		abbv2area, code2clasf, code2major, code2minor, code2group, code2accomodation, code2concentration, code2degree, code2program, code2campus);
 	        }
 
 	        if (!incremental)
 	 	        for (Student student: students.values()) {
 	        		updatedStudents.add(student.getUniqueId());
-	        		getHibSession().delete(student);
+	        		getHibSession().remove(student);
 	 	        }
 	        
+            getHibSession().flush();
+    		if (!createdStudents.isEmpty())
+    			for (Student s: createdStudents)
+    				updatedStudents.add(s.getUniqueId());
             info(updatedStudents.size() + " students changed");
-
- 	        if (!updatedStudents.isEmpty())
+            if (!updatedStudents.isEmpty())
  	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
             
             commitTransaction();
@@ -191,7 +197,7 @@ public class StudentImport extends BaseImport {
 		}
 	}
 	
-	protected Student importStudent(Element element, String externalId, Hashtable<String, Student> students, Session session, Set<Long> updatedStudents,
+	protected Student importStudent(Element element, String externalId, Hashtable<String, Student> students, Session session, Set<Long> updatedStudents, List<Student> createdStudents,
 			Map<String, AcademicArea> abbv2area, Map<String, AcademicClassification> code2clasf, Map<String, PosMajor> code2major, Map<String, PosMinor> code2minor,
 			Map<String, StudentGroup> code2group, Map<String, StudentAccomodation> code2accomodation, Map<String, PosMajorConcentration> code2conc,
 			Map<String, Degree> code2degree, Map<String, Program> code2program, Map<String, Campus> code2campus) {
@@ -206,7 +212,7 @@ public class StudentImport extends BaseImport {
     	
     	updateStudentAccomodations(element, student, updatedStudents, code2accomodation);
     	
-    	saveOrUpdateStudent(student, updatedStudents);
+    	saveOrUpdateStudent(student, updatedStudents, createdStudents);
     	
     	return student;
 	}
@@ -346,12 +352,12 @@ public class StudentImport extends BaseImport {
     	    					acm.setProgram(program == null ? null : code2program.get(program));
     	    					acm.setCampus(campus == null ? null : code2campus.get(campus));
     	    					acm.setWeight(weight);
-    	    					iHibSession.update(acm);
+    	    					iHibSession.merge(acm);
     	    					if (student.getUniqueId() != null)
     	                			updatedStudents.add(student.getUniqueId());
     	    				} else if (!ToolBox.equals(acm.getWeight(), weight)) {
     	    					acm.setWeight(weight);
-    	    					iHibSession.update(acm);
+    	    					iHibSession.merge(acm);
     	    					if (student.getUniqueId() != null)
     	                			updatedStudents.add(student.getUniqueId());
     	    				}
@@ -386,12 +392,12 @@ public class StudentImport extends BaseImport {
     					acm.setProgram(program == null ? null : code2program.get(program));
     					acm.setCampus(campus == null ? null : code2campus.get(campus));
     					acm.setWeight(weight);
-    					iHibSession.update(acm);
+    					iHibSession.merge(acm);
     					if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
     				} else if (!ToolBox.equals(acm.getWeight(), weight)) {
     					acm.setWeight(weight);
-    					iHibSession.update(acm);
+    					iHibSession.merge(acm);
     					if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
     				}
@@ -436,7 +442,7 @@ public class StudentImport extends BaseImport {
     				m.setName("No Major");
     				m.setSession(a.getSession());
     				a.addToposMajors(m);
-    				getHibSession().saveOrUpdate(m);
+    				getHibSession().persist(m);
     				code2major.put(area + ":" + major, m);
     			}
     			if (table.remove(area + "|" + clasf + "|" + major + "|") == null) {
@@ -454,7 +460,7 @@ public class StudentImport extends BaseImport {
     	}
     	for (StudentAreaClassificationMajor acm: table.values()) {
     		student.getAreaClasfMajors().remove(acm);
-    		getHibSession().delete(acm);
+    		getHibSession().remove(acm);
     		if (student.getUniqueId() != null)
     			updatedStudents.add(student.getUniqueId());
     	}
@@ -538,7 +544,7 @@ public class StudentImport extends BaseImport {
     	}
     	for (StudentAreaClassificationMinor acm: table.values()) {
     		student.getAreaClasfMinors().remove(acm);
-    		getHibSession().delete(acm);
+    		getHibSession().remove(acm);
     		if (student.getUniqueId() != null)
     			updatedStudents.add(student.getUniqueId());
     	}
@@ -560,7 +566,7 @@ public class StudentImport extends BaseImport {
     				}
     				student.getGroups().add(group);
     				group.getStudents().add(student);
-    				getHibSession().saveOrUpdate(group);
+    				getHibSession().merge(group);
             		if (student.getUniqueId() != null)
             			updatedStudents.add(student.getUniqueId());
     			}
@@ -569,7 +575,7 @@ public class StudentImport extends BaseImport {
         		if (group.getExternalUniqueId() == null) continue;
         		student.getGroups().remove(group);
         		group.getStudents().remove(student);
-        		getHibSession().saveOrUpdate(group);
+        		getHibSession().merge(group);
         		if (student.getUniqueId() != null)
         			updatedStudents.add(student.getUniqueId());
         	}
@@ -605,11 +611,12 @@ public class StudentImport extends BaseImport {
     	}
 	}
 	
-	protected void saveOrUpdateStudent(Student student, Set<Long> updatedStudents) {
+	protected void saveOrUpdateStudent(Student student, Set<Long> updatedStudents, List<Student> createdStudents) {
     	if (student.getUniqueId() == null) {
-    		updatedStudents.add((Long)getHibSession().save(student));
+    		createdStudents.add(student);
+    		getHibSession().persist(student);
     	} else {
-    		getHibSession().update(student);
+    		getHibSession().merge(student);
     	}		
 	}
 	

@@ -41,9 +41,9 @@ public class GenAllExamNames {
             Session hibSession = new _RootDAO().getSession();
             tx = hibSession.beginTransaction();
             
-            List exams = hibSession.createQuery("select x from Exam x where x.name is null").list();
-            for (Iterator i=exams.iterator();i.hasNext();) {
-                Exam exam = (Exam)i.next();
+            List<Exam> exams = hibSession.createQuery("select x from Exam x where x.name is null", Exam.class).list();
+            for (Iterator<Exam> i=exams.iterator();i.hasNext();) {
+                Exam exam = i.next();
                 exam.setName(exam.generateName());
                 hibSession.merge(exam);
             }

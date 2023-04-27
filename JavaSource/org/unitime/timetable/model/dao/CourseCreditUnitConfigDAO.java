@@ -42,21 +42,21 @@ public class CourseCreditUnitConfigDAO extends _RootDAO<CourseCreditUnitConfig,L
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCreditType(org.hibernate.Session hibSession, Long creditTypeId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId").setParameter("creditTypeId", creditTypeId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditType.uniqueId = :creditTypeId", CourseCreditUnitConfig.class).setParameter("creditTypeId", creditTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCreditUnitType(org.hibernate.Session hibSession, Long creditUnitTypeId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditUnitType.uniqueId = :creditUnitTypeId").setParameter("creditUnitTypeId", creditUnitTypeId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.creditUnitType.uniqueId = :creditUnitTypeId", CourseCreditUnitConfig.class).setParameter("creditUnitTypeId", creditUnitTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findBySubpartOwner(org.hibernate.Session hibSession, Long subpartOwnerId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.subpartOwner.uniqueId = :subpartOwnerId").setParameter("subpartOwnerId", subpartOwnerId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.subpartOwner.uniqueId = :subpartOwnerId", CourseCreditUnitConfig.class).setParameter("subpartOwnerId", subpartOwnerId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<CourseCreditUnitConfig> findByCourseOwner(org.hibernate.Session hibSession, Long courseOwnerId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId").setParameter("courseOwnerId", courseOwnerId).list();
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId", CourseCreditUnitConfig.class).setParameter("courseOwnerId", courseOwnerId).list();
 	}
 }

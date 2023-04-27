@@ -848,6 +848,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			
 			public org.hibernate.query.Query query(org.hibernate.Session hibSession) {
 				// System.out.println("Q: " + query());
+				@SuppressWarnings("deprecation")
 				org.hibernate.query.Query query = setParams(hibSession.createQuery(query()), iExclude);
 				query.setParameter("sessionId", iSessionId);
 				query.setCacheable(true);

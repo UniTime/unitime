@@ -42,8 +42,8 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 			String sql = ApplicationProperty.CustomSQLUidToExternalTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
 				sql = sql.replace("%SCHEMA%", HibernateUtil.getConfiguration().getProperty("default_schema"));
-			Object ret = hibSession.createNativeQuery(sql).setParameter(0, username).setMaxResults(1).uniqueResult();
-			return (ret == null ? username : ret.toString());
+			String ret = hibSession.createNativeQuery(sql, String.class).setParameter(0, username).setMaxResults(1).uniqueResult();
+			return (ret == null ? username : ret);
 		} finally {
 			hibSession.close();
 		}
@@ -55,8 +55,8 @@ public class CustomSQLExternalUidTranslation implements ExternalUidTranslation {
 			String sql = ApplicationProperty.CustomSQLExternalToUidTranslation.value();
 			if (sql.indexOf("%SCHEMA%") >= 0)
 				sql = sql.replace("%SCHEMA%", HibernateUtil.getConfiguration().getProperty("default_schema"));
-			Object ret = hibSession.createNativeQuery(sql).setParameter(0, externalUniqueId).setMaxResults(1).uniqueResult();
-			return (ret == null ? externalUniqueId : ret.toString());
+			String ret = hibSession.createNativeQuery(sql, String.class).setParameter(0, externalUniqueId).setMaxResults(1).uniqueResult();
+			return (ret == null ? externalUniqueId : ret);
 		} finally {
 			hibSession.close();
 		}

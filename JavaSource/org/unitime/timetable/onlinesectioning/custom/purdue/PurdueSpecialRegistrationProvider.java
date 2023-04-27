@@ -1032,7 +1032,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							dbStudent.setOverrideExternalId(r.regRequestId);
 							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
 							dbStudent.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.ADD);
-							helper.getHibSession().update(dbStudent);
+							helper.getHibSession().merge(dbStudent);
 							student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
 							studentChanged = true;
 						}
@@ -1061,14 +1061,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								m.setMessage(message);
 								m.setOrder(0);
 								dbCourseDemand.getEnrollmentMessages().add(m);
-								helper.getHibSession().update(dbCourseDemand);
+								helper.getHibSession().merge(dbCourseDemand);
 								for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 									if (dbCourseRequest.getCourseOffering().getCourseName().equals(e.getKey())) {
 										dbCourseRequest.setOverrideExternalId(r.regRequestId);
 										dbCourseRequest.setOverrideStatus(toStatus(course2status.get(e.getKey())));
 										dbCourseRequest.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
 										dbCourseRequest.setCourseRequestOverrideIntent(course2intent.get(e.getKey()));
-										helper.getHibSession().update(dbCourseRequest);
+										helper.getHibSession().merge(dbCourseRequest);
 									}
 								}
 							}
@@ -1081,7 +1081,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-								helper.getHibSession().update(dbStudent);
+								helper.getHibSession().merge(dbStudent);
 							}
 							studentChanged = true;
 						}
@@ -1097,7 +1097,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 												for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 													if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
 														dbCourseRequest.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-														helper.getHibSession().update(dbCourseRequest);
+														helper.getHibSession().merge(dbCourseRequest);
 													}
 												}
 											}
@@ -2078,7 +2078,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(maxiStatus != null ? toStatus(maxiStatus) : toStatus(r));
-								helper.getHibSession().update(dbStudent);
+								helper.getHibSession().merge(dbStudent);
 							}
 							studentChanged = true;
 						}
@@ -2113,7 +2113,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(id.getCourseId())) {
 												dbCourseRequest.setOverrideStatus(toStatus(e.getValue()));
-												helper.getHibSession().update(dbCourseRequest);
+												helper.getHibSession().merge(dbCourseRequest);
 											}
 										}
 									}
@@ -2131,7 +2131,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						dbStudent.setOverrideExternalId(null);
 						dbStudent.setOverrideTimeStamp(null);
 						dbStudent.setOverrideIntent(null);
-						helper.getHibSession().update(dbStudent);
+						helper.getHibSession().merge(dbStudent);
 						student.setMaxCreditOverride(null);
 						studentChanged = true;
 					}
@@ -2153,7 +2153,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 												dbCourseRequest.setOverrideExternalId(null);
 												dbCourseRequest.setOverrideTimeStamp(null);
 												dbCourseRequest.setOverrideIntent(null);
-												helper.getHibSession().update(dbCourseRequest);
+												helper.getHibSession().merge(dbCourseRequest);
 											}
 										}
 									}
@@ -2279,7 +2279,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (dbStudent != null) {
 					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
 					if (pin != null) dbStudent.setPin(pin);
-					helper.getHibSession().update(dbStudent);
+					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
 				}
 				if (maxCredit != null) student.setMaxCredit(maxCredit);
@@ -2364,7 +2364,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 					if (dbStudent != null) {
 						dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-						helper.getHibSession().update(dbStudent);
+						helper.getHibSession().merge(dbStudent);
 					}
 					studentChanged = true;
 				}
@@ -2380,7 +2380,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 										for (CourseRequest dbCourseRequest: dbCourseDemand.getCourseRequests()) {
 											if (dbCourseRequest.getCourseOffering().getUniqueId().equals(e.getKey().getCourseId())) {
 												dbCourseRequest.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
-												helper.getHibSession().update(dbCourseRequest);
+												helper.getHibSession().merge(dbCourseRequest);
 											}
 										}
 									}

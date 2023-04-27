@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.script;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -109,7 +108,7 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 						for (LearningManagementSystemInfo entry: LearningManagementSystemInfo.findAll(context.getUser().getCurrentAcademicSessionId()))
 							parameter.addOption(entry.getReference(), entry.getLabel());
 					} else {
-						for (RefTableEntry entry: (List<RefTableEntry>)RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz).setCacheable(true).list()) {
+						for (RefTableEntry entry: RefTableEntryDAO.getInstance().getSession().createQuery("from " + clazz, RefTableEntry.class).setCacheable(true).list()) {
 							parameter.addOption(entry.getReference(), entry.getLabel());
 						}
 					}

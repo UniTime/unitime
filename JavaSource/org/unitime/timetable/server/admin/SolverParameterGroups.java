@@ -180,7 +180,8 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 		group.setType(Integer.valueOf(record.getField(1)));
 		group.setDescription(record.getField(2));
 		group.setOrder(order);
-		record.setUniqueId((Long)hibSession.save(group));
+		hibSession.persist(group);
+		record.setUniqueId(group.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				group,
@@ -202,7 +203,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter {
 		group.setType(Integer.valueOf(record.getField(1)));
 		group.setDescription(record.getField(2));
 		group.setOrder(order);
-		hibSession.saveOrUpdate(group);
+		hibSession.merge(group);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,

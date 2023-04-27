@@ -92,12 +92,15 @@ public class StudentGroupImport extends BaseImport {
         			group.setExpectedSize(null);
         		}
                 
-                getHibSession().saveOrUpdate(group);
+                if (group.getUniqueId() == null)
+		        	getHibSession().persist(group);
+		        else
+		        	getHibSession().merge(group);
             }
             
             for (StudentGroup group: id2group.values()) {
             	info("Group " + group.getGroupAbbreviation() + " (" + group.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(group);
+            	getHibSession().remove(group);
             }
             
             commitTransaction();

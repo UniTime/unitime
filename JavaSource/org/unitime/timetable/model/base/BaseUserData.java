@@ -36,6 +36,8 @@ public abstract class BaseUserData extends UserDataId {
 
 	private String iValue;
 
+
+
 	@Column(name = "value", nullable = false, length = 4000)
 	public String getValue() { return iValue; }
 	public void setValue(String value) { iValue = value; }

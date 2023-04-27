@@ -96,7 +96,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				if (getQuery().hasAttribute(t))
 					join += "left outer join s.groups G_" + t + " ";
 			
-			org.hibernate.query.Query q = helper.getHibSession().createQuery(
+			org.hibernate.query.Query<Object[]> q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
 					(getQuery().hasAttribute("area", "clasf", "classification", "major", "concentration", "campus", "program") ? "left outer join s.areaClasfMajors m " : "") +
 					(getQuery().hasAttribute("minor") ? "left outer join s.areaClasfMinors n " : "") + 
@@ -110,14 +110,14 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("operation") ? "" : 
 						"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering', 'reload-student')) " +
 						"and (l.result != 3 or l.operation not in ('validate-overrides', 'critical-courses', 'banner-update')) "
-					) + "order by l.uniqueId desc");
+					) + "order by l.uniqueId desc", Object[].class);
 
 			q.setParameter("sessionId", session.getUniqueId());
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			
 			Set<Long> processedLogIds = new HashSet<Long>();
-			for (Object[] o: (List<Object[]>)q.list()) {
+			for (Object[] o: q.list()) {
 				org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
 				
 				XStudent student = server.getStudent((Long)o[1]);

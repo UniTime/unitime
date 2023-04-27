@@ -100,7 +100,7 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 								cr.setOverrideTimeStamp(null);
 								cr.setOverrideIntent(null);
 								cr.setOverrideStatus(null);
-								helper.getHibSession().update(cr);
+								helper.getHibSession().merge(cr);
 							}
 					}
 				}
@@ -131,7 +131,7 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 										RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 										RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 								}
-								helper.getHibSession().update(courseRequest);
+								helper.getHibSession().merge(courseRequest);
 							}
 						}
 					}
@@ -147,7 +147,7 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 						RequestedCourseStatus.OVERRIDE_REJECTED == getRequest().getMaxCreditOverrideStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 					student.setOverrideMaxCredit(getRequest().getMaxCreditOverride());
 					student.setMaxCreditOverrideIntent(getRequest().getMaxCreditOverrideExternalId() == null ? null : CourseRequestOverrideIntent.WAITLIST);
-					helper.getHibSession().update(student);
+					helper.getHibSession().merge(student);
 				}
 				
 				// Reload student

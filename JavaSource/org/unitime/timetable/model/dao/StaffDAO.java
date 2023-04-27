@@ -42,6 +42,6 @@ public class StaffDAO extends _RootDAO<Staff,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Staff> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
-		return hibSession.createQuery("from Staff x where x.positionType.uniqueId = :positionTypeId").setParameter("positionTypeId", positionTypeId).list();
+		return hibSession.createQuery("from Staff x where x.positionType.uniqueId = :positionTypeId", Staff.class).setParameter("positionTypeId", positionTypeId).list();
 	}
 }

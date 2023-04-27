@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseRequest;
@@ -61,7 +62,7 @@ public abstract class BaseClassWaitList implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "class_waitlist_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "class_waitlist_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "class_waitlist_id")

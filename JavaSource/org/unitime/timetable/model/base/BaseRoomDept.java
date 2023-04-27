@@ -35,6 +35,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -64,7 +65,7 @@ public abstract class BaseRoomDept implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_dept_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "room_dept_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "room_sharing_group_seq")
 	})
 	@GeneratedValue(generator = "room_dept_id")

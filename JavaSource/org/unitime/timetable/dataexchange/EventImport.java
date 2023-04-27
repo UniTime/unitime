@@ -193,7 +193,7 @@ public class EventImport extends EventRelatedImports {
 			addNote("\t " + specialEventElement.asXML());
 			return(null);
 		}
-		getHibSession().save(event);
+		getHibSession().persist(event);
 		return(event);
 	}	
 
@@ -251,7 +251,7 @@ public class EventImport extends EventRelatedImports {
 			addNote("\t " + specialEventElement.asXML());
 			return(null);
 		}
-		getHibSession().save(event);
+		getHibSession().persist(event);
 		return(event);
 	}	
 
@@ -437,7 +437,7 @@ public class EventImport extends EventRelatedImports {
 			ec.setEmailAddress(email);
 			ec.setPhone(phone);
 			ec.setExternalUniqueId(externalId);
-			getHibSession().save(ec);
+			getHibSession().persist(ec);
 			flush(true);
 		}
 		return(ec);

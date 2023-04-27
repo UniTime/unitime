@@ -66,20 +66,18 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 	 * @param deptCode
 	 * @return
 	 */
-	public static List getStaffByDept(String deptCode, Long acadSessionId) throws Exception {	
-		if (deptCode == null){
-			return(null);
-		}
-		
-		Query q = StaffDAO.getInstance().getSession().createQuery(
+	public static List<Staff> getStaffByDept(String deptCode, Long acadSessionId) throws Exception {	
+		if (deptCode == null) return null;
+		Query<Staff> q = StaffDAO.getInstance().getSession().createQuery(
 				"select distinct s from Staff s where s.dept=:deptCode and " +
 				"(s.campus is null or s.campus=(select x.academicInitiative from Session x where x.uniqueId = :sessionId)) and " +
 				"(select di.externalUniqueId from DepartmentalInstructor di " +
-				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null");
+				"where di.department.deptCode=:deptCode and di.department.session.uniqueId=:sessionId and di.externalUniqueId = s.externalUniqueId ) is null",
+				Staff.class);
 		q.setParameter("deptCode", deptCode);
 		q.setParameter("sessionId", acadSessionId);
 		q.setCacheable(true);
-		return (q.list());
+		return q.list();
 	}
 	
 
@@ -90,8 +88,7 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 	 * @return
 	 */
 	public static List<Staff> findMatchingName(String fname, String lname) {
-		if ((fname==null || fname.trim().length()==0) && (lname==null || lname.trim().length()==0))
-			return null;
+		if ((fname==null || fname.trim().length()==0) && (lname==null || lname.trim().length()==0)) return null;
 		return StaffDAO.getInstance().getSession()
 				.createQuery("from Staff where firstName like :fname and lastName like :lname", Staff.class)
 				.setParameter("fname", fname == null ? "%" : fname + "%")

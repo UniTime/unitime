@@ -162,7 +162,7 @@ public class ExaminationStatuses implements AdminTable {
 			changed = true;
 		}
 		if (!changed) return;
-		hibSession.saveOrUpdate(status);
+		hibSession.merge(status);
 		ChangeLog.addChange(hibSession,
 				context,
 				status.getType(),

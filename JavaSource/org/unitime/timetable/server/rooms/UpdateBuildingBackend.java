@@ -85,7 +85,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
             building.setCoordinateX(buildingInterface.getX());
             building.setCoordinateY(buildingInterface.getY());
             if (building.getUniqueId() == null) {
-            	buildingInterface.setId((Long)hibSession.save(building));
+            	hibSession.persist(building);
             } else {
             	hibSession.merge(building);
             }
@@ -119,6 +119,7 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
             }
         	
 			tx.commit();
+			buildingInterface.setId(building.getUniqueId());
 			HibernateUtil.clearCache();
 	    } catch (Exception e) {
 	    	if (tx!=null) tx.rollback();
@@ -139,11 +140,11 @@ public class UpdateBuildingBackend implements GwtRpcImplementation<UpdateBuildin
                 for (Room r: hibSession.createQuery(
                 		"select r from Room r where r.building.uniqueId=:buildingId", Room.class)
                 		.setParameter("buildingId", building.getUniqueId()).list()) {
-                    hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId()).executeUpdate();
+                    hibSession.createMutationQuery("delete RoomPref p where p.room.uniqueId=:roomId").setParameter("roomId", r.getUniqueId()).executeUpdate();
                     for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
                         Assignment a = (Assignment)j.next();
                         a.getRooms().remove(r);
-                        hibSession.saveOrUpdate(a);
+                        hibSession.merge(a);
                         j.remove();
                     }
                     hibSession.remove(r);

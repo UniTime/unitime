@@ -38,6 +38,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.PitClassEvent;
 import org.unitime.timetable.model.PitClassMeeting;
 import org.unitime.timetable.model.PitClassMeetingUtilPeriod;
@@ -72,7 +73,7 @@ public abstract class BasePitClassMeeting implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_class_meeting_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pit_class_meeting_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "pit_class_meeting_id")

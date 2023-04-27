@@ -166,12 +166,15 @@ public class StudentSchedulingStatusImport extends BaseImport {
                 	fallbacks.put(status, fallbackEl.attributeValue("reference"));
                 
                 all.put(ref, status);
-            	getHibSession().saveOrUpdate(status);
+            	if (status.getUniqueId() == null)
+		        	getHibSession().persist(status);
+		        else
+		        	getHibSession().merge(status);
 			}
 			
 			if (!incremental) {
 				for (StudentSectioningStatus status: statuses.values()) {
-					getHibSession().delete(status);
+					getHibSession().remove(status);
 				}
 			} else {
 				for (StudentSectioningStatus status: statuses.values())
@@ -185,7 +188,7 @@ public class StudentSchedulingStatusImport extends BaseImport {
 				} else {
 					e.getKey().setFallBackStatus(fallback);
 				}
-				getHibSession().saveOrUpdate(e.getKey());
+				getHibSession().merge(e.getKey());
 			}
 
             commitTransaction();

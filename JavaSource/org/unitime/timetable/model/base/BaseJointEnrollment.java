@@ -31,6 +31,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.Solution;
@@ -59,7 +60,7 @@ public abstract class BaseJointEnrollment implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "jenrl_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "jenrl_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "jenrl_seq")
 	})
 	@GeneratedValue(generator = "jenrl_id")

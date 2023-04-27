@@ -146,7 +146,8 @@ public class Advisors implements AdminTable {
 			}
 			record.setField(7, students);
 		}
-		record.setUniqueId((Long)hibSession.save(advisor));
+		hibSession.persist(advisor);
+		record.setUniqueId(advisor.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				advisor,
@@ -212,7 +213,7 @@ public class Advisors implements AdminTable {
 			newStudents += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 		}
 		record.setField(7, newStudents);
-		hibSession.saveOrUpdate(advisor);
+		hibSession.merge(advisor);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,

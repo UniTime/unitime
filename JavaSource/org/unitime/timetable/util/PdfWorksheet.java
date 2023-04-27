@@ -148,7 +148,7 @@ public class PdfWorksheet {
         for (SubjectArea sa: subjectAreas)
         	subjectIds += (subjectIds.isEmpty() ? "" : ",") + sa.getUniqueId();
         courses.addAll(SessionDAO.getInstance().getSession().createQuery(
-        		"select co from CourseOffering co where  co.subjectArea.uniqueId in (" + subjectIds + ")").list());
+        		"select co from CourseOffering co where  co.subjectArea.uniqueId in (" + subjectIds + ")", CourseOffering.class).list());
         if (courses.isEmpty()) return false;
         PdfWorksheet w = new PdfWorksheet(out, subjectAreas, null);
         for (Iterator i=courses.iterator();i.hasNext();) {
@@ -213,7 +213,7 @@ public class PdfWorksheet {
 				query += " and co.instructionalOffering.waitlistMode = 2 and co.instructionalOffering.notOffered = false ";
 		}
         
-        Query q = SessionDAO.getInstance().getSession().createQuery(query);
+        Query<CourseOffering> q = SessionDAO.getInstance().getSession().createQuery(query, CourseOffering.class);
         q.setParameterList("subjectIds", subjectIds);
         if (courseNumber != null && !courseNumber.trim().isEmpty())
         	q.setParameter("courseNbr", ApplicationProperty.CourseOfferingNumberUpperCase.isTrue()? courseNumber.trim().replace('*', '%').toUpperCase() : courseNumber.trim().replace('*', '%'));

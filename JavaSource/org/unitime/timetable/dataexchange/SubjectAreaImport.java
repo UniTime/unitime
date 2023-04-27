@@ -68,7 +68,7 @@ public class SubjectAreaImport  extends BaseImport {
                 }
                 else {
                     if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
-                        getHibSession().delete(subjectArea);
+                        getHibSession().remove(subjectArea);
                         continue;
                     }
                 }
@@ -90,7 +90,10 @@ public class SubjectAreaImport  extends BaseImport {
                 }else
                 	subjectArea.setFundingDept(null);
     
-                getHibSession().saveOrUpdate(subjectArea);
+                if (subjectArea.getUniqueId() == null)
+		        	getHibSession().persist(subjectArea);
+		        else
+		        	getHibSession().merge(subjectArea);
                 flushIfNeeded(false);
             }
             

@@ -379,7 +379,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
 	    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 	    ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 	    ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
-		hibSession.saveOrUpdate(ep);
+		hibSession.merge(ep);
 	}
 	
 	public ExamPeriod create(SessionContext context, org.hibernate.Session hibSession) throws Exception {
@@ -397,7 +397,7 @@ public class ExamPeriodEditForm implements UniTimeForm {
         ep.setExamType(ExamTypeDAO.getInstance().get(iType));
         ep.setEventStartOffset(iStartOffset == null?Integer.valueOf(0):Integer.valueOf(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         ep.setEventStopOffset(iStopOffset == null?Integer.valueOf(0):Integer.valueOf(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
-        hibSession.saveOrUpdate(ep);
+        hibSession.persist(ep);
 		setUniqueId(ep.getUniqueId());
 		return ep;
 	}

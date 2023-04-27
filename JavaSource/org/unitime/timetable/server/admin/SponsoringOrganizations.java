@@ -91,7 +91,8 @@ public class SponsoringOrganizations implements AdminTable {
 		SponsoringOrganization sponsor = new SponsoringOrganization();
 		sponsor.setName(record.getField(0));
 		sponsor.setEmail(record.getField(1));
-		record.setUniqueId((Long)hibSession.save(sponsor));
+		hibSession.persist(sponsor);
+		record.setUniqueId(sponsor.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				sponsor,
@@ -109,7 +110,7 @@ public class SponsoringOrganizations implements AdminTable {
 			ToolBox.equals(sponsor.getEmail(), record.getField(1))) return;
 		sponsor.setName(record.getField(0));
 		sponsor.setEmail(record.getField(1));
-		hibSession.saveOrUpdate(sponsor);
+		hibSession.merge(sponsor);
 		ChangeLog.addChange(hibSession,
 				context,
 				sponsor,

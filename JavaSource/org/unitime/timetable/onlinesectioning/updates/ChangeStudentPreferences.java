@@ -104,9 +104,7 @@ public class ChangeStudentPreferences implements OnlineSectioningAction<Boolean>
 							action.addOptionBuilder().setKey("gaps").setValue(iPreferences.getScheduleGaps().name());
 						
 						
-						StudentDAO.getInstance().update(dbStudent);
-
-						helper.getHibSession().saveOrUpdate(dbStudent);
+						helper.getHibSession().merge(dbStudent);
 
 						student.updatePreferences(dbStudent, server.getAcademicSession().getDatePatternFirstDate());
 						server.update(student, false);

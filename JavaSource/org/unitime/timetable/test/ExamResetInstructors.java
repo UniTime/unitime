@@ -97,10 +97,10 @@ public class ExamResetInstructors {
             
             for (DepartmentalInstructor instructor: exam.getInstructors()) {
             	instructor.getExams().add(exam);
-            	hibSession.saveOrUpdate(instructor);
+            	hibSession.merge(instructor);
             }
             
-            hibSession.saveOrUpdate(exam);
+            hibSession.merge(exam);
         }
         hibSession.flush();
 	}

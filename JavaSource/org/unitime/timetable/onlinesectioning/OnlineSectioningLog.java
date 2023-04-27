@@ -155,7 +155,6 @@ public final class OnlineSectioningLog {
             }
             case 16: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(2, rawValue);
@@ -450,7 +449,6 @@ public final class OnlineSectioningLog {
      * @return The type.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType getType() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType.valueOf(type_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType.CLAZZ : result;
     }
@@ -1101,7 +1099,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType getType() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType.valueOf(type_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity.EntityType.CLAZZ : result;
       }
@@ -1692,7 +1689,6 @@ public final class OnlineSectioningLog {
       if (extensionRegistry == null) {
         throw new java.lang.NullPointerException();
       }
-      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -1726,7 +1722,6 @@ public final class OnlineSectioningLog {
             }
             case 40: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(5, rawValue);
@@ -1888,7 +1883,6 @@ public final class OnlineSectioningLog {
      * @return The preference.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference getPreference() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(preference_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.REQUIRED : result;
     }
@@ -2543,7 +2537,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference getPreference() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(preference_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.REQUIRED : result;
       }
@@ -2868,7 +2861,6 @@ public final class OnlineSectioningLog {
             }
             case 40: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(5, rawValue);
@@ -3230,7 +3222,6 @@ public final class OnlineSectioningLog {
      * @return The preference.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference getPreference() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(preference_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.REQUIRED : result;
     }
@@ -4762,7 +4753,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference getPreference() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.valueOf(preference_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Section.Preference.REQUIRED : result;
       }
@@ -7921,7 +7911,6 @@ public final class OnlineSectioningLog {
               break;
             case 8: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
@@ -8136,7 +8125,6 @@ public final class OnlineSectioningLog {
      * @return The type.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType getType() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType.valueOf(type_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED : result;
     }
@@ -8627,7 +8615,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType getType() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType.valueOf(type_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Enrollment.EnrollmentType.REQUESTED : result;
       }
@@ -9420,7 +9407,6 @@ public final class OnlineSectioningLog {
             }
             case 88: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(11, rawValue);
@@ -9982,7 +9968,6 @@ public final class OnlineSectioningLog {
      * @return The result.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType getResult() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.valueOf(result_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.SUCCESS : result;
     }
@@ -12630,7 +12615,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType getResult() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.valueOf(result_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.ResultType.SUCCESS : result;
       }
@@ -13571,7 +13555,6 @@ public final class OnlineSectioningLog {
       if (extensionRegistry == null) {
         throw new java.lang.NullPointerException();
       }
-      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -13584,7 +13567,6 @@ public final class OnlineSectioningLog {
               break;
             case 8: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
@@ -13781,7 +13763,6 @@ public final class OnlineSectioningLog {
      * @return The level.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level getLevel() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level.valueOf(level_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level.DEBUG : result;
     }
@@ -14320,7 +14301,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level getLevel() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level.valueOf(level_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Message.Level.DEBUG : result;
       }
@@ -14683,7 +14663,6 @@ public final class OnlineSectioningLog {
       if (extensionRegistry == null) {
         throw new java.lang.NullPointerException();
       }
-      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -15906,7 +15885,6 @@ public final class OnlineSectioningLog {
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log buildPartial() {
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log result = new org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log(this);
-        int from_bitField0_ = bitField0_;
         if (actionBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
             action_ = java.util.Collections.unmodifiableList(action_);
@@ -16711,7 +16689,6 @@ public final class OnlineSectioningLog {
               break;
             case 8: {
               int rawValue = input.readEnum();
-                @SuppressWarnings("deprecation")
               org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType value = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
@@ -16888,7 +16865,6 @@ public final class OnlineSectioningLog {
      * @return The type.
      */
     @java.lang.Override public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType getType() {
-      @SuppressWarnings("deprecation")
       org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(type_);
       return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT : result;
     }
@@ -17439,7 +17415,6 @@ public final class OnlineSectioningLog {
        */
       @java.lang.Override
       public org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType getType() {
-        @SuppressWarnings("deprecation")
         org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType result = org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.valueOf(type_);
         return result == null ? org.unitime.timetable.onlinesectioning.OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT : result;
       }

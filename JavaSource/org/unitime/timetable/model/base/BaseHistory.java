@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.History;
 import org.unitime.timetable.model.Session;
 
@@ -56,7 +57,7 @@ public abstract class BaseHistory implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "history_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "history_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "history_seq")
 	})
 	@GeneratedValue(generator = "history_id")

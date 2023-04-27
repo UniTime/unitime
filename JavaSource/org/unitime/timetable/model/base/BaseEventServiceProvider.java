@@ -31,6 +31,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventServiceProvider;
 import org.unitime.timetable.model.Session;
@@ -63,7 +64,7 @@ public abstract class BaseEventServiceProvider implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "service_provider_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "service_provider_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "ref_table_seq")
 	})
 	@GeneratedValue(generator = "service_provider_id")

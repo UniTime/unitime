@@ -235,7 +235,10 @@ public class AcademicSessionSetupImport extends BaseImport {
     		}
     		session.setHolidays(holiday.toString());
     	}
-    	getHibSession().saveOrUpdate(session);
+    	if (session.getUniqueId() == null)
+        	getHibSession().persist(session);
+        else
+        	getHibSession().merge(session);
     	
     	flush(true);
     	
@@ -323,13 +326,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             	dept.setDistributionPrefPriority(Integer.parseInt(distEl.attributeValue("priority", "0")));
             }
 
-            getHibSession().saveOrUpdate(dept);
+            if (dept.getUniqueId() == null)
+            	getHibSession().persist(dept);
+            else
+            	getHibSession().merge(dept);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (Department dept: id2dept.values()) {
             	debug("Department " + dept.getDeptCode() + " (" + dept.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(dept);
+            	getHibSession().remove(dept);
             }
         }
         
@@ -373,13 +379,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             subject.setTitle(element.attributeValue("title"));
             subject.setDepartment(Department.findByDeptCode(element.attributeValue("department"), session.getUniqueId()));
 
-            getHibSession().saveOrUpdate(subject);
+            if (subject.getUniqueId() == null)
+            	getHibSession().persist(subject);
+            else
+            	getHibSession().merge(subject);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (SubjectArea subject: id2subject.values()) {
             	debug("Subject area " + subject.getSubjectAreaAbbreviation() + " (" + subject.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(subject);
+            	getHibSession().remove(subject);
             }
         }
         
@@ -472,11 +481,14 @@ public class AcademicSessionSetupImport extends BaseImport {
         	}
         	
         	for (ManagerRole mr: roles.values()) {
-        		getHibSession().delete(mr);
+        		getHibSession().remove(mr);
         		manager.getManagerRoles().remove(mr);
         	}
         	
-        	getHibSession().saveOrUpdate(manager);
+        	if (manager.getUniqueId() == null)
+            	getHibSession().persist(manager);
+            else
+            	getHibSession().merge(manager);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
@@ -487,9 +499,9 @@ public class AcademicSessionSetupImport extends BaseImport {
             		if (session.equals(d.getSession())) i.remove();
             	}
             	if (manager.getDepartments().isEmpty()) {
-            		getHibSession().delete(manager);
+            		getHibSession().remove(manager);
             	} else {
-            		getHibSession().update(manager);
+            		getHibSession().merge(manager);
             	}
             }
         }
@@ -574,14 +586,17 @@ public class AcademicSessionSetupImport extends BaseImport {
             	updatedManagers.add(manager);
             }
             
-        	getHibSession().saveOrUpdate(group);
+        	if (group.getUniqueId() == null)
+            	getHibSession().persist(group);
+            else
+            	getHibSession().merge(group);
         }
         
         boolean incremental = "true".equalsIgnoreCase(root.attributeValue("incremental"));
         
         for (SolverGroup group: abbv2group.values()) {
         	if (incremental && !group.getDepartments().isEmpty()) {
-        		getHibSession().update(group);
+        		getHibSession().merge(group);
         		continue;
         	}
         	debug("Solver group " + group.getAbbv() + " removed.");
@@ -596,14 +611,14 @@ public class AcademicSessionSetupImport extends BaseImport {
         		m.getSolverGroups().remove(group);
         		updatedManagers.add(m);
         	}
-        	getHibSession().delete(group);
+        	getHibSession().remove(group);
         }
         
         for (Department d: updatedDepartments)
-        	getHibSession().saveOrUpdate(d);
+        	getHibSession().merge(d);
         
         for (TimetableManager m: updatedManagers)
-        	getHibSession().saveOrUpdate(m);
+        	getHibSession().merge(m);
         
         flush(true);
     }
@@ -643,13 +658,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             area.setAcademicAreaAbbreviation(abbv);
             area.setTitle(element.attributeValue("title", element.attributeValue("longTitle")));
 
-            getHibSession().saveOrUpdate(area);
+            if (area.getUniqueId() == null)
+            	getHibSession().persist(area);
+            else
+            	getHibSession().merge(area);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (AcademicArea area: id2area.values()) {
             	debug("Academic area " + area.getAcademicAreaAbbreviation() + " (" + area.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(area);
+            	getHibSession().remove(area);
             }
         }
         
@@ -691,13 +709,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             degr.setReference(ref);
             degr.setLabel(element.attributeValue("name"));
 
-            getHibSession().saveOrUpdate(degr);
+            if (degr.getUniqueId() == null)
+            	getHibSession().persist(degr);
+            else
+            	getHibSession().merge(degr);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (Degree degree: id2degr.values()) {
             	debug("Degree " + degree.getReference() + " (" + degree.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(degree);
+            	getHibSession().remove(degree);
             }
         }
         
@@ -740,13 +761,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             clasf.setCode(code);
             clasf.setName(element.attributeValue("name"));
             
-            getHibSession().saveOrUpdate(clasf);
+            if (clasf.getUniqueId() == null)
+            	getHibSession().persist(clasf);
+            else
+            	getHibSession().merge(clasf);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (AcademicClassification clasf: id2clasf.values()) {
             	debug("Academic classification " + clasf.getCode() + " (" + clasf.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(clasf);
+            	getHibSession().remove(clasf);
             }
         }
         
@@ -808,7 +832,10 @@ public class AcademicSessionSetupImport extends BaseImport {
             major.getAcademicAreas().add(area);
             area.getPosMajors().add(major);
             
-            getHibSession().saveOrUpdate(major);
+            if (major.getUniqueId() == null)
+            	getHibSession().persist(major);
+            else
+            	getHibSession().merge(major);
             
             Map<String, PosMajorConcentration> id2conc = new Hashtable<String, PosMajorConcentration>();
             Map<String, PosMajorConcentration> code2conc = new Hashtable<String, PosMajorConcentration>();
@@ -841,13 +868,16 @@ public class AcademicSessionSetupImport extends BaseImport {
                 conc.setExternalUniqueId(concId);
                 conc.setName(trim(concEl.attributeValue("name"), "name", 100));
                 
-                getHibSession().saveOrUpdate(conc);
+                if (conc.getUniqueId() == null)
+                	getHibSession().persist(conc);
+                else
+                	getHibSession().merge(conc);
             }
             if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             	for (PosMajorConcentration conc: id2conc.values()) {
                 	debug("Concentration " + area.getAcademicAreaAbbreviation() + " " + major.getCode() + "-" + conc.getCode() + " (" + conc.getExternalUniqueId() + ") deleted.");
                 	major.getConcentrations().remove(conc);
-                	getHibSession().delete(conc);
+                	getHibSession().remove(conc);
                 }
             }
         }
@@ -860,7 +890,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             		abbv = area.getAcademicAreaAbbreviation();
             	}
             	debug("Major " + abbv + " " + major.getCode() + " (" + major.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(major);
+            	getHibSession().remove(major);
             }    	
         }
         
@@ -921,7 +951,10 @@ public class AcademicSessionSetupImport extends BaseImport {
             minor.getAcademicAreas().add(area);
             area.getPosMinors().add(minor);
             
-            getHibSession().saveOrUpdate(minor);
+            if (minor.getUniqueId() == null)
+            	getHibSession().persist(minor);
+            else
+            	getHibSession().merge(minor);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
@@ -932,7 +965,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             		abbv = area.getAcademicAreaAbbreviation();
             	}
             	debug("Minor " + abbv + " " + minor.getCode() + " (" + minor.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(minor);
+            	getHibSession().remove(minor);
             }
         }
         
@@ -984,13 +1017,16 @@ public class AcademicSessionSetupImport extends BaseImport {
     		}
             group.setType(type == null ? null : StudentGroupType.findByReference(type, getHibSession()));
             
-            getHibSession().saveOrUpdate(group);
+            if (group.getUniqueId() == null)
+            	getHibSession().persist(group);
+            else
+            	getHibSession().merge(group);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (StudentGroup group: id2group.values()) {
             	debug("Group " + group.getGroupAbbreviation() + " (" + group.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(group);
+            	getHibSession().remove(group);
             }
         }
         
@@ -1034,13 +1070,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             accomodation.setAbbreviation(abbv);
             accomodation.setName(name);
             
-            getHibSession().saveOrUpdate(accomodation);
+            if (accomodation.getUniqueId() == null)
+            	getHibSession().persist(accomodation);
+            else
+            	getHibSession().merge(accomodation);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (StudentAccomodation accomodation: id2accomodation.values()) {
             	debug("Accomodation " + accomodation.getAbbreviation() + " (" + accomodation.getExternalUniqueId() + ") deleted.");
-            	getHibSession().delete(accomodation);
+            	getHibSession().remove(accomodation);
             }
         }
         
@@ -1133,13 +1172,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             	pattern.getDays().remove(d);
             }
             
-        	getHibSession().saveOrUpdate(pattern);
+        	if (pattern.getUniqueId() == null)
+            	getHibSession().persist(pattern);
+            else
+            	getHibSession().merge(pattern);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (TimePattern tp: name2pattern.values()) {
             	debug("Time pattern " + tp.getName() + " removed.");
-            	getHibSession().delete(tp);
+            	getHibSession().remove(tp);
             }
         }
         
@@ -1258,19 +1300,22 @@ public class AcademicSessionSetupImport extends BaseImport {
         }
         
         for (DatePattern pattern: updatedPatterns.values())
-        	getHibSession().saveOrUpdate(pattern);
+        	if (pattern.getUniqueId() == null)
+            	getHibSession().persist(pattern);
+            else
+            	getHibSession().merge(pattern);
         
         if (defaultDatePattern != null) {
         	if (!getHibSession().contains(session))
         		session = SessionDAO.getInstance().get(session.getUniqueId(), getHibSession());
         	session.setDefaultDatePattern(defaultDatePattern);
-        	getHibSession().saveOrUpdate(session);
+        	getHibSession().merge(session);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (DatePattern dp: name2pattern.values()) {
             	debug("Date pattern " + dp.getName() + " removed.");
-            	getHibSession().delete(dp);
+            	getHibSession().remove(dp);
             }
         }
         
@@ -1371,13 +1416,16 @@ public class AcademicSessionSetupImport extends BaseImport {
             else
             	debug("Examination period " + period.getName() + " updated.");
             
-            getHibSession().saveOrUpdate(period);
+            if (period.getUniqueId() == null)
+            	getHibSession().persist(period);
+            else
+            	getHibSession().merge(period);
         }
         
         if (!"true".equalsIgnoreCase(root.attributeValue("incremental"))) {
             for (ExamPeriod period: periods.values()) {
             	debug("Examination period " + period.getName() + " removed.");
-            	getHibSession().delete(period);
+            	getHibSession().remove(period);
             }
         }
         

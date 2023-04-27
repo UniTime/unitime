@@ -179,7 +179,8 @@ public class StandardEventNotes implements AdminTable {
 		}
 		note.setReference(record.getField(0));
 		note.setNote(record.getField(1));
-		record.setUniqueId((Long)hibSession.save(note));
+		hibSession.persist(note);
+		record.setUniqueId(note.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				note,
@@ -195,7 +196,7 @@ public class StandardEventNotes implements AdminTable {
 		if (ToolBox.equals(note.getReference(), record.getField(0)) && ToolBox.equals(note.getNote(), record.getField(1))) return;
 		note.setReference(record.getField(0));
 		note.setNote(record.getField(1));
-		hibSession.saveOrUpdate(note);
+		hibSession.merge(note);
 		ChangeLog.addChange(hibSession,
 				context,
 				note,

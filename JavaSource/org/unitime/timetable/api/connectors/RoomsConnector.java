@@ -160,8 +160,8 @@ public class RoomsConnector extends ApiConnector {
 			helper.getSessionContext().checkPermissionAnyAuthority(picture.getLocation().getSession(), Right.ApiRoomPictureUpload);
 			
 			picture.getLocation().getRoomPictures().remove(picture);
-			helper.getHibSession().delete(picture);
-			helper.getHibSession().saveOrUpdate(picture.getLocation());
+			helper.getHibSession().remove(picture);
+			helper.getHibSession().merge(picture.getLocation());
 			helper.getHibSession().flush();
 			
 			helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
@@ -232,8 +232,8 @@ public class RoomsConnector extends ApiConnector {
 		if (reference != null) picture.setType(AttachmentType.findByReference(helper.getHibSession(), reference));
 		picture.setTimeStamp(new Date());
 		picture.setDataFile(file.getBytes());
-		helper.getHibSession().saveOrUpdate(picture);
-		helper.getHibSession().saveOrUpdate(location);
+		helper.getHibSession().persist(picture);
+		helper.getHibSession().merge(location);
 		helper.getHibSession().flush();
 		helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
 	}

@@ -90,7 +90,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						meeting.setApprovalDate(now);
     						m.setApprovalDate(now);
     						m.setApprovalStatus(meeting.getApprovalStatus());
-    						hibSession.saveOrUpdate(meeting);
+    						hibSession.merge(meeting);
     						
     						break;
     					case APPROVE:
@@ -101,7 +101,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						meeting.setApprovalDate(now);
     						m.setApprovalDate(now);
     						m.setApprovalStatus(meeting.getApprovalStatus());
-    						hibSession.saveOrUpdate(meeting);
+    						hibSession.merge(meeting);
     						
     						break;
     					case CANCEL:
@@ -125,7 +125,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						meeting.setApprovalDate(now);
     						m.setApprovalDate(now);
     						m.setApprovalStatus(meeting.getApprovalStatus());
-    						hibSession.saveOrUpdate(meeting);
+    						hibSession.merge(meeting);
 
     						break;
     					}
@@ -183,7 +183,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			}
 			
 			event.getNotes().add(note);
-			hibSession.saveOrUpdate(note);
+			hibSession.persist(note);
 			
 			NoteInterface n = new NoteInterface();
 			n.setId(note.getUniqueId());

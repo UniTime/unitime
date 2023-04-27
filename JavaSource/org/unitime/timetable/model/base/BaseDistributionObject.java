@@ -33,6 +33,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -60,7 +61,7 @@ public abstract class BaseDistributionObject implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "distribution_object_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "distribution_object_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "dist_obj_seq")
 	})
 	@GeneratedValue(generator = "distribution_object_id")

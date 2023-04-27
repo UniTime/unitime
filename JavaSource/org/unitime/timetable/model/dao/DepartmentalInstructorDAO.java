@@ -42,21 +42,21 @@ public class DepartmentalInstructorDAO extends _RootDAO<DepartmentalInstructor,L
 
 	@SuppressWarnings("unchecked")
 	public List<DepartmentalInstructor> findByPositionType(org.hibernate.Session hibSession, Long positionTypeId) {
-		return hibSession.createQuery("from DepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId").setParameter("positionTypeId", positionTypeId).list();
+		return hibSession.createQuery("from DepartmentalInstructor x where x.positionType.uniqueId = :positionTypeId", DepartmentalInstructor.class).setParameter("positionTypeId", positionTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<DepartmentalInstructor> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from DepartmentalInstructor x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+		return hibSession.createQuery("from DepartmentalInstructor x where x.department.uniqueId = :departmentId", DepartmentalInstructor.class).setParameter("departmentId", departmentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<DepartmentalInstructor> findByRole(org.hibernate.Session hibSession, Long roleId) {
-		return hibSession.createQuery("from DepartmentalInstructor x where x.role.roleId = :roleId").setParameter("roleId", roleId).list();
+		return hibSession.createQuery("from DepartmentalInstructor x where x.role.roleId = :roleId", DepartmentalInstructor.class).setParameter("roleId", roleId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<DepartmentalInstructor> findByTeachingPreference(org.hibernate.Session hibSession, Long teachingPreferenceId) {
-		return hibSession.createQuery("from DepartmentalInstructor x where x.teachingPreference.uniqueId = :teachingPreferenceId").setParameter("teachingPreferenceId", teachingPreferenceId).list();
+		return hibSession.createQuery("from DepartmentalInstructor x where x.teachingPreference.uniqueId = :teachingPreferenceId", DepartmentalInstructor.class).setParameter("teachingPreferenceId", teachingPreferenceId).list();
 	}
 }

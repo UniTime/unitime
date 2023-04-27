@@ -42,11 +42,11 @@ public class StudentSectioningStatusDAO extends _RootDAO<StudentSectioningStatus
 
 	@SuppressWarnings("unchecked")
 	public List<StudentSectioningStatus> findByFallBackStatus(org.hibernate.Session hibSession, Long fallBackStatusId) {
-		return hibSession.createQuery("from StudentSectioningStatus x where x.fallBackStatus.uniqueId = :fallBackStatusId").setParameter("fallBackStatusId", fallBackStatusId).list();
+		return hibSession.createQuery("from StudentSectioningStatus x where x.fallBackStatus.uniqueId = :fallBackStatusId", StudentSectioningStatus.class).setParameter("fallBackStatusId", fallBackStatusId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<StudentSectioningStatus> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from StudentSectioningStatus x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from StudentSectioningStatus x where x.session.uniqueId = :sessionId", StudentSectioningStatus.class).setParameter("sessionId", sessionId).list();
 	}
 }

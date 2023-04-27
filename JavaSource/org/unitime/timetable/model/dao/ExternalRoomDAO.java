@@ -42,11 +42,11 @@ public class ExternalRoomDAO extends _RootDAO<ExternalRoom,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<ExternalRoom> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
-		return hibSession.createQuery("from ExternalRoom x where x.roomType.uniqueId = :roomTypeId").setParameter("roomTypeId", roomTypeId).list();
+		return hibSession.createQuery("from ExternalRoom x where x.roomType.uniqueId = :roomTypeId", ExternalRoom.class).setParameter("roomTypeId", roomTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<ExternalRoom> findByBuilding(org.hibernate.Session hibSession, Long buildingId) {
-		return hibSession.createQuery("from ExternalRoom x where x.building.uniqueId = :buildingId").setParameter("buildingId", buildingId).list();
+		return hibSession.createQuery("from ExternalRoom x where x.building.uniqueId = :buildingId", ExternalRoom.class).setParameter("buildingId", buildingId).list();
 	}
 }

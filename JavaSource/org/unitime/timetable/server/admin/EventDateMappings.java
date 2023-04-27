@@ -104,7 +104,8 @@ public class EventDateMappings implements AdminTable {
 			mapping.setClassDate(dateFormat.parse(record.getField(0)));
 			mapping.setEventDate(dateFormat.parse(record.getField(1)));
 			mapping.setNote(record.getField(2));
-			record.setUniqueId((Long)hibSession.save(mapping));
+			hibSession.persist(mapping);
+			record.setUniqueId(mapping.getUniqueId());
 			ChangeLog.addChange(hibSession,
 					context,
 					mapping,
@@ -128,7 +129,7 @@ public class EventDateMappings implements AdminTable {
 			mapping.setClassDate(dateFormat.parse(record.getField(0)));
 			mapping.setEventDate(dateFormat.parse(record.getField(1)));
 			mapping.setNote(record.getField(2));
-			hibSession.saveOrUpdate(mapping);
+			hibSession.merge(mapping);
 			ChangeLog.addChange(hibSession,
 					context,
 					mapping,

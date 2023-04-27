@@ -315,7 +315,7 @@ public class LookupTables {
         DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 		org.hibernate.Session hibSession = idao.getSession();
 
-		Query q = hibSession.createQuery(query.toString());
+		Query<DepartmentalInstructor> q = hibSession.createQuery(query.toString(), DepartmentalInstructor.class);
 		q.setFetchSize(5000);
 		q.setCacheable(true);
 		q.setParameter("acadSessionId", acadSessionId);

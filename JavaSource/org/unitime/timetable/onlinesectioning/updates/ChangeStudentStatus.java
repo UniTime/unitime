@@ -134,7 +134,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 								action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
 						}
 						
-						helper.getHibSession().saveOrUpdate(dbStudent);
+						helper.getHibSession().merge(dbStudent);
 						server.update(student, false);
 					}
 					helper.commitTransaction();

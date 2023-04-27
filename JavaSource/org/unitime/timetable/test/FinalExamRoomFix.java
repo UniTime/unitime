@@ -45,7 +45,7 @@ public class FinalExamRoomFix {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");
             		location.setExamEnabled(type, true);
-            		hibSession.saveOrUpdate(location);
+            		hibSession.merge(location);
             	}
             }
 
@@ -55,7 +55,7 @@ public class FinalExamRoomFix {
             	if (!location.hasFinalExamsEnabled()) {
             		System.out.println("Fixing " + location.getLabel() + " (" + location.getSession().getLabel() + ")");
             		location.setExamEnabled(type, true);
-            		hibSession.saveOrUpdate(location);
+            		hibSession.merge(location);
             	}
             }
 

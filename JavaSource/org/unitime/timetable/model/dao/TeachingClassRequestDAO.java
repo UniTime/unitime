@@ -42,11 +42,11 @@ public class TeachingClassRequestDAO extends _RootDAO<TeachingClassRequest,Long>
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingClassRequest> findByTeachingRequest(org.hibernate.Session hibSession, Long teachingRequestId) {
-		return hibSession.createQuery("from TeachingClassRequest x where x.teachingRequest.uniqueId = :teachingRequestId").setParameter("teachingRequestId", teachingRequestId).list();
+		return hibSession.createQuery("from TeachingClassRequest x where x.teachingRequest.uniqueId = :teachingRequestId", TeachingClassRequest.class).setParameter("teachingRequestId", teachingRequestId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<TeachingClassRequest> findByTeachingClass(org.hibernate.Session hibSession, Long teachingClassId) {
-		return hibSession.createQuery("from TeachingClassRequest x where x.teachingClass.uniqueId = :teachingClassId").setParameter("teachingClassId", teachingClassId).list();
+		return hibSession.createQuery("from TeachingClassRequest x where x.teachingClass.uniqueId = :teachingClassId", TeachingClassRequest.class).setParameter("teachingClassId", teachingClassId).list();
 	}
 }

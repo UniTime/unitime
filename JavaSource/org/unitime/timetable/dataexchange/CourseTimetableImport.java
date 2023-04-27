@@ -244,8 +244,8 @@ public class CourseTimetableImport extends BaseImport {
             sg.setSession(iSession);
             sg.setTimetableManagers(new HashSet(department.getTimetableManagers()));
             sg.setSolutions(new HashSet());
-            getHibSession().save(sg);
-            getHibSession().update(department);
+            getHibSession().persist(sg);
+            getHibSession().merge(department);
         }
         
         Solution solution = iOwnerId2solution.get(sg.getUniqueId());
@@ -258,8 +258,8 @@ public class CourseTimetableImport extends BaseImport {
             solution.setAssignments(new HashSet());
             solution.setCommited(false);
             solution.setCommitDate(null);
-            getHibSession().save(solution);
-            getHibSession().update(sg);
+            getHibSession().persist(solution);
+            getHibSession().merge(sg);
             iOwnerId2solution.put(sg.getUniqueId(), solution);
         }
         
@@ -294,14 +294,14 @@ public class CourseTimetableImport extends BaseImport {
     				ClassEvent event = clazz.getEvent();
     				if (event != null) {
     	            	if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
-    	            		getHibSession().delete(event);
+    	            		getHibSession().remove(event);
     	            	} else {
     	            		for (Iterator<Meeting> j = event.getMeetings().iterator(); j.hasNext(); )
     	                		if (!j.next().getMeetingDate().before(iToday)) j.remove();
     	                	if (event.getMeetings().isEmpty()) {
-    	                		getHibSession().delete(event);
+    	                		getHibSession().remove(event);
     	                	} else {
-    	                		getHibSession().saveOrUpdate(event);
+    	                		getHibSession().merge(event);
     	                	}
     	            	}
     	            }
@@ -317,10 +317,10 @@ public class CourseTimetableImport extends BaseImport {
 	            			a.getConstraintInfo().remove(ci);
 	            		}
 	            	}
-	            	getHibSession().delete(ci);
+	            	getHibSession().remove(ci);
 	            }
 	            
-	        	getHibSession().delete(assignment);
+	        	getHibSession().remove(assignment);
 			}
         	
 			info(clazz.getClassLabel() + " := arrange hours");
@@ -365,7 +365,7 @@ public class CourseTimetableImport extends BaseImport {
 					datePattern.setType(Integer.valueOf(3));
 					datePattern.setVisible(false);
 					datePattern.setParents(new HashSet<DatePattern>());
-					getHibSession().saveOrUpdate(datePattern);
+					getHibSession().persist(datePattern);
 					iName2dp.put(datePattern.getName(), datePattern);
 				}
 			} else {
@@ -451,9 +451,12 @@ public class CourseTimetableImport extends BaseImport {
 	            Event event = assignment.generateCommittedEvent(clazz.getEvent(), true);
 	            if (event != null) {
 	            	if (!event.getMeetings().isEmpty()) {
-	            		getHibSession().saveOrUpdate(event);
+	            		if (event.getUniqueId() == null)
+    						getHibSession().persist(event);
+    					else
+    						getHibSession().merge(event);
 	            	} else if (event.getMeetings().isEmpty() && event.getUniqueId() != null)
-	            		getHibSession().delete(event);
+	            		getHibSession().remove(event);
 	            }
 			}
 		} else {
@@ -479,8 +482,11 @@ public class CourseTimetableImport extends BaseImport {
         
         info(clazz.getClassLabel() + " := " + assignment.getPlacement().getLongName(CONSTANTS.useAmPm()));
 		
-        getHibSession().saveOrUpdate(assignment);
-        getHibSession().saveOrUpdate(clazz);
+        if (assignment.getUniqueId() == null)
+			getHibSession().persist(assignment);
+		else
+			getHibSession().merge(assignment);
+        getHibSession().merge(clazz);
 	}
 	
 	protected Class_ lookupClass(Element classElement) {
@@ -759,7 +765,7 @@ public class CourseTimetableImport extends BaseImport {
 					di.setAcademicTitle(staff.getAcademicTitle());
 				}
 				di.setIgnoreToFar(false);
-				getHibSession().save(di);
+				getHibSession().persist(di);
 			}
 			instructor = new ClassInstructor();
 			instructor.setClassInstructing(clazz);
@@ -770,16 +776,16 @@ public class CourseTimetableImport extends BaseImport {
 				instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
 			clazz.addToclassInstructors(instructor);
 			di.addToclasses(instructor);
-			getHibSession().saveOrUpdate(instructor);
-			getHibSession().saveOrUpdate(di);
+			getHibSession().persist(instructor);
+			getHibSession().merge(di);
         }
         
         for (ClassInstructor instructor: instructors) {
         	DepartmentalInstructor di = instructor.getInstructor(); 
         	di.getClasses().remove(instructor);
         	instructor.getClassInstructing().getClassInstructors().remove(instructor);
-        	getHibSession().delete(instructor);
-        	getHibSession().saveOrUpdate(di);
+        	getHibSession().remove(instructor);
+        	getHibSession().merge(di);
         }
 	}
 	

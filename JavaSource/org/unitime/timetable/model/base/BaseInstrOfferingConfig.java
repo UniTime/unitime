@@ -38,6 +38,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
@@ -72,7 +73,7 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "instr_offering_config_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "instr_offering_config_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "instr_offr_config_seq")
 	})
 	@GeneratedValue(generator = "instr_offering_config_id")

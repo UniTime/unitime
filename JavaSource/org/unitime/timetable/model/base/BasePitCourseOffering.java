@@ -32,6 +32,7 @@ import java.io.Serializable;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.PitCourseOffering;
@@ -73,7 +74,7 @@ public abstract class BasePitCourseOffering implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_course_offering_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "pit_course_offering_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "point_in_time_seq")
 	})
 	@GeneratedValue(generator = "pit_course_offering_id")

@@ -78,7 +78,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_LASTLIKE_DEMAND, ChangeLog.Operation.UPDATE, null, null);
 	        }
            
-            getHibSession().createQuery("delete LastLikeCourseDemand ll where ll.subjectArea.uniqueId in " +
+            getHibSession().createMutationQuery("delete LastLikeCourseDemand ll where ll.subjectArea.uniqueId in " +
                     "(select s.uniqueId from SubjectArea s where s.session.uniqueId=:sessionId)").
                     setParameter("sessionId", session.getUniqueId()).executeUpdate();
             
@@ -104,7 +104,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	            	student.setFreeTimeCategory(Integer.valueOf(0));
 	            	student.setSchedulePreference(Integer.valueOf(0));
 	            	student.setSession(session);
-	            	getHibSession().save(student);
+	            	getHibSession().persist(student);
 	            	getHibSession().flush();
 	            	getHibSession().refresh(student);
 	            }
@@ -114,13 +114,13 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        
 	        flush(true);
 	        
-            getHibSession().createQuery("update CourseOffering c set c.demand="+
+            getHibSession().createMutationQuery("update CourseOffering c set c.demand="+
                     "(select count(distinct d.student) from LastLikeCourseDemand d where "+
                     "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
                     "c.permId is null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
                     setParameter("sessionId", session.getUniqueId()).executeUpdate();
 
-            getHibSession().createQuery("update CourseOffering c set c.demand="+
+            getHibSession().createMutationQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "d.student.session=c.subjectArea.session and c.permId=d.coursePermId) where "+
 	                "c.permId is not null and c.subjectArea.uniqueId in (select sa.uniqueId from SubjectArea sa where sa.session.uniqueId=:sessionId)").
@@ -182,7 +182,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        demand.setStudent(student);
 	        demand.setSubjectArea(area);
 	        demand.setPriority(Integer.decode(el.attributeValue("priority", String.valueOf(row++))));
-	        getHibSession().save(demand);
+	        getHibSession().persist(demand);
 		}
 	}
 

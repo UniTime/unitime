@@ -118,7 +118,7 @@ public class DistributionTypeEditAction extends UniTimeAction<DistributionTypeEd
                     if (d.getSessionId().equals(sessionId))
                     	distType.getDepartments().remove(d);
                 }
-                hibSession.saveOrUpdate(distType);
+                hibSession.merge(distType);
                 ChangeLog.addChange(
                         hibSession, 
                         sessionContext, 

@@ -214,23 +214,26 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
     	rf.setFeatureType(feature.getType() == null ? null : RoomFeatureTypeDAO.getInstance().get(feature.getType().getId(), hibSession));
     	rf.setDescription(feature.getDescription());
 
-    	hibSession.saveOrUpdate(rf);
+    	if (rf.getUniqueId() == null)
+    		hibSession.persist(rf);
+    	else
+    		hibSession.merge(rf);
     	
     	if (add != null && !add.isEmpty())
 			for (Location location: lookupLocations(hibSession, add, future, sessionId)) {
 				rf.getRooms().add(location);
 				location.getFeatures().add(rf);
-				hibSession.saveOrUpdate(location);
+				hibSession.merge(location);
 			}
 
     	if (drop != null && !drop.isEmpty())
 			for (Location location: lookupLocations(hibSession, drop, future, sessionId)) {
 				rf.getRooms().remove(location);
 				location.getFeatures().remove(rf);
-				hibSession.saveOrUpdate(location);
+				hibSession.merge(location);
 			}
     	
-    	hibSession.saveOrUpdate(rf);
+    	hibSession.merge(rf);
     	
         ChangeLog.addChange(
                 hibSession, 
@@ -267,13 +270,13 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
         
         for (Location location: rf.getRooms()) {
         	location.getFeatures().remove(rf);
-        	hibSession.saveOrUpdate(location);
+        	hibSession.merge(location);
         }
         
         for (RoomFeaturePref p: hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id", RoomFeaturePref.class).setParameter("id", rf.getUniqueId()).list()) {
 				p.getOwner().getPreferences().remove(p);
 				hibSession.remove(p);
-				hibSession.saveOrUpdate(p.getOwner());
+				hibSession.merge(p.getOwner());
 			}
         
         hibSession.remove(rf);

@@ -283,6 +283,7 @@ public class StudentSectioningImport extends BaseImport {
 	 			ref2status.put(status.getReference(), status);
             
             Set<Long> updatedStudents = new HashSet<Long>();
+            List<Student> createdStudents = new ArrayList<Student>();
             
             for (Iterator i1 = rootElement.elementIterator("student"); i1.hasNext(); ) {
                 Element studentElement = (Element) i1.next();
@@ -299,16 +300,16 @@ public class StudentSectioningImport extends BaseImport {
             		for (Iterator<CourseDemand> i = student.getCourseDemands().iterator(); i.hasNext(); ) {
             			CourseDemand cd = i.next();
             			if (cd.getFreeTime() != null)
-            				getHibSession().delete(cd.getFreeTime());
+            				getHibSession().remove(cd.getFreeTime());
             			for (CourseRequest cr: cd.getCourseRequests())
-            				getHibSession().delete(cr);
+            				getHibSession().remove(cr);
             			i.remove();
-            			getHibSession().delete(cd);
+            			getHibSession().remove(cd);
             			updatedStudents.add(student.getUniqueId());
             		}
             		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 	        			StudentClassEnrollment enrollment = i.next();
-	        			getHibSession().delete(enrollment);
+	        			getHibSession().remove(enrollment);
 	        			i.remove();
 	     	        	updatedStudents.add(student.getUniqueId());
 	        		}
@@ -316,7 +317,7 @@ public class StudentSectioningImport extends BaseImport {
             		boolean delete = "true".equals(cancelElement.attributeValue("delete", "false"));
 	            	if (delete) {
 	            		updatedStudents.add(student.getUniqueId());
-	            		getHibSession().delete(student);
+	            		getHibSession().remove(student);
 	            		continue;
 	            	}
 	            }
@@ -476,7 +477,7 @@ public class StudentSectioningImport extends BaseImport {
                         				m.setName("No Major");
                         				m.setSession(a.getSession());
                         				a.addToposMajors(m);
-                        				getHibSession().saveOrUpdate(m);
+                        				getHibSession().persist(m);
                         				code2major.put(area + ":" + code, m);
                         			}
             	    				StudentAreaClassificationMajor acm = new StudentAreaClassificationMajor();
@@ -565,13 +566,13 @@ public class StudentSectioningImport extends BaseImport {
                 	}
                 	for (StudentAreaClassificationMajor major: sMajors.values()) {
                 		student.getAreaClasfMajors().remove(major);
-                		getHibSession().delete(major);
+                		getHibSession().remove(major);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}
                 	for (StudentAreaClassificationMinor minor: sMinors.values()) {
                 		student.getAreaClasfMinors().remove(minor);
-                		getHibSession().delete(minor);
+                		getHibSession().remove(minor);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}            		
@@ -590,7 +591,7 @@ public class StudentSectioningImport extends BaseImport {
     	    				}
     	    				student.getGroups().add(group);
     	    				group.getStudents().add(student);
-    	    				getHibSession().saveOrUpdate(group);
+    	    				getHibSession().merge(group);
                     		if (student.getUniqueId() != null)
                     			updatedStudents.add(student.getUniqueId());
     	    			}
@@ -599,7 +600,7 @@ public class StudentSectioningImport extends BaseImport {
                 		if (group.getExternalUniqueId() == null) continue;
                 		student.getGroups().remove(group);
                 		group.getStudents().remove(student);
-                		getHibSession().saveOrUpdate(group);
+                		getHibSession().merge(group);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}
@@ -645,9 +646,10 @@ public class StudentSectioningImport extends BaseImport {
 	            }
             	
             	if (student.getUniqueId() == null) {
-            		updatedStudents.add((Long)getHibSession().save(student));
+            		createdStudents.add(student);
+            		getHibSession().persist(student);
             	} else {
-            		getHibSession().update(student);
+            		getHibSession().merge(student);
             	}
             	
             	Element reqCoursesElement = studentElement.element("updateCourseRequests");
@@ -789,7 +791,7 @@ public class StudentSectioningImport extends BaseImport {
             						cr = requests.next();
             						if (cr.getCourseRequestOptions() != null) {
             							for (Iterator<CourseRequestOption> j = cr.getCourseRequestOptions().iterator(); j.hasNext(); )
-            								getHibSession().delete(j.next());
+            								getHibSession().remove(j.next());
             							cr.getCourseRequestOptions().clear();
             						}
             					} else {
@@ -809,7 +811,10 @@ public class StudentSectioningImport extends BaseImport {
             					unusedRequests.add(requests.next());
             					requests.remove();
             				}
-            				getHibSession().saveOrUpdate(cd);
+            				if (cd.getUniqueId() == null)
+            					getHibSession().persist(cd);
+            				else
+            					getHibSession().merge(cd);
             				
             				if (mode == EnrollmentMode.IMPORT) {
                 				for (int j = 0; j < courses.size(); j++) {
@@ -846,7 +851,7 @@ public class StudentSectioningImport extends BaseImport {
                                 		if (request != null)
                                 			for (Iterator<StudentEnrollmentMessage> l = request.getCourseDemand().getEnrollmentMessages().iterator(); l.hasNext(); ) {
                                 				StudentEnrollmentMessage message = l.next();
-                                				getHibSession().delete(message);
+                                				getHibSession().remove(message);
                                 				l.remove();
                                 			}
 
@@ -937,8 +942,14 @@ public class StudentSectioningImport extends BaseImport {
         					free.setLength(time.getLength());
         					free.setSession(student.getSession());
         					free.setName(time.getLongName(true));
-        					getHibSession().saveOrUpdate(free);
-        					getHibSession().saveOrUpdate(cd);
+        					if (free.getUniqueId() == null)
+            					getHibSession().persist(free);
+            				else
+            					getHibSession().merge(free);
+        					if (cd.getUniqueId() == null)
+            					getHibSession().persist(cd);
+            				else
+            					getHibSession().merge(cd);
                         } else warn("Request element "+requestElement.getName()+" not recognized.");
                     }
             		
@@ -984,9 +995,9 @@ public class StudentSectioningImport extends BaseImport {
         					}
         					
         					if (cd == null) continue;
-        					getHibSession().delete(cd.getFreeTime());
+        					getHibSession().remove(cd.getFreeTime());
                 			student.getCourseDemands().remove(cd);
-                			getHibSession().delete(cd);
+                			getHibSession().remove(cd);
                         } else warn("Request element "+requestElement.getName()+" not recognized.");
                     }
         			
@@ -1011,7 +1022,7 @@ public class StudentSectioningImport extends BaseImport {
                     	for (StudentClassEnrollment enrl: enrollments.values()) {
                 			student.getClassEnrollments().remove(enrl);
                 			enrl.getClazz().getStudentEnrollments().remove(enrl);
-                			getHibSession().delete(enrl);
+                			getHibSession().remove(enrl);
                 		}
                     } else {
                         for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
@@ -1020,15 +1031,15 @@ public class StudentSectioningImport extends BaseImport {
             				if (cr == null) {
             					if (mode == EnrollmentMode.NOCHANGE) {
                 					enrl.setCourseRequest(null);
-                					getHibSession().saveOrUpdate(enrl);
+                					getHibSession().merge(enrl);
             					} else {
                     				enrl.getClazz().getStudentEnrollments().remove(enrl);
-                    				getHibSession().delete(enrl);
+                    				getHibSession().remove(enrl);
                     				i.remove();
             					}
             				} else {
             					enrl.setCourseRequest(cr);
-            					getHibSession().saveOrUpdate(enrl);
+            					getHibSession().merge(enrl);
             				}
                 		}
                     }
@@ -1036,27 +1047,27 @@ public class StudentSectioningImport extends BaseImport {
             		for (CourseRequest cr: unusedRequests) {
             			CourseDemand cd = cr.getCourseDemand();
             			cd.getCourseRequests().remove(cr);
-            			getHibSession().delete(cr);
+            			getHibSession().remove(cr);
             			if (cd.getCourseRequests().isEmpty()) {
             				student.getCourseDemands().remove(cd);
-                			getHibSession().delete(cd);
+                			getHibSession().remove(cd);
             			}
             		}
             		
             		for (CourseDemand cd: remaining) {
             			if (cd.getFreeTime() != null)
-            				getHibSession().delete(cd.getFreeTime());
+            				getHibSession().remove(cd.getFreeTime());
             			for (CourseRequest cr: cd.getCourseRequests())
-            				getHibSession().delete(cr);
+            				getHibSession().remove(cr);
             			student.getCourseDemands().remove(cd);
-            			getHibSession().delete(cd);
+            			getHibSession().remove(cd);
             		}
             		
             		if (!updateMode) {
             			priority = 0;
                 		for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
                 			cd.setPriority(priority++);
-                			getHibSession().saveOrUpdate(cd);
+                			getHibSession().merge(cd);
                 		}
             		}
 
@@ -1106,7 +1117,10 @@ public class StudentSectioningImport extends BaseImport {
             				student.getAdvisorCourseRequests().add(acr);
             			}
             			acr.setNotes(notes);
-            			getHibSession().saveOrUpdate(acr);
+    					if (acr.getUniqueId() == null)
+        					getHibSession().persist(acr);
+        				else
+        					getHibSession().merge(acr);
             		}
                 	int priority = 0;
                 	for (Iterator i = recommendationsEl.elementIterator("recommendation"); i.hasNext(); ) { 
@@ -1181,10 +1195,14 @@ public class StudentSectioningImport extends BaseImport {
         					free.setLength(time.getLength());
         					free.setSession(student.getSession());
         					free.setName(time.getLongName(true));
-        					getHibSession().saveOrUpdate(free);	
+        					if (free.getUniqueId() == null)
+            					getHibSession().persist(free);
+            				else
+            					getHibSession().merge(free);
+
 						} else {
 							if (acr.getFreeTime() != null) {
-								getHibSession().delete(acr.getFreeTime());
+								getHibSession().remove(acr.getFreeTime());
 								acr.setFreeTime(null);
 							}
 						}
@@ -1203,7 +1221,10 @@ public class StudentSectioningImport extends BaseImport {
     							}        								
     						}
     					}
-						getHibSession().saveOrUpdate(acr);
+    					if (acr.getUniqueId() == null)
+        					getHibSession().persist(acr);
+        				else
+        					getHibSession().merge(acr);
 						int alterantive = 1;
 						AdvisorCourseRequest parent = acr;
 						for (Iterator j = recEl.elementIterator("alternative"); j.hasNext(); ) { 
@@ -1269,10 +1290,14 @@ public class StudentSectioningImport extends BaseImport {
 	        					free.setLength(time.getLength());
 	        					free.setSession(student.getSession());
 	        					free.setName(time.getLongName(true));
-	        					getHibSession().saveOrUpdate(free);	
+	        					if (free.getUniqueId() == null)
+	            					getHibSession().persist(free);
+	            				else
+	            					getHibSession().merge(free);
+	
 							} else {
 								if (acr.getFreeTime() != null) {
-									getHibSession().delete(acr.getFreeTime());
+									getHibSession().remove(acr.getFreeTime());
 									acr.setFreeTime(null);
 								}
 							}
@@ -1292,24 +1317,30 @@ public class StudentSectioningImport extends BaseImport {
 	    						}
 	    					}
 	            			alterantive ++;
-	            			getHibSession().saveOrUpdate(acr);
+	    					if (acr.getUniqueId() == null)
+	        					getHibSession().persist(acr);
+	        				else
+	        					getHibSession().merge(acr);
 						}
             			priority ++;
                 	}
                 	for (AdvisorCourseRequest acr: remaining) {
             			if (acr.getFreeTime() != null)
-            				getHibSession().delete(acr.getFreeTime());
+            				getHibSession().remove(acr.getFreeTime());
             			student.getAdvisorCourseRequests().remove(acr);
-            			getHibSession().delete(acr);
+            			getHibSession().remove(acr);
             		}
             	}
             	
             	
-            	getHibSession().update(student);
+            	getHibSession().merge(student);
 	        }
 	            
+            getHibSession().flush();
+    		if (!createdStudents.isEmpty())
+    			for (Student s: createdStudents)
+    				updatedStudents.add(s.getUniqueId());
             info(updatedStudents.size() + " students changed");
-            
  	        if (!updatedStudents.isEmpty())
  	 	        StudentSectioningQueue.studentChanged(getHibSession(), null, session.getUniqueId(), updatedStudents);
  	        
@@ -1392,7 +1423,7 @@ public class StudentSectioningImport extends BaseImport {
 			cr.setPreferences(new HashSet<StudentSectioningPref>());
 		} else {
 			for (Iterator<StudentSectioningPref> i = cr.getPreferences().iterator(); i.hasNext(); ) {
-				iHibSession.delete(i.next());
+				iHibSession.remove(i.next());
 				i.remove();
 			}
 		}
@@ -1493,7 +1524,7 @@ public class StudentSectioningImport extends BaseImport {
 			cr.setPreferences(new HashSet<AdvisorSectioningPref>());
 		} else {
 			for (Iterator<AdvisorSectioningPref> i = cr.getPreferences().iterator(); i.hasNext(); ) {
-				iHibSession.delete(i.next());
+				iHibSession.remove(i.next());
 				i.remove();
 			}
 		}

@@ -64,7 +64,7 @@ public class DistributionType extends BaseDistributionType implements Comparable
     	return new TreeSet<DistributionType>(
     			DistributionTypeDAO.getInstance().getSession().createQuery("select t from DistributionType t where t.examPref=" + examPref +
 					(instructorPrefOnly ? " and t.instructorPref=true" : "") +
-					(visible != null ? " and t.visible=" + visible : "")
+					(visible != null ? " and t.visible=" + visible : ""), DistributionType.class
 					).setCacheable(true).list());
 	}
 	

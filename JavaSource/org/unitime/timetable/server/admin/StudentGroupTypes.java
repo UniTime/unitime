@@ -74,7 +74,7 @@ public class StudentGroupTypes implements AdminTable {
 		data.setSortBy(1);
 		Set<Long> used = new HashSet<Long>(
 				StudentGroupTypeDAO.getInstance().getSession().createQuery(
-						"select distinct g.type.uniqueId from StudentGroup g").setCacheable(true).list());
+						"select distinct g.type.uniqueId from StudentGroup g", Long.class).setCacheable(true).list());
 		for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll()) {
 			Record r = data.addRecord(type.getUniqueId());
 			r.setField(0, type.getReference());
@@ -111,7 +111,8 @@ public class StudentGroupTypes implements AdminTable {
 		type.setKeepTogether("true".equals(record.getField(2)));
 		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
 		type.setAdvisorsCanSet("true".equals(record.getField(4)));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -135,7 +136,7 @@ public class StudentGroupTypes implements AdminTable {
 		type.setKeepTogether("true".equals(record.getField(2)));
 		type.setAllowDisabled(record.getField(3) == null ? 0 : Short.valueOf(record.getField(3)));
 		type.setAdvisorsCanSet("true".equals(record.getField(4)));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,

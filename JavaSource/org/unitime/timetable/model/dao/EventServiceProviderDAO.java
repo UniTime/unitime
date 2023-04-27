@@ -42,11 +42,11 @@ public class EventServiceProviderDAO extends _RootDAO<EventServiceProvider,Long>
 
 	@SuppressWarnings("unchecked")
 	public List<EventServiceProvider> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from EventServiceProvider x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from EventServiceProvider x where x.session.uniqueId = :sessionId", EventServiceProvider.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<EventServiceProvider> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
-		return hibSession.createQuery("from EventServiceProvider x where x.department.uniqueId = :departmentId").setParameter("departmentId", departmentId).list();
+		return hibSession.createQuery("from EventServiceProvider x where x.department.uniqueId = :departmentId", EventServiceProvider.class).setParameter("departmentId", departmentId).list();
 	}
 }

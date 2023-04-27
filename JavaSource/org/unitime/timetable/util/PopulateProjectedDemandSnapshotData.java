@@ -67,7 +67,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" where co.instructionalOffering.uniqueId in ")
 		    .append(" ( select io.uniqueId from InstructionalOffering io where io.session.uniqueId = :sessId ) " );
 		hibSession
-			.createQuery(courseOfferingUpdateSb.toString())
+			.createMutationQuery(courseOfferingUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();
@@ -81,7 +81,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" io.snapshotLimitDate = :snapshotDate")
 		    .append(" where io.session.uniqueId = :sessId ");
 		hibSession
-			.createQuery(instructionalOfferingUpdateSb.toString())
+			.createMutationQuery(instructionalOfferingUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();
@@ -97,7 +97,7 @@ public class PopulateProjectedDemandSnapshotData {
 	    	.append(" ( select ss.uniqueId from SchedulingSubpart as ss where ")
 	    	.append("  ss.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessId ) " );
 		hibSession
-			.createQuery(classUpdateSb.toString())
+			.createMutationQuery(classUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();
@@ -113,7 +113,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" where cpr.academicArea.uniqueId in ")
 		    .append(" ( select aa.uniqueId from AcademicArea aa where aa.session.uniqueId = :sessId ) " );
 		hibSession
-			.createQuery(curriculumProjectionRuleUpdateSb.toString())
+			.createMutationQuery(curriculumProjectionRuleUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();
@@ -129,7 +129,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" where cc.curriculum.uniqueId in ")
 		    .append(" ( select c.uniqueId from Curriculum c where c.academicArea.session.uniqueId = :sessId ) " );
 		hibSession
-			.createQuery(curriculumClassificationUpdateSb.toString())
+			.createMutationQuery(curriculumClassificationUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();
@@ -145,7 +145,7 @@ public class PopulateProjectedDemandSnapshotData {
 		    .append(" where ccrs.classification.uniqueId in ")
 		    .append(" ( select cc.uniqueId from CurriculumClassification cc where cc.curriculum.academicArea.session.uniqueId = :sessId ) " );
 		hibSession
-			.createQuery(curriculumClassificationUpdateSb.toString())
+			.createMutationQuery(curriculumClassificationUpdateSb.toString())
 			.setParameter("snapshotDate", snapshotDate)
 			.setParameter("sessId", acadSession.getUniqueId().longValue())
 			.executeUpdate();

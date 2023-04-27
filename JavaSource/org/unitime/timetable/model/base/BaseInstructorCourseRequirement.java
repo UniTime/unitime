@@ -36,6 +36,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
@@ -65,7 +66,7 @@ public abstract class BaseInstructorCourseRequirement implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "instr_crsreq_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "instr_crsreq_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "instr_crsreq_id")

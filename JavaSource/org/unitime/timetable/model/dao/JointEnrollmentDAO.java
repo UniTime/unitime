@@ -42,16 +42,16 @@ public class JointEnrollmentDAO extends _RootDAO<JointEnrollment,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findBySolution(org.hibernate.Session hibSession, Long solutionId) {
-		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId").setParameter("solutionId", solutionId).list();
+		return hibSession.createQuery("from JointEnrollment x where x.solution.uniqueId = :solutionId", JointEnrollment.class).setParameter("solutionId", solutionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass1(org.hibernate.Session hibSession, Long class1Id) {
-		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id").setParameter("class1Id", class1Id).list();
+		return hibSession.createQuery("from JointEnrollment x where x.class1.uniqueId = :class1Id", JointEnrollment.class).setParameter("class1Id", class1Id).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<JointEnrollment> findByClass2(org.hibernate.Session hibSession, Long class2Id) {
-		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id").setParameter("class2Id", class2Id).list();
+		return hibSession.createQuery("from JointEnrollment x where x.class2.uniqueId = :class2Id", JointEnrollment.class).setParameter("class2Id", class2Id).list();
 	}
 }

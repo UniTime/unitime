@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.LocationPicture;
 
@@ -59,7 +60,7 @@ public abstract class BaseLocationPicture implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_pict_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "room_pict_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "room_seq")
 	})
 	@GeneratedValue(generator = "room_pict_id")

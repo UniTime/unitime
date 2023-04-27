@@ -226,7 +226,7 @@ public class ExamPeriodEditAction extends UniTimeAction<ExamPeriodEditForm> {
 
                 form.delete(sessionContext, hibSession);
             	
-    			tx.commit();
+                if (tx != null) tx.commit();
     	    } catch (Exception e) {
     	        e.printStackTrace();
     	    	if (tx!=null) tx.rollback();

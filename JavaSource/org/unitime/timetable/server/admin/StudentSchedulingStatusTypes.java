@@ -210,7 +210,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		status.setFallBackStatus(fallBackId == null ? null : StudentSectioningStatusDAO.getInstance().get(fallBackId, hibSession));
 		status.setSession(session ? SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()) : null);
 		
-		record.setUniqueId((Long)hibSession.save(status));
+		hibSession.persist(status);
+		record.setUniqueId(status.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				status,
@@ -272,7 +273,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		status.setEffectiveStopPeriod(endTime);
 		status.setFallBackStatus(fallBackId == null ? null : StudentSectioningStatusDAO.getInstance().get(fallBackId, hibSession));
 		status.setSession(session ? SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()) : null);
-		hibSession.saveOrUpdate(status);
+		hibSession.merge(status);
 		if (changed)
 			ChangeLog.addChange(hibSession,
 					context,
@@ -308,7 +309,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 					others.put(s.getUniqueId(), other);
 					hibSession.flush();
 				}
-				hibSession.createQuery("update Student set sectioningStatus.uniqueId = :newId where sectioningStatus.uniqueId = :oldId and session.uniqueId = :sessionId"
+				hibSession.createMutationQuery("update Student set sectioningStatus.uniqueId = :newId where sectioningStatus.uniqueId = :oldId and session.uniqueId = :sessionId"
 						).setParameter("newId", other.getUniqueId()).setParameter("oldId", status.getUniqueId()).setParameter("sessionId", s.getUniqueId()).executeUpdate();
 			}
 			for (Session s: hibSession.createQuery("from Session where defaultSectioningStatus.uniqueId = :uniqueId and uniqueId != :sessionId", Session.class
@@ -341,9 +342,9 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			for (StudentSectioningStatus other: hibSession.createQuery("from StudentSectioningStatus where uniqueId != :uniqueId and reference = :reference", StudentSectioningStatus.class
 					).setParameter("uniqueId", status.getUniqueId()).setParameter("reference", status.getReference()).list()) {
 				System.out.println("Removing " + other.getReference() + " from " + (other.getSession() == null ? "GLOBAL" : other.getSession().getLabel()));
-				hibSession.createQuery("update Student set sectioningStatus = :newId where sectioningStatus = :oldId"
+				hibSession.createMutationQuery("update Student set sectioningStatus.uniqueId = :newId where sectioningStatus.uniqueId = :oldId"
 						).setParameter("newId", status.getUniqueId()).setParameter("oldId", other.getUniqueId()).executeUpdate();
-				hibSession.createQuery("update Session set defaultSectioningStatus = :newId where defaultSectioningStatus = :oldId"
+				hibSession.createMutationQuery("update Session set defaultSectioningStatus.uniqueId = :newId where defaultSectioningStatus.uniqueId = :oldId"
 						).setParameter("newId", status.getUniqueId()).setParameter("oldId", other.getUniqueId()).executeUpdate();
 				hibSession.remove(other);
 			}
@@ -360,7 +361,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		if (status == null) return;
 		for (StudentSectioningStatus s: hibSession.createQuery(
 				"from StudentSectioningStatus s where s.fallBackStatus.uniqueId = :statusId", StudentSectioningStatus.class).setParameter("statusId", status.getUniqueId()).list()) {
-			s.setFallBackStatus(null); hibSession.saveOrUpdate(s);
+			s.setFallBackStatus(null); hibSession.merge(s);
 		}
 		ChangeLog.addChange(hibSession,
 				context,

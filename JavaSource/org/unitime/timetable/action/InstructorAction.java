@@ -232,7 +232,10 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
             
             inst.setIgnoreToFar(Boolean.valueOf(form.getIgnoreDist()));
             
-			hibSession.saveOrUpdate(inst);
+            if (inst.getUniqueId() == null)
+            	hibSession.persist(inst);
+            else
+            	hibSession.merge(inst);
 
             ChangeLog.addChange(
                     hibSession, 
@@ -274,7 +277,7 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
         
 		String deptId = (String) request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
        
-        Query q = hibSession.createQuery(query);
+        Query<DepartmentalInstructor> q = hibSession.createQuery(query, DepartmentalInstructor.class);
         q.setParameter("puid", form.getPuId().trim());
         q.setParameter("deptId", Long.parseLong(deptId));
         if (form.getInstructorId()!=null && form.getInstructorId().trim().length()>0) {

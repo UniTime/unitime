@@ -153,13 +153,13 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
                      " and co.courseNbr = :crsNbr" +
                      " and co.title = :title" +
                      " and co.instructionalOffering.session.uniqueId = :acadSessionId";
-        Query query = hibSession.createQuery(sql);
+        Query<CourseOffering> query = hibSession.createQuery(sql, CourseOffering.class);
         query.setParameter("crsNbr", courseNbr);
         query.setParameter("subjArea", subjAreaAbbv);
         query.setParameter("acadSessionId", acadSessionId.longValue());
         query.setParameter("title", title);
         
-        return (CourseOffering)query.uniqueResult();
+        return query.uniqueResult();
 
     }
 
@@ -215,11 +215,12 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    io.generateInstrOfferingPermId();
 		    io.setLimit(Integer.valueOf(0));
 		    io.setByReservationOnly(false);
-		    idao.saveOrUpdate(io);
+		    cdao.getSession().persist(io);
 		    idao.getSession().refresh(io);
 		    co.setInstructionalOffering(io);
 		    io.addTocourseOfferings(co);
-		    cdao.saveOrUpdate(co);		    
+		    cdao.getSession().persist(co);
+		    cdao.getSession().flush();
 		    cdao.getSession().refresh(co);
 		    cdao.getSession().refresh(subjArea);
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();

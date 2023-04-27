@@ -112,7 +112,8 @@ public class Concentrations implements AdminTable {
 		conc.setName(record.getField(2));
 		PosMajor major = PosMajorDAO.getInstance().get(Long.valueOf(record.getField(3)), hibSession); 
 		conc.setMajor(major); major.getConcentrations().add(conc);
-		record.setUniqueId((Long)hibSession.save(conc));
+		hibSession.persist(conc);
+		record.setUniqueId(conc.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				conc,
@@ -131,7 +132,7 @@ public class Concentrations implements AdminTable {
 			conc.setExternalUniqueId(record.getField(0));
 			conc.setCode(record.getField(1));
 			conc.setName(record.getField(2));
-			hibSession.saveOrUpdate(conc);
+			hibSession.merge(conc);
 			ChangeLog.addChange(hibSession,
 					context,
 					conc,

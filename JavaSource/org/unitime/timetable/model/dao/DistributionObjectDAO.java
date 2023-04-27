@@ -42,11 +42,11 @@ public class DistributionObjectDAO extends _RootDAO<DistributionObject,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<DistributionObject> findByDistributionPref(org.hibernate.Session hibSession, Long distributionPrefId) {
-		return hibSession.createQuery("from DistributionObject x where x.distributionPref.uniqueId = :distributionPrefId").setParameter("distributionPrefId", distributionPrefId).list();
+		return hibSession.createQuery("from DistributionObject x where x.distributionPref.uniqueId = :distributionPrefId", DistributionObject.class).setParameter("distributionPrefId", distributionPrefId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<DistributionObject> findByPrefGroup(org.hibernate.Session hibSession, Long prefGroupId) {
-		return hibSession.createQuery("from DistributionObject x where x.prefGroup.uniqueId = :prefGroupId").setParameter("prefGroupId", prefGroupId).list();
+		return hibSession.createQuery("from DistributionObject x where x.prefGroup.uniqueId = :prefGroupId", DistributionObject.class).setParameter("prefGroupId", prefGroupId).list();
 	}
 }

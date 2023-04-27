@@ -115,7 +115,8 @@ public class AttachmentTypes implements AdminTable {
 		type.setAbbreviation(record.getField(1));
 		type.setLabel(record.getField(2));
 		type.setVisibility(getVisibility(record));
-		record.setUniqueId((Long)hibSession.save(type));
+		hibSession.persist(type);
+		record.setUniqueId(type.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
@@ -136,7 +137,7 @@ public class AttachmentTypes implements AdminTable {
 		type.setAbbreviation(record.getField(1));
 		type.setLabel(record.getField(2));
 		type.setVisibility(getVisibility(record));
-		hibSession.saveOrUpdate(type);
+		hibSession.merge(type);
 		ChangeLog.addChange(hibSession,
 				context,
 				type,

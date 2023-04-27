@@ -42,6 +42,6 @@ public class AcademicAreaDAO extends _RootDAO<AcademicArea,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<AcademicArea> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from AcademicArea x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from AcademicArea x where x.session.uniqueId = :sessionId", AcademicArea.class).setParameter("sessionId", sessionId).list();
 	}
 }

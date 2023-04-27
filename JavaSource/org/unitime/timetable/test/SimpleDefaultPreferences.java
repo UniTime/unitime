@@ -95,7 +95,7 @@ public class SimpleDefaultPreferences {
 					// Here, you can tweak what is set on the course
 					
 					// Only needed if there is something changed on the course...
-					hibSession.saveOrUpdate(course);
+					hibSession.merge(course);
 				}
 				
 				// Iterate over all the configs of the offering
@@ -228,7 +228,7 @@ public class SimpleDefaultPreferences {
 		            			}
 							}
 							
-							hibSession.saveOrUpdate(clazz);
+							hibSession.merge(clazz);
 						}
 						
 						// If all classes have the same (not default) date pattern, set it on subpart instead
@@ -236,7 +236,7 @@ public class SimpleDefaultPreferences {
 							subpart.setDatePattern(datePattern);
 							for (Class_ clazz: subpart.getClasses()) {
 								clazz.setDatePattern(null);
-								hibSession.saveOrUpdate(clazz);
+								hibSession.merge(clazz);
 							}
 						}
 						
@@ -272,13 +272,13 @@ public class SimpleDefaultPreferences {
 							}
 						}
 
-						hibSession.saveOrUpdate(subpart);
+						hibSession.merge(subpart);
 					}
 					
-					hibSession.saveOrUpdate(config);
+					hibSession.merge(config);
 				}
 
-				hibSession.saveOrUpdate(offering);
+				hibSession.merge(offering);
 			}
 			
 			log.info("All done.");

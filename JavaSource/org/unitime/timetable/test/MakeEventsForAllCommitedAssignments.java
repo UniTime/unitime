@@ -44,12 +44,12 @@ public class MakeEventsForAllCommitedAssignments {
             HibernateUtil.configureHibernate(new Properties());
             
             Session hibSession = new _RootDAO().getSession();
-            List commitedSolutions = hibSession.createQuery("select s from Solution s where s.commited = true").list();
+            List<Solution> commitedSolutions = hibSession.createQuery("select s from Solution s where s.commited = true", Solution.class).list();
             
             int idx = 0;
             
-            for (Iterator i=commitedSolutions.iterator();i.hasNext();) {
-                Solution s = (Solution)i.next();
+            for (Iterator<Solution> i=commitedSolutions.iterator();i.hasNext();) {
+                Solution s = i.next();
             
                 idx++;
                 
@@ -73,7 +73,10 @@ public class MakeEventsForAllCommitedAssignments {
                         ClassEvent event = a.generateCommittedEvent(null,true);
                         if (event != null && !event.getMeetings().isEmpty()) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName(true));
-                            hibSession.saveOrUpdate(event);
+                            if (event.getUniqueId() == null)
+                            	hibSession.persist(event);
+                            else
+                            	hibSession.merge(event);
                         }
             		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
             		    	hibSession.remove(event);

@@ -124,7 +124,7 @@ public class Minors implements AdminTable {
 					area.getPosMinors().remove(minor);
 					changed = true;
 				}
-				hibSession.saveOrUpdate(minor);
+				hibSession.merge(minor);
 				if (changed)
 					ChangeLog.addChange(hibSession,
 							context,
@@ -148,7 +148,8 @@ public class Minors implements AdminTable {
 				minor.getAcademicAreas().add(area);
 				area.getPosMinors().add(minor);
 			}
-			r.setUniqueId((Long)hibSession.save(minor));
+			hibSession.persist(minor);
+			r.setUniqueId(minor.getUniqueId());
 			ChangeLog.addChange(hibSession,
 					context,
 					minor,
@@ -174,7 +175,8 @@ public class Minors implements AdminTable {
 			minor.getAcademicAreas().add(area);
 			area.getPosMinors().add(minor);
 		}
-		record.setUniqueId((Long)hibSession.save(minor));
+		hibSession.persist(minor);
+		record.setUniqueId(minor.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				minor,
@@ -208,7 +210,7 @@ public class Minors implements AdminTable {
 				area.getPosMinors().remove(minor);
 				changed = true;
 			}
-			hibSession.saveOrUpdate(minor);
+			hibSession.merge(minor);
 			if (changed)
 				ChangeLog.addChange(hibSession,
 						context,

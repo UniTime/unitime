@@ -203,18 +203,17 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 	        DepartmentalInstructorDAO idao = DepartmentalInstructorDAO.getInstance();
 			org.hibernate.Session hibSession = idao.getSession();
 
-			Query q = hibSession.createQuery(query.toString());
+			Query<DepartmentalInstructor> q = hibSession.createQuery(query.toString(), DepartmentalInstructor.class);
 			q.setFetchSize(5000);
 			q.setCacheable(true);
 			q.setParameter("acadSessionId", acadSessionId);
 	        
-			List result = q.list();
+			List<DepartmentalInstructor> result = q.list();
 			if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
 				Collections.sort(result, new DepartmentalInstructorComparator(instructorNameFormat));
 			else
 				Collections.sort(result, new DepartmentalInstructorComparator());
-		    for (Iterator i=result.iterator();i.hasNext();) {
-	            DepartmentalInstructor di = (DepartmentalInstructor)i.next();
+		    for (DepartmentalInstructor di: result) {
 	            String name = di.getName(instructorNameFormat);
 	            InstructorInterface instructorObject = new InstructorInterface();
 	            instructorObject.setId(di.getUniqueId());
@@ -274,15 +273,14 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 	        DepartmentDAO departmentDao = DepartmentDAO.getInstance();
 	        org.hibernate.Session hibSession2 = departmentDao.getSession();
 
-			Query q2 = hibSession2.createQuery(query2.toString());
+			Query<Department> q2 = hibSession2.createQuery(query2.toString(), Department.class);
 			q2.setFetchSize(5000);
 			q2.setCacheable(true);
 			q2.setParameter("acadSessionId", acadSessionId);
 	        
-			List result2 = q2.list();
+			List<Department> result2 = q2.list();
 	        Collections.sort(result2);
-		    for (Iterator i=result2.iterator();i.hasNext();) {
-	            Department dept = (Department)i.next();
+		    for (Department dept: result2) {
 				fundingDeptSet.add(dept);
 			}
 		    

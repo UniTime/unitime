@@ -42,11 +42,16 @@ public class LocationDAO extends _RootDAO<Location,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Location> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Location x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Location x where x.session.uniqueId = :sessionId", Location.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Location> findByEventDepartment(org.hibernate.Session hibSession, Long eventDepartmentId) {
-		return hibSession.createQuery("from Location x where x.eventDepartment.uniqueId = :eventDepartmentId").setParameter("eventDepartmentId", eventDepartmentId).list();
+		return hibSession.createQuery("from Location x where x.eventDepartment.uniqueId = :eventDepartmentId", Location.class).setParameter("eventDepartmentId", eventDepartmentId).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Location> findByRoomType(org.hibernate.Session hibSession, Long roomTypeId) {
+		return hibSession.createQuery("from Location x where x.roomType.uniqueId = :roomTypeId", Location.class).setParameter("roomTypeId", roomTypeId).list();
 	}
 }

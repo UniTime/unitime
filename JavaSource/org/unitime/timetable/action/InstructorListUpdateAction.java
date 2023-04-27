@@ -207,14 +207,13 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 				        	ClassInstructor ci = (ClassInstructor)i.next();
 				        	updatedClasses.add(ci.getClassInstructing());
 				        	ci.getClassInstructing().getClassInstructors().remove(ci);
-				        	hibSession.saveOrUpdate(ci);
 				        	hibSession.remove(ci);
 				        }
 					    
 				        for (Iterator i=inst.getAssignments().iterator();i.hasNext();) {
 				        	Assignment a = (Assignment)i.next();
 				        	a.getInstructors().remove(inst);
-				        	hibSession.saveOrUpdate(a);
+				        	hibSession.merge(a);
 				        }
 				        inst.getDepartment().getInstructors().remove(inst);
 				        

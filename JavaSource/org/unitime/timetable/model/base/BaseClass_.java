@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.JoinFormula;
 import org.unitime.timetable.model.Assignment;
@@ -210,9 +209,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
-	@Cascade(value = org.hibernate.annotations.CascadeType.SAVE_UPDATE)
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
 	public void addTochildClasses(Class_ class_) {

@@ -91,9 +91,9 @@ public class CourseCatalogImport extends BaseImport {
                         catalog.setMaximumCredit(Float.valueOf(MAX_CREDIT));
                 }
 
-                getHibSession().saveOrUpdate(catalog);  // to set the uniqueId
+                getHibSession().persist(catalog);  // to set the uniqueId
                 loadCredits(element, catalog);
-                getHibSession().saveOrUpdate(catalog);  // to save the subparts
+                getHibSession().merge(catalog);  // to save the subparts
                 flushIfNeeded(false);
             }
 

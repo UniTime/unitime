@@ -173,7 +173,7 @@ public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
                             if (!(pref instanceof TimePref)) j.remove();
                         }
                         clazz.getSchedulingSubpart().deleteAllDistributionPreferences(hibSession);
-                        hibSession.saveOrUpdate(clazz.getSchedulingSubpart());
+                        hibSession.merge(clazz.getSchedulingSubpart());
                     }
                     clazz.setManagingDept(clazz.getControllingDept(), sessionContext.getUser(), hibSession);
                     // Clear all room preferences from the class
@@ -182,10 +182,10 @@ public class DepartmentEditAction extends UniTimeAction<DepartmentEditForm> {
                         if (!(pref instanceof TimePref)) j.remove();
                     }
                     clazz.deleteAllDistributionPreferences(hibSession);
-                    hibSession.saveOrUpdate(clazz);
+                    hibSession.merge(clazz);
                 }
             } else {
-                hibSession.createQuery(
+                hibSession.createMutationQuery(
                         "delete StudentClassEnrollment e where e.clazz.uniqueId in " +
                         "(select c.uniqueId from Class_ c, CourseOffering co where " +
                         "co.isControl=true and " +

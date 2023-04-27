@@ -36,6 +36,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
@@ -76,7 +77,7 @@ public abstract class BaseExternalRoom implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "external_room_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "external_room_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "external_room_id")

@@ -39,6 +39,8 @@ public abstract class BaseMapTileCache extends MapTileCacheId {
 	private byte[] iData;
 	private Date iTimeStamp;
 
+
+
 	@Column(name = "data", nullable = false)
 	public byte[] getData() { return iData; }
 	public void setData(byte[] data) { iData = data; }

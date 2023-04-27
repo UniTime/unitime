@@ -137,7 +137,7 @@ public class PreferencesImport  extends BaseImport {
                 	preference.setOwner(group);
                 	group.getPreferences().add(preference);
                 }
-            	getHibSession().saveOrUpdate(group);
+            	getHibSession().merge(group);
             }
             
         	info("All done.");

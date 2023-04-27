@@ -178,7 +178,7 @@ public class RoomSharingImport  extends BaseImport {
                     	if (rd.getDepartment().equals(dept)) {
                     		if (!control.equals(rd.getControl())) {
                     			rd.setControl(control);
-                    			getHibSession().update(rd);
+                    			getHibSession().merge(rd);
                     			info(location.getLabel() + ": " + (control ? " control moved to " + dept.getLabel() : " control removed from " + dept.getLabel()));
                     			changed = true;
                     		}
@@ -194,7 +194,7 @@ public class RoomSharingImport  extends BaseImport {
                     rd.setRoom(location);
                     location.getRoomDepts().add(rd);
                     dept.getRoomDepts().add(rd);
-                    getHibSession().save(rd);
+                    getHibSession().persist(rd);
                     departments.add(dept);
                     info(location.getLabel() + ": added " + (control ? "controlling " : "") + " department" + dept.getLabel());
                     changed = true;
@@ -204,7 +204,7 @@ public class RoomSharingImport  extends BaseImport {
                 	info(location.getLabel() + ": removed " + (rd.isControl() ? "controlling " : "") + " department" + rd.getDepartment().getLabel());
                 	location.getRoomDepts().remove(rd);
                 	rd.getDepartment().getRoomDepts().remove(rd);
-                	getHibSession().delete(rd);
+                	getHibSession().remove(rd);
                 	changed = true;
                 }
                 
@@ -266,7 +266,7 @@ public class RoomSharingImport  extends BaseImport {
                 }
                 
                 location.setRoomSharingModel(model);
-                getHibSession().update(location);
+                getHibSession().merge(location);
                 
                 if (changed)
                 	nrChanged ++;

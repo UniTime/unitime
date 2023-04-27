@@ -42,21 +42,21 @@ public class PitStudentAcadAreaMinorClassificationDAO extends _RootDAO<PitStuden
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMinorClassification> findByPitStudent(org.hibernate.Session hibSession, Long pitStudentId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.pitStudent.uniqueId = :pitStudentId").setParameter("pitStudentId", pitStudentId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.pitStudent.uniqueId = :pitStudentId", PitStudentAcadAreaMinorClassification.class).setParameter("pitStudentId", pitStudentId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMinorClassification> findByAcademicArea(org.hibernate.Session hibSession, Long academicAreaId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicArea.uniqueId = :academicAreaId").setParameter("academicAreaId", academicAreaId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicArea.uniqueId = :academicAreaId", PitStudentAcadAreaMinorClassification.class).setParameter("academicAreaId", academicAreaId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMinorClassification> findByAcademicClassification(org.hibernate.Session hibSession, Long academicClassificationId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicClassification.uniqueId = :academicClassificationId").setParameter("academicClassificationId", academicClassificationId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.academicClassification.uniqueId = :academicClassificationId", PitStudentAcadAreaMinorClassification.class).setParameter("academicClassificationId", academicClassificationId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<PitStudentAcadAreaMinorClassification> findByMinor(org.hibernate.Session hibSession, Long minorId) {
-		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.minor.uniqueId = :minorId").setParameter("minorId", minorId).list();
+		return hibSession.createQuery("from PitStudentAcadAreaMinorClassification x where x.minor.uniqueId = :minorId", PitStudentAcadAreaMinorClassification.class).setParameter("minorId", minorId).list();
 	}
 }

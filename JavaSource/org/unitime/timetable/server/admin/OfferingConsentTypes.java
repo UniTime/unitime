@@ -92,7 +92,8 @@ public class OfferingConsentTypes implements AdminTable {
 		consent.setReference(record.getField(0));
 		consent.setLabel(record.getField(1));
 		consent.setAbbv(record.getField(2));
-		record.setUniqueId((Long)hibSession.save(consent));
+		hibSession.persist(consent);
+		record.setUniqueId(consent.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				consent,
@@ -111,7 +112,7 @@ public class OfferingConsentTypes implements AdminTable {
 		consent.setReference(record.getField(0));
 		consent.setLabel(record.getField(1));
 		consent.setAbbv(record.getField(2));
-		hibSession.saveOrUpdate(consent);
+		hibSession.merge(consent);
 		ChangeLog.addChange(hibSession,
 				context,
 				consent,

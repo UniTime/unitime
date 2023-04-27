@@ -42,16 +42,16 @@ public class InstrOfferingConfigDAO extends _RootDAO<InstrOfferingConfig,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<InstrOfferingConfig> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
-		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setParameter("instructionalOfferingId", instructionalOfferingId).list();
+		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalOffering.uniqueId = :instructionalOfferingId", InstrOfferingConfig.class).setParameter("instructionalOfferingId", instructionalOfferingId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstrOfferingConfig> findByClassDurationType(org.hibernate.Session hibSession, Long classDurationTypeId) {
-		return hibSession.createQuery("from InstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setParameter("classDurationTypeId", classDurationTypeId).list();
+		return hibSession.createQuery("from InstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId", InstrOfferingConfig.class).setParameter("classDurationTypeId", classDurationTypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<InstrOfferingConfig> findByInstructionalMethod(org.hibernate.Session hibSession, Long instructionalMethodId) {
-		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId").setParameter("instructionalMethodId", instructionalMethodId).list();
+		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalMethod.uniqueId = :instructionalMethodId", InstrOfferingConfig.class).setParameter("instructionalMethodId", instructionalMethodId).list();
 	}
 }

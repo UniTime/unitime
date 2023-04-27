@@ -72,7 +72,7 @@ public class CurriculaImport extends BaseImport {
         	info("Deleting existing curricula...");
         	for (Curriculum c: getHibSession().createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class).
             	setParameter("sessionId", session.getUniqueId()).list()) {
-        		getHibSession().delete(c);
+        		getHibSession().remove(c);
         	}
         	flush(false);
         	
@@ -312,10 +312,10 @@ public class CurriculaImport extends BaseImport {
                 	curriculum.setDepartment(dept);
                 }
                 
-                getHibSession().saveOrUpdate(curriculum);
+                getHibSession().persist(curriculum);
                 
                 for (CurriculumCourseGroup group: groups.values()) {
-                	getHibSession().saveOrUpdate(group);
+                	getHibSession().persist(group);
                 }
 
                 flushIfNeeded(false);

@@ -160,7 +160,8 @@ public class Room extends BaseRoom {
 			roomDept.setDepartment(dept);
 			this.addToroomDepts(roomDept);
 			dept.addToroomDepts(roomDept);
-			rdDao.saveOrUpdate(roomDept);
+			rdDao.getSession().persist(roomDept);
+			rdDao.getSession().flush();
 		}
 	}
     
@@ -191,14 +192,14 @@ public class Room extends BaseRoom {
 				b.setExternalUniqueId(er.getBuilding().getExternalUniqueId());
 				b.setName(er.getBuilding().getDisplayName());
 				b.setSession(session);
-				hibSession.saveOrUpdate(b);
+				hibSession.persist(b);
 				hibSession.flush();
 			} else if (updateExistingRooms) {
 				b.setAbbreviation(er.getBuilding().getAbbreviation());
 				b.setCoordinateX(er.getBuilding().getCoordinateX());
 				b.setCoordinateY(er.getBuilding().getCoordinateY());
 				b.setName(er.getBuilding().getDisplayName());
-				hibSession.saveOrUpdate(b);
+				hibSession.merge(b);
 			}
 			Room r = hibSession.createQuery(
 					"from Room r where r.building.session.uniqueId = :sessionId and r.externalUniqueId = :externalId", Room.class)
@@ -232,7 +233,7 @@ public class Room extends BaseRoom {
 					}
 				}
 				LocationPermIdGenerator.setPermanentId(r);
-				hibSession.saveOrUpdate(r);
+				hibSession.persist(r);
 				hibSession.flush();
 				for (ExternalRoomDepartment erd: er.getRoomDepartments())
 					r.addExternalRoomDept(erd, er.getRoomDepartments());
@@ -265,7 +266,7 @@ public class Room extends BaseRoom {
 						}
 					}
 				}
-				hibSession.saveOrUpdate(r);
+				hibSession.merge(r);
 				if (resetRoomDepartments) {
 					Map<String, ExternalRoomDepartment> code2extRoomDept = new HashMap<String, ExternalRoomDepartment>();
 					for (ExternalRoomDepartment erd: er.getRoomDepartments())
@@ -275,7 +276,7 @@ public class Room extends BaseRoom {
 						ExternalRoomDepartment erd = code2extRoomDept.remove(rd.getDepartment().getDeptCode());
 						if (erd != null) {
 							rd.setControl(ExternalRoomDepartment.isControllingExternalDept(erd, er.getRoomDepartments()));
-							hibSession.saveOrUpdate(rd);
+							hibSession.merge(rd);
 						} else {
 							rd.getDepartment().getRoomDepts().remove(rd);
 							i.remove();

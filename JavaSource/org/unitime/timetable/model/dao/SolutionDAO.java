@@ -42,6 +42,6 @@ public class SolutionDAO extends _RootDAO<Solution,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Solution> findByOwner(org.hibernate.Session hibSession, Long ownerId) {
-		return hibSession.createQuery("from Solution x where x.owner.uniqueId = :ownerId").setParameter("ownerId", ownerId).list();
+		return hibSession.createQuery("from Solution x where x.owner.uniqueId = :ownerId", Solution.class).setParameter("ownerId", ownerId).list();
 	}
 }

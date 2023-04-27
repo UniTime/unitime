@@ -42,11 +42,11 @@ public class AdvisorDAO extends _RootDAO<Advisor,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<Advisor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from Advisor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from Advisor x where x.session.uniqueId = :sessionId", Advisor.class).setParameter("sessionId", sessionId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Advisor> findByRole(org.hibernate.Session hibSession, Long roleId) {
-		return hibSession.createQuery("from Advisor x where x.role.roleId = :roleId").setParameter("roleId", roleId).list();
+		return hibSession.createQuery("from Advisor x where x.role.roleId = :roleId", Advisor.class).setParameter("roleId", roleId).list();
 	}
 }

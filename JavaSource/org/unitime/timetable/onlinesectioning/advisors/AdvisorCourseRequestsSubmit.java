@@ -174,8 +174,14 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 													acr.setCredit(null); acr.setNotes(null); 
 												}
 												acr.setCritical(0);
-												helper.getHibSession().saveOrUpdate(free);
-												helper.getHibSession().saveOrUpdate(acr);
+												if (free.getUniqueId() == null)
+													helper.getHibSession().persist(free);
+												else
+													helper.getHibSession().merge(free);
+												if (acr.getUniqueId() == null)
+													helper.getHibSession().persist(acr);
+												else
+													helper.getHibSession().merge(acr);
 												alt++;
 											}
 											continue;
@@ -205,7 +211,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										acr.setCourse(rc.getCourseName());
 										acr.setPriority(priority); acr.setAlternative(alt); acr.setSubstitute(false);
 										if (acr.getFreeTime() != null) {
-											helper.getHibSession().delete(acr.getFreeTime());
+											helper.getHibSession().remove(acr.getFreeTime());
 											acr.setFreeTime(null);
 										}
 										if (alt == 0) {
@@ -231,7 +237,10 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											acr.setCritical(acr.isCritical(critical));
 										}
 										acr.updatePreferences(rc, helper.getHibSession());
-										helper.getHibSession().saveOrUpdate(acr);
+										if (acr.getUniqueId() == null)
+											helper.getHibSession().persist(acr);
+										else
+											helper.getHibSession().merge(acr);
 										alt++;
 									}
 								} else {
@@ -250,7 +259,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										acr.getPreferences().clear();
 									}
 									if (acr.getFreeTime() != null) {
-										helper.getHibSession().delete(acr.getFreeTime());
+										helper.getHibSession().remove(acr.getFreeTime());
 										acr.setFreeTime(null);
 									}
 									acr.setFreeTime(null);
@@ -263,7 +272,10 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setCritical(0);
 									acr.setWaitlist(null);
 									acr.setNoSub(null);
-									helper.getHibSession().saveOrUpdate(acr);
+									if (acr.getUniqueId() == null)
+										helper.getHibSession().persist(acr);
+									else
+										helper.getHibSession().merge(acr);
 								}
 								priority ++;
 							}
@@ -303,7 +315,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 											acr.setCredit(null); acr.setNotes(null); 
 										}
 										if (acr.getFreeTime() != null) {
-											helper.getHibSession().delete(acr.getFreeTime());
+											helper.getHibSession().remove(acr.getFreeTime());
 											acr.setFreeTime(null);
 										}
 										if (iDetails.hasCriticalCheck()) {
@@ -317,7 +329,10 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										acr.setWaitlist(null);
 										acr.setNoSub(null);
 										acr.updatePreferences(rc, helper.getHibSession());
-										helper.getHibSession().saveOrUpdate(acr);
+										if (acr.getUniqueId() == null)
+											helper.getHibSession().persist(acr);
+										else
+											helper.getHibSession().merge(acr);
 										alt++;
 									}
 								} else {
@@ -336,7 +351,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 										acr.getPreferences().clear();
 									}
 									if (acr.getFreeTime() != null) {
-										helper.getHibSession().delete(acr.getFreeTime());
+										helper.getHibSession().remove(acr.getFreeTime());
 										acr.setFreeTime(null);
 									}
 									acr.setCourse(null); acr.setCourseOffering(null);
@@ -348,7 +363,10 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.setCritical(0);
 									acr.setWaitlist(null);
 									acr.setNoSub(null);
-									helper.getHibSession().saveOrUpdate(acr);
+									if (acr.getUniqueId() == null)
+										helper.getHibSession().persist(acr);
+									else
+										helper.getHibSession().merge(acr);
 								}
 								priority ++;
 							}
@@ -368,7 +386,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 									acr.getPreferences().clear();
 								}
 								if (acr.getFreeTime() != null) {
-									helper.getHibSession().delete(acr.getFreeTime());
+									helper.getHibSession().remove(acr.getFreeTime());
 									acr.setFreeTime(null);
 								}
 								acr.setCourse(null); acr.setCourseOffering(null);
@@ -380,15 +398,18 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								acr.setCritical(0);
 								acr.setWaitlist(null);
 								acr.setNoSub(null);
-								helper.getHibSession().saveOrUpdate(acr);
+								if (acr.getUniqueId() == null)
+									helper.getHibSession().persist(acr);
+								else
+									helper.getHibSession().merge(acr);
 							}
 						}
 						
 						
 						for (AdvisorCourseRequest acr: acrs) {
 							if (acr.getFreeTime() != null)
-								helper.getHibSession().delete(acr.getFreeTime());
-							helper.getHibSession().delete(acr);
+								helper.getHibSession().remove(acr.getFreeTime());
+							helper.getHibSession().remove(acr);
 							dbStudent.getAdvisorCourseRequests().remove(acr);
 						}
 						
@@ -420,7 +441,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 								else
 									action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
 								
-								helper.getHibSession().saveOrUpdate(dbStudent);
+								helper.getHibSession().merge(dbStudent);
 								action.setResult(OnlineSectioningLog.Action.ResultType.TRUE);
 							} else {
 								action.setResult(OnlineSectioningLog.Action.ResultType.FALSE);
@@ -433,7 +454,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 							dbStudent.setPinReleased(getDetails().getRequest().isPinReleased());
 							dbStudent.setPin(getDetails().getRequest().getPin());
 							action.addOptionBuilder().setKey("PIN").setValue(getDetails().getRequest().getPin() + (getDetails().getRequest().isPinReleased() ? "" : " NOT RELEASED"));
-							helper.getHibSession().saveOrUpdate(dbStudent);
+							helper.getHibSession().merge(dbStudent);
 						}
 						
 						if (student != null) {

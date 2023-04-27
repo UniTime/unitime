@@ -96,7 +96,7 @@ public class PointInTimeDataSnapshots implements AdminTable {
 				!ToolBox.equals(pointInTimeData.getNote(), record.getField(1));
 			pointInTimeData.setName(record.getField(0));
 			pointInTimeData.setNote(record.getField(1));
-			hibSession.saveOrUpdate(pointInTimeData);
+			hibSession.merge(pointInTimeData);
 			if (changed)
 				ChangeLog.addChange(hibSession,
 						context,

@@ -99,7 +99,8 @@ public class LearningManagementSystemInfos implements AdminTable {
 		lmsInfo.setExternalUniqueId(record.getField(2));
 		lmsInfo.setDefaultLms("true".equalsIgnoreCase(record.getField(3)));
 		lmsInfo.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		record.setUniqueId((Long)hibSession.save(lmsInfo));
+		hibSession.persist(lmsInfo);
+		record.setUniqueId(lmsInfo.getUniqueId());
 		ChangeLog.addChange(hibSession,
 				context,
 				lmsInfo,
@@ -120,7 +121,7 @@ public class LearningManagementSystemInfos implements AdminTable {
 		lmsInfo.setLabel(record.getField(1));
 		lmsInfo.setExternalUniqueId(record.getField(2));
 		lmsInfo.setDefaultLms("true".equalsIgnoreCase(record.getField(3)));
-		hibSession.saveOrUpdate(lmsInfo);
+		hibSession.merge(lmsInfo);
 		ChangeLog.addChange(hibSession,
 				context,
 				lmsInfo,

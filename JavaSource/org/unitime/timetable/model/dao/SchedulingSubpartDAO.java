@@ -42,21 +42,21 @@ public class SchedulingSubpartDAO extends _RootDAO<SchedulingSubpart,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByItype(org.hibernate.Session hibSession, Integer itypeId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId").setParameter("itypeId", itypeId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.itype.itype = :itypeId", SchedulingSubpart.class).setParameter("itypeId", itypeId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByParentSubpart(org.hibernate.Session hibSession, Long parentSubpartId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId").setParameter("parentSubpartId", parentSubpartId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.parentSubpart.uniqueId = :parentSubpartId", SchedulingSubpart.class).setParameter("parentSubpartId", parentSubpartId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByInstrOfferingConfig(org.hibernate.Session hibSession, Long instrOfferingConfigId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId").setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.instrOfferingConfig.uniqueId = :instrOfferingConfigId", SchedulingSubpart.class).setParameter("instrOfferingConfigId", instrOfferingConfigId).list();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<SchedulingSubpart> findByDatePattern(org.hibernate.Session hibSession, Long datePatternId) {
-		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId").setParameter("datePatternId", datePatternId).list();
+		return hibSession.createQuery("from SchedulingSubpart x where x.datePattern.uniqueId = :datePatternId", SchedulingSubpart.class).setParameter("datePatternId", datePatternId).list();
 	}
 }

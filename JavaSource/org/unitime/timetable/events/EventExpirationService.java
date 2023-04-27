@@ -22,7 +22,6 @@ package org.unitime.timetable.events;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -78,9 +77,10 @@ public class EventExpirationService extends Thread {
 			Transaction tx = hibSession.beginTransaction();
 			try {
 				Date now = new Date();
-				for (Event event: (List<Event>)hibSession.createQuery(
+				for (Event event: hibSession.createQuery(
 						"select distinct e from Event e inner join e.meetings m " +
-						"where e.expirationDate is not null and m.approvalStatus = 0 and e.expirationDate < " + HibernateUtil.date(new Date())).list()) {
+						"where e.expirationDate is not null and m.approvalStatus = 0 and e.expirationDate < " + HibernateUtil.date(new Date()),
+						Event.class).list()) {
 					
 					Set<Meeting> affectedMeetings = new HashSet<Meeting>();
 					String affectedMeetingStr = "";
@@ -88,7 +88,7 @@ public class EventExpirationService extends Thread {
 			        	if (meeting.getStatus() == Meeting.Status.PENDING) {
 			        		meeting.setStatus(Meeting.Status.CANCELLED);
 							meeting.setApprovalDate(now);
-							hibSession.saveOrUpdate(meeting);
+							hibSession.merge(meeting);
 							affectedMeetings.add(meeting);
 							if (!affectedMeetingStr.isEmpty()) affectedMeetingStr += "<br>";
 							affectedMeetingStr += meeting.getTimeLabel() + (meeting.getLocation() == null ? "" : " " + meeting.getLocation().getLabel());
@@ -105,7 +105,7 @@ public class EventExpirationService extends Thread {
 					note.setTextNote(MESSAGES.noteEventExpired());
 
 					event.getNotes().add(note);
-					hibSession.saveOrUpdate(note);
+					hibSession.persist(note);
 				
 					hibSession.merge(event);
 					

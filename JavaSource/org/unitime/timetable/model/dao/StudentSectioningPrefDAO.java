@@ -42,6 +42,6 @@ public class StudentSectioningPrefDAO extends _RootDAO<StudentSectioningPref,Lon
 
 	@SuppressWarnings("unchecked")
 	public List<StudentSectioningPref> findByCourseRequest(org.hibernate.Session hibSession, Long courseRequestId) {
-		return hibSession.createQuery("from StudentSectioningPref x where x.courseRequest.uniqueId = :courseRequestId").setParameter("courseRequestId", courseRequestId).list();
+		return hibSession.createQuery("from StudentSectioningPref x where x.courseRequest.uniqueId = :courseRequestId", StudentSectioningPref.class).setParameter("courseRequestId", courseRequestId).list();
 	}
 }

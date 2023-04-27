@@ -42,6 +42,6 @@ public class PosMajorDAO extends _RootDAO<PosMajor,Long> {
 
 	@SuppressWarnings("unchecked")
 	public List<PosMajor> findBySession(org.hibernate.Session hibSession, Long sessionId) {
-		return hibSession.createQuery("from PosMajor x where x.session.uniqueId = :sessionId").setParameter("sessionId", sessionId).list();
+		return hibSession.createQuery("from PosMajor x where x.session.uniqueId = :sessionId", PosMajor.class).setParameter("sessionId", sessionId).list();
 	}
 }

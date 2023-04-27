@@ -29,6 +29,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.StudentSectioningQueue;
 
 /**
@@ -55,7 +56,7 @@ public abstract class BaseStudentSectioningQueue implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "sectioning_queue_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "sectioning_queue_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "sectioning_queue_id")

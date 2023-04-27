@@ -177,14 +177,20 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                 				if (param==null) {
                 					param = new SolverParameter();
                 					param.setDefinition(def);
+                    				param.setValue(value==null?def.getDefault():value);
+                    				hibSession.persist(param);
+                				} else {
+                    				param.setValue(value==null?def.getDefault():value);
+                					hibSession.merge(param);
                 				}
-                				param.setValue(value==null?def.getDefault():value);
-                				hibSession.saveOrUpdate(param);
                     			params.add(param);
                 			}
             			}
             		}
-            		dao.saveOrUpdate(setting, hibSession);
+            		if (setting.getUniqueId() == null)
+            			hibSession.persist(setting);
+            		else
+            			hibSession.merge(setting);
             		if (tx!=null) tx.commit();
             	} catch (Exception e) {
             		if (tx!=null) tx.rollback();

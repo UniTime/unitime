@@ -146,11 +146,10 @@ public class SchedulingSubpartDetailAction extends PreferencesAction2<Scheduling
         if (MSG.actionClearClassPreferencesOnSubpart().equals(op)) {
         	sessionContext.checkPermission(ss, Right.SchedulingSubpartDetailClearClassPreferences);
 
-        	Class_DAO cdao = new Class_DAO();
         	for (Iterator i=ss.getClasses().iterator();i.hasNext();) {
         		Class_ c = (Class_)i.next();
         		c.getPreferences().clear();
-        		cdao.saveOrUpdate(c);
+        		Class_DAO.getInstance().getSession().merge(c);
         	}
 
             ChangeLog.addChange(

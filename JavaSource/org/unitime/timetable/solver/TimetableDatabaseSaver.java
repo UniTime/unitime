@@ -348,7 +348,10 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         		}
         		solution.setParameters(params);
 
-        		hibSession.saveOrUpdate(solution);
+        		if (solution.getUniqueId() == null)
+        			hibSession.persist(solution);
+        		else
+        			hibSession.merge(solution);
     		}
     		
     		hibSession.flush(); hibSession.clear(); int batchIdx = 0;

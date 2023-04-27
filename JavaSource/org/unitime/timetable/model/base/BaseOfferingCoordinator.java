@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.OfferingCoordinator;
@@ -61,7 +62,7 @@ public abstract class BaseOfferingCoordinator implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "offering_coordinator_id", strategy = "org.unitime.commons.hibernate.id.UniqueIdGenerator", parameters = {
+	@GenericGenerator(name = "offering_coordinator_id", type = UniqueIdGenerator.class, parameters = {
 		@Parameter(name = "sequence", value = "pref_group_seq")
 	})
 	@GeneratedValue(generator = "offering_coordinator_id")

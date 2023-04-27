@@ -581,7 +581,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 										if (cd.getEnrollmentMessages() != null)
 											for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
 												StudentEnrollmentMessage message = i.next();
-												helper.getHibSession().delete(message);
+												helper.getHibSession().remove(message);
 												i.remove();
 											}
 										StudentEnrollmentMessage m = new StudentEnrollmentMessage();
@@ -592,13 +592,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 										m.setMessage(failureMessage);
 										m.setOrder(0);
 										cd.getEnrollmentMessages().add(m);
-										helper.getHibSession().save(m);
+										helper.getHibSession().persist(m);
 									}
 								}
 							}
 						}
 						
-						helper.getHibSession().saveOrUpdate(dbStudent);
+						helper.getHibSession().merge(dbStudent);
 						helper.getHibSession().flush();
 						
 						server.update(student, false);

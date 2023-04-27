@@ -135,6 +135,7 @@ public class CourseSelectionBoxBackend {
 			CourseOffering co = CourseOfferingDAO.getInstance().get(courseId);
 			if (co != null) return co;
 		}
+		CourseOffering ret = null;
 		for (CourseOffering co: CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
@@ -142,9 +143,9 @@ public class CourseSelectionBoxBackend {
 				.setParameter("course", courseName.toLowerCase())
 				.setParameter("sessionId", sessionId)
 				.setCacheable(true).setMaxResults(1).list()) {
-			return co;
+			ret = co; break;
 		}
-		return null;
+		return ret;
 	}
 	
 	@GwtRpcImplements(RetrieveCourseDetail.class)

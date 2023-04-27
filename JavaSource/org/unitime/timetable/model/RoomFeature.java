@@ -112,10 +112,6 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	public static RoomFeature getRoomFeatureById(Long id) throws HibernateException {
 		return (RoomFeature) (RoomFeatureDAO.getInstance()).get(id);
 	}
-	
-	public void saveOrUpdate() throws HibernateException {
-		(RoomFeatureDAO.getInstance()).saveOrUpdate(this);
-	}
 
     /** Request attribute name for available room features **/
     public static String FEATURE_LIST_ATTR_NAME = "roomFeaturesList";

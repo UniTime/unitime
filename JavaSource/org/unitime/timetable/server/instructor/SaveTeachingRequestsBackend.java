@@ -145,9 +145,16 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 						tr.getClassRequests().remove(cr);
 						hibSession.remove(cr);
 					}
-					hibSession.saveOrUpdate(tr);
-					for (TeachingClassRequest tcr: tr.getClassRequests())
-						hibSession.saveOrUpdate(tcr);
+					if (tr.getUniqueId() == null)
+						hibSession.persist(tr);
+					else
+						hibSession.merge(tr);
+					for (TeachingClassRequest tcr: tr.getClassRequests()) {
+						if (tcr.getUniqueId() == null)
+							hibSession.persist(tcr);
+						else
+							hibSession.merge(tcr);
+					}	
 				} else {
 					MultiRequest multi = (MultiRequest)r;
 					for (RequestedClass rc: multi.getClasses()) {
@@ -202,9 +209,15 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 							tr.getClassRequests().remove(cr);
 							hibSession.remove(cr);
 						}						
-						hibSession.saveOrUpdate(tr);
+						if (tr.getUniqueId() == null)
+							hibSession.persist(tr);
+						else
+							hibSession.merge(tr);
 						for (TeachingClassRequest tcr: tr.getClassRequests())
-							hibSession.saveOrUpdate(tcr);
+							if (tcr.getUniqueId() == null)
+								hibSession.persist(tcr);
+							else
+								hibSession.merge(tcr);
 					}
 				}
 			}
@@ -281,7 +294,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									ci.setPercentShare(support.getPercentShare());
 									ci.setLead(support.getLead());
 									ci.setResponsibility(support.getTeachingRequest().getResponsibility());
-									hibSession.saveOrUpdate(ci);
+									hibSession.merge(ci);
 									updateConfigs.add(config);
 									updatedClassIds.add(clazz.getUniqueId());
 								}
@@ -332,7 +345,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 									ci.setTeachingRequest(tr);
 									cr.getTeachingClass().getClassInstructors().add(ci);
 									instructor.getClasses().add(ci);
-									hibSession.saveOrUpdate(ci);
+									hibSession.persist(ci);
 									updateConfigs.add(cr.getTeachingClass().getSchedulingSubpart().getInstrOfferingConfig());
 									updatedClassIds.add(cr.getTeachingClass().getUniqueId());
 								}
@@ -341,7 +354,7 @@ public class SaveTeachingRequestsBackend implements GwtRpcImplementation<SaveReq
 					}
 				}
 			}
-			hibSession.saveOrUpdate(offering);
+			hibSession.merge(offering);
 			
 			tx.commit(); tx = null;
 		} catch (Exception e) {

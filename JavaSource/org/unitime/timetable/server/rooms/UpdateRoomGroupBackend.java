@@ -207,29 +207,32 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
     		for (RoomGroup x: RoomGroup.getAllRoomGroupsForSession(rg.getSession())) {
     			if (!x.getUniqueId().equals(rg.getUniqueId()) && x.isDefaultGroup()) {
     				x.setDefaultGroup(false);
-    				hibSession.saveOrUpdate(x);
+    				hibSession.merge(x);
     			}
     		}
     	}
     	rg.setDefaultGroup(group.isDefault() && rg.isGlobal());
 
-    	hibSession.saveOrUpdate(rg);
+    	if (rg.getUniqueId() == null)
+    		hibSession.persist(rg);
+    	else
+    		hibSession.merge(rg);
     	
     	if (add != null && !add.isEmpty())
 			for (Location location: lookupLocations(hibSession, add, future, sessionId)) {
 				rg.getRooms().add(location);
 				location.getRoomGroups().add(rg);
-				hibSession.saveOrUpdate(location);
+				hibSession.merge(location);
 			}
 
     	if (drop != null && !drop.isEmpty())
 			for (Location location: lookupLocations(hibSession, drop, future, sessionId)) {
 				rg.getRooms().remove(location);
 				location.getRoomGroups().remove(rg);
-				hibSession.saveOrUpdate(location);
+				hibSession.merge(location);
 			}
     	
-    	hibSession.saveOrUpdate(rg);
+    	hibSession.merge(rg);
     	
         ChangeLog.addChange(
                 hibSession, 
@@ -266,14 +269,14 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
         
         for (Location location: rg.getRooms()) {
         	location.getRoomGroups().remove(rg);
-        	hibSession.saveOrUpdate(location);
+        	hibSession.merge(location);
         }
         
         for (RoomGroupPref p: hibSession.createQuery("from RoomGroupPref p where p.roomGroup.uniqueId = :id", RoomGroupPref.class)
 					.setParameter("id", rg.getUniqueId()).list()) {
 				p.getOwner().getPreferences().remove(p);
 				hibSession.remove(p);
-				hibSession.saveOrUpdate(p.getOwner());
+				hibSession.merge(p.getOwner());
 			}
         
         hibSession.remove(rg);
