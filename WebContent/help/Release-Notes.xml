@@ -24,9 +24,23 @@
 <release-history>
 
 <doc-title>UniTime 4.7 Release Notes</doc-title>
+
 <release>
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Add/Edit Solver Configuration: Date Parameters</name>
+			<description>
+				<line>Use yyyy-MM-dd format for parameters of date type.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.7.91</version>
+	<release-date>Thu, 6 Apr 2023</release-date>
 	<category>
 		<title>Course Timetabling</title>
 		<item>
