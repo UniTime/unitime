@@ -139,7 +139,7 @@
 							<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
 								size="10" maxlength="10" cssStyle="text-align: right;"/>
 						</s:elseif><s:elseif test="#def.type == 'date'">
-							<tt:calendar name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"/>
+							<tt:calendar name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}" format="yyyy-MM-dd"/>
 						</s:elseif><s:elseif test="#def.type == 'timepref'">
 							<div id='pd${def.uniqueId}' style="display: block;">
 								<img border="0"
