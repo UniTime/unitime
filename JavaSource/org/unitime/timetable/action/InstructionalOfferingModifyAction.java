@@ -442,7 +442,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         									ntp.setPrefLevel(prefLevel);
         									ntp.setTimePattern(tp.getTimePattern());
         									ntp.setPreference(tp.getPreference());
-        									c.addTopreferences(ntp);
+        									c.addToPreferences(ntp);
         									classChanged = true;
         								}
         							}
@@ -458,7 +458,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         									nbp.setPrefLevel(bp.getPrefLevel());
         									nbp.setBuilding(bp.getBuilding());
         									nbp.setDistanceFrom(bp.getDistanceFrom());
-        									c.addTopreferences(nbp);
+        									c.addToPreferences(nbp);
         									classChanged = true;
         								}
         							}
@@ -473,7 +473,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         									nrp.setOwner(c);
         									nrp.setPrefLevel(rp.getPrefLevel());
         									nrp.setRoom(rp.getRoom());
-        									c.addTopreferences(nrp);
+        									c.addToPreferences(nrp);
         									classChanged = true;
         								}
         							}
@@ -488,7 +488,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         									nrfp.setOwner(c);
         									nrfp.setPrefLevel(rfp.getPrefLevel());
         									nrfp.setRoomFeature(rfp.getRoomFeature());
-        									c.addTopreferences(nrfp);
+        									c.addToPreferences(nrfp);
         									classChanged = true;
         								}
         							}
@@ -503,7 +503,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         									nrgp.setOwner(c);
         									nrgp.setPrefLevel(rgp.getPrefLevel());
         									nrgp.setRoomGroup(rgp.getRoomGroup());
-        									c.addTopreferences(nrgp);
+        									c.addToPreferences(nrgp);
         									classChanged = true;
         								}
         							}
@@ -537,7 +537,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 						tp.setPreference(timePref.getPreference());
                         if (weaken)
                             tp.weakenHardPreferences();
-						ss.addTopreferences(tp);
+						ss.addToPreferences(tp);
 					}
 
         			if (currentManagingDept.getUniqueId().equals(controllingDept.getUniqueId()) && rg!=null){
@@ -545,7 +545,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
     					rgp.setOwner(ss);
     					rgp.setPrefLevel(prefLevel);
     					rgp.setRoomGroup(rg);
-    					ss.addTopreferences(rgp);
+    					ss.addToPreferences(rgp);
         			}
         			hibSession.merge(ss);
         		}
@@ -690,14 +690,14 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 				if (ss == null || !ss.getUniqueId().equals(subpartId))
 					ss = ssdao.get(subpartId);
 				newClass.setSchedulingSubpart(ss);
-				ss.addToclasses(newClass);
+				ss.addToClasses(newClass);
 				if (parentClassId != null){
 					if (parentClassId.longValue() > 0 && (parentClass == null || !parentClass.getUniqueId().equals(parentClassId)))
 						parentClass = cdao.get(parentClassId);
 					else if (parentClassId.longValue() < 0)
 						parentClass = (Class_)tmpClsToRealClass.get(parentClassId);
 					newClass.setParentClass(parentClass);
-					parentClass.addTochildClasses(newClass);
+					parentClass.addToChildClasses(newClass);
 				}
 				if (managingDept == null || !managingDept.getUniqueId().equals(managingDeptId))
 					managingDept = deptdao.get(managingDeptId);
@@ -854,7 +854,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 							tp.setTimePattern(timePattern);
 							tp.setPreference(timePref.getPreference());
                             if (weaken) tp.weakenHardPreferences();
-							modifiedClass.addTopreferences(tp);
+							modifiedClass.addToPreferences(tp);
 						}
 						modifiedClass.deleteAllDistributionPreferences(hibSession);
 					}

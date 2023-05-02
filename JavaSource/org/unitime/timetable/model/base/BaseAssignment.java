@@ -130,9 +130,13 @@ public abstract class BaseAssignment implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
-	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {
 		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
+	}
+	@Deprecated
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		addToInstructors(departmentalInstructor);
 	}
 
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -142,18 +146,26 @@ public abstract class BaseAssignment implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
-	public void addTorooms(Location location) {
+	public void addToRooms(Location location) {
 		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
+	}
+	@Deprecated
+	public void addTorooms(Location location) {
+		addToRooms(location);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "assignment", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AssignmentInfo> getAssignmentInfo() { return iAssignmentInfo; }
 	public void setAssignmentInfo(Set<AssignmentInfo> assignmentInfo) { iAssignmentInfo = assignmentInfo; }
-	public void addToassignmentInfo(AssignmentInfo assignmentInfo) {
+	public void addToAssignmentInfo(AssignmentInfo assignmentInfo) {
 		if (iAssignmentInfo == null) iAssignmentInfo = new HashSet<AssignmentInfo>();
 		iAssignmentInfo.add(assignmentInfo);
+	}
+	@Deprecated
+	public void addToassignmentInfo(AssignmentInfo assignmentInfo) {
+		addToAssignmentInfo(assignmentInfo);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "assignments")
@@ -161,9 +173,13 @@ public abstract class BaseAssignment implements Serializable {
 	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
 	public Set<ConstraintInfo> getConstraintInfo() { return iConstraintInfo; }
 	public void setConstraintInfo(Set<ConstraintInfo> constraintInfo) { iConstraintInfo = constraintInfo; }
-	public void addToconstraintInfo(ConstraintInfo constraintInfo) {
+	public void addToConstraintInfo(ConstraintInfo constraintInfo) {
 		if (iConstraintInfo == null) iConstraintInfo = new HashSet<ConstraintInfo>();
 		iConstraintInfo.add(constraintInfo);
+	}
+	@Deprecated
+	public void addToconstraintInfo(ConstraintInfo constraintInfo) {
+		addToConstraintInfo(constraintInfo);
 	}
 
 	@Override

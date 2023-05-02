@@ -510,13 +510,13 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 						}
 						ci = new ClassInstructor();
 						ci.setClassInstructing(c);
-						c.addToclassInstructors(ci);
+						c.addToClassInstructors(ci);
 						DepartmentalInstructor di = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(instrIdStr));
 						if (di == null) {
 							continue;
 						}
 						ci.setInstructor(di);
-						di.addToclasses(ci);
+						di.addToClasses(ci);
 						ci.setLead(Boolean.parseBoolean(r.getField(DataColumn.CHECK_CONFICTS.ordinal())));
 						String pctShareStr = r.getField(DataColumn.PCT_SHARE.ordinal());
 						if (pctShareStr == null || pctShareStr.trim().equals("")) {

@@ -103,18 +103,26 @@ public abstract class BasePosMajor implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
-	public void addToacademicAreas(AcademicArea academicArea) {
+	public void addToAcademicAreas(AcademicArea academicArea) {
 		if (iAcademicAreas == null) iAcademicAreas = new HashSet<AcademicArea>();
 		iAcademicAreas.add(academicArea);
+	}
+	@Deprecated
+	public void addToacademicAreas(AcademicArea academicArea) {
+		addToAcademicAreas(academicArea);
 	}
 
 	@OneToMany(mappedBy = "major", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
-	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
+	public void addToConcentrations(PosMajorConcentration posMajorConcentration) {
 		if (iConcentrations == null) iConcentrations = new HashSet<PosMajorConcentration>();
 		iConcentrations.add(posMajorConcentration);
+	}
+	@Deprecated
+	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
+		addToConcentrations(posMajorConcentration);
 	}
 
 	@Override

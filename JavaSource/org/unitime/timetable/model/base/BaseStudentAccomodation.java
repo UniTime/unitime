@@ -99,9 +99,13 @@ public abstract class BaseStudentAccomodation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
-	public void addTostudents(Student student) {
+	public void addToStudents(Student student) {
 		if (iStudents == null) iStudents = new HashSet<Student>();
 		iStudents.add(student);
+	}
+	@Deprecated
+	public void addTostudents(Student student) {
+		addToStudents(student);
 	}
 
 	@Override

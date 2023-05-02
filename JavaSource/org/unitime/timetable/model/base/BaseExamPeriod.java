@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -28,6 +29,8 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
@@ -92,8 +95,9 @@ public abstract class BaseExamPeriod implements Serializable {
 	public Integer getEventStopOffset() { return iEventStopOffset; }
 	public void setEventStopOffset(Integer eventStopOffset) { iEventStopOffset = eventStopOffset; }
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 

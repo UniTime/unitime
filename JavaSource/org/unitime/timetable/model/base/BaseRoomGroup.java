@@ -118,9 +118,13 @@ public abstract class BaseRoomGroup implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
-	public void addTorooms(Location location) {
+	public void addToRooms(Location location) {
 		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
+	}
+	@Deprecated
+	public void addTorooms(Location location) {
+		addToRooms(location);
 	}
 
 	@Override

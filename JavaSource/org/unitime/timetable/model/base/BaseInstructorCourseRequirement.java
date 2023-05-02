@@ -92,9 +92,13 @@ public abstract class BaseInstructorCourseRequirement implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructorCourseRequirementNote> getNotes() { return iNotes; }
 	public void setNotes(Set<InstructorCourseRequirementNote> notes) { iNotes = notes; }
-	public void addTonotes(InstructorCourseRequirementNote instructorCourseRequirementNote) {
+	public void addToNotes(InstructorCourseRequirementNote instructorCourseRequirementNote) {
 		if (iNotes == null) iNotes = new HashSet<InstructorCourseRequirementNote>();
 		iNotes.add(instructorCourseRequirementNote);
+	}
+	@Deprecated
+	public void addTonotes(InstructorCourseRequirementNote instructorCourseRequirementNote) {
+		addToNotes(instructorCourseRequirementNote);
 	}
 
 	@Override

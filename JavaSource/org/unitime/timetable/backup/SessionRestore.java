@@ -659,7 +659,7 @@ public class SessionRestore implements SessionRestoreInterface {
 						if (instructor != null) {
 							OfferingCoordinator oc = new OfferingCoordinator();
 							oc.setInstructor(instructor); oc.setOffering(io); oc.setPercentShare(0);
-							io.addToofferingCoordinators(oc);
+							io.addToOfferingCoordinators(oc);
 							otherObjectsToSave.add(oc);
 						}
 					}
@@ -760,7 +760,7 @@ public class SessionRestore implements SessionRestoreInterface {
 								acm.setAcademicClassification(clasf);
 								acm.setMajor(major);
 								acm.setWeight(1.0);
-								student.addToareaClasfMajors(acm);
+								student.addToAreaClasfMajors(acm);
 								otherObjectsToSave.add(acm);
 							}
 						}
@@ -787,7 +787,7 @@ public class SessionRestore implements SessionRestoreInterface {
 								acm.setStudent(student);
 								acm.setAcademicClassification(clasf);
 								acm.setMinor(minor);
-								student.addToareaClasfMinors(acm);
+								student.addToAreaClasfMinors(acm);
 								otherObjectsToSave.add(acm);
 							}
 						}
@@ -953,7 +953,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				if (a != null) {
 					AcademicArea area = (AcademicArea)get(AcademicArea.class, a.getValue(0));	
 					CurriculumReservation cr = (CurriculumReservation)getObject();
-					cr.addToareas(area);
+					cr.addToAreas(area);
 				}
 			}
 		}

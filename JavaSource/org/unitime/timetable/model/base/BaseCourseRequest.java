@@ -130,27 +130,39 @@ public abstract class BaseCourseRequest implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseRequestOption> getCourseRequestOptions() { return iCourseRequestOptions; }
 	public void setCourseRequestOptions(Set<CourseRequestOption> courseRequestOptions) { iCourseRequestOptions = courseRequestOptions; }
-	public void addTocourseRequestOptions(CourseRequestOption courseRequestOption) {
+	public void addToCourseRequestOptions(CourseRequestOption courseRequestOption) {
 		if (iCourseRequestOptions == null) iCourseRequestOptions = new HashSet<CourseRequestOption>();
 		iCourseRequestOptions.add(courseRequestOption);
+	}
+	@Deprecated
+	public void addTocourseRequestOptions(CourseRequestOption courseRequestOption) {
+		addToCourseRequestOptions(courseRequestOption);
 	}
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ClassWaitList> getClassWaitLists() { return iClassWaitLists; }
 	public void setClassWaitLists(Set<ClassWaitList> classWaitLists) { iClassWaitLists = classWaitLists; }
-	public void addToclassWaitLists(ClassWaitList classWaitList) {
+	public void addToClassWaitLists(ClassWaitList classWaitList) {
 		if (iClassWaitLists == null) iClassWaitLists = new HashSet<ClassWaitList>();
 		iClassWaitLists.add(classWaitList);
+	}
+	@Deprecated
+	public void addToclassWaitLists(ClassWaitList classWaitList) {
+		addToClassWaitLists(classWaitList);
 	}
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentSectioningPref> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<StudentSectioningPref> preferences) { iPreferences = preferences; }
-	public void addTopreferences(StudentSectioningPref studentSectioningPref) {
+	public void addToPreferences(StudentSectioningPref studentSectioningPref) {
 		if (iPreferences == null) iPreferences = new HashSet<StudentSectioningPref>();
 		iPreferences.add(studentSectioningPref);
+	}
+	@Deprecated
+	public void addTopreferences(StudentSectioningPref studentSectioningPref) {
+		addToPreferences(studentSectioningPref);
 	}
 
 	@Override

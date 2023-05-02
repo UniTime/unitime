@@ -135,27 +135,39 @@ public abstract class BaseEvent implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventContact> getAdditionalContacts() { return iAdditionalContacts; }
 	public void setAdditionalContacts(Set<EventContact> additionalContacts) { iAdditionalContacts = additionalContacts; }
-	public void addToadditionalContacts(EventContact eventContact) {
+	public void addToAdditionalContacts(EventContact eventContact) {
 		if (iAdditionalContacts == null) iAdditionalContacts = new HashSet<EventContact>();
 		iAdditionalContacts.add(eventContact);
+	}
+	@Deprecated
+	public void addToadditionalContacts(EventContact eventContact) {
+		addToAdditionalContacts(eventContact);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventNote> getNotes() { return iNotes; }
 	public void setNotes(Set<EventNote> notes) { iNotes = notes; }
-	public void addTonotes(EventNote eventNote) {
+	public void addToNotes(EventNote eventNote) {
 		if (iNotes == null) iNotes = new HashSet<EventNote>();
 		iNotes.add(eventNote);
+	}
+	@Deprecated
+	public void addTonotes(EventNote eventNote) {
+		addToNotes(eventNote);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Meeting> getMeetings() { return iMeetings; }
 	public void setMeetings(Set<Meeting> meetings) { iMeetings = meetings; }
-	public void addTomeetings(Meeting meeting) {
+	public void addToMeetings(Meeting meeting) {
 		if (iMeetings == null) iMeetings = new HashSet<Meeting>();
 		iMeetings.add(meeting);
+	}
+	@Deprecated
+	public void addTomeetings(Meeting meeting) {
+		addToMeetings(meeting);
 	}
 
 	@ManyToMany
@@ -165,9 +177,13 @@ public abstract class BaseEvent implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventServiceProvider> getRequestedServices() { return iRequestedServices; }
 	public void setRequestedServices(Set<EventServiceProvider> requestedServices) { iRequestedServices = requestedServices; }
-	public void addTorequestedServices(EventServiceProvider eventServiceProvider) {
+	public void addToRequestedServices(EventServiceProvider eventServiceProvider) {
 		if (iRequestedServices == null) iRequestedServices = new HashSet<EventServiceProvider>();
 		iRequestedServices.add(eventServiceProvider);
+	}
+	@Deprecated
+	public void addTorequestedServices(EventServiceProvider eventServiceProvider) {
+		addToRequestedServices(eventServiceProvider);
 	}
 
 	@Override

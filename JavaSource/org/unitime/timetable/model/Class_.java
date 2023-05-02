@@ -1276,7 +1276,7 @@ public class Class_ extends BaseClass_ {
 				if (!(origPref instanceof DistributionPref)) {
 					newPref = (Preference)origPref.clone();
 					newPref.setOwner(newClass);
-					newClass.addTopreferences(newPref);
+					newClass.addToPreferences(newPref);
 				}
 			}
 		}
@@ -1291,8 +1291,8 @@ public class Class_ extends BaseClass_ {
 				newCi.setLead(ci.isLead());
 				newCi.setPercentShare(ci.getPercentShare());
 				newCi.setResponsibility(ci.getResponsibility());
-				ci.getInstructor().addToclasses(newCi);
-				newClass.addToclassInstructors(newCi);
+				ci.getInstructor().addToClasses(newCi);
+				newClass.addToClassInstructors(newCi);
 			}
 		}
 		return(newClass);

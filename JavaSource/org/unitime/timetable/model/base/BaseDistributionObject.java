@@ -29,10 +29,12 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.proxy.HibernateProxy;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
@@ -81,7 +83,11 @@ public abstract class BaseDistributionObject implements Serializable {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pref_group_id", nullable = false)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
-	public PreferenceGroup getPrefGroup() { return iPrefGroup; }
+	public PreferenceGroup getPrefGroup() {
+		if (iPrefGroup != null && iPrefGroup instanceof HibernateProxy)
+			iPrefGroup = (PreferenceGroup) Hibernate.unproxy(iPrefGroup);
+		return iPrefGroup;
+	}
 	public void setPrefGroup(PreferenceGroup prefGroup) { iPrefGroup = prefGroup; }
 
 	@Override

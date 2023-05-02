@@ -381,7 +381,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 				origTpDays = (TimePatternDays) dIt.next();
 				newTpDays = new TimePatternDays();
 				newTpDays.setDayCode(origTpDays.getDayCode());
-				newTimePattern.addTodays(newTpDays);
+				newTimePattern.addToDays(newTpDays);
 			}
 		}
 		newTimePattern.setMinPerMtg(getMinPerMtg());
@@ -395,7 +395,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 				origTpTime = (TimePatternTime) it.next();
 				newTpTime = new TimePatternTime();
 				newTpTime.setStartSlot(origTpTime.getStartSlot());
-				newTimePattern.addTotimes(newTpTime);
+				newTimePattern.addToTimes(newTpTime);
 			}
 		}
 		newTimePattern.setSession(getSession());

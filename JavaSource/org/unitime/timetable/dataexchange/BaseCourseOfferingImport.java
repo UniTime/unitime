@@ -1111,9 +1111,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					}
 					instructor = new ClassInstructor();
 					instructor.setClassInstructing(c);
-					c.addToclassInstructors(instructor);
+					c.addToClassInstructors(instructor);
 					instructor.setInstructor(di);
-					di.addToclasses(instructor);
+					di.addToClasses(instructor);
 					changed = true;
 					addNew = true;
 	            }
@@ -1368,7 +1368,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (co.getDemand() == null){
 					co.setDemand(Integer.valueOf(0));
 				}
-				io.addTocourseOfferings(co);
+				io.addToCourseOfferings(co);
 				co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)CourseOfferingDAO.getInstance().getSession(), this).toString());
 				co.setSubjectAreaAbbv(co.getSubjectArea().getSubjectAreaAbbreviation());
 				addNote("\tadded course: " + co.getSubjectArea().getSubjectAreaAbbreviation() + " " + co.getCourseNbr());
@@ -1529,7 +1529,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					nco.setInstructionalOffering(io);
 					if (nco.getCredit() != null)
 						addNote("\tadded credit: " + nco.getCredit().creditAbbv());
-					io.addTocourseOfferings(nco);
+					io.addToCourseOfferings(nco);
 					changed = true;
 					if (io.getUniqueId() == null)
 						getHibSession().persist(io);
@@ -1601,7 +1601,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ioc = new InstrOfferingConfig();
 					ioc.setName(name);
 					ioc.setInstructionalOffering(io);
-					io.addToinstrOfferingConfigs(ioc);
+					io.addToInstrOfferingConfigs(ioc);
 					changed = true;
 					addNew = true;
 				}
@@ -1797,7 +1797,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							if (ss.getItype().getItype().equals(itypeId)){
 								org.hibernate.Session hSess = this.getHibSession();
 								clazz.setSchedulingSubpart(ss);
-								ss.addToclasses(clazz);
+								ss.addToClasses(clazz);
 								hSess.merge(ss);
 								hSess.flush();
 								hSess.refresh(ss);
@@ -1880,13 +1880,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setDisplayInstructor(Boolean.valueOf(true));
 					if(parentClass != null){
 						clazz.setParentClass(parentClass);
-						parentClass.addTochildClasses(clazz);
+						parentClass.addToChildClasses(clazz);
 					}
 					for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
 						SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
 						if (ss.getItype().getItype().equals(itypeId)){
 							clazz.setSchedulingSubpart(ss);
-							ss.addToclasses(clazz);
+							ss.addToClasses(clazz);
 							break;
 						}
 					}
@@ -2005,7 +2005,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						tpref.setOwner(clazz);
 						tpref.setPrefLevel(requiredPrefLevel);
 						tpref.setPreference(preference);
-						clazz.addTopreferences(tpref);
+						clazz.addToPreferences(tpref);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class changed");
 						changed = true;
 					} else if (tp != null && (clazz.getTimePatterns() == null || clazz.getTimePatterns().isEmpty())){
@@ -2014,7 +2014,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						tpref.setOwner(clazz);
 						tpref.setPrefLevel(requiredPrefLevel);
 						tpref.setPreference(preference);
-						clazz.addTopreferences(tpref);
+						clazz.addToPreferences(tpref);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' time pattern for class added");
 						changed = true;						
 					} else if (tp == null && clazz.getTimePatterns() != null && !clazz.getTimePatterns().isEmpty()){
@@ -2216,8 +2216,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				DistributionObject distObj = new DistributionObject();
 				distObj.setDistributionPref(dp);
 				distObj.setPrefGroup(c);
-				dp.addTodistributionObjects(distObj);
-				c.addTodistributionObjects(distObj);
+				dp.addToDistributionObjects(distObj);
+				c.addToDistributionObjects(distObj);
 			}
 			getHibSession().persist(dp);
 			getHibSession().flush();
@@ -2247,7 +2247,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				meeting.setEvent(newEvent);
 				meeting.setStatus(status);
 				meeting.setApprovalDate(approvedTime);
-				newEvent.addTomeetings(meeting);
+				newEvent.addToMeetings(meeting);
 			}
 			getHibSession().persist(newEvent);
 			assignmentHelper.createAssignment(newEvent, tp, dp);
@@ -2297,7 +2297,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                         newMeeting.setEvent(origEvent);
                         newMeeting.setStatus(status);
                         newMeeting.setApprovalDate(approvedTime);
-                        origEvent.addTomeetings(newMeeting);
+                        origEvent.addToMeetings(newMeeting);
                         changed = true;
                     }
                 }
@@ -2385,12 +2385,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ss.setItype(itype);
 					ss.setSchedulingSubpartSuffixCache(suffix);
 					ss.setInstrOfferingConfig(ioc);
-					ss.setSession(ioc.getSession());
 					ss.setCourseName(ioc.getInstructionalOffering().getCourseName());
 					ioc.addToschedulingSubparts(ss);
 					if(parentSubpart != null){
 						ss.setParentSubpart(parentSubpart);
-						parentSubpart.addTochildSubparts(ss);
+						parentSubpart.addToChildSubparts(ss);
 					}
 					changed = true;
 					isAdd = true;
@@ -2412,13 +2411,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				
 				if (parentSubpart != null && ss.getParentSubpart() == null){
 					ss.setParentSubpart(parentSubpart);
-					parentSubpart.addTochildSubparts(ss);
+					parentSubpart.addToChildSubparts(ss);
 					addNote("\tsubpart now has parent");
 					changed = true;
 				} else if (parentSubpart != null && !ss.getParentSubpart().getUniqueId().equals(parentSubpart.getUniqueId())){
 					ss.getParentSubpart().getChildSubparts().remove(ss);
 					ss.setParentSubpart(parentSubpart);
-					parentSubpart.addTochildSubparts(ss);
+					parentSubpart.addToChildSubparts(ss);
 					addNote("\tsubpart has different parent");
 					changed = true;
 				} else if (parentSubpart == null && ss.getParentSubpart() != null){

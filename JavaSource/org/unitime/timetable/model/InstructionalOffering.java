@@ -671,7 +671,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 											if (di != null){
 												ci.getInstructor().getClasses().remove(ci);
 												ci.setInstructor(di);
-												di.addToclasses(ci);
+												di.addToClasses(ci);
 											} else {
 												c.getClassInstructors().remove(ci);
 												ci.setClassInstructing(null);
@@ -684,7 +684,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 					}
 				}
 			}
-			this.addToinstrOfferingConfigs(newIoc);
+			this.addToInstrOfferingConfigs(newIoc);
 		}
 	}
 

@@ -29,10 +29,12 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.proxy.HibernateProxy;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -76,7 +78,11 @@ public abstract class BasePreference implements Serializable {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id", nullable = false)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
-	public PreferenceGroup getOwner() { return iOwner; }
+	public PreferenceGroup getOwner() {
+		if (iOwner != null && iOwner instanceof HibernateProxy)
+			iOwner = (PreferenceGroup) Hibernate.unproxy(iOwner);
+		return iOwner;
+	}
 	public void setOwner(PreferenceGroup owner) { iOwner = owner; }
 
 	@ManyToOne(optional = false)

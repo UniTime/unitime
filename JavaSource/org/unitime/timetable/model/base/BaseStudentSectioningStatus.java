@@ -108,9 +108,13 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseType> getTypes() { return iTypes; }
 	public void setTypes(Set<CourseType> types) { iTypes = types; }
-	public void addTotypes(CourseType courseType) {
+	public void addToTypes(CourseType courseType) {
 		if (iTypes == null) iTypes = new HashSet<CourseType>();
 		iTypes.add(courseType);
+	}
+	@Deprecated
+	public void addTotypes(CourseType courseType) {
+		addToTypes(courseType);
 	}
 
 	@Override

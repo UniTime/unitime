@@ -151,18 +151,26 @@ public abstract class BasePitSchedulingSubpart implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitSchedulingSubpart> getPitChildSubparts() { return iPitChildSubparts; }
 	public void setPitChildSubparts(Set<PitSchedulingSubpart> pitChildSubparts) { iPitChildSubparts = pitChildSubparts; }
-	public void addTopitChildSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
+	public void addToPitChildSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
 		if (iPitChildSubparts == null) iPitChildSubparts = new HashSet<PitSchedulingSubpart>();
 		iPitChildSubparts.add(pitSchedulingSubpart);
+	}
+	@Deprecated
+	public void addTopitChildSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
+		addToPitChildSubparts(pitSchedulingSubpart);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitSchedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClass> getPitClasses() { return iPitClasses; }
 	public void setPitClasses(Set<PitClass> pitClasses) { iPitClasses = pitClasses; }
-	public void addTopitClasses(PitClass pitClass) {
+	public void addToPitClasses(PitClass pitClass) {
 		if (iPitClasses == null) iPitClasses = new HashSet<PitClass>();
 		iPitClasses.add(pitClass);
+	}
+	@Deprecated
+	public void addTopitClasses(PitClass pitClass) {
+		addToPitClasses(pitClass);
 	}
 
 	@Override

@@ -218,7 +218,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    cdao.getSession().persist(io);
 		    idao.getSession().refresh(io);
 		    co.setInstructionalOffering(io);
-		    io.addTocourseOfferings(co);
+		    io.addToCourseOfferings(co);
 		    cdao.getSession().persist(co);
 		    cdao.getSession().flush();
 		    cdao.getSession().refresh(co);
@@ -430,7 +430,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 
     public void setCredit(CourseCreditUnitConfig courseCreditUnitConfig){
     	if (this.getCreditConfigs() == null || this.getCreditConfigs().size() == 0){
-    		this.addTocreditConfigs(courseCreditUnitConfig);
+    		this.addToCreditConfigs(courseCreditUnitConfig);
     	} else if (!this.getCreditConfigs().contains(courseCreditUnitConfig)){
     		this.getCreditConfigs().clear();
     		this.getCreditConfigs().add(courseCreditUnitConfig);

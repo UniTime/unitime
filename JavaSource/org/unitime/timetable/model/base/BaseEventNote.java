@@ -130,9 +130,13 @@ public abstract class BaseEventNote implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Meeting> getAffectedMeetings() { return iAffectedMeetings; }
 	public void setAffectedMeetings(Set<Meeting> affectedMeetings) { iAffectedMeetings = affectedMeetings; }
-	public void addToaffectedMeetings(Meeting meeting) {
+	public void addToAffectedMeetings(Meeting meeting) {
 		if (iAffectedMeetings == null) iAffectedMeetings = new HashSet<Meeting>();
 		iAffectedMeetings.add(meeting);
+	}
+	@Deprecated
+	public void addToaffectedMeetings(Meeting meeting) {
+		addToAffectedMeetings(meeting);
 	}
 
 	@Override

@@ -147,6 +147,10 @@ public class HibernateUtil {
 		LoadedConfig config = registryBuilder.getConfigLoader().loadConfigXmlUrl(classLoader.getResource("hibernate.cfg.xml"));
 		
         String dialect = ApplicationProperty.DatabaseDialect.value();
+        if ("org.hibernate.dialect.MySQLInnoDBDialect".equals(dialect))
+        	dialect = MySQLDialect.class.getName();
+        else if ("org.hibernate.dialect.Oracle10gDialect".equals(dialect))
+        	dialect = OracleDialect.class.getName();
         if (dialect!=null) {
         	config.getConfigurationValues().put("dialect", dialect);
         	config.getConfigurationValues().put("hibernate.dialect", dialect);
@@ -252,6 +256,10 @@ public class HibernateUtil {
         LoadedConfig config = registryBuilder.getConfigLoader().loadConfigXmlUrl(classLoader.getResource("hibernate.cfg.xml"));
         
         String dialect = ApplicationProperty.DatabaseDialect.value();
+        if ("org.hibernate.dialect.MySQLInnoDBDialect".equals(dialect))
+        	dialect = MySQLDialect.class.getName();
+        else if ("org.hibernate.dialect.Oracle10gDialect".equals(dialect))
+        	dialect = OracleDialect.class.getName();
         if (dialect!=null) {
         	config.getConfigurationValues().put("dialect", dialect);
         	config.getConfigurationValues().put("hibernate.dialect", dialect);

@@ -117,27 +117,39 @@ public abstract class BasePitStudent implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitStudentAcadAreaMajorClassification> getPitAcadAreaMajorClassifications() { return iPitAcadAreaMajorClassifications; }
 	public void setPitAcadAreaMajorClassifications(Set<PitStudentAcadAreaMajorClassification> pitAcadAreaMajorClassifications) { iPitAcadAreaMajorClassifications = pitAcadAreaMajorClassifications; }
-	public void addTopitAcadAreaMajorClassifications(PitStudentAcadAreaMajorClassification pitStudentAcadAreaMajorClassification) {
+	public void addToPitAcadAreaMajorClassifications(PitStudentAcadAreaMajorClassification pitStudentAcadAreaMajorClassification) {
 		if (iPitAcadAreaMajorClassifications == null) iPitAcadAreaMajorClassifications = new HashSet<PitStudentAcadAreaMajorClassification>();
 		iPitAcadAreaMajorClassifications.add(pitStudentAcadAreaMajorClassification);
+	}
+	@Deprecated
+	public void addTopitAcadAreaMajorClassifications(PitStudentAcadAreaMajorClassification pitStudentAcadAreaMajorClassification) {
+		addToPitAcadAreaMajorClassifications(pitStudentAcadAreaMajorClassification);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitStudentAcadAreaMinorClassification> getPitAcadAreaMinorClassifications() { return iPitAcadAreaMinorClassifications; }
 	public void setPitAcadAreaMinorClassifications(Set<PitStudentAcadAreaMinorClassification> pitAcadAreaMinorClassifications) { iPitAcadAreaMinorClassifications = pitAcadAreaMinorClassifications; }
-	public void addTopitAcadAreaMinorClassifications(PitStudentAcadAreaMinorClassification pitStudentAcadAreaMinorClassification) {
+	public void addToPitAcadAreaMinorClassifications(PitStudentAcadAreaMinorClassification pitStudentAcadAreaMinorClassification) {
 		if (iPitAcadAreaMinorClassifications == null) iPitAcadAreaMinorClassifications = new HashSet<PitStudentAcadAreaMinorClassification>();
 		iPitAcadAreaMinorClassifications.add(pitStudentAcadAreaMinorClassification);
+	}
+	@Deprecated
+	public void addTopitAcadAreaMinorClassifications(PitStudentAcadAreaMinorClassification pitStudentAcadAreaMinorClassification) {
+		addToPitAcadAreaMinorClassifications(pitStudentAcadAreaMinorClassification);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitStudentClassEnrollment> getPitClassEnrollments() { return iPitClassEnrollments; }
 	public void setPitClassEnrollments(Set<PitStudentClassEnrollment> pitClassEnrollments) { iPitClassEnrollments = pitClassEnrollments; }
-	public void addTopitClassEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
+	public void addToPitClassEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
 		if (iPitClassEnrollments == null) iPitClassEnrollments = new HashSet<PitStudentClassEnrollment>();
 		iPitClassEnrollments.add(pitStudentClassEnrollment);
+	}
+	@Deprecated
+	public void addTopitClassEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
+		addToPitClassEnrollments(pitStudentClassEnrollment);
 	}
 
 	@Override

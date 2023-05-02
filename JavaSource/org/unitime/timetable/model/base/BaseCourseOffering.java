@@ -213,9 +213,13 @@ public abstract class BaseCourseOffering implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
-	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
+	public void addToCreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
 		if (iCreditConfigs == null) iCreditConfigs = new HashSet<CourseCreditUnitConfig>();
 		iCreditConfigs.add(courseCreditUnitConfig);
+	}
+	@Deprecated
+	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
+		addToCreditConfigs(courseCreditUnitConfig);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -225,9 +229,13 @@ public abstract class BaseCourseOffering implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<OverrideType> getDisabledOverrides() { return iDisabledOverrides; }
 	public void setDisabledOverrides(Set<OverrideType> disabledOverrides) { iDisabledOverrides = disabledOverrides; }
-	public void addTodisabledOverrides(OverrideType overrideType) {
+	public void addToDisabledOverrides(OverrideType overrideType) {
 		if (iDisabledOverrides == null) iDisabledOverrides = new HashSet<OverrideType>();
 		iDisabledOverrides.add(overrideType);
+	}
+	@Deprecated
+	public void addTodisabledOverrides(OverrideType overrideType) {
+		addToDisabledOverrides(overrideType);
 	}
 
 	@Override

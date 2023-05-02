@@ -92,9 +92,13 @@ public abstract class BaseSolverParameterGroup implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverParameterDef> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameterDef> parameters) { iParameters = parameters; }
-	public void addToparameters(SolverParameterDef solverParameterDef) {
+	public void addToParameters(SolverParameterDef solverParameterDef) {
 		if (iParameters == null) iParameters = new HashSet<SolverParameterDef>();
 		iParameters.add(solverParameterDef);
+	}
+	@Deprecated
+	public void addToparameters(SolverParameterDef solverParameterDef) {
+		addToParameters(solverParameterDef);
 	}
 
 	@Override

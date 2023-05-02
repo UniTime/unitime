@@ -208,99 +208,143 @@ public abstract class BaseStudent implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAreaClassificationMajor> getAreaClasfMajors() { return iAreaClasfMajors; }
 	public void setAreaClasfMajors(Set<StudentAreaClassificationMajor> areaClasfMajors) { iAreaClasfMajors = areaClasfMajors; }
-	public void addToareaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
+	public void addToAreaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
 		if (iAreaClasfMajors == null) iAreaClasfMajors = new HashSet<StudentAreaClassificationMajor>();
 		iAreaClasfMajors.add(studentAreaClassificationMajor);
+	}
+	@Deprecated
+	public void addToareaClasfMajors(StudentAreaClassificationMajor studentAreaClassificationMajor) {
+		addToAreaClasfMajors(studentAreaClassificationMajor);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAreaClassificationMinor> getAreaClasfMinors() { return iAreaClasfMinors; }
 	public void setAreaClasfMinors(Set<StudentAreaClassificationMinor> areaClasfMinors) { iAreaClasfMinors = areaClasfMinors; }
-	public void addToareaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
+	public void addToAreaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
 		if (iAreaClasfMinors == null) iAreaClasfMinors = new HashSet<StudentAreaClassificationMinor>();
 		iAreaClasfMinors.add(studentAreaClassificationMinor);
+	}
+	@Deprecated
+	public void addToareaClasfMinors(StudentAreaClassificationMinor studentAreaClassificationMinor) {
+		addToAreaClasfMinors(studentAreaClassificationMinor);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentAccomodation> getAccomodations() { return iAccomodations; }
 	public void setAccomodations(Set<StudentAccomodation> accomodations) { iAccomodations = accomodations; }
-	public void addToaccomodations(StudentAccomodation studentAccomodation) {
+	public void addToAccomodations(StudentAccomodation studentAccomodation) {
 		if (iAccomodations == null) iAccomodations = new HashSet<StudentAccomodation>();
 		iAccomodations.add(studentAccomodation);
+	}
+	@Deprecated
+	public void addToaccomodations(StudentAccomodation studentAccomodation) {
+		addToAccomodations(studentAccomodation);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<StudentGroup> groups) { iGroups = groups; }
-	public void addTogroups(StudentGroup studentGroup) {
+	public void addToGroups(StudentGroup studentGroup) {
 		if (iGroups == null) iGroups = new HashSet<StudentGroup>();
 		iGroups.add(studentGroup);
+	}
+	@Deprecated
+	public void addTogroups(StudentGroup studentGroup) {
+		addToGroups(studentGroup);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<WaitList> getWaitlists() { return iWaitlists; }
 	public void setWaitlists(Set<WaitList> waitlists) { iWaitlists = waitlists; }
-	public void addTowaitlists(WaitList waitList) {
+	public void addToWaitlists(WaitList waitList) {
 		if (iWaitlists == null) iWaitlists = new HashSet<WaitList>();
 		iWaitlists.add(waitList);
+	}
+	@Deprecated
+	public void addTowaitlists(WaitList waitList) {
+		addToWaitlists(waitList);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseDemand> getCourseDemands() { return iCourseDemands; }
 	public void setCourseDemands(Set<CourseDemand> courseDemands) { iCourseDemands = courseDemands; }
-	public void addTocourseDemands(CourseDemand courseDemand) {
+	public void addToCourseDemands(CourseDemand courseDemand) {
 		if (iCourseDemands == null) iCourseDemands = new HashSet<CourseDemand>();
 		iCourseDemands.add(courseDemand);
+	}
+	@Deprecated
+	public void addTocourseDemands(CourseDemand courseDemand) {
+		addToCourseDemands(courseDemand);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
 	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
-	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
+	public void addToClassEnrollments(StudentClassEnrollment studentClassEnrollment) {
 		if (iClassEnrollments == null) iClassEnrollments = new HashSet<StudentClassEnrollment>();
 		iClassEnrollments.add(studentClassEnrollment);
+	}
+	@Deprecated
+	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
+		addToClassEnrollments(studentClassEnrollment);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<LastLikeCourseDemand> getLastLikeCourseDemands() { return iLastLikeCourseDemands; }
 	public void setLastLikeCourseDemands(Set<LastLikeCourseDemand> lastLikeCourseDemands) { iLastLikeCourseDemands = lastLikeCourseDemands; }
-	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
+	public void addToLastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
 		if (iLastLikeCourseDemands == null) iLastLikeCourseDemands = new HashSet<LastLikeCourseDemand>();
 		iLastLikeCourseDemands.add(lastLikeCourseDemand);
+	}
+	@Deprecated
+	public void addTolastLikeCourseDemands(LastLikeCourseDemand lastLikeCourseDemand) {
+		addToLastLikeCourseDemands(lastLikeCourseDemand);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentNote> getNotes() { return iNotes; }
 	public void setNotes(Set<StudentNote> notes) { iNotes = notes; }
-	public void addTonotes(StudentNote studentNote) {
+	public void addToNotes(StudentNote studentNote) {
 		if (iNotes == null) iNotes = new HashSet<StudentNote>();
 		iNotes.add(studentNote);
+	}
+	@Deprecated
+	public void addTonotes(StudentNote studentNote) {
+		addToNotes(studentNote);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "students")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Advisor> getAdvisors() { return iAdvisors; }
 	public void setAdvisors(Set<Advisor> advisors) { iAdvisors = advisors; }
-	public void addToadvisors(Advisor advisor) {
+	public void addToAdvisors(Advisor advisor) {
 		if (iAdvisors == null) iAdvisors = new HashSet<Advisor>();
 		iAdvisors.add(advisor);
+	}
+	@Deprecated
+	public void addToadvisors(Advisor advisor) {
+		addToAdvisors(advisor);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "student")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AdvisorCourseRequest> getAdvisorCourseRequests() { return iAdvisorCourseRequests; }
 	public void setAdvisorCourseRequests(Set<AdvisorCourseRequest> advisorCourseRequests) { iAdvisorCourseRequests = advisorCourseRequests; }
-	public void addToadvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {
+	public void addToAdvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {
 		if (iAdvisorCourseRequests == null) iAdvisorCourseRequests = new HashSet<AdvisorCourseRequest>();
 		iAdvisorCourseRequests.add(advisorCourseRequest);
+	}
+	@Deprecated
+	public void addToadvisorCourseRequests(AdvisorCourseRequest advisorCourseRequest) {
+		addToAdvisorCourseRequests(advisorCourseRequest);
 	}
 
 	@Override

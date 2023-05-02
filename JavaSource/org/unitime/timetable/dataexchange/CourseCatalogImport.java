@@ -136,7 +136,7 @@ public class CourseCatalogImport extends BaseImport {
             }
             credit.setFractionalCreditAllowed(Boolean.valueOf(element.attributeValue("fractionalCreditAllowed")));
             credit.setSubpartId(element.attributeValue("subpartId"));
-            catalog.addTosubparts(credit);
+            catalog.addToSubparts(credit);
         }
 	}
 }

@@ -78,9 +78,13 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
-	public void addTodistributionObjects(DistributionObject distributionObject) {
+	public void addToDistributionObjects(DistributionObject distributionObject) {
 		if (iDistributionObjects == null) iDistributionObjects = new HashSet<DistributionObject>();
 		iDistributionObjects.add(distributionObject);
+	}
+	@Deprecated
+	public void addTodistributionObjects(DistributionObject distributionObject) {
+		addToDistributionObjects(distributionObject);
 	}
 
 	@Override

@@ -124,7 +124,7 @@ public class BuildingRoomImport extends BaseImport {
 		}
 		room.setBuilding(building);
 		room.setDisplayName(element.attributeValue("displayName"));
-		building.addTorooms(room);
+		building.addToRooms(room);
 		getHibSession().persist(room);
 		if(element.element("roomDepartments") != null) {
 			for (Iterator i = element.element("roomDepartments").elementIterator(); i.hasNext();)
@@ -152,7 +152,7 @@ public class BuildingRoomImport extends BaseImport {
 			dept.setPercent(Integer.decode(percent));
 		}
 		dept.setRoom(room);
-		room.addToroomDepartments(dept);
+		room.addToRoomDepartments(dept);
 		getHibSession().persist(dept);
 	}
 
@@ -167,7 +167,7 @@ public class BuildingRoomImport extends BaseImport {
 			feature.setValue(feature.getValue().substring(0, 20));
 		}
 		feature.setRoom(room);
-		room.addToroomFeatures(feature);
+		room.addToRoomFeatures(feature);
 		getHibSession().persist(feature);
 	}
 	

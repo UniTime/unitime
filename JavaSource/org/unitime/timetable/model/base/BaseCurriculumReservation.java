@@ -68,9 +68,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicArea> getAreas() { return iAreas; }
 	public void setAreas(Set<AcademicArea> areas) { iAreas = areas; }
-	public void addToareas(AcademicArea academicArea) {
+	public void addToAreas(AcademicArea academicArea) {
 		if (iAreas == null) iAreas = new HashSet<AcademicArea>();
 		iAreas.add(academicArea);
+	}
+	@Deprecated
+	public void addToareas(AcademicArea academicArea) {
+		addToAreas(academicArea);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -80,9 +84,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
-	public void addTomajors(PosMajor posMajor) {
+	public void addToMajors(PosMajor posMajor) {
 		if (iMajors == null) iMajors = new HashSet<PosMajor>();
 		iMajors.add(posMajor);
+	}
+	@Deprecated
+	public void addTomajors(PosMajor posMajor) {
+		addToMajors(posMajor);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -92,9 +100,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
-	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
+	public void addToConcentrations(PosMajorConcentration posMajorConcentration) {
 		if (iConcentrations == null) iConcentrations = new HashSet<PosMajorConcentration>();
 		iConcentrations.add(posMajorConcentration);
+	}
+	@Deprecated
+	public void addToconcentrations(PosMajorConcentration posMajorConcentration) {
+		addToConcentrations(posMajorConcentration);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -104,9 +116,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicClassification> getClassifications() { return iClassifications; }
 	public void setClassifications(Set<AcademicClassification> classifications) { iClassifications = classifications; }
-	public void addToclassifications(AcademicClassification academicClassification) {
+	public void addToClassifications(AcademicClassification academicClassification) {
 		if (iClassifications == null) iClassifications = new HashSet<AcademicClassification>();
 		iClassifications.add(academicClassification);
+	}
+	@Deprecated
+	public void addToclassifications(AcademicClassification academicClassification) {
+		addToClassifications(academicClassification);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -116,9 +132,13 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMinor> getMinors() { return iMinors; }
 	public void setMinors(Set<PosMinor> minors) { iMinors = minors; }
-	public void addTominors(PosMinor posMinor) {
+	public void addToMinors(PosMinor posMinor) {
 		if (iMinors == null) iMinors = new HashSet<PosMinor>();
 		iMinors.add(posMinor);
+	}
+	@Deprecated
+	public void addTominors(PosMinor posMinor) {
+		addToMinors(posMinor);
 	}
 
 	@Override

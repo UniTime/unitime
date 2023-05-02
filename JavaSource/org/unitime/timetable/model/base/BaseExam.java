@@ -124,8 +124,9 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -149,9 +150,13 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamOwner> getOwners() { return iOwners; }
 	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }
-	public void addToowners(ExamOwner examOwner) {
+	public void addToOwners(ExamOwner examOwner) {
 		if (iOwners == null) iOwners = new HashSet<ExamOwner>();
 		iOwners.add(examOwner);
+	}
+	@Deprecated
+	public void addToowners(ExamOwner examOwner) {
+		addToOwners(examOwner);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -161,18 +166,26 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getAssignedRooms() { return iAssignedRooms; }
 	public void setAssignedRooms(Set<Location> assignedRooms) { iAssignedRooms = assignedRooms; }
-	public void addToassignedRooms(Location location) {
+	public void addToAssignedRooms(Location location) {
 		if (iAssignedRooms == null) iAssignedRooms = new HashSet<Location>();
 		iAssignedRooms.add(location);
+	}
+	@Deprecated
+	public void addToassignedRooms(Location location) {
+		addToAssignedRooms(location);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "exams")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
-	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {
 		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
+	}
+	@Deprecated
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		addToInstructors(departmentalInstructor);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
@@ -183,9 +196,13 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
 	public Set<ExamConflict> getConflicts() { return iConflicts; }
 	public void setConflicts(Set<ExamConflict> conflicts) { iConflicts = conflicts; }
-	public void addToconflicts(ExamConflict examConflict) {
+	public void addToConflicts(ExamConflict examConflict) {
 		if (iConflicts == null) iConflicts = new HashSet<ExamConflict>();
 		iConflicts.add(examConflict);
+	}
+	@Deprecated
+	public void addToconflicts(ExamConflict examConflict) {
+		addToConflicts(examConflict);
 	}
 
 	@Override

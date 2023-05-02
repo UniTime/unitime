@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -105,8 +106,9 @@ public abstract class BaseDatePattern implements Serializable {
 	public Float getNumberOfWeeks() { return iNumberOfWeeks; }
 	public void setNumberOfWeeks(Float numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -117,18 +119,26 @@ public abstract class BaseDatePattern implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DatePattern> getParents() { return iParents; }
 	public void setParents(Set<DatePattern> parents) { iParents = parents; }
-	public void addToparents(DatePattern datePattern) {
+	public void addToParents(DatePattern datePattern) {
 		if (iParents == null) iParents = new HashSet<DatePattern>();
 		iParents.add(datePattern);
+	}
+	@Deprecated
+	public void addToparents(DatePattern datePattern) {
+		addToParents(datePattern);
 	}
 
 	@ManyToMany(mappedBy = "datePatterns")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
-	public void addTodepartments(Department department) {
+	public void addToDepartments(Department department) {
 		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
+	}
+	@Deprecated
+	public void addTodepartments(Department department) {
+		addToDepartments(department);
 	}
 
 	@Override

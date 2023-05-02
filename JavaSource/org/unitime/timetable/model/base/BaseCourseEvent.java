@@ -66,9 +66,13 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RelatedCourseInfo> getRelatedCourses() { return iRelatedCourses; }
 	public void setRelatedCourses(Set<RelatedCourseInfo> relatedCourses) { iRelatedCourses = relatedCourses; }
-	public void addTorelatedCourses(RelatedCourseInfo relatedCourseInfo) {
+	public void addToRelatedCourses(RelatedCourseInfo relatedCourseInfo) {
 		if (iRelatedCourses == null) iRelatedCourses = new HashSet<RelatedCourseInfo>();
 		iRelatedCourses.add(relatedCourseInfo);
+	}
+	@Deprecated
+	public void addTorelatedCourses(RelatedCourseInfo relatedCourseInfo) {
+		addToRelatedCourses(relatedCourseInfo);
 	}
 
 	@Override

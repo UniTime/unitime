@@ -146,45 +146,65 @@ public abstract class BaseSolution implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
-	public void addToparameters(SolverParameter solverParameter) {
+	public void addToParameters(SolverParameter solverParameter) {
 		if (iParameters == null) iParameters = new HashSet<SolverParameter>();
 		iParameters.add(solverParameter);
+	}
+	@Deprecated
+	public void addToparameters(SolverParameter solverParameter) {
+		addToParameters(solverParameter);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solution", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolutionInfo> getSolutionInfo() { return iSolutionInfo; }
 	public void setSolutionInfo(Set<SolutionInfo> solutionInfo) { iSolutionInfo = solutionInfo; }
-	public void addTosolutionInfo(SolutionInfo solutionInfo) {
+	public void addToSolutionInfo(SolutionInfo solutionInfo) {
 		if (iSolutionInfo == null) iSolutionInfo = new HashSet<SolutionInfo>();
 		iSolutionInfo.add(solutionInfo);
+	}
+	@Deprecated
+	public void addTosolutionInfo(SolutionInfo solutionInfo) {
+		addToSolutionInfo(solutionInfo);
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
-	public void addTostudentEnrollments(StudentEnrollment studentEnrollment) {
+	public void addToStudentEnrollments(StudentEnrollment studentEnrollment) {
 		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet<StudentEnrollment>();
 		iStudentEnrollments.add(studentEnrollment);
+	}
+	@Deprecated
+	public void addTostudentEnrollments(StudentEnrollment studentEnrollment) {
+		addToStudentEnrollments(studentEnrollment);
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
-	public void addToassignments(Assignment assignment) {
+	public void addToAssignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+	@Deprecated
+	public void addToassignments(Assignment assignment) {
+		addToAssignments(assignment);
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<JointEnrollment> getJointEnrollments() { return iJointEnrollments; }
 	public void setJointEnrollments(Set<JointEnrollment> jointEnrollments) { iJointEnrollments = jointEnrollments; }
-	public void addTojointEnrollments(JointEnrollment jointEnrollment) {
+	public void addToJointEnrollments(JointEnrollment jointEnrollment) {
 		if (iJointEnrollments == null) iJointEnrollments = new HashSet<JointEnrollment>();
 		iJointEnrollments.add(jointEnrollment);
+	}
+	@Deprecated
+	public void addTojointEnrollments(JointEnrollment jointEnrollment) {
+		addToJointEnrollments(jointEnrollment);
 	}
 
 	@Override

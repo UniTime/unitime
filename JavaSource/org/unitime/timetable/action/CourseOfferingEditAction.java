@@ -559,7 +559,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		    io.setLimit(Integer.valueOf(0));
 		    
 		    co.setInstructionalOffering(io);
-		    io.addTocourseOfferings(co);
+		    io.addToCourseOfferings(co);
 
             co.setScheduleBookNote(form.getScheduleBookNote());
             

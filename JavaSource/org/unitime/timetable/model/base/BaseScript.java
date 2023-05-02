@@ -96,9 +96,13 @@ public abstract class BaseScript implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ScriptParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<ScriptParameter> parameters) { iParameters = parameters; }
-	public void addToparameters(ScriptParameter scriptParameter) {
+	public void addToParameters(ScriptParameter scriptParameter) {
 		if (iParameters == null) iParameters = new HashSet<ScriptParameter>();
 		iParameters.add(scriptParameter);
+	}
+	@Deprecated
+	public void addToparameters(ScriptParameter scriptParameter) {
+		addToParameters(scriptParameter);
 	}
 
 	@Override

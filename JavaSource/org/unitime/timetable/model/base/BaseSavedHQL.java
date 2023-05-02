@@ -91,9 +91,13 @@ public abstract class BaseSavedHQL implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SavedHQLParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SavedHQLParameter> parameters) { iParameters = parameters; }
-	public void addToparameters(SavedHQLParameter savedHQLParameter) {
+	public void addToParameters(SavedHQLParameter savedHQLParameter) {
 		if (iParameters == null) iParameters = new HashSet<SavedHQLParameter>();
 		iParameters.add(savedHQLParameter);
+	}
+	@Deprecated
+	public void addToparameters(SavedHQLParameter savedHQLParameter) {
+		addToParameters(savedHQLParameter);
 	}
 
 	@Override

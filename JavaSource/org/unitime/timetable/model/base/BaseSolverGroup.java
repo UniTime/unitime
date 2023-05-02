@@ -100,27 +100,39 @@ public abstract class BaseSolverGroup implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
-	public void addTotimetableManagers(TimetableManager timetableManager) {
+	public void addToTimetableManagers(TimetableManager timetableManager) {
 		if (iTimetableManagers == null) iTimetableManagers = new HashSet<TimetableManager>();
 		iTimetableManagers.add(timetableManager);
+	}
+	@Deprecated
+	public void addTotimetableManagers(TimetableManager timetableManager) {
+		addToTimetableManagers(timetableManager);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solverGroup")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
-	public void addTodepartments(Department department) {
+	public void addToDepartments(Department department) {
 		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
+	}
+	@Deprecated
+	public void addTodepartments(Department department) {
+		addToDepartments(department);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Solution> getSolutions() { return iSolutions; }
 	public void setSolutions(Set<Solution> solutions) { iSolutions = solutions; }
-	public void addTosolutions(Solution solution) {
+	public void addToSolutions(Solution solution) {
 		if (iSolutions == null) iSolutions = new HashSet<Solution>();
 		iSolutions.add(solution);
+	}
+	@Deprecated
+	public void addTosolutions(Solution solution) {
+		addToSolutions(solution);
 	}
 
 	@Override

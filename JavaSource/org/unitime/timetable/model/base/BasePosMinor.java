@@ -99,9 +99,13 @@ public abstract class BasePosMinor implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AcademicArea> getAcademicAreas() { return iAcademicAreas; }
 	public void setAcademicAreas(Set<AcademicArea> academicAreas) { iAcademicAreas = academicAreas; }
-	public void addToacademicAreas(AcademicArea academicArea) {
+	public void addToAcademicAreas(AcademicArea academicArea) {
 		if (iAcademicAreas == null) iAcademicAreas = new HashSet<AcademicArea>();
 		iAcademicAreas.add(academicArea);
+	}
+	@Deprecated
+	public void addToacademicAreas(AcademicArea academicArea) {
+		addToAcademicAreas(academicArea);
 	}
 
 	@Override

@@ -254,7 +254,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		else
 			aamc.setWeight(1.0);
 		aamc.setPitStudent(s);
-		s.addTopitAcadAreaMajorClassifications(aamc);
+		s.addToPitAcadAreaMajorClassifications(aamc);
 		 getHibSession().persist(aamc);
 	}
 
@@ -264,7 +264,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		aamc.setAcademicClassification(academicClassifications.get(getRequiredLongAttribute(element, PointInTimeDataExport.sAcademicClassificationUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
 		aamc.setMinor(minors.get(getRequiredLongAttribute(element, PointInTimeDataExport.sMinorUniqueIdAttribute, PointInTimeDataExport.sAcadAreaMinorClassificationElementName)));
 		aamc.setPitStudent(s);
-		s.addTopitAcadAreaMinorClassifications(aamc);
+		s.addToPitAcadAreaMinorClassifications(aamc);
 		 getHibSession().persist(aamc);
 	}
 
@@ -277,7 +277,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		psce.setTimestamp(CalendarUtils.getDate(getRequiredStringAttribute(element, PointInTimeDataExport.sTimestampAttribute, PointInTimeDataExport.sEnrollmentElementName), (dateFormat + " " + timeFormat)));
 		psce.setChangedBy(getOptionalStringAttribute(element, PointInTimeDataExport.sChangedByAttribute));
 		psce.setPitStudent(s);
-		s.addTopitClassEnrollments(psce);
+		s.addToPitClassEnrollments(psce);
 		 getHibSession().persist(psce);
 	}
 
@@ -819,13 +819,13 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementTimePatternTime(Element element, TimePattern tp) throws Exception {
 		TimePatternTime timePatternTime = new TimePatternTime();
 		timePatternTime.setStartSlot(getRequiredIntegerAttribute(element, PointInTimeDataExport.sStartSlotAttribute, PointInTimeDataExport.sTimePatternDaysElementName));
-		tp.addTotimes(timePatternTime);
+		tp.addToTimes(timePatternTime);
 	}
 
 	private void elementTimePatternDays(Element element, TimePattern tp) throws Exception {
 		TimePatternDays timePatternDays = new TimePatternDays();
 		timePatternDays.setDayCode(getRequiredIntegerAttribute(element, PointInTimeDataExport.sDayCodeAttribute, PointInTimeDataExport.sTimePatternDaysElementName));
-		tp.addTodays(timePatternDays);
+		tp.addToDays(timePatternDays);
 		
 	}
 
@@ -853,7 +853,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			NonUniversityLocation n = new NonUniversityLocation();
 			n.setName(name);
 			n.setSession(session);
-			session.addTorooms(n);
+			session.addToRooms(n);
 			Long roomTypeId = getRequiredLongAttribute(nonUniversityLocationElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
 			n.setRoomType(roomTypes.get(roomTypeId));
 			Integer capacity = getRequiredIntegerAttribute(nonUniversityLocationElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sNonUniversityLocationElementName);
@@ -882,7 +882,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				rd.setControl(Boolean.TRUE);
 				rd.setDepartment(departments.get(ctrlDeptId));
 				rd.setRoom(n);
-				n.addToroomDepts(rd);
+				n.addToRoomDepts(rd);
 				getHibSession().persist(rd);
 			}
 			l = n;
@@ -899,7 +899,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			b = new Building();
 			b.setAbbreviation(abbreviation);
 			b.setSession(session);
-			session.addTobuildings(b);
+			session.addToBuildings(b);
 			String name = getRequiredStringAttribute(buildingElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sBuildingElementName);
 			b.setName(name);
 			String externalId = getOptionalStringAttribute(buildingElement, PointInTimeDataExport.sExternalIdAttribute);
@@ -937,7 +937,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			r.setBuilding(building);
 			r.setRoomNumber(roomNumber);
 			r.setSession(session);
-			session.addTorooms(r);
+			session.addToRooms(r);
 			Long roomTypeId = getRequiredLongAttribute(roomElement, PointInTimeDataExport.sRoomTypeIdAttribute, PointInTimeDataExport.sRoomElementName);
 			r.setRoomType(roomTypes.get(roomTypeId));
 			Integer capacity = getRequiredIntegerAttribute(roomElement, PointInTimeDataExport.sCapacityAttribute, PointInTimeDataExport.sRoomElementName);
@@ -1010,7 +1010,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			d.setInheritInstructorPreferences(Boolean.TRUE);
 			d.setExternalManager(Boolean.FALSE);
 			d.setDistributionPrefPriority(0);
-			session.addTodepartments(d);
+			session.addToDepartments(d);
 			getHibSession().persist(d);
 			departmentsByCode.put(deptCode, d);
 		}
@@ -1086,9 +1086,9 @@ public class PointInTimeDataImport extends EventRelatedImports {
 				sa.setTitle(title);
 				sa.setExternalUniqueId(externalId);
 				sa.setDepartment(department);
-				department.addTosubjectAreas(sa);
+				department.addToSubjectAreas(sa);
 				sa.setSession(session);
-				session.addTosubjectAreas(sa);
+				session.addToSubjectAreas(sa);
 				getHibSession().persist(sa);
 				subjectAreas.put(sa.getSubjectAreaAbbreviation(), sa);
 			}
@@ -1268,7 +1268,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementClassInstructor(Element classInstructorElement, PitClass pitClass) throws Exception {
 		PitClassInstructor pci = new PitClassInstructor();
 		pci.setPitClassInstructing(pitClass);
-		pitClass.addTopitClassInstructors(pci);
+		pitClass.addToPitClassInstructors(pci);
 		
 		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(getRequiredLongAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName)));
 		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sClassInstructorElementName));
@@ -1287,7 +1287,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementOfferingCoordinator(Element classInstructorElement, PitInstructionalOffering pitInstructionalOffering) throws Exception {
 		PitOfferingCoordinator pci = new PitOfferingCoordinator();
 		pci.setPitInstructionalOffering(pitInstructionalOffering);
-		pitInstructionalOffering.addTopitOfferingCoordinators(pci);
+		pitInstructionalOffering.addToPitOfferingCoordinators(pci);
 		
 		pci.setPitDepartmentalInstructor(pitDepartmentInstructors.get(getRequiredLongAttribute(classInstructorElement, PointInTimeDataExport.sDepartmentalInstructorUniqueIdAttribute, PointInTimeDataExport.sClassInstructorElementName)));
 		pci.setPercentShare(getRequiredIntegerAttribute(classInstructorElement, PointInTimeDataExport.sShareAttribute, PointInTimeDataExport.sOfferingCoordinatorElementName));
@@ -1304,7 +1304,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		if (courseElement.getName().equals(PointInTimeDataExport.sCourseElementName)){
 			PitCourseOffering pco = new PitCourseOffering();
 			pco.setPitInstructionalOffering(pitInstructionalOffering);
-			pitInstructionalOffering.addTopitCourseOfferings(pco);
+			pitInstructionalOffering.addToPitCourseOfferings(pco);
 			
 			pco.setSubjectArea(subjectAreas.get(getRequiredStringAttribute(courseElement, PointInTimeDataExport.sSubjectAreaAbbreviationAttribute, PointInTimeDataExport.sCourseElementName)));
 			pco.setCourseNbr(getRequiredStringAttribute(courseElement, PointInTimeDataExport.sCourseNbrAttribute, PointInTimeDataExport.sCourseElementName));
@@ -1369,7 +1369,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		
 		pioc.setName(getRequiredStringAttribute(configElement, PointInTimeDataExport.sNameAttribute,PointInTimeDataExport. sConfigElementName));
 		pioc.setPitInstructionalOffering(pitInstructionalOffering);
-		pitInstructionalOffering.addTopitInstrOfferingConfigs(pioc);
+		pitInstructionalOffering.addToPitInstrOfferingConfigs(pioc);
 		pioc.setUnlimitedEnrollment(getRequiredBooleanAttribute(configElement, PointInTimeDataExport.sUnlimitedEnrollmentAttributeName, PointInTimeDataExport.sConfigElementName));
 		
 		String durationTypeStr = getOptionalStringAttribute(configElement, PointInTimeDataExport.sDurationTypeAttribute);
@@ -1403,12 +1403,12 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			pc.setClazz(c);
 		}
 		pc.setPitSchedulingSubpart(pitSchedulingSubpart);
-		pitSchedulingSubpart.addTopitClasses(pc);
+		pitSchedulingSubpart.addToPitClasses(pc);
 		Long parentClassUid = getOptionalLongAttribute(classElement, PointInTimeDataExport.sParentClassUniqueIdAttribute);
 		if (parentClassUid != null){
 			PitClass parentPitClass = pitClasses.get(parentClassUid);
 			pc.setPitParentClass(parentPitClass);
-			parentPitClass.addTopitChildClasses(pc);
+			parentPitClass.addToPitChildClasses(pc);
 		}
 		
 		pc.setDatePattern(datePatterns.get(getRequiredLongAttribute(classElement, PointInTimeDataExport.sDatePatternUniqueIdAttribute, PointInTimeDataExport.sClassElementName)));
@@ -1522,7 +1522,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementClassEvent(Element classEventElement, PitClass pc) throws Exception {
 		PitClassEvent pce = new PitClassEvent();
 		pce.setPitClass(pc);
-		pc.addTopitClassEvents(pce);
+		pc.addToPitClassEvents(pce);
 		pce.setEventName(getRequiredStringAttribute(classEventElement, PointInTimeDataExport.sNameAttribute, PointInTimeDataExport.sClassEventElementName));
 		 getHibSession().persist(pce);
 		for(Element classMeetingElement : (List<Element>) classEventElement.elements()){
@@ -1533,7 +1533,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 	private void elementClassMeeting(Element classMeetingElement, PitClassEvent pce) throws Exception {
 		PitClassMeeting pcm = new PitClassMeeting();
 		pcm.setPitClassEvent(pce);
-		pce.addTopitClassMeetings(pcm);
+		pce.addToPitClassMeetings(pcm);
 		pcm.setMeetingDate(CalendarUtils.getDate(getRequiredStringAttribute(classMeetingElement, PointInTimeDataExport.sMeetingDateAttribute, PointInTimeDataExport.sClassMeetingElementName), dateFormat));
 		pcm.setStartPeriod(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStartPeriodAttribute, PointInTimeDataExport.sClassMeetingElementName));
 		pcm.setStopPeriod(getRequiredIntegerAttribute(classMeetingElement, PointInTimeDataExport.sStopPeriodAttribute, PointInTimeDataExport.sClassMeetingElementName));
@@ -1561,7 +1561,7 @@ public class PointInTimeDataImport extends EventRelatedImports {
 		PitClassMeetingUtilPeriod pcmup = new PitClassMeetingUtilPeriod();
 		pcmup.setTimeSlot(getRequiredIntegerAttribute(classMeetingUtilPeriodElement, PointInTimeDataExport.sPeriodAttribute, PointInTimeDataExport.sClassMeetingUtilPeriodElementName));
 		pcmup.setPitClassMeeting(pitClassMeeting);
-		pitClassMeeting.addTopitClassMeetingUtilPeriods(pcmup);
+		pitClassMeeting.addToPitClassMeetingUtilPeriods(pcmup);
 		 getHibSession().persist(pcmup);
 	}
 
@@ -1574,10 +1574,10 @@ public class PointInTimeDataImport extends EventRelatedImports {
 			}
 			if (parentPitSubpart != null){
 				pss.setPitParentSubpart(parentPitSubpart);
-				parentPitSubpart.addTopitChildSubparts(pss);
+				parentPitSubpart.addToPitChildSubparts(pss);
 			}
 			pss.setPitInstrOfferingConfig(pitInstructionalOfferingConfig);
-			pitInstructionalOfferingConfig.addToschedulingSubparts(pss);
+			pitInstructionalOfferingConfig.addToSchedulingSubparts(pss);
 			pss.setMinutesPerWk(getRequiredIntegerAttribute(subpartElement, PointInTimeDataExport.sMinPerWeekAttribute, PointInTimeDataExport.sSubpartElementName));
 			pss.setSchedulingSubpartSuffixCache(getRequiredStringAttribute(subpartElement, PointInTimeDataExport.sSuffixAttribute, PointInTimeDataExport.sSubpartElementName));
 			pss.setItype(itypes.get(getRequiredStringAttribute(subpartElement, PointInTimeDataExport.sTypeAttribute, PointInTimeDataExport.sSubpartElementName)));

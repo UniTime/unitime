@@ -351,7 +351,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	    } else {
        	    	mgrRole.setReceiveEmails(false);
        	    }
-       	    mgr.addTomanagerRoles(mgrRole);
+       	    mgr.addToManagerRoles(mgrRole);
        	}        
 		hibSession.persist(mgr);
 
@@ -453,7 +453,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
 	       	    mgrRole.setTimetableManager(mgr);
 	       	    mgrRole.setPrimary(role.getRoleId().equals(form.getPrimaryRole()));
 	       	    mgrRole.setReceiveEmails(receiveEmail);
-	       	    mgr.addTomanagerRoles(mgrRole);
+	       	    mgr.addToManagerRoles(mgrRole);
            	}           	
        	}        
 

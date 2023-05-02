@@ -21,6 +21,7 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
@@ -98,8 +99,9 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	public Date getApplied() { return iApplied; }
 	public void setApplied(Date applied) { iApplied = applied; }
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -107,9 +109,13 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructorCourseRequirement> getCourseRequirements() { return iCourseRequirements; }
 	public void setCourseRequirements(Set<InstructorCourseRequirement> courseRequirements) { iCourseRequirements = courseRequirements; }
-	public void addTocourseRequirements(InstructorCourseRequirement instructorCourseRequirement) {
+	public void addToCourseRequirements(InstructorCourseRequirement instructorCourseRequirement) {
 		if (iCourseRequirements == null) iCourseRequirements = new HashSet<InstructorCourseRequirement>();
 		iCourseRequirements.add(instructorCourseRequirement);
+	}
+	@Deprecated
+	public void addTocourseRequirements(InstructorCourseRequirement instructorCourseRequirement) {
+		addToCourseRequirements(instructorCourseRequirement);
 	}
 
 	@Override

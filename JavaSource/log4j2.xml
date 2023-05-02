@@ -10,18 +10,8 @@
 			<AppenderRef ref="stdout"/>
 		</Root>
 		<Logger name="org.hibernate" level="INFO"/>
-		<Logger name="org.hibernate.cfg" level="WARN"/>
-		<Logger name="org.hibernate.connection.DriverManagerConnectionProvider" level="WARN"/>
-		<Logger name="org.hibernate.util.JDBCExceptionReporter" level="ERROR"/>
-		<Logger name="org.hibernate.cache.EhCacheProvider" level="ERROR"/>
-		<Logger name="org.hibernate.cache.CacheFactory" level="ERROR"/>
 		<Logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR"/>
-		<Logger name="org.hibernate.ps.PreparedStatementCache" level="WARN"/>
-		<Logger name="org.hibernate.engine.transaction.internal.jta.JtaTransaction" level="ERROR"/>
-		<Logger name="net.sf.ehcache.distribution.jgroups.JGroupsCacheReceiver" level="ERROR"/>
-		<Logger name="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapManager" level="WARN"/>
-		<Logger name="org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory" level="ERROR"/>
-		<Logger name="org.apache.struts.action.ActionMapping" level="ERROR"/>
 		<Logger name="org.unitime.commons.hibernate.connection.DBCPConnectionProvider" level="INFO"/>
+		<Logger name="org.jgroups.protocols" level="DEBUG"/>
 	</Loggers>
 </Configuration>

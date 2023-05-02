@@ -560,14 +560,14 @@ public class SessionRollForward {
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toRoom);
-					toRoom.addTopictures(toPicture);
+					toRoom.addToPictures(toPicture);
 					rDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromRoom.getAllowedServices()) {
 					EventServiceProvider toProvider = fromProvider.findInSession(toSession.getUniqueId());
 					if (toProvider != null)
-						toRoom.addToallowedServices(toProvider);
+						toRoom.addToAllowedServices(toProvider);
 				}
 
 				rDao.getSession().flush();
@@ -591,8 +591,8 @@ public class SessionRollForward {
 			toRoomDept.setRoom(toLocation);
 			toRoomDept.setControl(fromRoomDept.isControl());
 			toRoomDept.setDepartment(toDept);
-			toLocation.addToroomDepts(toRoomDept);
-			toDept.addToroomDepts(toRoomDept);
+			toLocation.addToRoomDepts(toRoomDept);
+			toDept.addToRoomDepts(toRoomDept);
 			rdDao.getSession().persist(toRoomDept);
 			PreferenceLevel fromRoomPrefLevel = fromLocation.getRoomPreferenceLevel(fromRoomDept.getDepartment());
 			if (!fromRoomPrefLevel.getPrefProlog().equals(PreferenceLevel.sNeutral)){
@@ -600,7 +600,7 @@ public class SessionRollForward {
 				toRoomPref.setOwner(toDept);
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
 				toRoomPref.setRoom(toLocation);
-				toDept.addTopreferences(toRoomPref);
+				toDept.addToPreferences(toRoomPref);
 				rdDao.getSession().persist(toDept);
 			}
 		}
@@ -677,14 +677,14 @@ public class SessionRollForward {
 			for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
 				NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
 				toPicture.setLocation(toNonUniversityLocation);
-				toNonUniversityLocation.addTopictures(toPicture);
+				toNonUniversityLocation.addToPictures(toPicture);
 				nulDao.getSession().persist(toPicture);
 			}
 			
 			for (EventServiceProvider fromProvider: fromNonUniversityLocation.getAllowedServices()) {
 				EventServiceProvider toProvider = fromProvider.findInSession(toSession.getUniqueId());
 				if (toProvider != null)
-					toNonUniversityLocation.addToallowedServices(toProvider);
+					toNonUniversityLocation.addToAllowedServices(toProvider);
 			}
 
 			if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
@@ -881,7 +881,7 @@ public class SessionRollForward {
 					toDepartment = (Department) fromDepartment.clone();
 					toDepartment.setStatusType(null);
 					toDepartment.setSession(toSession);
-					toSession.addTodepartments(toDepartment);
+					toSession.addToDepartments(toDepartment);
 					dDao.getSession().persist(toDepartment);
 					if(fromDepartment.getSolverGroup() != null) {
 						sg = SolverGroup.findBySessionIdName(toSession.getUniqueId(), fromDepartment.getSolverGroup().getName());
@@ -943,7 +943,7 @@ public class SessionRollForward {
 					if (null == toDatePattern.getDepartments()){
 						toDatePattern.setDepartments(new java.util.HashSet());
 					}
-					toDatePattern.addTodepartments(toDepartment);
+					toDatePattern.addToDepartments(toDepartment);
 				}
 			}
 		}		
@@ -974,7 +974,7 @@ public class SessionRollForward {
 				DatePattern toDp = fromToDatePatternMap.get(fromDp);
 				if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
 					for (DatePattern fromParent: fromDp.getParents()){
-						toDp.addToparents(fromToDatePatternMap.get(fromParent));
+						toDp.addToParents(fromToDatePatternMap.get(fromParent));
 					}
 					dpDao.getSession().merge(toDp);
 				}
@@ -1034,12 +1034,12 @@ public class SessionRollForward {
 								toSubjectArea.setFundingDept(toFundingDept);
 							}
 							toSubjectArea.setSession(toSession);
-							toSession.addTosubjectAreas(toSubjectArea);
+							toSession.addToSubjectAreas(toSubjectArea);
 							if (fromSubjectArea.getDepartment() != null) {
 								toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
 								if (toDepartment != null){
 									toSubjectArea.setDepartment(toDepartment);
-									toDepartment.addTosubjectAreas(toSubjectArea);
+									toDepartment.addToSubjectAreas(toSubjectArea);
 									sDao.getSession().persist(toSubjectArea);
 									sDao.getSession().flush();
 									sDao.getSession().evict(toSubjectArea);
@@ -1096,7 +1096,7 @@ public class SessionRollForward {
 					toDepartment.setInheritInstructorPreferences(true);
 					toDepartment.setAllowEvents(false);
 					toDepartment.setAllowStudentScheduling(true);
-					toSession.addTodepartments(toDepartment);
+					toSession.addToDepartments(toDepartment);
 					DepartmentDAO.getInstance().getSession().persist(toDepartment);
 				}
 				String toSubject = null;
@@ -1108,8 +1108,8 @@ public class SessionRollForward {
 						toSubjectArea.setTitle("New Subject");
 						toSubjectArea.setSession(toSession);
 						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
-						toDepartment.addTosubjectAreas(toSubjectArea);
-						toSession.addTosubjectAreas(toSubjectArea);
+						toDepartment.addToSubjectAreas(toSubjectArea);
+						toSession.addToSubjectAreas(toSubjectArea);
 						sDao.getSession().persist(toSubjectArea);
 						sDao.getSession().flush();
 						sDao.getSession().evict(toSubjectArea);
@@ -1127,12 +1127,12 @@ public class SessionRollForward {
 						}
 						toSubjectArea.setDepartment(null);
 						toSubjectArea.setSession(toSession);
-						toSession.addTosubjectAreas(toSubjectArea);
+						toSession.addToSubjectAreas(toSubjectArea);
 						if (fromSubjectArea.getDepartment() != null) {
 							toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
 							if (toDepartment != null){
 								toSubjectArea.setDepartment(toDepartment);
-								toDepartment.addTosubjectAreas(toSubjectArea);
+								toDepartment.addToSubjectAreas(toSubjectArea);
 								sDao.getSession().persist(toSubjectArea);
 								sDao.getSession().flush();
 								sDao.getSession().evict(toSubjectArea);
@@ -1212,7 +1212,7 @@ public class SessionRollForward {
 				toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
 				toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
 				toBuildingPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toBuildingPref);
+				toPrefGroup.addToPreferences(toBuildingPref);
 			}
 		}
 	
@@ -1300,7 +1300,7 @@ public class SessionRollForward {
 				toRoomPref.setRoom(toRoom);
 				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 				toRoomPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomPref);
+				toPrefGroup.addToPreferences(toRoomPref);
 			}	
 		} else if (fromRoomPref.getRoom() instanceof NonUniversityLocation) {
 			NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
@@ -1319,7 +1319,7 @@ public class SessionRollForward {
 				toRoomPref.setRoom(toNonUniversityLocation);
 				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 				toRoomPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomPref);
+				toPrefGroup.addToPreferences(toRoomPref);
 			}	
 		}				
 	}
@@ -1399,7 +1399,7 @@ public class SessionRollForward {
 				toPref.setExamPeriod(toPeriod);
 				toPref.setOwner(toPrefGroup);
 				toPref.setPrefLevel(fromPref.getPrefLevel());
-				toPrefGroup.addTopreferences(toPref);
+				toPrefGroup.addToPreferences(toPref);
 			}
 		}
 	}
@@ -1413,7 +1413,7 @@ public class SessionRollForward {
 				toRoomFeaturePref.setRoomFeature(grf);
 				toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
 				toRoomFeaturePref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomFeaturePref);
+				toPrefGroup.addToPreferences(toRoomFeaturePref);
 			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
@@ -1434,7 +1434,7 @@ public class SessionRollForward {
 					toRoomFeaturePref.setRoomFeature(toDepartmentRoomFeature);
 					toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
 					toRoomFeaturePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toRoomFeaturePref);
+					toPrefGroup.addToPreferences(toRoomFeaturePref);
 				}
 			}
 		}
@@ -1492,14 +1492,14 @@ public class SessionRollForward {
 			toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
 			toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 			toRoomGroupPref.setOwner(toPrefGroup);
-			toPrefGroup.addTopreferences(toRoomGroupPref);
+			toPrefGroup.addToPreferences(toRoomGroupPref);
 		} else if (fromRoomGroupPref.getRoomGroup().isGlobal()) {
 			RoomGroup toRoomGroup = RoomGroup.findGlobalRoomGroupForName(toSession, fromRoomGroupPref.getRoomGroup().getName());
 			if (toRoomGroup != null) {
 				toRoomGroupPref.setRoomGroup(toRoomGroup);
 				toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 				toRoomGroupPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomGroupPref);
+				toPrefGroup.addToPreferences(toRoomGroupPref);
 			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
@@ -1519,7 +1519,7 @@ public class SessionRollForward {
 					toRoomGroupPref.setRoomGroup(toRoomGroup);
 					toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 					toRoomGroupPref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toRoomGroupPref);
+					toPrefGroup.addToPreferences(toRoomGroupPref);
 				}						
 			}
 		}
@@ -1587,7 +1587,7 @@ public class SessionRollForward {
 				}
 				if (toTimePref != null){
 					toTimePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toTimePref);
+					toPrefGroup.addToPreferences(toTimePref);
 				}
 			}
 		}
@@ -1608,7 +1608,7 @@ public class SessionRollForward {
 				if (toTimePref != null){
 					toTimePref.setPreference(null);
 					toTimePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toTimePref);
+					toPrefGroup.addToPreferences(toTimePref);
 				}
 			}			
 		}
@@ -1656,7 +1656,7 @@ public class SessionRollForward {
 						}
 						if (toTimePref != null){
 							toTimePref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toTimePref);
+							toPrefGroup.addToPreferences(toTimePref);
 							if (toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelRequired) || toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelProhibited)){
 								toTimePref.setPreference(null);
 							}
@@ -1676,7 +1676,7 @@ public class SessionRollForward {
 						toTimePref.setOwner(toPrefGroup);
 						toTimePref.setTimePattern(toTp);
 						toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
-						toPrefGroup.addTopreferences(toTimePref);
+						toPrefGroup.addToPreferences(toTimePref);
 					} else {
 						iLog.warn("To Time Pattern not found:  " + fromTp.getName() + " for " + fromPrefGroup.htmlLabel());						
 					}
@@ -1702,7 +1702,7 @@ public class SessionRollForward {
 				toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
 				toDatePatternPref.setDatePattern(toDatePattern);
 				toDatePatternPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toDatePatternPref);
+				toPrefGroup.addToPreferences(toDatePatternPref);
 			}
 		}
 		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp() && (toPrefGroup.getDatePatternPreferences() == null || toPrefGroup.getDatePatternPreferences().isEmpty())) {
@@ -1759,7 +1759,7 @@ public class SessionRollForward {
 						DatePatternPref toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
 						toDatePatternPref.setDatePattern(toDatePattern);
 						toDatePatternPref.setOwner(toPrefGroup);
-						toPrefGroup.addTopreferences(toDatePatternPref);
+						toPrefGroup.addToPreferences(toDatePatternPref);
 					}
 				}
 			}				
@@ -1787,7 +1787,7 @@ public class SessionRollForward {
 					Department toDept = Department.findByDeptCode(((Department)fromDistributionPref.getOwner()).getDeptCode(), toSession.getUniqueId());
 					if (toDept != null){
 						toDistributionPref.setOwner(toDept);
-						toDept.addTopreferences(toDistributionPref);
+						toDept.addToPreferences(toDistributionPref);
 					} else {
 						continue;
 					}
@@ -1795,7 +1795,7 @@ public class SessionRollForward {
 				toDistObj.setDistributionPref(toDistributionPref);
 				toDistObj.setPrefGroup(toPrefGroup);
 				toDistObj.setSequenceNumber(fromDistObj.getSequenceNumber());
-				toPrefGroup.addTodistributionObjects(toDistObj);
+				toPrefGroup.addToDistributionObjects(toDistObj);
 				if (toDistributionPref.getUniqueId() == null)
 					hibSession.persist(toDistributionPref);
 				else
@@ -1819,7 +1819,7 @@ public class SessionRollForward {
 					InstructorCoursePref toCoursePref = (InstructorCoursePref) fromCoursePref.clone();
 					toCoursePref.setCourse(course);
 					toCoursePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toCoursePref);
+					toPrefGroup.addToPreferences(toCoursePref);
 				}
 			}
 		}
@@ -1898,7 +1898,7 @@ public class SessionRollForward {
 					InstructorAttributePref toAttributePref = (InstructorAttributePref) fromAttributePref.clone();
 					toAttributePref.setAttribute(attribute);
 					toAttributePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toAttributePref);
+					toPrefGroup.addToPreferences(toAttributePref);
 				}
 			}
 		}
@@ -1914,7 +1914,7 @@ public class SessionRollForward {
 					InstructorPref toInstrPref = (InstructorPref) fromInstrPref.clone();
 					toInstrPref.setInstructor(instructor);
 					toInstrPref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toInstrPref);
+					toPrefGroup.addToPreferences(toInstrPref);
 				}
 			}
 		}
@@ -2053,7 +2053,7 @@ public class SessionRollForward {
 			}
 			if (toOwner.getOwnerType() != null){
 				toOwner.setExam(toExam);
-				toExam.addToowners(toOwner);
+				toExam.addToOwners(toOwner);
 			}
 		}
 		if (toExam.getOwners() != null || toExam.getOwners().size() > 0){
@@ -2156,7 +2156,7 @@ public class SessionRollForward {
 				}
 				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
 				toDistributionPref.setOwner(toInstructor);
-				toInstructor.addTopreferences(toDistributionPref);
+				toInstructor.addToPreferences(toDistributionPref);
 			}
 		}
 	}
@@ -2209,8 +2209,8 @@ public class SessionRollForward {
 								for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
 									InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(toSession);
 									if (toAttribute != null) {
-										toAttribute.addToinstructors(toInstructor);
-										toInstructor.addToattributes(toAttribute);
+										toAttribute.addToInstructors(toInstructor);
+										toInstructor.addToAttributes(toAttribute);
 									}
 								}
 								rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
@@ -2437,7 +2437,7 @@ public class SessionRollForward {
 					if (null == toTimePattern.getDepartments()){
 						toTimePattern.setDepartments(new java.util.HashSet());
 					}
-					toTimePattern.addTodepartments(toDepartment);
+					toTimePattern.addToDepartments(toDepartment);
 				}
 			}
 		}		
@@ -2522,8 +2522,8 @@ public class SessionRollForward {
 									toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
 									
 									toClassInstr.setUniqueId(null);
-									toClass.addToclassInstructors(toClassInstr);
-									toDeptInstr.addToclasses(toClassInstr);
+									toClass.addToClassInstructors(toClassInstr);
+									toDeptInstr.addToClasses(toClassInstr);
 									hibSession.evict(fromClassInstr);
 								}
 							}
@@ -2574,7 +2574,7 @@ public class SessionRollForward {
 						toOfferingCoordinator.setOffering(toInstructionalOffering);
 						toOfferingCoordinator.setResponsibility(fromOfferingCoordinator.getResponsibility());
 						toOfferingCoordinator.setPercentShare(fromOfferingCoordinator.getPercentShare());
-						toInstructionalOffering.addToofferingCoordinators(toOfferingCoordinator);
+						toInstructionalOffering.addToOfferingCoordinators(toOfferingCoordinator);
 						OfferingCoordinatorDAO.getInstance().getSession().persist(toOfferingCoordinator);
 					}
 				}
@@ -2907,7 +2907,7 @@ public class SessionRollForward {
     					tempDept.setInheritInstructorPreferences(true);
     					tempDept.setAllowEvents(false);
     					tempDept.setAllowStudentScheduling(false);
-    					toSession.addTodepartments(tempDept);
+    					toSession.addToDepartments(tempDept);
     					hibSession.persist(tempDept);
     				}
     			}
@@ -3521,11 +3521,11 @@ public class SessionRollForward {
 						toTCR.setPercentShare(fromTCR.getPercentShare());
 						toTCR.setTeachingRequest(toRequest);
 						toTCR.setTeachingClass(toClass);
-						toRequest.addToclassRequests(toTCR);
+						toRequest.addToClassRequests(toTCR);
 						if (toTCR.isAssignInstructor()) valid = true;
 					}
 					if (valid) {
-						toInstructionalOffering.addToteachingRequests(toRequest);
+						toInstructionalOffering.addToTeachingRequests(toRequest);
 						trDao.getSession().persist(toRequest);
 						rollForwardInstructorPrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());
 						rollForwardInstructorAttributePrefs(fromRequest, toRequest, toSubjectArea.getDepartment().getSession());

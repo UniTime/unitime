@@ -329,7 +329,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                
 	                // Add course to instructional offering
 	                co2.setInstructionalOffering(io1);
-	                io1.addTocourseOfferings(co2);
+	                io1.addToCourseOfferings(co2);
 
 	                // Update
                     if (io1.getInstrOfferingPermId()==null) io1.generateInstrOfferingPermId();
@@ -479,7 +479,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	        for (int i=0; i<addedOfferings.size(); i++) {
 	            CourseOffering co3 = addedOfferings.get(i);
 	            co3.setInstructionalOffering(io);
-	            io.addTocourseOfferings(co3);
+	            io.addToCourseOfferings(co3);
 	            hibSession.persist(co3);
 	            
 	            hibSession.flush();

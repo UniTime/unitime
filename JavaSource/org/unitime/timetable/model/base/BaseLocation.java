@@ -200,9 +200,13 @@ public abstract class BaseLocation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomFeature> getFeatures() { return iFeatures; }
 	public void setFeatures(Set<RoomFeature> features) { iFeatures = features; }
-	public void addTofeatures(RoomFeature roomFeature) {
+	public void addToFeatures(RoomFeature roomFeature) {
 		if (iFeatures == null) iFeatures = new HashSet<RoomFeature>();
 		iFeatures.add(roomFeature);
+	}
+	@Deprecated
+	public void addTofeatures(RoomFeature roomFeature) {
+		addToFeatures(roomFeature);
 	}
 
 	@ManyToMany
@@ -212,27 +216,39 @@ public abstract class BaseLocation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamType> getExamTypes() { return iExamTypes; }
 	public void setExamTypes(Set<ExamType> examTypes) { iExamTypes = examTypes; }
-	public void addToexamTypes(ExamType examType) {
+	public void addToExamTypes(ExamType examType) {
 		if (iExamTypes == null) iExamTypes = new HashSet<ExamType>();
 		iExamTypes.add(examType);
+	}
+	@Deprecated
+	public void addToexamTypes(ExamType examType) {
+		addToExamTypes(examType);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExamLocationPref> getExamPreferences() { return iExamPreferences; }
 	public void setExamPreferences(Set<ExamLocationPref> examPreferences) { iExamPreferences = examPreferences; }
-	public void addToexamPreferences(ExamLocationPref examLocationPref) {
+	public void addToExamPreferences(ExamLocationPref examLocationPref) {
 		if (iExamPreferences == null) iExamPreferences = new HashSet<ExamLocationPref>();
 		iExamPreferences.add(examLocationPref);
+	}
+	@Deprecated
+	public void addToexamPreferences(ExamLocationPref examLocationPref) {
+		addToExamPreferences(examLocationPref);
 	}
 
 	@ManyToMany(mappedBy = "rooms")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
-	public void addToassignments(Assignment assignment) {
+	public void addToAssignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+	@Deprecated
+	public void addToassignments(Assignment assignment) {
+		addToAssignments(assignment);
 	}
 
 	@ManyToMany
@@ -242,18 +258,26 @@ public abstract class BaseLocation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomGroup> getRoomGroups() { return iRoomGroups; }
 	public void setRoomGroups(Set<RoomGroup> roomGroups) { iRoomGroups = roomGroups; }
-	public void addToroomGroups(RoomGroup roomGroup) {
+	public void addToRoomGroups(RoomGroup roomGroup) {
 		if (iRoomGroups == null) iRoomGroups = new HashSet<RoomGroup>();
 		iRoomGroups.add(roomGroup);
+	}
+	@Deprecated
+	public void addToroomGroups(RoomGroup roomGroup) {
+		addToRoomGroups(roomGroup);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "room", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
-	public void addToroomDepts(RoomDept roomDept) {
+	public void addToRoomDepts(RoomDept roomDept) {
 		if (iRoomDepts == null) iRoomDepts = new HashSet<RoomDept>();
 		iRoomDepts.add(roomDept);
+	}
+	@Deprecated
+	public void addToroomDepts(RoomDept roomDept) {
+		addToRoomDepts(roomDept);
 	}
 
 	@Override

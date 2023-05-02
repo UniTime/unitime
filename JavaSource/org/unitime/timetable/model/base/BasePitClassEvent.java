@@ -86,9 +86,13 @@ public abstract class BasePitClassEvent implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassMeeting> getPitClassMeetings() { return iPitClassMeetings; }
 	public void setPitClassMeetings(Set<PitClassMeeting> pitClassMeetings) { iPitClassMeetings = pitClassMeetings; }
-	public void addTopitClassMeetings(PitClassMeeting pitClassMeeting) {
+	public void addToPitClassMeetings(PitClassMeeting pitClassMeeting) {
 		if (iPitClassMeetings == null) iPitClassMeetings = new HashSet<PitClassMeeting>();
 		iPitClassMeetings.add(pitClassMeeting);
+	}
+	@Deprecated
+	public void addTopitClassMeetings(PitClassMeeting pitClassMeeting) {
+		addToPitClassMeetings(pitClassMeeting);
 	}
 
 	@Override

@@ -94,9 +94,13 @@ public abstract class BaseRoom extends Location implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<RoomPicture> pictures) { iPictures = pictures; }
-	public void addTopictures(RoomPicture roomPicture) {
+	public void addToPictures(RoomPicture roomPicture) {
 		if (iPictures == null) iPictures = new HashSet<RoomPicture>();
 		iPictures.add(roomPicture);
+	}
+	@Deprecated
+	public void addTopictures(RoomPicture roomPicture) {
+		addToPictures(roomPicture);
 	}
 
 	@ManyToMany
@@ -106,18 +110,26 @@ public abstract class BaseRoom extends Location implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
 	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
-	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+	public void addToAllowedServices(EventServiceProvider eventServiceProvider) {
 		if (iAllowedServices == null) iAllowedServices = new HashSet<EventServiceProvider>();
 		iAllowedServices.add(eventServiceProvider);
+	}
+	@Deprecated
+	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+		addToAllowedServices(eventServiceProvider);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentRoom")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Room> getPartitions() { return iPartitions; }
 	public void setPartitions(Set<Room> partitions) { iPartitions = partitions; }
-	public void addTopartitions(Room room) {
+	public void addToPartitions(Room room) {
 		if (iPartitions == null) iPartitions = new HashSet<Room>();
 		iPartitions.add(room);
+	}
+	@Deprecated
+	public void addTopartitions(Room room) {
+		addToPartitions(room);
 	}
 
 	@Override

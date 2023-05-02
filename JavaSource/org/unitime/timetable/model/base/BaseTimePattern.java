@@ -125,9 +125,13 @@ public abstract class BaseTimePattern implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimePatternTime> getTimes() { return iTimes; }
 	public void setTimes(Set<TimePatternTime> times) { iTimes = times; }
-	public void addTotimes(TimePatternTime timePatternTime) {
+	public void addToTimes(TimePatternTime timePatternTime) {
 		if (iTimes == null) iTimes = new HashSet<TimePatternTime>();
 		iTimes.add(timePatternTime);
+	}
+	@Deprecated
+	public void addTotimes(TimePatternTime timePatternTime) {
+		addToTimes(timePatternTime);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
@@ -135,18 +139,26 @@ public abstract class BaseTimePattern implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimePatternDays> getDays() { return iDays; }
 	public void setDays(Set<TimePatternDays> days) { iDays = days; }
-	public void addTodays(TimePatternDays timePatternDays) {
+	public void addToDays(TimePatternDays timePatternDays) {
 		if (iDays == null) iDays = new HashSet<TimePatternDays>();
 		iDays.add(timePatternDays);
+	}
+	@Deprecated
+	public void addTodays(TimePatternDays timePatternDays) {
+		addToDays(timePatternDays);
 	}
 
 	@ManyToMany(mappedBy = "timePatterns")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
-	public void addTodepartments(Department department) {
+	public void addToDepartments(Department department) {
 		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
+	}
+	@Deprecated
+	public void addTodepartments(Department department) {
+		addToDepartments(department);
 	}
 
 	@Override

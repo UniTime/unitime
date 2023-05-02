@@ -92,9 +92,13 @@ public abstract class BaseSettings implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ManagerSettings> getManagerSettings() { return iManagerSettings; }
 	public void setManagerSettings(Set<ManagerSettings> managerSettings) { iManagerSettings = managerSettings; }
-	public void addTomanagerSettings(ManagerSettings managerSettings) {
+	public void addToManagerSettings(ManagerSettings managerSettings) {
 		if (iManagerSettings == null) iManagerSettings = new HashSet<ManagerSettings>();
 		iManagerSettings.add(managerSettings);
+	}
+	@Deprecated
+	public void addTomanagerSettings(ManagerSettings managerSettings) {
+		addToManagerSettings(managerSettings);
 	}
 
 	@Override

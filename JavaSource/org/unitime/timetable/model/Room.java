@@ -158,8 +158,8 @@ public class Room extends BaseRoom {
 			roomDept.setRoom(this);
 			roomDept.setControl(Boolean.valueOf(ExternalRoomDepartment.isControllingExternalDept(externalRoomDept, externalRoomDepts)));
 			roomDept.setDepartment(dept);
-			this.addToroomDepts(roomDept);
-			dept.addToroomDepts(roomDept);
+			this.addToRoomDepts(roomDept);
+			dept.addToRoomDepts(roomDept);
 			rdDao.getSession().persist(roomDept);
 			rdDao.getSession().flush();
 		}

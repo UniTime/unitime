@@ -120,9 +120,13 @@ public abstract class BasePitInstrOfferingConfig implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitSchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<PitSchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
-	public void addToschedulingSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
+	public void addToSchedulingSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
 		if (iSchedulingSubparts == null) iSchedulingSubparts = new HashSet<PitSchedulingSubpart>();
 		iSchedulingSubparts.add(pitSchedulingSubpart);
+	}
+	@Deprecated
+	public void addToschedulingSubparts(PitSchedulingSubpart pitSchedulingSubpart) {
+		addToSchedulingSubparts(pitSchedulingSubpart);
 	}
 
 	@Override

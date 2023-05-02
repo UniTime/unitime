@@ -88,9 +88,13 @@ public abstract class BaseSolverPredefinedSetting implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
-	public void addToparameters(SolverParameter solverParameter) {
+	public void addToParameters(SolverParameter solverParameter) {
 		if (iParameters == null) iParameters = new HashSet<SolverParameter>();
 		iParameters.add(solverParameter);
+	}
+	@Deprecated
+	public void addToparameters(SolverParameter solverParameter) {
+		addToParameters(solverParameter);
 	}
 
 	@Override

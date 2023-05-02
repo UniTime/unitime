@@ -318,7 +318,7 @@ public class EventImport extends EventRelatedImports {
 		}
 
 		meeting.setEvent(event);
-		event.addTomeetings(meeting);
+		event.addToMeetings(meeting);
 	
 	}
 	private void elementRelatedCourses(Element element, CourseEvent event) throws Exception {
@@ -383,7 +383,7 @@ public class EventImport extends EventRelatedImports {
 		    rci.setCourse(co);
 		}
 		rci.setEvent(courseEvent);
-		courseEvent.addTorelatedCourses(rci);
+		courseEvent.addToRelatedCourses(rci);
 	}
 
 	private EventContact elementEventContact(Element eventContactElement) throws Exception {
@@ -527,7 +527,7 @@ public class EventImport extends EventRelatedImports {
 		note.setUserId(userId);
 		
 		note.setEvent(event);
-		event.addTonotes(note);
+		event.addToNotes(note);
 	}
 	
 	@Override

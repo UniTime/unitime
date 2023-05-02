@@ -123,27 +123,39 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitCourseOffering> getPitCourseOfferings() { return iPitCourseOfferings; }
 	public void setPitCourseOfferings(Set<PitCourseOffering> pitCourseOfferings) { iPitCourseOfferings = pitCourseOfferings; }
-	public void addTopitCourseOfferings(PitCourseOffering pitCourseOffering) {
+	public void addToPitCourseOfferings(PitCourseOffering pitCourseOffering) {
 		if (iPitCourseOfferings == null) iPitCourseOfferings = new HashSet<PitCourseOffering>();
 		iPitCourseOfferings.add(pitCourseOffering);
+	}
+	@Deprecated
+	public void addTopitCourseOfferings(PitCourseOffering pitCourseOffering) {
+		addToPitCourseOfferings(pitCourseOffering);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitInstrOfferingConfig> getPitInstrOfferingConfigs() { return iPitInstrOfferingConfigs; }
 	public void setPitInstrOfferingConfigs(Set<PitInstrOfferingConfig> pitInstrOfferingConfigs) { iPitInstrOfferingConfigs = pitInstrOfferingConfigs; }
-	public void addTopitInstrOfferingConfigs(PitInstrOfferingConfig pitInstrOfferingConfig) {
+	public void addToPitInstrOfferingConfigs(PitInstrOfferingConfig pitInstrOfferingConfig) {
 		if (iPitInstrOfferingConfigs == null) iPitInstrOfferingConfigs = new HashSet<PitInstrOfferingConfig>();
 		iPitInstrOfferingConfigs.add(pitInstrOfferingConfig);
+	}
+	@Deprecated
+	public void addTopitInstrOfferingConfigs(PitInstrOfferingConfig pitInstrOfferingConfig) {
+		addToPitInstrOfferingConfigs(pitInstrOfferingConfig);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstructionalOffering")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitOfferingCoordinator> getPitOfferingCoordinators() { return iPitOfferingCoordinators; }
 	public void setPitOfferingCoordinators(Set<PitOfferingCoordinator> pitOfferingCoordinators) { iPitOfferingCoordinators = pitOfferingCoordinators; }
-	public void addTopitOfferingCoordinators(PitOfferingCoordinator pitOfferingCoordinator) {
+	public void addToPitOfferingCoordinators(PitOfferingCoordinator pitOfferingCoordinator) {
 		if (iPitOfferingCoordinators == null) iPitOfferingCoordinators = new HashSet<PitOfferingCoordinator>();
 		iPitOfferingCoordinators.add(pitOfferingCoordinator);
+	}
+	@Deprecated
+	public void addTopitOfferingCoordinators(PitOfferingCoordinator pitOfferingCoordinator) {
+		addToPitOfferingCoordinators(pitOfferingCoordinator);
 	}
 
 	@Override

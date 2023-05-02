@@ -110,7 +110,7 @@ public class UpdateDepartmentBackend implements GwtRpcImplementation<UpdateDepar
             	acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
             	department.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
             	department.setDistributionPrefPriority(0);
-    			acadSession.addTodepartments(department);
+    			acadSession.addToDepartments(department);
     			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
             }
                        

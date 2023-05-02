@@ -181,36 +181,52 @@ public abstract class BasePitClass implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClass> getPitChildClasses() { return iPitChildClasses; }
 	public void setPitChildClasses(Set<PitClass> pitChildClasses) { iPitChildClasses = pitChildClasses; }
-	public void addTopitChildClasses(PitClass pitClass) {
+	public void addToPitChildClasses(PitClass pitClass) {
 		if (iPitChildClasses == null) iPitChildClasses = new HashSet<PitClass>();
 		iPitChildClasses.add(pitClass);
+	}
+	@Deprecated
+	public void addTopitChildClasses(PitClass pitClass) {
+		addToPitChildClasses(pitClass);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassInstructing", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassInstructor> getPitClassInstructors() { return iPitClassInstructors; }
 	public void setPitClassInstructors(Set<PitClassInstructor> pitClassInstructors) { iPitClassInstructors = pitClassInstructors; }
-	public void addTopitClassInstructors(PitClassInstructor pitClassInstructor) {
+	public void addToPitClassInstructors(PitClassInstructor pitClassInstructor) {
 		if (iPitClassInstructors == null) iPitClassInstructors = new HashSet<PitClassInstructor>();
 		iPitClassInstructors.add(pitClassInstructor);
+	}
+	@Deprecated
+	public void addTopitClassInstructors(PitClassInstructor pitClassInstructor) {
+		addToPitClassInstructors(pitClassInstructor);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitStudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<PitStudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
-	public void addTostudentEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
+	public void addToStudentEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
 		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet<PitStudentClassEnrollment>();
 		iStudentEnrollments.add(pitStudentClassEnrollment);
+	}
+	@Deprecated
+	public void addTostudentEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
+		addToStudentEnrollments(pitStudentClassEnrollment);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassEvent> getPitClassEvents() { return iPitClassEvents; }
 	public void setPitClassEvents(Set<PitClassEvent> pitClassEvents) { iPitClassEvents = pitClassEvents; }
-	public void addTopitClassEvents(PitClassEvent pitClassEvent) {
+	public void addToPitClassEvents(PitClassEvent pitClassEvent) {
 		if (iPitClassEvents == null) iPitClassEvents = new HashSet<PitClassEvent>();
 		iPitClassEvents.add(pitClassEvent);
+	}
+	@Deprecated
+	public void addTopitClassEvents(PitClassEvent pitClassEvent) {
+		addToPitClassEvents(pitClassEvent);
 	}
 
 	@Override

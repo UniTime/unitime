@@ -105,9 +105,13 @@ public abstract class BaseExternalBuilding implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExternalRoom> getRooms() { return iRooms; }
 	public void setRooms(Set<ExternalRoom> rooms) { iRooms = rooms; }
-	public void addTorooms(ExternalRoom externalRoom) {
+	public void addToRooms(ExternalRoom externalRoom) {
 		if (iRooms == null) iRooms = new HashSet<ExternalRoom>();
 		iRooms.add(externalRoom);
+	}
+	@Deprecated
+	public void addTorooms(ExternalRoom externalRoom) {
+		addToRooms(externalRoom);
 	}
 
 	@Override

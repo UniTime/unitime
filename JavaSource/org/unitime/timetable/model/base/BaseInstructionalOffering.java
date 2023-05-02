@@ -171,45 +171,65 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
-	public void addTocourseOfferings(CourseOffering courseOffering) {
+	public void addToCourseOfferings(CourseOffering courseOffering) {
 		if (iCourseOfferings == null) iCourseOfferings = new HashSet<CourseOffering>();
 		iCourseOfferings.add(courseOffering);
+	}
+	@Deprecated
+	public void addTocourseOfferings(CourseOffering courseOffering) {
+		addToCourseOfferings(courseOffering);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstrOfferingConfig> getInstrOfferingConfigs() { return iInstrOfferingConfigs; }
 	public void setInstrOfferingConfigs(Set<InstrOfferingConfig> instrOfferingConfigs) { iInstrOfferingConfigs = instrOfferingConfigs; }
-	public void addToinstrOfferingConfigs(InstrOfferingConfig instrOfferingConfig) {
+	public void addToInstrOfferingConfigs(InstrOfferingConfig instrOfferingConfig) {
 		if (iInstrOfferingConfigs == null) iInstrOfferingConfigs = new HashSet<InstrOfferingConfig>();
 		iInstrOfferingConfigs.add(instrOfferingConfig);
+	}
+	@Deprecated
+	public void addToinstrOfferingConfigs(InstrOfferingConfig instrOfferingConfig) {
+		addToInstrOfferingConfigs(instrOfferingConfig);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructionalOffering")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Reservation> getReservations() { return iReservations; }
 	public void setReservations(Set<Reservation> reservations) { iReservations = reservations; }
-	public void addToreservations(Reservation reservation) {
+	public void addToReservations(Reservation reservation) {
 		if (iReservations == null) iReservations = new HashSet<Reservation>();
 		iReservations.add(reservation);
+	}
+	@Deprecated
+	public void addToreservations(Reservation reservation) {
+		addToReservations(reservation);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "offering")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
 	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
-	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+	public void addToOfferingCoordinators(OfferingCoordinator offeringCoordinator) {
 		if (iOfferingCoordinators == null) iOfferingCoordinators = new HashSet<OfferingCoordinator>();
 		iOfferingCoordinators.add(offeringCoordinator);
+	}
+	@Deprecated
+	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+		addToOfferingCoordinators(offeringCoordinator);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "offering", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TeachingRequest> getTeachingRequests() { return iTeachingRequests; }
 	public void setTeachingRequests(Set<TeachingRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
-	public void addToteachingRequests(TeachingRequest teachingRequest) {
+	public void addToTeachingRequests(TeachingRequest teachingRequest) {
 		if (iTeachingRequests == null) iTeachingRequests = new HashSet<TeachingRequest>();
 		iTeachingRequests.add(teachingRequest);
+	}
+	@Deprecated
+	public void addToteachingRequests(TeachingRequest teachingRequest) {
+		addToTeachingRequests(teachingRequest);
 	}
 
 	@Override

@@ -148,6 +148,11 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return getSession().getUniqueId();
     }
 	
+	@Transient
+	public Session getSession() {
+		return getInstrOfferingConfig().getInstructionalOffering().getSession();
+	}
+	
 	public String htmlLabel(){
 		return(this.getItype().getDesc());
 	}
@@ -794,7 +799,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     
     public void setCredit(CourseCreditUnitConfig courseCreditUnitConfig){
     	if (this.getCreditConfigs() == null || this.getCreditConfigs().size() == 0){
-    		this.addTocreditConfigs(courseCreditUnitConfig);
+    		this.addToCreditConfigs(courseCreditUnitConfig);
     	} else if (!this.getCreditConfigs().contains(courseCreditUnitConfig)){
     		this.getCreditConfigs().clear();
     		this.getCreditConfigs().add(courseCreditUnitConfig);
@@ -813,7 +818,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			ccuc = (CourseCreditUnitConfig) credIt.next();
     			newCcuc = (CourseCreditUnitConfig) ccuc.clone();
     			newCcuc.setOwner(newSchedulingSubpart);
-    			newSchedulingSubpart.addTocreditConfigs(newCcuc);
+    			newSchedulingSubpart.addToCreditConfigs(newCcuc);
     		}
     	}
     	newSchedulingSubpart.setDatePattern(getDatePattern());
@@ -833,7 +838,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 				if (!(p instanceof DistributionPref)) {
 					newPref = (Preference)p.clone();
 					newPref.setOwner(newSchedulingSubpart);
-					newSchedulingSubpart.addTopreferences(newPref);
+					newSchedulingSubpart.addToPreferences(newPref);
 				}
 			}
 		}
@@ -850,7 +855,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			origClass = (Class_) cIt.next();
     			newClass = (Class_) origClass.cloneWithPreferences();
     			newClass.setSchedulingSubpart(newSchedulingSubpart);
-    			newSchedulingSubpart.addToclasses(newClass);
+    			newSchedulingSubpart.addToClasses(newClass);
     			newClass.setSectionNumberCache(origClass.getSectionNumberCache());
     			newClass.setUniqueIdRolledForwardFrom(origClass.getUniqueId());
     			if (origClass.getChildClasses() != null){
@@ -869,7 +874,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			origChildSubpart = (SchedulingSubpart) ssIt.next();
     			newChildSubpart = (SchedulingSubpart)origChildSubpart.cloneDeep();
     			newChildSubpart.setParentSubpart(newSchedulingSubpart);
-    			newSchedulingSubpart.addTochildSubparts(newChildSubpart);
+    			newSchedulingSubpart.addToChildSubparts(newChildSubpart);
     			if (newChildSubpart.getClasses() != null){
     				Class_ newChildClass = null;
     				Class_ newParentClass = null;
@@ -877,7 +882,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     					newChildClass = (Class_) nccIt.next();
     					newParentClass = (Class_) childClassToParentClass.get(newChildClass.getUniqueIdRolledForwardFrom());
     					newChildClass.setParentClass(newParentClass);
-    					newParentClass.addTochildClasses(newChildClass);
+    					newParentClass.addToChildClasses(newChildClass);
     					newChildClass.setUniqueIdRolledForwardFrom(null);
     				}
     			}

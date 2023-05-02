@@ -357,7 +357,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		CourseOffering courseOffering = new CourseOffering();
 		OfferingConsentType consent = OfferingConsentType.getOfferingConsentTypeForReference(ApplicationProperty.VariableTitleDefaultConsentType.value());
 		courseOffering.setSubjectArea(subjectArea);
-		subjectArea.addTocourseOfferings(courseOffering);					
+		subjectArea.addToCourseOfferings(courseOffering);					
 		courseOffering.setSubjectAreaAbbv(subjectArea.getSubjectAreaAbbreviation());
 		courseOffering.setCourseNbr(newCourseNumber);
 		courseOffering.setTitle(getProperlyCasedTitle(variableTitleQuery.getCourseTitle()));
@@ -368,7 +368,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 
 		InstructionalOffering instructionalOffering = new InstructionalOffering();
 		instructionalOffering.setNotOffered(false);
-		instructionalOffering.addTocourseOfferings(courseOffering);
+		instructionalOffering.addToCourseOfferings(courseOffering);
 		courseOffering.setInstructionalOffering(instructionalOffering);
 		instructionalOffering.setSession(subjectArea.getSession());
 		instructionalOffering.setByReservationOnly(false);
@@ -397,7 +397,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 					if (cct != null & ccut != null) {
 						CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(ccf.getReference(), cct, ccut, minCredit, maxCredit, Boolean.TRUE, Boolean.TRUE);
 						ccuc.setOwner(courseOffering);
-						courseOffering.addTocreditConfigs(ccuc);
+						courseOffering.addToCreditConfigs(ccuc);
 						hibSession.persist(ccuc);
 					}
 				}
@@ -410,7 +410,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	private InstrOfferingConfig createConfiguration(InstructionalOffering instructionalOffering, String configName, org.hibernate.Session hibSession) {
 		InstrOfferingConfig instrOfferingConfig = new InstrOfferingConfig();
 		instrOfferingConfig.setInstructionalOffering(instructionalOffering);
-		instructionalOffering.addToinstrOfferingConfigs(instrOfferingConfig);
+		instructionalOffering.addToInstrOfferingConfigs(instrOfferingConfig);
 		if (ApplicationProperty.VariableTitleDefaultLimit.intValue() < 0) {
 			instrOfferingConfig.setUnlimitedEnrollment(Boolean.TRUE);
 			instrOfferingConfig.setLimit(0);
@@ -434,7 +434,6 @@ public class VariableTitleCourseConnector extends ApiConnector {
         ss.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
         ss.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
         ss.setChildSubparts(new HashSet<SchedulingSubpart>());
-        ss.setSession(instrOfferingConfig.getSession());
         hibSession.persist(ss);
         
         return ss;
@@ -465,7 +464,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
         clazz.setNbrRooms(0);
         clazz.setSchedulingSubpart(ss);
         clazz.setRoomRatio(Float.valueOf(0));
-        ss.addToclasses(clazz);
+        ss.addToClasses(clazz);
         hibSession.persist(clazz);
         
         if (variableTitleQuery.getInstructorId() != null) {
@@ -475,7 +474,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	        ci.setPercentShare(100);
 	        ci.setInstructor(di);
 	        ci.setClassInstructing(clazz);
-	        clazz.addToclassInstructors(ci);
+	        clazz.addToClassInstructors(ci);
 	        hibSession.persist(ci);
         }
         return clazz;

@@ -489,7 +489,7 @@ public class AcademicSessionMerge {
 						addPrefixToDeptFields(toDepartment, prefix);
 					}
 					toDepartment.setSession(iMergedSession);
-					iMergedSession.addTodepartments(toDepartment);
+					iMergedSession.addToDepartments(toDepartment);
 					dDao.getSession().persist(toDepartment);
 				}
 				if(fromDepartment.getSolverGroup() != null && toDepartment.getSolverGroup() == null) {
@@ -586,8 +586,8 @@ public class AcademicSessionMerge {
 										SolverGroup fromSg = (SolverGroup) sgIt.next();
 										SolverGroup toSg = findToSolverGroup(fromSg, fromDepartment, defaultPrefix);
 										if (toSg != null && !tm.getSolverGroups().contains(toSg)){
-											toSg.addTotimetableManagers(tm);
-											tm.addTosolverGroups(toSg);
+											toSg.addToTimetableManagers(tm);
+											tm.addToSolverGroups(toSg);
 											sgDao.getSession().merge(toSg);
 										}
 									}
@@ -763,7 +763,7 @@ public class AcademicSessionMerge {
 							toBldg = (Building) fromBldg.clone();
 						}
 						toBldg.setSession(iMergedSession);
-						iMergedSession.addTobuildings(toBldg);
+						iMergedSession.addToBuildings(toBldg);
 						bDao.getSession().persist(toBldg);
 					} 
 					bDao.getSession().flush();
@@ -914,8 +914,8 @@ public class AcademicSessionMerge {
 			toRoomDept.setRoom(toLocation);
 			toRoomDept.setControl(fromRoomDept.isControl());
 			toRoomDept.setDepartment(toDept);
-			toLocation.addToroomDepts(toRoomDept);
-			toDept.addToroomDepts(toRoomDept);
+			toLocation.addToRoomDepts(toRoomDept);
+			toDept.addToRoomDepts(toRoomDept);
 			rdDao.getSession().persist(toRoomDept);
 			PreferenceLevel fromRoomPrefLevel = fromLocation.getRoomPreferenceLevel(fromRoomDept.getDepartment());
 			if (!fromRoomPrefLevel.getPrefProlog().equals(PreferenceLevel.sNeutral)){
@@ -923,7 +923,7 @@ public class AcademicSessionMerge {
 				toRoomPref.setOwner(toDept);
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
 				toRoomPref.setRoom(toLocation);
-				toDept.addTopreferences(toRoomPref);
+				toDept.addToPreferences(toRoomPref);
 				rdDao.getSession().merge(toDept);
 			}
 		}
@@ -1059,14 +1059,14 @@ public class AcademicSessionMerge {
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toRoom);
-					toRoom.addTopictures(toPicture);
+					toRoom.addToPictures(toPicture);
 					rpDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromRoom.getAllowedServices()) {
 					EventServiceProvider toProvider = fromProvider.findInSession(iMergedSession.getUniqueId());
 					if (toProvider != null)
-						toRoom.addToallowedServices(toProvider);
+						toRoom.addToAllowedServices(toProvider);
 				}
 				rDao.getSession().merge(toRoom);
 			} else {
@@ -1141,14 +1141,14 @@ public class AcademicSessionMerge {
 				for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
 					NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
 					toPicture.setLocation(toNonUniversityLocation);
-					toNonUniversityLocation.addTopictures(toPicture);
+					toNonUniversityLocation.addToPictures(toPicture);
 					nulpDao.getSession().persist(toPicture);
 				}
 				
 				for (EventServiceProvider fromProvider: fromNonUniversityLocation.getAllowedServices()) {
 					EventServiceProvider toProvider = fromProvider.findInSession(iMergedSession.getUniqueId());
 					if (toProvider != null)
-						toNonUniversityLocation.addToallowedServices(toProvider);
+						toNonUniversityLocation.addToAllowedServices(toProvider);
 				}
 	
 				if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
@@ -1243,9 +1243,9 @@ public class AcademicSessionMerge {
 					}
 					toDepartment.getDatePatterns().add(toDatePattern);
 					if (null == toDatePattern.getDepartments()){
-						toDatePattern.addTodepartments(toDepartment);
+						toDatePattern.addToDepartments(toDepartment);
 					}
-					toDatePattern.addTodepartments(toDepartment);
+					toDatePattern.addToDepartments(toDepartment);
 				}
 			}
 		}		
@@ -1277,7 +1277,7 @@ public class AcademicSessionMerge {
 				DatePattern toDp = fromToDatePatternMap.get(fromDp);
 				if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
 					for (DatePattern fromParent: fromDp.getParents()){
-						toDp.addToparents(fromToDatePatternMap.get(fromParent));
+						toDp.addToParents(fromToDatePatternMap.get(fromParent));
 					}
 					dpDao.getSession().merge(toDp);
 				}
@@ -1310,7 +1310,7 @@ public class AcademicSessionMerge {
 					if (null == toTimePattern.getDepartments()){
 						toTimePattern.setDepartments(new java.util.HashSet<Department>());
 					}
-					toTimePattern.addTodepartments(toDepartment);
+					toTimePattern.addToDepartments(toDepartment);
 				}
 			}
 		}		
@@ -1456,12 +1456,12 @@ public class AcademicSessionMerge {
 									toSubjectArea.setFundingDept(toFundingDept);
 								}
 								toSubjectArea.setSession(iMergedSession);
-								iMergedSession.addTosubjectAreas(toSubjectArea);
+								iMergedSession.addToSubjectAreas(toSubjectArea);
 								if (fromSubjectArea.getDepartment() != null) {
 									toDepartment = findToDepartment(fromSubjectArea.getDepartment(), prefix);
 									if (toDepartment != null){
 										toSubjectArea.setDepartment(toDepartment);
-										toDepartment.addTosubjectAreas(toSubjectArea);
+										toDepartment.addToSubjectAreas(toSubjectArea);
 										sDao.getSession().persist(toSubjectArea);
 										sDao.getSession().flush();
 										sDao.getSession().evict(toSubjectArea);
@@ -1493,7 +1493,7 @@ public class AcademicSessionMerge {
 					toDepartment.setInheritInstructorPreferences(true);
 					toDepartment.setAllowEvents(false);
 					toDepartment.setAllowStudentScheduling(true);
-					iMergedSession.addTodepartments(toDepartment);
+					iMergedSession.addToDepartments(toDepartment);
 					DepartmentDAO.getInstance().getSession().persist(toDepartment);
 				}
 				for (String toSubject : newSubjects){
@@ -1503,8 +1503,8 @@ public class AcademicSessionMerge {
 						toSubjectArea.setTitle("New Subject");
 						toSubjectArea.setSession(iMergedSession);
 						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
-						toDepartment.addTosubjectAreas(toSubjectArea);
-						iMergedSession.addTosubjectAreas(toSubjectArea);
+						toDepartment.addToSubjectAreas(toSubjectArea);
+						iMergedSession.addToSubjectAreas(toSubjectArea);
 						sDao.getSession().persist(toSubjectArea);
 						sDao.getSession().flush();
 						sDao.getSession().evict(toSubjectArea);
@@ -1533,12 +1533,12 @@ public class AcademicSessionMerge {
 								}
 								toSubjectArea.setDepartment(null);
 								toSubjectArea.setSession(iMergedSession);
-								iMergedSession.addTosubjectAreas(toSubjectArea);
+								iMergedSession.addToSubjectAreas(toSubjectArea);
 								if (fromSubjectArea.getDepartment() != null) {
 									toDepartment = findToDepartment(fromSubjectArea.getDepartment(), prefix);
 								if (toDepartment != null){
 										toSubjectArea.setDepartment(toDepartment);
-										toDepartment.addTosubjectAreas(toSubjectArea);
+										toDepartment.addToSubjectAreas(toSubjectArea);
 										sDao.getSession().persist(toSubjectArea);
 										sDao.getSession().flush();
 										sDao.getSession().evict(toSubjectArea);
@@ -1665,7 +1665,7 @@ public class AcademicSessionMerge {
 				toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
 				toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
 				toBuildingPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toBuildingPref);
+				toPrefGroup.addToPreferences(toBuildingPref);
 			}
 		}
 	
@@ -1810,7 +1810,7 @@ public class AcademicSessionMerge {
 				toRoomPref.setRoom(toRoom);
 				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 				toRoomPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomPref);
+				toPrefGroup.addToPreferences(toRoomPref);
 			}	
 		} else if (fromRoomPref.getRoom() instanceof NonUniversityLocation) {
 			NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
@@ -1827,7 +1827,7 @@ public class AcademicSessionMerge {
 				toRoomPref.setRoom(toNonUniversityLocation);
 				toRoomPref.setPrefLevel(fromRoomPref.getPrefLevel());
 				toRoomPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomPref);
+				toPrefGroup.addToPreferences(toRoomPref);
 			}	
 		}				
 	}
@@ -1892,7 +1892,7 @@ public class AcademicSessionMerge {
 				toRoomFeaturePref.setRoomFeature(grf);
 				toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
 				toRoomFeaturePref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomFeaturePref);
+				toPrefGroup.addToPreferences(toRoomFeaturePref);
 			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, defaultPrefix);
@@ -1913,7 +1913,7 @@ public class AcademicSessionMerge {
 					toRoomFeaturePref.setRoomFeature(toDepartmentRoomFeature);
 					toRoomFeaturePref.setPrefLevel(fromRoomFeaturePref.getPrefLevel());
 					toRoomFeaturePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toRoomFeaturePref);
+					toPrefGroup.addToPreferences(toRoomFeaturePref);
 				}
 			}
 		}
@@ -1975,14 +1975,14 @@ public class AcademicSessionMerge {
 			toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
 			toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 			toRoomGroupPref.setOwner(toPrefGroup);
-			toPrefGroup.addTopreferences(toRoomGroupPref);
+			toPrefGroup.addToPreferences(toRoomGroupPref);
 		} else if (fromRoomGroupPref.getRoomGroup().isGlobal()) {
 			RoomGroup toRoomGroup = RoomGroup.findGlobalRoomGroupForName(iMergedSession, fromRoomGroupPref.getRoomGroup().getName());
 			if (toRoomGroup != null) {
 				toRoomGroupPref.setRoomGroup(toRoomGroup);
 				toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 				toRoomGroupPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toRoomGroupPref);
+				toPrefGroup.addToPreferences(toRoomGroupPref);
 			}
 		} else {
 			Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, defaultPrefix);
@@ -2002,7 +2002,7 @@ public class AcademicSessionMerge {
 					toRoomGroupPref.setRoomGroup(toRoomGroup);
 					toRoomGroupPref.setPrefLevel(fromRoomGroupPref.getPrefLevel());
 					toRoomGroupPref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toRoomGroupPref);
+					toPrefGroup.addToPreferences(toRoomGroupPref);
 				}						
 			}
 		}
@@ -2075,7 +2075,7 @@ public class AcademicSessionMerge {
 				}
 				if (toTimePref != null){
 					toTimePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toTimePref);
+					toPrefGroup.addToPreferences(toTimePref);
 				}
 			}
 		}
@@ -2096,7 +2096,7 @@ public class AcademicSessionMerge {
 				if (toTimePref != null){
 					toTimePref.setPreference(null);
 					toTimePref.setOwner(toPrefGroup);
-					toPrefGroup.addTopreferences(toTimePref);
+					toPrefGroup.addToPreferences(toTimePref);
 				}
 			}			
 		}
@@ -2143,7 +2143,7 @@ public class AcademicSessionMerge {
 						}
 						if (toTimePref != null){
 							toTimePref.setOwner(toPrefGroup);
-							toPrefGroup.addTopreferences(toTimePref);
+							toPrefGroup.addToPreferences(toTimePref);
 							if (toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelRequired) || toTimePref.getPreference().contains(""+PreferenceLevel.sCharLevelProhibited)){
 								toTimePref.setPreference(null);
 							}
@@ -2163,7 +2163,7 @@ public class AcademicSessionMerge {
 						toTimePref.setOwner(toPrefGroup);
 						toTimePref.setTimePattern(toTp);
 						toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
-						toPrefGroup.addTopreferences(toTimePref);
+						toPrefGroup.addToPreferences(toTimePref);
 					} else {
 						iLog.warn("To Time Pattern not found:  " + fromTp.getName() + " for " + fromPrefGroup.htmlLabel());						
 					}
@@ -2187,7 +2187,7 @@ public class AcademicSessionMerge {
 				}
 				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
 				toDistributionPref.setOwner(toInstructor);
-				toInstructor.addTopreferences(toDistributionPref);
+				toInstructor.addToPreferences(toDistributionPref);
 			}
 		}
 	}
@@ -2235,8 +2235,8 @@ public class AcademicSessionMerge {
 									for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
 										InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(iMergedSession);
 										if (toAttribute != null) {
-											toAttribute.addToinstructors(toInstructor);
-											toInstructor.addToattributes(toAttribute);
+											toAttribute.addToInstructors(toInstructor);
+											toInstructor.addToAttributes(toAttribute);
 										}
 									}
 									mergeBuildingPrefs(fromInstructor, toInstructor, false, false, false, null, defaultPrefix);
@@ -2343,19 +2343,19 @@ public class AcademicSessionMerge {
 //			if (ccuc instanceof ArrangeCreditUnitConfig) {					
 //				ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
 //				toAcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addTocreditConfigs(toAcuc);
+//				toCourseOffering.addToCreditConfigs(toAcuc);
 //			} else if (ccuc instanceof FixedCreditUnitConfig) {
 //				FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
 //				toFcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addTocreditConfigs(toFcuc);
+//				toCourseOffering.addToCreditConfigs(toFcuc);
 //			} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
 //				VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
 //				toVrcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addTocreditConfigs(toVrcuc);
+//				toCourseOffering.addToCreditConfigs(toVrcuc);
 //			} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
 //				VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
 //				toVfcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addTocreditConfigs(toVfcuc);
+//				toCourseOffering.addToCreditConfigs(toVfcuc);
 //			}		
 //		}
 //
@@ -2402,25 +2402,25 @@ public class AcademicSessionMerge {
 //				toCourseOffering.setDemand(fromCourseOffering.getDemand());
 //				toCourseOffering.setInstructionalOffering(toInstructionalOffering);
 //				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
-//				toInstructionalOffering.addTocourseOfferings(toCourseOffering);
+//				toInstructionalOffering.addToCourseOfferings(toCourseOffering);
 //				if(courseCatalogEntry.getCreditType() != null){
 //					CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
 //					if (ccuc instanceof ArrangeCreditUnitConfig) {					
 //						ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
 //						toAcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addTocreditConfigs(toAcuc);
+//						toCourseOffering.addToCreditConfigs(toAcuc);
 //					} else if (ccuc instanceof FixedCreditUnitConfig) {
 //						FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
 //						toFcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addTocreditConfigs(toFcuc);
+//						toCourseOffering.addToCreditConfigs(toFcuc);
 //					} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
 //						VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
 //						toVrcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addTocreditConfigs(toVrcuc);
+//						toCourseOffering.addToCreditConfigs(toVrcuc);
 //					} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
 //						VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
 //						toVfcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addTocreditConfigs(toVfcuc);
+//						toCourseOffering.addToCreditConfigs(toVfcuc);
 //					}
 //				}				
 //			}
@@ -2514,7 +2514,7 @@ public class AcademicSessionMerge {
 						toCourseOffering.setFundingDept(toFundingDept);
 					}
 				}
-				toInstructionalOffering.addTocourseOfferings(toCourseOffering);
+				toInstructionalOffering.addToCourseOfferings(toCourseOffering);
 				if (mergeWaitListsProhibitedOverrides && fromCourseOffering.getDisabledOverrides() != null) {
 					toCourseOffering.setDisabledOverrides(new HashSet<OverrideType>(fromCourseOffering.getDisabledOverrides()));
 				}
@@ -2526,22 +2526,22 @@ public class AcademicSessionMerge {
 							ArrangeCreditUnitConfig fromAcuc = (ArrangeCreditUnitConfig) ccuc;
 							ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)fromAcuc.clone();
 							toAcuc.setOwner(toCourseOffering);
-							toCourseOffering.addTocreditConfigs(toAcuc);
+							toCourseOffering.addToCreditConfigs(toAcuc);
 						} else if (ccuc instanceof FixedCreditUnitConfig) {
 							FixedCreditUnitConfig fromFcuc = (FixedCreditUnitConfig) ccuc;
 							FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) fromFcuc.clone();
 							toFcuc.setOwner(toCourseOffering);
-							toCourseOffering.addTocreditConfigs(toFcuc);
+							toCourseOffering.addToCreditConfigs(toFcuc);
 						} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
 							VariableRangeCreditUnitConfig fromVrcuc = (VariableRangeCreditUnitConfig) ccuc;
 							VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) fromVrcuc.clone();
 							toVrcuc.setOwner(toCourseOffering);
-							toCourseOffering.addTocreditConfigs(toVrcuc);
+							toCourseOffering.addToCreditConfigs(toVrcuc);
 						} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
 							VariableFixedCreditUnitConfig fromVfcuc = (VariableFixedCreditUnitConfig) ccuc;
 							VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) fromVfcuc.clone();
 							toVfcuc.setOwner(toCourseOffering);
-							toCourseOffering.addTocreditConfigs(toVfcuc);
+							toCourseOffering.addToCreditConfigs(toVfcuc);
 						}
 					}
 				}
@@ -2774,7 +2774,7 @@ public class AcademicSessionMerge {
 				toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
 				toDatePatternPref.setDatePattern(toDatePattern);
 				toDatePatternPref.setOwner(toPrefGroup);
-				toPrefGroup.addTopreferences(toDatePatternPref);
+				toPrefGroup.addToPreferences(toDatePatternPref);
 			}
 		}
 		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp && (toPrefGroup.getDatePatternPreferences() == null || toPrefGroup.getDatePatternPreferences().isEmpty())) {
@@ -2831,7 +2831,7 @@ public class AcademicSessionMerge {
 						DatePatternPref toDatePatternPref = (DatePatternPref)fromDatePatternPref.clone();
 						toDatePatternPref.setDatePattern(toDatePattern);
 						toDatePatternPref.setOwner(toPrefGroup);
-						toPrefGroup.addTopreferences(toDatePatternPref);
+						toPrefGroup.addToPreferences(toDatePatternPref);
 					}
 				}
 			}				
@@ -2881,7 +2881,7 @@ public class AcademicSessionMerge {
 					Department toDept = findToDepartment((Department)fromDistributionPref.getOwner(), defaultPrefix);
 					if (toDept != null){
 						toDistributionPref.setOwner(toDept);
-						toDept.addTopreferences(toDistributionPref);
+						toDept.addToPreferences(toDistributionPref);
 					} else {
 						continue;
 					}
@@ -2889,7 +2889,7 @@ public class AcademicSessionMerge {
 				toDistObj.setDistributionPref(toDistributionPref);
 				toDistObj.setPrefGroup(toPrefGroup);
 				toDistObj.setSequenceNumber(fromDistObj.getSequenceNumber());
-				toPrefGroup.addTodistributionObjects(toDistObj);
+				toPrefGroup.addToDistributionObjects(toDistObj);
 				if (toDistributionPref.getUniqueId() == null)
 					dpDao.getSession().persist(toDistributionPref);
 				else
@@ -2978,7 +2978,7 @@ public class AcademicSessionMerge {
 		} else {
 			toClass.setCancelled(false);
 		}
-		toSubpart.addToclasses(toClass);
+		toSubpart.addToClasses(toClass);
 		if (fromClass.getManagingDept() != null && !fromClass.getManagingDept().equals(fromClass.getControllingDept())){
 			toClass.setManagingDept(findToDepartment(fromClass.getManagingDept(), defaultPrefix));
 		}
@@ -3007,7 +3007,7 @@ public class AcademicSessionMerge {
 				rfp.setOwner(toClass);
 				rfp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 				rfp.setRoomFeature(rf);
-				toClass.addTopreferences(rfp);
+				toClass.addToPreferences(rfp);
 			}
 		}
 		return(toClass);
@@ -3046,7 +3046,7 @@ public class AcademicSessionMerge {
 			rfSs.setToParentSubpart(parentSubpart.getToSubpart());
 			parentSubpart.addToToChildSubparts(toSubpart);			
 			toSubpart.setParentSubpart(parentSubpart.getToSubpart());
-			parentSubpart.getToSubpart().addTochildSubparts(toSubpart);
+			parentSubpart.getToSubpart().addToChildSubparts(toSubpart);
 		}
 				
 		SchedulingSubpartDAO.getInstance().getSession().persist(toSubpart);
@@ -3074,7 +3074,7 @@ public class AcademicSessionMerge {
 				if (parentSubpart != null){
 					Class_ parentClass = parentSubpart.findParentClassMatchingFromParentClass(fromClass.getParentClass());
 					toClass.setParentClass(parentClass);
-					parentClass.addTochildClasses(toClass);
+					parentClass.addToChildClasses(toClass);
 				}
 				Class_DAO.getInstance().getSession().persist(toClass);
 			}
@@ -3163,7 +3163,7 @@ public class AcademicSessionMerge {
 					toInstrOffrConfig.setUniqueIdRolledForwardFrom(fromInstrOffrConfig.getUniqueId());
 					toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
 					toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
-					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
+					toInstructionalOffering.addToInstrOfferingConfigs(toInstrOffrConfig);
 					iocDao.getSession().persist(toInstrOffrConfig);
 					ioDao.getSession().merge(toInstructionalOffering);
 					mergeSchedSubpartsForAConfigToSession(fromInstrOffrConfig, toInstrOffrConfig, isClassMerge, isSubpartTimePrefMerge, isSubpartLocationPrefMerge,
@@ -3288,8 +3288,8 @@ public class AcademicSessionMerge {
 									toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
 									
 									toClassInstr.setUniqueId(null);
-									toClass.addToclassInstructors(toClassInstr);
-									toDeptInstr.addToclasses(toClassInstr);
+									toClass.addToClassInstructors(toClassInstr);
+									toDeptInstr.addToClasses(toClassInstr);
 									hibSession.evict(fromClassInstr);
 								}
 							}

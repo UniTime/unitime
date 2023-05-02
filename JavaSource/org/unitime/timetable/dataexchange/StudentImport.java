@@ -436,12 +436,12 @@ public class StudentImport extends BaseImport {
     			PosMajor m = code2major.get(area + ":" + major);
     			if (m == null) {
     				m = new PosMajor();
-    				m.addToacademicAreas(a);
+    				m.addToAcademicAreas(a);
     				m.setExternalUniqueId("-");
     				m.setCode("-");
     				m.setName("No Major");
     				m.setSession(a.getSession());
-    				a.addToposMajors(m);
+    				a.addToPosMajors(m);
     				getHibSession().persist(m);
     				code2major.put(area + ":" + major, m);
     			}

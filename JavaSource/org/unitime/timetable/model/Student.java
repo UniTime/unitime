@@ -475,7 +475,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     		wl.setCourseDemand(cr == null ? null : cr.getCourseDemand());
     		wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
     		wl.fillInNotes();
-    		addTowaitlists(wl);
+    		addToWaitlists(wl);
     		if (hibSession != null) hibSession.persist(wl);
     		return wl;
     	} else {
@@ -518,7 +518,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setWaitListedTimeStamp(cr == null ? null : cr.getCourseDemand().getWaitlistedTimeStamp());
 				wl.setSwapCourseOffering(cr == null ? null : cr.getCourseDemand().getWaitListSwapWithCourseOffering());
 				wl.fillInNotes();
-				addTowaitlists(wl);
+				addToWaitlists(wl);
 				if (hibSession != null) hibSession.persist(wl);
 			}
 		}
@@ -541,7 +541,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 						wl.setWaitListedTimeStamp(cd.getWaitlistedTimeStamp());
 						wl.setSwapCourseOffering(cd.getWaitListSwapWithCourseOffering());
 						wl.fillInNotes();
-						addTowaitlists(wl);
+						addToWaitlists(wl);
 						if (hibSession != null) hibSession.persist(wl);
 					}
 				}
@@ -564,7 +564,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
 				wl.setWaitListedTimeStamp(old.getWaitListedTimeStamp());
 				wl.setSwapCourseOffering(old.getSwapCourseOffering());
 				wl.fillInNotes();
-				addTowaitlists(wl);
+				addToWaitlists(wl);
 				if (hibSession != null) hibSession.persist(wl);
 			}
 		}

@@ -156,6 +156,7 @@ protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
 protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 	String query = createQueryString(subjectAreas);
+	@SuppressWarnings("deprecation")
 	Query q = StudentClassEnrollmentDAO.getInstance().getSession().createQuery(query);
 	q.setParameter("sessId", getSession().getUniqueId().longValue());
 	return q.list();

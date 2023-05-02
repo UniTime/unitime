@@ -157,9 +157,13 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<AdvisorSectioningPref> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<AdvisorSectioningPref> preferences) { iPreferences = preferences; }
-	public void addTopreferences(AdvisorSectioningPref advisorSectioningPref) {
+	public void addToPreferences(AdvisorSectioningPref advisorSectioningPref) {
 		if (iPreferences == null) iPreferences = new HashSet<AdvisorSectioningPref>();
 		iPreferences.add(advisorSectioningPref);
+	}
+	@Deprecated
+	public void addTopreferences(AdvisorSectioningPref advisorSectioningPref) {
+		addToPreferences(advisorSectioningPref);
 	}
 
 	@Override

@@ -133,9 +133,13 @@ public abstract class BaseMeeting implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventContact> getMeetingContacts() { return iMeetingContacts; }
 	public void setMeetingContacts(Set<EventContact> meetingContacts) { iMeetingContacts = meetingContacts; }
-	public void addTomeetingContacts(EventContact eventContact) {
+	public void addToMeetingContacts(EventContact eventContact) {
 		if (iMeetingContacts == null) iMeetingContacts = new HashSet<EventContact>();
 		iMeetingContacts.add(eventContact);
+	}
+	@Deprecated
+	public void addTomeetingContacts(EventContact eventContact) {
+		addToMeetingContacts(eventContact);
 	}
 
 	@Override

@@ -97,18 +97,26 @@ public abstract class BaseAcademicArea implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMajor> getPosMajors() { return iPosMajors; }
 	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
-	public void addToposMajors(PosMajor posMajor) {
+	public void addToPosMajors(PosMajor posMajor) {
 		if (iPosMajors == null) iPosMajors = new HashSet<PosMajor>();
 		iPosMajors.add(posMajor);
+	}
+	@Deprecated
+	public void addToposMajors(PosMajor posMajor) {
+		addToPosMajors(posMajor);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "academicAreas")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PosMinor> getPosMinors() { return iPosMinors; }
 	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
-	public void addToposMinors(PosMinor posMinor) {
+	public void addToPosMinors(PosMinor posMinor) {
 		if (iPosMinors == null) iPosMinors = new HashSet<PosMinor>();
 		iPosMinors.add(posMinor);
+	}
+	@Deprecated
+	public void addToposMinors(PosMinor posMinor) {
+		addToPosMinors(posMinor);
 	}
 
 	@Override

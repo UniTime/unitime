@@ -55,6 +55,7 @@ import org.xml.sax.InputSource;
  */
 public class CreateBaseModelFromXml extends Task {
 	private Hashtable<String, String> iParent = new Hashtable<String, String>();
+	private Set<String> iAbstracts = new HashSet<String>();
 	private Hashtable<String, String[]> iIds = new Hashtable<String, String[]>();
 	private Hashtable<String, String> iRelations = new Hashtable<String, String>();
 	private Hashtable<String, TreeSet<String>> iClassProperties = new Hashtable<String, TreeSet<String>>();
@@ -148,6 +149,9 @@ public class CreateBaseModelFromXml extends Task {
 		String className = fixType(classEl.attributeValue("name"), pkg);
 		if (className.indexOf('.') >= 0) className = className.substring(className.lastIndexOf('.')+1);
 		if (ext!=null) iParent.put(className, ext);
+		if ("true".equals(classEl.attributeValue("abstract","false"))) {
+			iAbstracts.add(className);
+		}
 		Element idEl = classEl.element("id");
 		if (idEl!=null) {
 			String type = fixType(idEl.attributeValue("type"), pkg);
@@ -638,7 +642,17 @@ public class CreateBaseModelFromXml extends Task {
 					imports.add("org.hibernate.annotations.Cascade");
 					pwb.println("	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)");
 				}
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
+				if (lazy && iAbstracts.contains(type)) {
+					imports.add("org.hibernate.Hibernate");
+					imports.add("org.hibernate.proxy.HibernateProxy");
+					pwb.println("	public "+type+" get"+name+"() {");
+					pwb.println("		if (i" + name + " != null && i" + name + " instanceof HibernateProxy)");
+					pwb.println("			i" + name + " = (" + type + ") Hibernate.unproxy(i" + name + ");");
+					pwb.println("		return i" + name + ";");
+					pwb.println("	}");
+				} else {
+					pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
+				}
 				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else if (formula!=null) {
 				pwa.println("	private "+type+" i"+name+";");
@@ -813,10 +827,15 @@ public class CreateBaseModelFromXml extends Task {
 			pwa.println("	private Set<"+type+"> i"+name+";");
 			pwb.println("	public Set<"+type+"> get"+name+"() { return i"+name+"; }");
 			pwb.println("	public void set"+name+"(Set<"+type+"> "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
-			pwb.println("	public void addTo"+name.substring(0,1).toLowerCase()+name.substring(1)+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
+			pwb.println("	public void addTo"+name+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
 			pwb.println("		if (i"+name+" == null) i"+name+" = new HashSet<"+type+">();");
 			pwb.println("		i"+name+".add("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
 			pwb.println("	}");
+			pwb.println("	@Deprecated");
+			pwb.println("	public void addTo"+name.substring(0,1).toLowerCase()+name.substring(1)+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
+			pwb.println("		addTo"+name+"("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
+			pwb.println("	}");
+			
 		}
 		
 		if (serializable)

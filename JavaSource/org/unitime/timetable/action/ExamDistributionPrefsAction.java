@@ -435,7 +435,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
                 dObj.setDistributionPref(dp);
                 dObj.setSequenceNumber(Integer.valueOf(++idx));
                 exam.getDistributionObjects().add(dObj);
-                dp.addTodistributionObjects(dObj);
+                dp.addToDistributionObjects(dObj);
         	}
         
      	     // Save

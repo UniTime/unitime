@@ -169,45 +169,65 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
-	public void addTosubjectAreas(SubjectArea subjectArea) {
+	public void addToSubjectAreas(SubjectArea subjectArea) {
 		if (iSubjectAreas == null) iSubjectAreas = new HashSet<SubjectArea>();
 		iSubjectAreas.add(subjectArea);
+	}
+	@Deprecated
+	public void addTosubjectAreas(SubjectArea subjectArea) {
+		addToSubjectAreas(subjectArea);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Building> getBuildings() { return iBuildings; }
 	public void setBuildings(Set<Building> buildings) { iBuildings = buildings; }
-	public void addTobuildings(Building building) {
+	public void addToBuildings(Building building) {
 		if (iBuildings == null) iBuildings = new HashSet<Building>();
 		iBuildings.add(building);
+	}
+	@Deprecated
+	public void addTobuildings(Building building) {
+		addToBuildings(building);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
-	public void addTodepartments(Department department) {
+	public void addToDepartments(Department department) {
 		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
+	}
+	@Deprecated
+	public void addTodepartments(Department department) {
+		addToDepartments(department);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
-	public void addTorooms(Location location) {
+	public void addToRooms(Location location) {
 		if (iRooms == null) iRooms = new HashSet<Location>();
 		iRooms.add(location);
+	}
+	@Deprecated
+	public void addTorooms(Location location) {
+		addToRooms(location);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
 	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
-	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
+	public void addToInstructionalOfferings(InstructionalOffering instructionalOffering) {
 		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet<InstructionalOffering>();
 		iInstructionalOfferings.add(instructionalOffering);
+	}
+	@Deprecated
+	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
+		addToInstructionalOfferings(instructionalOffering);
 	}
 
 	@Override

@@ -118,9 +118,13 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<SchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
-	public void addToschedulingSubparts(SchedulingSubpart schedulingSubpart) {
+	public void addToSchedulingSubparts(SchedulingSubpart schedulingSubpart) {
 		if (iSchedulingSubparts == null) iSchedulingSubparts = new HashSet<SchedulingSubpart>();
 		iSchedulingSubparts.add(schedulingSubpart);
+	}
+	@Deprecated
+	public void addToschedulingSubparts(SchedulingSubpart schedulingSubpart) {
+		addToSchedulingSubparts(schedulingSubpart);
 	}
 
 	@Override

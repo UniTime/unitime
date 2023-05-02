@@ -132,9 +132,13 @@ public abstract class BasePitDepartmentalInstructor implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassInstructor> getPitClassesInstructing() { return iPitClassesInstructing; }
 	public void setPitClassesInstructing(Set<PitClassInstructor> pitClassesInstructing) { iPitClassesInstructing = pitClassesInstructing; }
-	public void addTopitClassesInstructing(PitClassInstructor pitClassInstructor) {
+	public void addToPitClassesInstructing(PitClassInstructor pitClassInstructor) {
 		if (iPitClassesInstructing == null) iPitClassesInstructing = new HashSet<PitClassInstructor>();
 		iPitClassesInstructing.add(pitClassInstructor);
+	}
+	@Deprecated
+	public void addTopitClassesInstructing(PitClassInstructor pitClassInstructor) {
+		addToPitClassesInstructing(pitClassInstructor);
 	}
 
 	@Override

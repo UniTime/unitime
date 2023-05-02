@@ -119,9 +119,13 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CurriculumCourse> getCourses() { return iCourses; }
 	public void setCourses(Set<CurriculumCourse> courses) { iCourses = courses; }
-	public void addTocourses(CurriculumCourse curriculumCourse) {
+	public void addToCourses(CurriculumCourse curriculumCourse) {
 		if (iCourses == null) iCourses = new HashSet<CurriculumCourse>();
 		iCourses.add(curriculumCourse);
+	}
+	@Deprecated
+	public void addTocourses(CurriculumCourse curriculumCourse) {
+		addToCourses(curriculumCourse);
 	}
 
 	@Override

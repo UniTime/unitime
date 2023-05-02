@@ -161,9 +161,13 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
-	public void addToclasses(ClassInstructor classInstructor) {
+	public void addToClasses(ClassInstructor classInstructor) {
 		if (iClasses == null) iClasses = new HashSet<ClassInstructor>();
 		iClasses.add(classInstructor);
+	}
+	@Deprecated
+	public void addToclasses(ClassInstructor classInstructor) {
+		addToClasses(classInstructor);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -173,27 +177,39 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
-	public void addToexams(Exam exam) {
+	public void addToExams(Exam exam) {
 		if (iExams == null) iExams = new HashSet<Exam>();
 		iExams.add(exam);
+	}
+	@Deprecated
+	public void addToexams(Exam exam) {
+		addToExams(exam);
 	}
 
 	@ManyToMany(mappedBy = "instructors")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
-	public void addToassignments(Assignment assignment) {
+	public void addToAssignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+	@Deprecated
+	public void addToassignments(Assignment assignment) {
+		addToAssignments(assignment);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructor")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
 	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
-	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+	public void addToOfferingCoordinators(OfferingCoordinator offeringCoordinator) {
 		if (iOfferingCoordinators == null) iOfferingCoordinators = new HashSet<OfferingCoordinator>();
 		iOfferingCoordinators.add(offeringCoordinator);
+	}
+	@Deprecated
+	public void addToofferingCoordinators(OfferingCoordinator offeringCoordinator) {
+		addToOfferingCoordinators(offeringCoordinator);
 	}
 
 	@ManyToMany
@@ -203,9 +219,13 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructorAttribute> getAttributes() { return iAttributes; }
 	public void setAttributes(Set<InstructorAttribute> attributes) { iAttributes = attributes; }
-	public void addToattributes(InstructorAttribute instructorAttribute) {
+	public void addToAttributes(InstructorAttribute instructorAttribute) {
 		if (iAttributes == null) iAttributes = new HashSet<InstructorAttribute>();
 		iAttributes.add(instructorAttribute);
+	}
+	@Deprecated
+	public void addToattributes(InstructorAttribute instructorAttribute) {
+		addToAttributes(instructorAttribute);
 	}
 
 	@Override

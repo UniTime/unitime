@@ -104,9 +104,13 @@ public abstract class BaseRoles implements Serializable {
 	@Column(name = "value")
 	public Set<String> getRights() { return iRights; }
 	public void setRights(Set<String> rights) { iRights = rights; }
-	public void addTorights(String string) {
+	public void addToRights(String string) {
 		if (iRights == null) iRights = new HashSet<String>();
 		iRights.add(string);
+	}
+	@Deprecated
+	public void addTorights(String string) {
+		addToRights(string);
 	}
 
 	@Override

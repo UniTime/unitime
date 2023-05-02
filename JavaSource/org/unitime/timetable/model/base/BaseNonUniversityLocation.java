@@ -68,9 +68,13 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<NonUniversityLocationPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<NonUniversityLocationPicture> pictures) { iPictures = pictures; }
-	public void addTopictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
+	public void addToPictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
 		if (iPictures == null) iPictures = new HashSet<NonUniversityLocationPicture>();
 		iPictures.add(nonUniversityLocationPicture);
+	}
+	@Deprecated
+	public void addTopictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
+		addToPictures(nonUniversityLocationPicture);
 	}
 
 	@ManyToMany
@@ -80,9 +84,13 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
 	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
-	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+	public void addToAllowedServices(EventServiceProvider eventServiceProvider) {
 		if (iAllowedServices == null) iAllowedServices = new HashSet<EventServiceProvider>();
 		iAllowedServices.add(eventServiceProvider);
+	}
+	@Deprecated
+	public void addToallowedServices(EventServiceProvider eventServiceProvider) {
+		addToAllowedServices(eventServiceProvider);
 	}
 
 	@Override

@@ -825,7 +825,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                 ioc.setInstructionalOffering(io);
                 ioc.setClassDurationType(dtype);
                 ioc.setInstructionalMethod(imeth);
-                io.addToinstrOfferingConfigs(ioc);
+                io.addToInstrOfferingConfigs(ioc);
 
                 hibSession.persist(ioc);
                 hibSession.merge(io);
@@ -958,7 +958,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	                    if (notDeletedSubparts.get(childClass.getSchedulingSubpart().getUniqueId())!=null) {
 	    	                Debug.debug("Setting class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 		                    childClass.setParentClass(parentClass);
-		                    parentClass.addTochildClasses(childClass);
+		                    parentClass.addToChildClasses(childClass);
 				            hibSession.merge(parentClass);
 				            hibSession.merge(childClass);
 
@@ -987,7 +987,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	   		                    if (notDeletedSubparts.get(childClass.getSchedulingSubpart().getUniqueId())!=null) {
 	    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 		   	                        childClass.setParentClass(parentClass);
-		    	                    parentClass.addTochildClasses(childClass);
+		    	                    parentClass.addToChildClasses(childClass);
 		    			            hibSession.merge(parentClass);
 		    			            hibSession.merge(childClass);
 	   		                    }
@@ -1024,7 +1024,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
    	                        Class_ childClass = (Class_) cci2.next();
 	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
    	                        childClass.setParentClass(parentClass);
-    	                    parentClass.addTochildClasses(childClass);
+    	                    parentClass.addToChildClasses(childClass);
     			            hibSession.merge(parentClass);
     			            hibSession.merge(childClass);
     	                }
@@ -1437,7 +1437,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	   	                        Class_ childClass = (Class_) cci.next();
     	    	                Debug.debug("Setting class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 	    	                    childClass.setParentClass(parentClass);
-	    	                    parentClass.addTochildClasses(childClass);
+	    	                    parentClass.addToChildClasses(childClass);
 	    			            hibSession.merge(parentClass);
 	    			            hibSession.merge(childClass);
 
@@ -1446,7 +1446,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	    	   	                        childClass = (Class_) cci.next();
 		    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
 	    	   	                        childClass.setParentClass(parentClass);
-	    	    	                    parentClass.addTochildClasses(childClass);
+	    	    	                    parentClass.addToChildClasses(childClass);
 	    	    			            hibSession.merge(parentClass);
 	    	    			            hibSession.merge(childClass);
 	    	    	                }
@@ -1464,7 +1464,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     	   	                        Class_ childClass = (Class_) cci2.next();
 	    	    	                Debug.debug("Setting ODD class " + childClass.getClassLabel() + " to parent " + parentClass.getClassLabel());
     	   	                        childClass.setParentClass(parentClass);
-    	    	                    parentClass.addTochildClasses(childClass);
+    	    	                    parentClass.addToChildClasses(childClass);
     	    			            hibSession.merge(parentClass);
     	    			            hibSession.merge(childClass);
     	    	                }
@@ -1664,7 +1664,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         	        if (md>0)
         	            c.setManagingDept(DepartmentDAO.getInstance().get(Long.valueOf(md)), sessionContext.getUser(), hibSession);
         	        c.setCancelled(false);
-        	        subpart.addToclasses(c);
+        	        subpart.addToClasses(c);
                 }
 
                 hibSession.merge(subpart);
@@ -1837,7 +1837,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                                 } while (childClass.getParentClass()!=null);
 
                                 childClass.setParentClass(parentClass);
-                                parentClass.addTochildClasses(childClass);
+                                parentClass.addToChildClasses(childClass);
             		            hibSession.merge(parentClass);
             		            hibSession.merge(childClass);
                             }

@@ -122,9 +122,13 @@ public abstract class BasePitClassMeeting implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<PitClassMeetingUtilPeriod> getPitClassMeetingUtilPeriods() { return iPitClassMeetingUtilPeriods; }
 	public void setPitClassMeetingUtilPeriods(Set<PitClassMeetingUtilPeriod> pitClassMeetingUtilPeriods) { iPitClassMeetingUtilPeriods = pitClassMeetingUtilPeriods; }
-	public void addTopitClassMeetingUtilPeriods(PitClassMeetingUtilPeriod pitClassMeetingUtilPeriod) {
+	public void addToPitClassMeetingUtilPeriods(PitClassMeetingUtilPeriod pitClassMeetingUtilPeriod) {
 		if (iPitClassMeetingUtilPeriods == null) iPitClassMeetingUtilPeriods = new HashSet<PitClassMeetingUtilPeriod>();
 		iPitClassMeetingUtilPeriods.add(pitClassMeetingUtilPeriod);
+	}
+	@Deprecated
+	public void addTopitClassMeetingUtilPeriods(PitClassMeetingUtilPeriod pitClassMeetingUtilPeriod) {
+		addToPitClassMeetingUtilPeriods(pitClassMeetingUtilPeriod);
 	}
 
 	@Override

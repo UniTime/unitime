@@ -142,9 +142,13 @@ public abstract class BaseExternalRoom implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExternalRoomDepartment> getRoomDepartments() { return iRoomDepartments; }
 	public void setRoomDepartments(Set<ExternalRoomDepartment> roomDepartments) { iRoomDepartments = roomDepartments; }
-	public void addToroomDepartments(ExternalRoomDepartment externalRoomDepartment) {
+	public void addToRoomDepartments(ExternalRoomDepartment externalRoomDepartment) {
 		if (iRoomDepartments == null) iRoomDepartments = new HashSet<ExternalRoomDepartment>();
 		iRoomDepartments.add(externalRoomDepartment);
+	}
+	@Deprecated
+	public void addToroomDepartments(ExternalRoomDepartment externalRoomDepartment) {
+		addToRoomDepartments(externalRoomDepartment);
 	}
 
 	@OneToMany
@@ -152,9 +156,13 @@ public abstract class BaseExternalRoom implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExternalRoomFeature> getRoomFeatures() { return iRoomFeatures; }
 	public void setRoomFeatures(Set<ExternalRoomFeature> roomFeatures) { iRoomFeatures = roomFeatures; }
-	public void addToroomFeatures(ExternalRoomFeature externalRoomFeature) {
+	public void addToRoomFeatures(ExternalRoomFeature externalRoomFeature) {
 		if (iRoomFeatures == null) iRoomFeatures = new HashSet<ExternalRoomFeature>();
 		iRoomFeatures.add(externalRoomFeature);
+	}
+	@Deprecated
+	public void addToroomFeatures(ExternalRoomFeature externalRoomFeature) {
+		addToRoomFeatures(externalRoomFeature);
 	}
 
 	@Override

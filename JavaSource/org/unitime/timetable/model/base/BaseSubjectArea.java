@@ -110,9 +110,13 @@ public abstract class BaseSubjectArea implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
-	public void addTocourseOfferings(CourseOffering courseOffering) {
+	public void addToCourseOfferings(CourseOffering courseOffering) {
 		if (iCourseOfferings == null) iCourseOfferings = new HashSet<CourseOffering>();
 		iCourseOfferings.add(courseOffering);
+	}
+	@Deprecated
+	public void addTocourseOfferings(CourseOffering courseOffering) {
+		addToCourseOfferings(courseOffering);
 	}
 
 	@Override

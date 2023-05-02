@@ -273,7 +273,7 @@ public class DepartmentEditForm implements UniTimeForm {
 			acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
 			department.setSession(acadSession);
 			department.setDistributionPrefPriority(0);
-			acadSession.addTodepartments(department);
+			acadSession.addToDepartments(department);
 			department.setExternalStatusTypes(new HashSet<ExternalDepartmentStatusType>());
 		}
 		else {

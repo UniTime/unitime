@@ -109,36 +109,52 @@ public abstract class BaseTimetableManager implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ManagerSettings> getSettings() { return iSettings; }
 	public void setSettings(Set<ManagerSettings> settings) { iSettings = settings; }
-	public void addTosettings(ManagerSettings managerSettings) {
+	public void addToSettings(ManagerSettings managerSettings) {
 		if (iSettings == null) iSettings = new HashSet<ManagerSettings>();
 		iSettings.add(managerSettings);
+	}
+	@Deprecated
+	public void addTosettings(ManagerSettings managerSettings) {
+		addToSettings(managerSettings);
 	}
 
 	@ManyToMany(mappedBy = "timetableManagers")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
-	public void addTodepartments(Department department) {
+	public void addToDepartments(Department department) {
 		if (iDepartments == null) iDepartments = new HashSet<Department>();
 		iDepartments.add(department);
+	}
+	@Deprecated
+	public void addTodepartments(Department department) {
+		addToDepartments(department);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "timetableManager", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ManagerRole> getManagerRoles() { return iManagerRoles; }
 	public void setManagerRoles(Set<ManagerRole> managerRoles) { iManagerRoles = managerRoles; }
-	public void addTomanagerRoles(ManagerRole managerRole) {
+	public void addToManagerRoles(ManagerRole managerRole) {
 		if (iManagerRoles == null) iManagerRoles = new HashSet<ManagerRole>();
 		iManagerRoles.add(managerRole);
+	}
+	@Deprecated
+	public void addTomanagerRoles(ManagerRole managerRole) {
+		addToManagerRoles(managerRole);
 	}
 
 	@ManyToMany(mappedBy = "timetableManagers")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SolverGroup> getSolverGroups() { return iSolverGroups; }
 	public void setSolverGroups(Set<SolverGroup> solverGroups) { iSolverGroups = solverGroups; }
-	public void addTosolverGroups(SolverGroup solverGroup) {
+	public void addToSolverGroups(SolverGroup solverGroup) {
 		if (iSolverGroups == null) iSolverGroups = new HashSet<SolverGroup>();
 		iSolverGroups.add(solverGroup);
+	}
+	@Deprecated
+	public void addTosolverGroups(SolverGroup solverGroup) {
+		addToSolverGroups(solverGroup);
 	}
 
 	@Override

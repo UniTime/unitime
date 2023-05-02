@@ -700,7 +700,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             	dObj.setDistributionPref(dp);
             	dObj.getPrefGroup().getDistributionObjects().add(dObj);
             	
-            	dp.addTodistributionObjects(dObj);
+            	dp.addToDistributionObjects(dObj);
         	}
         
      	    dp.setOwner(owningDept);

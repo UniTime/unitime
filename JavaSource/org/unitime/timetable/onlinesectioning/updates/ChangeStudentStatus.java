@@ -109,7 +109,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 							note.setTextNote(getNote());
 							note.setTimeStamp(ts);
 							note.setUserId(helper.getUser().getExternalId());
-							dbStudent.addTonotes(note);
+							dbStudent.addToNotes(note);
 							student.setLastNote(new XStudentNote(note));
 						}
 						

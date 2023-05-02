@@ -213,45 +213,65 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
-	public void addTochildClasses(Class_ class_) {
+	public void addToChildClasses(Class_ class_) {
 		if (iChildClasses == null) iChildClasses = new HashSet<Class_>();
 		iChildClasses.add(class_);
+	}
+	@Deprecated
+	public void addTochildClasses(Class_ class_) {
+		addToChildClasses(class_);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classInstructing", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ClassInstructor> getClassInstructors() { return iClassInstructors; }
 	public void setClassInstructors(Set<ClassInstructor> classInstructors) { iClassInstructors = classInstructors; }
-	public void addToclassInstructors(ClassInstructor classInstructor) {
+	public void addToClassInstructors(ClassInstructor classInstructor) {
 		if (iClassInstructors == null) iClassInstructors = new HashSet<ClassInstructor>();
 		iClassInstructors.add(classInstructor);
+	}
+	@Deprecated
+	public void addToclassInstructors(ClassInstructor classInstructor) {
+		addToClassInstructors(classInstructor);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
-	public void addToassignments(Assignment assignment) {
+	public void addToAssignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+	@Deprecated
+	public void addToassignments(Assignment assignment) {
+		addToAssignments(assignment);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<StudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
-	public void addTostudentEnrollments(StudentClassEnrollment studentClassEnrollment) {
+	public void addToStudentEnrollments(StudentClassEnrollment studentClassEnrollment) {
 		if (iStudentEnrollments == null) iStudentEnrollments = new HashSet<StudentClassEnrollment>();
 		iStudentEnrollments.add(studentClassEnrollment);
+	}
+	@Deprecated
+	public void addTostudentEnrollments(StudentClassEnrollment studentClassEnrollment) {
+		addToStudentEnrollments(studentClassEnrollment);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "teachingClass", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TeachingClassRequest> getTeachingRequests() { return iTeachingRequests; }
 	public void setTeachingRequests(Set<TeachingClassRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
-	public void addToteachingRequests(TeachingClassRequest teachingClassRequest) {
+	public void addToTeachingRequests(TeachingClassRequest teachingClassRequest) {
 		if (iTeachingRequests == null) iTeachingRequests = new HashSet<TeachingClassRequest>();
 		iTeachingRequests.add(teachingClassRequest);
+	}
+	@Deprecated
+	public void addToteachingRequests(TeachingClassRequest teachingClassRequest) {
+		addToTeachingRequests(teachingClassRequest);
 	}
 
 	@Override

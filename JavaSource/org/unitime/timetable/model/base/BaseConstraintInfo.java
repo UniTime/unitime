@@ -59,9 +59,13 @@ public abstract class BaseConstraintInfo extends SolverInfo implements Serializa
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
-	public void addToassignments(Assignment assignment) {
+	public void addToAssignments(Assignment assignment) {
 		if (iAssignments == null) iAssignments = new HashSet<Assignment>();
 		iAssignments.add(assignment);
+	}
+	@Deprecated
+	public void addToassignments(Assignment assignment) {
+		addToAssignments(assignment);
 	}
 
 	@Override

@@ -91,11 +91,13 @@
                 update="false"
                 insert="false"/>
 
+			<!-- 
             <many-to-one
                 name="session"
                 class="Session"
                 lazy="proxy"
                 formula="(select io.session_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid)"/>
+            -->
 
             <!-- 
 			<many-to-one 
@@ -444,7 +446,8 @@
                 name="session"
                 class="Session"
                 column="session_id"
-                not-null="true"/>
+                not-null="true"
+                lazy="proxy"/>
 
             <property
                 name="externalUniqueId"
@@ -1046,7 +1049,8 @@
                 class="Session"
                 column="session_id"
                 not-null="true"
-                foreign-key="fk_exam_session"/>
+                foreign-key="fk_exam_session"
+                lazy="proxy"/>
 
             <property
                 name="name"
@@ -1259,7 +1263,8 @@
                 class="Session"
                 column="session_id"
                 not-null="true"
-                foreign-key="fk_instr_surv_session"/>
+                foreign-key="fk_instr_surv_session"
+                lazy="proxy"/>
             <property
                 name="externalUniqueId"
                 column="external_uid"

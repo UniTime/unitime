@@ -154,9 +154,13 @@ public abstract class BaseCourseCatalog implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<CourseSubpartCredit> getSubparts() { return iSubparts; }
 	public void setSubparts(Set<CourseSubpartCredit> subparts) { iSubparts = subparts; }
-	public void addTosubparts(CourseSubpartCredit courseSubpartCredit) {
+	public void addToSubparts(CourseSubpartCredit courseSubpartCredit) {
 		if (iSubparts == null) iSubparts = new HashSet<CourseSubpartCredit>();
 		iSubparts.add(courseSubpartCredit);
+	}
+	@Deprecated
+	public void addTosubparts(CourseSubpartCredit courseSubpartCredit) {
+		addToSubparts(courseSubpartCredit);
 	}
 
 	@Override

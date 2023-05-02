@@ -65,9 +65,13 @@ public abstract class BaseExamStatus extends ExamStatusId {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimetableManager> getManagers() { return iManagers; }
 	public void setManagers(Set<TimetableManager> managers) { iManagers = managers; }
-	public void addTomanagers(TimetableManager timetableManager) {
+	public void addToManagers(TimetableManager timetableManager) {
 		if (iManagers == null) iManagers = new HashSet<TimetableManager>();
 		iManagers.add(timetableManager);
+	}
+	@Deprecated
+	public void addTomanagers(TimetableManager timetableManager) {
+		addToManagers(timetableManager);
 	}
 
 	@Override

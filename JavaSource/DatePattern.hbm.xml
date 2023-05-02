@@ -71,7 +71,8 @@
             class="Session"
             column="session_id"
             not-null="true"
-            foreign-key="fk_datepatt_session"/>
+            foreign-key="fk_datepatt_session"
+            lazy="proxy"/>
             
         <set
             name="parents"

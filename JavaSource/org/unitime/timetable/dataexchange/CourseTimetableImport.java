@@ -774,8 +774,8 @@ public class CourseTimetableImport extends BaseImport {
 			instructor.setPercentShare(Integer.valueOf(instructorElement.attributeValue("share", "100")));	
 			if (responsibility != null)
 				instructor.setResponsibility(TeachingResponsibility.getTeachingResponsibility(responsibility, getHibSession()));
-			clazz.addToclassInstructors(instructor);
-			di.addToclasses(instructor);
+			clazz.addToClassInstructors(instructor);
+			di.addToClasses(instructor);
 			getHibSession().persist(instructor);
 			getHibSession().merge(di);
         }

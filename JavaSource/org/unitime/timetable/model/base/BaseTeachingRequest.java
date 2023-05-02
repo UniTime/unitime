@@ -117,18 +117,26 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getAssignedInstructors() { return iAssignedInstructors; }
 	public void setAssignedInstructors(Set<DepartmentalInstructor> assignedInstructors) { iAssignedInstructors = assignedInstructors; }
-	public void addToassignedInstructors(DepartmentalInstructor departmentalInstructor) {
+	public void addToAssignedInstructors(DepartmentalInstructor departmentalInstructor) {
 		if (iAssignedInstructors == null) iAssignedInstructors = new HashSet<DepartmentalInstructor>();
 		iAssignedInstructors.add(departmentalInstructor);
+	}
+	@Deprecated
+	public void addToassignedInstructors(DepartmentalInstructor departmentalInstructor) {
+		addToAssignedInstructors(departmentalInstructor);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "teachingRequest", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TeachingClassRequest> getClassRequests() { return iClassRequests; }
 	public void setClassRequests(Set<TeachingClassRequest> classRequests) { iClassRequests = classRequests; }
-	public void addToclassRequests(TeachingClassRequest teachingClassRequest) {
+	public void addToClassRequests(TeachingClassRequest teachingClassRequest) {
 		if (iClassRequests == null) iClassRequests = new HashSet<TeachingClassRequest>();
 		iClassRequests.add(teachingClassRequest);
+	}
+	@Deprecated
+	public void addToclassRequests(TeachingClassRequest teachingClassRequest) {
+		addToClassRequests(teachingClassRequest);
 	}
 
 	@Override

@@ -173,8 +173,9 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public Boolean getExternalFundingDept() { return iExternalFundingDept; }
 	public void setExternalFundingDept(Boolean externalFundingDept) { iExternalFundingDept = externalFundingDept; }
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
+	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -193,18 +194,26 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
-	public void addTosubjectAreas(SubjectArea subjectArea) {
+	public void addToSubjectAreas(SubjectArea subjectArea) {
 		if (iSubjectAreas == null) iSubjectAreas = new HashSet<SubjectArea>();
 		iSubjectAreas.add(subjectArea);
+	}
+	@Deprecated
+	public void addTosubjectAreas(SubjectArea subjectArea) {
+		addToSubjectAreas(subjectArea);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "department", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
-	public void addToroomDepts(RoomDept roomDept) {
+	public void addToRoomDepts(RoomDept roomDept) {
 		if (iRoomDepts == null) iRoomDepts = new HashSet<RoomDept>();
 		iRoomDepts.add(roomDept);
+	}
+	@Deprecated
+	public void addToroomDepts(RoomDept roomDept) {
+		addToRoomDepts(roomDept);
 	}
 
 	@ManyToMany
@@ -214,9 +223,13 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DatePattern> getDatePatterns() { return iDatePatterns; }
 	public void setDatePatterns(Set<DatePattern> datePatterns) { iDatePatterns = datePatterns; }
-	public void addTodatePatterns(DatePattern datePattern) {
+	public void addToDatePatterns(DatePattern datePattern) {
 		if (iDatePatterns == null) iDatePatterns = new HashSet<DatePattern>();
 		iDatePatterns.add(datePattern);
+	}
+	@Deprecated
+	public void addTodatePatterns(DatePattern datePattern) {
+		addToDatePatterns(datePattern);
 	}
 
 	@ManyToMany
@@ -226,18 +239,26 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimePattern> getTimePatterns() { return iTimePatterns; }
 	public void setTimePatterns(Set<TimePattern> timePatterns) { iTimePatterns = timePatterns; }
-	public void addTotimePatterns(TimePattern timePattern) {
+	public void addToTimePatterns(TimePattern timePattern) {
 		if (iTimePatterns == null) iTimePatterns = new HashSet<TimePattern>();
 		iTimePatterns.add(timePattern);
+	}
+	@Deprecated
+	public void addTotimePatterns(TimePattern timePattern) {
+		addToTimePatterns(timePattern);
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "externalDepartment", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<ExternalDepartmentStatusType> getExternalStatusTypes() { return iExternalStatusTypes; }
 	public void setExternalStatusTypes(Set<ExternalDepartmentStatusType> externalStatusTypes) { iExternalStatusTypes = externalStatusTypes; }
-	public void addToexternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
+	public void addToExternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
 		if (iExternalStatusTypes == null) iExternalStatusTypes = new HashSet<ExternalDepartmentStatusType>();
 		iExternalStatusTypes.add(externalDepartmentStatusType);
+	}
+	@Deprecated
+	public void addToexternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
+		addToExternalStatusTypes(externalDepartmentStatusType);
 	}
 
 	@ManyToMany
@@ -247,18 +268,26 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
-	public void addTotimetableManagers(TimetableManager timetableManager) {
+	public void addToTimetableManagers(TimetableManager timetableManager) {
 		if (iTimetableManagers == null) iTimetableManagers = new HashSet<TimetableManager>();
 		iTimetableManagers.add(timetableManager);
+	}
+	@Deprecated
+	public void addTotimetableManagers(TimetableManager timetableManager) {
+		addToTimetableManagers(timetableManager);
 	}
 
 	@OneToMany(mappedBy = "department", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
-	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {
 		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
+	}
+	@Deprecated
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		addToInstructors(departmentalInstructor);
 	}
 
 	@Override

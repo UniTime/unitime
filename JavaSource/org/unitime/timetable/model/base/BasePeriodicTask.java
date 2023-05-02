@@ -111,18 +111,26 @@ public abstract class BasePeriodicTask implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TaskParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<TaskParameter> parameters) { iParameters = parameters; }
-	public void addToparameters(TaskParameter taskParameter) {
+	public void addToParameters(TaskParameter taskParameter) {
 		if (iParameters == null) iParameters = new HashSet<TaskParameter>();
 		iParameters.add(taskParameter);
+	}
+	@Deprecated
+	public void addToparameters(TaskParameter taskParameter) {
+		addToParameters(taskParameter);
 	}
 
 	@OneToMany(mappedBy = "task", cascade = {CascadeType.ALL})
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<TaskExecution> getSchedule() { return iSchedule; }
 	public void setSchedule(Set<TaskExecution> schedule) { iSchedule = schedule; }
-	public void addToschedule(TaskExecution taskExecution) {
+	public void addToSchedule(TaskExecution taskExecution) {
 		if (iSchedule == null) iSchedule = new HashSet<TaskExecution>();
 		iSchedule.add(taskExecution);
+	}
+	@Deprecated
+	public void addToschedule(TaskExecution taskExecution) {
+		addToSchedule(taskExecution);
 	}
 
 	@Override

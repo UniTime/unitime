@@ -449,7 +449,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 		    io.setWaitlistMode(courseOfferingInterface.getWaitList());
 
 		    courseOffering.setInstructionalOffering(io);
-		    io.addTocourseOfferings(courseOffering);
+		    io.addToCourseOfferings(courseOffering);
 		    
 		    courseOffering.setDisabledOverrides(new HashSet<OverrideType>());
 		    if (courseOfferingInterface.getCourseOverrides() != null) {

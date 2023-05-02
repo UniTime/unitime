@@ -110,9 +110,13 @@ public abstract class BaseReservation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstrOfferingConfig> getConfigurations() { return iConfigurations; }
 	public void setConfigurations(Set<InstrOfferingConfig> configurations) { iConfigurations = configurations; }
-	public void addToconfigurations(InstrOfferingConfig instrOfferingConfig) {
+	public void addToConfigurations(InstrOfferingConfig instrOfferingConfig) {
 		if (iConfigurations == null) iConfigurations = new HashSet<InstrOfferingConfig>();
 		iConfigurations.add(instrOfferingConfig);
+	}
+	@Deprecated
+	public void addToconfigurations(InstrOfferingConfig instrOfferingConfig) {
+		addToConfigurations(instrOfferingConfig);
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -122,9 +126,13 @@ public abstract class BaseReservation implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
-	public void addToclasses(Class_ class_) {
+	public void addToClasses(Class_ class_) {
 		if (iClasses == null) iClasses = new HashSet<Class_>();
 		iClasses.add(class_);
+	}
+	@Deprecated
+	public void addToclasses(Class_ class_) {
+		addToClasses(class_);
 	}
 
 	@Override

@@ -111,18 +111,26 @@ public abstract class BaseInstructorAttribute implements Serializable {
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<InstructorAttribute> getChildAttributes() { return iChildAttributes; }
 	public void setChildAttributes(Set<InstructorAttribute> childAttributes) { iChildAttributes = childAttributes; }
-	public void addTochildAttributes(InstructorAttribute instructorAttribute) {
+	public void addToChildAttributes(InstructorAttribute instructorAttribute) {
 		if (iChildAttributes == null) iChildAttributes = new HashSet<InstructorAttribute>();
 		iChildAttributes.add(instructorAttribute);
+	}
+	@Deprecated
+	public void addTochildAttributes(InstructorAttribute instructorAttribute) {
+		addToChildAttributes(instructorAttribute);
 	}
 
 	@ManyToMany(mappedBy = "attributes")
 	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
-	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {
 		if (iInstructors == null) iInstructors = new HashSet<DepartmentalInstructor>();
 		iInstructors.add(departmentalInstructor);
+	}
+	@Deprecated
+	public void addToinstructors(DepartmentalInstructor departmentalInstructor) {
+		addToInstructors(departmentalInstructor);
 	}
 
 	@Override
