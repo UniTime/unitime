@@ -436,7 +436,8 @@ public class HibernateUtil {
         if (isMySQL() || isPostgress())
             return "adddate("+dateSQL+","+incrementSQL+")";
         else
-            return dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL;
+        	return dateSQL + " + numtodsinterval(" + incrementSQL + ", 'day')";
+//            return "(" + dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL + ")";
     }
     
     public static String dayOfWeek(String field) {

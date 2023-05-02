@@ -226,7 +226,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 		
 		List<AdvisorCourseRequest> acrs = helper.getHibSession().createQuery(
-				"from AdvisorCourseRequest where student = :studentId order by priority, alternative", AdvisorCourseRequest.class
+				"from AdvisorCourseRequest where student.uniqueId = :studentId order by priority, alternative", AdvisorCourseRequest.class
 				).setParameter("studentId", iStudentId).list();
 		
 		if (student != null && iCheckExistingDemands) {

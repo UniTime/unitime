@@ -82,7 +82,8 @@ public class UniqueIdGenerator implements IdentifierGenerator {
     		params.setProperty("increment_size", "32767");
     		params.setProperty("value_column_name", "next_hi");
     		params.setProperty("table_name", "hibernate_unique_key");
-    		
+    	} else if (getGenerator() instanceof SequenceStyleGenerator) {
+    		params.setProperty("increment_size", "1");
     	}
         getGenerator().configure(type, params, serviceRegistry);
     }

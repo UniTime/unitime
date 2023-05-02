@@ -3513,7 +3513,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			org.hibernate.Session hibSession = CourseDemandDAO.getInstance().getSession();
 			CourseDemand cd = hibSession.createQuery(
-					"select cr.courseDemand from CourseRequest cr where cr.courseOffering = :courseId and cr.courseDemand.student = :studentId", CourseDemand.class
+					"select cr.courseDemand from CourseRequest cr where cr.courseOffering.uniqueId = :courseId and cr.courseDemand.student.uniqueId = :studentId", CourseDemand.class
 					).setParameter("studentId", studentId).setParameter("courseId", courseId).setMaxResults(1).uniqueResult();
 			if (cd == null) return null;
 			

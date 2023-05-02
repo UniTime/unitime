@@ -353,6 +353,7 @@ public class Query implements Serializable {
 		System.out.println(split("(a \"b c\")  ddd f", ""));
 		System.out.println(split("a \"b c\" OR not ddd f", "or"));
 		System.out.println(split("a or((\"b c\" or dddor) f) q", "or"));
+		System.out.println(parse("false"));
 	}
 	
 	
