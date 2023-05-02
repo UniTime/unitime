@@ -44,7 +44,7 @@
 	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property>
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
-	<property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
+	<property name="dialect">org.hibernate.dialect.OracleDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.SequenceGenerator</property>
 	-->
 	<!-- End of Oracle Configuration -->
@@ -52,7 +52,6 @@
 	<!-- Connect database using the C3P0 database connection pool -->
 	<!-- See https://www.mchange.com/projects/c3p0/#hibernate-specific -->
 	<property name="hibernate.connection.release_mode">auto</property><!-- Release mode database connection- auto the default value -->
-	<property name="hibernate.c3p0.max_statements">0</property> <!--  Number of prepared statements will be cached. 0 no caching -->
 	<property name="hibernate.c3p0.max_size">100</property> <!-- Max connection pool size -->
 	<property name="hibernate.c3p0.min_size">10</property> <!-- Min connection pool size -->
 	<property name="hibernate.c3p0.timeout">0</property> <!-- Time in seconds before free a connection. 0 no expiration --> 
