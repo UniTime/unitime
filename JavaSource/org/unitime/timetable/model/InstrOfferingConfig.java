@@ -46,7 +46,7 @@ import org.unitime.timetable.util.duration.MinutesPerWeek;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "instr_offering_config")
 public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 	private static final long serialVersionUID = 1L;

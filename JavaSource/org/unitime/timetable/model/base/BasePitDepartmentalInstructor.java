@@ -129,7 +129,7 @@ public abstract class BasePitDepartmentalInstructor implements Serializable {
 	public void setDepartmentalInstructor(DepartmentalInstructor departmentalInstructor) { iDepartmentalInstructor = departmentalInstructor; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitDepartmentalInstructor", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClassInstructor> getPitClassesInstructing() { return iPitClassesInstructing; }
 	public void setPitClassesInstructing(Set<PitClassInstructor> pitClassesInstructing) { iPitClassesInstructing = pitClassesInstructing; }
 	public void addToPitClassesInstructing(PitClassInstructor pitClassInstructor) {

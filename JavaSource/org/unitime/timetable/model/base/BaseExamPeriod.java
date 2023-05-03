@@ -97,7 +97,7 @@ public abstract class BaseExamPeriod implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 

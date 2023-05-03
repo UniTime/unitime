@@ -20,8 +20,11 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.MappedSuperclass;
+
+import java.io.Serializable;
 
 import org.unitime.timetable.model.UserData;
 
@@ -31,12 +34,27 @@ import org.unitime.timetable.model.UserData;
  */
 @MappedSuperclass
 @IdClass(UserDataId.class)
-public abstract class BaseUserData extends UserDataId {
+public abstract class BaseUserData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private String iExternalUniqueId;
+	private String iName;
 	private String iValue;
 
 
+	public BaseUserData() {
+	}
+
+
+	@Id
+	@Column(name="external_uid", length = 40)
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	@Id
+	@Column(name="name", length = 100)
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
 	@Column(name = "value", nullable = false, length = 4000)
 	public String getValue() { return iValue; }

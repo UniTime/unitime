@@ -97,7 +97,7 @@ public abstract class BaseSolverGroup implements Serializable {
 	@JoinTable(name = "solver_gr_to_tt_mgr",
 		joinColumns = { @JoinColumn(name = "solver_group_id") },
 		inverseJoinColumns = { @JoinColumn(name = "timetable_mgr_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addToTimetableManagers(TimetableManager timetableManager) {
@@ -110,7 +110,7 @@ public abstract class BaseSolverGroup implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solverGroup")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addToDepartments(Department department) {
@@ -123,7 +123,7 @@ public abstract class BaseSolverGroup implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Solution> getSolutions() { return iSolutions; }
 	public void setSolutions(Set<Solution> solutions) { iSolutions = solutions; }
 	public void addToSolutions(Solution solution) {

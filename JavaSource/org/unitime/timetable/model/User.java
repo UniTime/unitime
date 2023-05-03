@@ -33,7 +33,7 @@ import org.unitime.timetable.model.dao.UserDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "users")
 public class User extends BaseUser {
 	private static final long serialVersionUID = 1L;

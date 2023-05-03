@@ -70,12 +70,12 @@ public abstract class BaseDistributionPref extends Preference implements Seriali
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "dist_type_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public DistributionType getDistributionType() { return iDistributionType; }
 	public void setDistributionType(DistributionType distributionType) { iDistributionType = distributionType; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "distributionPref", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
 	public void addToDistributionObjects(DistributionObject distributionObject) {

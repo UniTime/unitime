@@ -19,22 +19,14 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SessionConfig;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class SessionConfigId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,22 +40,17 @@ public class SessionConfigId implements Serializable {
 		iKey = key;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "session_id")
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
-	@Id
-	@Column(name="name", length = 255)
 	public String getKey() { return iKey; }
 	public void setKey(String key) { iKey = key; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof SessionConfig)) return false;
-		SessionConfig sessionConfig = (SessionConfig)o;
+		if (o == null || !(o instanceof SessionConfigId)) return false;
+		SessionConfigId sessionConfig = (SessionConfigId)o;
 		if (getSession() == null || sessionConfig.getSession() == null || !getSession().equals(sessionConfig.getSession())) return false;
 		if (getKey() == null || sessionConfig.getKey() == null || !getKey().equals(sessionConfig.getKey())) return false;
 		return true;

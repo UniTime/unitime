@@ -19,21 +19,14 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.ExternalDepartmentStatusType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class ExternalDepartmentStatusTypeId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -47,23 +40,17 @@ public class ExternalDepartmentStatusTypeId implements Serializable {
 		iDepartment = department;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "ext_dept_id")
 	public Department getExternalDepartment() { return iExternalDepartment; }
 	public void setExternalDepartment(Department externalDepartment) { iExternalDepartment = externalDepartment; }
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "department_id")
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof ExternalDepartmentStatusType)) return false;
-		ExternalDepartmentStatusType externalDepartmentStatusType = (ExternalDepartmentStatusType)o;
+		if (o == null || !(o instanceof ExternalDepartmentStatusTypeId)) return false;
+		ExternalDepartmentStatusTypeId externalDepartmentStatusType = (ExternalDepartmentStatusTypeId)o;
 		if (getExternalDepartment() == null || externalDepartmentStatusType.getExternalDepartment() == null || !getExternalDepartment().equals(externalDepartmentStatusType.getExternalDepartment())) return false;
 		if (getDepartment() == null || externalDepartmentStatusType.getDepartment() == null || !getDepartment().equals(externalDepartmentStatusType.getDepartment())) return false;
 		return true;

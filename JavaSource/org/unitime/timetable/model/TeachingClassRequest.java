@@ -31,7 +31,7 @@ import org.unitime.timetable.model.base.BaseTeachingClassRequest;
 import org.unitime.timetable.model.comparators.ClassComparator;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "teachreq_class")
 public class TeachingClassRequest extends BaseTeachingClassRequest implements Comparable<TeachingClassRequest> {
 	private static final long serialVersionUID = 1L;

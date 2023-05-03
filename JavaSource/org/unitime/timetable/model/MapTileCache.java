@@ -36,7 +36,7 @@ import org.unitime.timetable.model.base.MapTileCacheId;
 import org.unitime.timetable.model.dao.MapTileCacheDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "map_tiles")
 public class MapTileCache extends BaseMapTileCache {
 	private static final long serialVersionUID = 1L;

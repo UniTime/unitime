@@ -504,7 +504,7 @@ public class ImportPreferences {
 		String deptCode = element.attributeValue("deptCode");
 		String puid = element.attributeValue("puid");
 		DepartmentalInstructor instructor = hibSession.
-			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.sessionId=:sessionId and id.puid=:puid", DepartmentalInstructor.class).
+			createQuery("select id from DepartmentalInstructor id where id.department.deptCode=:deptCode and id.department.session.uniqueId=:sessionId and id.puid=:puid", DepartmentalInstructor.class).
 			setParameter("deptCode", deptCode).
 			setParameter("sessionId", iSession.getUniqueId().longValue()).
 			setParameter("puid", puid).
@@ -645,7 +645,7 @@ public class ImportPreferences {
 			for (Iterator i=element.elementIterator("courseOffering");i.hasNext();) {
 				Element x = (Element)i.next();
 				SubjectArea sa =  hibSession.
-					createQuery("select sa from SubjectArea sa where sa.subjectAreaAbbreviation=:subjectAreaAbbreviation and sa.sessionId=:sessionId", SubjectArea.class).
+					createQuery("select sa from SubjectArea sa where sa.subjectAreaAbbreviation=:subjectAreaAbbreviation and sa.session.uniqueId=:sessionId", SubjectArea.class).
 					setParameter("sessionId", iSession.getUniqueId().longValue()).
 					setParameter("subjectAreaAbbreviation", x.attributeValue("subjectArea")).
 					uniqueResult();

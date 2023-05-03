@@ -20,9 +20,15 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 
 /**
@@ -31,14 +37,30 @@ import org.unitime.timetable.model.ScriptParameter;
  */
 @MappedSuperclass
 @IdClass(ScriptParameterId.class)
-public abstract class BaseScriptParameter extends ScriptParameterId {
+public abstract class BaseScriptParameter implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Script iScript;
+	private String iName;
 	private String iLabel;
 	private String iType;
 	private String iDefaultValue;
 
 
+	public BaseScriptParameter() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "script_id")
+	public Script getScript() { return iScript; }
+	public void setScript(Script script) { iScript = script; }
+
+	@Id
+	@Column(name="name", length = 128)
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
 	@Column(name = "label", nullable = true, length = 256)
 	public String getLabel() { return iLabel; }

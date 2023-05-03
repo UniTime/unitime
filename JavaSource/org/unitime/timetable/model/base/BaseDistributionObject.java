@@ -82,7 +82,7 @@ public abstract class BaseDistributionObject implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pref_group_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public PreferenceGroup getPrefGroup() {
 		if (iPrefGroup != null && iPrefGroup instanceof HibernateProxy)
 			iPrefGroup = (PreferenceGroup) Hibernate.unproxy(iPrefGroup);

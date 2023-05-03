@@ -43,7 +43,7 @@ import org.unitime.timetable.security.UserContext;
  * @author Tomas Muller, Heston Fernandes
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "subject_area")
 public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectArea> {
 

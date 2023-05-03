@@ -20,9 +20,15 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SessionConfig;
 
 /**
@@ -31,13 +37,29 @@ import org.unitime.timetable.model.SessionConfig;
  */
 @MappedSuperclass
 @IdClass(SessionConfigId.class)
-public abstract class BaseSessionConfig extends SessionConfigId {
+public abstract class BaseSessionConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Session iSession;
+	private String iKey;
 	private String iValue;
 	private String iDescription;
 
 
+	public BaseSessionConfig() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id")
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	@Id
+	@Column(name="name", length = 255)
+	public String getKey() { return iKey; }
+	public void setKey(String key) { iKey = key; }
 
 	@Column(name = "value", nullable = true, length = 4000)
 	public String getValue() { return iValue; }

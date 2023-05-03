@@ -119,7 +119,7 @@ public abstract class BasePitClassMeeting implements Serializable {
 	public void setPitClassEvent(PitClassEvent pitClassEvent) { iPitClassEvent = pitClassEvent; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassMeeting", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClassMeetingUtilPeriod> getPitClassMeetingUtilPeriods() { return iPitClassMeetingUtilPeriods; }
 	public void setPitClassMeetingUtilPeriods(Set<PitClassMeetingUtilPeriod> pitClassMeetingUtilPeriods) { iPitClassMeetingUtilPeriods = pitClassMeetingUtilPeriods; }
 	public void addToPitClassMeetingUtilPeriods(PitClassMeetingUtilPeriod pitClassMeetingUtilPeriod) {

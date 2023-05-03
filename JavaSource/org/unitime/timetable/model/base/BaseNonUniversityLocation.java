@@ -65,7 +65,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	public void setName(String name) { iName = name; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<NonUniversityLocationPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<NonUniversityLocationPicture> pictures) { iPictures = pictures; }
 	public void addToPictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
@@ -81,7 +81,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	@JoinTable(name = "location_service_provider",
 		joinColumns = { @JoinColumn(name = "location_id") },
 		inverseJoinColumns = { @JoinColumn(name = "provider_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
 	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
 	public void addToAllowedServices(EventServiceProvider eventServiceProvider) {

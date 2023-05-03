@@ -31,7 +31,7 @@ import org.unitime.timetable.model.base.BaseExamStatus;
 import org.unitime.timetable.model.dao.ExamStatusDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "exam_status")
 public class ExamStatus extends BaseExamStatus {
 	private static final long serialVersionUID = 1L;

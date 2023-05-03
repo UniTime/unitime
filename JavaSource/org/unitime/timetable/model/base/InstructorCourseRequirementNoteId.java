@@ -19,22 +19,15 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementType;
-import org.unitime.timetable.model.InstructorCourseRequirementNote;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class InstructorCourseRequirementNoteId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,23 +41,17 @@ public class InstructorCourseRequirementNoteId implements Serializable {
 		iType = type;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "requirement_id")
 	public InstructorCourseRequirement getRequirement() { return iRequirement; }
 	public void setRequirement(InstructorCourseRequirement requirement) { iRequirement = requirement; }
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "type_id")
 	public InstructorCourseRequirementType getType() { return iType; }
 	public void setType(InstructorCourseRequirementType type) { iType = type; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof InstructorCourseRequirementNote)) return false;
-		InstructorCourseRequirementNote instructorCourseRequirementNote = (InstructorCourseRequirementNote)o;
+		if (o == null || !(o instanceof InstructorCourseRequirementNoteId)) return false;
+		InstructorCourseRequirementNoteId instructorCourseRequirementNote = (InstructorCourseRequirementNoteId)o;
 		if (getRequirement() == null || instructorCourseRequirementNote.getRequirement() == null || !getRequirement().equals(instructorCourseRequirementNote.getRequirement())) return false;
 		if (getType() == null || instructorCourseRequirementNote.getType() == null || !getType().equals(instructorCourseRequirementNote.getType())) return false;
 		return true;

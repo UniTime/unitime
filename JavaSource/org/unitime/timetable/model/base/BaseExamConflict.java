@@ -95,7 +95,7 @@ public abstract class BaseExamConflict implements Serializable {
 	public void setNrInstructors(Integer nrInstructors) { iNrInstructors = nrInstructors; }
 
 	@ManyToMany(fetch = FetchType.EAGER, mappedBy = "conflicts")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToExams(Exam exam) {
@@ -111,7 +111,7 @@ public abstract class BaseExamConflict implements Serializable {
 	@JoinTable(name = "xconflict_student",
 		joinColumns = { @JoinColumn(name = "conflict_id") },
 		inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addToStudents(Student student) {
@@ -127,7 +127,7 @@ public abstract class BaseExamConflict implements Serializable {
 	@JoinTable(name = "xconflict_instructor",
 		joinColumns = { @JoinColumn(name = "conflict_id") },
 		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {

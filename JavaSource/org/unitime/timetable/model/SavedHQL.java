@@ -44,7 +44,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "saved_hql")
 public class SavedHQL extends BaseSavedHQL {
 	private static final long serialVersionUID = 2532519378106863655L;

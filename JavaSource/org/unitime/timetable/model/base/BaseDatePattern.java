@@ -108,7 +108,7 @@ public abstract class BaseDatePattern implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -116,7 +116,7 @@ public abstract class BaseDatePattern implements Serializable {
 	@JoinTable(name = "date_pattern_parent",
 		joinColumns = { @JoinColumn(name = "date_pattern_id") },
 		inverseJoinColumns = { @JoinColumn(name = "parent_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DatePattern> getParents() { return iParents; }
 	public void setParents(Set<DatePattern> parents) { iParents = parents; }
 	public void addToParents(DatePattern datePattern) {
@@ -129,7 +129,7 @@ public abstract class BaseDatePattern implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "datePatterns")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addToDepartments(Department department) {

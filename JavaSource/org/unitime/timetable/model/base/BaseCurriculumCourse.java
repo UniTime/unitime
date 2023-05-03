@@ -109,7 +109,7 @@ public abstract class BaseCurriculumCourse implements Serializable {
 	@JoinTable(name = "curriculum_course_group",
 		joinColumns = { @JoinColumn(name = "cur_course_id") },
 		inverseJoinColumns = { @JoinColumn(name = "group_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<CurriculumCourseGroup> getGroups() { return iGroups; }
 	public void setGroups(Set<CurriculumCourseGroup> groups) { iGroups = groups; }
 	public void addToGroups(CurriculumCourseGroup curriculumCourseGroup) {

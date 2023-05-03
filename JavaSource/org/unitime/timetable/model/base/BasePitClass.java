@@ -135,19 +135,19 @@ public abstract class BasePitClass implements Serializable {
 
 	@ManyToOne
 	@JoinFormula(" ( select sa.department_uniqueid from %SCHEMA%.pit_sched_subpart ss, %SCHEMA%.pit_instr_offer_config ioc, %SCHEMA%.pit_instr_offering io, %SCHEMA%.pit_course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = pit_subpart_id and ioc.uniqueid = ss.pit_config_id and io.uniqueid = ioc.pit_instr_offr_id and co.pit_instr_offr_id = io.uniqueid and co.is_control = %TRUE% and sa.uniqueid = co.subject_area_id ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "class_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "managing_dept", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getManagingDept() { return iManagingDept; }
 	public void setManagingDept(Department managingDept) { iManagingDept = managingDept; }
 
@@ -173,12 +173,12 @@ public abstract class BasePitClass implements Serializable {
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "funding_dept_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitParentClass", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClass> getPitChildClasses() { return iPitChildClasses; }
 	public void setPitChildClasses(Set<PitClass> pitChildClasses) { iPitChildClasses = pitChildClasses; }
 	public void addToPitChildClasses(PitClass pitClass) {
@@ -191,7 +191,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassInstructing", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClassInstructor> getPitClassInstructors() { return iPitClassInstructors; }
 	public void setPitClassInstructors(Set<PitClassInstructor> pitClassInstructors) { iPitClassInstructors = pitClassInstructors; }
 	public void addToPitClassInstructors(PitClassInstructor pitClassInstructor) {
@@ -204,7 +204,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitStudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<PitStudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addToStudentEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {
@@ -217,7 +217,7 @@ public abstract class BasePitClass implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClass", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClassEvent> getPitClassEvents() { return iPitClassEvents; }
 	public void setPitClassEvents(Set<PitClassEvent> pitClassEvents) { iPitClassEvents = pitClassEvents; }
 	public void addToPitClassEvents(PitClassEvent pitClassEvent) {

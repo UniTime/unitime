@@ -43,7 +43,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "preference_level")
 public class PreferenceLevel extends BasePreferenceLevel {
 	private static final long serialVersionUID = 1L;

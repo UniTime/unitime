@@ -52,7 +52,7 @@ public abstract class BaseInstructorPref extends Preference implements Serializa
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "instructor_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public DepartmentalInstructor getInstructor() { return iInstructor; }
 	public void setInstructor(DepartmentalInstructor instructor) { iInstructor = instructor; }
 

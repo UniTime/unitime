@@ -139,7 +139,7 @@ public abstract class BaseExternalRoom implements Serializable {
 
 	@OneToMany
 	@JoinColumn(name = "external_room_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ExternalRoomDepartment> getRoomDepartments() { return iRoomDepartments; }
 	public void setRoomDepartments(Set<ExternalRoomDepartment> roomDepartments) { iRoomDepartments = roomDepartments; }
 	public void addToRoomDepartments(ExternalRoomDepartment externalRoomDepartment) {
@@ -153,7 +153,7 @@ public abstract class BaseExternalRoom implements Serializable {
 
 	@OneToMany
 	@JoinColumn(name = "external_room_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ExternalRoomFeature> getRoomFeatures() { return iRoomFeatures; }
 	public void setRoomFeatures(Set<ExternalRoomFeature> roomFeatures) { iRoomFeatures = roomFeatures; }
 	public void addToRoomFeatures(ExternalRoomFeature externalRoomFeature) {

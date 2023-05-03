@@ -89,7 +89,7 @@ public abstract class BaseInstructorCourseRequirement implements Serializable {
 	public void setCourseOffering(CourseOffering courseOffering) { iCourseOffering = courseOffering; }
 
 	@OneToMany(mappedBy = "requirement", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstructorCourseRequirementNote> getNotes() { return iNotes; }
 	public void setNotes(Set<InstructorCourseRequirementNote> notes) { iNotes = notes; }
 	public void addToNotes(InstructorCourseRequirementNote instructorCourseRequirementNote) {

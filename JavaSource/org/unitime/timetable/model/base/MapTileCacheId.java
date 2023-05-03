@@ -19,18 +19,12 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
-import org.unitime.timetable.model.MapTileCache;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class MapTileCacheId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -46,26 +40,20 @@ public class MapTileCacheId implements Serializable {
 		iY = y;
 	}
 
-	@Id
-	@Column(name="z")
 	public Integer getZ() { return iZ; }
 	public void setZ(Integer z) { iZ = z; }
 
-	@Id
-	@Column(name="x")
 	public Integer getX() { return iX; }
 	public void setX(Integer x) { iX = x; }
 
-	@Id
-	@Column(name="y")
 	public Integer getY() { return iY; }
 	public void setY(Integer y) { iY = y; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof MapTileCache)) return false;
-		MapTileCache mapTileCache = (MapTileCache)o;
+		if (o == null || !(o instanceof MapTileCacheId)) return false;
+		MapTileCacheId mapTileCache = (MapTileCacheId)o;
 		if (getZ() == null || mapTileCache.getZ() == null || !getZ().equals(mapTileCache.getZ())) return false;
 		if (getX() == null || mapTileCache.getX() == null || !getX().equals(mapTileCache.getX())) return false;
 		if (getY() == null || mapTileCache.getY() == null || !getY().equals(mapTileCache.getY())) return false;

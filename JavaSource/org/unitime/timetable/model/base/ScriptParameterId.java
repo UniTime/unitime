@@ -19,22 +19,14 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.Script;
-import org.unitime.timetable.model.ScriptParameter;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class ScriptParameterId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,22 +40,17 @@ public class ScriptParameterId implements Serializable {
 		iName = name;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "script_id")
 	public Script getScript() { return iScript; }
 	public void setScript(Script script) { iScript = script; }
 
-	@Id
-	@Column(name="name", length = 128)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof ScriptParameter)) return false;
-		ScriptParameter scriptParameter = (ScriptParameter)o;
+		if (o == null || !(o instanceof ScriptParameterId)) return false;
+		ScriptParameterId scriptParameter = (ScriptParameterId)o;
 		if (getScript() == null || scriptParameter.getScript() == null || !getScript().equals(scriptParameter.getScript())) return false;
 		if (getName() == null || scriptParameter.getName() == null || !getName().equals(scriptParameter.getName())) return false;
 		return true;

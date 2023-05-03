@@ -39,7 +39,7 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "itype_desc")
 public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
 	private static final long serialVersionUID = 1L;

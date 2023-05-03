@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseSectioningSolutionLog;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "sct_solution_log")
 public class SectioningSolutionLog extends BaseSectioningSolutionLog {
 	private static final long serialVersionUID = 1L;

@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.TravelTimeDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "travel_time")
 public class TravelTime extends BaseTravelTime {
 	private static final long serialVersionUID = -5810111960278939304L;

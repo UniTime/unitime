@@ -167,13 +167,13 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 
 	@ManyToOne
 	@JoinFormula(" ( select sa.department_uniqueid from %SCHEMA%.scheduling_subpart ss, %SCHEMA%.instr_offering_config ioc, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = subpart_id and ioc.uniqueid = ss.config_id and io.uniqueid = ioc.instr_offr_id and co.instr_offr_id = io.uniqueid and co.is_control = %TRUE% and sa.uniqueid = co.subject_area_id ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
 
 	@ManyToOne(optional = true, fetch = FetchType.EAGER)
 	@JoinColumn(name = "managing_dept", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getManagingDept() { return iManagingDept; }
 	public void setManagingDept(Department managingDept) { iManagingDept = managingDept; }
 
@@ -194,7 +194,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula(" (       select a.uniqueid from        %SCHEMA%.assignment a,        %SCHEMA%.solution s,        %SCHEMA%.department d,       %SCHEMA%.solver_group g      where a.class_id=uniqueid and        a.solution_id=s.uniqueid and        s.commited = %TRUE% and        d.uniqueid=managing_dept and        s.owner_id=g.uniqueid and       d.solver_group_id=g.uniqueid ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Assignment getCommittedAssignment() { return iCommittedAssignment; }
 	public void setCommittedAssignment(Assignment committedAssignment) { iCommittedAssignment = committedAssignment; }
 
@@ -205,12 +205,12 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "funding_dept_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
 	public void addToChildClasses(Class_ class_) {
@@ -223,7 +223,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classInstructing", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ClassInstructor> getClassInstructors() { return iClassInstructors; }
 	public void setClassInstructors(Set<ClassInstructor> classInstructors) { iClassInstructors = classInstructors; }
 	public void addToClassInstructors(ClassInstructor classInstructor) {
@@ -236,7 +236,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToAssignments(Assignment assignment) {
@@ -249,7 +249,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<StudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addToStudentEnrollments(StudentClassEnrollment studentClassEnrollment) {
@@ -262,7 +262,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "teachingClass", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TeachingClassRequest> getTeachingRequests() { return iTeachingRequests; }
 	public void setTeachingRequests(Set<TeachingClassRequest> teachingRequests) { iTeachingRequests = teachingRequests; }
 	public void addToTeachingRequests(TeachingClassRequest teachingClassRequest) {

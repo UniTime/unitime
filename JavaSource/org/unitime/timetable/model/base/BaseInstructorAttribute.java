@@ -108,7 +108,7 @@ public abstract class BaseInstructorAttribute implements Serializable {
 	public void setDepartment(Department department) { iDepartment = department; }
 
 	@OneToMany(mappedBy = "parentAttribute")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstructorAttribute> getChildAttributes() { return iChildAttributes; }
 	public void setChildAttributes(Set<InstructorAttribute> childAttributes) { iChildAttributes = childAttributes; }
 	public void addToChildAttributes(InstructorAttribute instructorAttribute) {
@@ -121,7 +121,7 @@ public abstract class BaseInstructorAttribute implements Serializable {
 	}
 
 	@ManyToMany(mappedBy = "attributes")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {

@@ -77,7 +77,7 @@ public abstract class BasePreference implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public PreferenceGroup getOwner() {
 		if (iOwner != null && iOwner instanceof HibernateProxy)
 			iOwner = (PreferenceGroup) Hibernate.unproxy(iOwner);

@@ -35,7 +35,7 @@ import org.unitime.timetable.model.base.BaseCurriculumCourse;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "curriculum_course")
 public class CurriculumCourse extends BaseCurriculumCourse implements Comparable<CurriculumCourse> {
 	private static final long serialVersionUID = 1L;

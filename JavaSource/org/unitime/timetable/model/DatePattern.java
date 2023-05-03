@@ -65,7 +65,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "date_pattern")
 public class DatePattern extends BaseDatePattern implements Comparable<DatePattern> {
 	private static final long serialVersionUID = 1L;

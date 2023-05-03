@@ -52,7 +52,7 @@ public abstract class BaseRoomPref extends Preference implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "room_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Location getRoom() { return iRoom; }
 	public void setRoom(Location room) { iRoom = room; }
 

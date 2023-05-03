@@ -56,7 +56,7 @@ public abstract class BaseConstraintInfo extends SolverInfo implements Serializa
 	@JoinTable(name = "constraint_info",
 		joinColumns = { @JoinColumn(name = "solver_info_id") },
 		inverseJoinColumns = { @JoinColumn(name = "assignment_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToAssignments(Assignment assignment) {

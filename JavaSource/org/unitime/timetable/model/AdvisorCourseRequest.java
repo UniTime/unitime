@@ -43,7 +43,7 @@ import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.Adv
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider.CriticalCourses;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "advisor_crsreq")
 public class AdvisorCourseRequest extends BaseAdvisorCourseRequest implements Comparable<AdvisorCourseRequest> {
 	private static final long serialVersionUID = 1L;

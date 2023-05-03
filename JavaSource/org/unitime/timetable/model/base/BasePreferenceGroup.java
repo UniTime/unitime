@@ -71,7 +71,7 @@ public abstract class BasePreferenceGroup implements Serializable {
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Preference> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<Preference> preferences) { iPreferences = preferences; }
 	public void addToPreferences(Preference preference) {
@@ -84,7 +84,7 @@ public abstract class BasePreferenceGroup implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "prefGroup", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DistributionObject> getDistributionObjects() { return iDistributionObjects; }
 	public void setDistributionObjects(Set<DistributionObject> distributionObjects) { iDistributionObjects = distributionObjects; }
 	public void addToDistributionObjects(DistributionObject distributionObject) {

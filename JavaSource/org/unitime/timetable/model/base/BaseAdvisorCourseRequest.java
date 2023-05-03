@@ -154,7 +154,7 @@ public abstract class BaseAdvisorCourseRequest implements Serializable {
 	public void setFreeTime(FreeTime freeTime) { iFreeTime = freeTime; }
 
 	@OneToMany(mappedBy = "courseRequest", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<AdvisorSectioningPref> getPreferences() { return iPreferences; }
 	public void setPreferences(Set<AdvisorSectioningPref> preferences) { iPreferences = preferences; }
 	public void addToPreferences(AdvisorSectioningPref advisorSectioningPref) {

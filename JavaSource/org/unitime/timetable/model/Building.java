@@ -41,7 +41,7 @@ import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
  * @author Tomas Muller, James Marshall, Zuzana Mullerova
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "building")
 public class Building extends BaseBuilding implements Comparable {
 

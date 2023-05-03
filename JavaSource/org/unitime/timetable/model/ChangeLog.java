@@ -48,7 +48,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "change_log")
 public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);

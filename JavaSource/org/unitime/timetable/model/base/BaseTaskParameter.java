@@ -20,9 +20,15 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.TaskParameter;
 
 /**
@@ -31,12 +37,28 @@ import org.unitime.timetable.model.TaskParameter;
  */
 @MappedSuperclass
 @IdClass(TaskParameterId.class)
-public abstract class BaseTaskParameter extends TaskParameterId {
+public abstract class BaseTaskParameter implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private PeriodicTask iTask;
+	private String iName;
 	private String iValue;
 
 
+	public BaseTaskParameter() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "task_id")
+	public PeriodicTask getTask() { return iTask; }
+	public void setTask(PeriodicTask task) { iTask = task; }
+
+	@Id
+	@Column(name="name", length = 128)
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
 	@Column(name = "value", nullable = true, length = 2048)
 	public String getValue() { return iValue; }

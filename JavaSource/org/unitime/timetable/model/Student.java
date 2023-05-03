@@ -62,7 +62,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "student")
 public class Student extends BaseStudent implements Comparable<Student>, NameInterface, Qualifiable {
 	private static final long serialVersionUID = 1L;

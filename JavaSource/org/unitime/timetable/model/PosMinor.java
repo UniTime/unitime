@@ -32,7 +32,7 @@ import org.unitime.timetable.model.dao.PosMinorDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "pos_minor")
 public class PosMinor extends BasePosMinor {
 	private static final long serialVersionUID = 1L;

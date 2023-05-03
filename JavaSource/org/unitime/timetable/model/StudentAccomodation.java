@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.StudentAccomodationDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "student_accomodation")
 public class StudentAccomodation extends BaseStudentAccomodation {
 	private static final long serialVersionUID = 1L;

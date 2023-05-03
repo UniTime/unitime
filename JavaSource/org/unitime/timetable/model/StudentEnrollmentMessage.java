@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseStudentEnrollmentMessage;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "student_enrl_msg")
 public class StudentEnrollmentMessage extends BaseStudentEnrollmentMessage implements Comparable {
 	private static final long serialVersionUID = 1L;

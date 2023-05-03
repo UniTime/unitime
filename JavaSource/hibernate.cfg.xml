@@ -72,14 +72,20 @@
 
 	<property name="default_schema">timetable</property>
 
-	<property name="show_sql">false</property>
-
 	<!-- Generate comments inside the SQL, for easier debugging, defaults -->
+	<!-- 
+	<property name="hibernate.show_sql">true</property>
+	<property name="hibernate.format_sql">true</property>
+	<property name="hibernate.highlight_sql">true</property>
+	-->
 	<property name="hibernate.use_sql_comments">true</property>
 
 	<!-- See https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/resource/jdbc/spi/PhysicalConnectionHandlingMode.html -->
 	<property name="hibernate.connection.handling_mode">IMMEDIATE_ACQUISITION_AND_HOLD</property>
 
+	<property name="hibernate.max_fetch_depth">2</property>
+	<property name="hibernate.jdbc.fetch_size">1000</property>
+	<property name="hibernate.jdbc.batch_size">20</property>
 	<property name="hibernate.default_batch_fetch_size">100</property>
 
 	<property name="hibernate.current_session_context_class">managed</property>

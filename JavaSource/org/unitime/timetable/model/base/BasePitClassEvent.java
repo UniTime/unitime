@@ -83,7 +83,7 @@ public abstract class BasePitClassEvent implements Serializable {
 	public void setPitClass(PitClass pitClass) { iPitClass = pitClass; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitClassEvent", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitClassMeeting> getPitClassMeetings() { return iPitClassMeetings; }
 	public void setPitClassMeetings(Set<PitClassMeeting> pitClassMeetings) { iPitClassMeetings = pitClassMeetings; }
 	public void addToPitClassMeetings(PitClassMeeting pitClassMeeting) {

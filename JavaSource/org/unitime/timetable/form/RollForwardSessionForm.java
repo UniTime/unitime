@@ -266,8 +266,8 @@ public class RollForwardSessionForm implements UniTimeForm {
 			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
 				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
-				    + getRollForwardSubjectAreaIds()[i] + "'";
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+				    + getRollForwardSubjectAreaIds()[i];
 				validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + getRollForwardSubjectAreaIds()[i]), coDao.getSession().createQuery(queryStr, CourseOffering.class).list());
 			}			
 		}
@@ -280,8 +280,8 @@ public class RollForwardSessionForm implements UniTimeForm {
 			for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
 				String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
-				    + getRollForwardClassInstrSubjectIds()[i] + "'";
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+				    + getRollForwardClassInstrSubjectIds()[i];
 				validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + getRollForwardClassInstrSubjectIds()[i]), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list());
 			}			
 		}
@@ -294,8 +294,8 @@ public class RollForwardSessionForm implements UniTimeForm {
 			for (int i = 0; i < getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
 				String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = '"
-				    + getRollForwardOfferingCoordinatorsSubjectIds()[i] + "'";
+					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+				    + getRollForwardOfferingCoordinatorsSubjectIds()[i];
 				validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + getRollForwardOfferingCoordinatorsSubjectIds()[i]), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list());
 			}			
 		}

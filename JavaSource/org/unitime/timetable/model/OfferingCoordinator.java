@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseOfferingCoordinator;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "offering_coordinator")
 public class OfferingCoordinator extends BaseOfferingCoordinator implements Comparable<OfferingCoordinator> {
 	private static final long serialVersionUID = 1L;

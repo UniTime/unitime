@@ -55,7 +55,7 @@ import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
  * @author Tomas Muller, Stephanie Schluttenhofer, Heston Fernandes
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "course_offering")
 public class CourseOffering extends BaseCourseOffering implements Comparable {
 	private static final long serialVersionUID = 1L;

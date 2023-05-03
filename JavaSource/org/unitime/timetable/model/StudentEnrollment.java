@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseStudentEnrollment;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "student_enrl")
 public class StudentEnrollment extends BaseStudentEnrollment {
 	private static final long serialVersionUID = 1L;

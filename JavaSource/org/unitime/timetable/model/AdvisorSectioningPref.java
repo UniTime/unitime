@@ -34,7 +34,7 @@ import jakarta.persistence.Table;
 import org.unitime.timetable.model.base.BaseAdvisorSectioningPref;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "advisor_sect_pref")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="preference_type", discriminatorType = DiscriminatorType.INTEGER)

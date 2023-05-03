@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseLastLikeCourseDemand;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "lastlike_course_demand")
 public class LastLikeCourseDemand extends BaseLastLikeCourseDemand {
 	private static final long serialVersionUID = 1L;

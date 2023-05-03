@@ -33,7 +33,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "time_pattern_days")
 public class TimePatternDays extends BaseTimePatternDays implements Comparable {
 	private static final long serialVersionUID = 1L;

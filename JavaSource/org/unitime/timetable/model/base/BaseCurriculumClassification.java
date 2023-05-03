@@ -116,7 +116,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	public void setAcademicClassification(AcademicClassification academicClassification) { iAcademicClassification = academicClassification; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "classification", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<CurriculumCourse> getCourses() { return iCourses; }
 	public void setCourses(Set<CurriculumCourse> courses) { iCourses = courses; }
 	public void addToCourses(CurriculumCourse curriculumCourse) {

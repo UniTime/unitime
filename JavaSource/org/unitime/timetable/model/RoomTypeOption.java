@@ -34,7 +34,7 @@ import org.unitime.timetable.model.base.BaseRoomTypeOption;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "room_type_option")
 public class RoomTypeOption extends BaseRoomTypeOption {
 	private static final long serialVersionUID = 1L;

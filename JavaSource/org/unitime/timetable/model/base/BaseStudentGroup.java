@@ -108,7 +108,7 @@ public abstract class BaseStudentGroup implements Serializable {
 	@JoinTable(name = "student_to_group",
 		joinColumns = { @JoinColumn(name = "group_id") },
 		inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addToStudents(Student student) {

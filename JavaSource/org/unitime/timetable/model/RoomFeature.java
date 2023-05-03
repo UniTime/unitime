@@ -43,7 +43,7 @@ import org.unitime.timetable.model.dao.RoomFeatureDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "room_feature")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="discriminator", discriminatorType = DiscriminatorType.STRING)
@@ -81,7 +81,7 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 					).setParameter("sessionId", sessionId).setCacheable(true).list();
 		} else {
 			return RoomFeatureDAO.getInstance().getSession().createQuery(
-					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label", GlobalRoomFeature.class
+					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType.uniqueId = :featureTypeId order by label", GlobalRoomFeature.class
 					).setParameter("sessionId", sessionId).setParameter("featureTypeId", featureTypeId).setCacheable(true).list();
 		}
 	}

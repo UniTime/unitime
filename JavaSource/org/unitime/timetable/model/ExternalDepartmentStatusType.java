@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseExternalDepartmentStatusType;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "ext_dept_status")
 public class ExternalDepartmentStatusType extends BaseExternalDepartmentStatusType {
 	private static final long serialVersionUID = 1L;

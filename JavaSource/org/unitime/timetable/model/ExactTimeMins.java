@@ -36,7 +36,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "exact_time_mins")
 public class ExactTimeMins extends BaseExactTimeMins implements Comparable {
 	private static final long serialVersionUID = 1L;

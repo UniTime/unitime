@@ -59,7 +59,7 @@ public abstract class BaseBuildingPref extends Preference implements Serializabl
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "bldg_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Building getBuilding() { return iBuilding; }
 	public void setBuilding(Building building) { iBuilding = building; }
 

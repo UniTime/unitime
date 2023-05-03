@@ -35,7 +35,7 @@ import org.unitime.timetable.model.base.BaseInstructorAttribute;
 import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "attribute")
 public class InstructorAttribute extends BaseInstructorAttribute implements Comparable<InstructorAttribute> {
 	private static final long serialVersionUID = 331064011983395675L;

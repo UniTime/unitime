@@ -34,7 +34,7 @@ import org.unitime.timetable.model.base.BaseInstructorCourseRequirement;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "instr_crsreq")
 public class InstructorCourseRequirement extends BaseInstructorCourseRequirement implements Comparable<InstructorCourseRequirement> {
 	private static final long serialVersionUID = 3076787808984760805L;

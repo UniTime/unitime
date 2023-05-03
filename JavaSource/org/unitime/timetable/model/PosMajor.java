@@ -40,7 +40,7 @@ import org.unitime.timetable.model.dao.PosMajorDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "pos_major")
 public class PosMajor extends BasePosMajor {
 	private static final long serialVersionUID = 1L;
@@ -70,7 +70,7 @@ public class PosMajor extends BasePosMajor {
 	 */
     public static List<PosMajor> getPosMajorList(Long sessionId) {
 	    Session hibSession = PosMajorDAO.getInstance().getSession();
-	    String query = "from PosMajor where academicArea.sessionId=:acadSessionId order by name";
+	    String query = "from PosMajor where academicArea.session.uniqueId=:acadSessionId order by name";
 	    Query<PosMajor> q = hibSession.createQuery(query, PosMajor.class);
 	    q.setParameter("acadSessionId", sessionId.longValue());
 		return q.list();

@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BasePitStudentAcadAreaMajorClassification;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "pit_stu_aa_major_clasf")
 public class PitStudentAcadAreaMajorClassification extends BasePitStudentAcadAreaMajorClassification {
 

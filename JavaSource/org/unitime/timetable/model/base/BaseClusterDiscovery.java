@@ -20,9 +20,11 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.unitime.timetable.model.ClusterDiscovery;
@@ -33,13 +35,28 @@ import org.unitime.timetable.model.ClusterDiscovery;
  */
 @MappedSuperclass
 @IdClass(ClusterDiscoveryId.class)
-public abstract class BaseClusterDiscovery extends ClusterDiscoveryId {
+public abstract class BaseClusterDiscovery implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private String iOwnAddress;
+	private String iClusterName;
 	private byte[] iPingData;
 	private Date iTimeStamp;
 
 
+	public BaseClusterDiscovery() {
+	}
+
+
+	@Id
+	@Column(name="own_address", length = 200)
+	public String getOwnAddress() { return iOwnAddress; }
+	public void setOwnAddress(String ownAddress) { iOwnAddress = ownAddress; }
+
+	@Id
+	@Column(name="cluster_name", length = 200)
+	public String getClusterName() { return iClusterName; }
+	public void setClusterName(String clusterName) { iClusterName = clusterName; }
 
 	@Column(name = "ping_data", nullable = true, length = 5000)
 	public byte[] getPingData() { return iPingData; }

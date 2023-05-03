@@ -20,10 +20,17 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
+import org.unitime.timetable.model.InstructorCourseRequirementType;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
@@ -31,12 +38,29 @@ import org.unitime.timetable.model.InstructorCourseRequirementNote;
  */
 @MappedSuperclass
 @IdClass(InstructorCourseRequirementNoteId.class)
-public abstract class BaseInstructorCourseRequirementNote extends InstructorCourseRequirementNoteId {
+public abstract class BaseInstructorCourseRequirementNote implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private InstructorCourseRequirement iRequirement;
+	private InstructorCourseRequirementType iType;
 	private String iNote;
 
 
+	public BaseInstructorCourseRequirementNote() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "requirement_id")
+	public InstructorCourseRequirement getRequirement() { return iRequirement; }
+	public void setRequirement(InstructorCourseRequirement requirement) { iRequirement = requirement; }
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "type_id")
+	public InstructorCourseRequirementType getType() { return iType; }
+	public void setType(InstructorCourseRequirementType type) { iType = type; }
 
 	@Column(name = "note", nullable = true, length = 2048)
 	public String getNote() { return iNote; }

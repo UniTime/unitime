@@ -78,7 +78,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 	    	if (solutionIdsStr == null || solutionIdsStr.isEmpty()) {
 	    		for (SolverGroup g: SolverGroup.getUserSolverGroups(context.getUser())) {
 	        		for (Long id: SolutionDAO.getInstance().getSession().createQuery(
-	        				"select s.uniqueId from Solution s where s.commited = true and s.owner = :groupId", Long.class)
+	        				"select s.uniqueId from Solution s where s.commited = true and s.owner.uniqueId = :groupId", Long.class)
 	        				.setParameter("groupId", g.getUniqueId()).setCacheable(true).list()) {
 	        			if (solutionIdsStr == null)
 	        				solutionIdsStr = id.toString();

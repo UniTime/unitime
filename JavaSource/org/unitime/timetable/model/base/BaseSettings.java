@@ -89,7 +89,7 @@ public abstract class BaseSettings implements Serializable {
 
 	@OneToMany
 	@JoinColumn(name = "uniqueid", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ManagerSettings> getManagerSettings() { return iManagerSettings; }
 	public void setManagerSettings(Set<ManagerSettings> managerSettings) { iManagerSettings = managerSettings; }
 	public void addToManagerSettings(ManagerSettings managerSettings) {

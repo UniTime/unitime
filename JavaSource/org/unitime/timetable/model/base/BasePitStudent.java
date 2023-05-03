@@ -114,7 +114,7 @@ public abstract class BasePitStudent implements Serializable {
 	public void setStudent(Student student) { iStudent = student; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitStudentAcadAreaMajorClassification> getPitAcadAreaMajorClassifications() { return iPitAcadAreaMajorClassifications; }
 	public void setPitAcadAreaMajorClassifications(Set<PitStudentAcadAreaMajorClassification> pitAcadAreaMajorClassifications) { iPitAcadAreaMajorClassifications = pitAcadAreaMajorClassifications; }
 	public void addToPitAcadAreaMajorClassifications(PitStudentAcadAreaMajorClassification pitStudentAcadAreaMajorClassification) {
@@ -127,7 +127,7 @@ public abstract class BasePitStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitStudentAcadAreaMinorClassification> getPitAcadAreaMinorClassifications() { return iPitAcadAreaMinorClassifications; }
 	public void setPitAcadAreaMinorClassifications(Set<PitStudentAcadAreaMinorClassification> pitAcadAreaMinorClassifications) { iPitAcadAreaMinorClassifications = pitAcadAreaMinorClassifications; }
 	public void addToPitAcadAreaMinorClassifications(PitStudentAcadAreaMinorClassification pitStudentAcadAreaMinorClassification) {
@@ -140,7 +140,7 @@ public abstract class BasePitStudent implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitStudent", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitStudentClassEnrollment> getPitClassEnrollments() { return iPitClassEnrollments; }
 	public void setPitClassEnrollments(Set<PitStudentClassEnrollment> pitClassEnrollments) { iPitClassEnrollments = pitClassEnrollments; }
 	public void addToPitClassEnrollments(PitStudentClassEnrollment pitStudentClassEnrollment) {

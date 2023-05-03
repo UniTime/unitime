@@ -20,9 +20,11 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.unitime.timetable.model.MapTileCache;
@@ -33,13 +35,34 @@ import org.unitime.timetable.model.MapTileCache;
  */
 @MappedSuperclass
 @IdClass(MapTileCacheId.class)
-public abstract class BaseMapTileCache extends MapTileCacheId {
+public abstract class BaseMapTileCache implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Integer iZ;
+	private Integer iX;
+	private Integer iY;
 	private byte[] iData;
 	private Date iTimeStamp;
 
 
+	public BaseMapTileCache() {
+	}
+
+
+	@Id
+	@Column(name="z")
+	public Integer getZ() { return iZ; }
+	public void setZ(Integer z) { iZ = z; }
+
+	@Id
+	@Column(name="x")
+	public Integer getX() { return iX; }
+	public void setX(Integer x) { iX = x; }
+
+	@Id
+	@Column(name="y")
+	public Integer getY() { return iY; }
+	public void setY(Integer y) { iY = y; }
 
 	@Column(name = "data", nullable = false)
 	public byte[] getData() { return iData; }

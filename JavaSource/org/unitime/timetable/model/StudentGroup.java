@@ -37,7 +37,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "student_group")
 public class StudentGroup extends BaseStudentGroup {
 	private static final long serialVersionUID = 1L;
@@ -67,7 +67,7 @@ public class StudentGroup extends BaseStudentGroup {
 	 */
     public static List<StudentGroup> getStudentGroupList(Long sessionId) {
     	return StudentGroupDAO.getInstance().getSession()
-				.createQuery("from StudentGroup where sessionId = :sessionId order by groupName", StudentGroup.class)
+				.createQuery("from StudentGroup where session.uniqueId = :sessionId order by groupName", StudentGroup.class)
 				.setParameter("sessionId", sessionId)
 				.list();
     }

@@ -107,7 +107,7 @@ public abstract class BaseReservation implements Serializable {
 	@JoinTable(name = "reservation_config",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "config_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstrOfferingConfig> getConfigurations() { return iConfigurations; }
 	public void setConfigurations(Set<InstrOfferingConfig> configurations) { iConfigurations = configurations; }
 	public void addToConfigurations(InstrOfferingConfig instrOfferingConfig) {
@@ -123,7 +123,7 @@ public abstract class BaseReservation implements Serializable {
 	@JoinTable(name = "reservation_class",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "class_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToClasses(Class_ class_) {

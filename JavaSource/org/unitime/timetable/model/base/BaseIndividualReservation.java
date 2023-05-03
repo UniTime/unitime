@@ -57,7 +57,7 @@ public abstract class BaseIndividualReservation extends Reservation implements S
 	@JoinTable(name = "reservation_student",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Student> getStudents() { return iStudents; }
 	public void setStudents(Set<Student> students) { iStudents = students; }
 	public void addToStudents(Student student) {

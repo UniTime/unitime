@@ -45,7 +45,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "course_request")
 public class CourseRequest extends BaseCourseRequest implements Comparable {
 	private static final long serialVersionUID = 1L;

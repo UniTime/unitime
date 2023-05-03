@@ -166,7 +166,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public void setDefaultInstructionalMethod(InstructionalMethod defaultInstructionalMethod) { iDefaultInstructionalMethod = defaultInstructionalMethod; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addToSubjectAreas(SubjectArea subjectArea) {
@@ -179,7 +179,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Building> getBuildings() { return iBuildings; }
 	public void setBuildings(Set<Building> buildings) { iBuildings = buildings; }
 	public void addToBuildings(Building building) {
@@ -192,7 +192,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addToDepartments(Department department) {
@@ -205,7 +205,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addToRooms(Location location) {
@@ -218,7 +218,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "session", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstructionalOffering> getInstructionalOfferings() { return iInstructionalOfferings; }
 	public void setInstructionalOfferings(Set<InstructionalOffering> instructionalOfferings) { iInstructionalOfferings = instructionalOfferings; }
 	public void addToInstructionalOfferings(InstructionalOffering instructionalOffering) {

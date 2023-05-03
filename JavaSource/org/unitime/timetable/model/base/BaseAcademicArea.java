@@ -94,7 +94,7 @@ public abstract class BaseAcademicArea implements Serializable {
 	public void setSession(Session session) { iSession = session; }
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "academicAreas")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMajor> getPosMajors() { return iPosMajors; }
 	public void setPosMajors(Set<PosMajor> posMajors) { iPosMajors = posMajors; }
 	public void addToPosMajors(PosMajor posMajor) {
@@ -107,7 +107,7 @@ public abstract class BaseAcademicArea implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "academicAreas")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMinor> getPosMinors() { return iPosMinors; }
 	public void setPosMinors(Set<PosMinor> posMinors) { iPosMinors = posMinors; }
 	public void addToPosMinors(PosMinor posMinor) {

@@ -131,19 +131,19 @@ public abstract class BaseSolution implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "owner_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public SolverGroup getOwner() { return iOwner; }
 	public void setOwner(SolverGroup owner) { iOwner = owner; }
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula(" ( select si.uniqueid from %SCHEMA%.solver_info si, %SCHEMA%.solver_info_def d where si.type=1 and si.solver_info_def_id=d.uniqueid and d.name='GlobalInfo' and si.solution_id=uniqueid ) ")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public SolutionInfo getGlobalInfo() { return iGlobalInfo; }
 	public void setGlobalInfo(SolutionInfo globalInfo) { iGlobalInfo = globalInfo; }
 
 	@OneToMany(cascade = {CascadeType.ALL})
 	@JoinColumn(name = "solution_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
 	public void addToParameters(SolverParameter solverParameter) {
@@ -156,7 +156,7 @@ public abstract class BaseSolution implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "solution", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SolutionInfo> getSolutionInfo() { return iSolutionInfo; }
 	public void setSolutionInfo(Set<SolutionInfo> solutionInfo) { iSolutionInfo = solutionInfo; }
 	public void addToSolutionInfo(SolutionInfo solutionInfo) {
@@ -169,7 +169,7 @@ public abstract class BaseSolution implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<StudentEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
 	public void addToStudentEnrollments(StudentEnrollment studentEnrollment) {
@@ -182,7 +182,7 @@ public abstract class BaseSolution implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToAssignments(Assignment assignment) {
@@ -195,7 +195,7 @@ public abstract class BaseSolution implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "solution", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<JointEnrollment> getJointEnrollments() { return iJointEnrollments; }
 	public void setJointEnrollments(Set<JointEnrollment> jointEnrollments) { iJointEnrollments = jointEnrollments; }
 	public void addToJointEnrollments(JointEnrollment jointEnrollment) {

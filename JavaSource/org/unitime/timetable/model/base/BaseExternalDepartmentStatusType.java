@@ -19,11 +19,15 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExternalDepartmentStatusType;
 
@@ -33,12 +37,29 @@ import org.unitime.timetable.model.ExternalDepartmentStatusType;
  */
 @MappedSuperclass
 @IdClass(ExternalDepartmentStatusTypeId.class)
-public abstract class BaseExternalDepartmentStatusType extends ExternalDepartmentStatusTypeId {
+public abstract class BaseExternalDepartmentStatusType implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Department iExternalDepartment;
+	private Department iDepartment;
 
 	private DepartmentStatusType iStatusType;
 
+	public BaseExternalDepartmentStatusType() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "ext_dept_id")
+	public Department getExternalDepartment() { return iExternalDepartment; }
+	public void setExternalDepartment(Department externalDepartment) { iExternalDepartment = externalDepartment; }
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "department_id")
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "status_type", nullable = false)

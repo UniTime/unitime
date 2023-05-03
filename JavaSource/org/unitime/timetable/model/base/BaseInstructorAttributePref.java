@@ -52,7 +52,7 @@ public abstract class BaseInstructorAttributePref extends Preference implements 
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "attribute_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public InstructorAttribute getAttribute() { return iAttribute; }
 	public void setAttribute(InstructorAttribute attribute) { iAttribute = attribute; }
 

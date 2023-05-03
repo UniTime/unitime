@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.SolverParameterDefDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "solver_parameter_def")
 public class SolverParameterDef extends BaseSolverParameterDef implements Comparable {
 	private static final long serialVersionUID = 1L;

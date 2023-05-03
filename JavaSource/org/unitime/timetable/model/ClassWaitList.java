@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseClassWaitList;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "class_waitlist")
 public class ClassWaitList extends BaseClassWaitList {
 	private static final long serialVersionUID = 1L;

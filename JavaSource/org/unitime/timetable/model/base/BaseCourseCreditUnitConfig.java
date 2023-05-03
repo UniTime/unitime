@@ -85,7 +85,7 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula("(select f.uniqueid from %SCHEMA%.crse_credit_format f where f.reference = credit_format)")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public CourseCreditFormat getCourseCreditFormat() { return iCourseCreditFormat; }
 	public void setCourseCreditFormat(CourseCreditFormat courseCreditFormat) { iCourseCreditFormat = courseCreditFormat; }
 

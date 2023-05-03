@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -27,6 +28,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +36,8 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamStatus;
+import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 
 /**
@@ -42,13 +46,30 @@ import org.unitime.timetable.model.TimetableManager;
  */
 @MappedSuperclass
 @IdClass(ExamStatusId.class)
-public abstract class BaseExamStatus extends ExamStatusId {
+public abstract class BaseExamStatus implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Session iSession;
+	private ExamType iType;
 
 	private DepartmentStatusType iStatus;
 	private Set<TimetableManager> iManagers;
 
+	public BaseExamStatus() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "session_id")
+	public Session getSession() { return iSession; }
+	public void setSession(Session session) { iSession = session; }
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "type_id")
+	public ExamType getType() { return iType; }
+	public void setType(ExamType type) { iType = type; }
 
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "status_id", nullable = true)
@@ -62,7 +83,7 @@ public abstract class BaseExamStatus extends ExamStatusId {
 			@JoinColumn(name = "type_id")
 		},
 		inverseJoinColumns = { @JoinColumn(name = "manager_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TimetableManager> getManagers() { return iManagers; }
 	public void setManagers(Set<TimetableManager> managers) { iManagers = managers; }
 	public void addToManagers(TimetableManager timetableManager) {

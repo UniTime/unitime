@@ -119,7 +119,7 @@ public abstract class BaseAssignment implements Serializable {
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "class_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Class_ getClazz() { return iClazz; }
 	public void setClazz(Class_ clazz) { iClazz = clazz; }
 
@@ -127,7 +127,7 @@ public abstract class BaseAssignment implements Serializable {
 	@JoinTable(name = "assigned_instructors",
 		joinColumns = { @JoinColumn(name = "assignment_id") },
 		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {
@@ -143,7 +143,7 @@ public abstract class BaseAssignment implements Serializable {
 	@JoinTable(name = "assigned_rooms",
 		joinColumns = { @JoinColumn(name = "assignment_id") },
 		inverseJoinColumns = { @JoinColumn(name = "room_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addToRooms(Location location) {
@@ -156,7 +156,7 @@ public abstract class BaseAssignment implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "assignment", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<AssignmentInfo> getAssignmentInfo() { return iAssignmentInfo; }
 	public void setAssignmentInfo(Set<AssignmentInfo> assignmentInfo) { iAssignmentInfo = assignmentInfo; }
 	public void addToAssignmentInfo(AssignmentInfo assignmentInfo) {
@@ -169,7 +169,7 @@ public abstract class BaseAssignment implements Serializable {
 	}
 
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "assignments")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@Cascade(value = org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
 	public Set<ConstraintInfo> getConstraintInfo() { return iConstraintInfo; }
 	public void setConstraintInfo(Set<ConstraintInfo> constraintInfo) { iConstraintInfo = constraintInfo; }

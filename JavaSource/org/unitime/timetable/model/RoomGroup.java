@@ -40,7 +40,7 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "room_group")
 public class RoomGroup extends BaseRoomGroup implements Comparable {
 	private static final long serialVersionUID = 1L;
@@ -170,7 +170,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 		if(session == null) return null;
 		if (isGlobal()) {
 			return RoomGroupDAO.getInstance().getSession()
-					.createQuery("from RoomGroup where global = true and name = :name and sessionId = :sessionId", RoomGroup.class)
+					.createQuery("from RoomGroup where global = true and name = :name and session.uniqueId = :sessionId", RoomGroup.class)
 					.setParameter("name", getName())
 					.setParameter("sessionId", session.getUniqueId())
 					.setMaxResults(1)

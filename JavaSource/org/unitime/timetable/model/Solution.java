@@ -84,7 +84,7 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "solution")
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	private static CourseMessages MSG = Localization.create(CourseMessages.class);

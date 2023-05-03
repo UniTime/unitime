@@ -117,7 +117,10 @@ public class LoggingConnectionProvider implements ConnectionProvider, Stoppable,
 		public String getStackTrace() {
 			int first = 0;
 			for (int i = 3; i < iTrace.length; i++)
-				if (iTrace[i].getClassName().startsWith("org.unitime.") && !iTrace[i].getClassName().endsWith("._BaseRootDAO")) { first = i; break; }
+				if (iTrace[i].getClassName().startsWith("org.unitime.")
+						&& !iTrace[i].getClassName().endsWith(".HibernateUtil")
+						&& !iTrace[i].getClassName().endsWith("._RootDAO")
+						&& !iTrace[i].getClassName().endsWith(".OnlineSectioningHelper")) { first = i; break; }
 			StringBuffer ret = new StringBuffer();
 			for (int i = first; i < iTrace.length; i++)
 				ret.append("\n  " + iTrace[i]);
@@ -127,7 +130,10 @@ public class LoggingConnectionProvider implements ConnectionProvider, Stoppable,
 		public String toString() {
 			StackTraceElement trace = null;
 			for (int i = 3; i < iTrace.length; i++)
-				if (iTrace[i].getClassName().startsWith("org.unitime.") && !iTrace[i].getClassName().endsWith("._BaseRootDAO")) { trace = iTrace[i]; break; }
+				if (iTrace[i].getClassName().startsWith("org.unitime.") 
+						&& !iTrace[i].getClassName().endsWith(".HibernateUtil")
+						&& !iTrace[i].getClassName().endsWith("._RootDAO")
+						&& !iTrace[i].getClassName().endsWith(".OnlineSectioningHelper")) { trace = iTrace[i]; break; }
 			return sDF.format(getLeaseTime()) + " " + getState() + " " + getName() + " " + trace;
 		}
 	}

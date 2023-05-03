@@ -63,7 +63,7 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 	public void setReqAttendance(Boolean reqAttendance) { iReqAttendance = reqAttendance; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<RelatedCourseInfo> getRelatedCourses() { return iRelatedCourses; }
 	public void setRelatedCourses(Set<RelatedCourseInfo> relatedCourses) { iRelatedCourses = relatedCourses; }
 	public void addToRelatedCourses(RelatedCourseInfo relatedCourseInfo) {

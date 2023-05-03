@@ -49,7 +49,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "exam_owner")
 public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
 	private static final long serialVersionUID = 1L;

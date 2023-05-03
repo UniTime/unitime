@@ -468,9 +468,9 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 
 	        if (doFilterManager) {
 	        	if (filterManager.longValue()<0) { //all departmental
-	        		query.append(" and (c.managingDept is null or c.managingDept in co.subjectArea.department)");
+	        		query.append(" and c.managingDept = co.subjectArea.department");
 	        	} else {
-	        		query.append(" and c.managingDept = "+filterManager);
+	        		query.append(" and c.managingDept.uniqueId = "+filterManager);
 	        	}
 	        }
 			

@@ -47,7 +47,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "solver_group")
 public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;

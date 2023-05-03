@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.unitime.timetable.model.base.BaseInstructorCourseRequirementNote;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "instr_crsreq_note")
 public class InstructorCourseRequirementNote extends BaseInstructorCourseRequirementNote {
 	private static final long serialVersionUID = 5329224826169603067L;

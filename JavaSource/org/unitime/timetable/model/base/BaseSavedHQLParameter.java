@@ -20,9 +20,15 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 
+import java.io.Serializable;
+
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQLParameter;
 
 /**
@@ -31,14 +37,30 @@ import org.unitime.timetable.model.SavedHQLParameter;
  */
 @MappedSuperclass
 @IdClass(SavedHQLParameterId.class)
-public abstract class BaseSavedHQLParameter extends SavedHQLParameterId {
+public abstract class BaseSavedHQLParameter implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private SavedHQL iSavedHQL;
+	private String iName;
 	private String iLabel;
 	private String iType;
 	private String iDefaultValue;
 
 
+	public BaseSavedHQLParameter() {
+	}
+
+
+	@Id
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "hql_id")
+	public SavedHQL getSavedHQL() { return iSavedHQL; }
+	public void setSavedHQL(SavedHQL savedHQL) { iSavedHQL = savedHQL; }
+
+	@Id
+	@Column(name="name", length = 128)
+	public String getName() { return iName; }
+	public void setName(String name) { iName = name; }
 
 	@Column(name = "label", nullable = true, length = 256)
 	public String getLabel() { return iLabel; }

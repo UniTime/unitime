@@ -41,7 +41,7 @@ import org.unitime.timetable.model.dao.AcademicAreaDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "academic_area")
 public class AcademicArea extends BaseAcademicArea {
 	private static final long serialVersionUID = 1L;

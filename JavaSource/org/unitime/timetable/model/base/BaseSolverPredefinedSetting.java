@@ -85,7 +85,7 @@ public abstract class BaseSolverPredefinedSetting implements Serializable {
 
 	@OneToMany(cascade = {CascadeType.ALL})
 	@JoinColumn(name = "solver_predef_setting_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SolverParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<SolverParameter> parameters) { iParameters = parameters; }
 	public void addToParameters(SolverParameter solverParameter) {

@@ -65,7 +65,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@JoinTable(name = "reservation_acad_area",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "area_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<AcademicArea> getAreas() { return iAreas; }
 	public void setAreas(Set<AcademicArea> areas) { iAreas = areas; }
 	public void addToAreas(AcademicArea academicArea) {
@@ -81,7 +81,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@JoinTable(name = "reservation_major",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "major_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMajor> getMajors() { return iMajors; }
 	public void setMajors(Set<PosMajor> majors) { iMajors = majors; }
 	public void addToMajors(PosMajor posMajor) {
@@ -97,7 +97,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@JoinTable(name = "reservation_major_conc",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "concentration_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
 	public void addToConcentrations(PosMajorConcentration posMajorConcentration) {
@@ -113,7 +113,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@JoinTable(name = "reservation_clasf",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "acad_clasf_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<AcademicClassification> getClassifications() { return iClassifications; }
 	public void setClassifications(Set<AcademicClassification> classifications) { iClassifications = classifications; }
 	public void addToClassifications(AcademicClassification academicClassification) {
@@ -129,7 +129,7 @@ public abstract class BaseCurriculumReservation extends Reservation implements S
 	@JoinTable(name = "reservation_minor",
 		joinColumns = { @JoinColumn(name = "reservation_id") },
 		inverseJoinColumns = { @JoinColumn(name = "minor_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMinor> getMinors() { return iMinors; }
 	public void setMinors(Set<PosMinor> minors) { iMinors = minors; }
 	public void addToMinors(PosMinor posMinor) {

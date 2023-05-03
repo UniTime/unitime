@@ -91,7 +91,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 	public void setParentRoom(Room parentRoom) { iParentRoom = parentRoom; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "location", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<RoomPicture> getPictures() { return iPictures; }
 	public void setPictures(Set<RoomPicture> pictures) { iPictures = pictures; }
 	public void addToPictures(RoomPicture roomPicture) {
@@ -107,7 +107,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 	@JoinTable(name = "room_service_provider",
 		joinColumns = { @JoinColumn(name = "location_id") },
 		inverseJoinColumns = { @JoinColumn(name = "provider_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<EventServiceProvider> getAllowedServices() { return iAllowedServices; }
 	public void setAllowedServices(Set<EventServiceProvider> allowedServices) { iAllowedServices = allowedServices; }
 	public void addToAllowedServices(EventServiceProvider eventServiceProvider) {
@@ -120,7 +120,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentRoom")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Room> getPartitions() { return iPartitions; }
 	public void setPartitions(Set<Room> partitions) { iPartitions = partitions; }
 	public void addToPartitions(Room room) {

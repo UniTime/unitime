@@ -102,7 +102,7 @@ public abstract class BaseExternalBuilding implements Serializable {
 
 	@OneToMany
 	@JoinColumn(name = "external_bldg_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ExternalRoom> getRooms() { return iRooms; }
 	public void setRooms(Set<ExternalRoom> rooms) { iRooms = rooms; }
 	public void addToRooms(ExternalRoom externalRoom) {

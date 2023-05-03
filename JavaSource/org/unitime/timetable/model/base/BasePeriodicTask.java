@@ -108,7 +108,7 @@ public abstract class BasePeriodicTask implements Serializable {
 	public void setOwner(TimetableManager owner) { iOwner = owner; }
 
 	@OneToMany(mappedBy = "task", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TaskParameter> getParameters() { return iParameters; }
 	public void setParameters(Set<TaskParameter> parameters) { iParameters = parameters; }
 	public void addToParameters(TaskParameter taskParameter) {
@@ -121,7 +121,7 @@ public abstract class BasePeriodicTask implements Serializable {
 	}
 
 	@OneToMany(mappedBy = "task", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TaskExecution> getSchedule() { return iSchedule; }
 	public void setSchedule(Set<TaskExecution> schedule) { iSchedule = schedule; }
 	public void addToSchedule(TaskExecution taskExecution) {

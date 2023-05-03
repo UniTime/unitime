@@ -19,18 +19,12 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
-import org.unitime.timetable.model.ClusterDiscovery;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class ClusterDiscoveryId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -44,21 +38,17 @@ public class ClusterDiscoveryId implements Serializable {
 		iClusterName = clusterName;
 	}
 
-	@Id
-	@Column(name="own_address", length = 200)
 	public String getOwnAddress() { return iOwnAddress; }
 	public void setOwnAddress(String ownAddress) { iOwnAddress = ownAddress; }
 
-	@Id
-	@Column(name="cluster_name", length = 200)
 	public String getClusterName() { return iClusterName; }
 	public void setClusterName(String clusterName) { iClusterName = clusterName; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof ClusterDiscovery)) return false;
-		ClusterDiscovery clusterDiscovery = (ClusterDiscovery)o;
+		if (o == null || !(o instanceof ClusterDiscoveryId)) return false;
+		ClusterDiscoveryId clusterDiscovery = (ClusterDiscoveryId)o;
 		if (getOwnAddress() == null || clusterDiscovery.getOwnAddress() == null || !getOwnAddress().equals(clusterDiscovery.getOwnAddress())) return false;
 		if (getClusterName() == null || clusterDiscovery.getClusterName() == null || !getClusterName().equals(clusterDiscovery.getClusterName())) return false;
 		return true;

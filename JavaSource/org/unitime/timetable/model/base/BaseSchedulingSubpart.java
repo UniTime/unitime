@@ -119,7 +119,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "config_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public InstrOfferingConfig getInstrOfferingConfig() { return iInstrOfferingConfig; }
 	public void setInstrOfferingConfig(InstrOfferingConfig instrOfferingConfig) { iInstrOfferingConfig = instrOfferingConfig; }
 
@@ -129,7 +129,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
 	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
 	public void addToChildSubparts(SchedulingSubpart schedulingSubpart) {
@@ -142,7 +142,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "schedulingSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Class_> getClasses() { return iClasses; }
 	public void setClasses(Set<Class_> classes) { iClasses = classes; }
 	public void addToClasses(Class_ class_) {
@@ -155,7 +155,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "subpartOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
 	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
 	public void addToCreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {

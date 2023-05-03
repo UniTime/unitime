@@ -79,7 +79,7 @@ public class DistributionTypeEditAction extends UniTimeAction<DistributionTypeEd
 		}
 		
         List<Department> list = DistributionTypeDAO.getInstance().getSession()
-        		.createQuery("from Department session.uniqueId = :sessionId order by deptCode", Department.class)
+        		.createQuery("from Department where session.uniqueId = :sessionId order by deptCode", Department.class)
         		.setParameter("sessionId", sessionId)
         		.list();
         List<ComboBoxLookup> availableDepts = new ArrayList<ComboBoxLookup>();

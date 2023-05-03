@@ -120,7 +120,7 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitCourseOffering> getPitCourseOfferings() { return iPitCourseOfferings; }
 	public void setPitCourseOfferings(Set<PitCourseOffering> pitCourseOfferings) { iPitCourseOfferings = pitCourseOfferings; }
 	public void addToPitCourseOfferings(PitCourseOffering pitCourseOffering) {
@@ -133,7 +133,7 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstructionalOffering", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitInstrOfferingConfig> getPitInstrOfferingConfigs() { return iPitInstrOfferingConfigs; }
 	public void setPitInstrOfferingConfigs(Set<PitInstrOfferingConfig> pitInstrOfferingConfigs) { iPitInstrOfferingConfigs = pitInstrOfferingConfigs; }
 	public void addToPitInstrOfferingConfigs(PitInstrOfferingConfig pitInstrOfferingConfig) {
@@ -146,7 +146,7 @@ public abstract class BasePitInstructionalOffering implements Serializable {
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "pitInstructionalOffering")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PitOfferingCoordinator> getPitOfferingCoordinators() { return iPitOfferingCoordinators; }
 	public void setPitOfferingCoordinators(Set<PitOfferingCoordinator> pitOfferingCoordinators) { iPitOfferingCoordinators = pitOfferingCoordinators; }
 	public void addToPitOfferingCoordinators(PitOfferingCoordinator pitOfferingCoordinator) {

@@ -81,13 +81,13 @@ public abstract class BaseRoomDept implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinFormula("(select p.pref_level_id from %SCHEMA%.room_pref p where p.owner_id = department_id and p.room_id = room_id)")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public PreferenceLevel getPreference() { return iPreference; }
 	public void setPreference(PreferenceLevel preference) { iPreference = preference; }
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "room_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Location getRoom() { return iRoom; }
 	public void setRoom(Location room) { iRoom = room; }
 

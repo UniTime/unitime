@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BasePosMajorConcentration;
 import org.unitime.timetable.model.dao.PosMajorConcentrationDAO;
 
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "pos_major_conc")
 public class PosMajorConcentration extends BasePosMajorConcentration {
 	private static final long serialVersionUID = 1L;

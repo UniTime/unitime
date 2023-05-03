@@ -42,7 +42,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "staff")
 public class Staff extends BaseStaff implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;

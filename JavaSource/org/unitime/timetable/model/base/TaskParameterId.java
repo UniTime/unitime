@@ -19,22 +19,14 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.PeriodicTask;
-import org.unitime.timetable.model.TaskParameter;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class TaskParameterId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,22 +40,17 @@ public class TaskParameterId implements Serializable {
 		iName = name;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "task_id")
 	public PeriodicTask getTask() { return iTask; }
 	public void setTask(PeriodicTask task) { iTask = task; }
 
-	@Id
-	@Column(name="name", length = 128)
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof TaskParameter)) return false;
-		TaskParameter taskParameter = (TaskParameter)o;
+		if (o == null || !(o instanceof TaskParameterId)) return false;
+		TaskParameterId taskParameter = (TaskParameterId)o;
 		if (getTask() == null || taskParameter.getTask() == null || !getTask().equals(taskParameter.getTask())) return false;
 		if (getName() == null || taskParameter.getName() == null || !getName().equals(taskParameter.getName())) return false;
 		return true;

@@ -114,7 +114,7 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	@JoinTable(name = "teachreq_instructor",
 		joinColumns = { @JoinColumn(name = "request_id") },
 		inverseJoinColumns = { @JoinColumn(name = "instructor_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DepartmentalInstructor> getAssignedInstructors() { return iAssignedInstructors; }
 	public void setAssignedInstructors(Set<DepartmentalInstructor> assignedInstructors) { iAssignedInstructors = assignedInstructors; }
 	public void addToAssignedInstructors(DepartmentalInstructor departmentalInstructor) {
@@ -127,7 +127,7 @@ public abstract class BaseTeachingRequest extends PreferenceGroup implements Ser
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "teachingRequest", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TeachingClassRequest> getClassRequests() { return iClassRequests; }
 	public void setClassRequests(Set<TeachingClassRequest> classRequests) { iClassRequests = classRequests; }
 	public void addToClassRequests(TeachingClassRequest teachingClassRequest) {

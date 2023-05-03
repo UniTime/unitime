@@ -101,12 +101,12 @@ public abstract class BaseInstructorSurvey extends PreferenceGroup implements Se
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
 	@OneToMany(mappedBy = "instructorSurvey", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstructorCourseRequirement> getCourseRequirements() { return iCourseRequirements; }
 	public void setCourseRequirements(Set<InstructorCourseRequirement> courseRequirements) { iCourseRequirements = courseRequirements; }
 	public void addToCourseRequirements(InstructorCourseRequirement instructorCourseRequirement) {

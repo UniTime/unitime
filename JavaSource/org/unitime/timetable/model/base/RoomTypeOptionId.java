@@ -19,22 +19,15 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MappedSuperclass;
-
 import java.io.Serializable;
 
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.RoomTypeOption;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-@MappedSuperclass
 public class RoomTypeOptionId implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,23 +41,17 @@ public class RoomTypeOptionId implements Serializable {
 		iDepartment = department;
 	}
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "room_type")
 	public RoomType getRoomType() { return iRoomType; }
 	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
-	@Id
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "department_id")
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof RoomTypeOption)) return false;
-		RoomTypeOption roomTypeOption = (RoomTypeOption)o;
+		if (o == null || !(o instanceof RoomTypeOptionId)) return false;
+		RoomTypeOptionId roomTypeOption = (RoomTypeOptionId)o;
 		if (getRoomType() == null || roomTypeOption.getRoomType() == null || !getRoomType().equals(roomTypeOption.getRoomType())) return false;
 		if (getDepartment() == null || roomTypeOption.getDepartment() == null || !getDepartment().equals(roomTypeOption.getDepartment())) return false;
 		return true;

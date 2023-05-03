@@ -58,7 +58,7 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "query_log")
 public class QueryLog extends BaseQueryLog {
 	private static final long serialVersionUID = 7073111443207707716L;

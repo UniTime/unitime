@@ -37,7 +37,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "course_request_option")
 public class CourseRequestOption extends BaseCourseRequestOption {
 	private static final long serialVersionUID = 1L;

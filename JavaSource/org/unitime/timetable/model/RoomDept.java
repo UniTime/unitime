@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseRoomDept;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "room_dept")
 public class RoomDept extends BaseRoomDept implements Comparable {
 	private static final long serialVersionUID = 1L;

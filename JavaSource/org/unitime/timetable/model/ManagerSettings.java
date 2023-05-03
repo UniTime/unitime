@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.SettingsDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "manager_settings")
 public class ManagerSettings extends BaseManagerSettings {
 	private static final long serialVersionUID = 1L;

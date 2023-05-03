@@ -158,7 +158,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public void setTeachingPreference(PreferenceLevel teachingPreference) { iTeachingPreference = teachingPreference; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructor", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
 	public void addToClasses(ClassInstructor classInstructor) {
@@ -174,7 +174,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	@JoinTable(name = "exam_instructor",
 		joinColumns = { @JoinColumn(name = "instructor_id") },
 		inverseJoinColumns = { @JoinColumn(name = "exam_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Exam> getExams() { return iExams; }
 	public void setExams(Set<Exam> exams) { iExams = exams; }
 	public void addToExams(Exam exam) {
@@ -187,7 +187,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	}
 
 	@ManyToMany(mappedBy = "instructors")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Assignment> getAssignments() { return iAssignments; }
 	public void setAssignments(Set<Assignment> assignments) { iAssignments = assignments; }
 	public void addToAssignments(Assignment assignment) {
@@ -200,7 +200,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "instructor")
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<OfferingCoordinator> getOfferingCoordinators() { return iOfferingCoordinators; }
 	public void setOfferingCoordinators(Set<OfferingCoordinator> offeringCoordinators) { iOfferingCoordinators = offeringCoordinators; }
 	public void addToOfferingCoordinators(OfferingCoordinator offeringCoordinator) {
@@ -216,7 +216,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	@JoinTable(name = "instructor_attributes",
 		joinColumns = { @JoinColumn(name = "instructor_id") },
 		inverseJoinColumns = { @JoinColumn(name = "attribute_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<InstructorAttribute> getAttributes() { return iAttributes; }
 	public void setAttributes(Set<InstructorAttribute> attributes) { iAttributes = attributes; }
 	public void addToAttributes(InstructorAttribute instructorAttribute) {

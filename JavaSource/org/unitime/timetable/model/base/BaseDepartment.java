@@ -175,7 +175,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "session_id", nullable = false)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
@@ -186,12 +186,12 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 
 	@ManyToOne(optional = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "solver_group_id", nullable = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public SolverGroup getSolverGroup() { return iSolverGroup; }
 	public void setSolverGroup(SolverGroup solverGroup) { iSolverGroup = solverGroup; }
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "department", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addToSubjectAreas(SubjectArea subjectArea) {
@@ -204,7 +204,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "department", cascade = {CascadeType.ALL})
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<RoomDept> getRoomDepts() { return iRoomDepts; }
 	public void setRoomDepts(Set<RoomDept> roomDepts) { iRoomDepts = roomDepts; }
 	public void addToRoomDepts(RoomDept roomDept) {
@@ -220,7 +220,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@JoinTable(name = "date_pattern_dept",
 		joinColumns = { @JoinColumn(name = "dept_id") },
 		inverseJoinColumns = { @JoinColumn(name = "pattern_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DatePattern> getDatePatterns() { return iDatePatterns; }
 	public void setDatePatterns(Set<DatePattern> datePatterns) { iDatePatterns = datePatterns; }
 	public void addToDatePatterns(DatePattern datePattern) {
@@ -236,7 +236,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@JoinTable(name = "time_pattern_dept",
 		joinColumns = { @JoinColumn(name = "dept_id") },
 		inverseJoinColumns = { @JoinColumn(name = "pattern_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TimePattern> getTimePatterns() { return iTimePatterns; }
 	public void setTimePatterns(Set<TimePattern> timePatterns) { iTimePatterns = timePatterns; }
 	public void addToTimePatterns(TimePattern timePattern) {
@@ -249,7 +249,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	}
 
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "externalDepartment", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<ExternalDepartmentStatusType> getExternalStatusTypes() { return iExternalStatusTypes; }
 	public void setExternalStatusTypes(Set<ExternalDepartmentStatusType> externalStatusTypes) { iExternalStatusTypes = externalStatusTypes; }
 	public void addToExternalStatusTypes(ExternalDepartmentStatusType externalDepartmentStatusType) {
@@ -265,7 +265,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	@JoinTable(name = "dept_to_tt_mgr",
 		joinColumns = { @JoinColumn(name = "department_id") },
 		inverseJoinColumns = { @JoinColumn(name = "timetable_mgr_id") })
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<TimetableManager> getTimetableManagers() { return iTimetableManagers; }
 	public void setTimetableManagers(Set<TimetableManager> timetableManagers) { iTimetableManagers = timetableManagers; }
 	public void addToTimetableManagers(TimetableManager timetableManager) {
@@ -278,7 +278,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	}
 
 	@OneToMany(mappedBy = "department", cascade = {CascadeType.ALL}, orphanRemoval = true)
-	@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }
 	public void addToInstructors(DepartmentalInstructor departmentalInstructor) {

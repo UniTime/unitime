@@ -39,7 +39,7 @@ import org.unitime.timetable.model.dao.ExternalBuildingDAO;
  * @author Tomas Muller
  */
 @Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, includeLazy = false)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "external_building")
 public class ExternalBuilding extends BaseExternalBuilding {
 	private static final long serialVersionUID = 1L;

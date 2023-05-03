@@ -555,7 +555,7 @@ public class SessionRollForward {
 						}
 					}
 				}
-				rDao.getSession().persist(toRoom);
+				rDao.getSession().merge(toRoom);
 				
 				for (RoomPicture fromPicture: fromRoom.getPictures()) {
 					RoomPicture toPicture = fromPicture.clonePicture();
@@ -725,11 +725,12 @@ public class SessionRollForward {
 	
 	private void rollTravelTimesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
 		TravelTimeDAO dao = TravelTimeDAO.getInstance();
-		dao.getSession().createMutationQuery(
-				"delete from TravelTime where session.uniqueId = :sessionId")
+		for (TravelTime time: dao.getSession().createQuery(
+				"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
 				.setParameter("sessionId", toSession.getUniqueId())
-				.executeUpdate();
-		
+				.list()) {
+			dao.getSession().remove(time);
+		}
 		for (TravelTime travel: dao.getSession().createQuery(
     			"from TravelTime where session.uniqueId = :sessionId", TravelTime.class)
     			.setParameter("sessionId", fromSession.getUniqueId()).list()) {
