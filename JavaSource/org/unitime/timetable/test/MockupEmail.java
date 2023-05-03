@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

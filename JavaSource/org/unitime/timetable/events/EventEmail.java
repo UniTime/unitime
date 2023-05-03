@@ -35,9 +35,9 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import javax.activation.DataSource;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
+import jakarta.activation.DataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.logging.Log;

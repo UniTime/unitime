@@ -21,9 +21,9 @@ package org.unitime.commons;
 
 import java.io.File;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 

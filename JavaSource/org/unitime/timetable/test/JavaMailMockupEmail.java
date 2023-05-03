@@ -21,11 +21,11 @@ package org.unitime.timetable.test;
 
 import java.io.UnsupportedEncodingException;
 
-import javax.mail.MessagingException;
-import javax.mail.Address;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Address;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
 
 import org.unitime.commons.JavaMailWrapper;
 import org.unitime.timetable.ApplicationProperties;

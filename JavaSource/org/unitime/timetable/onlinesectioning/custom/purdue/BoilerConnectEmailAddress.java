@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;

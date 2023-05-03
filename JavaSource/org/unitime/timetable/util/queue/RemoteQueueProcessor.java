@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-import javax.activation.DataSource;
-import javax.activation.FileTypeMap;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileTypeMap;
 
 import org.apache.commons.io.IOUtils;
 

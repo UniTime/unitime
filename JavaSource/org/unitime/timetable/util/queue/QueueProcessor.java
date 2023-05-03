@@ -2,7 +2,7 @@ package org.unitime.timetable.util.queue;
 
 import java.util.List;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 public interface QueueProcessor {
 	

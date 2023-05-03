@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

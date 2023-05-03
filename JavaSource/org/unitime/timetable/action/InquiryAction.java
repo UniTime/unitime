@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.convention.annotation.Action;

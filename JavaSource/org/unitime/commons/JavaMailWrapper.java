@@ -24,19 +24,19 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.mail.Address;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.mail.Address;
+import jakarta.mail.Authenticator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Transport;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +48,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
  */
 public class JavaMailWrapper extends Email {
 	protected static Log sLog = LogFactory.getLog(Email.class);
-	protected javax.mail.Session iMailSession = null;
+	protected jakarta.mail.Session iMailSession = null;
 	protected MimeMessage iMail = null;
 	protected Multipart iBody = null;
 	
@@ -70,7 +70,7 @@ public class JavaMailWrapper extends Email {
             };
         }
 
-        iMailSession = javax.mail.Session.getDefaultInstance(p, a);
+        iMailSession = jakarta.mail.Session.getDefaultInstance(p, a);
         if ("true".equals(p.getProperty("mail.debug")))
         	iMailSession.setDebug(true);
         iMail = new MimeMessage(iMailSession);

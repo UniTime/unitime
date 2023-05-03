@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.activation.DataSource;
-import javax.activation.FileTypeMap;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileTypeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

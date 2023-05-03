@@ -49,10 +49,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 import javax.imageio.ImageIO;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.commons.Email;

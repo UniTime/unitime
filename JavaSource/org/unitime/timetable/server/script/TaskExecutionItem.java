@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.activation.FileTypeMap;
+import jakarta.activation.FileTypeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.hibernate.Transaction;
