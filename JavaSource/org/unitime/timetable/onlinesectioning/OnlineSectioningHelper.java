@@ -57,7 +57,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
-import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -83,7 +83,7 @@ import org.unitime.timetable.util.NameFormat;
 /**
  * @author Tomas Muller
  */
-public class OnlineSectioningHelper {
+public class OnlineSectioningHelper implements ExternalClassNameHelperInterface {
     protected static Log sLog = LogFactory.getLog(OnlineSectioningHelper.class);
 	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
 	public static boolean sTransactionCreatesNewHibSession = false;
@@ -111,6 +111,7 @@ public class OnlineSectioningHelper {
     protected CacheMode iCacheMode = null;
     protected XExactTimeConversion iExactTimeConversion = null;
     protected HasGradableSubpart iHasGradableSubpart = null;
+    protected ExternalClassNameHelperInterface iExternalClassNameHelper = null;
     protected boolean iUseLastAction = false;
     
     public OnlineSectioningHelper() {
@@ -1072,5 +1073,39 @@ public class OnlineSectioningHelper {
 			for (OnlineSectioningLog.Property p: getUser().getParameterList())
 				if ("specreg".equals(p.getKey())) return p.getValue();
 		return null;
+	}
+	
+    public void setExternalClassNameHelper(ExternalClassNameHelperInterface provider) {
+    	iExternalClassNameHelper = provider;
+    }
+
+	@Override
+	public String getClassSuffix(Class_ clazz, CourseOffering courseOffering) {
+		if (iExternalClassNameHelper != null) return iExternalClassNameHelper.getClassSuffix(clazz, courseOffering);
+		return clazz.getClassSuffix(courseOffering);
+	}
+
+	@Override
+	public String getClassLabel(Class_ clazz, CourseOffering courseOffering) {
+		if (iExternalClassNameHelper != null) return iExternalClassNameHelper.getClassLabel(clazz, courseOffering);
+		return clazz.getClassLabel(courseOffering);
+	}
+
+	@Override
+	public String getClassLabelWithTitle(Class_ clazz, CourseOffering courseOffering) {
+		if (iExternalClassNameHelper != null) return iExternalClassNameHelper.getClassLabelWithTitle(clazz, courseOffering);
+		return clazz.getClassLabelWithTitle(courseOffering);
+	}
+
+	@Override
+	public String getExternalId(Class_ clazz, CourseOffering courseOffering) {
+		if (iExternalClassNameHelper != null) return iExternalClassNameHelper.getExternalId(clazz, courseOffering);
+		return clazz.getExternalId(courseOffering);
+	}
+
+	@Override
+	public Float getClassCredit(Class_ clazz, CourseOffering courseOffering) {
+		if (iExternalClassNameHelper != null) return iExternalClassNameHelper.getClassCredit(clazz, courseOffering);
+		return clazz.getCredit(courseOffering);
 	}
 }

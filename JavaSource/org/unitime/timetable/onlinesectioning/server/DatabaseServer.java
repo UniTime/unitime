@@ -34,6 +34,7 @@ import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.SectioningServlet;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasClassNamesCache;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
 import org.unitime.timetable.model.Class_;
@@ -228,6 +229,13 @@ public class DatabaseServer extends AbstractLockingServer {
 			} else if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
 				getCurrentHelper().setGradableSubpartsProvider((HasGradableSubpart)Class_.getExternalClassNameHelper());
 			}
+		}
+		if (Class_.getExternalClassNameHelper() != null) {
+			if (Class_.getExternalClassNameHelper() instanceof HasClassNamesCache) {
+				List<Long> offeringIds = new ArrayList<Long>(1); offeringIds.add(offeringId);
+				getCurrentHelper().setExternalClassNameHelper(((HasClassNamesCache)Class_.getExternalClassNameHelper()).getClassNamesCache(offeringIds, getCurrentHelper().getHibSession()));
+			} else
+				getCurrentHelper().setExternalClassNameHelper(Class_.getExternalClassNameHelper());
 		}
 		
 		return new XOffering(o, distributions, getCurrentHelper());

@@ -39,6 +39,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasClassNamesCache;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpartCache;
 import org.unitime.timetable.model.Class_;
@@ -85,6 +86,12 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 			} else if (Class_.getExternalClassNameHelper() instanceof HasGradableSubpart) {
 				helper.setGradableSubpartsProvider((HasGradableSubpart)Class_.getExternalClassNameHelper());
 			}
+		}
+		if (Class_.getExternalClassNameHelper() != null) {
+			if (Class_.getExternalClassNameHelper() instanceof HasClassNamesCache)
+				helper.setExternalClassNameHelper(((HasClassNamesCache)Class_.getExternalClassNameHelper()).getClassNamesCache(server.getAcademicSession().getUniqueId(), helper.getHibSession()));
+			else
+				helper.setExternalClassNameHelper(Class_.getExternalClassNameHelper());
 		}
 
 		Lock lock = server.lockAll();

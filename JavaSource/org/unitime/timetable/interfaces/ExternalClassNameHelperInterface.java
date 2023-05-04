@@ -45,4 +45,9 @@ public interface ExternalClassNameHelperInterface {
 		public HasGradableSubpart getGradableSubparts(Long sessionId, org.hibernate.Session hibSession);
 		public HasGradableSubpart getGradableSubparts(Collection<Long> offeringIds, org.hibernate.Session hibSession);
 	}
+	
+	public interface HasClassNamesCache {
+		public ExternalClassNameHelperInterface getClassNamesCache(Long sessionId, org.hibernate.Session hibSession);
+		public ExternalClassNameHelperInterface getClassNamesCache(Collection<Long> offeringIds, org.hibernate.Session hibSession);
+	}
 }

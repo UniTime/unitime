@@ -116,12 +116,12 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         if (iExternalId == null)
         	iExternalId = clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getClassLabel();
         for (CourseOffering course: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
-        	iNameByCourse.put(course.getUniqueId(), clazz.getClassSuffix(course));
-        	String extId = clazz.getExternalId(course);
+        	iNameByCourse.put(course.getUniqueId(), helper.getClassSuffix(clazz, course));
+        	String extId = helper.getExternalId(clazz, course);
         	if (extId == null)
-        		extId = clazz.getClassLabel(course);
+        		extId = helper.getClassLabel(clazz, course);
         	iExternalIdByCourse.put(course.getUniqueId(), extId);
-            Float credit = clazz.getCredit(course);
+            Float credit = helper.getClassCredit(clazz, course);
             if (credit != null) {
             	if (iCreditByCourse == null) iCreditByCourse = new HashMap<Long, Float>();
             	iCreditByCourse.put(course.getUniqueId(), credit);
