@@ -1,0 +1,11 @@
+Project description:
+UniTime is a distributed scheduling system that that allows multiple universities and departmental schedule managers to coordinate efforts to build and modify course and exam timetables that meets their diverse organizational needs while allowing for minimization of student course conflicts, and it can also be used alone to create and maintain a school's schedule of classes and/or exams, or interfaced with an existing student information system.
+
+Features
+-course timetabling
+-examination timetabling
+-event management
+-student scheduling
+
+Technique:
+We used the top-down approach. This approach depends on having some prior knowledge about the domain of the program which we have because we are university students, then applying this knowledge and using our own hypotheses to understand how the code works, and refine our definition of how the program works.
