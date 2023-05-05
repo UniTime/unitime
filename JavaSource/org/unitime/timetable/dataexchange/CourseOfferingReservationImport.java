@@ -81,7 +81,7 @@ public class CourseOfferingReservationImport extends BaseImport {
 
 	CourseOffering fetchCourseOffering(String courseNumber, Long subjectAreaId) {
 		return getHibSession().
-			createQuery("select distinct a from CourseOffering a where a.courseNumber=:courseNumber and a.subjectArea=:subjectArea", CourseOffering.class).
+			createQuery("select distinct a from CourseOffering a where a.courseNumber=:courseNumber and a.subjectArea.uniqueId=:subjectArea", CourseOffering.class).
 			setParameter("subjectArea", subjectAreaId.longValue()).
 			setParameter("courseNumber", courseNumber).
 			setCacheable(true).
