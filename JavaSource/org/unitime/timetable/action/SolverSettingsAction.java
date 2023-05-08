@@ -195,6 +195,14 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
                 
                 form.reset();
                 form.setOp(MSG.actionAddNewSolverConfig());
+            } else {
+            	form.setOp(op);
+            	for (SolverParameterDef def: SolverParameterDefDAO.getInstance().findAll()) {
+        			if (!def.isVisible().booleanValue()) continue;
+        			if (Boolean.TRUE.equals(form.getUseDefault(def.getUniqueId())) && form.getParameter(def.getUniqueId()) == null) {
+        				form.setParameter(def.getUniqueId(), def.getDefault());
+        			}
+        		}
             }
         }
 

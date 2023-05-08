@@ -107,6 +107,12 @@
 				<s:fielderror fieldName="form.appearance"/>
 			</TD>
 		</TR>
+		<s:if test="!fieldErrors.isEmpty()">
+			<TR><TD colspan="3" align="left" class="errorTable">
+				<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror/>
+			</TD></TR>
+		</s:if>	
+		
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<s:iterator value="solverParameterGroups" var="group">
 			<s:if test="#group.solverType == form.appearanceType.solverType && #group.visible">
@@ -161,7 +167,7 @@
 							<s:textfield name="form.parameter[%{#def.uniqueId}]" disabled="%{form.useDefault[#def.uniqueId]}" id="p%{#def.uniqueId}"
 								size="30" maxlength="2048"/>
 						</s:else>						
-						<s:fielderror fieldName="form.parameter[%{#def.uniqueId}]"/>
+						<s:fielderror><s:param>form.parameter[${def.uniqueId}]</s:param></s:fielderror>
 					</TD></TR>
 				</s:iterator>
 			</s:if><s:else>
