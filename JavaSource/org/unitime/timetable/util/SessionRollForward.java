@@ -35,7 +35,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
-import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -2529,9 +2528,7 @@ public class SessionRollForward {
 								}
 							}
 							hibSession.evict(fromClass);
-							Transaction t = hibSession.beginTransaction();
 							hibSession.merge(toClass);
-							t.commit();
 						} else {
 							hibSession.evict(fromClass);
 						}
