@@ -36,6 +36,16 @@
 				<line>Use yyyy-MM-dd format for parameters of date type.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Solver Configuration: Validation</name>
+			<description>
+				<line>When the validation of the Add/Edit Solver Configuration page fails, ensure that
+					<line>default parameters are loaded in,</line>
+					<line>add/edit operation is preserved, and</line>
+					<line>field errors are displayed.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
