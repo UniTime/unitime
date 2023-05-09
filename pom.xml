@@ -721,7 +721,7 @@
 		<mail.version>2.1.1</mail.version>
 		<angus-mail.version>2.0.1</angus-mail.version>
 		<io.version>2.11.0</io.version>
-		<restlet.version>2.4.0</restlet.version>
+		<restlet.version>2.4.3</restlet.version>
 		<log4j.version>2.20.0</log4j.version>
 		<javassist.version>3.29.2-GA</javassist.version>
 		<mysql.version>8.0.33</mysql.version>

@@ -393,7 +393,7 @@ reactive-streams (reactive-streams-1.0.4.jar)
 	under MIT-0
 	http://www.reactive-streams.org/
 
-Restlet Core - API and Engine (org.restlet-2.4.0.jar)
+Restlet Core - API and Engine (org.restlet-2.4.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://restlet.org/org.restlet
 
