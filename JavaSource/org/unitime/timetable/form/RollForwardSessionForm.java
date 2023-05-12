@@ -249,7 +249,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		}		
 	}
 
-	public boolean validateCourseOfferingRollForward(Session toAcadSession, RollForwardErrors action){
+	public boolean validateCourseOfferingRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
 		boolean ret = true;
 		if (getRollForwardCourseOfferings().booleanValue()){
 			if (getSubpartLocationPrefsAction() != null 
@@ -289,31 +289,49 @@ public class RollForwardSessionForm implements UniTimeForm {
 			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardCourseOfferings(), new ArrayList<CourseOffering>()))
 				ret = false;
 			CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
+			if (toSubjectArea == null) {
+				for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
+					String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
+						+ toAcadSession.getUniqueId().toString()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + getRollForwardSubjectAreaIds()[i];
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + getRollForwardSubjectAreaIds()[i]), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
+						ret = false;
+				}
+			} else {
 				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
-					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-				    + getRollForwardSubjectAreaIds()[i];
-				if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + getRollForwardSubjectAreaIds()[i]), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
-					ret = false;
+						+ toAcadSession.getUniqueId()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + toSubjectArea.getUniqueId();
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
+						ret = false;
 			}
 		}
 		return ret;
 	}
 	
-	public boolean validateClassInstructorRollForward(Session toAcadSession, RollForwardErrors action){
+	public boolean validateClassInstructorRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
 		if (getRollForwardClassInstructors().booleanValue()){
 			boolean ret = true;
 			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardClassInstructors(), new ArrayList<ClassInstructor>()))
 				ret = false;
 			ClassInstructorDAO ciDao = ClassInstructorDAO.getInstance();
-			for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
+			if (toSubjectArea == null) {
+				for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
+					String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
+						+ toAcadSession.getUniqueId().toString()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + getRollForwardClassInstrSubjectIds()[i];
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + getRollForwardClassInstrSubjectIds()[i]), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list()))
+						ret = false;
+				}
+			} else {
 				String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
-					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-				    + getRollForwardClassInstrSubjectIds()[i];
-				if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + getRollForwardClassInstrSubjectIds()[i]), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list()))
-					ret = false;
+						+ toAcadSession.getUniqueId().toString()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + toSubjectArea.getUniqueId();
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list()))
+						ret = false;
 			}
 			return ret;
 		} else {
@@ -321,19 +339,28 @@ public class RollForwardSessionForm implements UniTimeForm {
 		}
 	}
 	
-	public boolean validateOfferingCoordinatorsRollForward(Session toAcadSession, RollForwardErrors action){
+	public boolean validateOfferingCoordinatorsRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
 		if (getRollForwardOfferingCoordinators().booleanValue()){
 			boolean ret = true;
 			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardOfferingCoordinators(), new ArrayList<OfferingCoordinator>()))
 				ret = false;
 			OfferingCoordinatorDAO ocDao = OfferingCoordinatorDAO.getInstance();
-			for (int i = 0; i < getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
+			if (toSubjectArea == null) {
+				for (int i = 0; i < getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
+					String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
+						+ toAcadSession.getUniqueId().toString()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + getRollForwardOfferingCoordinatorsSubjectIds()[i];
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + getRollForwardOfferingCoordinatorsSubjectIds()[i]), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list()))
+						ret = false;
+				}
+			} else {
 				String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
-					+ toAcadSession.getUniqueId().toString()
-					+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-				    + getRollForwardOfferingCoordinatorsSubjectIds()[i];
-				if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + getRollForwardOfferingCoordinatorsSubjectIds()[i]), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list()))
-					ret = false;
+						+ toAcadSession.getUniqueId().toString()
+						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+					    + toSubjectArea.getUniqueId();
+					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list()))
+						ret = false;
 			}
 			return ret;
 		} else {
@@ -421,10 +448,10 @@ public class RollForwardSessionForm implements UniTimeForm {
 		validateTimePatternRollForward(toAcadSession, action);
 		validateLearningManagementSystemRollForward(toAcadSession, action);
 		validateSubjectAreaRollForward(toAcadSession, action);
-		validateCourseOfferingRollForward(toAcadSession, action);
-		validateTeachingRequestsRollForward(toAcadSession, action);
-		validateClassInstructorRollForward(toAcadSession, action);
-		validateOfferingCoordinatorsRollForward(toAcadSession, action);
+		validateCourseOfferingRollForward(toAcadSession, null, action);
+		validateTeachingRequestsRollForward(toAcadSession, null, action);
+		validateClassInstructorRollForward(toAcadSession, null, action);
+		validateOfferingCoordinatorsRollForward(toAcadSession, null, action);
 		validateExamConfigurationRollForward(toAcadSession, action);
 		validateMidtermExamRollForward(toAcadSession, action);
 		validateFinalExamRollForward(toAcadSession, action);
@@ -1077,17 +1104,23 @@ public class RollForwardSessionForm implements UniTimeForm {
 		this.rollForwardTeachingRequestsSubjectIds = rollForwardTeachingRequestsSubjectIds;
 	}
 	
-	public boolean validateTeachingRequestsRollForward(Session toAcadSession, RollForwardErrors action){
+	public boolean validateTeachingRequestsRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
 		if (getRollForwardTeachingRequests().booleanValue()) {
 			if (getRollForwardOfferingCoordinatorsSubjectIds() == null || getRollForwardOfferingCoordinatorsSubjectIds().length == 0) {
 				action.addFieldError("mustSelectDepartment", MSG.errorRollForwardGeneric(MSG.rollForwardTeachingRequests(), MSG.infoNoSubjectAreaSelected()));
 				return false;
-			} else {
+			} else if (toSubjectArea == null) {
 				return validateRollForward(action, toAcadSession, getSessionToRollInstructorDataForwardFrom(), MSG.rollForwardTeachingRequests(),
 						TeachingRequestDAO.getInstance().getSession().createQuery(
 								"select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and cast(co.subjectArea.uniqueId as string) in :subjectIds",
 								TeachingRequest.class)
 					.setParameterList("subjectIds", getRollForwardOfferingCoordinatorsSubjectIds(), String.class).list());
+			} else {
+				return validateRollForward(action, toAcadSession, getSessionToRollInstructorDataForwardFrom(), MSG.rollForwardTeachingRequests(),
+						TeachingRequestDAO.getInstance().getSession().createQuery(
+								"select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subjectId",
+								TeachingRequest.class)
+					.setParameter("subjectId", toSubjectArea.getUniqueId()).list());
 			}
 		} else {
 			return true;

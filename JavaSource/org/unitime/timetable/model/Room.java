@@ -117,7 +117,7 @@ public class Room extends BaseRoom {
 		return r;
 	}
 	
-	public Room findSameRoomInSession(Session newSession) throws Exception{
+	public Room findSameRoomInSession(Session newSession) {
 		if (newSession == null) {
 			return(null);
 		}

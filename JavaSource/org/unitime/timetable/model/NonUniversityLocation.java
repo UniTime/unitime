@@ -91,7 +91,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		return l;
 	}
 	
-	public NonUniversityLocation findSameNonUniversityLocationInSession(Session newSession) throws Exception{
+	public NonUniversityLocation findSameNonUniversityLocationInSession(Session newSession) {
 		if (newSession == null) {
 			return(null);
 		}

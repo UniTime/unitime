@@ -138,7 +138,7 @@ public class Building extends BaseBuilding implements Comparable {
 		return b;
 	}
 
-	public Building findSameBuildingInSession(Session newSession) throws Exception{
+	public Building findSameBuildingInSession(Session newSession) {
 		if (newSession == null){
 			return(null);
 		}

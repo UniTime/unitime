@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
-import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Class_;
@@ -106,16 +105,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
-		coDao.getSession().clear();
+		// coDao.getSession().clear();
 	}
 	
 	public void rollForwardInstructionalOfferingForACourseOffering(CourseOffering co, Session fromSession, Session toSession){
-		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-		
-		if (co != null){
-				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
-		}
-		coDao.getSession().clear();
+		if (co != null)
+			rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 	}
 
 	
@@ -145,7 +140,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				}
 			}
 		}
-		coDao.getSession().clear();
 	}
 
 	private void addInstructionalOffering(CourseCatalog courseCatalogEntry, Session toSession) {
@@ -166,8 +160,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			}
 			InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
 			ioDao.getSession().persist(instructionalOffering);
-			ioDao.getSession().flush();
-			ioDao.getSession().evict(instructionalOffering);
 		}
 	}
 
@@ -188,56 +180,36 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 
 	public void rollForwardInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session fromSession, Session toSession){
-		InstructionalOfferingDAO ioDao = InstructionalOfferingDAO.getInstance();
-		org.hibernate.Session hibSession = ioDao.getSession();
 		iLog.info("Rolling " + fromInstructionalOffering.getCourseNameWithTitle());
-		Transaction trns = null;
-		try {
-			if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
-				trns = hibSession.beginTransaction();
-			InstructionalOffering toInstructionalOffering = findToInstructionalOffering(fromInstructionalOffering, toSession, hibSession);
-			if (toInstructionalOffering == null){
-				return;
-			}
-			if (toInstructionalOffering.getInstrOfferingConfigs() != null && toInstructionalOffering.getInstrOfferingConfigs().size() > 0){
-				toInstructionalOffering.getInstrOfferingConfigs().clear();
-			}
-			toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
-			toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
-			InstrOfferingConfig fromInstrOffrConfig = null;
-			InstrOfferingConfig toInstrOffrConfig = null;
-			if (fromInstructionalOffering.getInstrOfferingConfigs() != null && fromInstructionalOffering.getInstrOfferingConfigs().size() > 0){
-				List<InstrOfferingConfig> fromInstrOffrConfigs = new ArrayList<InstrOfferingConfig>(fromInstructionalOffering.getInstrOfferingConfigs());
-				Collections.sort(fromInstrOffrConfigs, new InstrOfferingConfigComparator(null));
-				for (Iterator it = fromInstrOffrConfigs.iterator(); it.hasNext();){
-					fromInstrOffrConfig = (InstrOfferingConfig) it.next();
-					toInstrOffrConfig = new InstrOfferingConfig();
-					toInstrOffrConfig.setLimit(fromInstrOffrConfig.getLimit());
-					toInstrOffrConfig.setInstructionalOffering(toInstructionalOffering);
-					toInstrOffrConfig.setName(fromInstrOffrConfig.getName());
-					toInstrOffrConfig.setUnlimitedEnrollment(fromInstrOffrConfig.isUnlimitedEnrollment());
-					toInstrOffrConfig.setUniqueIdRolledForwardFrom(fromInstrOffrConfig.getUniqueId());
-					toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
-					toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
-					toInstructionalOffering.addToInstrOfferingConfigs(toInstrOffrConfig);
-					hibSession.persist(toInstrOffrConfig);
-					hibSession.merge(toInstructionalOffering);
-					rollForwardSchedSubpartsForAConfig(fromInstrOffrConfig, toInstrOffrConfig, hibSession, toSession);
-					hibSession.merge(toInstructionalOffering);
-				}
-			}
-			if (trns != null && trns.isActive()) {
-				trns.commit();
-			}
-			hibSession.flush();
-			hibSession.evict(toInstructionalOffering);
-			hibSession.evict(fromInstructionalOffering);
-		} catch (Exception e){
-			iLog.error("Failed to roll " + fromInstructionalOffering.getCourseName(), e);
-			if (trns != null){
-				if (trns.isActive()){
-					trns.rollback();
-				}
+		InstructionalOffering toInstructionalOffering = findToInstructionalOffering(fromInstructionalOffering, toSession);
+		if (toInstructionalOffering == null){
+			return;
+		}
+		if (toInstructionalOffering.getInstrOfferingConfigs() != null && toInstructionalOffering.getInstrOfferingConfigs().size() > 0){
+			toInstructionalOffering.getInstrOfferingConfigs().clear();
+		}
+		toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
+		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
+		InstrOfferingConfig fromInstrOffrConfig = null;
+		InstrOfferingConfig toInstrOffrConfig = null;
+		if (fromInstructionalOffering.getInstrOfferingConfigs() != null && fromInstructionalOffering.getInstrOfferingConfigs().size() > 0){
+			List<InstrOfferingConfig> fromInstrOffrConfigs = new ArrayList<InstrOfferingConfig>(fromInstructionalOffering.getInstrOfferingConfigs());
+			Collections.sort(fromInstrOffrConfigs, new InstrOfferingConfigComparator(null));
+			for (Iterator it = fromInstrOffrConfigs.iterator(); it.hasNext();){
+				fromInstrOffrConfig = (InstrOfferingConfig) it.next();
+				toInstrOffrConfig = new InstrOfferingConfig();
+				toInstrOffrConfig.setLimit(fromInstrOffrConfig.getLimit());
+				toInstrOffrConfig.setInstructionalOffering(toInstructionalOffering);
+				toInstrOffrConfig.setName(fromInstrOffrConfig.getName());
+				toInstrOffrConfig.setUnlimitedEnrollment(fromInstrOffrConfig.isUnlimitedEnrollment());
+				toInstrOffrConfig.setUniqueIdRolledForwardFrom(fromInstrOffrConfig.getUniqueId());
+				toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
+				toInstrOffrConfig.setInstructionalMethod(fromInstrOffrConfig.getInstructionalMethod());
+				toInstructionalOffering.addToInstrOfferingConfigs(toInstrOffrConfig);
+				getHibSession().persist(toInstrOffrConfig);
+				getHibSession().merge(toInstructionalOffering);
+				rollForwardSchedSubpartsForAConfig(fromInstrOffrConfig, toInstrOffrConfig, toSession);
+				getHibSession().merge(toInstructionalOffering);
 			}
 		}		
 	}
@@ -287,7 +259,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}	
 	}
 	
-	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession, org.hibernate.Session hibSession) throws Exception{
+	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession) {
 		Class_ toClass = new Class_();
 
 		toClass.setEnabledForStudentScheduling(fromClass.isEnabledForStudentScheduling());
@@ -336,15 +308,15 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			rollForwardRoomPrefs(fromClass, toClass, toSession);
 			rollForwardRoomGroupPrefs(fromClass, toClass, toSession);
 			rollForwardRoomFeaturePrefs(fromClass, toClass, toSession);
-			rollForwardDatePatternPrefs(fromClass, toClass, toSession, hibSession);
+			rollForwardDatePatternPrefs(fromClass, toClass, toSession);
 		}
 		if (isRollForwardDistributions())
-			rollForwardDistributionPrefs(fromClass, toClass, toSession, hibSession);
+			rollForwardDistributionPrefs(fromClass, toClass, toSession);
 
 		return(toClass);
 	}
 	
-	private void rollForwardSchedulingSubpart(InstrOfferingConfig toInstrOffrConfig, SchedulingSubpart fromSubpart, RollForwardSchedSubpart parentSubpart, org.hibernate.Session hibSession, Session toSession) throws Exception{
+	private void rollForwardSchedulingSubpart(InstrOfferingConfig toInstrOffrConfig, SchedulingSubpart fromSubpart, RollForwardSchedSubpart parentSubpart, Session toSession) {
 		SchedulingSubpart toSubpart = new SchedulingSubpart();
 		toSubpart.setAutoSpreadInTime(fromSubpart.isAutoSpreadInTime());
 		toSubpart.setStudentAllowOverlap(fromSubpart.isStudentAllowOverlap());
@@ -377,8 +349,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			parentSubpart.getToSubpart().addToChildSubparts(toSubpart);
 		}
 				
-		hibSession.persist(toSubpart);
-		hibSession.merge(toInstrOffrConfig);
+		getHibSession().persist(toSubpart);
+		getHibSession().merge(toInstrOffrConfig);
 		if (fromSubpart.getClasses() != null && fromSubpart.getClasses().size() > 0){
 			List<Class_> classes = new ArrayList<Class_>(fromSubpart.getClasses());
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
@@ -387,7 +359,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			for (Iterator it = classes.iterator(); it.hasNext();){
 				fromClass = (Class_) it.next();
 				if (CancelledClassAction.SKIP == getCancelledClassAction() && fromClass.isCancelled()) continue;
-				toClass = rollForwardClass(fromClass, toSubpart, toSession, hibSession);
+				toClass = rollForwardClass(fromClass, toSubpart, toSession);
 				RollForwardClass rfc = new RollForwardClass();
 				rfc.setToClass(toClass);
 				rfc.setFromClass(fromClass);
@@ -404,30 +376,30 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toClass.setParentClass(parentClass);
 					parentClass.addToChildClasses(toClass);
 				}
-				hibSession.persist(toClass);
+				getHibSession().persist(toClass);
 			}
 		}
-		hibSession.merge(toInstrOffrConfig);
+		getHibSession().merge(toInstrOffrConfig);
 		rollForwardTimePrefs(fromSubpart, toSubpart, toSession);
 		rollForwardBuildingPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomGroupPrefs(fromSubpart, toSubpart, toSession);
 		rollForwardRoomFeaturePrefs(fromSubpart, toSubpart, toSession);
-		rollForwardDatePatternPrefs(fromSubpart, toSubpart, toSession, hibSession);
-		if (isRollForwardDistributions()) rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession, hibSession);
+		rollForwardDatePatternPrefs(fromSubpart, toSubpart, toSession);
+		if (isRollForwardDistributions()) rollForwardDistributionPrefs(fromSubpart, toSubpart, toSession);
 		if (fromSubpart.getChildSubparts() != null && fromSubpart.getChildSubparts().size() > 0){
 			List<SchedulingSubpart> childSubparts = new ArrayList<SchedulingSubpart>(fromSubpart.getChildSubparts());
 			Collections.sort(childSubparts, new SchedulingSubpartComparator());
 			SchedulingSubpart childSubpart = null;
 			for(Iterator it = childSubparts.iterator(); it.hasNext();){
 				childSubpart = (SchedulingSubpart) it.next();
-				rollForwardSchedulingSubpart(toInstrOffrConfig, childSubpart, rfSs, hibSession,toSession);
+				rollForwardSchedulingSubpart(toInstrOffrConfig, childSubpart, rfSs, toSession);
 			}
 		}
-		hibSession.merge(toInstrOffrConfig);
+		getHibSession().merge(toInstrOffrConfig);
 	}
 	
-	private void rollForwardSchedSubpartsForAConfig(InstrOfferingConfig ioc, InstrOfferingConfig newIoc, org.hibernate.Session hibSession, Session toSession) throws Exception{
+	private void rollForwardSchedSubpartsForAConfig(InstrOfferingConfig ioc, InstrOfferingConfig newIoc, Session toSession) {
 		if (ioc.getSchedulingSubparts() != null && ioc.getSchedulingSubparts().size() > 0){
 			SchedulingSubpart ss = null;
 			List<SchedulingSubpart> subparts = new ArrayList<SchedulingSubpart>(ioc.getSchedulingSubparts());
@@ -435,13 +407,13 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			for(Iterator it = subparts.iterator(); it.hasNext();){
 				ss = (SchedulingSubpart) it.next();
 				if (ss.getParentSubpart() == null){
-					rollForwardSchedulingSubpart(newIoc, ss, null, hibSession,toSession);
+					rollForwardSchedulingSubpart(newIoc, ss, null, toSession);
 				}
 			}
 		}
 	}
 		
-	private InstructionalOffering createToInstructionalOfferingFromFromInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session toSession, org.hibernate.Session hibSession){
+	private InstructionalOffering createToInstructionalOfferingFromFromInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session toSession){
 		if (fromInstructionalOffering == null) {
 			return(null);
 		}
@@ -529,7 +501,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.persist(toInstructionalOffering); 
+		getHibSession().persist(toInstructionalOffering); 
 		return(toInstructionalOffering);
 		
 	}
@@ -626,7 +598,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		return(toCourseOffering);
 	}
 	
-	private InstructionalOffering createToInstructionalOfferingBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, Session toSession, org.hibernate.Session hibSession){
+	private InstructionalOffering createToInstructionalOfferingBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, Session toSession){
 		if (fromInstructionalOffering == null) {
 			return(null);
 		}
@@ -684,12 +656,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
 			toInstructionalOffering.generateInstrOfferingPermId();
 		}
-		hibSession.persist(toInstructionalOffering); 
+		getHibSession().persist(toInstructionalOffering); 
 		return(toInstructionalOffering);		
 	}
 
 	
-	private InstructionalOffering findToInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session toSession, org.hibernate.Session hibSession){
+	private InstructionalOffering findToInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session toSession){
 		if (fromInstructionalOffering == null) {
 			return(null);
 		}
@@ -701,16 +673,16 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (co != null){
 			InstructionalOffering toInstructionalOffering = co.getInstructionalOffering();
 			if (toInstructionalOffering != null){
-				toInstructionalOffering.deleteAllClasses(hibSession);
-				toInstructionalOffering.deleteAllDistributionPreferences(hibSession);
+				toInstructionalOffering.deleteAllClasses(getHibSession());
+				toInstructionalOffering.deleteAllDistributionPreferences(getHibSession());
 				toInstructionalOffering.getInstrOfferingConfigs().clear();
 				return(toInstructionalOffering);
 			}
 		}
 		if (sessionHasCourseCatalog(toSession)){
-			return(createToInstructionalOfferingBasedOnCourseCatalog(fromInstructionalOffering, toSession, hibSession));
+			return(createToInstructionalOfferingBasedOnCourseCatalog(fromInstructionalOffering, toSession));
 		} else {
-			return(createToInstructionalOfferingFromFromInstructionalOffering(fromInstructionalOffering, toSession, hibSession));
+			return(createToInstructionalOfferingFromFromInstructionalOffering(fromInstructionalOffering, toSession));
 		}
 		
 	}
