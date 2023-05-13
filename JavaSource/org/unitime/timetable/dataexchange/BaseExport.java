@@ -40,7 +40,7 @@ import org.unitime.timetable.model.Session;
 public abstract class BaseExport extends DataExchangeHelper {
     protected static Log sLog = LogFactory.getLog(BaseExport.class);
     
-    public BaseExport() {
+    protected BaseExport() {
         super();
     }
     
@@ -57,7 +57,7 @@ public abstract class BaseExport extends DataExchangeHelper {
                 if (fos!=null) fos.close();
             } catch (IOException e) {
                 fatal("Unable to write file "+fileName+", reason:"+e.getMessage(),e);
-                throw e;
+                //throw e;
             }
         }
     }
