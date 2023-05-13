@@ -487,7 +487,9 @@ public class XLSPrinter implements Printer {
             if(overlapMM < 0) {
                 overlapMM = 0.0D;
             }
-            rowCoordinatesPerMM = ConvertImageUnits.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightMM;
+          if(rowHeightMM !=0){
+		    rowCoordinatesPerMM = ConvertImageUnits.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightMM;
+	  }
             inset = (int)(overlapMM * rowCoordinatesPerMM);
             clientAnchorDetail = new ClientAnchorDetail(startingRow, toRow, inset);
         }
