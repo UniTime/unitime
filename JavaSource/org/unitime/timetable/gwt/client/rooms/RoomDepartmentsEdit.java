@@ -160,7 +160,8 @@ public class RoomDepartmentsEdit extends Composite {
 	protected void onShow() {
 	}
 	
-	private int iLastScrollTop, iLastScrollLeft;
+	private int iLastScrollTop; 
+	private int iLastScrollLeft;
 	public void show() {
 		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEditRoomsDepartments());
 		setVisible(true);
