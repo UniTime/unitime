@@ -64,16 +64,6 @@
             type="java.lang.Integer"
             length="10"
             not-null="true"/>
-
-		<!-- 
-        <property
-            name="enrollment"
-            column="enrollment"
-            type="java.lang.Integer"
-            length="10"
-            not-null="false"/>
-        -->
-
          <property
             name="enrollment"
             type="java.lang.Integer"
