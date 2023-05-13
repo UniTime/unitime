@@ -52,13 +52,6 @@
             type="java.lang.Integer"
             formula="(      select sum( co.lastlike_demand +       (case when cox.lastlike_demand is null then 0 else cox.lastlike_demand end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
 
-		<!-- 
-        <property
-            name="enrollment"
-            type="java.lang.Integer"
-            formula="(      select sum( co.enrollment +       (case when cox.enrollment is null then 0 else cox.enrollment end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
-        -->
-
          <property
             name="enrollment"
             type="java.lang.Integer"
@@ -112,21 +105,6 @@
             <key column="offering_id"/>
             <one-to-many class="Reservation"/>
         </set>
-
-		<!-- 
-        <set
-            name="creditConfigs"
-            inverse="true"
-            lazy="true"
-            cascade="all-delete-orphan"
-            table="course_credit_unit_config">
-
-            <cache include="non-lazy" usage="transactional"/>
-            <key column="instr_offr_id"/>
-            <one-to-many class="CourseCreditUnitConfig"/>
-        </set>
-         -->
-
         <property
             name="uniqueIdRolledForwardFrom"
             column="uid_rolled_fwd_from"
