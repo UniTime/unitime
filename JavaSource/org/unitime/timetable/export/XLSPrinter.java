@@ -418,8 +418,11 @@ public class XLSPrinter implements Printer {
     		if(overlapMM < 0) {
     			overlapMM = 0.0D;
     		}
-    		coordinatePositionsPerMM = ConvertImageUnits.TOTAL_COLUMN_COORDINATE_POSITIONS / colWidthMM;
-    		inset = (int)(coordinatePositionsPerMM * overlapMM);
+    		if(colWidthMM !=0)
+		{
+			coordinatePositionsPerMM = ConvertImageUnits.TOTAL_COLUMN_COORDINATE_POSITIONS / colWidthMM;
+		}
+		inset = (int)(coordinatePositionsPerMM * overlapMM);
     		anchorDetail = new ClientAnchorDetail(startingColumn, toColumn, inset);
     	}
     	return(anchorDetail);
