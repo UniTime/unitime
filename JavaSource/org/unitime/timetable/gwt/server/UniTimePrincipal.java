@@ -40,7 +40,7 @@ public class UniTimePrincipal implements Principal, Serializable {
 	private String iStudentExternalId;
 	
 	public UniTimePrincipal(String externalId, String studentExternalId, String name) {
-		if (externalId == null) throw new NullPointerException();
+		if (externalId == null) throw new IlegalArgumentException();
 		iExternalId = externalId;
 		iStudentExternalId = studentExternalId;
 		iName = name;
