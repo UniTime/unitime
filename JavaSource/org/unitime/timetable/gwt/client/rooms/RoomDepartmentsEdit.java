@@ -57,8 +57,8 @@ public class RoomDepartmentsEdit extends Composite {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
-	private SimpleForm iForm;
-	private UniTimeHeaderPanel iHeader, iFooter;
+
+	private UniTimeHeaderPanel iHeader;
 	private RoomPropertiesInterface iProperties;
 	private DepartmentInterface iDepartment = null;
 	private ExamTypeInterface iExamType = null;
@@ -66,6 +66,7 @@ public class RoomDepartmentsEdit extends Composite {
 	private RoomsTable iRooms = null;
 	
 	public RoomDepartmentsEdit() {
+		SimpleForm iForm;
 		iForm = new SimpleForm();
 		iForm.addStyleName("unitime-RoomDepartmentsEdit");
 		
@@ -131,7 +132,7 @@ public class RoomDepartmentsEdit extends Composite {
 				iHeader.clearMessage();
 			}
 		});
-		
+		UniTimeHeaderPanel iFooter;
 		iFooter = iHeader.clonePanel();
 		iForm.addBottomRow(iFooter);
 		
@@ -159,7 +160,8 @@ public class RoomDepartmentsEdit extends Composite {
 	protected void onShow() {
 	}
 	
-	private int iLastScrollTop, iLastScrollLeft;
+	private int iLastScrollTop; 
+	private int iLastScrollLeft;
 	public void show() {
 		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEditRoomsDepartments());
 		setVisible(true);
