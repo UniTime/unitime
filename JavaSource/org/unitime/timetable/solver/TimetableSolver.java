@@ -659,16 +659,17 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 				Hint hint = (Hint)i.next();
 				Placement p = hint.getPlacement((TimetableModel)currentSolution().getModel());
 				if (p!=null) {
-					Placement ini = (Placement)initialAssignments.get(p.variable());
-					record.add(ini,p);
-					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName(useAmPm()))+" &rarr; "+p.getLongName(useAmPm()));
-                    if (ini!=null) currentSolution().getAssignment().unassign(0, p.variable());
+					Placement initialPlacement = (Placement)initialAssignments.get(p.variable());
+					record.add(initialPlacement,p);
+					String variableName = p.variable().getName();
+    					String initialPlacementLongName = (initialPlacement == null) ? "not assigned" : initialPlacement.getLongName(useAmPm());
+    					String pLongName = p.getLongName(useAmPm());
+					String progressInfoMsg = String.format("%s: %s &rarr; %s", variableName, initialPlacementLongName, pLongName);
+					
+					Progress.getInstance(currentSolution().getModel()).info(progressInfoMsg);
+                    if (initialPlacement!=null) currentSolution().getAssignment().unassign(0, p.variable());
 				} else if (hint.getDays() == 0) {
-					Lecture lecture = null;
-					for (Lecture l: currentSolution().getModel().variables())
-						if (l.getClassId().equals(hint.getClassId())) {
-							lecture = l;
-						}
+					Lecture lecture = currentSolution().getModel().variables().stream().filter(l -> l.getClassId().equals(hint.getClassId())).findFirst().orElse(null);
 					if (lecture != null && !lecture.isCommitted())
 						currentSolution().getAssignment().unassign(0, lecture);
 				}
