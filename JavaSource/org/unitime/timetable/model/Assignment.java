@@ -330,11 +330,9 @@ public class Assignment extends BaseAssignment {
 	           s2+t2.getNrSlotsPerMeeting()!=s1) return false;
 	       double distance = getDistance(a1,a2);
 	       if (distance <= a1.getSolution().getProperties().getPropertyDouble("Student.DistanceLimit",67.0)) return false;
-	       if (distance <= a1.getSolution().getProperties().getPropertyDouble("Student.DistanceLimit75min",100.0) && (
+	       return !(distance <= a1.getSolution().getProperties().getPropertyDouble("Student.DistanceLimit75min",100.0) && (
 	           (t1.getLength()==18 && s1+t1.getLength()==s2) ||
 	           (t2.getLength()==18 && s2+t2.getLength()==s1)))
-	           return false;
-	       return true;
    }
 	
 	public int getMinutesPerMeeting() {
