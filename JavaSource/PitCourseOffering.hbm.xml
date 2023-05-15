@@ -161,18 +161,5 @@
             not-null="false"
             foreign-key="fk_pit_co_to_ct"/>
 
-<!-- TODO:  decide what to do with course credit
-        <set
-            name="creditConfigs"
-            inverse="true"
-            lazy="true"
-            cascade="all-delete-orphan"
-            table="course_credit_unit_config">
-
-            <cache include="non-lazy" usage="transactional"/>
-            <key column="course_id" foreign-key="fk_crs_crdt_unit_cfg_crs_own"/>
-            <one-to-many class="CourseCreditUnitConfig"/>
-        </set>
- -->
     </class>
 </hibernate-mapping>

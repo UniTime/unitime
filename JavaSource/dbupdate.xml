@@ -3655,11 +3655,6 @@
 				(select g.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.non_university_location r where
 				x.room_group_id = g.uniqueid and x.room_id = r.uniqueid and g.global = 1 and g.session_id != r.session_id)
 		</sql>
-		<!-- 
-		<sql>
-			delete from %SCHEMA%.room_group where not exists (select * from %SCHEMA%.room_group_room x where x.room_group_id = uniqueid) and global = 1
-		</sql>
-		-->
 		<sql>
 			update %SCHEMA%.room_group_pref p set p.room_group_id = 
 				(select n.uniqueid from %SCHEMA%.room_group g, %SCHEMA%.room_group n, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o
@@ -3744,11 +3739,6 @@
 				(select f.uniqueid from %SCHEMA%.room_feature f, %SCHEMA%.non_university_location r where
 				x.feature_id = f.uniqueid and x.room_id = r.uniqueid and f.discriminator = 'global' and f.session_id != r.session_id)
 		</sql>
-		<!-- 
-		<sql>
-			delete from %SCHEMA%.room_feature where not exists (select * from %SCHEMA%.room_join_room_feature x where x.feature_id = uniqueid) and discriminator = 'global'
-		</sql>
-		-->
 		<sql>
 			update %SCHEMA%.room_feature_pref p set p.room_feature_id = 
 				(select n.uniqueid from %SCHEMA%.room_feature g, %SCHEMA%.room_feature n, %SCHEMA%.class_ c, %SCHEMA%.scheduling_subpart t, %SCHEMA%.instr_offering_config e, %SCHEMA%.instructional_offering o

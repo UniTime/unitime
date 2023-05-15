@@ -97,14 +97,6 @@
                 lazy="proxy"
                 formula="(select io.session_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid)"/>
 
-            <!-- 
-			<many-to-one 
-				name="controllingCourseOffering" 
-				class="CourseOffering"
-				lazy="proxy" 
-				formula="(select co.uniqueid from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co where s.uniqueid=UNIQUEID and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid and co.is_control = %TRUE% and co.instr_offr_id=io.uniqueid)"
-			/>	
-      		-->
             <many-to-one
                 name="itype"
                 class="ItypeDesc"
@@ -374,17 +366,8 @@
                 type="java.lang.String"
                 not-null="false"
                 length="40"/>
-
-			<!-- 
-            <property
-                name="enrollment"
-                column="enrollment"
-                type="java.lang.Integer"
-                not-null="false"
-                length="4"/>
-			-->
 			
-			<property
+	    <property
             	name="enrollment"
             	type="java.lang.Integer"
             	lazy="true"
@@ -809,21 +792,6 @@
                 <key column="session_id"/>
                 <one-to-many class="org.unitime.timetable.model.InstructionalOffering"/>
             </set>
-
-            <!-- 
-			<set
-				name="instructors"
-				inverse="true"
-				lazy="true"
-				cascade="all"
-				table="DEPARTMENTAL_INSTRUCTOR"
-				order-by="LAST_NAME"
-				>
-		 		<cache include="non-lazy" usage="transactional"/>
-				<key column="SESSION_ID"/>
-				<one-to-many class="org.unitime.timetable.model.DepartmentalInstructor"/>
-			</set>
-			-->
 			
 			<property
 				name="lastWeekToEnroll"

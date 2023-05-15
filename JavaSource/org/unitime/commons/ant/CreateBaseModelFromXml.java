@@ -150,19 +150,6 @@ public class CreateBaseModelFromXml extends Task {
 			preprocess(i.next(), className, pkg);
 		}
 	}	
-
-	/*
-	@SuppressWarnings("unchecked")
-	private String param(Element el, String name) {
-		if (el==null) return null;
-		for (Iterator<Element> i = el.elementIterator("param"); i.hasNext();) {
-			Element p = i.next();
-			if (name.equals(p.attributeValue("name"))) return p.getText();
-		}
-		return null;
-	}
-	*/
-	
 	private String fixType(String type, String pkg) {
 		if (type == null) return null;
 		if (type.startsWith("java.lang.")) return type.substring("java.lang.".length());
@@ -187,23 +174,6 @@ public class CreateBaseModelFromXml extends Task {
 		if (name == null) return null;
 		return name.substring(0,1).toUpperCase() + name.substring(1);
 	}
-	
-	/*
-	private boolean hasLength(String type) {
-		if ("Boolean".equals(type)) return false;
-		if ("Long".equals(type)) return false;
-		if ("Integer".equals(type)) return false;
-		if ("String".equals(type)) return true;
-		if ("Float".equals(type)) return false;
-		if ("Double".equals(type)) return false;
-		if ("Date".equals(type)) return false;
-		if ("XmlBlobType".equals(type)) return false;
-		if ("XmlClobType".equals(type)) return false;
-		warn("Unknown type "+type);
-		return false;
-	}
-	*/
-	
 	private File fileFromPackage(File outputFolder, String pkg) {
 		File ret = new File(outputFolder, pkg.replace('.', File.separatorChar));
 		ret.mkdirs();
@@ -253,15 +223,6 @@ public class CreateBaseModelFromXml extends Task {
 		Vector<String[]> manyToOnes = new Vector<String[]>();
 		TreeSet<String> properties = new TreeSet<String>();
 		Vector<String[]> compositeId = new Vector<String[]>();
-		
-		/*
-		Element discriminator = classEl.element("discriminator");
-		String discriminatorColumn = null;
-		if (discriminator!=null) {
-			discriminatorColumn = discriminator.attributeValue("column").toLowerCase();
-		}
-		*/
-		
 		boolean hasProperty = false;
 		for (Iterator<Element> i = classEl.elementIterator("id"); i.hasNext();) {
 			Element el = i.next();
@@ -312,9 +273,6 @@ public class CreateBaseModelFromXml extends Task {
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				// boolean notNul = "true".equals(el.attributeValue("not-null"));
-				// int length = Integer.parseInt(el.attributeValue("length","0"));
-				// String column = el.attributeValue("column");
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
 				if ("default".equals(attribute)) attribute = "defaultValue";
 				compositeId.add(new String[] {type, name});
@@ -334,8 +292,6 @@ public class CreateBaseModelFromXml extends Task {
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
 			String name = fixName(el.attributeValue("name"));
-			// boolean notNul = "true".equals(el.attributeValue("not-null"));
-			// int length = Integer.parseInt(el.attributeValue("length","0"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
@@ -369,10 +325,7 @@ public class CreateBaseModelFromXml extends Task {
 				imports.add(type);
 				type = type.substring(type.lastIndexOf('.')+1);
 			}
-			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
 			String name = fixName(el.attributeValue("name"));
-			// boolean notNul = "true".equals(el.attributeValue("not-null"));
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			if (column!=null) {
@@ -395,14 +348,8 @@ public class CreateBaseModelFromXml extends Task {
 			Element el = i.next();
 			String type = null;
 			String name = fixName(el.attributeValue("name"));
-			// boolean lazy = "true".equals(el.attributeValue("lazy","false"));
-			// boolean eager = "false".equals(el.attributeValue("lazy","true"));
-			// String cascade = el.attributeValue("cascade");
 			pwb.println();
 			if (el.element("many-to-many")!=null) {
-				// String column = el.element("key").attributeValue("column").toLowerCase();
-				// String icolumn = el.element("many-to-many").attributeValue("column").toLowerCase();
-				// String m2mtable = el.attributeValue("table").toLowerCase();
 				type = fixType(el.element("many-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
@@ -594,9 +541,6 @@ public class CreateBaseModelFromXml extends Task {
 			pw.println("import java.util.List;");
 		if (idType == null || !manyToOnes.isEmpty())
 			pw.println();
-		// pw.println("import org.hibernate.Hibernate;");
-		// pw.println("import org.hibernate.criterion.Order;");
-		// pw.println();
 		pw.println("import "+pkg+"."+className+";");
 		pw.println("import "+pkg+".dao._RootDAO;");
 		pw.println("import "+pkg+".dao."+className+"DAO;");
@@ -617,148 +561,6 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println("	public Class<"+className+"> getReferenceClass() {");
 		pw.println("		return "+className+".class;");
 		pw.println("	}");
-		/*
-		pw.println();
-		pw.println("	public Order getDefaultOrder () {");
-		pw.println("		return null;");
-		pw.println("	}");
-		String y = className.substring(0,1).toLowerCase()+className.substring(1);
-		if (idName!=null) {
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			pw.println();
-			pw.println("	public "+className+" get("+idType+" "+x+") {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" get("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idType+" "+x+") {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" loadInitialize("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		"+className+" "+y+" = load("+x+", hibSession);");
-			pw.println("		if (!Hibernate.isInitialized("+y+")) Hibernate.initialize("+y+");");
-			pw.println("		return "+y+";");
-			pw.println("	}");
-		} else {
-			if (idClass==null) idClass = className;
-			String x = "key";
-			pw.println();
-			pw.println("	public "+className+" get("+idClass+" "+x+") {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" get("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") get(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idClass+" "+x+") {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+");");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" load("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		return ("+className+") load(getReferenceClass(), "+x+", hibSession);");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public "+className+" loadInitialize("+idClass+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		"+className+" "+y+" = load("+x+", hibSession);");
-			pw.println("		if (!Hibernate.isInitialized("+y+")) Hibernate.initialize("+y+");");
-			pw.println("		return "+y+";");
-			pw.println("	}");
-		}
-		pw.println();
-		pw.println("	public void save("+className+" "+y+") {");
-		pw.println("		save((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void save("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		save((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void saveOrUpdate("+className+" "+y+") {");
-		pw.println("		saveOrUpdate((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void saveOrUpdate("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		saveOrUpdate((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println();
-		pw.println("	public void update("+className+" "+y+") {");
-		pw.println("		update((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void update("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		update((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		if (idName!=null) {
-			if (idClass==null) idClass = className;
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			if (idType.equals("String")) {
-				pw.println("	public void delete(Object "+x+") {");
-				pw.println("		if ("+x+" instanceof String)");
-				pw.println("			delete((Object) load((String)"+x+"));");
-				pw.println("		else");
-				pw.println("		super.delete("+x+");");
-				pw.println("	}");
-				pw.println();
-				pw.println("	public void delete(Object "+x+", org.hibernate.Session hibSession) {");
-				pw.println("		if ("+x+" instanceof String)");
-				pw.println("			delete((Object) load((String)"+x+", hibSession), hibSession);");
-				pw.println("		else");
-				pw.println("			super.delete("+x+", hibSession);");
-				pw.println("	}");
-			} else {
-				pw.println("	public void delete("+idType+" "+x+") {");
-				pw.println("		delete(load("+x+"));");
-				pw.println("	}");
-				pw.println();
-				pw.println("	public void delete("+idType+" "+x+", org.hibernate.Session hibSession) {");
-				pw.println("		delete(load("+x+", hibSession), hibSession);");
-				pw.println("	}");
-			}
-		}
-		pw.println();
-		pw.println("	public void delete("+className+" "+y+") {");
-		pw.println("		delete((Object) "+y+");");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void delete("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		delete((Object) "+y+", hibSession);");
-		pw.println("	}");
-		pw.println();
-		pw.println("	public void refresh("+className+" "+y+", org.hibernate.Session hibSession) {");
-		pw.println("		refresh((Object) "+y+", hibSession);");
-		pw.println("	}");
-		if (!abs) {
-			pw.println();
-			pw.println("	@SuppressWarnings(\"unchecked\")");
-			pw.println("	public List<"+className+"> findAll(org.hibernate.Session hibSession) {");
-			pw.println("		return hibSession.createQuery(\"from "+className+"\").list();");
-			pw.println("	}");
-		}
-		*/
-		/*
-		if (idType != null && idName != null) {
-			String x = idName.substring(0,1).toLowerCase()+idName.substring(1);
-			pw.println();
-			pw.println("	public void delete("+idType+" "+x+") {");
-			pw.println("		delete(load("+x+"));");
-			pw.println("	}");
-			pw.println();
-			pw.println("	public void delete("+idType+" "+x+", org.hibernate.Session hibSession) {");
-			pw.println("		delete(load("+x+", hibSession), hibSession);");
-			pw.println("	}");
-		}
-		*/
 		for (String[] attr: manyToOnes) {
 			String type = attr[0];
 			String name = attr[1];
@@ -770,12 +572,6 @@ public class CreateBaseModelFromXml extends Task {
 				iType = id[0];
 				iName = id[1];
 			}
-			/*
-			pw.println();
-			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+type+" "+x+") {");
-			pw.println("		return hibSession.createQuery(\"from "+className+" x where x."+x+"."+iName.substring(0,1).toLowerCase()+iName.substring(1)+" = :"+x+"Id\").set"+iType+"(\""+x+"Id\", "+x+".get"+iName+"()).list();");
-			pw.println("	}");
-			*/
 			pw.println();
 			pw.println("	@SuppressWarnings(\"unchecked\")");
 			pw.println("	public List<"+className+"> findBy"+name+"(org.hibernate.Session hibSession, "+iType+" "+x+"Id) {");

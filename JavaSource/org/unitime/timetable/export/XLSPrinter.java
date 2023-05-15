@@ -400,7 +400,8 @@ public class XLSPrinter implements Printer {
     	double totalWidthMM = 0.0D;
     	double colWidthMM = 0.0D;
     	double overlapMM;
-    	double coordinatePositionsPerMM;
+    	double coordinatePositionsPerMM=0;
+	    
     	int toColumn = startingColumn;
     	int inset;
 
@@ -418,8 +419,11 @@ public class XLSPrinter implements Printer {
     		if(overlapMM < 0) {
     			overlapMM = 0.0D;
     		}
-    		coordinatePositionsPerMM = ConvertImageUnits.TOTAL_COLUMN_COORDINATE_POSITIONS / colWidthMM;
-    		inset = (int)(coordinatePositionsPerMM * overlapMM);
+    		if(colWidthMM !=0)
+		{
+			coordinatePositionsPerMM = ConvertImageUnits.TOTAL_COLUMN_COORDINATE_POSITIONS / colWidthMM;
+		}
+		inset = (int)(coordinatePositionsPerMM * overlapMM);
     		anchorDetail = new ClientAnchorDetail(startingColumn, toColumn, inset);
     	}
     	return(anchorDetail);
@@ -462,7 +466,7 @@ public class XLSPrinter implements Printer {
         double rowHeightMM = 0.0D;
         double totalRowHeightMM = 0.0D;
         double overlapMM;
-        double rowCoordinatesPerMM;
+        double rowCoordinatesPerMM=0;
         int toRow = startingRow;
         int inset;
 
@@ -484,7 +488,9 @@ public class XLSPrinter implements Printer {
             if(overlapMM < 0) {
                 overlapMM = 0.0D;
             }
-            rowCoordinatesPerMM = ConvertImageUnits.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightMM;
+          if(rowHeightMM !=0){
+		    rowCoordinatesPerMM = ConvertImageUnits.TOTAL_ROW_COORDINATE_POSITIONS / rowHeightMM;
+	  }
             inset = (int)(overlapMM * rowCoordinatesPerMM);
             clientAnchorDetail = new ClientAnchorDetail(startingRow, toRow, inset);
         }

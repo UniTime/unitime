@@ -624,25 +624,6 @@
 			</condition>
 		</item>
 	</menu>
-	<!-- 
-	<menu name="OLD Events">
-		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
-			<hasPermission name="Events" authority="any"/>
-		</condition>
-		<item name="Events" page="eventList.do"/>
-		<item name="Meetings" page="meetingList.do"/>
-		<item name="Add Event" page="eventAdd.do">
-			<condition>
-				<hasPermission name="EventAddSpecial" authority="any"/>
-			</condition>
-		</item>
-		<item name="Room Availability" page="eventGrid.do"/>
-	</menu>
-	-->
 	<separator/>
 	<menu name="Administration">
 		<condition>
