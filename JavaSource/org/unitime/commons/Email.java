@@ -83,4 +83,22 @@ public abstract class Email {
 	public abstract void setInReplyTo(String messageId) throws Exception;
 	
 	public abstract String getMessageId() throws Exception;
+
+	// add forward email method as a new feature
+	public abstract void forward(Email e) throws Exception
+	{
+		this.Email = e;
+		e.send();
+
+	}
+
+	// add report method as a new feature
+	public abstract void report() throws Exception
+	{
+		Scanner scanner = new Scanner(System.in);
+        System.out.println("Please write the reason of your report :");
+		String report = scanner.nextLine();
+		System.out.println("your report send  succeesfully , thank you <3");
+
+	}
 }
