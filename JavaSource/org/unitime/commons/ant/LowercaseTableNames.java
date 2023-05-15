@@ -236,7 +236,7 @@ public class LowercaseTableNames extends Task {
 			super(out, format);
 			this.format = format;
 		}
-	
+	   @Override
 	    protected void indent() throws IOException {
 	        String indent = format.getIndent();
 
@@ -246,7 +246,7 @@ public class LowercaseTableNames extends Task {
 	            }
 	        }
 	    }
-
+            @Override
 	    protected void writeAttributes(Element element) throws IOException {
 	        for (int i = 0, size = element.attributeCount(); i < size; i++) {
 	            Attribute attribute = element.attribute(i);
@@ -265,7 +265,7 @@ public class LowercaseTableNames extends Task {
                 writer.write(quote);
 	        }
 	    }
-	    
+	    @Override
 	    protected void writeElement(Element element) throws IOException {
 	        int size = element.nodeCount();
 	        String qualifiedName = element.getQualifiedName();
