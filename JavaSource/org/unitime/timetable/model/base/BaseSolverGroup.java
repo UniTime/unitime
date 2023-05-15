@@ -84,7 +84,7 @@ public abstract class BaseSolverGroup implements Serializable {
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
 
-	@Column(name = "abbv", nullable = false, length = 10)
+	@Column(name = "abbv", nullable = false, length = 50)
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 

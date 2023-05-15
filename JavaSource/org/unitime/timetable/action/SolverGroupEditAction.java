@@ -268,7 +268,7 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 	            					name.append(x.getLabel());
 	            				}
 	            				SolverGroup sg = new SolverGroup();
-	            				sg.setAbbv(abbv.length()<=10?abbv.toString():abbv.toString().substring(0,10));
+	            				sg.setAbbv(abbv.length()<=50?abbv.toString():abbv.toString().substring(0,47)+"...");
 	            				sg.setName(name.length()<=50?name.toString():name.toString().substring(0,47)+"...");
 	            				sg.setTimetableManagers(new HashSet<TimetableManager>());
 	            				sg.setSession(session);

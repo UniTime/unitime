@@ -44,7 +44,7 @@
             column="abbv"
             type="string"
             not-null="true"
-            length="10"/>
+            length="50"/>
 
         <many-to-one
             name="session"

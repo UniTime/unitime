@@ -56,7 +56,7 @@
 		<TR>
 			<TD><loc:message name="fieldAbbreviation"/>:</TD>
 			<TD>
-				<s:textfield name="form.abbv" size="10" maxlength="10"/>
+				<s:textfield name="form.abbv" size="50" maxlength="50"/>
 				&nbsp;<s:fielderror fieldName="form.abbv"/>
 			</TD>
 		</TR>
