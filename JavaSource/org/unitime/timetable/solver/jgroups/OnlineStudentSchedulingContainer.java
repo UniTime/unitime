@@ -209,18 +209,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 
 	@Override
 	public int getUsage() {
-		iGlobalLock.readLock().lock();
-		int ret = 0;
-		try {
-			for (OnlineSectioningServer s: iInstances.values())
-				if (s.isMaster())
-					ret += 200;
-				else
-					ret += 100;
-		} finally {
-			iGlobalLock.readLock().unlock();
-		}
-		return ret;
+		return 100 * iInstances.size();
 	}
 
 	@Override

@@ -422,6 +422,13 @@ public enum ApplicationProperty {
 	@DefaultValue("200")
 	@Description("Solver: minimal amount of free memory (in MB) for the solver to load")
 	SolverMemoryLimit("tmtbl.solver.mem_limit"),
+	
+	@Type(Integer.class)
+	@Since(4.8)
+	@Description("Solver: base usage of the solver server. " +
+			"This parameter is used to disable/penalize certain nodes from the cluster from running solver servers. " +
+			"Defaults to 0 for solver servers and 500 for web servers.")
+	SolverBaseUsage("tmtbl.solver.base_usage"),
 
 	@Values({"fatal", "error", "warn", "info", "debug", "trace"})
 	@Description("Solver: log level for %")

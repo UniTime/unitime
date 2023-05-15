@@ -104,7 +104,16 @@ public abstract class AbstractSolverServer implements SolverServer {
 	@Override
 	public int getUsage() {
 		int ret = iUsageBase;
-		if (isLocal()) ret += 500;
+		String baseUsage = ApplicationProperty.SolverBaseUsage.value();
+		if (baseUsage == null || baseUsage.isEmpty()) {
+			ret += (isLocal() ? 500 : 0);
+		} else {
+			try {
+				ret += Integer.parseInt(baseUsage);
+			} catch (NumberFormatException e) {
+				ret += (isLocal() ? 500 : 0);
+			}
+		}
 		return ret;
 	}
 	
