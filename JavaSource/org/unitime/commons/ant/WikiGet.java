@@ -232,27 +232,27 @@ public class WikiGet extends Task {
                             File imageFile = new File(iImgDir, title);
                             if (imageFile.exists() || copy(new URL(imageUrl.toString().replaceAll("&amp;","&")), imageFile)) return iImgDir.getName()+"/"+imageFile.getName();
                         }
-                        //System.out.println("Skip: "+imageUrl);
+             
                         return imageUrl.toString();
                     }
                     String pageName = imageUrl.getPath().substring(sWikiPrefix.length());
                     if (pageName.startsWith("Special:") || pageName.startsWith("User:") || pageName.startsWith("UniTime:")) {
-                        //System.out.println("Skip: "+imageUrl);
+                     
                         return imageUrl.toString();
                     }
                     addPage(pageName);
                     return getPageFileName(pageName);
                 }
                 if ("mailto".equalsIgnoreCase(imageUrl.getProtocol())) {
-                    //System.out.println("Skip: "+imageName);
+                   
                     return imageName;
                 }
                 if (!iWikiUrl.getHost().equals(imageUrl.getHost())) {
-                    //System.out.println("Skip: "+imageUrl);
+                   
                     return imageUrl.toString();
                 }
                 if (!imageUrl.getFile().startsWith(sWikiPrefix)) {
-                    //System.out.println("Skip: "+imageUrl);
+                  
                     return imageUrl.toString();
                 }
                 File imageFile = new File(iImgDir, getImageFileName(imageUrl));
