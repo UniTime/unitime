@@ -569,22 +569,27 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 						String token = s.nextToken();
 						if (term.equalsIgnoreCase(token)) return true;
 					}
-				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+				} 
+                if (attr.matches("regex|regexp|re")) {
 					return rc.getName().matches(term);
-				} else if ("find".equals(attr)) {
+				} 
+                if ("find".equals(attr)) {
 					return rc.getName().toLowerCase().indexOf(term.toLowerCase()) >= 0;
-				} else if ("type".equals(attr) && rc.getType() != null) {
+				} 
+                if ("type".equals(attr) && rc.getType() != null) {
 					RoomType type = RoomTypeDAO.getInstance().get(rc.getType());
 					return type != null && (term.equalsIgnoreCase(type.getReference()) || term.equalsIgnoreCase(type.getLabel()));
-				} else if ("size".equals(attr)) {
+				} 
+                if ("size".equals(attr)) {
 					int min = 0, max = Integer.MAX_VALUE;
 					Size prefix = Size.eq;
-					String number = term;
-					if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
-					else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
-					else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
-					else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
-					else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+					String number = term;   int digit=1;
+					if (number.startsWith("<=")) { prefix = Size.le; digit=2; }
+					if (number.startsWith(">=")) { prefix = Size.ge; digit=2; }
+					if (number.startsWith("<")) { prefix = Size.lt;     }
+					if (number.startsWith(">")) { prefix = Size.gt;     }
+					if (number.startsWith("=")) { prefix = Size.eq;  }
+                    number = number.substring(2);
 					try {
 						int a = Integer.parseInt(number);
 						switch (prefix) {
@@ -608,6 +613,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 			}
 		});
 	}
+    
     
     @Override
     public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) {
