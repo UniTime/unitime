@@ -32,6 +32,19 @@ import org.unitime.timetable.defaults.ApplicationProperty;
  */
 public abstract class Email {
 
+	
+	// add priority as a new feature
+	private String priority;
+	// Getter and setter methods for priority
+    public String getPriority() {
+        return priority;
+    }
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+
+
 	public static Email createEmail() throws Exception {
 		return (Email)Class.forName(ApplicationProperty.EmailProvider.value()).getDeclaredConstructor().newInstance();
 	}
@@ -84,13 +97,7 @@ public abstract class Email {
 	
 	public abstract String getMessageId() throws Exception;
 
-	// add forward email method as a new feature
-	public abstract void forward(Email e) throws Exception
-	{
-		this.Email = e;
-		e.send();
-
-	}
+	// delete forward email method to put it on another class
 
 	// add report method as a new feature
 	public abstract void report() throws Exception
@@ -101,4 +108,7 @@ public abstract class Email {
 		System.out.println("your report send  succeesfully , thank you <3");
 
 	}
+
+}
+
 }
