@@ -669,7 +669,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					Progress.getInstance(currentSolution().getModel()).info(progressInfoMsg);
                     if (initialPlacement!=null) currentSolution().getAssignment().unassign(0, p.variable());
 				} else if (hint.getDays() == 0) {
-					Lecture lecture = currentSolution().getModel().variables().stream().filter(l -> l.getClassId().equals(hint.getClassId())).findFirst().orElse(null);
+					Lecture lecture = currentSolution().getModel().variables().stream().reduce((a, b) -> b.getClassId().equals(hint.getClassId()) ? b : a).orElse(null);
 					if (lecture != null && !lecture.isCommitted())
 						currentSolution().getAssignment().unassign(0, lecture);
 				}
