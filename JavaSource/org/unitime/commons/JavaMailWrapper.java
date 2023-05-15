@@ -173,4 +173,11 @@ public class JavaMailWrapper extends Email {
 	public String getMessageId() throws MessagingException {
 		return iMail.getHeader("Message-Id", null);
 	}
+	//add forwrd email 
+	public abstract void forward(Email e) throws Exception
+	{
+		this.Email = e;
+		e.send();
+
+	}
 }
