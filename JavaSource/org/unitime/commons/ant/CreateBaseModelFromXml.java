@@ -205,6 +205,8 @@ public class CreateBaseModelFromXml extends Task {
 	@SuppressWarnings("unchecked")
 	private void importClass(Element classEl, String pkg, File outputFolder, String ext, String idClass, String idName, String idType) throws IOException {
 		String className = fixType(classEl.attributeValue("name"), pkg);
+		String defaultValue="defaultValue";
+		String Default="default";
 		@SuppressWarnings("unused")
 		String table = classEl.attributeValue("table");
 		StringWriter attributes = new StringWriter();
@@ -234,14 +236,14 @@ public class CreateBaseModelFromXml extends Task {
 			String name = fixName(el.attributeValue("name"));
 			String column = el.attributeValue("column").toLowerCase();
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
-			if ("default".equals(attribute)) attribute = "defaultValue";
+			if (Default.equals(attribute)) attribute = defaultValue;
 			idName = name; idType = type;
-			pwa.println("	private "+type+" i"+name+";");
-			pwp.println("	public static String PROP_"+column.toUpperCase()+" = \""+name.substring(0, 1).toLowerCase()+name.substring(1)+"\";");
+			pwa.println("private "+type+" i"+name+";");
+			pwp.println("public static String PROP_"+column.toUpperCase()+" = \""+name.substring(0, 1).toLowerCase()+name.substring(1)+"\";");
 			properties.add(name);
 			pwb.println();
-			pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-			pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+			pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+			pwb.println("public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 			hasProperty = true;
 		}
 		for (Iterator<Element> i = classEl.elementIterator("composite-id"); i.hasNext();) {
@@ -254,15 +256,14 @@ public class CreateBaseModelFromXml extends Task {
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 				String name = fixName(el.attributeValue("name"));
-				// String column = el.attributeValue("column").toLowerCase();
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
-				if ("default".equals(attribute)) attribute = "defaultValue";
-				pwa.println("	private "+type+" i"+name+";");
+				if (Default.equals(attribute)) attribute =defaultValue;
+				pwa.println("private "+type+" i"+name+";");
 				properties.add(name);
 				compositeId.add(new String[] {type, name});
 				pwb.println();
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+				pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+				pwb.println("public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 				hasProperty = true;
 			}
 			for (Iterator<Element> j = cidEl.elementIterator("key-property"); j.hasNext();) {
@@ -274,13 +275,13 @@ public class CreateBaseModelFromXml extends Task {
 				}
 				String name = fixName(el.attributeValue("name"));
 				String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
-				if ("default".equals(attribute)) attribute = "defaultValue";
+				if ("default".equals(attribute)) attribute = defaultValue;
 				compositeId.add(new String[] {type, name});
-				pwa.println("	private "+type+" i"+name+";");
+				pwa.println("private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+				pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+				pwb.println("public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 				hasProperty = true;
 			}
 		}
@@ -295,18 +296,18 @@ public class CreateBaseModelFromXml extends Task {
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			String attribute = name.substring(0,1).toLowerCase()+name.substring(1);
-			if ("default".equals(attribute)) attribute = "defaultValue";
+			if (Default.equals(attribute)) attribute = defaultValue;
 			if (column!=null) {
-				pwa.println("	private "+type+" i"+name+";");
+				pwa.println("private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
 				pwp.println("	public static String PROP_"+column.toUpperCase()+" = \""+name.substring(0, 1).toLowerCase()+name.substring(1)+"\";");
 				if (type.equals("Boolean"))
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
+				pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+				pwb.println("public void set"+name+"("+type+" "+attribute+") { i"+name+" = "+attribute+"; }");
 			} else if (formula!=null) {
-				pwa.println("	private "+type+" i"+name+";");
+				pwa.println("private "+type+" i"+name+";");
 				pwb.println();
 				if (type.equals("Boolean"))
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
@@ -329,17 +330,17 @@ public class CreateBaseModelFromXml extends Task {
 			String column = el.attributeValue("column");
 			String formula = el.attributeValue("formula");
 			if (column!=null) {
-				pwa.println("	private "+type+" i"+name+";");
+				pwa.println("private "+type+" i"+name+";");
 				properties.add(name);
 				pwb.println();
 				manyToOnes.add(new String[] {type, name});
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
+				pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+				pwb.println("public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else if (formula!=null) {
-				pwa.println("	private "+type+" i"+name+";");
+				pwa.println("private "+type+" i"+name+";");
 				pwb.println();
-				pwb.println("	public "+type+" get"+name+"() { return i"+name+"; }");
-				pwb.println("	public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
+				pwb.println("public "+type+" get"+name+"() { return i"+name+"; }");
+				pwb.println("public void set"+name+"("+type+" "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
 			} else {
 				System.err.println("Unknown "+el.getName()+": "+el.asXML());
 			}
@@ -356,7 +357,6 @@ public class CreateBaseModelFromXml extends Task {
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
 			} else if (el.element("one-to-many")!=null) {
-				// String column = el.element("key").attributeValue("column").toLowerCase();
 				type = fixType(el.element("one-to-many").attributeValue("class"), pkg);
 				if (type.indexOf('.')>=0) {
 					imports.add(type);
@@ -374,13 +374,13 @@ public class CreateBaseModelFromXml extends Task {
 			if (type.indexOf('.')>=0) imports.add(type);
 			imports.add("java.util.Set");
 			imports.add("java.util.HashSet");
-			pwa.println("	private Set<"+type+"> i"+name+";");
-			pwb.println("	public Set<"+type+"> get"+name+"() { return i"+name+"; }");
-			pwb.println("	public void set"+name+"(Set<"+type+"> "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
-			pwb.println("	public void addTo"+name.substring(0,1).toLowerCase()+name.substring(1)+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
-			pwb.println("		if (i"+name+" == null) i"+name+" = new HashSet<"+type+">();");
-			pwb.println("		i"+name+".add("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
-			pwb.println("	}");
+			pwa.println("private Set<"+type+"> i"+name+";");
+			pwb.println("public Set<"+type+"> get"+name+"() { return i"+name+"; }");
+			pwb.println("public void set"+name+"(Set<"+type+"> "+name.substring(0,1).toLowerCase()+name.substring(1)+") { i"+name+" = "+name.substring(0,1).toLowerCase()+name.substring(1)+"; }");
+			pwb.println("public void addTo"+name.substring(0,1).toLowerCase()+name.substring(1)+"("+type+" "+type.substring(0, 1).toLowerCase()+type.substring(1)+") {");
+			pwb.println("if (i"+name+" == null) i"+name+" = new HashSet<"+type+">();");
+			pwb.println("i"+name+".add("+type.substring(0, 1).toLowerCase()+type.substring(1)+");");
+			pwb.println("}");
 		}
 		pwa.flush(); pwa.close();
 		pwb.flush(); pwb.close();
