@@ -755,6 +755,7 @@
 	</build>
 
 	<properties>
+		<sonar.sources>JavaSource</sonar.sources>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
 		<hibernate.version>4.3.11.Final</hibernate.version>
