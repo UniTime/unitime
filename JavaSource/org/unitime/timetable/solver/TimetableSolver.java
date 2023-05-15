@@ -529,23 +529,25 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     }
 
     private boolean match(Query q, final String name) {
-    	return q == null || q.match(new TermMatcher() {
+    	if (q == null)
+		return true;
+	return q.match(new TermMatcher() {
 			@Override
 			public boolean match(String attr, String term) {
 				if (term.isEmpty()) return true;
 				if (attr == null) {
-					term: for (StringTokenizer s = new StringTokenizer(term, " ,"); s.hasMoreTokens(); ) {
-						String termToken = s.nextToken();
+				                StringTokenizer s = new StringTokenizer(term, " ,");
 						for (StringTokenizer t = new StringTokenizer(name, " ,"); t.hasMoreTokens(); ) {
 							String token = t.nextToken();
-							if (token.toLowerCase().startsWith(termToken.toLowerCase())) continue term;
+							if (!token.toLowerCase().startsWith(termToken.toLowerCase())) return false;
 						}
-						return false;
 					}
 					return true;
-				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+				} 
+				if (attr.matches("regex|regexp|re") {
 					return name.matches(term);
-				} else if ("find".equals(attr)) {
+				} 
+				if ("find".equals(attr)) {
 					return name.toLowerCase().indexOf(term.toLowerCase()) >= 0;
 				}
 				return false;
