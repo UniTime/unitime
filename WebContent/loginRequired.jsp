@@ -27,10 +27,10 @@
 	<br><br>
 	<A class="l7" href="javascript:self.history.back();"><loc:message name="linkBACK"/></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<s:if test="target != null && !target.isEmpty()">
-		<A class="l7" href="${request.getContextPath()}/login.action?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
+		<A class="l7" href="${fn:escapeXml(request.getContextPath())}/login.action?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
 	</s:if>
 	<s:else>
-		<A class="l7" href="${request.getContextPath()}/login.action" target="_top"><loc:message name="linkLOGIN"/></A>
+		<A class="l7" href="${fn:escapeXml(request.getContextPath())}/login.action" target="_top"><loc:message name="linkLOGIN"/></A>
 	</s:else>
 	<BR><BR>
 </DIV>
