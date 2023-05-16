@@ -87,7 +87,11 @@ public abstract class Email {
 	public void setRich(String message) throws Exception {
 		setBody(message, "text/richtext; charset=UTF-8");
 	}
+	public void setImage(String image) throws Exception {
+		setBody(image, "image/jpeg;");
+	}
 
-	
-	
+
+
+
 }
