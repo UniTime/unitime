@@ -233,7 +233,7 @@
     <target name="doc" depends="load-properties">
         <delete dir="${dist.dir}/doc" failonerror="false"/>
         <mkdir dir="${dist.dir}/doc"/>
-    	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="1.8" linksource="false" breakiterator="true" useexternalfile="yes">
+    	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="11" linksource="false" breakiterator="true" useexternalfile="yes">
     		<doctitle><![CDATA[
     		<table border='0' style='font-size: 11pt;font-weight: normal;'><tr><td align='left'>
     			Licensed to The Apereo Foundation under one or more contributor license<br>
