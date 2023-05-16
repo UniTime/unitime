@@ -83,4 +83,11 @@ public abstract class Email {
 	public abstract void setInReplyTo(String messageId) throws Exception;
 	
 	public abstract String getMessageId() throws Exception;
+	
+	public void setRich(String message) throws Exception {
+		setBody(message, "text/richtext; charset=UTF-8");
+	}
+
+	
+	
 }
