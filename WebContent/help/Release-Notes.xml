@@ -34,6 +34,18 @@
 			<description>
 				<line>Added a new page (Instructor Survey) that can be used by instructors to fill in their preferences and course requirements.</line>
 				<line>To be enabled by the Instructor Survey toggle on the academic session status page (Status Types page).</line>
+				<line>See https://help.unitime.org/instructor-survey for more details.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Technology Upgrade</title>
+		<item>
+			<name>Hibernate 6.2 / JGroups 5.2</name>
+			<description>
+				<line>UniTime updated to use the latest versions of Hibernate 6.2 and JGroups 5.2.</line>
+				<line>Infinispan 14 is now used for second level cache and cache replication/invalidation when there are multiple web servers.</line>
+				<line>This, however, requires UniTime to use Java 11 or later (Java 8 is no longer supported).</line>
 			</description>
 		</item>
 	</category>
