@@ -92,7 +92,7 @@ public abstract class Email {
         setBody(image, "image/jpeg;");
     }
 
-    public void setPriority(int priority) throws Exception {
+    public void setPriority(int priority)  {
         if (priority < 1 || priority > 5) {
             throw new IllegalArgumentException("Priority must be between 1 and 5");
         }
