@@ -637,6 +637,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						enrl.setApprovedBy(approvedBy);
 						enrl.setApprovedDate(approvedDate);
 						student.getClassEnrollments().add(enrl);
+						helper.getHibSession().persist(enrl);
 						helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
 					}
 					
@@ -722,7 +723,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 				}
 				
-				helper.getHibSession().persist(student);
+				helper.getHibSession().merge(student);
 			
 				EnrollStudent.updateSpace(server,
 						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment(), wlMode),

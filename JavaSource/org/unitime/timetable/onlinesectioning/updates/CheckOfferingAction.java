@@ -442,6 +442,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							enrl.setApprovedBy(approvedBy);
 							enrl.setApprovedDate(approvedDate);
 							student.getClassEnrollments().add(enrl);
+							helper.getHibSession().persist(enrl);
 							helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
 						}
 						if (cd != null && cd.isWaitlist()) {
@@ -526,7 +527,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_CHECK, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
 					}
 					
-					helper.getHibSession().persist(student);
+					helper.getHibSession().merge(student);
 		
 					EnrollStudent.updateSpace(server,
 							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, offering, r.getRequest().getEnrollment(), WaitListMode.WaitList),

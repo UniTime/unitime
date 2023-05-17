@@ -759,6 +759,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						enrl.setApprovedDate((Date)approval[1]);
 					}
 					enrl.setCourseRequest(cr);
+					helper.getHibSession().persist(enrl);
 				}
 				
 				for (CourseDemand cd: remaining) {
