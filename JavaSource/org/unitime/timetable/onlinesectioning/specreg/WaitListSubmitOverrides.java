@@ -131,6 +131,12 @@ public class WaitListSubmitOverrides implements OnlineSectioningAction<CourseReq
 										RequestedCourseStatus.OVERRIDE_CANCELLED == rc.getStatus() ? CourseRequestOverrideStatus.CANCELLED :
 										RequestedCourseStatus.OVERRIDE_REJECTED == rc.getStatus() ? CourseRequestOverrideStatus.REJECTED : null);
 								}
+								if ("TBD".equals(courseRequest.getOverrideExternalId()) && courseRequest.getCourseRequestOverrideIntent() == CourseRequestOverrideIntent.WAITLIST) {
+									courseRequest.setOverrideExternalId(null);
+									courseRequest.setOverrideTimeStamp(null);
+									courseRequest.setCourseRequestOverrideIntent(null);
+									courseRequest.setCourseRequestOverrideStatus(null);
+								}
 								helper.getHibSession().merge(courseRequest);
 							}
 						}
