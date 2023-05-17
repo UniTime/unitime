@@ -97,6 +97,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.Session;
@@ -729,6 +730,10 @@ public class SessionRestore implements SessionRestoreInterface {
 							acm.setConcentration(conc);
 					}
 				}
+			}
+			if (getObject() instanceof RoomFeatureType) {
+				RoomFeatureType rft = (RoomFeatureType)getObject();
+				if (rft.isShowInInstructorSurvey() == null) rft.setShowInInstructorSurvey(true);
 			}
 		}
 		
