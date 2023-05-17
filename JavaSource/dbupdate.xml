@@ -3629,9 +3629,9 @@
 		</mysql>
 		<mysql>
 			insert into %SCHEMA%.room_group select 
-				@rownum:=@rownum+1 as uniqueid, s.uniqueid as session_id,
+				@rownum\:=@rownum+1 as uniqueid, s.uniqueid as session_id,
 				g.name, g.description, g.global, g.default_group, g.department_id, g.abbv
-			from %SCHEMA%.room_group g, %SCHEMA%.sessions s, (select @rownum:=%ID%) r where g.global = 1 and not exists
+			from %SCHEMA%.room_group g, %SCHEMA%.sessions s, (select @rownum\:=%ID%) r where g.global = 1 and not exists
 				(select * from %SCHEMA%.room_group x where x.session_id = s.uniqueid and x.name = g.name)
 		</mysql>
 		<sql>
@@ -3717,9 +3717,9 @@
 		</plsql>
 		<mysql>
 			insert into %SCHEMA%.room_feature select 
-				@rownum:=@rownum+1 as uniqueid,
+				@rownum\:=@rownum+1 as uniqueid,
 				f.discriminator, f.label, f.sis_reference, f.sis_value, f.department_id, f.abbv, s.uniqueid as session_id
-			from %SCHEMA%.room_feature f, %SCHEMA%.sessions s, (select @rownum:=%ID%) r
+			from %SCHEMA%.room_feature f, %SCHEMA%.sessions s, (select @rownum\:=%ID%) r
 			where f.discriminator = 'global' and not exists
 				(select * from %SCHEMA%.room_feature x where x.session_id = s.uniqueid and x.label = f.label)
 		</mysql>
@@ -12287,7 +12287,7 @@
 		<mysql>alter table %SCHEMA%.offering_coordinator add uniqueid decimal(20,0)</mysql>
 		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql>update %SCHEMA%.offering_coordinator o join (
-			select @uid:=@uid+1 uid, offering_id, instructor_id from %SCHEMA%.offering_coordinator cross join (select @uid:=%ID%) x
+			select @uid\:=@uid+1 uid, offering_id, instructor_id from %SCHEMA%.offering_coordinator cross join (select @uid\:=%ID%) x
 			) as r on (o.offering_id = r.offering_id and o.instructor_id = r.instructor_id) set o.uniqueid = r.uid
 		</mysql>
 		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.offering_coordinator</mysql>
@@ -12403,8 +12403,8 @@
 		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
 		<mysql>
 			insert into %SCHEMA%.pos_major (uniqueid, code, name, external_uid, session_id)
-			select @uid:=@uid+1, '-', 'No Major', a.uniqueid, a.session_id
-				from %SCHEMA%.academic_area a cross join (select @uid:=%ID%) x
+			select @uid\:=@uid+1, '-', 'No Major', a.uniqueid, a.session_id
+				from %SCHEMA%.academic_area a cross join (select @uid\:=%ID%) x
 				where a.uniqueid in (select sa.acad_area_id from %SCHEMA%.student_acad_area sa where (select count(*) from %SCHEMA%.student_major m where m.student_id = sa.student_id) = 0)
 		</mysql>
 		<mysql into="ID">select greatest(ifnull(1 + max(uniqueid), %ID%), %ID%) from %SCHEMA%.pos_major</mysql>
@@ -12483,8 +12483,8 @@
 		</sql>
 		<mysql>
 			insert into %SCHEMA%.student_area_clasf_major (uniqueid, student_id, acad_area_id, acad_clasf_id, major_id)
-			select @uid:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.major_id
-			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_major m, %SCHEMA%.pos_acad_area_major am cross join (select @uid:=%ID%) x
+			select @uid\:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.major_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_major m, %SCHEMA%.pos_acad_area_major am cross join (select @uid\:=%ID%) x
 			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.major_id = m.major_id
 		</mysql>
 		<mysql into="ID">select ifnull(1 + max(uniqueid), %ID%) from %SCHEMA%.student_area_clasf_major</mysql>
@@ -12533,8 +12533,8 @@
 		</sql>
 		<mysql>
 			insert into %SCHEMA%.student_area_clasf_minor (uniqueid, student_id, acad_area_id, acad_clasf_id, minor_id)
-			select @uid:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.minor_id
-			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_minor m, %SCHEMA%.pos_acad_area_minor am cross join (select @uid:=%ID%) x
+			select @uid\:=@uid+1 unique_id, a.student_id, a.acad_area_id, a.acad_clasf_id, m.minor_id
+			from %SCHEMA%.student_acad_area a, %SCHEMA%.student_minor m, %SCHEMA%.pos_acad_area_minor am cross join (select @uid\:=%ID%) x
 			where m.student_id = a.student_id and am.academic_area_id = a.acad_area_id and am.minor_id = m.minor_id
 		</mysql>
 		<plsql>

@@ -28,11 +28,11 @@
 
 	<!-- MySQL Configuration -->
 	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-	<property name="connection.url">jdbc:mysql://localhost:3306/timetable</property>
+	<property name="connection.url">jdbc:mysql://localhost:3306/timetable?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;allowPublicKeyRetrieval=true</property>
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
 	<property name="connection.autocommit">true</property>
-	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+	<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.enhanced.TableGenerator</property>
 	<property name="hibernate.connection.useUnicode">true</property>
 	<property name="hibernate.connection.characterEncoding">utf8</property>
@@ -56,7 +56,6 @@
 	<property name="hibernate.c3p0.min_size">10</property> <!-- Min connection pool size -->
 	<property name="hibernate.c3p0.timeout">0</property> <!-- Time in seconds before free a connection. 0 no expiration --> 
 	<property name="hibernate.c3p0.idleConnectionTestPeriod">3000</property> <!--  idle time in seconds before testing if a connection is valid - Setting a fairly long idleConnectionTestPeriod, and not testing on checkout and check-in at all is an excellent, high-performance approach. -->
-	<property name="hibernate.c3p0.idle_test_period">3000</property> <!--  idle time in seconds before testing if a connection is valid - Setting a fairly long idleConnectionTestPeriod, and not testing on checkout and check-in at all is an excellent, high-performance approach. -->
 	<property name="hibernate.c3p0.preferredTestQuery">SELECT 1;</property>
 	<property name="hibernate.c3p0.max_statements">200</property> <!-- The size of c3p0's global PreparedStatement cache. -->
 	<property name="hibernate.c3p0.timeout">1800</property> <!-- Seconds a Connection can remain pooled but unused before being discarded. Zero means idle connections never expire. -->
