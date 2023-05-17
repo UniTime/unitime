@@ -203,6 +203,8 @@ public class HibernateUtil {
         String default_schema = getProperty(properties, "default_schema");
         if (default_schema != null)
         	config.getConfigurationValues().put("default_schema", default_schema);
+        else
+        	default_schema = "timetable";
         
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));

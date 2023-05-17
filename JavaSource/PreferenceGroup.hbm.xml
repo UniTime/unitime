@@ -299,7 +299,7 @@
                 name="studentEnrollments"
                 inverse="true"
                 lazy="true"
-                cascade="all-delete-orphan"
+                cascade="delete-orphan"
                 table="student_class_enrl">
 
                 <cache include="non-lazy" usage="transactional"/>

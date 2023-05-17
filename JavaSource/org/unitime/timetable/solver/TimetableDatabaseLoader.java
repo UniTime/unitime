@@ -2339,7 +2339,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			"select distinct a, e.studentId, io.uniqueId from "+
     			"Solution s inner join s.assignments a inner join s.studentEnrollments e inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering io "+
     			"where "+
-    			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner not in ("+iSolverGroupIds+") and "+
+    			"s.commited=true and s.owner.session.uniqueId=:sessionId and s.owner.uniqueId not in ("+iSolverGroupIds+") and "+
     			"a.clazz=e.clazz", Object[].class).setParameter("sessionId", iSessionId.longValue()).list();
 
     	

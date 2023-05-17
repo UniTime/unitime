@@ -248,7 +248,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		addToAssignments(assignment);
 	}
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "clazz", orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<StudentClassEnrollment> getStudentEnrollments() { return iStudentEnrollments; }
 	public void setStudentEnrollments(Set<StudentClassEnrollment> studentEnrollments) { iStudentEnrollments = studentEnrollments; }
