@@ -230,6 +230,12 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("Distribution preference {0} refers to less than two classes.")
 	String warnBadDistributionIncomplete(String constraint);
 	
+	@DefaultMessage("Distribution preference {0} would create more than 1,000 constraints.")
+	String warnDistributionTooMany(String constraint);
+
+	@DefaultMessage("Distribution preference {0} would create more than 10,000 constraints, it is ignored.")
+	String errorDistributionTooMany(String constraint);
+	
 	@DefaultMessage("Inconsistent course reservations for course {0}.")
 	String warnBadCourseReservations(String course);
 	

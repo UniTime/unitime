@@ -46,6 +46,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver Load: Distributions</name>
+			<description>
+				<line>When a distribution with One of Each or Pairwise structure is used
+					<line>estimate the number of individual distribution constraints that would be posted,</line>
+					<line>if there are over 1,000 of them &gt; print a warning</line>
+					<line>if there are over 10,000 of them &gt; print an error, ignore the distribution preference.</line>
+				</line>
+				<line>This is to prevent speed / out-of-memory issues, especially when one-of-each is used as it can lead to a lot of individual constraints.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

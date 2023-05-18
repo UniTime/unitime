@@ -1855,6 +1855,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	if (lectures.size()<2) {
         		iProgress.message(msglevel("distrPrefIncomplete", Progress.MSGLEVEL_WARN), MSG.warnBadDistributionIncomplete(pref.getLabel()));
         	} else {
+        		long n = lectures.size();
+        		long estimate = n * (n - 1) / 2;
+        		if (estimate > 10000) {
+        			iProgress.message(msglevel("distrPrefTooManyError", Progress.MSGLEVEL_ERROR), MSG.errorDistributionTooMany(pref.preferenceText(true, false, "<br>", "<br>", "")));
+        			return;
+        		}
+        		if (estimate > 1000) {
+        			iProgress.message(msglevel("distrPrefTooManyWarn", Progress.MSGLEVEL_WARN), MSG.warnDistributionTooMany(pref.preferenceText(true, false, "<br>", "<br>", "")));
+        		}
         		for (int idx1=0;idx1<lectures.size()-1;idx1++) {
         			Lecture l1 = lectures.get(idx1);
         			for (int idx2=idx1+1;idx2<lectures.size();idx2++) {
@@ -1897,6 +1906,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			if (count > 0) counts.add(count);
         	}
         	if (counts.size() > 1) {
+        		double estimate = 1.0;
+        		for (Integer count: counts)
+        			estimate *= count;
+        		if (estimate > 10000) {
+        			iProgress.message(msglevel("distrPrefTooManyError", Progress.MSGLEVEL_ERROR), MSG.errorDistributionTooMany(pref.preferenceText(true, false, "<br>", "<br>", "")));
+        			return;
+        		}
+        		if (estimate > 1000) {
+        			iProgress.message(msglevel("distrPrefTooManyWarn", Progress.MSGLEVEL_WARN), MSG.warnDistributionTooMany(pref.preferenceText(true, false, "<br>", "<br>", "")));
+        		}
         		for (Enumeration<List<Lecture>> e = DistributionPref.permutations(lectures, counts); e.hasMoreElements(); ) {
         			Collection<Lecture> perm = e.nextElement();
     				Constraint gc = createGroupConstraint(pref);
