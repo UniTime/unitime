@@ -343,7 +343,7 @@ public enum ApplicationProperty {
 	@Description("All Pages: enable page help")
 	PageHelpEnabled("tmtbl.wiki.help"),
 
-	@DefaultValue("https://help47.unitime.org/")
+	@DefaultValue("https://help48.unitime.org/")
 	@Description("All Pages: page help url")
 	PageHelpUrl("tmtbl.wiki.url"),
 
