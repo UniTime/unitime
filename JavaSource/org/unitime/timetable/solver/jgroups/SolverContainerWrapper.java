@@ -85,8 +85,6 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 				return null;
 			else if (senders.size() == 1)
 				return iContainer.createProxy(senders.get(0), user);
-			else if (iContainer instanceof ReplicatedSolverContainer)
-				return ((ReplicatedSolverContainer<T>)iContainer).createProxy(senders, user);
 			else
 				return iContainer.createProxy(ToolBox.random(senders), user);
 		} catch (Exception e) {

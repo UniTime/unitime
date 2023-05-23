@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,7 +71,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
 				if (iRun && !iPause)
-					checkForNewServers();
+					checkForNewServers(false);
 			}
 			iLog.info("Generic updater stopped.");
 		} catch (Exception e) {
@@ -100,16 +99,11 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		} catch (InterruptedException e) {}
 	}
 	
-	public synchronized void checkForNewServers() {
+	public synchronized void checkForNewServers(boolean reload) {
 		if (!isCoordinator()) return;
 		if (!HibernateUtil.isConfigured()) {
 			iLog.info("Hibernate is not configured yet, will check for new servers later...");
 			return;
-		}
-		Lock lock = null;
-		if (iContainer.getLockService() != null) {
-			lock = iContainer.getLockService().getLock("updater[generic].check");
-			lock.lock();
 		}
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
@@ -141,57 +135,33 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					try {
 						Set<Address> members = solvers.get(session.getUniqueId().toString());
 						if (members.size() > 1) {
-							if (iContainer.getLockService() != null) {
-								List<Address> masters = new ArrayList<Address>();
-								RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(
-										members, "hasMaster", new Object[] { session.getUniqueId().toString() }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
-								for (Map.Entry<Address, Rsp<Boolean>> entry : ret.entrySet()) {
-									Address sender = entry.getKey();
-									Rsp<Boolean> rsp = entry.getValue();
-									if (Boolean.TRUE.equals(rsp.getValue())) masters.add(sender);
+							iLog.warn(members.size() + " members for " + session.getLabel() + " detected.");
+							// pick a master
+							Address master = ToolBox.random(members); members.remove(master);
+							// reload master
+							iLog.warn("Reloading " + master + " for " + session.getLabel() + ".");
+							iContainer.getDispatcher().callRemoteMethod(master, "invoke",
+									new Object[] { "reload", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
+									new Class[] { String.class, String.class, Class[].class, Object[].class },
+									SolverServerImplementation.sFirstResponse);
+							// unload all others
+							for (Address member: members) {
+								if (!member.equals(master)) {
+									iLog.warn("Unloading " + member + " for " + session.getLabel() + ".");
+									iContainer.getDispatcher().callRemoteMethod(member, "unloadSolver",
+											new Object[] { session.getUniqueId().toString() },
+											new Class[] { String.class },
+											SolverServerImplementation.sFirstResponse);
 								}
-								if (masters.size() > 1) {
-									iLog.warn(masters.size() + " masters for " + session.getLabel() + " detected.");
-									if (lock != null)
-										iLog.info(iContainer.getLockService().printLocks());
-									iLog.info("Releasing master locks for " + session.getLabel() + " ...");
-									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
-											new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},
-											new Class[] { String.class, String.class, Class[].class, Object[].class },
-											SolverServerImplementation.sAllResponses);
-									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
-											new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReloadIsNeeded", Boolean.TRUE}},
-											new Class[] { String.class, String.class, Class[].class, Object[].class },
-											SolverServerImplementation.sAllResponses);
-									iContainer.getDispatcher().callRemoteMethods(masters, "invoke",
-											new Object[] { "releaseMasterLockIfHeld", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
-											new Class[] { String.class, String.class, Class[].class, Object[].class },
-											SolverServerImplementation.sAllResponses);
-									continue;
-								}
-							} else {
-								iLog.warn(members.size() + " members for " + session.getLabel() + " detected.");
-								// pick a master
-								Address master = ToolBox.random(members); members.remove(master);
-								// reload master
-								iLog.warn("Reloading " + master + " for " + session.getLabel() + ".");
-								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
-										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReadyToServe", Boolean.FALSE}},
+							}
+						} else if (reload) {
+							for (Address member: members) {
+								iLog.warn("Reloading " + member + " for " + session.getLabel() + ".");
+								iContainer.getDispatcher().callRemoteMethod(member, "invoke",
+										new Object[] { "reload", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
 										new Class[] { String.class, String.class, Class[].class, Object[].class },
 										SolverServerImplementation.sFirstResponse);
-								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
-										new Object[] { "setProperty", session.getUniqueId().toString(), new Class[] {String.class, Object.class}, new Object[] {"ReloadIsNeeded", Boolean.TRUE}},
-										new Class[] { String.class, String.class, Class[].class, Object[].class },
-										SolverServerImplementation.sFirstResponse);
-								iContainer.getDispatcher().callRemoteMethod(master, "invoke",
-										new Object[] { "releaseMasterLockIfHeld", session.getUniqueId().toString(), new Class[] {}, new Object[] {}},
-										new Class[] { String.class, String.class, Class[].class, Object[].class },
-										SolverServerImplementation.sFirstResponse);
-								// unload all others
-								iContainer.getDispatcher().callRemoteMethods(members, "unloadSolver",
-										new Object[] { session.getUniqueId().toString() },
-										new Class[] { String.class },
-										SolverServerImplementation.sAllResponses);
+								break;
 							}
 						}
 					} catch (Exception e) {
@@ -260,7 +230,6 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			}
 		} finally {
 			hibSession.close();
-			if (lock != null) lock.unlock();
 		}
 	}
 	

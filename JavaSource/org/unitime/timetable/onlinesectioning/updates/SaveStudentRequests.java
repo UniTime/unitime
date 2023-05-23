@@ -63,13 +63,10 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
  * @author Tomas Muller
  */
-@CheckMaster(Master.REQUIRED)
 public class SaveStudentRequests implements OnlineSectioningAction<CourseRequestInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

@@ -26,13 +26,10 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
  * @author Tomas Muller
  */
-@CheckMaster(Master.REQUIRED)
 public class GetStudentPreferences implements OnlineSectioningAction<StudentSchedulingPreferencesInterface> {
 	private static final long serialVersionUID = 1L;
 

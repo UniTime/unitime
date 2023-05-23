@@ -180,24 +180,9 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
         
         if ("Reload".equals(op) && onlineId!=null) {
 			OnlineSectioningServer solver = getSolverServerService().getOnlineStudentSchedulingContainer().getSolver(onlineId);
-			if (solver != null && solver.isMaster()) {
-				solver.setProperty("ReadyToServe", Boolean.FALSE);
-				solver.setProperty("ReloadIsNeeded", Boolean.TRUE);
-				solver.releaseMasterLockIfHeld();
+			if (solver != null) {
+				solver.reload();
 			}
-        }
-        
-        if ("Unmaster".equals(op) && onlineId!=null) {
-        	if (host != null) {
-        		SolverServer server = getSolverServerService().getServer(host);
-        		if (server != null) {
-        			OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(onlineId);
-        			if (solver != null) solver.releaseMasterLockIfHeld();
-        		}
-        	} else {
-        		OnlineSectioningServer solver = getSolverServerService().getOnlineStudentSchedulingContainer().getSolver(onlineId);
-        		if (solver != null) solver.releaseMasterLockIfHeld();
-        	}
         }
         
         if ("Deselect".equals(op)) {
@@ -719,8 +704,10 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
                             op+="<input type=\"button\" value=\"" + MESSAGES.actionServerDisable() + "\" onClick=\"if (confirm('" +
                             		MESSAGES.confirmServerDisable(server.getHost()) + "')) document.location='manageSolvers.action?op=Disable&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                         }
-                    	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerReset() + "\" onClick=\"if (confirm('" +
-                    				MESSAGES.confirmServerReset(server.getHost()) + "')) document.location='manageSolvers.action?op=Reset&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
+                        if (server.isCoordinator()) {
+                        	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerReset() + "\" onClick=\"if (confirm('" +
+                        			MESSAGES.confirmServerReset(server.getHost()) + "')) document.location='manageSolvers.action?op=Reset&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
+                        }
                         if (!local) {
                         	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerShutdown() + "\" onClick=\"if (confirm('" +
                         			MESSAGES.confirmServerShutdown(server.getHost()) + "')) document.location='manageSolvers.action?op=Shutdown&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
@@ -843,34 +830,23 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
 
                     String op = "";
                     if (!sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) {
-                        if (solver.isMaster() && solver.isReady()) {
+                        if (solver.isReady()) {
                       	   op += "<input type=\"button\" value=\"" + MESSAGES.actionOnlineSolverReload() + "\" onClick=\"" +
                          			"if (confirm('" + MESSAGES.confirmOnlineReload() + "')) " +
                          			"document.location='manageSolvers.action?op=Reload&onlineId=" + sessionId + "';" + 
                          			" event.cancelBubble=true;\">&nbsp;&nbsp;";
                          }
-                         if (solver.isMaster() && servers.size() > 1) {
-                             op += "<input type=\"button\" value=\"" + MESSAGES.actionOnlineSolverShutdownAll() + "\" onClick=\"" +
-                          			"if (confirm('" + MESSAGES.confrimOnlineShutdown() + "')) " +
-                          			"document.location='manageSolvers.action?op=Unload&onlineId=" + sessionId + "';" + 
-                          			" event.cancelBubble=true;\">&nbsp;&nbsp;";
-                             op += "<input type=\"button\" value=\"" + MESSAGES.actionOnlineSolverUnmaster() + "\" onClick=\"" +
-                           			"if (confirm('" + MESSAGES.confirmOnlineUnMaster() + "')) " +
-                           			"document.location='manageSolvers.action?op=Unmaster&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
-                           			" event.cancelBubble=true;\">";
-                         } else {
-                             op += "<input type=\"button\" value=\"" + MESSAGES.actionOnlineSolverShutdown() + "\" onClick=\"" +
-                          			"if (confirm('" + MESSAGES.confrimOnlineShutdown() + "')) " +
-                          			"document.location='manageSolvers.action?op=Unload&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
-                          			" event.cancelBubble=true;\">";
-                         }
+                        op += "<input type=\"button\" value=\"" + MESSAGES.actionOnlineSolverShutdown() + "\" onClick=\"" +
+                     			"if (confirm('" + MESSAGES.confrimOnlineShutdown() + "')) " +
+                     			"document.location='manageSolvers.action?op=Unload&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
+                     			" event.cancelBubble=true;\">";
                     }
                     
                     if (mem) {
                         webTable.addLine(null, new String[] {
                                 (loaded.getTime() <= 0 ? MESSAGES.itemNotApplicable() : sDF.format(loaded)),
                                 sessionLabel,
-                                solver.getHost() + (solver.isMaster() ? " (master)" : ""),
+                                solver.getHost(),
                                 mode,
                                 "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>O" + server.getHost() + ":" + sessionId + "</span>",
                                 (totVal==null?"":totVal),
@@ -901,7 +877,7 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
                         webTable.addLine(null, new String[] {
                                 (loaded.getTime() <= 0 ? MESSAGES.itemNotApplicable() : sDF.format(loaded)),
                                 sessionLabel,
-                                solver.getHost() + (solver.isMaster() ? " " + MESSAGES.serverFlagMaster() : ""),
+                                solver.getHost(),
                                 mode,
                                 (totVal==null?"":totVal),
                                 (assigned==null?"":assigned),

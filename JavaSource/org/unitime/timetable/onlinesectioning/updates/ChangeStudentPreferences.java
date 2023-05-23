@@ -36,15 +36,12 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
-@CheckMaster(Master.REQUIRED)
 public class ChangeStudentPreferences implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

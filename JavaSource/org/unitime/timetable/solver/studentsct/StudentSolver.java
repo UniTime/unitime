@@ -812,12 +812,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	}
 	
 	@Override
-	public boolean isMaster() {
-		return true;
-	}
-	
-	@Override
-	public void releaseMasterLockIfHeld() {
+	public void reload() {
 	}
 
 	@Override

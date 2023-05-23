@@ -29,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
-import org.jgroups.blocks.locking.LockService;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -175,11 +174,6 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			@Override
 			public boolean isWaitTillStarted() {
 				return false;
-			}
-
-			@Override
-			public LockService getLockService() {
-				return null;
 			}
 		};
 	}

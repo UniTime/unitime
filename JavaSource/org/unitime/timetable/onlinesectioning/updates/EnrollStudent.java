@@ -90,8 +90,6 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction.IdPair;
@@ -101,7 +99,6 @@ import org.unitime.timetable.onlinesectioning.specreg.WaitListSubmitOverrides;
 /**
  * @author Tomas Muller
  */
-@CheckMaster(Master.REQUIRED)
 public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInterface>, HasCacheMode {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

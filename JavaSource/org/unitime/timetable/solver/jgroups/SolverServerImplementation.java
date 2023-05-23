@@ -20,8 +20,6 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -49,10 +47,9 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
+import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.MergeView;
-import org.jgroups.Message;
-import org.jgroups.Receiver;
 import org.jgroups.SuspectedException;
 import org.jgroups.Message.Flag;
 import org.jgroups.View;
@@ -84,7 +81,7 @@ import org.unitime.timetable.util.queue.RemoteQueueProcessor;
 /**
  * @author Tomas Muller
  */
-public class SolverServerImplementation extends AbstractSolverServer implements Receiver {
+public class SolverServerImplementation extends AbstractSolverServer {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, ApplicationProperty.SolverClusterTimeout.intValue()).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
@@ -111,7 +108,27 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iLocal = local;
 		iChannel = channel;
 		iServerChannel = new ForkChannel(channel, String.valueOf(SCOPE_SERVER), "fork-" + SCOPE_SERVER);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new RpcDispatcher(iChannel, this) {
+			protected Object handleUpEvent(Event evt) throws Exception {
+				Object ret = super.handleUpEvent(evt);
+				switch(evt.getType()) {
+				case Event.VIEW_CHANGE:
+					View view=evt.getArg();
+					sLog.info("viewAccepted(" + view + ")");
+					if (view instanceof MergeView) {
+						Thread t = new Thread() {
+							public void run() {
+								reset();
+							}
+						};
+						t.setDaemon(true);
+						t.setName("SolverServer:Reset");
+						t.start();
+					}
+				}
+				return ret;
+			}
+		};
 		
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE, local);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
@@ -419,42 +436,6 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		}
     }
 	
-	@Override
-	public void viewAccepted(View view) {
-		sLog.info("viewAccepted(" + view + ")");
-		if (view instanceof MergeView) {
-			reset();
-		}
-	}
-
-
-	@Override
-	public void block() {
-		sLog.info("block");
-	}
-
-
-	@Override
-	public void unblock() {
-		sLog.info("unblock");
-	}
-
-
-	@Override
-	public void receive(Message msg) {
-		sLog.info("receive(" + msg + ", " + msg.getObject() + ")");
-	}
-
-
-	@Override
-	public void getState(OutputStream output) throws Exception {
-	}
-
-
-	@Override
-	public void setState(InputStream input) throws Exception {
-	}
-	
 	public class ServerInvocationHandler implements InvocationHandler {
 		private Address iAddress;
 		
@@ -753,26 +734,8 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 
 	@Override
 	public synchronized void reset() {
-		if (iOnlineStudentSchedulingContainer.getLockService() != null)
-			sLog.info(iOnlineStudentSchedulingContainer.getLockService().printLocks());
-		
-		// For each of my online student sectioning solvers
-		for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
-			OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
-			if (server == null) continue;
-			
-			// mark server for reload and release the lock
-			if (server.isMaster()) {
-				if (ApplicationProperty.OnlineSchedulingReloadAfterMerge.isTrue()) {
-					sLog.info("Marking " + server.getAcademicSession() + " for reload");
-					server.setProperty("ReadyToServe", Boolean.FALSE);
-					server.setProperty("ReloadIsNeeded", Boolean.TRUE);
-				}
-
-				sLog.info("Releasing master lock for " + server.getAcademicSession() + " ...");
-				server.releaseMasterLockIfHeld();
-			}
-		}
+		// Check for new online servers and duplicates
+		iUpdater.checkForNewServers(ApplicationProperty.OnlineSchedulingReloadAfterMerge.isTrue());
 	}
 
 	@Override

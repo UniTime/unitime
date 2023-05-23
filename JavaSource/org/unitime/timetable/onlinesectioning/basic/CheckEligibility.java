@@ -39,14 +39,11 @@ import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHold
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
  * @author Tomas Muller
  */
-@CheckMaster(Master.REQUIRED)
 public class CheckEligibility implements OnlineSectioningAction<OnlineSectioningInterface.EligibilityCheck> {
 	private static final long serialVersionUID = 1L;
 	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

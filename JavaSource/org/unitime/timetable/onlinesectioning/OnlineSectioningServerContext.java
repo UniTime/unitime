@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import org.jgroups.blocks.locking.LockService;
-
 /**
  * @author Tomas Muller
  */
@@ -29,6 +27,4 @@ public interface OnlineSectioningServerContext {
 	public Long getAcademicSessionId();
 
 	public boolean isWaitTillStarted();
-	
-	public LockService getLockService();
 }

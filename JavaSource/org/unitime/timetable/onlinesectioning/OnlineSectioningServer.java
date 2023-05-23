@@ -43,16 +43,11 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster;
-import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
  * @author Tomas Muller
  */
 public interface OnlineSectioningServer {
-	public boolean isMaster();
-	@CheckMaster(Master.REQUIRED)
-	public void releaseMasterLockIfHeld();
 	public String getHost();
 	public String getUser();
 	
@@ -79,78 +74,56 @@ public interface OnlineSectioningServer {
 	public Collection<Long> getInstructedOfferings(String instructorExternalId);
 	public Set<Long> getRequestedCourseIds(Long studentId);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void update(XExpectations expectations);
 	
 	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) throws SectioningException;
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
 	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;
 	
-	@CheckMaster(Master.REQUIRED)
 	public void remove(XStudent student);
-	
-	@CheckMaster(Master.REQUIRED)
+
 	public void update(XStudent student, boolean updateRequests);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void remove(XOffering offering);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void update(XOffering offering);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void clearAll();
 	
-	@CheckMaster(Master.REQUIRED)
 	public void clearAllStudents();
 	
-	@CheckMaster(Master.REQUIRED)
 	public XCourseRequest assign(XCourseRequest request, XEnrollment enrollment);
 	
-	@CheckMaster(Master.REQUIRED)
 	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist);
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock readLock();
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock writeLock();
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock lockAll();
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName);
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName);
 	
-	@CheckMaster(Master.REQUIRED)
 	public Lock lockRequest(CourseRequestInterface request, String actionName);
 	
 	public boolean isOfferingLocked(Long offeringId);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void lockOffering(Long offeringId);
 	
-	@CheckMaster(Master.REQUIRED)
 	public void unlockOffering(Long offeringId);
 	
 	public Collection<Long> getLockedOfferings();
 	
-	@CheckMaster(Master.REQUIRED)
 	public void releaseAllOfferingLocks();
 	
-	@CheckMaster(Master.REQUIRED)
 	public void persistExpectedSpaces(Long offeringId);
 	
-	@CheckMaster(Master.REQUIRED)
 	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge);
 	
-	@CheckMaster(Master.REQUIRED)
 	public boolean needPersistExpectedSpaces(Long offeringId);
-	
-	@CheckMaster(Master.REQUIRED)
+
 	public boolean isReady();
 	
 	public static enum Deadline { NEW, CHANGE, DROP };
@@ -159,6 +132,7 @@ public interface OnlineSectioningServer {
 	public CourseDeadlines getCourseDeadlines(Long courseId);
 	
 	public void unload();
+	public void reload();
 	
 	public long getMemUsage();
 	
