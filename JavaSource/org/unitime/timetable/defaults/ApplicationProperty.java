@@ -3255,7 +3255,12 @@ public enum ApplicationProperty {
 	@Parameter("Department code")
 	@Since(4.7)
 	InstructorSurveyDistributionPreferencesDeptHard("unitime.instructorSurvey.distPrefsHard.%"),
-
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: Send email confirmation when a survey is submitted")
+	@Since(4.8)
+	InstructorSurveyEmailConfirmation("unitime.instructorSurvey.emailConfirmation"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

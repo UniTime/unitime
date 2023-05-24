@@ -168,6 +168,12 @@ public class InstructorSurveyWidget extends Composite {
 						LoadingWidget.hideLoading();
 						UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
 						setValue(result);
+						if (result.hasPopupMessage()) {
+							if (result.isPopupWarning())
+								UniTimeNotifications.warn(result.getPopupMessage());
+							else
+								UniTimeNotifications.info(result.getPopupMessage());
+						}
 					}
 				});
 			}

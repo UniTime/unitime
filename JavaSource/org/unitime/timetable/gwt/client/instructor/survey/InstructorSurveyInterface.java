@@ -70,6 +70,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private List<AcademicSessionInfo> iSessions = null;
 		private List<AcademicSessionInfo> iSessionsWithPreferences = null;
 		private List<AcademicSessionInfo> iSessionsWithCourses = null;
+		private String iPopupMessage;
+		private boolean iPopupWarning;
 		
 		public InstructorSurveyData() {}
 		public InstructorSurveyData(InstructorSurveyData data) {
@@ -311,6 +313,14 @@ public class InstructorSurveyInterface implements IsSerializable {
 			if (courses != other) return "@#courses " + courses + "/" + iCourses + "\n vs " +  other + "/" + data.iCourses;
 			return "NO CHANGE";
 		}
+		
+		public boolean hasPopupMessage() {
+			return iPopupMessage != null && !iPopupMessage.isEmpty();
+		}
+		public String getPopupMessage() { return iPopupMessage; }
+		public void setPopupMessage(String popupMessage) { iPopupMessage = popupMessage; }
+		public boolean isPopupWarning() { return iPopupWarning; }
+		public void setPopupWarning(boolean popupWarning) { iPopupWarning = popupWarning; }
 		
 		@Override
 		public String toString() {

@@ -7792,4 +7792,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Other\nRequirements")
 	String colRequestedOtherPrefs();
+	
+	@DefaultMessage("Instructor Survey for {0} ({1})")
+	String instructorSurveyEmailSubject(String instructorName, String academicSession);
 }
