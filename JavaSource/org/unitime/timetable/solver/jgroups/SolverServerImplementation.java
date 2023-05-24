@@ -118,7 +118,7 @@ public class SolverServerImplementation extends AbstractSolverServer {
 					if (view instanceof MergeView) {
 						Thread t = new Thread() {
 							public void run() {
-								reset();
+								reset(ApplicationProperty.OnlineSchedulingReloadAfterMerge.isTrue());
 							}
 						};
 						t.setDaemon(true);
@@ -733,9 +733,9 @@ public class SolverServerImplementation extends AbstractSolverServer {
 	}
 
 	@Override
-	public synchronized void reset() {
+	public synchronized void reset(boolean reload) {
 		// Check for new online servers and duplicates
-		iUpdater.checkForNewServers(ApplicationProperty.OnlineSchedulingReloadAfterMerge.isTrue());
+		iUpdater.checkForNewServers(reload);
 	}
 
 	@Override

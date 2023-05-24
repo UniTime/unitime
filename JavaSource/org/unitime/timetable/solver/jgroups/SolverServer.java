@@ -99,7 +99,7 @@ public interface SolverServer {
 	
 	public void unloadSolver(SolverType type, String id);
 	
-	public void reset();
+	public void reset(boolean reload);
 	
 	public List<SolverServer> getServers(boolean onlyAvailable);
 	

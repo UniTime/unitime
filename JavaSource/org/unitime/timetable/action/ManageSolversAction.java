@@ -205,7 +205,7 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
         if ("Reset".equals(op)) {
         	SolverServer server = getSolverServerService().getServer(solver);
         	if (server != null)
-        		server.reset();
+        		server.reset(false);
         }
 
         if ("Enable".equals(op)) {

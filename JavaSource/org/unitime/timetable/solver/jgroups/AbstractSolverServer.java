@@ -251,7 +251,7 @@ public abstract class AbstractSolverServer implements SolverServer {
 	}
 
 	@Override
-	public void reset() {
+	public void reset(boolean reload) {
 	}
 	
 	@Override
