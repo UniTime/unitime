@@ -309,8 +309,10 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		Email email = Email.createEmail();
-		if (survey.hasEmail())
+		if (survey.hasEmail()) {
 			email.addRecipientCC(survey.getEmail(), survey.getFormattedName());
+			email.setReplyTo(survey.getEmail(), survey.getFormattedName());
+		}
 		for (TimetableManager m: managers)
 			if (m.getEmailAddress() != null && !m.getEmailAddress().isEmpty())
 				email.addRecipient(m.getEmailAddress(), m.getName(nameFormat));
