@@ -708,10 +708,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>6.2.2.Final</hibernate.version>
+		<hibernate.version>6.2.3.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>2.5.30</struts2.version>
-		<protobuf.version>3.22.3</protobuf.version>
+		<protobuf.version>3.23.1</protobuf.version>
 		<gwt.version>2.10.0</gwt.version>
 		<spring.version>5.3.27</spring.version>
 		<spring-security.version>5.8.3</spring-security.version>
@@ -736,7 +736,7 @@
 		<biweekly.version>0.6.7</biweekly.version>
 		<poi.version>5.2.3</poi.version>
 		<dom4j.version>2.1.4</dom4j.version>
-		<jackson.version>2.15.0</jackson.version>
+		<jackson.version>2.15.1</jackson.version>
 		<text.version>1.10.0</text.version>
 		<asm.version>9.5</asm.version>
 		<infinispan-hibernate.version>14.0.9.Final</infinispan-hibernate.version>
