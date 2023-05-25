@@ -53,7 +53,6 @@
 	border: 1px solid #9CB0CE;
 	margin-top: 5px;
 	background-color: #FFFFFF;
-	vertical-align: center;
 }
 
 .unitime-Page .content {
@@ -178,9 +177,6 @@
 	cursor: pointer;	
 }
 
-.unitime-FocusPanel {
-}
-
 .unitime-FocusPanel:focus {
 	outline: none;
 }
@@ -260,9 +256,6 @@ h1 {
 .gwt-SuggestBoxPopup {
 	margin-left: 3px;
 	z-index: 1000000;
-}
-
-.unitime-MainTableHeaderRow {
 }
 
 .unitime-MainTableHeader {
@@ -591,9 +584,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-style: italic;
 }
 
-.unitime-ReservationDisabled {
-}
-
 .unitime-ReservationExclusive {
 	text-decoration: underline;
 }
@@ -623,9 +613,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	height: 20px;
 	border: 1px solid #9CB0CE;
 	padding: 0px 2px 0px 2px;
-}
-
-.unitime-WebTable {
 }
 
 .unitime-WebTable td {
@@ -712,6 +699,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .gwt-TabPanelBottom {
 	border: 2px solid #9CB0CE;
 	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	-moz-border-radius: 5px;
 }
 
@@ -726,7 +714,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	margin-left: 6px;
 	padding: 3px 6px 3px 6px;
 	-webkit-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
 	-webkit-border-top-right-radius: 5px;
+	border-top-right-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;
 }
@@ -799,9 +789,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	border-right: 1px solid #9CB0CE;
 	border-bottom: 1px solid #9CB0CE;
 	background-color: #92c1f0;
-}
-
-.unitime-TimeGrid {
 }
 
 .unitime-TimeGrid .calendar {
@@ -1014,6 +1001,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	margin-left: 2px;
 	margin-right: 2px;
 	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	-moz-border-radius: 5px;
 }
 
@@ -1025,6 +1013,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	margin-left: 2px;
 	margin-right: 2px;
 	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	-moz-border-radius: 5px;
 	color: #FFFFFF;
 }
@@ -1037,7 +1026,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	opacity: .25;
     -moz-opacity: .25;
 	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	-webkit-border-radius: 5px;
+	border-radius: 5px;
 	-moz-border-radius: 5px;
 	-moz-border-radius: 5px;
 	z-index: 499;
@@ -1052,6 +1043,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	opacity: .75;
     -moz-opacity: .75;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	color: #FFFFFF;
 	z-index: 500;
@@ -1065,7 +1057,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #FFFFFF;
 	width: 100%;
 	-webkit-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
 	-webkit-border-top-right-radius: 5px;
+	border-top-right-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;	
 }
@@ -1090,7 +1084,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding-left: 2px;
 	white-space: wrap;
 	-webkit-border-bottom-left-radius: 5px;
+	border-bottom-left-radius: 5px;
 	-webkit-border-bottom-right-radius: 5px;
+	border-bottom-right-radius: 5px;
 	-moz-border-radius-bottomleft: 5px;
 	-moz-border-radius-bottomright: 5px;	
 }
@@ -1098,6 +1094,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-TimeGrid .meeting-selected {
 	-webkit-box-shadow: 3px 3px 5px #B7B7B7;
 	-moz-box-shadow: 3px 3px 5px #B7B7B7;
+	box-shadow: 3px 3px 5px #B7B7B7;
 	filter: alpha(opacity=100)  
 		progid:DXImageTransform.Microsoft.dropshadow(OffX=3, OffY=3,Color='#C7C7C7', Positive='true');
 	opacity: 1;
@@ -1121,7 +1118,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	width: 5px;
 	display:none;
 	-webkit-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
 	-webkit-border-bottom-left-radius: 5px;
+	border-bottom-left-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-bottomleft: 5px;}
 
@@ -1131,7 +1130,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	height: 100%;
 	left: 0px;
 	-webkit-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
 	-webkit-border-bottom-left-radius: 5px;
+	border-bottom-left-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-bottomleft: 5px;
 }
@@ -1525,6 +1526,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-family: arial;
 	overflow: hidden;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 4px;
 	color: #000000;
@@ -1555,6 +1557,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	opacity: .90;
     -moz-opacity: .90;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 10px;
 	color: #000000;
@@ -1573,6 +1576,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	opacity: .90;
     -moz-opacity: .90;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 10px;
 	color: #000000;
@@ -1592,6 +1596,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	opacity: .90;
     -moz-opacity: .90;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 10px;
 	color: #000000;
@@ -1795,9 +1800,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	}
 }
 
-.unitime-BlankSeparator {
-}
-
 .unitime-Menu {
 	z-index: 1500000;
 }
@@ -1848,6 +1850,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-FilterBox {
 	border-radius: 1px;
 	-webkit-border-radius: 1px;
+	border-radius: 1px;
 	-moz-border-radius: 1px;
 	border: 1px solid #9CB0CE;
 	padding: 0px;
@@ -1899,8 +1902,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #909090;
 	cursor: pointer;
 	position: relative;
-	display: -moz-inline-box;
-	display: inline-block;
 	vertical-align: top;
 	padding-left: 1px;
 	float: right;
@@ -1914,8 +1915,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-FilterBox .button-image {
 	cursor: pointer;
 	position: relative;
-	display: -moz-inline-box;
-	display: inline-block;
 	margin-top: 3px;
 	float: right;
 	width: 16px;
@@ -1935,8 +1934,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	cursor: pointer;
 	position: relative;
 	float: left;
-	display: -moz-inline-box;
-	display: inline-block;
 	margin-top: 3px;
 	margin-right: 2px;
 	margin-left: 1px;
@@ -1946,6 +1943,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	margin: 1px;
 	border-radius: 2px;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	padding: 2px;
 	position: relative;
@@ -2014,7 +2012,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
     -moz-opacity: .95;
     */
 	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
 	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
 	padding: 1px;
@@ -2036,6 +2036,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding: 1px 3px 1px 3px;
 	cursor: pointer;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	width: 1%;
 	font-family: Verdana, sans-serif;
@@ -2047,9 +2048,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-FilterBoxPopup .item-selected {
 	background-color: #92c1f0;
-}
-
-.unitime-FilterBoxPopup .panel {
 }
 
 .unitime-FilterBoxPopup .command {
@@ -2082,6 +2080,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	cursor: pointer;
 	display: inline-flex;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	width: 30%;
 	overflow: hidden;
@@ -2420,7 +2419,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	position: absolute;
 	overflow: hidden;
 	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
 	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
 	padding: 1px;
@@ -2442,7 +2443,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	position: absolute;
 	overflow: hidden;
 	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
 	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
 	padding: 1px;
@@ -2464,6 +2467,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding: 1px 3px 1px 3px;
 	cursor: pointer;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	width: 1%;
 	font-family: Verdana, sans-serif;
@@ -2475,9 +2479,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-TimeSelectorPopup .item-selected {
 	background-color: #92c1f0;
-}
-
-.unitime-TravelTimes {
 }
 
 .unitime-TravelTimes .cell {
@@ -2573,7 +2574,9 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	position: absolute;
 	overflow: hidden;
 	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
 	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
 	padding: 1px;
@@ -2597,6 +2600,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding: 1px 3px 1px 3px;
 	cursor: pointer;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;
@@ -3010,6 +3014,7 @@ div.gwt-MenuBarPopup {
 	opacity: .90;
     -moz-opacity: .90;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 10px;
 	color: #000000;
@@ -3128,6 +3133,7 @@ div.gwt-MenuBarPopup {
 	opacity: .90;
     -moz-opacity: .90;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 	padding: 4px;
 	color: #000000;
@@ -3141,7 +3147,9 @@ div.gwt-MenuBarPopup {
 	zoom:50%;
 	display: inline-block;
 	-moz-transform: scale(0.5);
+	transform: scale(0.5);
 	-moz-transform-origin: top left;
+	transform-origin: top left;
 }
 
 .unitime-RoomSharingWidget {
@@ -3311,7 +3319,6 @@ div.gwt-MenuBarPopup {
 .unitime-RoomSharingWidget .legend .note {
 	display: block;
 	padding-top: 5px;
-	vertical-align: middle;
 }
 
 .unitime-RoomSharingWidget .legend .note .label {
@@ -3432,9 +3439,6 @@ unitime-RoomSharingWidget .legend .blank {
     -moz-opacity:1;
 }
 
-.unitime-EventMeetingsHideDeleted {
-}
-
 .unitime-EventMeetingsHideDeleted .cancelled-row {
 	display: none;
 }
@@ -3519,7 +3523,9 @@ unitime-RoomSharingWidget .legend .blank {
 	position: absolute;
 	overflow: hidden;
 	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
 	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
 	-moz-border-radius-bottomleft: 3px;
 	-moz-border-radius-bottomright: 3px;
 	padding: 1px;
@@ -3543,6 +3549,7 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 1px 3px 1px 3px;
 	cursor: pointer;
 	-webkit-border-radius: 2px;
+	border-radius: 2px;
 	-moz-border-radius: 2px;
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;
@@ -3668,9 +3675,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-InfoPanel .left {
 	padding-right: 30px;
-}
-
-.unitime-InfoPanel .middle {
 }
 
 .unitime-InfoPanel .right {
@@ -4016,9 +4020,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-Rooms .row {
 	vertical-align: top;
-}
-
-.unitime-Rooms .cell {
 }
 
 .unitime-Rooms .note {
@@ -4450,7 +4451,6 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ConfirmationPanel .error-panel {
 	display: block;
 	text-align: right;
-	vertical-align: top;
 	font-size: x-small;
 	font-style: italic;
 	color: red;
@@ -4594,9 +4594,6 @@ unitime-RoomSharingWidget .legend .blank {
 	background-color: white;
 }
 
-.unitime-MultiSelect .content {
-}
-
 .unitime-MultiSelect .item {
 	display: block;
 }
@@ -4614,6 +4611,7 @@ unitime-RoomSharingWidget .legend .blank {
 	border: 1px solid #9CB0CE;
 	padding: 5px;
 	-webkit-border-radius: 6px;
+	border-radius: 6px;
 	-moz-border-radius: 6px;
 }
 
@@ -4770,12 +4768,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingRequests .objectives .objective {
 	white-space: nowrap;
-}
-
-.unitime-TeachingRequestDetail {
-}
-
-.unitime-TeachingRequestDetail .scroll {
 }
 
 .unitime-TeachingRequests .sections .section {
@@ -5002,9 +4994,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-TeachingRequestDetail .enrollment-conflict {
 	background-color: rgb(255, 240, 240);
-}
-
-.unitime-CourseFinderDialog {
 }
 
 .unitime-CourseFinderDialog .filter {
@@ -5339,9 +5328,6 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-top: 3px;
 }
 
-.unitime-SchedulingAssistantButtonsHeader {
-}
-
 .unitime-SchedulingAssistantButtons button {
 	margin: 2px;
 }
@@ -5358,9 +5344,6 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SchedulingAssistantButtons .center-panel {
 	margin-top: 3px;
 	display: inline-block;
-}
-
-.unitime-Panel {
 }
 
 .unitime-Panel .body {
@@ -5384,9 +5367,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-Panel .footer .center {
 	width: 100%;
-}
-
-.unitime-SuggestionsBox {
 }
 
 .unitime-SuggestionsBox .panel {
@@ -5552,14 +5532,12 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-FlowForm .header-cell {
-	display: inline-block;
 	float: left;
 	clear: left;
 	width: 100px;
 }
 
 .unitime-FlowForm .content-cell {
-	display:inline-block;
 	float:left;
 	padding: 1px 0px 1px 5px;
 }
@@ -5711,9 +5689,6 @@ unitime-RoomSharingWidget .legend .blank {
 	border-left: 1px solid #DDD;
 }
 
-.unitime-TimetableGrid .timetable-panel {
-}
-
 .unitime-TimetableGrid .vertical-separator {
 	height: 100%;
 	position: absolute;
@@ -5781,9 +5756,11 @@ unitime-RoomSharingWidget .legend .blank {
 @media print {
 	.unitime-TimetableGrid .meeting {
 		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 	.unitime-TimetableGrid .background {
 		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 	.unitime-TimetableGrid .meeting .header {
 		background-color: rgba(0, 0, 0, 0.05);
@@ -5979,9 +5956,6 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SuggestionsPage .conflict .counter {
 	vertical-align: middle;
-}
-
-.unitime-SuggestionsPage .constraint {
 }
 
 .unitime-SuggestionsPage .constraint .preference {

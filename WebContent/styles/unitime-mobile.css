@@ -31,10 +31,15 @@
 
 .unitime-MobileNotifications .slideup {
 	-webkit-animation: slideupfrombottom 1s ease-in-out;
+	animation: slideupfrombottom 1s ease-in-out;
 }
 
-
 @-webkit-keyframes slideupfrombottom {
+  from { -webkit-transform: translateY(100%); }
+  to { -webkit-transform: translateY(0); }
+}
+
+@keyframes slideupfrombottom {
   from { -webkit-transform: translateY(100%); }
   to { -webkit-transform: translateY(0); }
 }
