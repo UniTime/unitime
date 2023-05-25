@@ -261,6 +261,12 @@ public class InstructorSurveyPage extends Composite {
 						setValue(result);
 						if (ToolBox.hasParent())
 							ToolBox.closeWindow();
+						if (result.hasPopupMessage()) {
+							if (result.isPopupWarning())
+								UniTimeNotifications.warn(result.getPopupMessage());
+							else
+								UniTimeNotifications.info(result.getPopupMessage());
+						}
 					}
 				});
 			}
@@ -288,6 +294,18 @@ public class InstructorSurveyPage extends Composite {
 								setValue(result);
 								if (ToolBox.hasParent())
 									ToolBox.closeWindow();
+								if (result.hasPopupMessage()) {
+									if (result.isPopupWarning())
+										UniTimeNotifications.warn(result.getPopupMessage());
+									else
+										UniTimeNotifications.info(result.getPopupMessage());
+								}
+								if (result.hasPopupMessage()) {
+									if (result.isPopupWarning())
+										UniTimeNotifications.warn(result.getPopupMessage());
+									else
+										UniTimeNotifications.info(result.getPopupMessage());
+								}	
 							}
 						});
 					}
