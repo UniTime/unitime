@@ -67,6 +67,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.security.SessionContext;
@@ -354,6 +355,9 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 			if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || assignment.getClazz().isDisplayInstructor()) {
 				for (Iterator<ClassInstructor> i = assignment.getClazz().getClassInstructors().iterator(); i.hasNext();) {
 					ClassInstructor instructor = i.next();
+					if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+							instructor.getResponsibility() != null &&
+							instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 					if (instructor.isLead() || !ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
 						instructors.add(instructor.getInstructor());
 				}
