@@ -1849,6 +1849,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		Float maxCredit = original.getMaxCredit();
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
+		request.setWaitListMode(details.getWaitListMode());
 		if (maxCredit != null && request.getCredit(null) > maxCredit) {
 			for (RequestedCourse rc: getOverCreditRequests(request, maxCredit)) {
 				response.addMessage(rc.getCourseId(), rc.getCourseName(), "CREDIT",
