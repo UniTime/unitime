@@ -178,7 +178,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                 if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
                 Vector<Cell> rooms = new Vector<Cell>();
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
-                    rooms.add(rpad(iNoRoom,11));
+                    rooms.add(formatRoom(iNoRoom));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
                     rooms.add(formatRoom(room));
                 }

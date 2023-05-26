@@ -426,7 +426,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             rpad(getMeetingTime(section),36),
                             lpad(String.valueOf(section.getNrStudents()),5).withSeparator("  "),
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30),
-                            new Cell(section.getExamAssignment()==null?"":iNoRoom)
+                            new Cell(section.getExamAssignment()==null?"":iNoRoom).withColSpan(3)
                             );
                 } else {
                     if (getLineNumber()+section.getExamAssignment().getRooms().size()>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();

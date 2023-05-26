@@ -359,7 +359,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 }
             } else {
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
-                	rooms.add(rpad(iNoRoom, 12));
+                	rooms.add(new Cell(new Cell(" ").withSeparator(""), formatRoom(iNoRoom)));
                     roomCaps.add(rpad("", 4));
                     roomExCaps.add(rpad("", 5));
                 } else for (ExamRoomInfo room : exam.getRooms()) {
@@ -675,7 +675,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                         }
                     } else {
                         if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
-                        	rooms.add(rpad(iNoRoom, 12));
+                        	rooms.add(new Cell(new Cell(" ").withSeparator(""), formatRoom(iNoRoom)));
                             roomCaps.add(rpad("", 4));
                             roomExCaps.add(rpad("", 5));
                         } else for (ExamRoomInfo room : exam.getRooms()) {
