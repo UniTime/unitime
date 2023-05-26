@@ -874,11 +874,14 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		String query = null;
 		if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
 			query = "select ci.classInstructing.uniqueId, ci.instructor from ClassInstructor ci " +
+					(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join ci.responsibility r " : "") +
 					"where ci.classInstructing.uniqueId in :classIds";
 			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue())
 				query += " and ci.classInstructing.displayInstructor = true";
 			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
 				query += " and ci.lead = true";
+			if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue())
+				query += " and (r is null or bit_and(r.options, " + TeachingResponsibility.Option.auxiliary.toggle() + ") = 0)";
 		} else {
 			query = "select a.clazz.uniqueId, i from Assignment a inner join a.instructors i " +
 					"where a.solution.commited = true and a.clazz.uniqueId in :classIds";

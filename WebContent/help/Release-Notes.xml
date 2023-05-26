@@ -29,6 +29,23 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Timetable Grid: Hide Auxiliary Instructors</name>
+			<description>
+				<line>Added an ability to hide instructors with auxiliary responsibilities.
+					<line>When class instructors are used (instead of solution instructors), hide instructors with auxiliary teaching responsibilities.</line>
+					<line>A teaching responsibility can be marked as Auxiliary on the Administration &gt; Other &gt; Teaching Responsibilities page.</line>
+					<line>The conflicts are still checked for such instructors and they show when the data are loaded into the solver.
+						<line>They only do not show when there is no solver loaded in memory for the user,</line>
+						<line>or for committed solutions of other problems (when unitime.timeGrid.fixInstructors is also set to true).</line>
+					</line>
+				</line>
+				<line>Enabled when tmtbl.timeGrid.useClassInstructors.hideAuxiliary is set to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Add/Edit Solver Configuration: Date Parameters</name>
