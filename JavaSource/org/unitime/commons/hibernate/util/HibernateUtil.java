@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
@@ -54,14 +55,20 @@ import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
+import org.hibernate.metamodel.mapping.BasicValuedMapping;
+import org.hibernate.query.ReturnableType;
 import org.hibernate.query.sqm.function.NamedSqmFunctionDescriptor;
+import org.hibernate.query.sqm.produce.function.FunctionReturnTypeResolver;
 import org.hibernate.query.sqm.produce.function.StandardArgumentsValidators;
+import org.hibernate.query.sqm.tree.SqmTypedNode;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
 import org.hibernate.sql.ast.SqlAstNodeRenderingMode;
 import org.hibernate.sql.ast.SqlAstTranslator;
 import org.hibernate.sql.ast.spi.SqlAppender;
 import org.hibernate.sql.ast.tree.SqlAstNode;
+import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.spi.TypeConfiguration;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -444,7 +451,7 @@ public class HibernateUtil {
     
     public static String dayOfWeek(String field) {
     	if (isOracle())
-    		return "(trunc(" + field + ") - trunc(" + field + ", 'IW'))";
+    		return "weekday(" + field + ")";
     	else if (isPostgress())
     		return "extract(isodow from " + field + ") - 1";
     	else
@@ -461,6 +468,8 @@ public class HibernateUtil {
     public static void addOperations(MetadataBuilder builder, Class dialect) {
     	if (PostgreSQLDialect.class.isAssignableFrom(dialect)) {
     		builder.applySqlFunction("adddate", PostgreSQLAddDateFunction.INSTANCE);
+        } else if (OracleDialect.class.isAssignableFrom(dialect)) {
+        	builder.applySqlFunction("weekday", OracleWeekdayFunction.INSTANCE);
         }
     }
     
@@ -476,6 +485,32 @@ public class HibernateUtil {
     		sqlAppender.appendSql(" as int) & cast(");
     		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql(") * interval '1 day'");
+    	}
+    }
+    
+    public static class OracleWeekdayFunction extends NamedSqmFunctionDescriptor {
+    	public static final OracleWeekdayFunction INSTANCE = new OracleWeekdayFunction();
+    	public OracleWeekdayFunction() {
+    		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		// (trunc(?) - trunc(?, 'IW'));
+    		sqlAppender.appendSql("(trunc(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(") - trunc(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(", 'IW'))");
     	}
     }
     
