@@ -3519,6 +3519,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 			
+			request.setWaitListMode(details.getWaitListMode());
 			String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 			if (maxCreditDenied != null && request.getCredit(null) >= maxCreditDenied) {
 				for (RequestedCourse rc: getOverCreditRequests(request, maxCredit))
