@@ -69,6 +69,7 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
+import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
@@ -372,6 +373,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
 			if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || assignment.getClazz().isDisplayInstructor()) {
 				for (ClassInstructor instructor: assignment.getClazz().getClassInstructors()) {
+					if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+							instructor.getResponsibility() != null &&
+							instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 					if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse())
 						cell.addInstructor(instructor.getInstructor().getName(context.getInstructorNameFormat()));
 				}
@@ -667,13 +671,19 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				check += " and i.lead = true";
 			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue())
 				check += " and i.classInstructing.displayInstructor = true";
+			if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue())
+				check += " and (r is null or bitand(r.options, " + TeachingResponsibility.Option.auxiliary.toggle() + ") = 0)";
 			if (instructor.getExternalUniqueId() != null && !instructor.getExternalUniqueId().isEmpty()) {
-				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check,
+				Query<Assignment> q = hibSession.createQuery(
+						"select distinct a from Assignment as a inner join a.clazz.classInstructors as i " +
+						(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join i.responsibility r " : "") +
+						"where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check,
 						Assignment.class);
 				q.setParameter("extId", instructor.getExternalUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
+						(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join i.responsibility r " : "") +
 						"where i.instructor.externalUniqueId = :extId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check,
 						Assignment.class);
 				q.setParameter("extId", instructor.getExternalUniqueId());
@@ -681,12 +691,16 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				q.setCacheable(true);
 				committed = q.list();
 			} else {
-				Query<Assignment> q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check,
+				Query<Assignment> q = hibSession.createQuery(
+						"select distinct a from Assignment as a inner join a.clazz.classInstructors as i " +
+								(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join i.responsibility r " : "") +
+								"where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check,
 						Assignment.class);
 				q.setParameter("instructorId", instructor.getUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
+						(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join i.responsibility r " : "") +
 						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check,
 						Assignment.class);
 				q.setParameter("instructorId", instructor.getUniqueId());
@@ -942,6 +956,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 					if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
 						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
 							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
+								if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+										instructor.getResponsibility() != null &&
+										instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse())
 									if (term.equalsIgnoreCase(instructor.getInstructor().getExternalUniqueId())) return true;
 									if (term.equalsIgnoreCase(instructor.getInstructor().getFirstName())) return true;
@@ -980,6 +997,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 					if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
 						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
 							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
+								if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+										instructor.getResponsibility() != null &&
+										instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse())
 									if (term.equalsIgnoreCase(instructor.getInstructor().getExternalUniqueId())) return true;
 									if (term.equalsIgnoreCase(instructor.getInstructor().getFirstName())) return true;
@@ -1002,6 +1022,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 						if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || a.getClazz().isDisplayInstructor()) {
 							for (ClassInstructor instructor: a.getClazz().getClassInstructors()) {
 								if (instructor.isLead() || ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isFalse()) {
+									if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+											instructor.getResponsibility() != null &&
+											instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 									if (m.getResourceType() == ResourceType.INSTRUCTOR.ordinal() && !(
 											m.getResourceId().equals(instructor.getInstructor().getUniqueId()) ||
 											(m.getExternalId() != null && m.getExternalId().equals(instructor.getInstructor().getExternalUniqueId()))))

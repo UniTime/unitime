@@ -2093,6 +2093,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), hide instructors with auxiliary responsibilities." +
+			"A teaching responsibility can be marked as Auxiliary on the Administration > Other > Teaching Responsibilities page.")
+	TimetableGridUseClassInstructorsHideAuxiliary("tmtbl.timeGrid.useClassInstructors.hideAuxiliary"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Timetable Grid: skip holidays in room utilization computations")
 	TimetableGridUtilizationSkipHolidays("tmtbl.timeGrid.utilizationSkipHolidays"),
 

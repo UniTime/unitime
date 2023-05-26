@@ -65,6 +65,7 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -293,6 +294,9 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || assignment.getClazz().isDisplayInstructor()) {
 					for (Iterator<ClassInstructor> i = assignment.getClazz().getClassInstructors().iterator(); i.hasNext();) {
 						ClassInstructor instructor = i.next();
+						if (ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() && 
+								instructor.getResponsibility() != null &&
+								instructor.getResponsibility().hasOption(Option.auxiliary)) continue;
 						if (instructor.isLead() || !ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
 							instructors.add(instructor.getInstructor());
 					}
