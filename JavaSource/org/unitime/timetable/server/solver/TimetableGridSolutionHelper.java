@@ -60,6 +60,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -1037,6 +1038,9 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 							if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;
 						}
 					}
+				} else if ("config".equals(attr)) {
+					InstrOfferingConfig config = a.getClazz().getSchedulingSubpart().getInstrOfferingConfig();
+					return config.getName().matches(term);
 				} else if ("limit".equals(attr)) {
 					int min = 0, max = Integer.MAX_VALUE;
 					Size prefix = Size.eq;
