@@ -65,10 +65,12 @@ import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridMode
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.TeachingResponsibilityDAO;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;
@@ -1042,6 +1044,9 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 						if (term.equalsIgnoreCase("null") && resp == null) return true;
 						if (resp != null && (term.equalsIgnoreCase(resp.getReference()) || term.equalsIgnoreCase(resp.getLabel()))) return true;
 					}
+				} else if ("config".equals(attr)) {
+					InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(p.variable().getConfiguration().getConfigId());
+					return config.getName().matches(term);
 				} else if ("room".equals(attr)) {
 					if (p.isMultiRoom())
 						for (RoomLocation l: p.getRoomLocations()) {
