@@ -111,7 +111,7 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             rpad(getMeetingTime(section),35),
                             lpad(String.valueOf(section.getNrStudents()),5).withSeparator("  "),
                             rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30),
-                            new Cell(section.getExamAssignment()==null?"":iNoRoom)
+                            new Cell(section.getExamAssignment()==null?"":iNoRoom).withColSpan(3)
                             );
                 } else {
                     if (getLineNumber()+Math.max(section.getExamAssignment().getRooms().size(), section.hasDifferentSubjectChildren() ? section.getDifferentSubjectChildren().size() : 0)>getNrLinesPerPage() && getNrLinesPerPage() > 0) newPage();

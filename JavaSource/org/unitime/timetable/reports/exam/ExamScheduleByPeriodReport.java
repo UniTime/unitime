@@ -131,7 +131,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                                     formatSection10(section.getSection()),
                                     rpad(getMeetingTime(section),35),
                                     lpad(String.valueOf(section.getNrStudents()),5),
-                                    new Cell(iNoRoom)
+                                    new Cell(iNoRoom).withColSpan(3)
                                     );
                             iPeriodPrinted = !iNewPage;
                         } else {

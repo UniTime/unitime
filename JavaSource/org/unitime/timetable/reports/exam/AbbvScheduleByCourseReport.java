@@ -183,7 +183,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                                  rpad(sameItype && isSkipRepeating()?"":section.getItype().length()==0?MSG.lrALL():section.getItype(),5),
                                  formatSection10(sameSct && isSkipRepeating()?"":section.getSection()).withSeparator(""),
                                  formatShortPeriodDate(section.getExamAssignment()), formatShortPeriodTime(section.getExamAssignment()),
-                                 rpad(iNoRoom,23)
+                                 formatRoom(iNoRoom)
                                  ));
                         } else {
                             lines.add(new Line(
@@ -191,7 +191,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                             		rpad(sameCrs && isSkipRepeating()?"":section.getCourseNbr(),8),
                             		formatSection10(sameSct && isSkipRepeating()?"":section.getSection().length()==0?MSG.lrALL():section.getSection()).withSeparator(""),
                             		formatPeriodDate(section.getExamAssignment()), formatPeriodTime(section.getExamAssignment()),
-                            		rpad(iNoRoom,23)
+                            		formatRoom(iNoRoom)
                             		));
                         }
                 } else {
