@@ -71,10 +71,12 @@ public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorReq
 			if (c.get(Calendar.YEAR) < sessionYear) {
 				Calendar x = Calendar.getInstance(Locale.US);
 			    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
+			    x.clear(Calendar.MILLISECOND);
 			    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
 			} else if (c.get(Calendar.YEAR) > sessionYear) {
 				Calendar x = Calendar.getInstance(Locale.US);
 			    x.set(sessionYear,11,31,0,0,0);
+			    x.clear(Calendar.MILLISECOND);
 			    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
 			}
 			WeekInterface week = new WeekInterface();

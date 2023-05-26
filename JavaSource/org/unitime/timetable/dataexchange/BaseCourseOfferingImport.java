@@ -841,6 +841,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 		
 		cal.set(year, (month - 1), day, 0, 0, 0);
+		cal.clear(Calendar.MILLISECOND);
 
 		return(cal);
 	}

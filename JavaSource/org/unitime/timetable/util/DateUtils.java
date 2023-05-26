@@ -40,16 +40,19 @@ public class DateUtils {
     public static int getFirstDayOfWeek(int year, int week) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.MONDAY);
 		int dayOfYear = c.get(Calendar.DAY_OF_YEAR); 
 		if (c.get(Calendar.YEAR)<year) {
 		    Calendar x = Calendar.getInstance(Locale.US);
 		    x.set(c.get(Calendar.YEAR),11,31,0,0,0);
+		    x.clear(Calendar.MILLISECOND);
 		    dayOfYear -= x.get(Calendar.DAY_OF_YEAR);
 		} else if (c.get(Calendar.YEAR)>year) {
 		    Calendar x = Calendar.getInstance(Locale.US);
 		    x.set(year,11,31,0,0,0);
+		    x.clear(Calendar.MILLISECOND);
 		    dayOfYear += x.get(Calendar.DAY_OF_YEAR);
 		}
 		return dayOfYear;
@@ -57,6 +60,7 @@ public class DateUtils {
     public static Date getDate(int year, int dayOfYear) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.DAY_OF_YEAR,dayOfYear);
 		return c.getTime();
     }
@@ -66,6 +70,7 @@ public class DateUtils {
     public static Date getStartDate(int year, int week) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
 		c.add(Calendar.DAY_OF_YEAR, 1);
@@ -74,6 +79,7 @@ public class DateUtils {
     public static Date getEndDate(int year, int week) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
 		c.add(Calendar.DAY_OF_YEAR, 1);
@@ -82,6 +88,7 @@ public class DateUtils {
     public static Date getStartDate(int year, int week, int offset) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
 		c.add(Calendar.DAY_OF_YEAR, 1 + offset);
@@ -90,6 +97,7 @@ public class DateUtils {
     public static Date getEndDate(int year, int week, int offset) {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.set(year,1,1,0,0,0);
+		c.clear(Calendar.MILLISECOND);
 		c.set(Calendar.WEEK_OF_YEAR,week);
 		c.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
 		c.add(Calendar.DAY_OF_YEAR, 1 + offset);
@@ -131,7 +139,7 @@ public class DateUtils {
     	Calendar cal = Calendar.getInstance(Locale.US);
     	cal.set(calculateActualYear(month, year),
                 (month < 0 ? (12 + (month%12)) : month % 12), day, 0, 0, 0);
-    	cal.set(Calendar.MILLISECOND, 0);
+    	cal.clear(Calendar.MILLISECOND);
         return(cal);
     }
     public static int getDayOfYear(int day, int month, int year) {
