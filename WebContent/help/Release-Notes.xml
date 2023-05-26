@@ -44,6 +44,13 @@
 				<line>Enabled when tmtbl.timeGrid.useClassInstructors.hideAuxiliary is set to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Class Filter</name>
+			<description>
+				<line>Added ability to filter by instructional offering configuration name, for example config:1</line>
+				<line>The value is a regular expression that the configuration name must match.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>
