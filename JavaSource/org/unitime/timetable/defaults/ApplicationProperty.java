@@ -3266,6 +3266,19 @@ public enum ApplicationProperty {
 	@Description("Instructor Survey: Send email confirmation when a survey is submitted")
 	@Since(4.8)
 	InstructorSurveyEmailConfirmation("unitime.instructorSurvey.emailConfirmation"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Survey: When listing courses that the instructor has already assigned, exclude assignemnts that have an auxiliary teaching responsibility. " +
+			"A teaching responsibility can be marked as Auxiliary on the Administration > Other > Teaching Responsibilities page.")
+	@Since(4.8)
+	InstructorSurveyExcludeAuxiliaryAssignments("unitime.instructorSurvey.excludeAuxiliaryAssignments"),
+	
+	@Type(String.class)
+	@Description("Instructor Survey: When listing courses that the instructor has already assigned, exclude courses with the type matching course type. " +
+			"This property contains a regular expression; courses with course type reference matching this expression are excluded.")
+	@Since(4.8)
+	InstructorSurveyExcludeCourseTypes("unitime.instructorSurvey.excludeCourseTypes"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
