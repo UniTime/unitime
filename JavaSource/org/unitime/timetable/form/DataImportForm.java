@@ -79,7 +79,8 @@ public class DataImportForm implements UniTimeForm {
     	PREFERENCES("preferences", "Course Timetabling Preferences"),
     	SESSION_SETUP("sessionSetup", "Academic Session Setup"),
     	STUDENT_ADVISORS("studentAdvisors", "Student Advisors"),
-    	STUDENT_STATUSES("studentStatuses", "Student Scheduling Statuses")
+    	STUDENT_STATUSES("studentStatuses", "Student Scheduling Statuses"),
+    	INSTRUCTOR_SURVEYS("instructorSurveys", "Instructor Surveys"),
     	;
     	
     	private String iType, iLabel;

@@ -63,6 +63,7 @@ public class DataExchangeHelper {
         sExportRegister.put("sessionSetup", AcademicSessionSetupExport.class);
         sExportRegister.put("studentAdvisors", StudentAdvisorsExport.class);
         sExportRegister.put("studentStatuses", StudentSchedulingStatusExport.class);
+        sExportRegister.put("instructorSurveys", InstructorSurveyExport.class);
         sImportRegister = new Hashtable<String, Class>();
         sImportRegister.put("academicAreas",AcademicAreaImport.class);
         sImportRegister.put("academicClassifications",AcademicClassificationImport.class);
@@ -102,6 +103,7 @@ public class DataExchangeHelper {
         sImportRegister.put("coursett", SolverImport.class);
         sImportRegister.put("sectioning", SolverImport.class);
         sImportRegister.put("instructor-schedule", SolverImport.class);
+        sImportRegister.put("instructorSurveys", InstructorSurveyImport.class);
     }
     
     public DataExchangeHelper() {

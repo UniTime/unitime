@@ -27,6 +27,8 @@ import java.util.TreeSet;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -332,6 +334,10 @@ public class PreferencesExport extends BaseExport{
 		}
 		if (el == null) return null;
 		el.addAttribute("level", preference.getPrefLevel().getPrefProlog());
+		if (preference.getNote() != null && !preference.getNote().isEmpty())
+			el.addElement("note")
+			.addAttribute(QName.get("space", Namespace.XML_NAMESPACE), "preserve")
+			.setText(preference.getNote());
 		return el;
 	}
 }
