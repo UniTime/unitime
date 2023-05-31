@@ -74,9 +74,9 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class PreferencesImport  extends BaseImport {
-	private Session iSession;
-	private SimpleDateFormat iDateFormat, iTimeFormat;
-	private DateFormat iHHmm = new SimpleDateFormat("HHmm", Locale.US);
+	protected Session iSession;
+	protected SimpleDateFormat iDateFormat, iTimeFormat;
+	protected DateFormat iHHmm = new SimpleDateFormat("HHmm", Locale.US);
 	
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("preferences")) {
@@ -487,8 +487,10 @@ public class PreferencesImport  extends BaseImport {
     	Department mngDept = ctrDept;
     	if (group instanceof Class_)
     		mngDept = ((Class_)group).getManagingDept();
-    	if (group instanceof SchedulingSubpart)
+    	else if (group instanceof SchedulingSubpart)
     		mngDept = ((SchedulingSubpart)group).getManagingDept();
+    	else
+    		mngDept = group.getDepartment();
     	
     	if ("datePref".equals(element.getName())) {
     		DatePattern pattern = lookupDatePattern(element.attributeValue("pattern", "not-set"));
@@ -499,6 +501,7 @@ public class PreferencesImport  extends BaseImport {
     		DatePatternPref pref = new DatePatternPref();
     		pref.setDatePattern(pattern);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("timePref".equals(element.getName())) {
@@ -535,6 +538,7 @@ public class PreferencesImport  extends BaseImport {
             	}
     		}
     		pref.setPreference(model.getPreferences());
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("buildingPref".equals(element.getName())) {
@@ -543,6 +547,7 @@ public class PreferencesImport  extends BaseImport {
     		BuildingPref pref = new BuildingPref();
     		pref.setBuilding(building);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("roomPref".equals(element.getName())) {
@@ -555,32 +560,36 @@ public class PreferencesImport  extends BaseImport {
     			RoomPref pref = new RoomPref();
     			pref.setRoom(room);
     			pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    			pref.setNote(getNote(element));
         		return pref;
     		} else if (label != null) {
-    			Location location = lookupLocation(label, element.attributeValue("department", mngDept.getDeptCode()));
+    			Location location = lookupLocation(label, element.attributeValue("department", (mngDept == null ? null : mngDept.getDeptCode())));
     			if (location == null) return null;
     			RoomPref pref = new RoomPref();
     			pref.setRoom(location);
     			pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    			pref.setNote(getNote(element));
         		return pref;
     		} else {
     			return null;
     		}
     	}
     	if ("groupPref".equals(element.getName())) {
-    		RoomGroup rg = lookupRoomGroup(element.attributeValue("group", "not-set"), element.attributeValue("department", mngDept.getDeptCode()));
+    		RoomGroup rg = lookupRoomGroup(element.attributeValue("group", "not-set"), element.attributeValue("department", (mngDept == null ? null : mngDept.getDeptCode())));
     		if (rg == null) return null;
     		RoomGroupPref pref = new RoomGroupPref();
     		pref.setRoomGroup(rg);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("featurePref".equals(element.getName())) {
-    		RoomFeature feature = lookupRoomFeature(element.attributeValue("feature", "not-set"), element.attributeValue("department", mngDept.getDeptCode()));
+    		RoomFeature feature = lookupRoomFeature(element.attributeValue("feature", "not-set"), element.attributeValue("department", (mngDept == null ? null : mngDept.getDeptCode())));
     		if (feature == null) return null;
     		RoomFeaturePref pref = new RoomFeaturePref();
     		pref.setRoomFeature(feature);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("distributionPref".equals(element.getName())) {
@@ -613,14 +622,16 @@ public class PreferencesImport  extends BaseImport {
             		}
             	}
     		}
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("instructorPref".equals(element.getName())) {
-    		DepartmentalInstructor instructor = lookupInstructor(element.attributeValue("instructor", "not-set"), element.attributeValue("department", ctrDept.getDeptCode()));
+    		DepartmentalInstructor instructor = lookupInstructor(element.attributeValue("instructor", "not-set"), element.attributeValue("department", (ctrDept == null ? null : ctrDept.getDeptCode())));
     		if (instructor == null) return null;
     		InstructorPref pref = new InstructorPref();
     		pref.setInstructor(instructor);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("coursePref".equals(element.getName())) {
@@ -629,14 +640,16 @@ public class PreferencesImport  extends BaseImport {
     		InstructorCoursePref pref = new InstructorCoursePref();
     		pref.setCourse(course);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("attributePref".equals(element.getName())) {
-    		InstructorAttribute attribute = lookupAttribute(element.attributeValue("attribute", "not-set"), element.attributeValue("department", ctrDept.getDeptCode()));
+    		InstructorAttribute attribute = lookupAttribute(element.attributeValue("attribute", "not-set"), element.attributeValue("department", (ctrDept == null ? null : ctrDept.getDeptCode())));
     		if (attribute == null) return null;
     		InstructorAttributePref pref = new InstructorAttributePref();
     		pref.setAttribute(attribute);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	if ("periodPref".equals(element.getName())) {
@@ -645,9 +658,15 @@ public class PreferencesImport  extends BaseImport {
     		ExamPeriodPref pref = new ExamPeriodPref();
     		pref.setExamPeriod(period);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setNote(getNote(element));
     		return pref;
     	}
     	return null;
+    }
+    
+    protected String getNote(Element parent) {
+    	Element noteEl = parent.element("note");
+    	return noteEl == null ? null : noteEl.getText();
     }
     
 }

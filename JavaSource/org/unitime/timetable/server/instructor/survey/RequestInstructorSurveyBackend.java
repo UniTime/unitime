@@ -485,7 +485,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				(excludeAuxiliary ? "left outer join ci.responsibility r " : "") +
 				"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
 				"and ci.lead = true and c.schedulingSubpart.itype.organized = true" +
-				(excludeAuxiliary ? " and (r is null or bitand(r.options, " + TeachingResponsibility.Option.auxiliary.toggle() + ") = 0)" : "")
+				(excludeAuxiliary ? " and (r is null or bit_and(r.options, " + TeachingResponsibility.Option.auxiliary.toggle() + ") = 0)" : "")
 				)
 				.setString("id", externalId)
 				.setLong("sessionId", sessionId)
