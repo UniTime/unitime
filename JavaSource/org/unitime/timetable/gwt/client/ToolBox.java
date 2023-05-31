@@ -303,8 +303,8 @@ public class ToolBox {
 	}-*/;
 	
 	public native static void closeWindow()/*-{
-		return $wnd.parent.hideGwtDialog();
-		return $wnd.parent.refreshPage();
+		$wnd.parent.hideGwtDialog();
+		$wnd.parent.refreshPage();
 	}-*/;
 	
 	public static Throwable unwrap(Throwable e) {
