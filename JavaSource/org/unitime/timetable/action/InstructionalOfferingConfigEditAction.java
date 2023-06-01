@@ -941,7 +941,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             ArrayList classesList = new ArrayList(classes);
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ID));
 
-            Set parentClasses = parent.getClasses();
+            ArrayList parentClasses = new ArrayList(parent.getClasses());
             int parentNumClasses = parentClasses.size();
             if (parentNumClasses>0) {
 	            Iterator cci = classesList.iterator();
