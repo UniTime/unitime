@@ -136,7 +136,7 @@
 		<s:hidden name="form.externalId"/>
 	</sec:authorize>
 	
-	<s:if test="#request.courseTypes != null && #request.courseTypes.isEmpty()">
+	<s:if test="#request.courseTypes != null && !#request.courseTypes.isEmpty()">
 		<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
 							(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<TR>
