@@ -97,13 +97,14 @@ public class TestHqlExportToCSV implements Exporter {
 					for (Long id: vals.keySet()) {
 						if (!value.isEmpty()) value += ",";
 						value += id.toString();
+						if (!o.allowMultiSelection()) break;
 					}
 				}
 				hql = hql.replace("%" + o.name() + "%", "(" + value + ")");
 			}
         }
         if (hql.indexOf("%USER%") >= 0)
-        	hql = hql.replace("%USER%", HibernateUtil.escapeSql(helper.getSessionContext().getUser().getExternalUserId()));
+        	hql = hql.replace("%USER%", "'" + HibernateUtil.escapeSql(helper.getSessionContext().getUser().getExternalUserId()) + "'");
 
 		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper, false));
 		helper.setup(out.getContentType(), reference(), false);

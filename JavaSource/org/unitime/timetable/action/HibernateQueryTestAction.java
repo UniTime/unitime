@@ -147,13 +147,14 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 						for (Long id: vals.keySet()) {
 							if (!value.isEmpty()) value += ",";
 							value += id.toString();
+							if (!o.allowMultiSelection()) break;
 						}
 					}
 					query = query.replace("%" + o.name() + "%", "(" + value + ")");
 				}
 	        }
 	        if (query.indexOf("%USER%") >= 0)
-	        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
+	        	query = query.replace("%USER%", "'" + HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()) + "'");
 	        
         	BufferedPrinter out = new BufferedPrinter(new CSVPrinter(response.getWriter(), false));
         	response.setContentType(out.getContentType() + "; charset=UTF-8");
@@ -189,13 +190,14 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 							for (Long id: vals.keySet()) {
 								if (!value.isEmpty()) value += ",";
 								value += id.toString();
+								if (!o.allowMultiSelection()) break;
 							}
 						}
 						query = query.replace("%" + o.name() + "%", "(" + value + ")");
 					}
 		        }
 		        if (query.indexOf("%USER%") >= 0)
-		        	query = query.replace("%USER%", HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()));
+		        	query = query.replace("%USER%", "'" + HibernateUtil.escapeSql(sessionContext.getUser().getExternalUserId()) + "'");
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();
 		        Query<Tuple> q = null;

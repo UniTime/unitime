@@ -221,13 +221,14 @@ public class SavedHqlExportToCSV implements Exporter {
 						for (Long id: vals.keySet()) {
 							if (!value.isEmpty()) value += ",";
 							value += id.toString();
+							if (!o.allowMultiSelection()) break;
 						}
 					}
 					hql = hql.replace("%" + o.name() + "%", "(" + value + ")");
 				}
 			}
 			if (hql.indexOf("%USER%") >= 0)
-				hql = hql.replace("%USER%", HibernateUtil.escapeSql(user.getExternalUserId()));
+				hql = hql.replace("%USER%", "'" + HibernateUtil.escapeSql(user.getExternalUserId()) + "'");
 			org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 			org.hibernate.query.Query<Tuple> q = hibSession.createQuery(hql, Tuple.class);
 			if (maxRows > 0)
