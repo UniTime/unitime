@@ -22,7 +22,7 @@
 <script name="Distribution Types: Same Day (Examination)" permission="Distribution Types" engine="ECMAScript" created="Mon Sep 30 19:54:03 CEST 2019">
   <description><![CDATA[This script creates the Same Day constraint distribution type for examination timetabling.]]></description>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'EX_SAME_DAY').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'EX_SAME_DAY').uniqueResult();
 if (type == null) {
   type = new org.unitime.timetable.model.DistributionType();
   type.setReference('EX_SAME_DAY');

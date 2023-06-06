@@ -5,7 +5,7 @@
 It is the combination of Same Days, Same Start and Same Room distribution preferences.<br>
 When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time in the same room.]]></description>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'SAME_DATES').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'SAME_DATES').uniqueResult();
 if (type == null) {
   log.info('Creating Same Dates constraint...');
   type = new org.unitime.timetable.model.DistributionType();

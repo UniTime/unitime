@@ -55,7 +55,7 @@ if (daySun) { dayCode += 1; days += "Su"; }
 var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 var reference = '_MaxWeeks:' + maxWeeks + ':' + dayCode + '_';
 
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
 var abbv = 'Max ' + maxWeeks + ' Wks';
 var label = 'At Most ' + maxWeeks + ' Weeks';
 var desc = 'Classes should be placed in no more than ' + maxWeeks + ' weeks (all classes are considered).';

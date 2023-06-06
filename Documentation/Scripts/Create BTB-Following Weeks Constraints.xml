@@ -23,7 +23,7 @@
   <description><![CDATA[Back-To-Back Weeks: Given classes must be taught on weeks that are back-to-back<br>
 Following Weeks: Given classes must be taught on weeks that are back-to-back and in the given order]]></description>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'BTB_WEEKS').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'BTB_WEEKS').uniqueResult();
 if (type == null) {
   log.info('Creating Back-To-Back Weeks constraint...');
   type = new org.unitime.timetable.model.DistributionType();
@@ -43,7 +43,7 @@ type.setExamPref(false);
 type.setVisible(true);
 hibSession.saveOrUpdate(type);
 
-type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'FOLLOWING_WEEKS').uniqueResult();
+type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'FOLLOWING_WEEKS').uniqueResult();
 if (type == null) {
   log.info('Creating Following Weeks constraint...');
   type = new org.unitime.timetable.model.DistributionType();

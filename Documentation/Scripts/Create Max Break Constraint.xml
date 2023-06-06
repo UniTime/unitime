@@ -28,7 +28,7 @@ Reference _MaxBreaks:1:30_ translates to a maximum number of one break (two bloc
   <parameter name="maxBreaks" label="Max Breaks" type="enum(0,1,2,3,4,5)" default="1"/>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 var reference = '_MaxBreaks:' + maxBreaks + ':' + minLength + '_';
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
 var label = '';
 var abbv = '';
 var desc = '';

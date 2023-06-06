@@ -19,36 +19,36 @@
  * limitations under the License.
  * 
  -->
-<report name="TA: Teaching Conflicts" created="Fri Nov 18 14:09:53 CET 2016">
+<report name="TA: Teaching Conflicts" created="Tue Jun 06 16:56:11 CEST 2023">
   <flag>APPEARANCE_COURSES</flag>
   <description><![CDATA[This report shows cases, where the instructor is also a student and he or she is enrolled in a class that is overlapping with the class that the instructor is teaching.]]></description>
   <query><![CDATA[select distinct
   ci.instructor.uniqueId as __Instructor,
   s.externalUniqueId as Student_Id, s.lastName || ' ' || s.firstName as Student_Name, s.email as Student_Email,
   e.courseOffering.subjectAreaAbbv || ' ' || e.courseOffering.courseNbr as Enrolled_Course,
-  c1.schedulingSubpart.itype.abbv || ' ' || c1.sectionNumberCache as Section,
-  ((case ((a1.days - (mod(a1.days, 64)))/64) when 1 then 'M' else '' end) ||
-  (case mod((a1.days - (mod(a1.days, 32)))/32, 2) when 1 then 'T' else '' end) ||
-  (case mod((a1.days - (mod(a1.days, 16)))/16, 2) when 1 then 'W' else '' end) ||
-  (case mod((a1.days - (mod(a1.days, 8)))/8, 2) when 1 then 'Th' else '' end) ||
-  (case mod((a1.days - (mod(a1.days, 4)))/4, 2) when 1 then 'F' else '' end) ||
-  (case mod((a1.days - (mod(a1.days, 2)))/2, 2) when 1 then 'S' else '' end) ||
-  (case mod(a1.days, 2) when 1 then 'Su' else '' end)) || ' ' ||
-  str(floor((5 * m1.startPeriod + m1.startOffset - (mod(5 * m1.startPeriod + m1.startOffset, 60))) /60)) || ':' || lpad(str(mod(5 * m1.startPeriod + m1.startOffset, 60)), 2, '0') || ' - ' ||
-  str(floor((5 * m1.stopPeriod + m1.stopOffset - (mod(5 * m1.stopPeriod + m1.stopOffset, 60))) /60)) || ':' || lpad(str(mod(5 * m1.stopPeriod + m1.stopOffset, 60)), 2, '0') ||
-  ' ' || a1.datePattern.name as Time,
+  c1.schedulingSubpart.itype.abbv || ' ' || c1.sectionNumberCache as Section_1,
+  ((case ((a1.days - (mod(cast((a1.days) as int), 64)))/64) when 1 then 'M' else '' end) ||
+  (case mod(cast(((a1.days - (mod(cast((a1.days) as int), 32)))/32) as int), 2) when 1 then 'T' else '' end) ||
+  (case mod(cast(((a1.days - (mod(cast((a1.days) as int), 16)))/16) as int), 2) when 1 then 'W' else '' end) ||
+  (case mod(cast(((a1.days - (mod(cast((a1.days) as int), 8)))/8) as int), 2) when 1 then 'Th' else '' end) ||
+  (case mod(cast(((a1.days - (mod(cast((a1.days) as int), 4)))/4) as int), 2) when 1 then 'F' else '' end) ||
+  (case mod(cast(((a1.days - (mod(cast((a1.days) as int), 2)))/2) as int), 2) when 1 then 'S' else '' end) ||
+  (case mod(cast((a1.days) as int), 2) when 1 then 'Su' else '' end)) || ' ' ||
+  str(floor((5 * m1.startPeriod + m1.startOffset - (mod(cast((5 * m1.startPeriod + m1.startOffset) as int), 60))) /60)) || ':' || lpad(str(mod(cast((5 * m1.startPeriod + m1.startOffset) as int), 60)), 2, '0') || ' - ' ||
+  str(floor((5 * m1.stopPeriod + m1.stopOffset - (mod(cast((5 * m1.stopPeriod + m1.stopOffset) as int), 60))) /60)) || ':' || lpad(str(mod(cast((5 * m1.stopPeriod + m1.stopOffset) as int), 60)), 2, '0') ||
+  ' ' || a1.datePattern.name as Time_1,
   co2.subjectAreaAbbv || ' ' || co2.courseNbr as Teaching_Course,
-  c2.schedulingSubpart.itype.abbv || ' ' || c2.sectionNumberCache as Section,
-  ((case ((a2.days - (mod(a2.days, 64)))/64) when 1 then 'M' else '' end) ||
-  (case mod((a2.days - (mod(a2.days, 32)))/32, 2) when 1 then 'T' else '' end) ||
-  (case mod((a2.days - (mod(a2.days, 16)))/16, 2) when 1 then 'W' else '' end) ||
-  (case mod((a2.days - (mod(a2.days, 8)))/8, 2) when 1 then 'Th' else '' end) ||
-  (case mod((a2.days - (mod(a2.days, 4)))/4, 2) when 1 then 'F' else '' end) ||
-  (case mod((a2.days - (mod(a2.days, 2)))/2, 2) when 1 then 'S' else '' end) ||
-  (case mod(a2.days, 2) when 1 then 'Su' else '' end)) || ' ' ||
-  str(floor((5 * m2.startPeriod + m2.startOffset - (mod(5 * m2.startPeriod + m2.startOffset, 60))) /60)) || ':' || lpad(str(mod(5 * m2.startPeriod + m2.startOffset, 60)), 2, '0') || ' - ' ||
-  str(floor((5 * m2.stopPeriod + m2.stopOffset - (mod(5 * m2.stopPeriod + m2.stopOffset, 60))) /60)) || ':' || lpad(str(mod(5 * m2.stopPeriod + m2.stopOffset, 60)), 2, '0') ||
-  ' ' || a2.datePattern.name as Time
+  c2.schedulingSubpart.itype.abbv || ' ' || c2.sectionNumberCache as Section_2,
+  ((case ((a2.days - (mod(cast((a2.days) as int), 64)))/64) when 1 then 'M' else '' end) ||
+  (case mod(cast(((a2.days - (mod(cast((a2.days) as int), 32)))/32) as int), 2) when 1 then 'T' else '' end) ||
+  (case mod(cast(((a2.days - (mod(cast((a2.days) as int), 16)))/16) as int), 2) when 1 then 'W' else '' end) ||
+  (case mod(cast(((a2.days - (mod(cast((a2.days) as int), 8)))/8) as int), 2) when 1 then 'Th' else '' end) ||
+  (case mod(cast(((a2.days - (mod(cast((a2.days) as int), 4)))/4) as int), 2) when 1 then 'F' else '' end) ||
+  (case mod(cast(((a2.days - (mod(cast((a2.days) as int), 2)))/2) as int), 2) when 1 then 'S' else '' end) ||
+  (case mod(cast((a2.days) as int), 2) when 1 then 'Su' else '' end)) || ' ' ||
+  str(floor((5 * m2.startPeriod + m2.startOffset - (mod(cast((5 * m2.startPeriod + m2.startOffset) as int), 60))) /60)) || ':' || lpad(str(mod(cast((5 * m2.startPeriod + m2.startOffset) as int), 60)), 2, '0') || ' - ' ||
+  str(floor((5 * m2.stopPeriod + m2.stopOffset - (mod(cast((5 * m2.stopPeriod + m2.stopOffset) as int), 60))) /60)) || ':' || lpad(str(mod(cast((5 * m2.stopPeriod + m2.stopOffset) as int), 60)), 2, '0') ||
+  ' ' || a2.datePattern.name as Time_2
 from
   StudentClassEnrollment e inner join e.student s inner join e.clazz c1, Assignment a1,
   ClassInstructor ci inner join ci.classInstructing c2 inner join c2.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co2,
@@ -56,6 +56,6 @@ from
 where
   e1.clazz = c1 and e2.clazz = c2 and m1.startPeriod < m2.stopPeriod and m1.stopPeriod > m2.startPeriod and m1.approvalStatus <= 1 and m2.approvalStatus <= 1 and m1.meetingDate = m2.meetingDate and
   co2.subjectArea.uniqueId in %SUBJECTS% and co2.isControl = true and ci.instructor.externalUniqueId = s.externalUniqueId and e.courseOffering.instructionalOffering.session.uniqueId = %SESSION% and
-  a1.classId = c1.uniqueId and a1.solution.commited = true and
-  a2.classId = c2.uniqueId and a2.solution.commited = true and ci.lead = true]]></query>
+  a1.clazz.uniqueId = c1.uniqueId and a1.solution.commited = true and
+  a2.clazz.uniqueId = c2.uniqueId and a2.solution.commited = true and ci.lead = true]]></query>
 </report>

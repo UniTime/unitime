@@ -19,12 +19,12 @@
  * limitations under the License.
  * 
  -->
-<script name="Import Solver Configuration" permission="Solver Configurations" engine="ECMAScript" created="Thu Mar 02 15:09:00 CET 2017">
+<script name="Import Solver Configuration" permission="Solver Configurations" engine="ECMAScript" created="Tue Jun 06 17:36:49 CEST 2023">
   <description><![CDATA[This script imports solver configuration as it is exported on the Edit Solver Configuration]]></description>
-  <parameter name="reference" label="Reference" type="text"/>
+  <parameter name="appearance" label="Appearance" type="enum(Timetables,Solver,Exam Solver,Student Solver,Instructor Solver)" default="Solver"/>
   <parameter name="file" label="Solver Configuration File" type="file"/>
+  <parameter name="reference" label="Reference" type="text"/>
   <parameter name="name" label="Name" type="text"/>
-  <parameter name="appearance" label="Appearance" type="enum(Timetables,Solver,Examination Solver,Student Sectioning Solver,Instructor Scheduling Solver)" default="Solver"/>
   <body><![CDATA[var configName = file.getName().substring(0, file.getName().lastIndexOf('.'));
 log.info('Importing configuration ' + configName);
 var properties = new java.util.Properties();
@@ -38,8 +38,8 @@ if (config == null) {
   config.setName(reference);
   if (name) config.setDescription(name);
   else config.setDescription(reference);
-  for (var i = 0; i < org.unitime.timetable.model.SolverPredefinedSetting.sAppearances.length; i++)
-    if (org.unitime.timetable.model.SolverPredefinedSetting.sAppearances[i].equals(appearance))
+  for (var i = 0; i < org.unitime.timetable.model.SolverPredefinedSetting.Appearance.length; i++)
+    if (org.unitime.timetable.model.SolverPredefinedSetting.Appearance[i].equalsIgnoreCase(appearance.replace(' ', '_')))
       config.setAppearance(i);
   config.setParameters(new java.util.HashSet());
 } else {
@@ -55,7 +55,7 @@ else if (config.getAppearance() == 3)
 else if (config.getAppearance() == 4)
   type = 3;
 
-var parameterDefs = hibSession.createQuery('from SolverParameterDef where group.type = :type and visible = true').setInteger('type', type).list();
+var parameterDefs = hibSession.createQuery('from SolverParameterDef where group.type = :type and visible = true').setParameter('type', type).list();
 for (var i = parameterDefs.iterator(); i.hasNext(); ) {
   var def = i.next();
   if (def.getName().equals("Extensions.Classes")) continue;

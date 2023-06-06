@@ -5,7 +5,7 @@
 When prohibited or (strongly) discouraged: given classes cannot be taught on the same days (there cannot be a date when both classes are meeting).<br>
 Note: unlike with the same days/weeks constraint, this constraint consider individual meeting dates of both classes.]]></description>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'SAME_DATES').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'SAME_DATES').uniqueResult();
 if (type == null) {
   log.info('Creating Same Dates constraint...');
   type = new org.unitime.timetable.model.DistributionType();

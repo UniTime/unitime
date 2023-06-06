@@ -27,7 +27,7 @@
 var solverServerService = org.unitime.timetable.spring.SpringApplicationContextHolder.getBean("solverServerService");
 
 var config = hibSession.createQuery("from SolverPredefinedSetting where appearance = 3 and description = :config")
-  .setString("config", configName).uniqueResult();
+  .setParameter("config", configName).uniqueResult();
 
 var puid = log.getOwnerId();
 

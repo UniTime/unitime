@@ -35,7 +35,7 @@
   <parameter name="maxHoles" label="Max Hole [in minutes]" type="integer" default="60"/>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 var reference = '_MaxHoles:' + maxHoles + '_';
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
 var abbv = 'Minimize Holes';
 var label = 'Minimize Free Time On A Day';
 var desc = 'There should be less than ' + maxHoles + ' minutes of free time between the first and the last class during any day.';

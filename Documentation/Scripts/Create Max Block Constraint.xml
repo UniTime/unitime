@@ -30,7 +30,7 @@ Reference _MaxBlock:120:30_ translates to a maximal block of at most 2 hours (12
 var maxBlock = +maxBlockStr;
 var minBreak = +minBreakStr;
 var reference = '_MaxBlock:' + maxBlock + ':' + minBreak + '_';
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
 var label = '';
 var abbv = '';
 var desc = '';

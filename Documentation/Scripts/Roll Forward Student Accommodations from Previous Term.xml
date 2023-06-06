@@ -25,21 +25,21 @@
     "select z from Session s, Session z where s.uniqueId = :sessionId and " +
     "s.academicInitiative = z.academicInitiative and z.sessionBeginDateTime < s.sessionBeginDateTime " +
     "order by z.sessionBeginDateTime desc")
-    .setLong("sessionId", session.getUniqueId()).setMaxResults(1).uniqueResult();
+    .setParameter("sessionId", session.getUniqueId()).setMaxResults(1).uniqueResult();
 log.info("Taking data from " + fromSession.getLabel());
 
-var accommodations = hibSession.createQuery("from StudentAccomodation where session = :sessionId")
-    .setLong("sessionId", fromSession.getUniqueId()).list();
+var accommodations = hibSession.createQuery("from StudentAccomodation where session.uniqueId = :sessionId")
+    .setParameter("sessionId", fromSession.getUniqueId()).list();
 
 log.setStatus("Copying " + accommodations.size() + " over to " + session.getLabel(), accommodations.size());
 for (var i = accommodations.iterator(); i.hasNext(); ) {
   log.incProgress();
   var fromAccomodation = i.next();
   log.info(fromAccomodation.getAbbreviation() + " - " + fromAccomodation.getName());
-  var toAccomodation = hibSession.createQuery("from StudentAccomodation where session = :sessionId and (abbreviation = :abbreviation or name = :name)")
-    .setLong("sessionId", session.getUniqueId())
-    .setString("abbreviation", fromAccomodation.getAbbreviation())
-    .setString("name", fromAccomodation.getName())
+  var toAccomodation = hibSession.createQuery("from StudentAccomodation where session.uniqueId = :sessionId and (abbreviation = :abbreviation or name = :name)")
+    .setParameter("sessionId", session.getUniqueId())
+    .setParameter("abbreviation", fromAccomodation.getAbbreviation())
+    .setParameter("name", fromAccomodation.getName())
     .setMaxResults(1).uniqueResult();
   if (toAccomodation == null) {
     log.info("Creating " + fromAccomodation.getAbbreviation() + " - " + fromAccomodation.getName());
@@ -52,8 +52,8 @@ for (var i = accommodations.iterator(); i.hasNext(); ) {
   }
   for (var j = fromAccomodation.getStudents().iterator(); j.hasNext(); ) {
     var fromStudent = j.next();
-    var toStudent = hibSession.createQuery("from Student where session = :sessionId and externalUniqueId = :externalUniqueId")
-      .setLong("sessionId", session.getUniqueId()).setString("externalUniqueId", fromStudent.getExternalUniqueId()).uniqueResult();
+    var toStudent = hibSession.createQuery("from Student where session.uniqueId = :sessionId and externalUniqueId = :externalUniqueId")
+      .setParameter("sessionId", session.getUniqueId()).setParameter("externalUniqueId", fromStudent.getExternalUniqueId()).uniqueResult();
     if (toStudent == null) {
       log.warn("Student " + fromStudent.getName("last-first-middle") + " does not exist in " + session.getLabel());
     } else if (toAccomodation.getStudents().add(toStudent)) {

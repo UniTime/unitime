@@ -9,7 +9,7 @@ The constraint can be also parametrised by a distance between the two classes:<b
   <parameter name="hours" label="Minimal number of hours between the two classes" type="double" default="10.0"/>
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 var reference = 'DAYBREAK(' + hours + ',' + distance + ')';
-var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', reference).uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
 var abbv = 'Daybreak ' + hours + 'h' + (distance < 0 ? '' : ' >' + distance + 'min');
 var label = 'Daybreak of ' + hours + ' hours' + (distance < 0 ? '' : ' when over ' + distance + ' mins');
 var desc = 'There should be at least of ' + hours + ' hours between an evening class followed by a morning class the next day';

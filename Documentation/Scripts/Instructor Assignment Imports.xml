@@ -54,10 +54,10 @@ def lookupInstructorByName(name):
     ratio = 0.0
     instructors = hibSession.createQuery(
         'from DepartmentalInstructor where lastName = :lname and department.session.uniqueId = :sessionId and department.uniqueId = :deptId'
-        ).setString('lname', name.split(',')[0].strip()).setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).list()
+        ).setParameter('lname', name.split(',')[0].strip()).setParameter("sessionId", session.getUniqueId()).setParameter('deptId', department.getUniqueId()).list()
     if not instructors:
         instructors = hibSession.createQuery(
-            'from DepartmentalInstructor where department.session.uniqueId = :sessionId and department.uniqueId = :deptId').setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).list()
+            'from DepartmentalInstructor where department.session.uniqueId = :sessionId and department.uniqueId = :deptId').setParameter("sessionId", session.getUniqueId()).setParameter('deptId', department.getUniqueId()).list()
     for instructor in instructors:
         r = SequenceMatcher(None, name, instructor.getName('last-first-middle')).ratio()
         if not best or r > ratio:
@@ -71,11 +71,11 @@ def lookupInstructorByName(name):
 def lookupInstructorById(extId):
     instructor = hibSession.createQuery(
         'from DepartmentalInstructor where externalUniqueId = :extId and department.session.uniqueId = :sessionId and department.uniqueId = :deptId'
-        ).setString('extId', extId).setLong("sessionId", session.getUniqueId()).setLong('deptId', department.getUniqueId()).uniqueResult()
+        ).setParameter('extId', extId).setParameter("sessionId", session.getUniqueId()).setParameter('deptId', department.getUniqueId()).uniqueResult()
     if not instructor:
         student = hibSession.createQuery(
             'from Student where externalUniqueId = :extId and session.uniqueId = :sessionId'
-            ).setString('extId', extId).setLong("sessionId", session.getUniqueId()).uniqueResult()
+            ).setParameter('extId', extId).setParameter("sessionId", session.getUniqueId()).uniqueResult()
         if not student: return None
         instructor = DepartmentalInstructor()
         instructor.setExternalUniqueId(student.getExternalUniqueId())
@@ -94,11 +94,11 @@ def lookupInstructorById(extId):
 def lookupCourse(course):
     co = hibSession.createQuery(
         "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and (c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course"
-        ).setLong("sessionId", session.getUniqueId()).setString("course", course).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("course", course).uniqueResult()
     if not co:
         co = hibSession.createQuery(
         "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.uniqueId = :deptId and c.courseNbr = :course"
-        ).setLong("sessionId", session.getUniqueId()).setString("course", course).setLong("deptId", department.getUniqueId()).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("course", course).setParameter("deptId", department.getUniqueId()).uniqueResult()
     return co
 
 attributes = {}
@@ -106,7 +106,7 @@ for t in hibSession.createQuery('from InstructorAttributeType').list():
     attributes[t.getReference()] = {}
 for a in hibSession.createQuery(
     'from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :deptId)'
-    ).setLong("sessionId", session.getUniqueId()).setLong("deptId", department.getUniqueId()).list():
+    ).setParameter("sessionId", session.getUniqueId()).setParameter("deptId", department.getUniqueId()).list():
     type = a.getType().getReference()
     if type not in attributes:
         attributes[type] = {}
@@ -163,7 +163,7 @@ for line in lines:
                     x.setName(attribute)
                     x.setInstructors(HashSet())
                     x.setSession(session)
-                    x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setString("reference", key).uniqueResult())
+                    x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setParameter("reference", key).uniqueResult())
                     hibSession.save(x)
                     attributes[key][attribute] = x
                 attr[key].append(attribute)
@@ -182,7 +182,7 @@ for line in lines:
                         x.setName(attribute)
                         x.setInstructors(HashSet())
                         x.setSession(session)
-                        x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setString("reference", "Qualification").uniqueResult())
+                        x.setType(hibSession.createQuery("from InstructorAttributeType where reference = :reference").setParameter("reference", "Qualification").uniqueResult())
                         hibSession.save(x)
                         attributes["Qualification"][attribute] = x
                     attr["Qualification"].append(attribute)
@@ -294,11 +294,11 @@ from java.util import HashSet
 def lookupCourse(course):
     co = hibSession.createQuery(
         "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and (c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course"
-        ).setLong("sessionId", session.getUniqueId()).setString("course", course).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("course", course).uniqueResult()
     if not co:
         co = hibSession.createQuery(
         "from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.uniqueId = :deptId and c.courseNbr = :course"
-        ).setLong("sessionId", session.getUniqueId()).setString("course", course).setLong("deptId", department.getUniqueId()).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("course", course).setParameter("deptId", department.getUniqueId()).uniqueResult()
     return co
 
 attributes = {}
@@ -306,7 +306,7 @@ for t in hibSession.createQuery('from InstructorAttributeType').list():
     attributes[t.getReference()] = {}
 for a in hibSession.createQuery(
     'from InstructorAttribute a where a.session.uniqueId = :sessionId and (a.department is null or a.department.uniqueId = :deptId)'
-    ).setLong("sessionId", session.getUniqueId()).setLong("deptId", department.getUniqueId()).list():
+    ).setParameter("sessionId", session.getUniqueId()).setParameter("deptId", department.getUniqueId()).list():
     type = a.getType().getReference()
     if type not in attributes:
         attributes[type] = {}

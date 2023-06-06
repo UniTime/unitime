@@ -28,21 +28,21 @@ from java.util import HashSet
 def getArea(area):
     return hibSession.createQuery(
         "from AcademicArea a where a.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area"
-        ).setLong("sessionId", session.getUniqueId()).setString("area", area).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("area", area).uniqueResult()
 
 def getMajor(area, major):
     return hibSession.createQuery(
         "select m from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area and m.code = :major"
-        ).setLong("sessionId", session.getUniqueId()).setString("area", area).setString("major", major).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("area", area).setParameter("major", major).uniqueResult()
 
 def getClassification(clasf):
     return hibSession.createQuery(
         "from AcademicClassification c where c.session.uniqueId = :sessionId and c.code = :clasf"
-        ).setLong("sessionId", session.getUniqueId()).setString("clasf", clasf).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("clasf", clasf).uniqueResult()
         
 areas = hibSession.createQuery(
-    "select distinct acm.academicArea from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session = :sessionId"
-    ).setLong("sessionId", session.getUniqueId()).list()
+    "select distinct acm.academicArea from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session.uniqueId = :sessionId"
+    ).setParameter("sessionId", session.getUniqueId()).list()
 
 for prevArea in areas:
     area = getArea(prevArea.getAcademicAreaAbbreviation())
@@ -58,8 +58,8 @@ for prevArea in areas:
         hibSession.save(area)
     
 majors = hibSession.createQuery(
-    "select distinct acm.major from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session = :sessionId"
-    ).setLong("sessionId", session.getUniqueId()).list()
+    "select distinct acm.major from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session.uniqueId = :sessionId"
+    ).setParameter("sessionId", session.getUniqueId()).list()
 
 for prevMajor in majors:
     for prevArea in prevMajor.getAcademicAreas():
@@ -76,8 +76,8 @@ for prevMajor in majors:
             hibSession.save(major)
 
 clasfs = hibSession.createQuery(
-    "select distinct acm.academicClassification from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session = :sessionId"
-    ).setLong("sessionId", session.getUniqueId()).list()
+    "select distinct acm.academicClassification from LastLikeCourseDemand d inner join d.student.areaClasfMajors acm where d.subjectArea.session.uniqueId = :sessionId"
+    ).setParameter("sessionId", session.getUniqueId()).list()
 
 for prevClasf in clasfs:
     clasf = getClassification(prevClasf.getCode())
@@ -117,7 +117,7 @@ def loadAreaMajorClasf2ll():
         "inner join s.areaClasfMajors acm inner join acm.academicClassification f inner join acm.academicArea a " +
         "inner join acm.major m where x.subjectArea.session.uniqueId = :sessionId " +
         "group by a.academicAreaAbbreviation, m.code, f.code"
-        ).setLong("sessionId", session.getUniqueId()).list()
+        ).setParameter("sessionId", session.getUniqueId()).list()
     for line in counts:
         area = line[0]
         major = line[1]
@@ -151,17 +151,17 @@ def countLastLike(area, major, area2major2clasf2ll):
 def getArea(area):
     return hibSession.createQuery(
         "from AcademicArea a where a.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area"
-        ).setLong("sessionId", session.getUniqueId()).setString("area", area).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("area", area).uniqueResult()
 
 def getMajor(area, major):
     return hibSession.createQuery(
         "select m from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area and m.code = :major"
-        ).setLong("sessionId", session.getUniqueId()).setString("area", area).setString("major", major).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("area", area).setParameter("major", major).uniqueResult()
 
 def getClassification(clasf):
     return hibSession.createQuery(
         "from AcademicClassification c where c.session.uniqueId = :sessionId and c.code = :clasf"
-        ).setLong("sessionId", session.getUniqueId()).setString("clasf", clasf).uniqueResult()
+        ).setParameter("sessionId", session.getUniqueId()).setParameter("clasf", clasf).uniqueResult()
 
 def process(header, line, area2major2clasf2ll):
     area = line[0].strip()
@@ -243,7 +243,7 @@ def process(header, line, area2major2clasf2ll):
 def execute():
     offering = hibSession.createQuery(
         "delete CurriculumProjectionRule where academicArea.uniqueId in (select a.uniqueId from AcademicArea a where a.session.uniqueId = :sessionId)"
-        ).setLong("sessionId", session.getUniqueId()).executeUpdate()
+        ).setParameter("sessionId", session.getUniqueId()).executeUpdate()
         
     area2major2clasf2ll = loadAreaMajorClasf2ll()
     

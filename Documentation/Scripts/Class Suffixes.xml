@@ -46,7 +46,7 @@ var table = new java.util.HashMap();
 var allClasses = hibSession.createQuery(
   "select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
   "c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
-  .setLong("sessionId", session.getUniqueId()).list();
+  .setParameter("sessionId", session.getUniqueId()).list();
 for (var i = allClasses.iterator(); i.hasNext(); ) {
   var o = i.next();
   var clazz = o[0];
@@ -102,7 +102,7 @@ var out = new java.io.PrintWriter(new java.io.FileWriter(file));
 out.println("Subject,CourseNbr,Type,Section,Suffix");
 for (var i = subjects.iterator(); i.hasNext(); ) {
   var subject = i.next();
-  var classes = hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subject").setLong("subject", subject.getUniqueId()).list();
+  var classes = hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subject").setParameter("subject", subject.getUniqueId()).list();
   for (var j = classes.iterator(); j.hasNext(); ) {
     var clazz = j.next();
     if (clazz.getClassSuffix() == null || clazz.getClassSuffix().isEmpty()) continue;

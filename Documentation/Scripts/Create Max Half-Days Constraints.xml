@@ -36,7 +36,7 @@
   <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
 
 for (var i = 2; i <= 12; i++) {
-  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', '_MaxHalfDays:' + i + '_').uniqueResult();
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', '_MaxHalfDays:' + i + '_').uniqueResult();
   if (type == null) {
     type = new org.unitime.timetable.model.DistributionType();
     type.setReference('_MaxHalfDays:' + i + '_');

@@ -23,7 +23,7 @@
   <description><![CDATA[This script registers all the student scheduling solver parameters related to student accommodations.]]></description>
   <body><![CDATA[function createGroup(name, description, type) {
   var group = hibSession.createQuery("from SolverParameterGroup where name=:name")
-    .setString("name", name).uniqueResult();
+    .setParameter("name", name).uniqueResult();
   if (group == null) {
     group = new org.unitime.timetable.model.SolverParameterGroup();
     group.setName(name);
@@ -43,7 +43,7 @@
 
 function createParameter(name, description, type, value, visible, group) {
   var param = hibSession.createQuery("from SolverParameterDef where name=:name and group.name = :group")
-    .setString("name", name).setString("group", group.getName()).uniqueResult();
+    .setParameter("name", name).setParameter("group", group.getName()).uniqueResult();
   if (param == null) {
     param = new org.unitime.timetable.model.SolverParameterDef();
     param.setName(name);
@@ -66,7 +66,7 @@ function createParameter(name, description, type, value, visible, group) {
 
 function moveParameter(name, description, type, value, visible, group) {
   var param = hibSession.createQuery("from SolverParameterDef where name=:name and group.type = :type")
-    .setString("name", name).setInteger("type", group.getType()).uniqueResult();
+    .setParameter("name", name).setParameter("type", group.getType()).uniqueResult();
   if (param == null)
     return createParameter(name, description, type, value, visible, group);
   param.getGroup().getParameters().remove(param);
