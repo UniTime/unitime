@@ -468,8 +468,12 @@ public class HibernateUtil {
     public static void addOperations(MetadataBuilder builder, Class dialect) {
     	if (PostgreSQLDialect.class.isAssignableFrom(dialect)) {
     		builder.applySqlFunction("adddate", PostgreSQLAddDateFunction.INSTANCE);
+    		builder.applySqlFunction("days", PostgreSQLDaysFunction.INSTANCE);
         } else if (OracleDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("weekday", OracleWeekdayFunction.INSTANCE);
+        	builder.applySqlFunction("days", OracleDaysFunction.INSTANCE);
+        } else if (MySQLDialect.class.isAssignableFrom(dialect)) {
+        	builder.applySqlFunction("days", MySQLDaysFunction.INSTANCE);
         }
     }
     
@@ -511,6 +515,84 @@ public class HibernateUtil {
     		sqlAppender.appendSql(") - trunc(");
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql(", 'IW'))");
+    	}
+    }
+    
+    public static class OracleDaysFunction extends NamedSqmFunctionDescriptor {
+    	public static final OracleDaysFunction INSTANCE = new OracleDaysFunction();
+    	public OracleDaysFunction() {
+    		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		// (trunc(?) - trunc(?))
+    		sqlAppender.appendSql("(trunc(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(") - trunc(");
+    		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql("))");
+    	}
+    }
+    
+    public static class MySQLDaysFunction extends NamedSqmFunctionDescriptor {
+    	public static final MySQLDaysFunction INSTANCE = new MySQLDaysFunction();
+    	public MySQLDaysFunction() {
+    		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		// datediff(?, ?)
+    		sqlAppender.appendSql("datediff(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(", ");
+    		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(")");
+    	}
+    }
+    
+    public static class PostgreSQLDaysFunction extends NamedSqmFunctionDescriptor {
+    	public static final PostgreSQLDaysFunction INSTANCE = new PostgreSQLDaysFunction();
+    	public PostgreSQLDaysFunction() {
+    		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		// (date(?) - date(?))
+    		sqlAppender.appendSql("(date(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(") - date(");
+    		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql("))");
     	}
     }
     
