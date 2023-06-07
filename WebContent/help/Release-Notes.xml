@@ -53,6 +53,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Scripts, Reports</name>
+			<description>
+				<line>Added an ability to export all scripts and all HQL reports using the Data Exchange page.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Add/Edit Solver Configuration: Date Parameters</name>
