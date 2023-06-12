@@ -81,6 +81,8 @@ public class DataImportForm implements UniTimeForm {
     	STUDENT_ADVISORS("studentAdvisors", "Student Advisors"),
     	STUDENT_STATUSES("studentStatuses", "Student Scheduling Statuses"),
     	INSTRUCTOR_SURVEYS("instructorSurveys", "Instructor Surveys"),
+    	SCRIPTS("scripts", "Scripts"),
+    	REPORTS("reports", "Reports"),
     	;
     	
     	private String iType, iLabel;
