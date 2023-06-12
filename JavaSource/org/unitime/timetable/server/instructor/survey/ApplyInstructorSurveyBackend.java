@@ -63,7 +63,7 @@ public class ApplyInstructorSurveyBackend implements GwtRpcImplementation<Instru
 				i.remove();
 			else if (p instanceof BuildingPref)
 				i.remove();
-			else if (p instanceof DistributionPref)
+			else if (p instanceof DistributionPref && ((DistributionPref)p).getDistributionType().effectiveSurvey())
 				i.remove();
 		}
 		for (Preference p: is.getPreferences()) {
@@ -75,6 +75,8 @@ public class ApplyInstructorSurveyBackend implements GwtRpcImplementation<Instru
 				if (!di.getAvailableRoomGroups().contains(((RoomGroupPref)p).getRoomGroup())) continue;
 			if (p instanceof BuildingPref)
 				if (!di.getAvailableBuildings().contains(((BuildingPref)p).getBuilding())) continue;
+			if (p instanceof DistributionPref)
+				if (!((DistributionPref)p).getDistributionType().effectiveSurvey()) continue;
 			
 			Preference x = (Preference)p.clone();
 			x.setOwner(di);

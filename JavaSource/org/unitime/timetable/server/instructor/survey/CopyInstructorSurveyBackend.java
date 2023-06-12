@@ -113,7 +113,8 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 						}
 					} else if (p instanceof DistributionPref) {
 						DistributionPref dp = (DistributionPref)p;
-						survey.getDistributionPreferences().addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
+						if (dp.getDistributionType().effectiveSurvey())
+							survey.getDistributionPreferences().addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
 					} else if (p instanceof RoomPref) {
 						RoomPref rp = (RoomPref)p;
 						Problem prob = Problem.NOT_APPLIED;

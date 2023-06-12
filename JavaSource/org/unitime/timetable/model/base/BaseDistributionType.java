@@ -52,6 +52,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	private Boolean iInstructorPref;
 	private Boolean iExamPref;
 	private Boolean iVisible;
+	private Boolean iSurvey;
 
 	private Set<Department> iDepartments;
 
@@ -103,6 +104,12 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
+	@Column(name = "survey", nullable = true)
+	public Boolean isSurvey() { return iSurvey; }
+	@Transient
+	public Boolean getSurvey() { return iSurvey; }
+	public void setSurvey(Boolean survey) { iSurvey = survey; }
+
 	@ManyToMany
 	@JoinTable(name = "dist_type_dept",
 		joinColumns = { @JoinColumn(name = "dist_type_id") },
@@ -148,6 +155,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 			"\n	Reference: " + getReference() +
 			"\n	RequirementId: " + getRequirementId() +
 			"\n	SequencingRequired: " + getSequencingRequired() +
+			"\n	Survey: " + getSurvey() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	Visible: " + getVisible() +
 			"]";

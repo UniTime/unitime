@@ -112,8 +112,10 @@ public class InstructorRequirementsBackend implements GwtRpcImplementation<Instr
 						}
 						//line.setTime(rtt.getModel().toString());
         			} else if (p instanceof DistributionPref) {
-        				line.addDist(p.preferenceText(instructorNameFormat));
-        				line.addDistHtml(p.preferenceHtml(instructorNameFormat));
+        				if (((DistributionPref)p).getDistributionType().effectiveSurvey()) {
+        					line.addDist(p.preferenceText(instructorNameFormat));
+        					line.addDistHtml(p.preferenceHtml(instructorNameFormat));
+        				}
         			} else {
         				line.addRoom(p.preferenceText(instructorNameFormat));
         				line.addRoomHtml(p.preferenceHtml(instructorNameFormat));

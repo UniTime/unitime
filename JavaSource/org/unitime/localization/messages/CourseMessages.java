@@ -4859,6 +4859,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Allow Instructor Preference")
 	String fieldAllowInstructorPreference();
 	
+	@DefaultMessage("Instructor Survey")
+	String fieldAllowInstructorSurvey();
+	
 	@DefaultMessage("Sequencing Required")
 	String fieldSequencingRequired();
 	

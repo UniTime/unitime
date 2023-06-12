@@ -102,6 +102,7 @@ public class DistributionTypeEditAction extends UniTimeAction<DistributionTypeEd
                 distType.setAllowedPref(x.getAllowedPref());
                 distType.setDescr(x.getDescr());
                 distType.setInstructorPref(x.isInstructorPref()==null?Boolean.FALSE:x.isInstructorPref());
+                distType.setSurvey(x.effectiveSurvey());
                 distType.setLabel(x.getLabel());
                 distType.setVisible(x.isVisible() == null ? Boolean.FALSE : x.isVisible());
                 HashSet<Department> oldDepts = new HashSet<Department>(distType.getDepartments());

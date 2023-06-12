@@ -334,6 +334,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		Preferences distPref = new Preferences(-1l, CMSG.propertyDistribution());
 		boolean hardDistPref = isAllowed(survey, ApplicationProperty.InstructorSurveyDistributionPreferencesDeptHard, ApplicationProperty.InstructorSurveyDistributionPreferencesHard);
 		for (DistributionType dt: DistributionType.findAll(true, false, true)) {
+			if (!dt.effectiveSurvey()) continue;
 			if (dt.getDepartments() != null && !dt.getDepartments().isEmpty()) {
 				boolean hasDept = false;
 				for (Department d: dt.getDepartments())
@@ -392,7 +393,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 					}
 				} else if (p instanceof DistributionPref) {
 					DistributionPref dp = (DistributionPref)p;
-					distPref.addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
+					if (dp.getDistributionType().effectiveSurvey())
+						distPref.addSelection(new Selection(dp.getDistributionType().getUniqueId(), dp.getPrefLevel().getUniqueId(), p.getNote()));
 				} else if (p instanceof RoomPref) {
 					RoomPref rp = (RoomPref)p;
 					Problem prob = (deptRooms == null || deptRooms.contains(rp.getRoom()) ? Problem.NOT_APPLIED : Problem.DIFFERENT_DEPT);
