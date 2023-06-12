@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CourseDetail;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.ListAcademicClassifications;
@@ -84,6 +85,7 @@ public class CourseSelectionBoxBackend {
 		public GwtRpcResponseList<CourseAssignment> execute(ListCourseOfferings request, SessionContext context) {
 			checkPermissions(request.getSessionId(), context);
 			GwtRpcResponseList<CourseAssignment> results = new GwtRpcResponseList<CourseAssignment>();
+			String excludeCourseType = ApplicationProperty.InstructorSurveyExcludeCourseTypes.value();
 			for (CourseOffering c: CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and (" +
@@ -97,6 +99,8 @@ public class CourseSelectionBoxBackend {
 					.setCacheable(true)
 					.setMaxResults(request.getLimit() == null || request.getLimit() < 0 ? Integer.MAX_VALUE : request.getLimit())
 					.list()) {
+				if (excludeCourseType != null && !excludeCourseType.isEmpty() && c.getCourseType() != null && 
+						c.getCourseType().getReference().matches(excludeCourseType)) continue;
 				CourseAssignment course = new CourseAssignment();
 				course.setCourseId(c.getUniqueId());
 				course.setSubject(c.getSubjectAreaAbbv());
