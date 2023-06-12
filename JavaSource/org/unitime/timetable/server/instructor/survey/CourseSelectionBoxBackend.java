@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CourseDetail;
@@ -74,6 +75,7 @@ public class CourseSelectionBoxBackend {
 	protected static final StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	private static void checkPermissions(Long sessionId, SessionContext context) {
+		ApplicationProperties.setSessionId(sessionId);
 		boolean admin = context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		if (!admin)
 			context.hasPermissionAnySession(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});

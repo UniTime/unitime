@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
@@ -135,6 +136,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				"from InstructorSurvey where session.uniqueId = :sessionId and externalUniqueId = :externalId", InstructorSurvey.class
 				).setParameter("sessionId", sessionId)
 				.setParameter("externalId", externalId).setMaxResults(1).uniqueResult();
+		ApplicationProperties.setSessionId(sessionId);
 
 		if (!admin) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
