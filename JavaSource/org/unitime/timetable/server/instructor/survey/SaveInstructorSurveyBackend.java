@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
@@ -114,6 +115,8 @@ public class SaveInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 		} else {
 			context.checkPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		}
+		
+		ApplicationProperties.setSessionId(sessionId);
 		
 		org.hibernate.Session hibSession = InstructorSurveyDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
